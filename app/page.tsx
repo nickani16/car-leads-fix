@@ -1,65 +1,277 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+  const [images, setImages] = useState<
+    { id: string; file: File; url: string }[]
+  >([]);
+  const [formData, setFormData] = useState({
+    reg: "",
+    miles: "",
+    phone: "",
+    email: "",
+  });
+
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
+
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    const previews = files.map((file) => ({
+      id: Math.random().toString(36).substring(2, 9),
+      file,
+      url: URL.createObjectURL(file),
+    }));
+    setImages((prev) => [...prev, ...previews]);
+  };
+
+  const removeImage = (id: string) => {
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!consent) {
+      setConsentError(true);
+      return;
+    }
+
+    if (!formData.reg || !formData.phone || !formData.email) {
+      alert("Fyll i registreringsnummer, telefonnummer och e-post.");
+      return;
+    }
+
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+
+      setFormData({
+        reg: "",
+        miles: "",
+        phone: "",
+        email: "",
+      });
+      setImages([]);
+      setConsent(false);
+      setConsentError(false);
+    }, 1200);
+  };
+
+  if (submitted) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 py-12 bg-gradient-to-b from-white to-zinc-100">
+        <div className="bg-white shadow-xl border border-zinc-200 rounded-2xl p-10 max-w-md text-center">
+          <h2 className="text-3xl md:text-4xl font-medium mb-4 text-zinc-900">
+            Tack för din förfrågan! 🎉
+          </h2>
+          <p className="text-zinc-600 text-base md:text-lg leading-relaxed font-normal">
+            Vi återkommer till dig inom 24 timmar med ett prisförslag baserat på
+            dina uppgifter.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+          <button
+            onClick={() => setSubmitted(false)}
+            className="mt-6 bg-[#1E3A8A] hover:bg-[#1E40AF] text-white font-semibold py-3 px-6 rounded-xl transition shadow-md text-sm md:text-base"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Skicka en ny förfrågan
+          </button>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-white to-zinc-100 flex items-center justify-center px-6 py-16">
+      <div className="w-full max-w-2xl">
+
+        {/* HEADER */}
+        <div className="text-center mb-14">
+          <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-900">
+            Sälj din bil – få högsta priset
+          </h1>
+          <p className="mt-4 text-lg text-zinc-600 max-w-lg mx-auto font-normal">
+            Fyll i uppgifterna eller ladda upp bilder så matchar vi din bil direkt.
+          </p>
+        </div>
+
+        {/* FORM CARD */}
+        <div className="bg-white border border-zinc-200 shadow-xl rounded-2xl p-10">
+          <form className="space-y-8" onSubmit={handleSubmit}>
+
+            {/* REG NUMBER */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Registreringsnummer
+              </label>
+
+              <div className="flex items-center gap-3 border border-zinc-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition">
+                <div className="w-8 h-12 bg-[#003399] rounded-md flex flex-col items-center justify-center text-white font-semibold text-[10px] leading-none shadow">
+                  <span className="text-[8px]">EU</span>
+                  <span className="text-sm">S</span>
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="ABC123"
+                  value={formData.reg}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      reg: e.target.value.toUpperCase(),
+                    })
+                  }
+                  className="flex-1 text-xl tracking-[0.35em] font-medium uppercase outline-none"
+                />
+              </div>
+            </div>
+
+            {/* MILES */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Miltal
+              </label>
+              <input
+                type="text"
+                placeholder="5000 mil"
+                value={formData.miles}
+                onChange={(e) =>
+                  setFormData({ ...formData, miles: e.target.value })
+                }
+                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
+              />
+            </div>
+
+            {/* PHONE */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Telefonnummer
+              </label>
+              <input
+                type="tel"
+                placeholder="070-123 45 67"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
+              />
+            </div>
+
+            {/* EMAIL */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                E-post
+              </label>
+              <input
+                type="email"
+                placeholder="din@email.se"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
+              />
+            </div>
+
+            {/* IMAGE UPLOAD */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Ladda upp bilder (valfritt)
+              </label>
+
+              <div className="border border-dashed border-zinc-300 rounded-xl p-6 text-center hover:border-zinc-400 transition bg-zinc-50 cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  id="fileUpload"
+                  onChange={handleImageUpload}
+                />
+
+                <label htmlFor="fileUpload" className="cursor-pointer block">
+                  <div className="text-sm font-medium text-zinc-700">
+                    Dra in bilder eller klicka för att välja
+                  </div>
+                  <div className="text-xs text-zinc-500 mt-1 font-normal">
+                    PNG, JPG upp till 10MB
+                  </div>
+                </label>
+              </div>
+
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  {images.map((img) => (
+                    <div key={img.id} className="relative group">
+                      <img
+                        src={img.url}
+                        alt="preview"
+                        className="w-full h-24 object-cover rounded-xl shadow"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => removeImage(img.id)}
+                        className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition font-normal"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* CONSENT */}
+            <div className="flex flex-col gap-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => {
+                    setConsent(e.target.checked);
+                    setConsentError(false);
+                  }}
+                  className="mt-1 w-5 h-5 accent-[#1E3A8A]"
+                />
+                <p className="text-sm text-zinc-600 leading-relaxed font-normal">
+                  Jag godkänner att mina uppgifter behandlas enligt
+                  integritetspolicyn.
+                </p>
+              </label>
+
+              {consentError && (
+                <p className="text-red-500 text-xs font-normal">
+                  Du måste godkänna integritetspolicyn för att fortsätta.
+                </p>
+              )}
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full text-white font-semibold py-4 rounded-xl text-lg shadow-lg transition ${
+                loading
+                  ? "bg-[#9BBDF9] cursor-not-allowed"
+                  : "bg-[#1E3A8A] hover:bg-[#1E40AF]"
+              }`}
+            >
+              {loading ? "Skickar..." : "Få gratis värdering →"}
+            </button>
+
+            <p className="text-center text-xs text-zinc-500 pt-2 font-normal">
+              Kostnadsfritt • Ingen bindning • Svar inom 24h
+            </p>
+          </form>
+        </div>
+      </div>
+    </main>
   );
 }
