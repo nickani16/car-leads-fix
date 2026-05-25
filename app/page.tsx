@@ -1,10 +1,22 @@
 "use client";
-import { useState } from "react";
 
+import Image from "next/image";
+import { useState } from "react";
+import { DM_Sans, Archivo } from "next/font/google";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["700"],
+});
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["500"],
+});
 export default function Home() {
   const [images, setImages] = useState<
     { id: string; file: File; url: string }[]
   >([]);
+
   const [formData, setFormData] = useState({
     reg: "",
     miles: "",
@@ -18,22 +30,54 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // IMAGE UPLOAD
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (!e.target.files) return;
+
     const files = Array.from(e.target.files);
-    const previews = files.map((file) => ({
-      id: Math.random().toString(36).substring(2, 9),
+
+    // Filtrera bort filer över 10MB
+    const validFiles = files.filter(
+      (file) => file.size <= 10 * 1024 * 1024
+    );
+
+    // Hur många bilder som får plats
+    const remainingSlots = 10 - images.length;
+
+    if (remainingSlots <= 0) {
+      alert("Du kan ladda upp max 10 bilder.");
+      return;
+    }
+
+    // Begränsa till max 10 totalt
+    const limitedFiles = validFiles.slice(0, remainingSlots);
+
+    const newImages = limitedFiles.map((file) => ({
+      id: crypto.randomUUID(),
       file,
       url: URL.createObjectURL(file),
     }));
-    setImages((prev) => [...prev, ...previews]);
+
+    setImages((prev) => [...prev, ...newImages]);
+
+    if (files.length > validFiles.length) {
+      alert("Vissa bilder var större än 10MB och laddades inte upp.");
+    }
+
+    if (files.length > remainingSlots) {
+      alert("Max 10 bilder tillåtna.");
+    }
   };
 
+  // REMOVE IMAGE
   const removeImage = (id: string) => {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // SUBMIT
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!consent) {
@@ -42,28 +86,55 @@ export default function Home() {
     }
 
     if (!formData.reg || !formData.phone || !formData.email) {
-      alert("Fyll i registreringsnummer, telefonnummer och e-post.");
+      alert(
+        "Fyll i registreringsnummer, telefonnummer och e-post."
+      );
       return;
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
+    const form = new FormData();
 
-      setFormData({
-        reg: "",
-        miles: "",
-        phone: "",
-        email: "",
-      });
-      setImages([]);
-      setConsent(false);
-      setConsentError(false);
-    }, 1200);
+    form.append("reg", formData.reg);
+    form.append("miles", formData.miles);
+    form.append("phone", formData.phone);
+    form.append("email", formData.email);
+
+    // Lägg till bilder
+    images.forEach((img) => {
+      form.append("images", img.file);
+    });
+
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await res.json();
+
+    setLoading(false);
+
+    if (data.error) {
+      alert("Något gick fel: " + data.error);
+      return;
+    }
+
+    setSubmitted(true);
+
+    setFormData({
+      reg: "",
+      miles: "",
+      phone: "",
+      email: "",
+    });
+
+    setImages([]);
+    setConsent(false);
+    setConsentError(false);
   };
 
+  // SUCCESS PAGE
   if (submitted) {
     return (
       <main className="min-h-screen flex items-center justify-center px-6 py-12 bg-gradient-to-b from-white to-zinc-100">
@@ -71,9 +142,10 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-medium mb-4 text-zinc-900">
             Tack för din förfrågan! 🎉
           </h2>
+
           <p className="text-zinc-600 text-base md:text-lg leading-relaxed font-normal">
-            Vi återkommer till dig inom 24 timmar med ett prisförslag baserat på
-            dina uppgifter.
+            Vi återkommer till dig inom 24 timmar med ett
+            prisförslag baserat på dina uppgifter.
           </p>
 
           <button
@@ -93,11 +165,26 @@ export default function Home() {
 
         {/* HEADER */}
         <div className="text-center mb-14">
-          <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-900">
+
+          {/* LOGO */}
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={180}
+              height={60}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          <h1 className={`text-4xl md:text-5xl tracking-tight text-zinc-900 ${archivo.className}`}>
             Sälj din bil – få högsta priset
           </h1>
+
           <p className="mt-4 text-lg text-zinc-600 max-w-lg mx-auto font-normal">
-            Fyll i uppgifterna eller ladda upp bilder så matchar vi din bil direkt.
+            Fyll i uppgifterna eller ladda upp bilder så
+            matchar vi din bil direkt.
           </p>
         </div>
 
@@ -127,7 +214,8 @@ export default function Home() {
                       reg: e.target.value.toUpperCase(),
                     })
                   }
-                  className="flex-1 text-xl tracking-[0.35em] font-medium uppercase outline-none"
+                 className={`flex-1 text-3xl tracking-[0.35em] uppercase outline-none ${dmSans.className}`}
+style={{ fontWeight: 700 }}
                 />
               </div>
             </div>
@@ -137,12 +225,16 @@ export default function Home() {
               <label className="block text-sm font-medium text-zinc-700 mb-2">
                 Miltal
               </label>
+
               <input
                 type="text"
                 placeholder="5000 mil"
                 value={formData.miles}
                 onChange={(e) =>
-                  setFormData({ ...formData, miles: e.target.value })
+                  setFormData({
+                    ...formData,
+                    miles: e.target.value,
+                  })
                 }
                 className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
               />
@@ -153,12 +245,16 @@ export default function Home() {
               <label className="block text-sm font-medium text-zinc-700 mb-2">
                 Telefonnummer
               </label>
+
               <input
                 type="tel"
                 placeholder="070-123 45 67"
                 value={formData.phone}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({
+                    ...formData,
+                    phone: e.target.value,
+                  })
                 }
                 className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
               />
@@ -169,12 +265,16 @@ export default function Home() {
               <label className="block text-sm font-medium text-zinc-700 mb-2">
                 E-post
               </label>
+
               <input
                 type="email"
                 placeholder="din@email.se"
                 value={formData.email}
                 onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+                  setFormData({
+                    ...formData,
+                    email: e.target.value,
+                  })
                 }
                 className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
               />
@@ -183,22 +283,28 @@ export default function Home() {
             {/* IMAGE UPLOAD */}
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Ladda upp bilder (valfritt)
+                PNG, JPG upp till 10MB • Max 10 bilder
+                (Valfritt)
               </label>
 
               <div className="border border-dashed border-zinc-300 rounded-xl p-6 text-center hover:border-zinc-400 transition bg-zinc-50 cursor-pointer">
                 <input
                   type="file"
                   multiple
+                  accept="image/png, image/jpeg, image/jpg"
                   className="hidden"
                   id="fileUpload"
                   onChange={handleImageUpload}
                 />
 
-                <label htmlFor="fileUpload" className="cursor-pointer block">
+                <label
+                  htmlFor="fileUpload"
+                  className="cursor-pointer block"
+                >
                   <div className="text-sm font-medium text-zinc-700">
-                    Dra in bilder eller klicka för att välja
+                    Klicka för att välja bilder
                   </div>
+
                   <div className="text-xs text-zinc-500 mt-1 font-normal">
                     PNG, JPG upp till 10MB
                   </div>
@@ -208,7 +314,10 @@ export default function Home() {
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   {images.map((img) => (
-                    <div key={img.id} className="relative group">
+                    <div
+                      key={img.id}
+                      className="relative group"
+                    >
                       <img
                         src={img.url}
                         alt="preview"
@@ -217,7 +326,9 @@ export default function Home() {
 
                       <button
                         type="button"
-                        onClick={() => removeImage(img.id)}
+                        onClick={() =>
+                          removeImage(img.id)
+                        }
                         className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition font-normal"
                       >
                         ✕
@@ -240,15 +351,17 @@ export default function Home() {
                   }}
                   className="mt-1 w-5 h-5 accent-[#1E3A8A]"
                 />
+
                 <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-                  Jag godkänner att mina uppgifter behandlas enligt
-                  integritetspolicyn.
+                  Jag godkänner att mina uppgifter
+                  behandlas enligt integritetspolicyn.
                 </p>
               </label>
 
               {consentError && (
                 <p className="text-red-500 text-xs font-normal">
-                  Du måste godkänna integritetspolicyn för att fortsätta.
+                  Du måste godkänna integritetspolicyn
+                  för att fortsätta.
                 </p>
               )}
             </div>
@@ -263,11 +376,14 @@ export default function Home() {
                   : "bg-[#1E3A8A] hover:bg-[#1E40AF]"
               }`}
             >
-              {loading ? "Skickar..." : "Få gratis värdering →"}
+              {loading
+                ? "Skickar..."
+                : "Få gratis värdering →"}
             </button>
 
             <p className="text-center text-xs text-zinc-500 pt-2 font-normal">
-              Kostnadsfritt • Ingen bindning • Svar inom 24h
+              Kostnadsfritt • Ingen bindning • Svar inom
+              24h
             </p>
           </form>
         </div>
