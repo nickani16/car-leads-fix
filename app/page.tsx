@@ -160,23 +160,28 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-zinc-100 flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-2xl">
+    <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-white to-zinc-100 flex items-center justify-center px-4 sm:px-6 py-10 sm:py-16">
+      <div className="w-full max-w-2xl mx-auto">
 
         {/* HEADER */}
-        <div className="text-center mb-14">
+        {/* HEADER */}
+<div className="text-center mb-14 flex flex-col items-center">
 
           {/* LOGO */}
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={180}
-              height={60}
-              className="object-contain"
-              priority
-            />
-          </div>
+<div className="flex justify-center mb-10">
+  <Image
+    src="/logo.png"
+    alt="Logo"
+    width={180}
+    height={60}
+    style={{
+      width: "180px",
+      height: "auto",
+    }}
+    className="object-contain"
+    priority
+  />
+</div>
 
           <h1 className={`text-4xl md:text-5xl tracking-tight text-zinc-900 ${archivo.className}`}>
             Sälj din bil – få högsta priset
@@ -192,33 +197,42 @@ export default function Home() {
         <div className="bg-white border border-zinc-200 shadow-xl rounded-2xl p-10">
           <form className="space-y-8" onSubmit={handleSubmit}>
 
-            {/* REG NUMBER */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Registreringsnummer
-              </label>
+{/* REG NUMBER */}
+<div>
+  <label className="block text-sm font-medium text-zinc-700 mb-2">
+    Registreringsnummer
+  </label>
 
-              <div className="flex items-center gap-3 border border-zinc-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition">
-                <div className="w-8 h-12 bg-[#003399] rounded-md flex flex-col items-center justify-center text-white font-semibold text-[10px] leading-none shadow">
-                  <span className="text-[8px]">EU</span>
-                  <span className="text-sm">S</span>
-                </div>
+  <div className="flex overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm hover:shadow-md transition h-[68px] sm:h-[74px]">
 
-                <input
-                  type="text"
-                  placeholder="ABC123"
-                  value={formData.reg}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      reg: e.target.value.toUpperCase(),
-                    })
-                  }
-                 className={`flex-1 text-3xl tracking-[0.35em] uppercase outline-none ${dmSans.className}`}
-style={{ fontWeight: 700 }}
-                />
-              </div>
-            </div>
+    {/* LEFT EU PART */}
+    <div className="w-[44px] sm:w-[48px] bg-[#0046ad] flex items-center justify-center shrink-0">
+      <Image
+        src="/se-plate.png"
+        alt="Svensk registreringsskylt"
+        width={24}
+        height={44}
+        className="object-contain w-[24px] h-auto sm:w-[26px]"
+        priority
+      />
+    </div>
+
+    {/* INPUT */}
+    <input
+      type="text"
+      placeholder="ABC123"
+      value={formData.reg}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          reg: e.target.value.toUpperCase(),
+        })
+      }
+      className={`flex-1 min-w-0 px-4 sm:px-5 text-3xl md:text-4xl tracking-[0.10em] uppercase bg-transparent outline-none text-zinc-800 ${dmSans.className}`}
+      style={{ fontWeight: 700 }}
+    />
+  </div>
+</div>
 
             {/* MILES */}
             <div>
