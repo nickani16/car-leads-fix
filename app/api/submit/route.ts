@@ -14,8 +14,8 @@ export async function POST(req: Request) {
     const files = form.getAll("images") as File[];
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  "https://pxtyjvrraybupolsjsmq.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4dHlqdnJyYXlidXBvbHNqc21xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTYwMzU5MywiZXhwIjoyMDk1MTc5NTkzfQ.zZJXxqs4SH1PEA8mKQixjzGtM8c6FTbdrtnD7j5YgpA"
 );
 
     // LADDA UPP BILDER
