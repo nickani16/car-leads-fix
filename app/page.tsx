@@ -206,7 +206,7 @@ export default function Home() {
   <div className="flex overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm hover:shadow-md transition h-[68px] sm:h-[74px]">
 
     {/* LEFT EU PART */}
-    <div className="w-[44px] sm:w-[48px] bg-[#0046ad] flex items-center justify-center shrink-0">
+    <div className="w-[44px] sm:w-[48px] bg-[#003599] flex items-center justify-center shrink-0">
       <Image
         src="/se-plate.png"
         alt="Svensk registreringsskylt"
