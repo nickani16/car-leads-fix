@@ -250,7 +250,7 @@ export default function Home() {
                     miles: e.target.value,
                   })
                 }
-                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
+                className="w-full border border-zinc-300 rounded-lg px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
               />
             </div>
 
