@@ -166,17 +166,23 @@ export default function Home() {
 {/* HEADER */}
 <div className="text-center mb-8 flex flex-col items-center">
 
-  {/* LOGO */}
-  <div className="mt-4 mb-6">
+/* LOGO */
+<div className="mt-4 mb-6">
+  <Link
+    href="https://www.autorello.se/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <Image
       src="/logo.png"
       alt="Bilförmedling"
       width={130}
       height={70}
       priority
-      className="h-auto w-[180px] md:w-[220px] object-contain"
+      className="h-auto w-[180px] md:w-[220px] object-contain cursor-pointer"
     />
-  </div>
+  </Link>
+</div>
 
 <h1
   className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#333333] mb-4 ${archivo.className}`}
