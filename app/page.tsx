@@ -186,7 +186,7 @@ export default function Home() {
     <span className="block text-[#333333]">
       marknadens bästa pris
     </span>
-  </h1>
+  </h3>
 
   {/* SUBTEXT */}
   <p className="text-lg md:text-xl text-zinc-600 max-w-xl leading-relaxed">
