@@ -405,18 +405,18 @@ export default function Home() {
                 : "Få gratis värdering →"}
             </button>
 
-<div className="flex flex-wrap items-center justify-center pt-2 text-sm text-[#333333]">
+<div className="flex items-center justify-center whitespace-nowrap pt-2 text-xs sm:text-sm text-[#333333]">
   <span className="flex items-center gap-1">
     ✓ Kostnadsfritt
   </span>
 
-  <div className="mx-4 h-4 w-px bg-zinc-300" />
+  <div className="mx-2 sm:mx-3 h-4 w-px bg-zinc-300" />
 
   <span className="flex items-center gap-1">
     ✓ Ingen bindning
   </span>
 
-  <div className="mx-4 h-4 w-px bg-zinc-300" />
+  <div className="mx-2 sm:mx-3 h-4 w-px bg-zinc-300" />
 
   <span className="flex items-center gap-1">
     ✓ Svar inom 24h
