@@ -178,14 +178,14 @@ export default function Home() {
     />
   </div>
 
- <h3
-  className={`text-4xl md:text-6xl leading-[1.1] tracking-tight text-[#333333] mb-4 ${archivo.className}`}
+<h1
+  className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#333333] mb-4 ${archivo.className}`}
 >
   Sälj din bil till
   <span className="block">
     marknadens bästa pris
   </span>
-</h3>
+</h1>
 
   {/* SUBTEXT */}
   <p className="text-lg md:text-xl text-zinc-600 max-w-xl leading-relaxed">
