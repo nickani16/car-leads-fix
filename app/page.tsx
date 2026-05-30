@@ -384,16 +384,16 @@ export default function Home() {
               )}
             </div>
 
-            {/* SUBMIT BUTTON */}
             <button
-              type="submit"
-              disabled={loading}
-              className={`w-full text-white font-semibold py-4 rounded-xl text-lg shadow-lg transition ${
-                loading
-                  ? "bg-[#9BBDF9] cursor-not-allowed"
-                  : "bg-[#1E3A8A] hover:bg-[#1E40AF]"
-              }`}
-            >
+  type="submit"
+  disabled={loading}
+  className={`w-full font-semibold py-4 rounded-xl text-lg shadow-lg transition ${
+    loading
+      ? "bg-[#F9E267] opacity-70 cursor-not-allowed"
+      : "bg-[#F9E267] hover:brightness-95"
+  }`}
+  style={{ color: "#333333" }}
+>
               {loading
                 ? "Skickar..."
                 : "Få gratis värdering →"}
