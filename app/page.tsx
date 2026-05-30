@@ -179,7 +179,7 @@ export default function Home() {
   </div>
 
   {/* HEADING */}
-  <h1
+  <h3
     className={`text-4xl md:text-6xl leading-[1.1] tracking-tight text-zinc-900 mb-4 ${archivo.className}`}
   >
     Sälj din bil till
