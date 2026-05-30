@@ -164,39 +164,37 @@ export default function Home() {
       <div className="w-full max-w-2xl mx-auto">
 
 {/* HEADER */}
-<div className="text-center mb-12 flex flex-col items-center">
+<div className="text-center mb-8 flex flex-col items-center">
 
-{/* LOGO */}
- <div className="mt-6 mb-10">
-  <Image
-    src="/logo.png"
-    alt="Bilförmedling"
-    width={150}
-    height={70}
-    priority
-    className="h-auto w-[180px] md:w-[220px] object-contain"
-  />
-</div>
+  {/* LOGO */}
+  <div className="mt-4 mb-6">
+    <Image
+      src="/logo.png"
+      alt="Bilförmedling"
+      width={150}
+      height={70}
+      priority
+      className="h-auto w-[180px] md:w-[220px] object-contain"
+    />
+  </div>
 
-{/* HEADING */}
- <div className="mt-6 mb-20"></div>
-<h1
-  className={`text-4xl md:text-6xl leading-[1.1] tracking-tight text-zinc-900 mb-10 ${archivo.className}`}
->
-  Sälj din bil till
-  <span className="block text-[#1E3A8A]">
-    marknadens bästa pris
-  </span>
-</h1>
-
+  {/* HEADING */}
+  <h1
+    className={`text-4xl md:text-6xl leading-[1.1] tracking-tight text-zinc-900 mb-4 ${archivo.className}`}
+  >
+    Sälj din bil till
+    <span className="block text-[#333333]">
+      marknadens bästa pris
+    </span>
+  </h1>
 
   {/* SUBTEXT */}
-  <p className="mt-5 text-lg md:text-xl text-zinc-600 max-w-xl leading-relaxed">
+  <p className="text-lg md:text-xl text-zinc-600 max-w-xl leading-relaxed">
     Fyll i registreringsnummer, kontaktuppgifter och
     ladda gärna upp bilder. Vi återkommer med ett
     konkurrenskraftigt bud inom 24 timmar.
   </p>
-   <div className="mt-6 mb-20"></div>
+
 </div>
 
         {/* FORM CARD */}
