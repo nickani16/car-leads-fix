@@ -167,7 +167,7 @@ export default function Home() {
 <div className="text-center mb-12 flex flex-col items-center">
 
 {/* LOGO */}
- <div className="mt-6 mb-20">
+ <div className="mt-6 mb-10">
   <Image
     src="/logo.png"
     alt="Bilförmedling"
