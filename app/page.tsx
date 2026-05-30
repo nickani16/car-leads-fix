@@ -398,10 +398,19 @@ export default function Home() {
                 : "Få gratis värdering →"}
             </button>
 
-            <p className="text-center text-xs text-zinc-500 pt-2 font-normal">
-              Kostnadsfritt • Ingen bindning • Svar inom
-              24h
-            </p>
+<div className="flex flex-wrap items-center justify-center gap-4 pt-2 text-sm text-[#333333]">
+  <span className="flex items-center gap-1">
+    ✓ Kostnadsfritt
+  </span>
+
+  <span className="flex items-center gap-1">
+    ✓ Ingen bindning
+  </span>
+
+  <span className="flex items-center gap-1">
+    ✓ Svar inom 24h
+  </span>
+</div>
           </form>
         </div>
       </div>
