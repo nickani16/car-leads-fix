@@ -358,27 +358,29 @@ export default function Home() {
 
             {/* CONSENT */}
             <div className="flex flex-col gap-2">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(e) => {
-                    setConsent(e.target.checked);
-                    setConsentError(false);
-                  }}
-                  className="mt-1 w-5 h-5 accent-[#1E3A8A]"
-                />
+<label className="flex items-start gap-3">
+  <input
+    type="checkbox"
+    checked={consent}
+    onChange={(e) => {
+      setConsent(e.target.checked);
+      setConsentError(false);
+    }}
+    className="mt-1 w-5 h-5 accent-[#F9E267]"
+  />
 
-<p className="text-sm text-zinc-600 leading-relaxed font-normal">
-  Jag godkänner att mina uppgifter behandlas enligt{" "}
-  <a
-    href="https://www.autorello.se/policies/#shopifyReshowConsentBanner"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="underline font-medium text-[#333333] hover:text-black"
-  >
-    integritetspolicyn
-  </a>.
+  <p className="text-sm text-zinc-600 leading-relaxed font-normal">
+    Jag godkänner att mina uppgifter behandlas enligt{" "}
+    <a
+      href="https://www.autorello.se/policies/#shopifyReshowConsentBanner"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline text-[#333333] font-medium"
+    >
+      integritetspolicyn
+    </a>.
+  </p>
+</label>
 
               {consentError && (
                 <p className="text-red-500 text-xs font-normal">
