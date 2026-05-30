@@ -188,7 +188,7 @@ export default function Home() {
 </h1>
 
   {/* SUBTEXT */}
-  <p className="text-lg md:text-xl text-zinc-600 max-w-xl leading-relaxed">
+  <p className="text-base md:text-lg text-zinc-600 max-w-xl leading-relaxed">
     Fyll i registreringsnummer, kontaktuppgifter och
     ladda gärna upp bilder. Vi återkommer med ett
     konkurrenskraftigt bud inom 24 timmar.
