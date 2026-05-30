@@ -379,7 +379,6 @@ export default function Home() {
   >
     integritetspolicyn
   </a>.
-</p>
 
               {consentError && (
                 <p className="text-red-500 text-xs font-normal">
