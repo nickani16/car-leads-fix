@@ -369,11 +369,17 @@ export default function Home() {
                   className="mt-1 w-5 h-5 accent-[#1E3A8A]"
                 />
 
-                <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-                  Jag godkänner att mina uppgifter
-                  behandlas enligt integritetspolicyn.
-                </p>
-              </label>
+<p className="text-sm text-zinc-600 leading-relaxed font-normal">
+  Jag godkänner att mina uppgifter behandlas enligt{" "}
+  <a
+    href="https://www.autorello.se/policies/#shopifyReshowConsentBanner"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="underline font-medium text-[#333333] hover:text-black"
+  >
+    integritetspolicyn
+  </a>.
+</p>
 
               {consentError && (
                 <p className="text-red-500 text-xs font-normal">
