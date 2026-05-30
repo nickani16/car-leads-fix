@@ -171,7 +171,7 @@ export default function Home() {
     <Image
       src="/logo.png"
       alt="Bilförmedling"
-      width={150}
+      width={130}
       height={70}
       priority
       className="h-auto w-[180px] md:w-[220px] object-contain"
