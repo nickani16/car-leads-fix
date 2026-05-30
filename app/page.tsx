@@ -398,14 +398,18 @@ export default function Home() {
                 : "Få gratis värdering →"}
             </button>
 
-<div className="flex flex-wrap items-center justify-center gap-4 pt-2 text-sm text-[#333333]">
+<div className="flex flex-wrap items-center justify-center pt-2 text-sm text-[#333333]">
   <span className="flex items-center gap-1">
     ✓ Kostnadsfritt
   </span>
 
+  <div className="mx-4 h-4 w-px bg-zinc-300" />
+
   <span className="flex items-center gap-1">
     ✓ Ingen bindning
   </span>
+
+  <div className="mx-4 h-4 w-px bg-zinc-300" />
 
   <span className="flex items-center gap-1">
     ✓ Svar inom 24h
