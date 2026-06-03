@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";  
 import { useState } from "react";
 import { DM_Sans, Archivo } from "next/font/google";
 
@@ -166,10 +167,9 @@ export default function Home() {
 {/* HEADER */}
 <div className="text-center mb-8 flex flex-col items-center">
 
-/* LOGO */
 <div className="mt-4 mb-6">
   <Link
-    href="https://www.autorello.se/"
+    href="https://www.autorell.se/"
     target="_blank"
     rel="noopener noreferrer"
   >
@@ -183,6 +183,7 @@ export default function Home() {
     />
   </Link>
 </div>
+
 
 <h1
   className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#333333] mb-4 ${archivo.className}`}

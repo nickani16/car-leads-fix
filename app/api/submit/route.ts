@@ -13,10 +13,11 @@ export async function POST(req: Request) {
 
     const files = form.getAll("images") as File[];
 
-const supabase = createClient(
-  "https://pxtyjvrraybupolsjsmq.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4dHlqdnJyYXlidXBvbHNqc21xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTYwMzU5MywiZXhwIjoyMDk1MTc5NTkzfQ.zZJXxqs4SH1PEA8mKQixjzGtM8c6FTbdrtnD7j5YgpA"
-);
+    // 🔥 SUPABASE – ANVÄND ENV VARIABLER (INGA HÅRDKODADE NYCKLAR)
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     // LADDA UPP BILDER
     const imageUrls: string[] = [];
@@ -24,7 +25,6 @@ const supabase = createClient(
     for (const file of files) {
       const fileName = `images/${Date.now()}-${file.name}`;
 
-      // Upload till PRIVATE bucket
       const { data: uploadData, error: uploadError } =
         await supabase.storage
           .from("leads")
@@ -38,58 +38,38 @@ const supabase = createClient(
         continue;
       }
 
-      // Skapa signerad URL (24h)
       const { data: signedUrlData, error: signedUrlError } =
         await supabase.storage
           .from("leads")
-          .createSignedUrl(
-            uploadData.path,
-            60 * 60 * 24 // 24 timmar
-          );
+          .createSignedUrl(uploadData.path, 60 * 60 * 24);
 
       if (signedUrlError) {
-        console.error(
-          "Signed URL error:",
-          signedUrlError
-        );
+        console.error("Signed URL error:", signedUrlError);
         continue;
       }
 
       imageUrls.push(signedUrlData.signedUrl);
     }
 
-    // SPARA LEAD I DATABASEN
+    // SPARA LEAD
     const { data, error } = await supabase
       .from("leads")
-      .insert([
-        {
-          reg,
-          miles,
-          phone,
-          email,
-        },
-      ]);
+      .insert([{ reg, miles, phone, email }]);
 
     if (error) {
       console.error("Supabase-fel:", error);
-
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // RESEND
-    const resend = new Resend(
-      process.env.RESEND_API_KEY!
-    );
+    // 🔥 RESEND – ANVÄND ENV VARIABEL
+    const resend = new Resend(process.env.RESEND_API_KEY!);
 
     await resend.emails.send({
       from: "onboarding@resend.dev",
       to: "nikolai.parkkila@outlook.com",
       subject: "Ny lead inkom!",
       html: `
-        <h2>Ny lead</h2>
+        <h2>Ny Bilvärdering</h2>
 
         <p><strong>Registreringsnummer:</strong> ${reg}</p>
         <p><strong>Miltal:</strong> ${miles}</p>
@@ -103,11 +83,7 @@ const supabase = createClient(
             ? imageUrls
                 .map(
                   (url) => `
-                    <p>
-                      <a href="${url}">
-                        Öppna bild
-                      </a>
-                    </p>
+                    <p><a href="${url}">Öppna bild</a></p>
                   `
                 )
                 .join("")
@@ -123,10 +99,6 @@ const supabase = createClient(
     });
   } catch (err: any) {
     console.error("Fel i route:", err);
-
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
