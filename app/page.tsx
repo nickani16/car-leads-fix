@@ -243,49 +243,25 @@ export default function Home() {
   </div>
 </div>
 
-            {/* MILES */}
-<div>
-  <label className="block text-sm font-medium text-zinc-700 mb-2">
-    Miltal
-  </label>
+ {/* MILES */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Miltal
+              </label>
 
-  <input
-    type="number"
-    placeholder="5000 mil"
-    value={formData.miles}
-    onChange={(e) => {
-      const value = e.target.value;
-
-      // Om värdet är över 10000 → sätt felmeddelande
-      if (Number(value) > 10000) {
-        setFormError(
-          "Just nu söker våra europeiska återförsäljare bilar med en maxgräns på 10 000 mil. Tyvärr kommer vi inte kunna hitta en köpare till din bil om den har högre miltal."
-        );
-      } else {
-        setFormError("");
-      }
-
-      setFormData({
-        ...formData,
-        miles: value,
-      });
-    }}
-    className={`w-full border rounded-lg px-5 py-4 outline-none focus:ring-2 transition shadow-sm text-base font-normal
-      ${
-        formError
-          ? "border-red-500 focus:ring-red-500"
-          : "border-zinc-300 focus:ring-[#1E3A8A] focus:border-[#1E3A8A]"
-      }
-    `}
-  />
-  
-  {/* FELMEDDELANDE */}
-  {formError && (
-    <p className="text-red-600 text-sm mt-2 leading-relaxed">
-      {formError}
-    </p>
-  )}
-</div>
+              <input
+                type="text"
+                placeholder="5000 mil"
+                value={formData.miles}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    miles: e.target.value,
+                  })
+                }
+                className="w-full border border-zinc-300 rounded-lg px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
+              />
+            </div>
 
 
             {/* PHONE */}
