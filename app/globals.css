@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Fix för Samsung / Android WebView som gör text vit */
+input, textarea, select {
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  background-color: #ffffff !important;
+}
+
+/* Autofill fix */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #1a1a1a !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  background-color: #ffffff !important;
+}
+
+/* För att förhindra att Samsung tvingar dark mode */
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    color: #1a1a1a !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    background-color: #ffffff !important;
+  }
+}
