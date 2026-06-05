@@ -12,13 +12,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Autorell – Sälj din bil snabbt & enkelt",
   description: "Få marknadens bästa pris på din bil inom 24 timmar.",
-  icons: {
-    icon: "/circle.png",
-  },
 };
+
+
 
 export default function RootLayout({
   children,
