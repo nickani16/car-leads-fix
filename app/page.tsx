@@ -531,15 +531,24 @@ export default function Home() {
                 <div className="space-y-4 pt-4">
                   <div>
                     <label className="block text-sm font-medium">Telefonnummer</label>
-                    <input
-                      type="tel"
-                      placeholder="070-123 45 67"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
-                    />
+<input
+  type="tel"
+  placeholder="0701234567 eller +46701234567"
+  value={formData.phone}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\s+/g, "");
+    setFormData({ ...formData, phone: value });
+  }}
+  className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+/>
+
+{formData.phone &&
+  !/^(07\d{8}|(\+46|0046)7\d{8})$/.test(formData.phone) && (
+    <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm mt-2">
+      Ange ett giltigt svenskt telefonnummer (t.ex. 0701234567 eller +46701234567)
+    </div>
+  )}
+
                   </div>
 
                   <div>
