@@ -31,12 +31,20 @@ export async function POST(req: Request) {
             upsert: false,
           });
 
-      if (uploadError) continue;
+      if (uploadError || !uploadData) {
+        console.error("Upload error:", uploadError);
+        continue;
+      }
 
-      const { data: signedUrlData } =
+      const { data: signedUrlData, error: signedUrlError } =
         await supabase.storage
           .from("leads")
           .createSignedUrl(uploadData.path, 60 * 60 * 24);
+
+      if (signedUrlError || !signedUrlData || !signedUrlData.signedUrl) {
+        console.error("Signed URL error:", signedUrlError);
+        continue;
+      }
 
       imageUrls.push(signedUrlData.signedUrl);
     }
@@ -62,6 +70,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, imageUrls });
   } catch (err: any) {
+    console.error("Route error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
