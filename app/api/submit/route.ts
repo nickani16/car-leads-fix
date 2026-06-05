@@ -6,11 +6,29 @@ export async function POST(req: Request) {
   try {
     const form = await req.formData();
 
+    // --- BASIC INFO ---
     const reg = form.get("reg") as string;
     const miles = form.get("miles") as string;
     const phone = form.get("phone") as string;
     const email = form.get("email") as string;
 
+    // --- CONDITION / HISTORY ---
+    const owners = form.get("owners") as string;
+    const brakes = form.get("brakes") as string;
+    const damage = form.get("damage") as string;
+    const service = form.get("service") as string;
+    const importCar = form.get("importCar") as string;
+
+    // --- TECHNICAL ---
+    const tires = form.get("tires") as string;
+    const warnings = form.get("warnings") as string;
+    const gearbox = form.get("gearbox") as string;
+    const towbar = form.get("towbar") as string;
+
+    // --- SELLING TIME ---
+    const sellTime = form.get("sellTime") as string;
+
+    // --- IMAGES ---
     const files = form.getAll("images") as File[];
 
     const supabase = createClient(
@@ -49,8 +67,28 @@ export async function POST(req: Request) {
       imageUrls.push(signedUrlData.signedUrl);
     }
 
-    await supabase.from("leads").insert([{ reg, miles, phone, email }]);
+    // --- SAVE TO SUPABASE ---
+    await supabase.from("leads").insert([
+      {
+        reg,
+        miles,
+        phone,
+        email,
+        owners,
+        brakes,
+        damage,
+        service,
+        importCar,
+        tires,
+        warnings,
+        gearbox,
+        towbar,
+        sellTime,
+        images: imageUrls,
+      },
+    ]);
 
+    // --- SEND EMAIL ---
     const resend = new Resend(process.env.RESEND_API_KEY!);
 
     await resend.emails.send({
@@ -59,11 +97,32 @@ export async function POST(req: Request) {
       subject: "Ny lead inkom!",
       html: `
         <h2>Ny Bilvärdering</h2>
+
+        <h3>Grundinfo</h3>
         <p><strong>Registreringsnummer:</strong> ${reg}</p>
         <p><strong>Miltal:</strong> ${miles}</p>
+        <p><strong>Önskad försäljningstid:</strong> ${sellTime}</p>
+
+        <h3>Fordonshistorik</h3>
+        <p><strong>Antal ägare:</strong> ${owners}</p>
+        <p><strong>Importbil:</strong> ${importCar}</p>
+
+        <h3>Skick</h3>
+        <p><strong>Bromsar:</strong> ${brakes}</p>
+        <p><strong>Skador:</strong> ${damage}</p>
+        <p><strong>Servicehistorik:</strong> ${service}</p>
+
+        <h3>Tekniskt skick</h3>
+        <p><strong>Däck:</strong> ${tires}</p>
+        <p><strong>Varningslampor:</strong> ${warnings}</p>
+        <p><strong>Växellåda:</strong> ${gearbox}</p>
+        <p><strong>Dragkrok:</strong> ${towbar}</p>
+
+        <h3>Kontakt</h3>
         <p><strong>Telefon:</strong> ${phone}</p>
         <p><strong>E-post:</strong> ${email}</p>
-        <h3>Bilder:</h3>
+
+        <h3>Bilder</h3>
         ${imageUrls.map((url) => `<p><a href="${url}">Öppna bild</a></p>`).join("")}
       `,
     });

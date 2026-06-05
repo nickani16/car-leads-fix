@@ -170,8 +170,8 @@ export default function Home() {
     <Image
       src="/autorell-logo.png"
       alt="Autorell"
-      width={180}
-      height={70}
+      width={150}
+      height={60}
       priority
       className="h-auto w-[180px] md:w-[220px] object-contain cursor-pointer"
     />
@@ -190,7 +190,14 @@ export default function Home() {
 
         {/* FORM CARD */}
         <div className="bg-white border border-zinc-200 shadow-xl rounded-2xl p-10">
-          <form className="space-y-8" onSubmit={handleSubmit}>
+          <form
+  className="space-y-8"
+  onSubmit={handleSubmit}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") e.preventDefault();
+  }}
+>
+
 
 {/* -------------------- STEG 1 -------------------- */}
 {step === 1 && (
