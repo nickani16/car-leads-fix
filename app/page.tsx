@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";  
+import Link from "next/link";
 import { useState } from "react";
 import { DM_Sans, Archivo } from "next/font/google";
 
@@ -11,9 +11,12 @@ const dmSans = DM_Sans({
 });
 const archivo = Archivo({
   subsets: ["latin"],
-  weight: ["500"],
+  weight: ["400", "500", "700"],
 });
+
 export default function Home() {
+  const [step, setStep] = useState(1);
+
   const [images, setImages] = useState<
     { id: string; file: File; url: string }[]
   >([]);
@@ -21,31 +24,67 @@ export default function Home() {
   const [formData, setFormData] = useState({
     reg: "",
     miles: "",
+    sellTime: "",
+    brakes: "",
+    damage: "",
+    service: "",
+    owners: "",
+    import: "",
+    tires: "",
+    warnings: "",
+    gearbox: "",
+    towbar: "",
     phone: "",
     email: "",
   });
 
-  const [formError, setFormError] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [consentError, setConsentError] = useState(false);
-
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // UNIVERSAL VALIDATION
+  const validateStep = () => {
+    if (step === 1) return formData.reg.trim().length > 0;
+    if (step === 2)
+      return formData.miles && Number(formData.miles) <= 10000;
+    if (step === 3) return formData.sellTime.trim().length > 0;
+    if (step === 4)
+      return (
+        formData.brakes &&
+        formData.damage &&
+        formData.service &&
+        formData.phone &&
+        formData.email
+      );
+    return true;
+  };
+
+  const getErrorMessage = () => {
+    if (step === 1 && !formData.reg)
+      return "Du måste fylla i registreringsnummer för att gå vidare.";
+
+    if (step === 2 && Number(formData.miles) > 10000)
+      return "Just nu söker våra europeiska återförsäljare bilar med en maxgräns på 10 000 mil. Tyvärr kommer vi inte kunna hitta en köpare till din bil om den har högre miltal.";
+
+    if (step === 3 && !formData.sellTime)
+      return "Välj när du vill sälja bilen för att fortsätta.";
+
+    if (step === 4) {
+      if (!formData.brakes) return "Fyll i bromsarnas skick.";
+      if (!formData.damage) return "Fyll i om bilen har skador.";
+      if (!formData.service) return "Fyll i servicehistorik.";
+      if (!formData.phone) return "Fyll i telefonnummer.";
+      if (!formData.email) return "Fyll i e-post.";
+    }
+
+    return "";
+  };
+
   // IMAGE UPLOAD
-  const handleImageUpload = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
     const files = Array.from(e.target.files);
-
-    // Filtrera bort filer över 10MB
-    const validFiles = files.filter(
-      (file) => file.size <= 10 * 1024 * 1024
-    );
-
-    // Hur många bilder som får plats
+    const validFiles = files.filter((file) => file.size <= 10 * 1024 * 1024);
     const remainingSlots = 10 - images.length;
 
     if (remainingSlots <= 0) {
@@ -53,7 +92,6 @@ export default function Home() {
       return;
     }
 
-    // Begränsa till max 10 totalt
     const limitedFiles = validFiles.slice(0, remainingSlots);
 
     const newImages = limitedFiles.map((file) => ({
@@ -63,17 +101,8 @@ export default function Home() {
     }));
 
     setImages((prev) => [...prev, ...newImages]);
-
-    if (files.length > validFiles.length) {
-      alert("Vissa bilder var större än 10MB och laddades inte upp.");
-    }
-
-    if (files.length > remainingSlots) {
-      alert("Max 10 bilder tillåtna.");
-    }
   };
 
-  // REMOVE IMAGE
   const removeImage = (id: string) => {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
@@ -82,31 +111,13 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!consent) {
-      setConsentError(true);
-      return;
-    }
-
-    if (!formData.reg || !formData.phone || !formData.email) {
-      alert(
-        "Fyll i registreringsnummer, telefonnummer och e-post."
-      );
-      return;
-    }
-
     setLoading(true);
 
     const form = new FormData();
-
-    form.append("reg", formData.reg);
-    form.append("miles", formData.miles);
-    form.append("phone", formData.phone);
-    form.append("email", formData.email);
-
-    // Lägg till bilder
-    images.forEach((img) => {
-      form.append("images", img.file);
-    });
+    Object.entries(formData).forEach(([key, value]) =>
+      form.append(key, value)
+    );
+    images.forEach((img) => form.append("images", img.file));
 
     const res = await fetch("/api/submit", {
       method: "POST",
@@ -114,7 +125,6 @@ export default function Home() {
     });
 
     const data = await res.json();
-
     setLoading(false);
 
     if (data.error) {
@@ -123,17 +133,6 @@ export default function Home() {
     }
 
     setSubmitted(true);
-
-    setFormData({
-      reg: "",
-      miles: "",
-      phone: "",
-      email: "",
-    });
-
-    setImages([]);
-    setConsent(false);
-    setConsentError(false);
   };
 
   // SUCCESS PAGE
@@ -146,8 +145,7 @@ export default function Home() {
           </h2>
 
           <p className="text-zinc-600 text-base md:text-lg leading-relaxed font-normal">
-            Vi återkommer till dig inom 24 timmar med ett
-            prisförslag baserat på dina uppgifter.
+            Vi återkommer till dig inom 24 timmar med ett prisförslag baserat på dina uppgifter.
           </p>
 
           <button
@@ -165,19 +163,14 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-white to-zinc-100 flex items-center justify-center px-4 sm:px-6 py-10 sm:py-16">
       <div className="w-full max-w-2xl mx-auto">
 
-{/* HEADER */}
-<div className="text-center mb-8 flex flex-col items-center">
-
+        {/* HEADER */}
+        <div className="text-center mb-8 flex flex-col items-center">
 <div className="mt-4 mb-6">
-  <Link
-    href="https://www.autorell.se/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
+  <Link href="https://www.autorell.se/" target="_blank">
     <Image
-      src="/logo.png"
-      alt="Bilförmedling"
-      width={130}
+      src="/autorell-logo.png"
+      alt="Autorell"
+      width={180}
       height={70}
       priority
       className="h-auto w-[180px] md:w-[220px] object-contain cursor-pointer"
@@ -185,274 +178,411 @@ export default function Home() {
   </Link>
 </div>
 
+          <h1 className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#0058AA] mb-4 ${archivo.className}`}>
+            Sälj din bil till
+            <span className="block">marknadens bästa pris</span>
+          </h1>
 
-<h1
-  className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#333333] mb-4 ${archivo.className}`}
->
-  Sälj din bil till
-  <span className="block">
-    marknadens bästa pris
-  </span>
-</h1>
-
-  {/* SUBTEXT */}
-  <p className="text-base md:text-lg text-zinc-600 max-w-xl leading-relaxed">
-    Fyll i registreringsnummer, kontaktuppgifter och
-    ladda gärna upp bilder. Vi återkommer med ett
-    konkurrenskraftigt bud inom 24 timmar.
-  </p>
-
-</div>
+          <p className="text-base md:text-lg text-zinc-600 max-w-xl leading-relaxed">
+            Fyll i uppgifter steg för steg. Vi återkommer med ett konkurrenskraftigt bud inom 24 timmar.
+          </p>
+        </div>
 
         {/* FORM CARD */}
         <div className="bg-white border border-zinc-200 shadow-xl rounded-2xl p-10">
           <form className="space-y-8" onSubmit={handleSubmit}>
 
-{/* REG NUMBER */}
-<div>
-  <label className="block text-sm font-medium text-zinc-700 mb-2">
-    Registreringsnummer
-  </label>
+{/* -------------------- STEG 1 -------------------- */}
+{step === 1 && (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-semibold text-[#0058AA]">Steg 1: Registreringsnummer</h2>
 
-  <div className="flex overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm hover:shadow-md transition h-[68px] sm:h-[74px]">
+    <div className="flex overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm h-[68px] sm:h-[74px]">
+      <div className="w-[44px] sm:w-[48px] bg-[#003599] flex items-center justify-center">
+        <Image 
+  src="/se-plate.png"
+  width={24}
+  height={44}
+  alt="SE"
+  className="object-contain"
+  style={{ width: "auto", height: "100%" }}
+/>
+      </div>
 
-    {/* LEFT EU PART */}
-    <div className="w-[44px] sm:w-[48px] bg-[#003599] flex items-center justify-center shrink-0">
-      <Image
-        src="/se-plate.png"
-        alt="Svensk registreringsskylt"
-        width={24}
-        height={44}
-        className="object-contain w-[24px] h-auto sm:w-[26px]"
-        priority
+      <input
+        type="text"
+        placeholder="ABC123"
+        value={formData.reg}
+        onChange={(e) => {
+          const value = e.target.value.toUpperCase();
+
+          // Endast bokstäver och siffror
+          if (!/^[A-Z0-9]*$/.test(value)) return;
+
+          // Max 6 tecken
+          if (value.length > 6) return;
+
+          setFormData({ ...formData, reg: value });
+        }}
+        className={`flex-1 px-4 text-3xl tracking-[0.10em] uppercase outline-none text-zinc-600 ${dmSans.className}`}
+        style={{ fontWeight: 700 }}
       />
     </div>
 
-    {/* INPUT */}
-    <input
-      type="text"
-      placeholder="ABC123"
-      value={formData.reg}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          reg: e.target.value.toUpperCase(),
-        })
+    {/* FELMEDDELANDE */}
+    {(!/^[A-HJ-PR-UW-Z]{3}[0-9]{2}[A-HJ-PR-UW-Z0-9]$/.test(formData.reg)) && formData.reg.length === 6 && (
+      <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+        Ogiltigt registreringsnummer. Exempel: ABC123 eller ABC12A.
+      </div>
+    )}
+
+    <button
+      type="button"
+      onClick={() => validateStep() && setStep(2)}
+      disabled={
+        !/^[A-HJ-PR-UW-Z]{3}[0-9]{2}[A-HJ-PR-UW-Z0-9]$/.test(formData.reg)
       }
-      className={`flex-1 min-w-0 px-4 sm:px-5 text-3xl md:text-4xl tracking-[0.10em] uppercase bg-transparent outline-none text-zinc-800 ${dmSans.className}`}
-      style={{ fontWeight: 700 }}
-    />
+      className={`w-full py-4 rounded-xl font-semibold text-[#0058AA] transition ${
+        /^[A-HJ-PR-UW-Z]{3}[0-9]{2}[A-HJ-PR-UW-Z0-9]$/.test(formData.reg)
+          ? "bg-[#F9E267] hover:brightness-95"
+          : "bg-gray-300 cursor-not-allowed"
+      }`}
+    >
+      Nästa →
+    </button>
   </div>
-</div>
+)}
 
-{/* MILES */}
+            {/* -------------------- STEG 2 -------------------- */}
+            {step === 2 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-[#0058AA]">Steg 2: Miltal</h2>
+
+                <input
+                  type="number"
+                  placeholder="5000 mil"
+                  value={formData.miles}
+                  onChange={(e) =>
+                    setFormData({ ...formData, miles: e.target.value })
+                  }
+                  className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                />
+
+                {getErrorMessage() && (
+                  <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    {getErrorMessage()}
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="px-6 py-3 border rounded-xl"
+                  >
+                    ← Tillbaka
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => validateStep() && setStep(3)}
+                    disabled={!validateStep()}
+                    className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
+                      validateStep()
+                        ? "bg-[#F9E267] hover:brightness-95"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                  >
+                    Nästa →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* -------------------- STEG 3 -------------------- */}
+            {step === 3 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold text-[#0058AA]">Steg 3: När vill du sälja bilen?</h2>
+
+                <select
+                  value={formData.sellTime}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sellTime: e.target.value })
+                  }
+                  className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                >
+                  <option value="">Välj ett alternativ</option>
+                  <option value="nu">Så snart som möjligt</option>
+                  <option value="1-2 veckor">Inom 1–2 veckor</option>
+                  <option value="1 månad">Inom 1 månad</option>
+                  <option value="osäker">Jag är osäker</option>
+                </select>
+
+                {getErrorMessage() && (
+                  <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    {getErrorMessage()}
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="px-6 py-3 border rounded-xl"
+                  >
+                    ← Tillbaka
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => validateStep() && setStep(4)}
+                    disabled={!validateStep()}
+                    className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
+                      validateStep()
+                        ? "bg-[#F9E267] hover:brightness-95"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                  >
+                    Nästa →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* -------------------- STEG 4 -------------------- */}
+            {step === 4 && (
+              <div className="space-y-8">
+                <h2 className="text-2xl font-semibold text-[#0058AA]">Steg 4: Skick & skador</h2>
+
+                {/* Bromsar */}
+                <div>
+                  <label className="block text-sm font-medium">Hur är bromsarna?</label>
+                  <select
+                    value={formData.brakes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, brakes: e.target.value })
+                    }
+                    className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                  >
+                    <option value="">Välj</option>
+                    <option value="bra">Bra skick</option>
+                    <option value="ok">Okej skick</option>
+                    <option value="dåliga">Behöver bytas</option>
+                  </select>
+                </div>
+
+                {/* Skador */}
+                <div>
+                  <label className="block text-sm font-medium">Finns det skador?</label>
+                  <select
+                    value={formData.damage}
+                    onChange={(e) =>
+                      setFormData({ ...formData, damage: e.target.value })
+                    }
+                    className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                  >
+                    <option value="">Välj</option>
+                    <option value="inga">Inga skador</option>
+                    <option value="mindre">Mindre repor/dörruppslag</option>
+                    <option value="större">Större skador</option>
+                  </select>
+                </div>
+
+                {/* Service */}
+                <div>
+                  <label className="block text-sm font-medium">Servicehistorik</label>
+                  <select
+                    value={formData.service}
+                    onChange={(e) =>
+                      setFormData({ ...formData, service: e.target.value })
+                    }
+                    className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                  >
+                    <option value="">Välj</option>
+                    <option value="full">Full servicebok</option>
+                    <option value="delvis">Delvis servad</option>
+                    <option value="ingen">Ingen servicehistorik</option>
+                  </select>
+                </div>
+
+                {/* Extra viktiga frågor */}
+                <div className="space-y-4">
+
 <div>
-  <label className="block text-sm font-medium text-zinc-700 mb-2">
-    Miltal
-  </label>
-
+  <label className="block text-sm font-medium">Antal tidigare ägare</label>
   <input
     type="number"
-    placeholder="5000 mil"
-    value={formData.miles}
+    placeholder="t.ex. 2"
+    value={formData.owners}
     onChange={(e) => {
       const value = e.target.value;
 
-      if (Number(value) > 10000) {
-        setFormError(
-          "Just nu söker våra europeiska återförsäljare bilar med en maxgräns på 10 000 mil. Tyvärr kommer vi inte kunna hitta en köpare till din bil om den har högre miltal."
-        );
-      } else {
-        setFormError("");
+      // Endast siffror
+      if (!/^[0-9]*$/.test(value)) return;
+
+      // Max 10 ägare
+      if (Number(value) > 10) {
+        setFormData({ ...formData, owners: value });
+        return;
       }
 
-      setFormData({
-        ...formData,
-        miles: value,
-      });
+      setFormData({ ...formData, owners: value });
     }}
-    className={
-      formError
-        ? "w-full border border-red-500 rounded-lg px-5 py-4 outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm text-base font-normal"
-        : "w-full border border-zinc-300 rounded-lg px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] transition shadow-sm text-base font-normal"
-    }
+    min="0"
+    max="10"
+    className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
   />
 
-  {formError && (
-    <p className="text-red-600 text-sm mt-2">
-      {formError}
-    </p>
+  {/* FELMEDDELANDE OM > 10 */}
+  {formData.owners && Number(formData.owners) > 10 && (
+    <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm mt-2">
+      För att säkerställa bilens historik letar vi i första hand efter fordon med färre än 10 tidigare ägare. Vi får därför tacka nej den här gången.
+    </div>
   )}
 </div>
 
-            {/* PHONE */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Telefonnummer
-              </label>
 
-              <input
-                type="tel"
-                placeholder="070-123 45 67"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    phone: e.target.value,
-                  })
-                }
-                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
-              />
-            </div>
-
-            {/* EMAIL */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                E-post
-              </label>
-
-              <input
-                type="email"
-                placeholder="din@email.se"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    email: e.target.value,
-                  })
-                }
-                className="w-full border border-zinc-300 rounded-xl px-5 py-4 outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-[#1E3A8A] transition shadow-sm text-base font-normal"
-              />
-            </div>
-
-            {/* IMAGE UPLOAD */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
-                PNG, JPG upp till 10MB • Max 10 bilder
-                (Valfritt)
-              </label>
-
-              <div className="border border-dashed border-zinc-300 rounded-xl p-6 text-center hover:border-zinc-400 transition bg-zinc-50 cursor-pointer">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/png, image/jpeg, image/jpg"
-                  className="hidden"
-                  id="fileUpload"
-                  onChange={handleImageUpload}
-                />
-
-                <label
-                  htmlFor="fileUpload"
-                  className="cursor-pointer block"
-                >
-                  <div className="text-sm font-medium text-zinc-700">
-                    Klicka för att välja bilder
-                  </div>
-
-                  <div className="text-xs text-zinc-500 mt-1 font-normal">
-                    PNG, JPG upp till 10MB
-                  </div>
-                </label>
-              </div>
-
-              {images.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  {images.map((img) => (
-                    <div
-                      key={img.id}
-                      className="relative group"
+                  <div>
+                    <label className="block text-sm font-medium">Är bilen import?</label>
+                    <select
+                      value={formData.import}
+                      onChange={(e) =>
+                        setFormData({ ...formData, import: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
                     >
-                      <img
-                        src={img.url}
-                        alt="preview"
-                        className="w-full h-24 object-cover rounded-xl shadow"
-                      />
+                      <option value="">Välj</option>
+                      <option value="nej">Nej</option>
+                      <option value="ja">Ja</option>
+                    </select>
+                  </div>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeImage(img.id)
-                        }
-                        className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition font-normal"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                  <div>
+                    <label className="block text-sm font-medium">Däckens skick</label>
+                    <select
+                      value={formData.tires}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tires: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    >
+                      <option value="">Välj</option>
+                      <option value="nya">Nya</option>
+                      <option value="bra">Bra skick</option>
+                      <option value="slitna">Slitna</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium">Varningslampor tända?</label>
+                    <select
+                      value={formData.warnings}
+                      onChange={(e) =>
+                        setFormData({ ...formData, warnings: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    >
+                      <option value="">Välj</option>
+                      <option value="nej">Nej</option>
+                      <option value="ja">Ja</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium">Växellåda</label>
+                    <select
+                      value={formData.gearbox}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gearbox: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    >
+                      <option value="">Välj</option>
+                      <option value="automat">Automat</option>
+                      <option value="manuell">Manuell</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium">Dragkrok</label>
+                    <select
+                      value={formData.towbar}
+                      onChange={(e) =>
+                        setFormData({ ...formData, towbar: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    >
+                      <option value="">Välj</option>
+                      <option value="ja">Ja</option>
+                      <option value="nej">Nej</option>
+                    </select>
+                  </div>
+
                 </div>
-              )}
-            </div>
 
-            {/* CONSENT */}
-            <div className="flex flex-col gap-2">
-<label className="flex items-start gap-3">
-  <input
-    type="checkbox"
-    checked={consent}
-    onChange={(e) => {
-      setConsent(e.target.checked);
-      setConsentError(false);
-    }}
-    className="mt-1 w-5 h-5 accent-[#F9E267]"
-  />
+                {/* Kontaktuppgifter */}
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <label className="block text-sm font-medium">Telefonnummer</label>
+                    <input
+                      type="tel"
+                      placeholder="070-123 45 67"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    />
+                  </div>
 
-  <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-    Jag godkänner att mina uppgifter behandlas enligt{" "}
-    <a
-      href="https://www.autorello.se/policies/#shopifyReshowConsentBanner"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="underline text-[#333333] font-medium"
-    >
-      integritetspolicyn
-    </a>.
-  </p>
-</label>
+                  <div>
+                    <label className="block text-sm font-medium">E-post</label>
+                    <input
+                      type="email"
+                      placeholder="din@email.se"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+                    />
+                  </div>
+                </div>
 
-              {consentError && (
-                <p className="text-red-500 text-xs font-normal">
-                  Du måste godkänna integritetspolicyn
-                  för att fortsätta.
-                </p>
-              )}
-            </div>
+                {getErrorMessage() && (
+                  <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    {getErrorMessage()}
+                  </div>
+                )}
 
-            <button
-  type="submit"
-  disabled={loading}
-  className={`w-full font-semibold py-4 rounded-xl text-lg shadow-lg transition ${
-    loading
-      ? "bg-[#F9E267] opacity-70 cursor-not-allowed"
-      : "bg-[#F9E267] hover:brightness-95"
-  }`}
-  style={{ color: "#333333" }}
->
-              {loading
-                ? "Skickar..."
-                : "Få gratis värdering →"}
-            </button>
+                <div className="flex justify-between mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="px-6 py-3 border rounded-xl"
+                  >
+                    ← Tillbaka
+                  </button>
 
-<div className="flex items-center justify-center whitespace-nowrap pt-2 text-xs sm:text-sm text-[#333333]">
-  <span className="flex items-center gap-1">
-    ✓ Kostnadsfritt
-  </span>
+                  <button
+                    type="submit"
+                    disabled={!validateStep() || loading}
+                    className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
+                      validateStep()
+                        ? "bg-[#F9E267] hover:brightness-95"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                  >
+                    {loading ? "Skickar..." : "Skicka →"}
+                  </button>
+                </div>
+              </div>
+            )}
 
-  <div className="mx-2 sm:mx-3 h-4 w-px bg-zinc-300" />
-
-  <span className="flex items-center gap-1">
-    ✓ Ingen bindning
-  </span>
-
-  <div className="mx-2 sm:mx-3 h-4 w-px bg-zinc-300" />
-
-  <span className="flex items-center gap-1">
-    ✓ Svar inom 24h
-  </span>
-</div>
           </form>
         </div>
       </div>
     </main>
   );
 }
+
