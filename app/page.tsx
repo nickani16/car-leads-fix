@@ -149,12 +149,13 @@ export default function Home() {
             Vi återkommer till dig inom 24 timmar med ett prisförslag baserat på dina uppgifter.
           </p>
 
-          <button
-            onClick={() => setSubmitted(false)}
-            className="mt-6 bg-[#1E3A8A] hover:bg-[#1E40AF] text-white font-semibold py-3 px-6 rounded-xl transition shadow-md text-sm md:text-base"
-          >
-            Skicka en ny förfrågan
-          </button>
+<button
+  type="button"
+  onClick={() => window.location.href = "https://autorell.com/"}
+  className="mt-6 bg-[#F9E267] hover:brightness-95 text-[#0058AA] font-semibold py-3 px-6 rounded-xl transition shadow-md text-sm md:text-base"
+>
+  Till Autorell →
+</button>
         </div>
       </main>
     );
