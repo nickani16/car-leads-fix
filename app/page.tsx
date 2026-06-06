@@ -40,6 +40,7 @@ export default function Home() {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showImageInfo, setShowImageInfo] = useState(false);
 
   // UNIVERSAL VALIDATION
   const validateStep = () => {
@@ -527,13 +528,28 @@ export default function Home() {
 
                 </div>
 <div className="space-y-4">
+ <div className="flex items-center gap-2">
   <label className="block text-sm font-medium">
-    Bilder på bilen (valfritt) 
+    Bilder på bilen (valfritt)
   </label>
 
+  <button
+    type="button"
+    onClick={() => setShowImageInfo(!showImageInfo)}
+    className="w-5 h-5 rounded-full bg-zinc-200 text-zinc-700 text-xs font-bold flex items-center justify-center"
+  >
+    i
+  </button>
+</div>
+
+{showImageInfo && (
+  <div className="bg-blue-50 border border-blue-200 text-blue-900 rounded-xl p-4 text-sm">
+    Bilder är valfria men hjälper våra inköpare att göra en mer träffsäker värdering, vilket ofta kan leda till bättre bud.
+  </div>
+)}
   <label className="flex flex-col items-center justify-center w-full border-2 border-dashed border-zinc-300 rounded-xl p-8 cursor-pointer hover:border-[#0058AA] transition">
     <span className="text-lg font-medium text-zinc-700">
-      📸 Ladda upp bilder
+      Ladda upp bilder
     </span>
 
     <span className="text-sm text-zinc-500 mt-2 text-center">
