@@ -39,6 +39,7 @@ if (
     // --- TECHNICAL ---
     const tires = form.get("tires") as string;
     const warnings = form.get("warnings") as string;
+    const tireset = form.get("tireset") as string;
     const gearbox = form.get("gearbox") as string;
     const towbar = form.get("towbar") as string;
 
@@ -97,6 +98,7 @@ if (
         service,
         importCar,
         tires,
+        tireset,
         warnings,
         gearbox,
         towbar,
@@ -131,6 +133,7 @@ if (
 
         <h3>Tekniskt skick</h3>
         <p><strong>Däck:</strong> ${tires}</p>
+        <p><strong>Däckuppsättning:</strong> ${tireset}</p>
         <p><strong>Varningslampor:</strong> ${warnings}</p>
         <p><strong>Växellåda:</strong> ${gearbox}</p>
         <p><strong>Dragkrok:</strong> ${towbar}</p>
