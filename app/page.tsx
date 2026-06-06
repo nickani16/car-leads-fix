@@ -205,13 +205,12 @@ export default function Home() {
     <h2 className="text-2xl font-semibold text-[#0058AA]">Steg 1: Registreringsnummer</h2>
 
     <div className="flex overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm h-[68px] sm:h-[74px]">
-      <div className="w-[44px] sm:w-[48px] bg-[#003599] flex items-center justify-center">
+      <div className="w-[44px] sm:w-[48px] min-w-[44px] bg-[#003599] flex items-center justify-center flex-shrink-0">
 <Image
   src="/se-plate.png"
   width={24}
   height={44}
   alt="SE"
-  className="h-10 sm:h-12 w-auto object-contain"
   priority
 />
       </div>
