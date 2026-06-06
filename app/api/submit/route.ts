@@ -6,11 +6,28 @@ export async function POST(req: Request) {
   try {
     const form = await req.formData();
 
-    // --- BASIC INFO ---
-    const reg = form.get("reg") as string;
-    const miles = form.get("miles") as string;
-    const phone = form.get("phone") as string;
-    const email = form.get("email") as string;
+// --- BASIC INFO ---
+const reg = form.get("reg") as string;
+const miles = form.get("miles") as string;
+const phone = form.get("phone") as string;
+const email = form.get("email") as string;
+
+if (!phone?.trim() || phone.replace(/\D/g, "").length < 7) {
+  return NextResponse.json(
+    { error: "Ogiltigt telefonnummer" },
+    { status: 400 }
+  );
+}
+
+if (
+  !email?.trim() ||
+  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+) {
+  return NextResponse.json(
+    { error: "Ogiltig e-postadress" },
+    { status: 400 }
+  );
+}
 
     // --- CONDITION / HISTORY ---
     const owners = form.get("owners") as string;
