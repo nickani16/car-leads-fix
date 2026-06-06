@@ -179,14 +179,49 @@ export default function Home() {
   </Link>
 </div>
 
-          <h1 className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#0058AA] mb-4 ${archivo.className}`}>
-            Sälj din bil till
-            <span className="block">marknadens bästa pris</span>
-          </h1>
+<h1 className={`text-3xl md:text-5xl leading-[1.1] tracking-tight text-[#0058AA] mb-4 ${archivo.className}`}>
+  {step === 1 && (
+    <>
+      Sälj din bil
+      <span className="block">snabbt och enkelt</span>
+    </>
+  )}
 
-          <p className="text-base md:text-lg text-zinc-600 max-w-xl leading-relaxed">
-            Fyll i uppgifter steg för steg. Vi återkommer med ett konkurrenskraftigt bud inom 24 timmar.
-          </p>
+  {step === 2 && (
+    <>
+      Hur långt har bilen gått?
+      <span className="block">Ange aktuellt miltal</span>
+    </>
+  )}
+
+  {step === 3 && (
+    <>
+      När vill du sälja?
+      <span className="block">Hjälp oss hitta rätt köpare</span>
+    </>
+  )}
+
+  {step === 4 && (
+    <>
+      Berätta mer om bilen
+      <span className="block">Skick, utrustning och kontaktuppgifter</span>
+    </>
+  )}
+</h1>
+
+<p className="text-base md:text-lg text-zinc-600 max-w-xl leading-relaxed">
+  {step === 1 &&
+    "Fyll i registreringsnumret för att påbörja värderingen."}
+
+  {step === 2 &&
+    "Miltalet hjälper våra inköpare att ge en mer korrekt värdering."}
+
+  {step === 3 &&
+    "Berätta när du planerar att sälja bilen."}
+
+  {step === 4 &&
+    "Ju mer information du lämnar, desto bättre underlag får våra inköpare."}
+</p>
         </div>
 
         {/* FORM CARD */}
