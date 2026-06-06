@@ -419,7 +419,7 @@ images.forEach((img) => form.append("images", img.file));
                   <option value="nu">Så snart som möjligt</option>
                   <option value="1-2 veckor">Inom 1–2 veckor</option>
                   <option value="1 månad">Inom 1 månad</option>
-                  <option value="1 månad">Inom 2-3 månader</option>
+                  <option value="2-3 månad">Inom 2-3 månader</option>
                   <option value="osäker">Jag är osäker</option>
                 </select>
 
