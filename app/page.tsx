@@ -115,7 +115,7 @@ if (step === 5) {
 
   if (!emailValid)
     return "Ange en giltig e-postadress.";
-  
+
     if (!formData.privacyAccepted)
     return "Du måste godkänna integritetspolicyn.";
 
@@ -158,10 +158,13 @@ if (step === 5) {
 
     setLoading(true);
 
-    const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) =>
-      form.append(key, value)
-    );
+const form = new FormData();
+
+Object.entries(formData).forEach(([key, value]) =>
+  form.append(key, String(value))
+);
+
+images.forEach((img) => form.append("images", img.file));
     images.forEach((img) => form.append("images", img.file));
 
     const res = await fetch("/api/submit", {
