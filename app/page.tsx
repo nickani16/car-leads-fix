@@ -266,7 +266,7 @@ export default function Home() {
 
                 <input
                   type="number"
-                  placeholder="5000 mil"
+                  placeholder="Ex: 5000 mil"
                   value={formData.miles}
                   onChange={(e) =>
                     setFormData({ ...formData, miles: e.target.value })
@@ -526,7 +526,59 @@ export default function Home() {
                   </div>
 
                 </div>
+<div className="space-y-4">
+  <label className="block text-sm font-medium">
+    Bilder på bilen (valfritt) 
+  </label>
 
+  <label className="flex flex-col items-center justify-center w-full border-2 border-dashed border-zinc-300 rounded-xl p-8 cursor-pointer hover:border-[#0058AA] transition">
+    <span className="text-lg font-medium text-zinc-700">
+      📸 Ladda upp bilder
+    </span>
+
+    <span className="text-sm text-zinc-500 mt-2 text-center">
+      Klicka här eller välj upp till 10 bilder på bilen
+    </span>
+
+    <input
+      type="file"
+      multiple
+      accept="image/*"
+      onChange={handleImageUpload}
+      className="hidden"
+    />
+  </label>
+
+  {images.length > 0 && (
+    <>
+      <p className="text-sm text-zinc-600">
+        Uppladdade bilder ({images.length}/10)
+      </p>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {images.map((img) => (
+          <div key={img.id} className="relative">
+            <Image
+              src={img.url}
+              alt="Bilbild"
+              width={300}
+              height={200}
+              className="w-full h-32 object-cover rounded-xl border"
+            />
+
+            <button
+              type="button"
+              onClick={() => removeImage(img.id)}
+              className="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold shadow"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+</div>
                 {/* Kontaktuppgifter */}
                 <div className="space-y-4 pt-4">
                   <div>
