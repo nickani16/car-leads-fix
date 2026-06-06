@@ -34,6 +34,7 @@ export default function Home() {
     warnings: "",
     gearbox: "",
     towbar: "",
+    tireset: "",
     phone: "",
     email: "",
   });
@@ -42,24 +43,33 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showImageInfo, setShowImageInfo] = useState(false);
 
-  // UNIVERSAL VALIDATION
-  const validateStep = () => {
-    if (step === 1) return formData.reg.trim().length > 0;
-    if (step === 2)
-      return formData.miles && Number(formData.miles) <= 10000;
-    if (step === 3) return formData.sellTime.trim().length > 0;
-    if (step === 4)
-      return (
-        formData.brakes &&
-        formData.damage &&
-        formData.service &&
-        formData.phone &&
-        formData.email
-      );
-    return true;
-  };
+const validateStep = () => {
+  if (step === 1) return formData.reg.trim().length > 0;
 
-  const getErrorMessage = () => {
+  if (step === 2)
+    return formData.miles && Number(formData.miles) <= 10000;
+
+  if (step === 3)
+    return formData.sellTime.trim().length > 0;
+
+if (step === 4)
+  return (
+    formData.brakes &&
+    formData.damage &&
+    formData.service &&
+    formData.tireset
+  );
+
+  if (step === 5)
+    return (
+      formData.phone &&
+      formData.email
+    );
+
+  return true;
+}; // <-- DEN HÄR SAKNAS HOS DIG
+
+const getErrorMessage = () => {
     if (step === 1 && !formData.reg)
       return "Du måste fylla i registreringsnummer för att gå vidare.";
 
@@ -69,13 +79,17 @@ export default function Home() {
     if (step === 3 && !formData.sellTime)
       return "Välj när du vill sälja bilen för att fortsätta.";
 
-    if (step === 4) {
-      if (!formData.brakes) return "Fyll i bromsarnas skick.";
-      if (!formData.damage) return "Fyll i om bilen har skador.";
-      if (!formData.service) return "Fyll i servicehistorik.";
-      if (!formData.phone) return "Fyll i telefonnummer.";
-      if (!formData.email) return "Fyll i e-post.";
-    }
+if (step === 4) {
+  if (!formData.brakes) return "Fyll i bromsarnas skick.";
+  if (!formData.damage) return "Fyll i om bilen har skador.";
+  if (!formData.service) return "Fyll i servicehistorik.";
+  if (!formData.tireset) return "Välj vilka däck som medföljer.";
+}
+
+if (step === 5) {
+  if (!formData.phone) return "Fyll i telefonnummer.";
+  if (!formData.email) return "Fyll i e-post.";
+}
 
     return "";
   };
@@ -205,7 +219,18 @@ export default function Home() {
   {step === 4 && (
     <>
       Berätta mer om bilen
-      <span className="block">Skick, utrustning och kontaktuppgifter</span>
+      <span className="block">
+        Skick, utrustning och kontaktuppgifter
+      </span>
+    </>
+  )}
+
+  {step === 5 && (
+    <>
+      Nästan klart
+      <span className="block">
+        Kontaktuppgifter och bilder
+      </span>
     </>
   )}
 </h1>
@@ -222,6 +247,9 @@ export default function Home() {
 
   {step === 4 &&
     "Ju mer information du lämnar, desto bättre underlag får våra inköpare."}
+
+    {step === 5 &&
+  "Lägg till kontaktuppgifter och bilder för en snabbare värdering."}
 </p>
         </div>
 
@@ -561,6 +589,25 @@ export default function Home() {
                       <option value="nej">Nej</option>
                     </select>
                   </div>
+                  <div>
+  <label className="block text-sm font-medium">
+    Vilka däck medföljer?
+  </label>
+
+  <select
+    value={formData.tireset}
+    onChange={(e) =>
+      setFormData({ ...formData, tireset: e.target.value })
+    }
+    className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+  >
+    <option value="">Välj</option>
+    <option value="bada">Sommar- och vinterdäck</option>
+    <option value="sommar">Endast sommardäck</option>
+    <option value="vinter">Endast vinterdäck</option>
+    <option value="inga">Inga extra däck</option>
+  </select>
+</div>
 
                 </div>
 <div className="space-y-4">
@@ -631,35 +678,7 @@ export default function Home() {
     </>
   )}
 </div>
-                {/* Kontaktuppgifter */}
-                <div className="space-y-4 pt-4">
-                  <div>
-                    <label className="block text-sm font-medium">Telefonnummer</label>
-                    <input
-                      type="tel"
-                      placeholder="070-123 45 67"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">E-post</label>
-                    <input
-                      type="email"
-                      placeholder="din@email.se"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
-                    />
-                  </div>
-                </div>
-
+ 
                 {getErrorMessage() && (
                   <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
                     {getErrorMessage()}
@@ -675,20 +694,97 @@ export default function Home() {
                     ← Tillbaka
                   </button>
 
-                  <button
-                    type="submit"
-                    disabled={!validateStep() || loading}
-                    className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
-                      validateStep()
-                        ? "bg-[#F9E267] hover:brightness-95"
-                        : "bg-gray-300 cursor-not-allowed"
-                    }`}
-                  >
-                    {loading ? "Skickar..." : "Skicka →"}
-                  </button>
+<button
+  type="button"
+  onClick={() => validateStep() && setStep(5)}
+  disabled={!validateStep()}
+  className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
+    validateStep()
+      ? "bg-[#F9E267] hover:brightness-95"
+      : "bg-gray-300 cursor-not-allowed"
+  }`}
+>
+  Nästa →
+</button>
                 </div>
               </div>
             )}
+            {/* -------------------- STEG 5 -------------------- */}
+{step === 5 && (
+  <div className="space-y-8">
+
+    <h2 className="text-2xl font-semibold text-[#0058AA]">
+      Steg 5: Kontaktuppgifter
+    </h2>
+
+    <div className="space-y-4 pt-4">
+
+      <div>
+        <label className="block text-sm font-medium">
+          Telefonnummer
+        </label>
+
+        <input
+          type="tel"
+          placeholder="070-123 45 67"
+          value={formData.phone}
+          onChange={(e) =>
+            setFormData({ ...formData, phone: e.target.value })
+          }
+          className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium">
+          E-post
+        </label>
+
+        <input
+          type="email"
+          placeholder="din@email.se"
+          value={formData.email}
+          onChange={(e) =>
+            setFormData({ ...formData, email: e.target.value })
+          }
+          className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
+        />
+      </div>
+
+    </div>
+
+    {getErrorMessage() && (
+      <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+        {getErrorMessage()}
+      </div>
+    )}
+
+    <div className="flex justify-between mt-6">
+
+      <button
+        type="button"
+        onClick={() => setStep(4)}
+        className="px-6 py-3 border rounded-xl"
+      >
+        ← Tillbaka
+      </button>
+
+      <button
+        type="submit"
+        disabled={!validateStep() || loading}
+        className={`px-6 py-3 rounded-xl font-semibold text-[#0058AA] ${
+          validateStep()
+            ? "bg-[#F9E267] hover:brightness-95"
+            : "bg-gray-300 cursor-not-allowed"
+        }`}
+      >
+        {loading ? "Skickar..." : "Skicka →"}
+      </button>
+
+    </div>
+
+  </div>
+)}
 
           </form>
         </div>
