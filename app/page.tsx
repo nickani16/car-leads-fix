@@ -37,6 +37,7 @@ export default function Home() {
     tireset: "",
     phone: "",
     email: "",
+    privacyAccepted: false,
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -57,14 +58,22 @@ if (step === 4)
     formData.brakes &&
     formData.damage &&
     formData.service &&
-    formData.tireset
+    formData.owners &&
+    Number(formData.owners) <= 10 &&
+    formData.import &&
+    formData.tires &&
+    formData.tireset &&
+    formData.warnings &&
+    formData.gearbox &&
+    formData.towbar
   );
 
-  if (step === 5)
-    return (
-      formData.phone &&
-      formData.email
-    );
+if (step === 5)
+  return (
+    formData.phone &&
+    formData.email &&
+    formData.privacyAccepted
+  );
 
   return true;
 }; // <-- DEN HÄR SAKNAS HOS DIG
@@ -87,8 +96,29 @@ if (step === 4) {
 }
 
 if (step === 5) {
-  if (!formData.phone) return "Fyll i telefonnummer.";
-  if (!formData.email) return "Fyll i e-post.";
+  if (!formData.phone)
+    return "Fyll i telefonnummer.";
+
+  const phoneValid = /^(\+46|0)[0-9\s-]{7,15}$/.test(
+    formData.phone.trim()
+  );
+
+  if (!phoneValid)
+    return "Ange ett giltigt telefonnummer.";
+
+  if (!formData.email)
+    return "Fyll i e-post.";
+
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    formData.email.trim()
+  );
+
+  if (!emailValid)
+    return "Ange en giltig e-postadress.";
+  
+    if (!formData.privacyAccepted)
+    return "Du måste godkänna integritetspolicyn.";
+
 }
 
     return "";
@@ -220,7 +250,7 @@ if (step === 5) {
     <>
       Berätta mer om bilen
       <span className="block">
-        Skick, utrustning och kontaktuppgifter
+        Skick och utrustning
       </span>
     </>
   )}
@@ -386,6 +416,7 @@ if (step === 5) {
                   <option value="nu">Så snart som möjligt</option>
                   <option value="1-2 veckor">Inom 1–2 veckor</option>
                   <option value="1 månad">Inom 1 månad</option>
+                  <option value="1 månad">Inom 2-3 månader</option>
                   <option value="osäker">Jag är osäker</option>
                 </select>
 
@@ -750,7 +781,31 @@ if (step === 5) {
           className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
         />
       </div>
+<div className="flex items-start gap-3">
+  <input
+    type="checkbox"
+    checked={formData.privacyAccepted}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        privacyAccepted: e.target.checked,
+      })
+    }
+    className="mt-1"
+  />
 
+  <label className="text-sm text-zinc-600">
+    Jag godkänner behandlingen av mina personuppgifter enligt{" "}
+    <a
+      href="https://autorell.com/policies/privacy-policy"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#0058AA] underline"
+    >
+      integritetspolicyn
+    </a>.
+  </label>
+</div>
     </div>
 
     {getErrorMessage() && (
