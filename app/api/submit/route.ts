@@ -11,6 +11,7 @@ const reg = form.get("reg") as string;
 const miles = form.get("miles") as string;
 const phone = form.get("phone") as string;
 const email = form.get("email") as string;
+const source = form.get("source") as string;
 
 if (!phone?.trim() || phone.replace(/\D/g, "").length < 7) {
   return NextResponse.json(
@@ -86,26 +87,27 @@ if (
     }
 
     // --- SAVE TO SUPABASE ---
-    await supabase.from("leads").insert([
-      {
-        reg,
-        miles,
-        phone,
-        email,
-        owners,
-        brakes,
-        damage,
-        service,
-        importCar,
-        tires,
-        tireset,
-        warnings,
-        gearbox,
-        towbar,
-        sellTime,
-        images: imageUrls,
-      },
-    ]);
+await supabase.from("leads").insert([
+  {
+    reg,
+    miles,
+    phone,
+    email,
+    source,
+    owners,
+    brakes,
+    damage,
+    service,
+    importCar,
+    tires,
+    tireset,
+    warnings,
+    gearbox,
+    towbar,
+    sellTime,
+    images: imageUrls,
+  },
+]);
 
     // --- SEND EMAIL ---
     const resend = new Resend(process.env.RESEND_API_KEY!);
