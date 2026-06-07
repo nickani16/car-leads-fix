@@ -36,7 +36,7 @@ export default function DealerPage() {
 
   const [bids, setBids] = useState<any[]>([]);
   const [allBids, setAllBids] = useState<any[]>([]);
-const getHighestBid = (leadId: string) => {
+  const getHighestBid = (leadId: string) => {
   const leadBids = allBids.filter((item) => item.lead_id === leadId);
 
   if (leadBids.length === 0) return "-";
@@ -50,6 +50,28 @@ const getHighestBid = (leadId: string) => {
 
 const getBidCount = (leadId: string) => {
   return allBids.filter((item) => item.lead_id === leadId).length;
+};
+
+const getBiddingEndsAt = (createdAt: string) => {
+  const created = new Date(createdAt);
+  return new Date(created.getTime() + 24 * 60 * 60 * 1000);
+};
+
+const getBiddingStatus = (createdAt: string) => {
+  const endsAt = getBiddingEndsAt(createdAt);
+  const now = new Date();
+
+  if (now >= endsAt) return "Bidding closed";
+
+  const diffMs = endsAt.getTime() - now.getTime();
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+
+  return `Ends in ${hours}h ${minutes}m`;
+};
+
+const isBiddingClosed = (createdAt: string) => {
+  return new Date() >= getBiddingEndsAt(createdAt);
 };
 
   useEffect(() => {
@@ -135,65 +157,73 @@ setAllBids(bidsData || []);
 
 
 
-                <div className="text-zinc-500 text-sm">
-                  {new Date(lead.created_at).toLocaleString("en-GB")}
-                </div>
+<div>
+  <div className="text-xs text-zinc-500 mb-1">
+    {getBiddingStatus(lead.created_at)}
+  </div>
 
-                <div>
-<div className="flex items-center gap-2">
-<select
-  value={lead.status || "New"}
-  onChange={async (e) => {
-    const newStatus = e.target.value;
+  <div className="flex items-center gap-2">
+    <select
+      value={lead.status || "New"}
+      onChange={async (e) => {
+        const newStatus = e.target.value;
 
-    const { error } = await supabase
-      .from("leads")
-      .update({ status: newStatus })
-      .eq("id", lead.id);
+        const { error } = await supabase
+          .from("leads")
+          .update({ status: newStatus })
+          .eq("id", lead.id);
 
-    if (error) {
-      alert("Error updating status");
-      return;
-    }
+        if (error) {
+          console.error("STATUS UPDATE ERROR:", error);
+          alert("Error updating status");
+          return;
+        }
 
-    setLeads((prev) =>
-      prev.map((item) =>
-        item.id === lead.id ? { ...item, status: newStatus } : item
-      )
-    );
-  }}
-  className="text-xs px-3 py-1 rounded-lg bg-blue-100 text-blue-700 font-medium border border-blue-200"
->
-  <option value="New">New</option>
-  <option value="Bidding">Bidding</option>
-  <option value="Offer Accepted">Offer Accepted</option>
-  <option value="Sold">Sold</option>
-  <option value="Archived">Archived</option>
-</select>
+        setLeads((prev) =>
+          prev.map((item) =>
+            item.id === lead.id ? { ...item, status: newStatus } : item
+          )
+        );
+      }}
+      className="text-xs px-3 py-1 rounded-lg bg-blue-100 text-blue-700 font-medium border border-blue-200"
+    >
+      <option value="New">New</option>
+      <option value="Bidding">Bidding</option>
+      <option value="Offer Accepted">Offer Accepted</option>
+      <option value="Sold">Sold</option>
+      <option value="Archived">Archived</option>
+    </select>
 
-<button
-  onClick={async () => {
-    setSelectedLead(lead);
+    {!isBiddingClosed(lead.created_at) ? (
+      <button
+        onClick={async () => {
+          setSelectedLead(lead);
 
-    const { data } = await supabase
-      .from("bids")
-      .select("*")
-      .eq("lead_id", lead.id)
-      .order("created_at", { ascending: false });
+          const { data } = await supabase
+            .from("bids")
+            .select("*")
+            .eq("lead_id", lead.id)
+            .order("created_at", { ascending: false });
 
-    setBids(data || []);
-  }}
-  className="text-xs px-3 py-1 rounded-lg bg-[#0058AA] text-white hover:opacity-90 transition"
->
-  Place Bid
-</button>
+          setBids(data || []);
+        }}
+        className="text-xs px-3 py-1 rounded-lg bg-[#0058AA] text-white hover:opacity-90 transition"
+      >
+        Place Bid
+      </button>
+    ) : (
+      <span className="text-xs px-3 py-1 rounded-lg bg-zinc-200 text-zinc-500">
+        Closed
+    </span>
+  )}
+  </div>
 </div>
-                </div>
-              </div>
+</div>
             ))
           )}
         </div>
       </div>
+
       {selectedLead && (
   <div className="fixed inset-0 bg-black/40 flex items-start justify-center p-4 z-50 overflow-y-auto">
     
@@ -214,14 +244,14 @@ setAllBids(bidsData || []);
     </p>
   ) : (
     <div className="space-y-2">
-      {bids.map((item) => (
-        <div
-          key={item.id}
-          className="border rounded-lg px-3 py-2 text-sm"
-        >
-          €{Number(item.amount).toLocaleString()}
-        </div>
-      ))}
+{bids.map((item) => (
+  <div
+    key={item.id}
+    className="border rounded-lg px-3 py-2 text-sm"
+  >
+    €{Number(item.amount).toLocaleString()}
+  </div>
+))}
     </div>
   )}
 </div>
@@ -358,4 +388,3 @@ alert("Bid submitted successfully!");
     </main>
   );
 }
-
