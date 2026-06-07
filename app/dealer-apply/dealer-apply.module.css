@@ -1,0 +1,302 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 48px 24px;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 10% 20%, #17398466, transparent 35%),
+    radial-gradient(circle at 90% 85%, #087b7150, transparent 30%),
+    linear-gradient(135deg, #050914, #0a1222 55%, #07101d);
+}
+
+.glowOne,
+.glowTwo {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+}
+
+.glowOne {
+  top: -250px;
+  left: -150px;
+  background: #275eff40;
+}
+
+.glowTwo {
+  right: -200px;
+  bottom: -250px;
+  background: #10b9a32f;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  align-items: center;
+  gap: 80px;
+}
+
+.introduction {
+  max-width: 520px;
+}
+
+.brand {
+  margin: 0 0 70px;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.eyebrow {
+  margin: 0 0 15px;
+  color: #7fa2ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.introduction h1 {
+  margin: 0 0 22px;
+  font-size: clamp(42px, 5vw, 66px);
+  line-height: 1.03;
+  letter-spacing: -0.055em;
+}
+
+.introText {
+  color: #9ca9bc;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.featureList {
+  display: grid;
+  gap: 5px;
+  margin-top: 32px;
+  color: #dbe4f0;
+  font-size: 14px;
+}
+
+.featureList span {
+  margin-right: 10px;
+  color: #56e2c1;
+}
+
+.card,
+.successCard {
+  box-sizing: border-box;
+  border: 1px solid #ffffff1c;
+  border-radius: 26px;
+  background: #0d1728e8;
+  box-shadow: 0 35px 80px #00000061;
+  backdrop-filter: blur(24px);
+}
+
+.card {
+  width: 100%;
+  padding: 40px;
+}
+
+.cardHeader {
+  margin-bottom: 28px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.035em;
+}
+
+.cardHeader > p:last-child {
+  margin: 10px 0 0;
+  color: #8d9aae;
+  font-size: 14px;
+}
+
+.form {
+  display: grid;
+  gap: 19px;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 17px;
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+  color: #dce5f1;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #ffffff1c;
+  border-radius: 11px;
+  outline: none;
+  color: #f8fafc;
+  background: #050c18b8;
+  font: inherit;
+  font-size: 14px;
+  transition: 160ms ease;
+}
+
+.form input::placeholder {
+  color: #58667a;
+}
+
+.form input:focus {
+  border-color: #527fff;
+  box-shadow: 0 0 0 4px #3f6cff21;
+}
+
+.error,
+.notice {
+  padding: 13px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.error {
+  border: 1px solid #f8717140;
+  color: #fda4af;
+  background: #7f1d1d2e;
+}
+
+.submitButton,
+.secondaryButton {
+  min-height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #315ce8, #497cff);
+  box-shadow: 0 14px 30px #2a58e147;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.submitButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loginLink {
+  margin: 2px 0 0;
+  color: #718096;
+  text-align: center;
+  font-size: 12px;
+}
+
+.loginLink a {
+  color: #89a7ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.successCard {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  padding: 50px;
+  text-align: center;
+}
+
+.successCard h1 {
+  margin: 10px 0 16px;
+  font-size: 34px;
+}
+
+.successCard > p:not(.eyebrow) {
+  color: #9ca9bc;
+  line-height: 1.7;
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 25px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #56e2c14d;
+  border-radius: 50%;
+  color: #56e2c1;
+  background: #34d3b21c;
+  font-size: 28px;
+}
+
+.notice {
+  margin: 25px 0;
+  border: 1px solid #527fff30;
+  color: #aebddd;
+  background: #315ce817;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    max-width: 620px;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .introduction {
+    max-width: none;
+    text-align: center;
+  }
+
+  .brand {
+    margin-bottom: 35px;
+  }
+
+  .featureList {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px;
+  }
+
+  .introduction {
+    display: none;
+  }
+
+  .card {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+
+  .twoColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .successCard {
+    padding: 40px 24px;
+  }
+}

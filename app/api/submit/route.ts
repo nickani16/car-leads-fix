@@ -1,159 +1,166 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
 
-export async function POST(req: Request) {
+function text(form: FormData, key: string) {
+  return String(form.get(key) || '').trim()
+}
+
+export async function POST(request: Request) {
   try {
-    const form = await req.formData();
+    const form = await request.formData()
 
-// --- BASIC INFO ---
-const reg = form.get("reg") as string;
-const miles = form.get("miles") as string;
-const phone = form.get("phone") as string;
-const email = form.get("email") as string;
-const source = form.get("source") as string;
-console.log("SOURCE RECEIVED:", source);
+    const phone = text(form, 'phone')
+    const email = text(form, 'email')
 
-if (!phone?.trim() || phone.replace(/\D/g, "").length < 7) {
-  return NextResponse.json(
-    { error: "Ogiltigt telefonnummer" },
-    { status: 400 }
-  );
-}
+    if (!/^\+?[0-9\s()-]{7,20}$/.test(phone)) {
+      return NextResponse.json(
+        { error: 'Ogiltigt telefonnummer.' },
+        { status: 400 }
+      )
+    }
 
-if (
-  !email?.trim() ||
-  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-) {
-  return NextResponse.json(
-    { error: "Ogiltig e-postadress" },
-    { status: 400 }
-  );
-}
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: 'Ogiltig e-postadress.' },
+        { status: 400 }
+      )
+    }
 
-    // --- CONDITION / HISTORY ---
-    const owners = form.get("owners") as string;
-    const brakes = form.get("brakes") as string;
-    const damage = form.get("damage") as string;
-    const service = form.get("service") as string;
-    const importCar = form.get("importCar") as string;
+    const make =
+      text(form, 'make') === 'Other'
+        ? text(form, 'otherMake')
+        : text(form, 'make')
 
-    // --- TECHNICAL ---
-    const tires = form.get("tires") as string;
-    const warnings = form.get("warnings") as string;
-    const tireset = form.get("tireset") as string;
-    const gearbox = form.get("gearbox") as string;
-    const towbar = form.get("towbar") as string;
+    const requiredFields = {
+      reg: text(form, 'reg'),
+      make,
+      model: text(form, 'model'),
+      model_year: text(form, 'modelYear'),
+      body_type: text(form, 'bodyType'),
+      fuel_type: text(form, 'fuelType'),
+      gearbox: text(form, 'gearbox'),
+      drivetrain: text(form, 'drivetrain'),
+      miles: text(form, 'miles'),
+    }
 
-    // --- SELLING TIME ---
-    const sellTime = form.get("sellTime") as string;
-
-    // --- IMAGES ---
-    const files = form.getAll("images") as File[];
+    if (Object.values(requiredFields).some((value) => !value)) {
+      return NextResponse.json(
+        { error: 'Obligatoriska fordonsuppgifter saknas.' },
+        { status: 400 }
+      )
+    }
 
     const supabase = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    )
 
-    const imageUrls: string[] = [];
+    const imageUrls: string[] = []
+    const files = form
+      .getAll('images')
+      .filter((item): item is File => item instanceof File && item.size > 0)
 
-    for (const file of files) {
-      const fileName = `images/${Date.now()}-${file.name}`;
+    for (const [index, file] of files.entries()) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-')
+      const fileName = `images/${crypto.randomUUID()}-${index}-${safeName}`
 
-      const { data: uploadData, error: uploadError } =
-        await supabase.storage
-          .from("leads")
-          .upload(fileName, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('leads')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        })
 
       if (uploadError || !uploadData) {
-        console.error("Upload error:", uploadError);
-        continue;
+        console.error('Upload error:', uploadError)
+        continue
       }
 
       const { data: signedUrlData, error: signedUrlError } =
         await supabase.storage
-          .from("leads")
-          .createSignedUrl(uploadData.path, 60 * 60 * 24);
+        .from('leads')
+        .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7)
 
-      if (signedUrlError || !signedUrlData || !signedUrlData.signedUrl) {
-        console.error("Signed URL error:", signedUrlError);
-        continue;
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        console.error('Signed URL error:', signedUrlError)
+        continue
       }
 
-      imageUrls.push(signedUrlData.signedUrl);
+      imageUrls.push(signedUrlData.signedUrl)
     }
 
-    // --- SAVE TO SUPABASE ---
-await supabase.from("leads").insert([
-  {
-    reg,
-    miles,
-    phone,
-    email,
-    source,
-    owners,
-    brakes,
-    damage,
-    service,
-    importCar,
-    tires,
-    tireset,
-    warnings,
-    gearbox,
-    towbar,
-    sellTime,
-    images: imageUrls,
-  },
-]);
+    const lead = {
+      ...requiredFields,
+      variant: text(form, 'variant') || null,
+      vin: text(form, 'vin') || null,
+      first_registration: text(form, 'firstRegistration') || null,
+      power_hp: text(form, 'powerHp')
+        ? Number(text(form, 'powerHp'))
+        : null,
+      engine_size: text(form, 'engineSize') || null,
+      color: text(form, 'color') || null,
+      owners: text(form, 'owners'),
+      importCar: text(form, 'importCar'),
+      service: text(form, 'service'),
+      inspection_valid_until:
+        text(form, 'inspectionValidUntil') || null,
+      keys_count: text(form, 'keysCount'),
+      brakes: text(form, 'brakes'),
+      damage: text(form, 'damage'),
+      damage_description: text(form, 'damageDescription') || null,
+      warnings: text(form, 'warnings'),
+      tires: text(form, 'tires'),
+      tireset: text(form, 'tireset'),
+      towbar: text(form, 'towbar'),
+      equipment: text(form, 'equipment') || null,
+      sellTime: text(form, 'sellTime'),
+      phone,
+      email,
+      source: text(form, 'source') || 'SE',
+      images: imageUrls,
+      status: 'New',
+    }
 
-    // --- SEND EMAIL ---
-    const resend = new Resend(process.env.RESEND_API_KEY!);
+    const { error: insertError } = await supabase.from('leads').insert(lead)
 
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: "nikolai.parkkila@outlook.com",
-      subject: "Ny lead inkom!",
-      html: `
-        <h2>Ny Bilvärdering</h2>
+    if (insertError) {
+      console.error('Lead insert error:', insertError)
+      return NextResponse.json(
+        { error: 'Kunde inte spara fordonsuppgifterna.' },
+        { status: 500 }
+      )
+    }
 
-        <h3>Grundinfo</h3>
-        <p><strong>Country:</strong> ${source}</p>
-        <p><strong>Registreringsnummer:</strong> ${reg}</p>
-        <p><strong>Miltal:</strong> ${miles}</p>
-        <p><strong>Önskad försäljningstid:</strong> ${sellTime}</p>
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: 'nikolai.parkkila@outlook.com',
+        subject: `Ny fordonslead: ${make} ${lead.model}`,
+        html: `
+          <h2>${make} ${lead.model} ${lead.variant || ''}</h2>
+          <p><strong>Registrering:</strong> ${lead.reg}</p>
+          <p><strong>Årsmodell:</strong> ${lead.model_year}</p>
+          <p><strong>Miltal:</strong> ${lead.miles} mil</p>
+          <p><strong>Bränsle:</strong> ${lead.fuel_type}</p>
+          <p><strong>Växellåda:</strong> ${lead.gearbox}</p>
+          <p><strong>Drivning:</strong> ${lead.drivetrain}</p>
+          <p><strong>Skick:</strong> ${lead.damage}</p>
+          <p><strong>Telefon:</strong> ${phone}</p>
+          <p><strong>E-post:</strong> ${email}</p>
+          <p><strong>Bilder:</strong> ${imageUrls.length}</p>
+        `,
+      })
+    }
 
-        <h3>Fordonshistorik</h3>
-        <p><strong>Antal ägare:</strong> ${owners}</p>
-        <p><strong>Importbil:</strong> ${importCar}</p>
-
-        <h3>Skick</h3>
-        <p><strong>Bromsar:</strong> ${brakes}</p>
-        <p><strong>Skador:</strong> ${damage}</p>
-        <p><strong>Servicehistorik:</strong> ${service}</p>
-
-        <h3>Tekniskt skick</h3>
-        <p><strong>Däck:</strong> ${tires}</p>
-        <p><strong>Däckuppsättning:</strong> ${tireset}</p>
-        <p><strong>Varningslampor:</strong> ${warnings}</p>
-        <p><strong>Växellåda:</strong> ${gearbox}</p>
-        <p><strong>Dragkrok:</strong> ${towbar}</p>
-
-        <h3>Kontakt</h3>
-        <p><strong>Telefon:</strong> ${phone}</p>
-        <p><strong>E-post:</strong> ${email}</p>
-
-        <h3>Bilder</h3>
-        ${imageUrls.map((url) => `<p><a href="${url}">Öppna bild</a></p>`).join("")}
-      `,
-    });
-
-    return NextResponse.json({ success: true, imageUrls });
-  } catch (err: any) {
-    console.error("Route error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Route error:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Okänt serverfel.' },
+      { status: 500 }
+    )
   }
 }
