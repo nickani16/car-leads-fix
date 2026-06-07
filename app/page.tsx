@@ -29,7 +29,7 @@ export default function Home() {
     damage: "",
     service: "",
     owners: "",
-    import: "",
+    importCar: "",
     tires: "",
     warnings: "",
     gearbox: "",
@@ -61,7 +61,7 @@ if (step === 4)
     formData.service &&
     formData.owners &&
     Number(formData.owners) <= 10 &&
-    formData.import &&
+    formData.importCar &&
     formData.tires &&
     formData.tireset &&
     formData.warnings &&
@@ -554,7 +554,7 @@ images.forEach((img) => form.append("images", img.file));
                   <div>
                     <label className="block text-sm font-medium">Är bilen import?</label>
                     <select
-                      value={formData.import}
+                      value={formData.importCar}
                       onChange={(e) =>
                         setFormData({ ...formData, import: e.target.value })
                       }

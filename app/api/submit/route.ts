@@ -121,6 +121,7 @@ await supabase.from("leads").insert([
         <h2>Ny Bilvärdering</h2>
 
         <h3>Grundinfo</h3>
+        <p><strong>Country:</strong> ${source}</p>
         <p><strong>Registreringsnummer:</strong> ${reg}</p>
         <p><strong>Miltal:</strong> ${miles}</p>
         <p><strong>Önskad försäljningstid:</strong> ${sellTime}</p>
