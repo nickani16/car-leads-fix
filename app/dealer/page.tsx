@@ -23,6 +23,8 @@ type Lead = {
   tireset?: string;
   towbar?: string;
   warnings?: string;
+  images?: string[];
+  status?: string;
 };
 
 export default function DealerPage() {
@@ -30,20 +32,42 @@ export default function DealerPage() {
   const [loading, setLoading] = useState(true);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [bid, setBid] = useState("");
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const [bids, setBids] = useState<any[]>([]);
+  const [allBids, setAllBids] = useState<any[]>([]);
+const getHighestBid = (leadId: string) => {
+  const leadBids = allBids.filter((item) => item.lead_id === leadId);
+
+  if (leadBids.length === 0) return "-";
+
+  const highest = Math.max(
+    ...leadBids.map((item) => Number(item.amount))
+  );
+
+  return `€${highest.toLocaleString()}`;
+};
+
+const getBidCount = (leadId: string) => {
+  return allBids.filter((item) => item.lead_id === leadId).length;
+};
 
   useEffect(() => {
     const fetchLeads = async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
+const { data, error } = await supabase
+  .from("leads")
+  .select("id,reg,miles,created_at,source,sellTime,owners,service,damage,gearbox,tires,tireset,towbar,warnings,images,status")
+  .order("created_at", { ascending: false });
 
       console.log("DATA:", data);
       console.log("ERROR:", error);
 
       if (data) setLeads(data);
+      const { data: bidsData } = await supabase
+  .from("bids")
+  .select("*");
+
+setAllBids(bidsData || []);
       setLoading(false);
     };
 
@@ -73,7 +97,7 @@ export default function DealerPage() {
 <div>Registration</div>
 <div>Kilometers</div>
 <div>Country</div>
-<div>Bids</div>
+<div>Highest Bid</div>
 <div>Submitted</div>
 <div>Status</div>
           </div>
@@ -96,17 +120,56 @@ export default function DealerPage() {
                 <div className="text-zinc-600">
                   {Number(lead.miles) * 10} km
                 </div>
+                <div className="text-zinc-600">
+  {lead.source}
+</div>
+<div>
+  <div className="text-zinc-900 font-semibold">
+    {getHighestBid(lead.id)}
+  </div>
+
+  <div className="text-xs text-zinc-500">
+    {getBidCount(lead.id)} bids
+  </div>
+</div>
+
 
 
                 <div className="text-zinc-500 text-sm">
-                  {new Date(lead.created_at).toLocaleString("sv-SE")}
+                  {new Date(lead.created_at).toLocaleString("en-GB")}
                 </div>
 
                 <div>
 <div className="flex items-center gap-2">
-  <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium">
-    New
-  </span>
+<select
+  value={lead.status || "New"}
+  onChange={async (e) => {
+    const newStatus = e.target.value;
+
+    const { error } = await supabase
+      .from("leads")
+      .update({ status: newStatus })
+      .eq("id", lead.id);
+
+    if (error) {
+      alert("Error updating status");
+      return;
+    }
+
+    setLeads((prev) =>
+      prev.map((item) =>
+        item.id === lead.id ? { ...item, status: newStatus } : item
+      )
+    );
+  }}
+  className="text-xs px-3 py-1 rounded-lg bg-blue-100 text-blue-700 font-medium border border-blue-200"
+>
+  <option value="New">New</option>
+  <option value="Bidding">Bidding</option>
+  <option value="Offer Accepted">Offer Accepted</option>
+  <option value="Sold">Sold</option>
+  <option value="Archived">Archived</option>
+</select>
 
 <button
   onClick={async () => {
@@ -132,9 +195,9 @@ export default function DealerPage() {
         </div>
       </div>
       {selectedLead && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+  <div className="fixed inset-0 bg-black/40 flex items-start justify-center p-4 z-50 overflow-y-auto">
     
-    <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl">
+    <div className="bg-white w-full max-w-2xl rounded-2xl p-6 shadow-xl my-8">
       
 <h2 className="text-xl font-semibold mb-2 text-zinc-900">
   Place Bid
@@ -163,9 +226,52 @@ export default function DealerPage() {
   )}
 </div>
 
-      <p className="text-sm text-zinc-600 mb-4">
-        {selectedLead.reg} • {Number(selectedLead.miles) * 10} km
-      </p>
+<p className="text-sm text-zinc-600 mb-4">
+  {selectedLead.reg} • {Number(selectedLead.miles) * 10} km
+</p>
+
+<div className="mb-4 text-sm space-y-1">
+  <p><strong>Country:</strong> {selectedLead.source}</p>
+  <p><strong>Owners:</strong> {selectedLead.owners}</p>
+  <p><strong>Service:</strong> {selectedLead.service}</p>
+  <p><strong>Damage:</strong> {selectedLead.damage}</p>
+  <p><strong>Gearbox:</strong> {selectedLead.gearbox}</p>
+  <p><strong>Tires:</strong> {selectedLead.tires}</p>
+  <p><strong>Tire Set:</strong> {selectedLead.tireset}</p>
+  <p><strong>Towbar:</strong> {selectedLead.towbar}</p>
+  <p><strong>Warnings:</strong> {selectedLead.warnings}</p>
+</div>
+
+{selectedLead.images && selectedLead.images.length > 0 && (
+  <div className="mb-4">
+    <p className="font-medium mb-2">Photos</p>
+
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {selectedLead.images.map((image, index) => (
+<button
+  key={index}
+  type="button"
+  onClick={() => setActiveImage(image)}
+  className="relative block overflow-hidden rounded-lg border group"
+>
+<>
+  <img
+    src={image}
+    alt={`Vehicle ${index + 1}`}
+    className="w-full h-32 object-cover transition group-hover:scale-105"
+  />
+
+  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+    <span className="text-white text-sm font-medium">
+      Click to enlarge
+    </span>
+  </div>
+</>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
       <input
         type="number"
@@ -225,6 +331,31 @@ alert("Bid submitted successfully!");
     </div>
   </div>
 )}
+
+{activeImage && (
+  <div
+    className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]"
+    onClick={() => setActiveImage(null)}
+  >
+    <div className="relative max-w-5xl w-full">
+      <button
+        type="button"
+        onClick={() => setActiveImage(null)}
+        className="absolute -top-10 right-0 text-white text-2xl"
+      >
+        ×
+      </button>
+
+      <img
+        src={activeImage}
+        alt="Vehicle large preview"
+        className="w-full max-h-[85vh] object-contain rounded-xl"
+      />
+    </div>
+  </div>
+)}
+
     </main>
   );
 }
+
