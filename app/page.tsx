@@ -556,7 +556,7 @@ images.forEach((img) => form.append("images", img.file));
                     <select
                       value={formData.importCar}
                       onChange={(e) =>
-                        setFormData({ ...formData, import: e.target.value })
+                        setFormData({ ...formData, importCar: e.target.value })
                       }
                       className="w-full border border-zinc-300 rounded-xl px-5 py-4 text-base text-zinc-600"
                     >
