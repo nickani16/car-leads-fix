@@ -12,6 +12,7 @@ const miles = form.get("miles") as string;
 const phone = form.get("phone") as string;
 const email = form.get("email") as string;
 const source = form.get("source") as string;
+console.log("SOURCE RECEIVED:", source);
 
 if (!phone?.trim() || phone.replace(/\D/g, "").length < 7) {
   return NextResponse.json(

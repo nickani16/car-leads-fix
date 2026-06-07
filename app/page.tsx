@@ -161,6 +161,8 @@ if (step === 5) {
 
 const form = new FormData();
 
+console.log("FORMDATA:", formData);
+
 Object.entries(formData).forEach(([key, value]) =>
   form.append(key, String(value))
 );
