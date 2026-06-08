@@ -1,7 +1,9 @@
 .page {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -371,7 +373,9 @@
 @media (max-width: 520px) {
   .page {
     justify-content: flex-start;
-    padding: 28px 16px;
+    min-height: 100dvh;
+    padding: 20px 14px max(110px, env(safe-area-inset-bottom));
+    overscroll-behavior-y: contain;
   }
 
   .introduction {
@@ -379,15 +383,30 @@
   }
 
   .layout {
-    margin: auto;
+    margin: 0 auto;
+    min-height: calc(100dvh - 130px);
+    align-items: center;
   }
 
   .card {
-    padding: 31px 22px;
+    padding: 28px 20px;
     border-radius: 22px;
   }
 
   .cardTitle {
     font-size: 29px;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+
+  .button {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  .footer {
+    margin-top: 20px;
   }
 }

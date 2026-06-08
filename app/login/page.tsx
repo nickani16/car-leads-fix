@@ -62,34 +62,40 @@ export default function LoginPage() {
     setStatusMessage('')
     setIsLoading(true)
 
-    const supabase = createClient()
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
+      if (error) {
+        setErrorMessage('Invalid email or password.')
+        return
+      }
 
-    if (error) {
-      setErrorMessage('Invalid email or password.')
+      let destination = requestedPath
+
+      if (!destination && data.user) {
+        const { data: adminAccount } = await supabase
+          .from('admin_users')
+          .select('user_id')
+          .eq('user_id', data.user.id)
+          .eq('is_active', true)
+          .maybeSingle()
+
+        destination = adminAccount ? '/admin' : '/dealer'
+      }
+
+      router.replace(destination || '/dealer')
+      router.refresh()
+    } catch {
+      setErrorMessage(
+        'The connection was interrupted. Check your network and try again.'
+      )
+    } finally {
       setIsLoading(false)
-      return
     }
-
-    let destination = requestedPath
-
-    if (!destination && data.user) {
-      const { data: adminAccount } = await supabase
-        .from('admin_users')
-        .select('user_id')
-        .eq('user_id', data.user.id)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      destination = adminAccount ? '/admin' : '/dealer'
-    }
-
-    router.replace(destination || '/dealer')
-    router.refresh()
   }
 
   return (
