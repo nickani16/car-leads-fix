@@ -90,7 +90,9 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 
 function getCreatedAtTime(createdAt: string | null) {
   if (!createdAt) return 0
-  const time = new Date(createdAt).getTime()
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(createdAt)
+  const normalizedCreatedAt = hasTimezone ? createdAt : `${createdAt}Z`
+  const time = new Date(normalizedCreatedAt).getTime()
   return Number.isFinite(time) ? time : 0
 }
 
