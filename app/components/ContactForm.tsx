@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { FormEvent, useState } from 'react'
 
@@ -86,7 +87,14 @@ export default function ContactForm() {
 
       <label className="mt-5 flex items-start gap-3 text-xs leading-5 text-[#72777c]">
         <input type="checkbox" name="privacy" required className="mt-1 h-4 w-4 accent-[#242424]" />
-        Jag godkänner att Autorell behandlar mina uppgifter för att besvara min fråga.
+        <span>
+          Jag har läst{' '}
+          <Link href="/integritet" target="_blank" className="underline">
+            integritetspolicyn
+          </Link>{' '}
+          och förstår att Autorell behandlar uppgifterna för att besvara min
+          fråga.
+        </span>
       </label>
 
       {error && (

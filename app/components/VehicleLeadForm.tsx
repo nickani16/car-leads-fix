@@ -84,8 +84,10 @@ const copy = {
     photos: 'bilder',
     phone: 'Telefonnummer',
     email: 'E-postadress',
-    privacy: 'Jag godkänner behandlingen av mina personuppgifter enligt',
+    privacy: 'Jag har läst',
     privacyLink: 'integritetspolicyn',
+    termsJoin: 'och accepterar',
+    termsLink: 'användarvillkoren',
     back: 'Tillbaka',
     next: 'Fortsätt',
     submit: 'Skicka förfrågan',
@@ -138,8 +140,10 @@ const copy = {
     upload: 'Fahrzeugfotos hochladen',
     uploadHelp: 'Mindestens 4, maximal 12 Bilder. Max. 10 MB pro Bild.',
     photos: 'Bilder', phone: 'Telefonnummer', email: 'E-Mail-Adresse',
-    privacy: 'Ich stimme der Verarbeitung meiner Daten gemäß der',
-    privacyLink: 'Datenschutzerklärung zu',
+    privacy: 'Ich habe die',
+    privacyLink: 'Datenschutzerklärung gelesen',
+    termsJoin: 'und akzeptiere die',
+    termsLink: 'Nutzungsbedingungen',
     back: 'Zurück', next: 'Weiter', submit: 'Anfrage senden', sending: 'Wird gesendet...',
     required: 'Pflichtfeld', optional: 'Optional', choose: 'Bitte wählen',
     successLabel: 'Anfrage erhalten', successTitle: 'Vielen Dank! Wir prüfen Ihr Fahrzeug.',
@@ -183,8 +187,10 @@ const copy = {
     upload: 'Upload vehicle photos',
     uploadHelp: 'Minimum 4, maximum 12 images. Max 10 MB each.',
     photos: 'photos', phone: 'Phone number', email: 'Email address',
-    privacy: 'I accept the processing of my personal data according to the',
-    privacyLink: 'privacy policy', back: 'Back', next: 'Continue',
+    privacy: 'I have read the',
+    privacyLink: 'privacy policy',
+    termsJoin: 'and accept the',
+    termsLink: 'terms of use', back: 'Back', next: 'Continue',
     submit: 'Submit enquiry', sending: 'Submitting...', required: 'Required',
     optional: 'Optional', choose: 'Select an option',
     successLabel: 'Enquiry received', successTitle: 'Thank you! We are reviewing your vehicle.',
@@ -544,7 +550,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                   <Field label={t.phone}><input type="tel" autoComplete="tel" className="form-control" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></Field>
                   <Field label={t.email}><input type="email" autoComplete="email" className="form-control" value={form.email} onChange={(e) => update('email', e.target.value)} /></Field>
                 </div>
-                <label className="mt-5 flex items-start gap-3 border-t border-[#e3e1dc] pt-5 text-sm font-normal leading-6 text-[#626b72]"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-medium text-[#242424] underline" href="https://autorell.com/policies/privacy-policy" target="_blank">{t.privacyLink}</a>.</span></label>
+                <label className="mt-5 flex items-start gap-3 border-t border-[#e3e1dc] pt-5 text-sm font-normal leading-6 text-[#626b72]"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-medium text-[#242424] underline" href="/integritet" target="_blank">{t.privacyLink}</a> {t.termsJoin} <a className="font-medium text-[#242424] underline" href="/villkor" target="_blank">{t.termsLink}</a>.</span></label>
               </Section>
             )}
 

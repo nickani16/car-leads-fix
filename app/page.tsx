@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ChevronRight,
   CircleCheck,
+  LockKeyhole,
   Sparkles,
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
@@ -199,6 +200,51 @@ export default function HomePage() {
                 Logga in
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#dce5ec] bg-[#f6fbfe] py-20 sm:py-24">
+        <div className="mx-auto grid max-w-[1320px] gap-10 px-5 sm:px-8 lg:grid-cols-[.85fr_1.15fr] lg:items-center lg:px-12">
+          <div>
+            <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#B4D9EF] text-[#242424]">
+              <LockKeyhole size={21} />
+            </span>
+            <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[#6a7882]">
+              Din integritet
+            </p>
+            <h2 className="mt-4 max-w-xl text-4xl leading-[1.08] tracking-[-0.04em] sm:text-5xl">
+              Vi förmedlar bilen, inte dina kontaktuppgifter.
+            </h2>
+          </div>
+
+          <div className="rounded-[24px] border border-[#d7e8f2] bg-white p-7 shadow-[0_18px_55px_rgba(32,33,36,.055)] sm:p-9">
+            <p className="text-lg leading-8 text-[#4f606b]">
+              Ditt telefonnummer och din e-post säljs inte och visas inte för
+              dealers under budgivningen. Godkända handlare bedömer
+              fordonsprofilen. Kontaktuppgifter delas först när det behövs för
+              att genomföra en affär som du har valt att gå vidare med.
+            </p>
+            <div className="mt-7 grid gap-3 text-sm text-[#52616b] sm:grid-cols-2">
+              {[
+                'Anonyma dealers i budgivningen',
+                'Inga sålda kontaktlistor',
+                'Endast relevanta fordonsuppgifter',
+                'Du väljer om du vill sälja',
+              ].map((item) => (
+                <span key={item} className="flex items-center gap-2">
+                  <CircleCheck size={16} className="text-[#609bbb]" />
+                  {item}
+                </span>
+              ))}
+            </div>
+            <Link
+              href="/integritet"
+              className="mt-8 inline-flex items-center gap-2 border-b border-[#242424] pb-1 text-sm text-[#242424]"
+            >
+              Läs vår integritetspolicy
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>

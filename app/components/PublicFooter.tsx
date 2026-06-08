@@ -77,9 +77,15 @@ export default function PublicFooter() {
         <div className="flex flex-col gap-4 border-t border-[#d9d7d0] py-7 text-xs text-[#858681] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <span>Integritetspolicy</span>
-            <span>Cookies</span>
-            <span>Allmänna villkor</span>
+            <Link href="/integritet" className="transition hover:text-[#242424]">
+              Integritetspolicy
+            </Link>
+            <Link href="/cookies" className="transition hover:text-[#242424]">
+              Cookies
+            </Link>
+            <Link href="/villkor" className="transition hover:text-[#242424]">
+              Användarvillkor
+            </Link>
           </div>
         </div>
       </div>
