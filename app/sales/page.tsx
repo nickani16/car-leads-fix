@@ -10,6 +10,7 @@ import {
 import { requireSales } from '@/lib/sales-auth'
 import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
 import SellerDecisionActions from './SellerDecisionActions'
+import ContractPacketStatus from './ContractPacketStatus'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -24,7 +25,13 @@ const date = new Intl.DateTimeFormat('en-GB', {
 
 export default async function SalesPage() {
   const { adminClient } = await requireSales()
-  const [{ data: deals }, { data: leads }, { data: dealers }] =
+  const [
+    { data: deals },
+    { data: leads },
+    { data: dealers },
+    { data: packets },
+    { data: documents },
+  ] =
     await Promise.all([
       adminClient
         .from('deals')
@@ -38,11 +45,27 @@ export default async function SalesPage() {
       adminClient
         .from('dealers')
         .select('id,company_name,contact_person,email,phone,country,country_code'),
+      adminClient
+        .from('contract_packets')
+        .select('id,deal_id,status,blockers,template_version,generated_at'),
+      adminClient
+        .from('contract_documents_v2')
+        .select('id,deal_id,document_type,status'),
     ])
 
   const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
   const dealerMap = new Map(
     (dealers || []).map((dealer) => [dealer.id, dealer])
+  )
+  const packetMap = new Map(
+    (packets || []).map((packet) => [packet.deal_id, packet])
+  )
+  const documentCountMap = (documents || []).reduce<Record<string, number>>(
+    (counts, document) => {
+      counts[document.deal_id] = (counts[document.deal_id] || 0) + 1
+      return counts
+    },
+    {}
   )
   const openDeals = (deals || []).filter(
     (deal) => !['completed', 'cancelled'].includes(deal.status)
@@ -157,11 +180,17 @@ export default async function SalesPage() {
                     {canRecordDecision ? (
                       <SellerDecisionActions dealId={deal.id} />
                     ) : (
-                      <p className="mt-5 rounded-[12px] bg-white p-3 text-xs text-[#697074]">
-                        Seller decision:{' '}
-                        {deal.seller_decision ||
-                          deal.status.replaceAll('_', ' ')}
-                      </p>
+                      <>
+                        <p className="mt-5 rounded-[12px] bg-white p-3 text-xs text-[#697074]">
+                          Seller decision:{' '}
+                          {deal.seller_decision ||
+                            deal.status.replaceAll('_', ' ')}
+                        </p>
+                        <ContractPacketStatus
+                          packet={packetMap.get(deal.id)}
+                          documentCount={documentCountMap[deal.id] || 0}
+                        />
+                      </>
                     )}
                   </section>
                 </div>

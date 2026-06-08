@@ -104,7 +104,7 @@ export default function DealerLegalPage() {
                 'Registration details, VAT number, contact information and beneficial ownership information must be accurate and kept current.',
                 'Accounts are personal to the approved dealer organisation and may not be transferred or shared with unauthorised persons.',
                 'Autorell may request identity, company, sanctions, VAT and source-of-funds checks before allowing bids or completing a transaction.',
-                'Autorell operates as a marketplace and transaction coordinator. Unless a signed transaction document expressly states otherwise, the vehicle purchase agreement is between the seller and the winning buyer.',
+                'After seller acceptance, Autorell may use separate transaction agreements with the seller and the winning buyer. The signed documents determine the contracting parties, transfer structure, fees, ownership and risk.',
                 'Vehicle information is based on seller declarations, available records and inspections. Dealers must review all disclosed information before bidding.',
                 'English is the controlling platform language unless a signed transaction document expressly provides otherwise.',
               ]}

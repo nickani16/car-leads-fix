@@ -7,6 +7,7 @@ import {
   FilterSelect,
 } from '../AdminUI'
 import SellerDecisionActions from '@/app/sales/SellerDecisionActions'
+import ContractPacketStatus from '@/app/sales/ContractPacketStatus'
 
 type SearchParams = Promise<{
   q?: string
@@ -21,7 +22,13 @@ export default async function AdminDealsPage({
 }) {
   const params = await searchParams
   const { adminClient } = await requireAdmin()
-  const [{ data: deals }, { data: dealers }, { data: leads }] =
+  const [
+    { data: deals },
+    { data: dealers },
+    { data: leads },
+    { data: packets },
+    { data: documents },
+  ] =
     await Promise.all([
       adminClient.from('deals').select('*').order('created_at', {
         ascending: false,
@@ -30,12 +37,28 @@ export default async function AdminDealsPage({
         .from('dealers')
         .select('id,company_name,contact_person,email'),
       adminClient.from('leads').select('id,reg,make,model'),
+      adminClient
+        .from('contract_packets')
+        .select('id,deal_id,status,blockers,template_version,generated_at'),
+      adminClient
+        .from('contract_documents_v2')
+        .select('id,deal_id,document_type,status'),
     ])
 
   const dealerMap = new Map(
     (dealers || []).map((dealer) => [dealer.id, dealer])
   )
   const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
+  const packetMap = new Map(
+    (packets || []).map((packet) => [packet.deal_id, packet])
+  )
+  const documentCountMap = (documents || []).reduce<Record<string, number>>(
+    (counts, document) => {
+      counts[document.deal_id] = (counts[document.deal_id] || 0) + 1
+      return counts
+    },
+    {}
+  )
   const query = (params.q || '').toLowerCase().trim()
   const filtered = (deals || []).filter((deal) => {
     const dealer = dealerMap.get(deal.buyer_dealer_id)
@@ -151,6 +174,16 @@ export default async function AdminDealsPage({
                 {['provisional_winner', 'seller_review'].includes(
                   deal.status
                 ) && <SellerDecisionActions dealId={deal.id} />}
+                {[
+                  'seller_accepted',
+                  'contracts_pending',
+                  'contracts_ready',
+                ].includes(deal.status) && (
+                  <ContractPacketStatus
+                    packet={packetMap.get(deal.id)}
+                    documentCount={documentCountMap[deal.id] || 0}
+                  />
+                )}
               </article>
             )
           })}
