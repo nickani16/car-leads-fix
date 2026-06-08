@@ -11,6 +11,7 @@ import { requireSales } from '@/lib/sales-auth'
 import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
 import SellerDecisionActions from './SellerDecisionActions'
 import ContractPacketStatus from './ContractPacketStatus'
+import SellerContractIdentityForm from './SellerContractIdentityForm'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -31,6 +32,7 @@ export default async function SalesPage() {
     { data: dealers },
     { data: packets },
     { data: documents },
+    { data: contractParties },
   ] =
     await Promise.all([
       adminClient
@@ -51,6 +53,12 @@ export default async function SalesPage() {
       adminClient
         .from('contract_documents_v2')
         .select('id,deal_id,document_type,status'),
+      adminClient
+        .from('contract_parties')
+        .select(
+          'deal_id,party_role,legal_name,registered_address,country_code'
+        )
+        .eq('party_role', 'seller'),
     ])
 
   const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
@@ -66,6 +74,9 @@ export default async function SalesPage() {
       return counts
     },
     {}
+  )
+  const sellerPartyMap = new Map(
+    (contractParties || []).map((party) => [party.deal_id, party])
   )
   const openDeals = (deals || []).filter(
     (deal) => !['completed', 'cancelled'].includes(deal.status)
@@ -107,6 +118,8 @@ export default async function SalesPage() {
           openDeals.map((deal) => {
             const lead = leadMap.get(deal.lead_id)
             const dealer = dealerMap.get(deal.buyer_dealer_id)
+            const packet = packetMap.get(deal.id)
+            const sellerParty = sellerPartyMap.get(deal.id)
             const canRecordDecision = [
               'provisional_winner',
               'seller_review',
@@ -187,9 +200,21 @@ export default async function SalesPage() {
                             deal.status.replaceAll('_', ' ')}
                         </p>
                         <ContractPacketStatus
-                          packet={packetMap.get(deal.id)}
+                          packet={packet}
                           documentCount={documentCountMap[deal.id] || 0}
                         />
+                        {packet?.status === 'needs_information' && (
+                          <SellerContractIdentityForm
+                            dealId={deal.id}
+                            initialName={sellerParty?.legal_name}
+                            initialAddress={sellerParty?.registered_address}
+                            initialCountry={
+                              sellerParty?.country_code ||
+                              deal.origin_country ||
+                              'SE'
+                            }
+                          />
+                        )}
                       </>
                     )}
                   </section>

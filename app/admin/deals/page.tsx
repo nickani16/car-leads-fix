@@ -8,6 +8,7 @@ import {
 } from '../AdminUI'
 import SellerDecisionActions from '@/app/sales/SellerDecisionActions'
 import ContractPacketStatus from '@/app/sales/ContractPacketStatus'
+import PlatformLegalEntityForm from '../PlatformLegalEntityForm'
 
 type SearchParams = Promise<{
   q?: string
@@ -28,6 +29,7 @@ export default async function AdminDealsPage({
     { data: leads },
     { data: packets },
     { data: documents },
+    { data: platformEntity },
   ] =
     await Promise.all([
       adminClient.from('deals').select('*').order('created_at', {
@@ -43,6 +45,13 @@ export default async function AdminDealsPage({
       adminClient
         .from('contract_documents_v2')
         .select('id,deal_id,document_type,status'),
+      adminClient
+        .from('platform_legal_entities')
+        .select(
+          'legal_name,registration_number,vat_number,registered_address,country_code,email'
+        )
+        .eq('is_active', true)
+        .maybeSingle(),
     ])
 
   const dealerMap = new Map(
@@ -101,6 +110,7 @@ export default async function AdminDealsPage({
         title="All deals"
         description="Track every provisional and completed transaction, buyer, seller value, commission and cross-border route."
       />
+      <PlatformLegalEntityForm entity={platformEntity} />
       <AdminFilters
         search={params.q}
         searchPlaceholder="Search deal ID, registration, vehicle or dealer"
