@@ -8,6 +8,7 @@ import {
   DetailGrid,
 } from '../../AdminUI'
 import LeadLocationForm from './LeadLocationForm'
+import LeadTranslationForm from './LeadTranslationForm'
 
 export default async function AdminLeadDetailPage({
   params,
@@ -45,6 +46,15 @@ export default async function AdminLeadDetailPage({
         initialCity={lead.pickup_city}
         initialPostalCode={lead.pickup_postal_code}
         initialCountry={lead.origin_country || lead.source}
+      />
+
+      <LeadTranslationForm
+        leadId={lead.id}
+        originalDamage={lead.damage_description}
+        originalEquipment={lead.equipment}
+        initialDamageEnglish={lead.damage_description_en}
+        initialEquipmentEnglish={lead.equipment_en}
+        reviewedAt={lead.translation_reviewed_at}
       />
 
       <div className="mb-7 flex flex-wrap gap-2">

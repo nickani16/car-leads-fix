@@ -59,6 +59,8 @@ type Lead = {
   keys_count?: string
   damage_description?: string
   equipment?: string
+  damage_translation_pending?: boolean
+  equipment_translation_pending?: boolean
   images?: string[]
   status?: string
 }
@@ -211,7 +213,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,images,status'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,equipment_translation_pending,images,status'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -1145,6 +1147,9 @@ export default function DealerPage() {
                       </p>
                     </div>
                   )}
+                  {selectedLead.damage_translation_pending && (
+                    <TranslationPending label="Damage description" />
+                  )}
                   {selectedLead.equipment && (
                     <div className="mt-3 rounded-[14px] border border-[#c9e3f2] bg-[#eff8fd] px-4 py-3">
                       <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#52616b]">
@@ -1154,6 +1159,9 @@ export default function DealerPage() {
                         {selectedLead.equipment}
                       </p>
                     </div>
+                  )}
+                  {selectedLead.equipment_translation_pending && (
+                    <TranslationPending label="Equipment details" />
                   )}
                 </section>
               </div>
@@ -1453,6 +1461,20 @@ function Detail({ label, value }: { label: string; value?: string }) {
       </p>
       <p className="mt-1 text-sm font-semibold text-slate-700">
         {value || 'Not specified'}
+      </p>
+    </div>
+  )
+}
+
+function TranslationPending({ label }: { label: string }) {
+  return (
+    <div className="mt-3 rounded-[12px] border border-amber-200 bg-amber-50 px-4 py-3">
+      <p className="text-xs font-semibold text-amber-800">
+        {label}: translation pending
+      </p>
+      <p className="mt-1 text-xs leading-5 text-amber-700">
+        Autorell is reviewing the customer-provided text before it is released
+        to dealers.
       </p>
     </div>
   )
