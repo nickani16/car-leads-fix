@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from './login.module.css'
 
@@ -63,31 +62,31 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: JSON.stringify({
+          email,
+          password,
+          next: requestedPath || undefined,
+        }),
       })
+      const result = (await response.json()) as {
+        success?: boolean
+        destination?: string
+        error?: string
+      }
 
-      if (error) {
-        setErrorMessage('Invalid email or password.')
+      if (!response.ok || !result.success) {
+        setErrorMessage(result.error || 'Invalid email or password.')
         return
       }
 
-      let destination = requestedPath
-
-      if (!destination && data.user) {
-        const { data: adminAccount } = await supabase
-          .from('admin_users')
-          .select('user_id')
-          .eq('user_id', data.user.id)
-          .eq('is_active', true)
-          .maybeSingle()
-
-        destination = adminAccount ? '/admin' : '/dealer'
-      }
-
-      router.replace(destination || '/dealer')
+      router.replace(result.destination || '/dealer')
       router.refresh()
     } catch {
       setErrorMessage(
