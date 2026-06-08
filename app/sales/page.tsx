@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { requireSales } from '@/lib/sales-auth'
 import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
+import SellerDecisionActions from './SellerDecisionActions'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -28,7 +29,7 @@ export default async function SalesPage() {
       adminClient
         .from('deals')
         .select(
-          'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,buyer_total_amount,origin_country,destination_country,created_at'
+          'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,buyer_total_amount,origin_country,destination_country,seller_decision,seller_decision_at,created_at'
         )
         .order('created_at', { ascending: false }),
       adminClient
@@ -83,6 +84,10 @@ export default async function SalesPage() {
           openDeals.map((deal) => {
             const lead = leadMap.get(deal.lead_id)
             const dealer = dealerMap.get(deal.buyer_dealer_id)
+            const canRecordDecision = [
+              'provisional_winner',
+              'seller_review',
+            ].includes(deal.status)
 
             return (
               <article
@@ -149,6 +154,15 @@ export default async function SalesPage() {
                     <p className="mt-4 border-t border-[#deddd7] pt-3 text-xs text-[#7d8386]">
                       Created {date.format(new Date(deal.created_at))}
                     </p>
+                    {canRecordDecision ? (
+                      <SellerDecisionActions dealId={deal.id} />
+                    ) : (
+                      <p className="mt-5 rounded-[12px] bg-white p-3 text-xs text-[#697074]">
+                        Seller decision:{' '}
+                        {deal.seller_decision ||
+                          deal.status.replaceAll('_', ' ')}
+                      </p>
+                    )}
                   </section>
                 </div>
               </article>

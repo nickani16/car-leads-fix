@@ -6,6 +6,7 @@ import {
   Badge,
   FilterSelect,
 } from '../AdminUI'
+import SellerDecisionActions from '@/app/sales/SellerDecisionActions'
 
 type SearchParams = Promise<{
   q?: string
@@ -147,6 +148,9 @@ export default async function AdminDealsPage({
                   <Badge label={deal.vat_treatment || 'VAT review pending'} tone="amber" />
                   <Badge label={deal.bid_is_binding ? 'Binding bid' : 'Non-binding'} tone="green" />
                 </div>
+                {['provisional_winner', 'seller_review'].includes(
+                  deal.status
+                ) && <SellerDecisionActions dealId={deal.id} />}
               </article>
             )
           })}
@@ -157,4 +161,3 @@ export default async function AdminDealsPage({
     </main>
   )
 }
-
