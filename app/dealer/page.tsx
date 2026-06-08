@@ -192,7 +192,7 @@ export default function DealerPage() {
         )
         .order('created_at', { ascending: false }),
       supabase
-        .from('bids')
+        .from('dealer_bids')
         .select('id,lead_id,amount,dealer_id,created_at')
         .order('created_at', { ascending: false }),
       supabase
