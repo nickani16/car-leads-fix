@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import BrandLogo from './BrandLogo'
@@ -86,6 +88,17 @@ export default function PublicFooter() {
             <Link href="/villkor" className="transition hover:text-[#242424]">
               Användarvillkor
             </Link>
+            <button
+              type="button"
+              onClick={() =>
+                window.dispatchEvent(
+                  new Event('autorell-open-cookie-settings')
+                )
+              }
+              className="transition hover:text-[#242424]"
+            >
+              Cookieinställningar
+            </button>
           </div>
         </div>
       </div>

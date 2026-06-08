@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
+import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -25,7 +26,10 @@ export default function RootLayout({
       lang="sv"
       className={`${dmSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   )
 }
