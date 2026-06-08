@@ -22,7 +22,7 @@ export default function LoginPage() {
       const status = searchParams.get('status')
       const next = searchParams.get('next')
 
-      if (next === '/admin' || next === '/dealer') {
+      if (next === '/admin' || next === '/dealer' || next === '/sales') {
         setRequestedPath(next)
       }
 
@@ -47,6 +47,12 @@ export default function LoginPage() {
       if (status === 'admin-required') {
         setStatusMessage(
           'This account does not have access to the Autorell Admin Portal.'
+        )
+      }
+
+      if (status === 'sales-required') {
+        setStatusMessage(
+          'This account does not have access to the Autorell Sales Portal.'
         )
       }
     }, 0)
@@ -139,11 +145,11 @@ export default function LoginPage() {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <p className={styles.eyebrow}>DEALER PORTAL</p>
+            <p className={styles.eyebrow}>AUTORELL PORTAL</p>
             <h2 className={styles.cardTitle}>Welcome back</h2>
 
             <p className={styles.cardDescription}>
-              Sign in to access available vehicles and manage your bids.
+              Sign in to access your authorised Autorell workspace.
             </p>
           </div>
 
@@ -224,7 +230,7 @@ export default function LoginPage() {
                 </>
               ) : (
                 <>
-                  Sign in to Dealer Portal
+                  Sign in securely
                   <span aria-hidden="true">&rarr;</span>
                 </>
               )}
@@ -241,7 +247,7 @@ export default function LoginPage() {
               <path d="M12 3 5 6v5c0 4.8 2.9 8.2 7 10 4.1-1.8 7-5.2 7-10V6l-7-3Z" />
             </svg>
 
-            Secure access for authorised dealers only
+            Secure access for authorised Autorell users only
           </div>
         </div>
       </section>

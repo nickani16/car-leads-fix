@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 type LoginRequest = {
   email?: string
@@ -33,8 +34,10 @@ export async function POST(request: Request) {
       )
     }
 
-    const requestedPath =
-      body.next === '/admin' || body.next === '/dealer' ? body.next : ''
+    const requestedPath = ['/admin', '/dealer', '/sales'].includes(body.next || '')
+      ? body.next || ''
+      : ''
+    const adminClient = createAdminClient()
 
     if (requestedPath === '/admin') {
       const { data: adminAccount } = await supabase
@@ -59,16 +62,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, destination: '/dealer' })
     }
 
-    const { data: adminAccount } = await supabase
+    if (requestedPath === '/sales') {
+      const { data: staffAccount } = await adminClient
+        .from('staff_users')
+        .select('user_id')
+        .eq('user_id', data.user.id)
+        .eq('role', 'sales')
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (!staffAccount) {
+        await supabase.auth.signOut()
+        return NextResponse.json(
+          { error: 'This account does not have Sales Portal access.' },
+          { status: 403 }
+        )
+      }
+
+      return NextResponse.json({ success: true, destination: '/sales' })
+    }
+
+    const { data: adminAccount } = await adminClient
       .from('admin_users')
       .select('user_id')
       .eq('user_id', data.user.id)
       .eq('is_active', true)
       .maybeSingle()
 
+    if (adminAccount) {
+      return NextResponse.json({ success: true, destination: '/admin' })
+    }
+
+    const { data: staffAccount } = await adminClient
+      .from('staff_users')
+      .select('user_id')
+      .eq('user_id', data.user.id)
+      .eq('role', 'sales')
+      .eq('is_active', true)
+      .maybeSingle()
+
     return NextResponse.json({
       success: true,
-      destination: adminAccount ? '/admin' : '/dealer',
+      destination: staffAccount ? '/sales' : '/dealer',
     })
   } catch (error) {
     console.error('Server login error:', error)
