@@ -13,6 +13,7 @@ type ContractDocument = {
   snapshot: Record<string, unknown>
   content_hash: string
   created_at: string
+  final_approved_at?: string | null
 }
 
 type Party = {
@@ -84,6 +85,7 @@ export default function ContractDocumentView({
     ? snapshot.blockers.filter((item): item is string => typeof item === 'string')
     : []
   const ready = document.status === 'ready'
+  const finalApproved = Boolean(document.final_approved_at)
   const sentOrSigned = ['sent', 'signed'].includes(document.status)
 
   return (
@@ -100,7 +102,7 @@ export default function ContractDocumentView({
       </div>
 
       <article className="contract-sheet relative overflow-hidden bg-white">
-        {!sentOrSigned && (
+        {!sentOrSigned && !finalApproved && (
           <div className="contract-watermark" aria-hidden="true">
             DRAFT
           </div>
@@ -130,9 +132,15 @@ export default function ContractDocumentView({
 
         {!sentOrSigned && (
           <section className={`contract-notice ${ready ? 'contract-notice-ready' : ''}`}>
-            <strong>DRAFT - NOT FOR SIGNATURE</strong>
+            <strong>
+              {finalApproved
+                ? 'FINAL VERSION - APPROVED FOR SIGNATURE'
+                : 'DRAFT - NOT FOR SIGNATURE'}
+            </strong>
             <p>
-              {ready
+              {finalApproved
+                ? 'Autorell has approved this exact document version for the electronic signing workflow. It becomes executed only after all required signatures have been completed.'
+                : ready
                 ? 'Required transaction data is complete. Final legal wording and signing approval remain outstanding.'
                 : 'Required transaction information is incomplete. This document has no signing effect.'}
             </p>
@@ -218,7 +226,12 @@ export default function ContractDocumentView({
           <div>
             <strong>Document integrity record</strong>
             <p>SHA-256 {document.content_hash}</p>
-            <p>Template {document.template_version} · Status {document.status}</p>
+            <p>
+              Template {document.template_version} · Status {document.status}
+              {document.final_approved_at
+                ? ` · Approved ${new Date(document.final_approved_at).toLocaleString('en-GB')}`
+                : ''}
+            </p>
           </div>
         </footer>
       </article>

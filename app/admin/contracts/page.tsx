@@ -8,7 +8,7 @@ export default async function AdminContractsPage() {
   const { data } = await adminClient
     .from('contract_documents_v2')
     .select(
-      'id,deal_id,document_type,version,status,template_version,content_hash,created_at'
+      'id,deal_id,document_type,version,status,template_version,content_hash,created_at,final_approved_at'
     )
     .order('created_at', { ascending: false })
     .limit(200)
@@ -49,8 +49,16 @@ export default async function AdminContractsPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Badge
-                  label={document.status}
-                  tone={document.status === 'ready' ? 'green' : 'gray'}
+                  label={
+                    document.final_approved_at
+                      ? 'final approved'
+                      : document.status
+                  }
+                  tone={
+                    document.final_approved_at || document.status === 'ready'
+                      ? 'green'
+                      : 'gray'
+                  }
                 />
                 <ArrowRight size={16} />
               </div>
