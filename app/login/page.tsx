@@ -15,10 +15,17 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [requestedPath, setRequestedPath] = useState('')
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const status = new URLSearchParams(window.location.search).get('status')
+      const searchParams = new URLSearchParams(window.location.search)
+      const status = searchParams.get('status')
+      const next = searchParams.get('next')
+
+      if (next === '/admin' || next === '/dealer') {
+        setRequestedPath(next)
+      }
 
       if (status === 'pending') {
         setStatusMessage(
@@ -37,6 +44,12 @@ export default function LoginPage() {
           'Your password has been updated. You can now sign in with your new password.'
         )
       }
+
+      if (status === 'admin-required') {
+        setStatusMessage(
+          'This account does not have access to the Autorell Admin Portal.'
+        )
+      }
     }, 0)
 
     return () => window.clearTimeout(timer)
@@ -51,7 +64,7 @@ export default function LoginPage() {
 
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     })
@@ -62,7 +75,20 @@ export default function LoginPage() {
       return
     }
 
-    router.replace('/dealer')
+    let destination = requestedPath
+
+    if (!destination && data.user) {
+      const { data: adminAccount } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', data.user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      destination = adminAccount ? '/admin' : '/dealer'
+    }
+
+    router.replace(destination || '/dealer')
     router.refresh()
   }
 
