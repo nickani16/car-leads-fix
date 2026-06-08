@@ -24,7 +24,7 @@ export default function HomePage() {
     <main className="min-h-screen overflow-hidden bg-white text-[#202124]">
       <PublicHeader transparentAtTop />
 
-      <section className="relative isolate -mt-[104px] min-h-[780px] overflow-hidden bg-[#f7f2e8] pt-[104px] md:-mt-[124px] md:min-h-[864px] md:pt-[124px] lg:min-h-[864px]">
+      <section className="relative isolate min-h-[676px] overflow-hidden bg-[#f7f2e8] md:-mt-[124px] md:min-h-[864px] md:pt-[124px] lg:min-h-[864px]">
         <Image
           src="/autorell-home-hero.webp"
           alt="Premiumbil vid modern nordisk arkitektur"

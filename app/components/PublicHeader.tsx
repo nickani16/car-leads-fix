@@ -110,16 +110,19 @@ export default function PublicHeader({
               ['/kontakt', 'Kontakt'],
             ],
             partner: 'Bli bilhandlare',
-            login: 'Dealer login',
+            login: 'Logga in',
             cta: 'Värdera din bil',
             ctaHref: '/salj-bil',
           }
 
   return (
     <>
-      {!transparentAtTop && (
-        <div className="h-[104px] md:h-[124px]" aria-hidden="true" />
-      )}
+      <div
+        className={`h-[104px] ${
+          transparentAtTop ? 'md:hidden' : 'md:h-[124px]'
+        }`}
+        aria-hidden="true"
+      />
       <div
         className={`fixed inset-x-0 top-0 z-[100] transition-transform duration-300 ease-out ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
@@ -149,7 +152,7 @@ export default function PublicHeader({
         <header
           className={`relative transition-[background-color,border-color,box-shadow] duration-300 ${
             transparent
-              ? 'border-b border-transparent bg-transparent shadow-none'
+              ? 'border-b border-[#deddd8]/80 bg-white shadow-[0_8px_30px_rgba(32,33,36,.06)] lg:border-transparent lg:bg-transparent lg:shadow-none'
               : 'border-b border-[#deddd8]/80 bg-white/95 shadow-[0_8px_30px_rgba(32,33,36,.06)] backdrop-blur-xl'
           }`}
         >
@@ -204,9 +207,7 @@ export default function PublicHeader({
               className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition lg:hidden ${
                 open
                   ? 'border-[#242424] bg-[#242424] text-white'
-                  : transparent
-                    ? 'border-white/55 bg-white/75 text-[#242424] backdrop-blur-md'
-                    : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
+                  : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
               }`}
             >
               <span>{content.menuLabel}</span>
@@ -216,7 +217,7 @@ export default function PublicHeader({
         </header>
 
         <div
-          className={`fixed inset-x-0 bottom-0 top-[104px] overflow-y-auto bg-[#f6f4ef] transition duration-300 md:top-[124px] lg:hidden ${
+          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] lg:hidden ${
             open
               ? 'pointer-events-auto translate-y-0 opacity-100'
               : 'pointer-events-none -translate-y-3 opacity-0'
