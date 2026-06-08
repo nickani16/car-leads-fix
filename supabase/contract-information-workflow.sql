@@ -237,9 +237,8 @@ begin
     raise exception 'Admin access required';
   end if;
   if nullif(trim(p_legal_name), '') is null
-    or nullif(trim(p_registration_number), '') is null
     or nullif(trim(p_registered_address), '') is null then
-    raise exception 'Legal name, registration number and address are required';
+    raise exception 'Legal name and registered address are required';
   end if;
   if p_country_code !~ '^[A-Z]{2}$' then
     raise exception 'Use a two-letter country code';
@@ -253,7 +252,7 @@ begin
     country_code, email, is_active
   ) values (
     trim(p_legal_name),
-    trim(p_registration_number),
+    nullif(trim(coalesce(p_registration_number, '')), ''),
     nullif(trim(coalesce(p_vat_number, '')), ''),
     trim(p_registered_address),
     upper(p_country_code),
@@ -265,7 +264,7 @@ begin
   update public.contract_parties cp
   set
     legal_name = trim(p_legal_name),
-    registration_number = trim(p_registration_number),
+    registration_number = nullif(trim(coalesce(p_registration_number, '')), ''),
     vat_number = nullif(trim(coalesce(p_vat_number, '')), ''),
     registered_address = trim(p_registered_address),
     country_code = upper(p_country_code),

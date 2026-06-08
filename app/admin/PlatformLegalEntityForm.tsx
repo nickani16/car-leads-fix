@@ -76,7 +76,12 @@ export default function PlatformLegalEntityForm({
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <Field value={legalName} setValue={setLegalName} placeholder="Legal company name" />
-        <Field value={registrationNumber} setValue={setRegistrationNumber} placeholder="Registration number" />
+        <Field
+          value={registrationNumber}
+          setValue={setRegistrationNumber}
+          placeholder="Registration number (pending)"
+          required={false}
+        />
         <Field value={vatNumber} setValue={setVatNumber} placeholder="VAT number (optional)" />
         <Field value={email} setValue={setEmail} placeholder="Legal contact email" type="email" />
         <Field value={registeredAddress} setValue={setRegisteredAddress} placeholder="Registered address" />
@@ -99,12 +104,14 @@ function Field({
   placeholder,
   type = 'text',
   maxLength,
+  required = true,
 }: {
   value: string
   setValue: (value: string) => void
   placeholder: string
   type?: string
   maxLength?: number
+  required?: boolean
 }) {
   return (
     <input
@@ -112,7 +119,7 @@ function Field({
       value={value}
       onChange={(event) => setValue(event.target.value)}
       placeholder={placeholder}
-      required={placeholder !== 'VAT number (optional)'}
+      required={required && placeholder !== 'VAT number (optional)'}
       maxLength={maxLength}
       className="h-11 rounded-[11px] border border-amber-200 bg-white px-3 text-sm outline-none focus:border-amber-400"
     />
