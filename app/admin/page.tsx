@@ -24,7 +24,7 @@ type Lead = {
   email: string | null
   status: string | null
   source: string | null
-  created_at: string
+  created_at: string | null
 }
 
 type Bid = {
@@ -64,13 +64,28 @@ const date = new Intl.DateTimeFormat('sv-SE', {
   timeStyle: 'short',
 })
 
-function isClosed(createdAt: string) {
-  return Date.now() >= parseTimestamp(createdAt) + 24 * 60 * 60 * 1000
+function isClosed(createdAt: string | null) {
+  const timestamp = parseTimestamp(createdAt)
+  return timestamp === null || Date.now() >= timestamp + 24 * 60 * 60 * 1000
 }
 
-function parseTimestamp(value: string) {
-  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value)
-  return new Date(hasTimezone ? value : `${value}Z`).getTime()
+function parseTimestamp(value: string | null) {
+  if (!value) return null
+
+  const trimmedValue = value.trim()
+  const normalizedValue = /[+-]\d{2}$/.test(trimmedValue)
+    ? `${trimmedValue}:00`
+    : /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue)
+      ? trimmedValue
+      : `${trimmedValue}Z`
+  const timestamp = new Date(normalizedValue).getTime()
+
+  return Number.isFinite(timestamp) ? timestamp : null
+}
+
+function formatTimestamp(value: string | null) {
+  const timestamp = parseTimestamp(value)
+  return timestamp === null ? 'Unknown date' : date.format(new Date(timestamp))
 }
 
 export default async function AdminPage() {
@@ -197,7 +212,7 @@ export default async function AdminPage() {
                         label={isClosed(lead.created_at) ? 'Closed' : 'Active'}
                       />
                       <p className="mt-1 text-xs text-[#8a8f91]">
-                        {date.format(new Date(parseTimestamp(lead.created_at)))}
+                        {formatTimestamp(lead.created_at)}
                       </p>
                     </td>
                     <td className="py-4 pr-4">
