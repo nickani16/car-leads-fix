@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   BarChart3,
   FileText,
@@ -12,10 +15,10 @@ import LogoutButton from '../dealer/LogoutButton'
 
 const navigation = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Leads', href: '/admin#leads', icon: FileText },
-  { label: 'Auctions', href: '/admin#auctions', icon: Gavel },
-  { label: 'Dealers', href: '/admin#dealers', icon: Store },
-  { label: 'Deals', href: '/admin#deals', icon: BarChart3 },
+  { label: 'Leads', href: '/admin/leads', icon: FileText },
+  { label: 'Auctions', href: '/admin/auctions', icon: Gavel },
+  { label: 'Dealers', href: '/admin/dealers', icon: Store },
+  { label: 'Deals', href: '/admin/deals', icon: BarChart3 },
 ]
 
 export default function AdminShell({
@@ -27,6 +30,8 @@ export default function AdminShell({
   email: string
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+
   return (
     <div className="min-h-screen bg-[#f5f4f0] text-[#202124]">
       <div className="h-2 bg-[#B4D9EF]" />
@@ -39,11 +44,19 @@ export default function AdminShell({
             <nav className="hidden items-center gap-1.5 lg:flex">
               {navigation.map((item) => {
                 const Icon = item.icon
+                const active =
+                  item.href === '/admin'
+                    ? pathname === '/admin'
+                    : pathname.startsWith(item.href)
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-normal text-[#62686c] transition hover:bg-[#f3f2ee] hover:text-[#202124]"
+                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-normal transition ${
+                      active
+                        ? 'bg-[#B4D9EF] text-[#242424]'
+                        : 'text-[#62686c] hover:bg-[#f3f2ee] hover:text-[#202124]'
+                    }`}
                   >
                     <Icon size={16} />
                     {item.label}
@@ -66,10 +79,32 @@ export default function AdminShell({
             <LogoutButton />
           </div>
         </div>
+        <nav className="flex gap-2 overflow-x-auto border-t border-[#ebe9e3] px-5 py-2.5 lg:hidden">
+          {navigation.map((item) => {
+            const Icon = item.icon
+            const active =
+              item.href === '/admin'
+                ? pathname === '/admin'
+                : pathname.startsWith(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs ${
+                  active
+                    ? 'bg-[#B4D9EF] text-[#242424]'
+                    : 'bg-[#f5f4f0] text-[#62686c]'
+                }`}
+              >
+                <Icon size={14} />
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
       </header>
 
       {children}
     </div>
   )
 }
-

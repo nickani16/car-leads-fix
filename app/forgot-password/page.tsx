@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import BrandLogo from '@/app/components/BrandLogo'
 import styles from '../login/login.module.css'
 
 export default function ForgotPasswordPage() {
@@ -41,14 +41,9 @@ export default function ForgotPasswordPage() {
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
-          <Image
-            src="/autorell-logo.png"
-            alt="Autorell"
-            width={190}
-            height={55}
-            priority
-            className={styles.logo}
-          />
+          <Link href="/" className={styles.logo} aria-label="Autorell home">
+            <BrandLogo />
+          </Link>
           <div className={styles.badge}>Secure account recovery</div>
           <h1 className={styles.heroTitle}>Recover your dealer access.</h1>
           <p className={styles.heroText}>
