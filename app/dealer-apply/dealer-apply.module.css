@@ -167,6 +167,49 @@
   box-shadow: 0 0 0 4px rgba(180, 217, 239, 0.35);
 }
 
+.legalBox {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #d7e8f2;
+  border-radius: 16px;
+  background: #eff8fd;
+}
+
+.form .legalChoice {
+  display: flex;
+  grid-template-columns: none;
+  align-items: flex-start;
+  gap: 11px;
+  color: #46545e;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.form .legalChoice input {
+  width: 17px;
+  min-width: 17px;
+  height: 17px;
+  min-height: 17px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: #242424;
+}
+
+.legalChoice a {
+  color: #242424;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legalBox > p {
+  margin: 0;
+  color: #748087;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .error,
 .notice {
   padding: 14px 16px;

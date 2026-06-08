@@ -13,9 +13,10 @@ import {
   ShieldCheck,
   Truck,
 } from 'lucide-react'
-
-const effectiveDate = '8 June 2026'
-const documentVersion = 'Dealer Legal Terms v1.0'
+import {
+  DEALER_TERMS_EFFECTIVE_DATE,
+  DEALER_TERMS_VERSION,
+} from '@/lib/legal'
 
 const sections = [
   { href: '#dealer-terms', label: 'Dealer Terms' },
@@ -49,8 +50,10 @@ export default function DealerLegalPage() {
               </p>
             </div>
             <div className="rounded-[18px] border border-[#c9e3f2] bg-[#eff8fd] px-5 py-4 text-sm">
-              <p className="font-semibold">{documentVersion}</p>
-              <p className="mt-1 text-[#62686c]">Effective {effectiveDate}</p>
+              <p className="font-semibold">{DEALER_TERMS_VERSION}</p>
+              <p className="mt-1 text-[#62686c]">
+                Effective {DEALER_TERMS_EFFECTIVE_DATE}
+              </p>
             </div>
           </div>
         </div>
@@ -281,7 +284,7 @@ export default function DealerLegalPage() {
               or transaction requirement is unclear.
             </p>
             <Link
-              href="/dealer/support"
+              href="mailto:info@autorell.com"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#B4D9EF] px-5 py-3 text-sm font-medium text-[#242424]"
             >
               Contact Dealer Support

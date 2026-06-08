@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from './dealer-apply.module.css'
 
@@ -14,6 +13,8 @@ const initialForm = {
   email: '',
   phone: '',
   password: '',
+  acceptsDealerTerms: false,
+  acknowledgesPrivacyNotice: false,
 }
 
 export default function DealerApplyPage() {
@@ -22,7 +23,10 @@ export default function DealerApplyPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  function updateField(field: keyof typeof form, value: string) {
+  function updateField(
+    field: keyof typeof form,
+    value: string | boolean
+  ) {
     setForm((current) => ({
       ...current,
       [field]: value,
@@ -38,31 +42,33 @@ export default function DealerApplyPage() {
       return
     }
 
-    setIsLoading(true)
-
-    const supabase = createClient()
-
-    const { error } = await supabase.auth.signUp({
-      email: form.email.trim(),
-      password: form.password,
-      options: {
-        data: {
-          company_name: form.companyName.trim(),
-          vat_number: form.vatNumber.trim(),
-          country: form.country.trim(),
-          contact_person: form.contactPerson.trim(),
-          phone: form.phone.trim(),
-        },
-      },
-    })
-
-    if (error) {
-      setErrorMessage(error.message)
-      setIsLoading(false)
+    if (!form.acceptsDealerTerms || !form.acknowledgesPrivacyNotice) {
+      setErrorMessage(
+        'Accept the Dealer Terms and acknowledge the Privacy Notice.'
+      )
       return
     }
 
-    await supabase.auth.signOut()
+    setIsLoading(true)
+
+    const response = await fetch('/api/dealer-apply', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(form),
+    })
+
+    const result = (await response.json()) as {
+      success?: boolean
+      error?: string
+    }
+
+    if (!response.ok || !result.success) {
+      setErrorMessage(result.error || 'The application could not be submitted.')
+      setIsLoading(false)
+      return
+    }
 
     setIsSubmitted(true)
     setIsLoading(false)
@@ -228,13 +234,74 @@ export default function DealerApplyPage() {
               />
             </label>
 
+            <div className={styles.legalBox}>
+              <label className={styles.legalChoice}>
+                <input
+                  type="checkbox"
+                  checked={form.acceptsDealerTerms}
+                  onChange={(event) =>
+                    updateField('acceptsDealerTerms', event.target.checked)
+                  }
+                  required
+                />
+                <span>
+                  I have read and accept the{' '}
+                  <Link href="/dealer-terms#dealer-terms" target="_blank">
+                    Dealer Terms &amp; Conditions
+                  </Link>
+                  , including the{' '}
+                  <Link href="/dealer-terms#binding-bids" target="_blank">
+                    Binding Bid Rules
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/dealer-terms#fees" target="_blank">
+                    Buyer Fee Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+
+              <label className={styles.legalChoice}>
+                <input
+                  type="checkbox"
+                  checked={form.acknowledgesPrivacyNotice}
+                  onChange={(event) =>
+                    updateField(
+                      'acknowledgesPrivacyNotice',
+                      event.target.checked
+                    )
+                  }
+                  required
+                />
+                <span>
+                  I acknowledge that I have read the{' '}
+                  <Link href="/dealer-terms#privacy" target="_blank">
+                    Dealer Privacy Notice
+                  </Link>
+                  .
+                </span>
+              </label>
+
+              <p>
+                We record the accepted document versions, time, account holder,
+                IP address and browser information for legal evidence.
+              </p>
+            </div>
+
             {errorMessage && (
               <div role="alert" className={styles.error}>
                 {errorMessage}
               </div>
             )}
 
-            <button disabled={isLoading} className={styles.submitButton}>
+            <button
+              disabled={
+                isLoading ||
+                !form.acceptsDealerTerms ||
+                !form.acknowledgesPrivacyNotice
+              }
+              className={styles.submitButton}
+            >
               {isLoading ? 'Submitting application...' : 'Submit application'}
             </button>
 
