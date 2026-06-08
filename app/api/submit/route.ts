@@ -42,9 +42,15 @@ export async function POST(request: Request) {
       gearbox: text(form, 'gearbox'),
       drivetrain: text(form, 'drivetrain'),
       miles: text(form, 'miles'),
+      pickup_city: text(form, 'pickupCity'),
+      pickup_postal_code: text(form, 'pickupPostalCode'),
     }
+    const originCountry = text(form, 'source').toUpperCase()
 
-    if (Object.values(requiredFields).some((value) => !value)) {
+    if (
+      Object.values(requiredFields).some((value) => !value) ||
+      !/^[A-Z]{2}$/.test(originCountry)
+    ) {
       return NextResponse.json(
         { error: 'Obligatoriska fordonsuppgifter saknas.' },
         { status: 400 }
@@ -118,7 +124,8 @@ export async function POST(request: Request) {
       sellTime: text(form, 'sellTime'),
       phone,
       email,
-      source: text(form, 'source') || 'SE',
+      source: originCountry,
+      origin_country: originCountry,
       images: imageUrls,
       status: 'New',
     }
@@ -144,6 +151,7 @@ export async function POST(request: Request) {
           <p><strong>Registrering:</strong> ${lead.reg}</p>
           <p><strong>Årsmodell:</strong> ${lead.model_year}</p>
           <p><strong>Miltal:</strong> ${lead.miles} mil</p>
+          <p><strong>Upphämtningsort:</strong> ${lead.pickup_postal_code} ${lead.pickup_city}</p>
           <p><strong>Bränsle:</strong> ${lead.fuel_type}</p>
           <p><strong>Växellåda:</strong> ${lead.gearbox}</p>
           <p><strong>Drivning:</strong> ${lead.drivetrain}</p>

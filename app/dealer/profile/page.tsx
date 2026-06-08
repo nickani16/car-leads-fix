@@ -10,6 +10,9 @@ type Profile = {
   company_name: string
   vat_number: string
   country: string
+  country_code: string
+  delivery_city: string
+  delivery_postal_code: string
   contact_person: string
   email: string
   phone: string
@@ -20,6 +23,9 @@ const emptyProfile: Profile = {
   company_name: '',
   vat_number: '',
   country: '',
+  country_code: '',
+  delivery_city: '',
+  delivery_postal_code: '',
   contact_person: '',
   email: '',
   phone: '',
@@ -48,7 +54,7 @@ export default function DealerProfilePage() {
       const { data } = await supabase
         .from('dealers')
         .select(
-          'company_name,vat_number,country,contact_person,email,phone,status'
+          'company_name,vat_number,country,country_code,delivery_city,delivery_postal_code,contact_person,email,phone,status'
         )
         .eq('user_id', user.id)
         .single()
@@ -58,6 +64,9 @@ export default function DealerProfilePage() {
           company_name: data.company_name || '',
           vat_number: data.vat_number || '',
           country: data.country || '',
+          country_code: data.country_code || '',
+          delivery_city: data.delivery_city || '',
+          delivery_postal_code: data.delivery_postal_code || '',
           contact_person: data.contact_person || '',
           email: data.email || user.email || '',
           phone: data.phone || '',
@@ -83,6 +92,9 @@ export default function DealerProfilePage() {
         company_name: profile.company_name,
         vat_number: profile.vat_number,
         country: profile.country,
+        country_code: profile.country_code.toUpperCase(),
+        delivery_city: profile.delivery_city,
+        delivery_postal_code: profile.delivery_postal_code,
         contact_person: profile.contact_person,
         phone: profile.phone,
       })
@@ -159,6 +171,36 @@ export default function DealerProfilePage() {
                 value={profile.country}
                 onChange={(value) =>
                   setProfile((current) => ({ ...current, country: value }))
+                }
+              />
+              <ProfileField
+                label="Country code"
+                value={profile.country_code}
+                onChange={(value) =>
+                  setProfile((current) => ({
+                    ...current,
+                    country_code: value.toUpperCase().slice(0, 2),
+                  }))
+                }
+              />
+              <ProfileField
+                label="Delivery city"
+                value={profile.delivery_city}
+                onChange={(value) =>
+                  setProfile((current) => ({
+                    ...current,
+                    delivery_city: value,
+                  }))
+                }
+              />
+              <ProfileField
+                label="Delivery postal code"
+                value={profile.delivery_postal_code}
+                onChange={(value) =>
+                  setProfile((current) => ({
+                    ...current,
+                    delivery_postal_code: value.toUpperCase(),
+                  }))
                 }
               />
               <ProfileField

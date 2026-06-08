@@ -65,12 +65,12 @@ export default async function SalesPage({
     adminClient
       .from('deals')
       .select(
-        'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,buyer_total_amount,origin_country,destination_country,seller_decision,seller_decision_at,created_at'
+        'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,inspection_fee,transport_fee,export_document_fee,buyer_total_amount,origin_country,origin_city,origin_postal_code,destination_country,destination_city,destination_postal_code,seller_decision,seller_decision_at,created_at'
       )
       .order('created_at', { ascending: false }),
     adminClient
       .from('leads')
-      .select('id,reg,make,model,model_year,miles,email,phone,source,origin_country'),
+      .select('id,reg,make,model,model_year,miles,email,phone,source,origin_country,pickup_city,pickup_postal_code'),
     adminClient
       .from('dealers')
       .select('id,company_name,contact_person,email,phone,country,country_code'),
@@ -246,12 +246,17 @@ export default async function SalesPage({
                           </p>
                           <p className="mt-1 text-sm text-[#697074]">
                             {lead?.miles || 'Mileage unavailable'} ·{' '}
-                            {deal.origin_country ||
-                              lead?.origin_country ||
-                              lead?.source ||
-                              'Unknown'}
+                            {[
+                              deal.origin_city || lead?.pickup_city,
+                              deal.origin_country ||
+                                lead?.origin_country ||
+                                lead?.source,
+                            ]
+                              .filter(Boolean)
+                              .join(', ') || 'Unknown'}
                             {' → '}
-                            {deal.destination_country ||
+                            {deal.destination_city ||
+                              deal.destination_country ||
                               dealer?.country_code ||
                               'Unknown'}
                           </p>
@@ -301,6 +306,18 @@ export default async function SalesPage({
                         <MoneyLine
                           label="Autorell fee"
                           value={deal.commission_amount}
+                        />
+                        <MoneyLine
+                          label="Verified inspection"
+                          value={deal.inspection_fee}
+                        />
+                        <MoneyLine
+                          label="Transport"
+                          value={deal.transport_fee}
+                        />
+                        <MoneyLine
+                          label="Export & documents"
+                          value={deal.export_document_fee}
                         />
                         <MoneyLine
                           label="Buyer total"

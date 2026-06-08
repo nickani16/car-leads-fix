@@ -147,16 +147,17 @@ export default function DealerLegalPage() {
             </p>
             <div className="my-6 overflow-hidden rounded-[16px] border border-[#d7e8f2]">
               <PriceRow label="Winning bid" value="Example: €20,000" />
-              <PriceRow label="Autorell buyer fee" value="3%, minimum €500" />
-              <PriceRow label="Transport estimate" value="From €800" />
-              <PriceRow label="Export & documentation" value="€200" />
+              <PriceRow label="Autorell buyer fee" value="3%, minimum €750" />
+              <PriceRow label="Autorell Verified Inspection" value="€249" />
+              <PriceRow label="Transport estimate" value="From €850" />
+              <PriceRow label="Export & documentation" value="€250" />
             </div>
             <RuleList
               items={[
-                'The buyer fee is calculated as the greater of 3% of the winning bid or €500.',
+                'The buyer fee is calculated as the greater of 3% of the winning bid or €750.',
                 'The bidding interface displays an estimated buyer total before submission.',
-                'Transport is initially estimated at €800 and is confirmed according to collection point, destination, vehicle dimensions, accessibility and carrier availability.',
-                'The €200 documentation charge covers standard transaction and export administration. Exceptional government, customs, registration or third-party charges may be additional.',
+                'Transport is initially estimated from €850 and is confirmed according to the exact collection city, delivery city, vehicle dimensions, accessibility and carrier availability.',
+                'The €250 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',
                 'VAT and other taxes depend on the parties, vehicle tax status, route and applicable law. The final invoice and transaction documents control.',
               ]}
             />
@@ -189,6 +190,7 @@ export default function DealerLegalPage() {
             <RuleList
               items={[
                 'Transport prices are estimates until the exact route and collection conditions are confirmed.',
+                'The Autorell Verified Inspection records the vehicle condition at inspection and does not constitute a mechanical warranty.',
                 'The seller must make the vehicle, keys, registration documents and disclosed accessories available at the agreed collection time.',
                 'Vehicle condition, mileage and visible damage may be recorded at collection through photographs and a handover report.',
                 'Risk and responsibility transfer at the point stated in the signed purchase and logistics documents.',

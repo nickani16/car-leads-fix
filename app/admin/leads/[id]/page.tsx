@@ -7,6 +7,7 @@ import {
   DetailCard,
   DetailGrid,
 } from '../../AdminUI'
+import LeadLocationForm from './LeadLocationForm'
 
 export default async function AdminLeadDetailPage({
   params,
@@ -37,6 +38,13 @@ export default async function AdminLeadDetailPage({
         title={`${lead.make || 'Vehicle'} ${lead.model || ''}`}
         description={`${lead.reg || 'No registration'} · Lead ${lead.id}`}
         backHref="/admin/leads"
+      />
+
+      <LeadLocationForm
+        leadId={lead.id}
+        initialCity={lead.pickup_city}
+        initialPostalCode={lead.pickup_postal_code}
+        initialCountry={lead.origin_country || lead.source}
       />
 
       <div className="mb-7 flex flex-wrap gap-2">
@@ -77,6 +85,8 @@ export default async function AdminLeadDetailPage({
                 { label: 'First registration', value: lead.first_registration },
                 { label: 'Mileage', value: lead.miles },
                 { label: 'Origin country', value: lead.origin_country },
+                { label: 'Pickup city', value: lead.pickup_city },
+                { label: 'Pickup postal code', value: lead.pickup_postal_code },
                 { label: 'Source', value: lead.source },
               ]}
             />
@@ -170,14 +180,31 @@ export default async function AdminLeadDetailPage({
                   { label: 'Status', value: deal.status },
                   { label: 'Winning bid', value: `€${deal.winning_bid_amount}` },
                   { label: 'Commission', value: `€${deal.commission_amount}` },
+                  { label: 'Inspection', value: `€${deal.inspection_fee || 0}` },
                   { label: 'Transport', value: `€${deal.transport_fee}` },
                   {
                     label: 'Documentation',
                     value: `€${deal.export_document_fee}`,
                   },
                   { label: 'Buyer total', value: `€${deal.buyer_total_amount}` },
-                  { label: 'Origin', value: deal.origin_country },
-                  { label: 'Destination', value: deal.destination_country },
+                  {
+                    label: 'Origin',
+                    value:
+                      [deal.origin_postal_code, deal.origin_city, deal.origin_country]
+                        .filter(Boolean)
+                        .join(' ') || 'Not provided',
+                  },
+                  {
+                    label: 'Destination',
+                    value:
+                      [
+                        deal.destination_postal_code,
+                        deal.destination_city,
+                        deal.destination_country,
+                      ]
+                        .filter(Boolean)
+                        .join(' ') || 'Not provided',
+                  },
                 ]}
               />
             </DetailCard>
@@ -187,4 +214,3 @@ export default async function AdminLeadDetailPage({
     </main>
   )
 }
-

@@ -9,6 +9,8 @@ type DealerApplication = {
   companyName?: string
   vatNumber?: string
   country?: string
+  deliveryCity?: string
+  deliveryPostalCode?: string
   contactPerson?: string
   email?: string
   phone?: string
@@ -21,11 +23,48 @@ function clean(value: string | undefined) {
   return value?.trim() || ''
 }
 
+const countryCodes: Record<string, string> = {
+  austria: 'AT',
+  belgium: 'BE',
+  bulgaria: 'BG',
+  croatia: 'HR',
+  cyprus: 'CY',
+  czechia: 'CZ',
+  'czech republic': 'CZ',
+  denmark: 'DK',
+  estonia: 'EE',
+  finland: 'FI',
+  france: 'FR',
+  germany: 'DE',
+  greece: 'GR',
+  hungary: 'HU',
+  ireland: 'IE',
+  italy: 'IT',
+  latvia: 'LV',
+  lithuania: 'LT',
+  luxembourg: 'LU',
+  malta: 'MT',
+  netherlands: 'NL',
+  poland: 'PL',
+  portugal: 'PT',
+  romania: 'RO',
+  slovakia: 'SK',
+  slovenia: 'SI',
+  spain: 'ES',
+  sweden: 'SE',
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as DealerApplication
   const companyName = clean(body.companyName)
   const vatNumber = clean(body.vatNumber)
   const country = clean(body.country)
+  const countryCode =
+    country.length === 2
+      ? country.toUpperCase()
+      : countryCodes[country.toLowerCase()]
+  const deliveryCity = clean(body.deliveryCity)
+  const deliveryPostalCode = clean(body.deliveryPostalCode).toUpperCase()
   const contactPerson = clean(body.contactPerson)
   const email = clean(body.email).toLowerCase()
   const phone = clean(body.phone)
@@ -35,6 +74,9 @@ export async function POST(request: Request) {
     !companyName ||
     !vatNumber ||
     !country ||
+    !countryCode ||
+    !deliveryCity ||
+    !deliveryPostalCode ||
     !contactPerson ||
     !email ||
     !phone ||
@@ -92,6 +134,9 @@ export async function POST(request: Request) {
         company_name: companyName,
         vat_number: vatNumber,
         country,
+        country_code: countryCode,
+        delivery_city: deliveryCity,
+        delivery_postal_code: deliveryPostalCode,
         contact_person: contactPerson,
         phone,
         dealer_terms_version: DEALER_TERMS_VERSION,
@@ -146,6 +191,24 @@ export async function POST(request: Request) {
     )
   }
 
+  const { error: locationError } = await adminClient
+    .from('dealers')
+    .update({
+      country_code: countryCode,
+      delivery_city: deliveryCity,
+      delivery_postal_code: deliveryPostalCode,
+    })
+    .eq('user_id', data.user.id)
+
+  if (locationError) {
+    await adminClient.auth.admin.deleteUser(data.user.id)
+    console.error('Dealer delivery location error:', locationError)
+
+    return NextResponse.json(
+      { error: 'The delivery location could not be saved. No account was created.' },
+      { status: 500 }
+    )
+  }
+
   return NextResponse.json({ success: true })
 }
-

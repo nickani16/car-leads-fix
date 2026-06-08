@@ -44,9 +44,21 @@ type Pricing = {
   winning_bid_amount?: number | string
   seller_net_amount?: number | string
   commission_amount?: number | string
+  inspection_fee?: number | string
   transport_fee?: number | string
   export_document_fee?: number | string
   buyer_total_amount?: number | string
+}
+
+type DealSnapshot = {
+  origin_country?: string | null
+  origin_city?: string | null
+  origin_postal_code?: string | null
+  destination_country?: string | null
+  destination_city?: string | null
+  destination_postal_code?: string | null
+  inspection_fee?: number | string | null
+  inspection_name?: string | null
 }
 
 const money = new Intl.NumberFormat('en-IE', {
@@ -74,6 +86,7 @@ export default function ContractDocumentView({
   const snapshot = document.snapshot || {}
   const vehicle = objectValue<Vehicle>(snapshot, 'vehicle')
   const pricing = objectValue<Pricing>(snapshot, 'pricing')
+  const deal = objectValue<DealSnapshot>(snapshot, 'deal')
   const autorell = objectValue<Party>(snapshot, 'autorell')
   const seller = objectValue<Party>(snapshot, 'seller')
   const buyer = objectValue<Party>(snapshot, 'buyer')
@@ -191,12 +204,30 @@ export default function ContractDocumentView({
               <>
                 <PriceLine label="Vehicle price" value={pricing.winning_bid_amount} />
                 <PriceLine label="Autorell buyer fee" value={pricing.commission_amount} />
+                <PriceLine
+                  label={deal.inspection_name || 'Autorell Verified Inspection'}
+                  value={pricing.inspection_fee || deal.inspection_fee}
+                />
                 <PriceLine label="Transport" value={pricing.transport_fee} />
                 <PriceLine label="Export and documentation" value={pricing.export_document_fee} />
                 <PriceLine label="Total payable by buyer" value={pricing.buyer_total_amount} primary />
               </>
             )}
             <p className="contract-currency">Currency: {pricing.currency || 'EUR'}</p>
+            <p className="contract-currency">
+              Route:{' '}
+              {formatLocation(
+                deal.origin_city,
+                deal.origin_postal_code,
+                deal.origin_country
+              )}{' '}
+              →{' '}
+              {formatLocation(
+                deal.destination_city,
+                deal.destination_postal_code,
+                deal.destination_country
+              )}
+            </p>
           </div>
         </section>
 
@@ -237,6 +268,14 @@ export default function ContractDocumentView({
       </article>
     </main>
   )
+}
+
+function formatLocation(
+  city?: string | null,
+  postalCode?: string | null,
+  country?: string | null
+) {
+  return [postalCode, city, country].filter(Boolean).join(' ') || 'Pending'
 }
 
 function SectionHeading({ number, title }: { number: string; title: string }) {

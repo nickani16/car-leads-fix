@@ -41,6 +41,8 @@ type Lead = {
   miles: string
   created_at: string | null
   source?: string
+  pickup_city?: string
+  pickup_postal_code?: string
   sellTime?: string
   owners?: string
   service?: string
@@ -65,6 +67,8 @@ type Dealer = {
   contact_person?: string | null
   email: string
   country?: string | null
+  delivery_city?: string | null
+  delivery_postal_code?: string | null
 }
 
 type Bid = {
@@ -90,9 +94,20 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 })
 
 const BUYER_FEE_PERCENT = 0.03
-const MINIMUM_BUYER_FEE = 500
-const ESTIMATED_TRANSPORT_FEE = 800
-const EXPORT_DOCUMENT_FEE = 200
+const MINIMUM_BUYER_FEE = 750
+const VERIFIED_INSPECTION_FEE = 249
+const ESTIMATED_TRANSPORT_FEE = 850
+const EXPORT_DOCUMENT_FEE = 250
+
+const countryNames = new Intl.DisplayNames(['en'], { type: 'region' })
+
+function marketLocation(city?: string, countryCode?: string) {
+  const country =
+    countryCode && countryCode.length === 2
+      ? countryNames.of(countryCode.toUpperCase())
+      : countryCode
+  return [city, country].filter(Boolean).join(', ') || 'Not specified'
+}
 
 function getCreatedAtTime(createdAt: string | null) {
   if (!createdAt) return 0
@@ -195,7 +210,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,sellTime,owners,service,damage,damage_description,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,images,status'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,images,status'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -204,7 +219,7 @@ export default function DealerPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('dealers')
-        .select('company_name,contact_person,email,country')
+        .select('company_name,contact_person,email,country,delivery_city,delivery_postal_code')
         .eq('user_id', user.id)
         .single(),
     ])
@@ -477,6 +492,7 @@ export default function DealerPage() {
   const estimatedBuyerTotal = validBidAmount
     ? validBidAmount +
       estimatedBuyerFee +
+      VERIFIED_INSPECTION_FEE +
       ESTIMATED_TRANSPORT_FEE +
       EXPORT_DOCUMENT_FEE
     : 0
@@ -857,7 +873,9 @@ export default function DealerPage() {
                       <DataItem
                         label="Location"
                         icon={<MapPin size={15} />}
-                        value={lead.source || 'Not specified'}
+                        value={
+                          marketLocation(lead.pickup_city, lead.source)
+                        }
                       />
 
                       <div>
@@ -926,7 +944,10 @@ export default function DealerPage() {
               <div>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#B4D9EF] px-2.5 py-1 text-xs font-medium text-[#242424]">
-                    {selectedLead.source || 'Europe'}
+                    {marketLocation(
+                      selectedLead.pickup_city,
+                      selectedLead.source
+                    )}
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-bold ${
@@ -1146,11 +1167,22 @@ export default function DealerPage() {
                           value={moneyFormatter.format(validBidAmount)}
                         />
                         <BidCostRow
-                          label="Autorell buyer fee (3%, min. €500)"
+                          label="Autorell buyer fee (3%, min. €750)"
                           value={moneyFormatter.format(estimatedBuyerFee)}
                         />
                         <BidCostRow
-                          label="Estimated transport"
+                          label="Autorell Verified Inspection"
+                          value={moneyFormatter.format(
+                            VERIFIED_INSPECTION_FEE
+                          )}
+                        />
+                        <BidCostRow
+                          label={`Estimated transport${
+                            selectedLead?.pickup_city &&
+                            dealer?.delivery_city
+                              ? ` · ${selectedLead.pickup_city} → ${dealer.delivery_city}`
+                              : ''
+                          }`}
                           value={moneyFormatter.format(
                             ESTIMATED_TRANSPORT_FEE
                           )}

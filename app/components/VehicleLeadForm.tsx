@@ -33,6 +33,36 @@ const YEARS = Array.from(
   (_, index) => String(new Date().getFullYear() + 1 - index)
 )
 
+const EU_COUNTRIES = [
+  ['AT', 'Austria'],
+  ['BE', 'Belgium'],
+  ['BG', 'Bulgaria'],
+  ['HR', 'Croatia'],
+  ['CY', 'Cyprus'],
+  ['CZ', 'Czechia'],
+  ['DK', 'Denmark'],
+  ['EE', 'Estonia'],
+  ['FI', 'Finland'],
+  ['FR', 'France'],
+  ['DE', 'Germany'],
+  ['GR', 'Greece'],
+  ['HU', 'Hungary'],
+  ['IE', 'Ireland'],
+  ['IT', 'Italy'],
+  ['LV', 'Latvia'],
+  ['LT', 'Lithuania'],
+  ['LU', 'Luxembourg'],
+  ['MT', 'Malta'],
+  ['NL', 'Netherlands'],
+  ['PL', 'Poland'],
+  ['PT', 'Portugal'],
+  ['RO', 'Romania'],
+  ['SK', 'Slovakia'],
+  ['SI', 'Slovenia'],
+  ['ES', 'Spain'],
+  ['SE', 'Sweden'],
+] as const
+
 const copy = {
   sv: {
     market: 'Svensk bilförsäljning',
@@ -52,6 +82,9 @@ const copy = {
     year: 'Årsmodell',
     mileage: 'Miltal',
     firstRegistration: 'Första registrering',
+    pickupCity: 'Ort där bilen finns',
+    pickupPostalCode: 'Postnummer',
+    pickupCountry: 'Land',
     selectBrand: 'Välj bilmärke',
     selectYear: 'Välj årsmodell',
     technicalEyebrow: 'Tekniska uppgifter',
@@ -100,7 +133,7 @@ const copy = {
     successText: 'Vi kontaktar dig när fordonsprofilen är redo för nästa steg.',
     home: 'Till Autorell',
     errors: {
-      vehicle: 'Fyll i registreringsnummer, märke, modell, årsmodell och miltal.',
+      vehicle: 'Fyll i registreringsnummer, märke, modell, årsmodell, miltal, ort och postnummer.',
       technical: 'Välj karosstyp, bränsle, växellåda och drivning.',
       condition: 'Fyll i servicehistorik, skador, varningslampor och säljtillfälle.',
       damage: 'Beskriv skadorna kort.',
@@ -122,6 +155,9 @@ const copy = {
     reg: 'Kennzeichen', make: 'Marke', model: 'Modell',
     variant: 'Variante / Ausführung', year: 'Modelljahr',
     mileage: 'Kilometerstand', firstRegistration: 'Erstzulassung',
+    pickupCity: 'Abholort des Fahrzeugs',
+    pickupPostalCode: 'Postleitzahl',
+    pickupCountry: 'Land',
     selectBrand: 'Marke wählen', selectYear: 'Modelljahr wählen',
     technicalEyebrow: 'Technische Daten',
     technicalTitle: 'Die wichtigsten Spezifikationen',
@@ -150,7 +186,7 @@ const copy = {
     successText: 'Wir melden uns, sobald das Fahrzeugprofil bereit ist.',
     home: 'Zu Autorell',
     errors: {
-      vehicle: 'Bitte Kennzeichen, Marke, Modell, Modelljahr und Kilometerstand ausfüllen.',
+      vehicle: 'Bitte Kennzeichen, Marke, Modell, Modelljahr, Kilometerstand, Abholort und Postleitzahl ausfüllen.',
       technical: 'Bitte Karosserie, Kraftstoff, Getriebe und Antrieb wählen.',
       condition: 'Bitte Servicehistorie, Schäden, Warnleuchten und Verkaufszeitpunkt angeben.',
       damage: 'Bitte beschreiben Sie die Schäden kurz.',
@@ -171,6 +207,9 @@ const copy = {
     reg: 'Registration number', make: 'Make', model: 'Model',
     variant: 'Variant / trim', year: 'Model year', mileage: 'Mileage',
     firstRegistration: 'First registration', selectBrand: 'Select make',
+    pickupCity: 'Vehicle collection city',
+    pickupPostalCode: 'Postal code',
+    pickupCountry: 'Country',
     selectYear: 'Select model year', technicalEyebrow: 'Technical details',
     technicalTitle: 'The key specifications',
     technicalIntro: 'This makes the vehicle comparable across Europe.',
@@ -197,7 +236,7 @@ const copy = {
     successText: 'We will contact you when the vehicle profile is ready.',
     home: 'Go to Autorell',
     errors: {
-      vehicle: 'Enter registration, make, model, model year and mileage.',
+      vehicle: 'Enter registration, make, model, model year, mileage, collection city and postal code.',
       technical: 'Select body type, fuel type, transmission and drivetrain.',
       condition: 'Enter service history, damage, warning lights and selling time.',
       damage: 'Briefly describe the damage.',
@@ -249,7 +288,8 @@ const options = {
 
 const emptyForm = {
   reg: '', make: '', model: '', variant: '', modelYear: '', miles: '',
-  firstRegistration: '', bodyType: '', fuelType: '', gearbox: '',
+  firstRegistration: '', pickupCity: '', pickupPostalCode: '', pickupCountry: '',
+  bodyType: '', fuelType: '', gearbox: '',
   drivetrain: '', powerHp: '', color: '', owners: '', service: '',
   damage: '', damageDescription: '', warnings: '', tires: '', keysCount: '',
   towbar: '', sellTime: '', equipment: '', phone: '', email: '',
@@ -311,13 +351,16 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const o = options[locale]
   const c = conversionCopy[locale]
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState({
+    ...emptyForm,
+    pickupCountry: locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : '',
+  })
   const [images, setImages] = useState<{ id: string; file: File; url: string }[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const source = locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : 'EU'
+  const source = form.pickupCountry
   const distanceUnit = locale === 'sv' ? 'mil' : 'km'
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
   const otherBrandLabel =
@@ -333,7 +376,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   }
 
   function validate() {
-    if (step === 1 && (!form.reg || !form.make || !form.model || !form.modelYear || !form.miles)) return t.errors.vehicle
+    if (step === 1 && (!form.reg || !form.make || !form.model || !form.modelYear || !form.miles || !form.pickupCity || !form.pickupPostalCode || !form.pickupCountry)) return t.errors.vehicle
     if (step === 2 && (!form.bodyType || !form.fuelType || !form.gearbox || !form.drivetrain)) return t.errors.technical
     if (step === 3 && (!form.service || !form.damage || !form.warnings || !form.sellTime)) return t.errors.condition
     if (step === 3 && form.damage !== o.damage[0] && !form.damageDescription) return t.errors.damage
@@ -505,6 +548,9 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                   <Field label={t.year}><select className="form-control" value={form.modelYear} onChange={(e) => update('modelYear', e.target.value)}><option value="">{t.selectYear}</option>{YEARS.map((year) => <option key={year}>{year}</option>)}</select></Field>
                   <Field label={t.mileage}><div className="relative"><input type="number" min="0" className="form-control pr-14" value={form.miles} onChange={(e) => update('miles', e.target.value)} /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{distanceUnit}</span></div></Field>
                   <Field label={t.firstRegistration} optional={t.optional}><input type="date" className="form-control" value={form.firstRegistration} onChange={(e) => update('firstRegistration', e.target.value)} /></Field>
+                  <Field label={t.pickupCity}><input autoComplete="address-level2" className="form-control" value={form.pickupCity} onChange={(e) => update('pickupCity', e.target.value)} /></Field>
+                  <Field label={t.pickupPostalCode}><input autoComplete="postal-code" className="form-control uppercase" value={form.pickupPostalCode} onChange={(e) => update('pickupPostalCode', e.target.value.toUpperCase())} /></Field>
+                  <Field label={t.pickupCountry}><select className="form-control" value={form.pickupCountry} onChange={(e) => update('pickupCountry', e.target.value)}><option value="">{t.choose}</option>{EU_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></Field>
                 </Grid>
               </Section>
             )}

@@ -176,6 +176,7 @@ export default async function AdminDealsPage({
                   {[
                     ['Winning bid', `€${Number(deal.winning_bid_amount).toLocaleString()}`],
                     ['Commission', `€${Number(deal.commission_amount).toLocaleString()}`],
+                    ['Inspection', `€${Number(deal.inspection_fee || 0).toLocaleString()}`],
                     ['Transport', `€${Number(deal.transport_fee).toLocaleString()}`],
                     ['Buyer total', `€${Number(deal.buyer_total_amount).toLocaleString()}`],
                   ].map(([label, value]) => (
@@ -189,7 +190,12 @@ export default async function AdminDealsPage({
                 </dl>
 
                 <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#62686c]">
-                  <Badge label={`${deal.origin_country} → ${deal.destination_country}`} tone="gray" />
+                  <Badge
+                    label={`${deal.origin_city || deal.origin_country} → ${
+                      deal.destination_city || deal.destination_country
+                    }`}
+                    tone="gray"
+                  />
                   <Badge label={deal.vat_treatment || 'VAT review pending'} tone="amber" />
                   <Badge label={deal.bid_is_binding ? 'Binding bid' : 'Non-binding'} tone="green" />
                 </div>

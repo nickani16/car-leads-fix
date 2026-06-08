@@ -9,6 +9,8 @@ const initialForm = {
   companyName: '',
   vatNumber: '',
   country: '',
+  deliveryCity: '',
+  deliveryPostalCode: '',
   contactPerson: '',
   email: '',
   phone: '',
@@ -184,6 +186,37 @@ export default function DealerApplyPage() {
                     updateField('contactPerson', event.target.value)
                   }
                   placeholder="Full name"
+                  required
+                />
+              </label>
+            </div>
+
+            <div className={styles.twoColumns}>
+              <label>
+                Delivery city
+                <input
+                  value={form.deliveryCity}
+                  onChange={(event) =>
+                    updateField('deliveryCity', event.target.value)
+                  }
+                  placeholder="Berlin"
+                  autoComplete="address-level2"
+                  required
+                />
+              </label>
+
+              <label>
+                Delivery postal code
+                <input
+                  value={form.deliveryPostalCode}
+                  onChange={(event) =>
+                    updateField(
+                      'deliveryPostalCode',
+                      event.target.value.toUpperCase()
+                    )
+                  }
+                  placeholder="10115"
+                  autoComplete="postal-code"
                   required
                 />
               </label>
