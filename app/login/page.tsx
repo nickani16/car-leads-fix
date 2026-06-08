@@ -75,7 +75,7 @@ export default function LoginPage() {
           next: requestedPath || undefined,
         }),
       })
-      const result = (await response.json()) as {
+      const result = (await response.json().catch(() => ({}))) as {
         success?: boolean
         destination?: string
         error?: string
