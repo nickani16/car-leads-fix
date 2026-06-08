@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
@@ -1182,7 +1183,23 @@ export default function DealerPage() {
                       <span className="text-xs leading-5 text-[#52616b]">
                         I understand that this is a binding purchase offer and
                         that the final transport cost is confirmed based on the
-                        vehicle route.
+                        vehicle route. I accept the{' '}
+                        <Link
+                          href="/dealer/legal#binding-bids"
+                          target="_blank"
+                          className="font-semibold text-[#242424] underline underline-offset-2"
+                        >
+                          Binding Bid Rules
+                        </Link>{' '}
+                        and{' '}
+                        <Link
+                          href="/dealer/legal#fees"
+                          target="_blank"
+                          className="font-semibold text-[#242424] underline underline-offset-2"
+                        >
+                          Buyer Fee Policy
+                        </Link>
+                        .
                       </span>
                     </label>
 

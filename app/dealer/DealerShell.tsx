@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   BarChart3,
   Building2,
+  FileText,
   Gavel,
   HelpCircle,
   Menu,
@@ -26,6 +27,7 @@ const navigation = [
   { href: '/dealer/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dealer/support', label: 'Support', icon: HelpCircle },
   { href: '/dealer/profile', label: 'Profile', icon: Building2 },
+  { href: '/dealer/legal', label: 'Legal', icon: FileText },
 ]
 
 export default function DealerShell({
@@ -134,6 +136,31 @@ export default function DealerShell({
       </header>
 
       {children}
+
+      <footer className="border-t border-[#deddd7] bg-white">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-5 py-8 text-xs text-[#6b7073] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div>
+            <p className="font-medium text-[#242424]">
+              © {new Date().getFullYear()} Autorell AB
+            </p>
+            <p className="mt-1">
+              European dealer marketplace · All auction amounts are settled in
+              EUR.
+            </p>
+          </div>
+          <nav
+            aria-label="Dealer legal information"
+            className="flex flex-wrap gap-x-5 gap-y-3"
+          >
+            <Link href="/dealer/legal#dealer-terms">Dealer terms</Link>
+            <Link href="/dealer/legal#binding-bids">Binding bid rules</Link>
+            <Link href="/dealer/legal#fees">Fees</Link>
+            <Link href="/dealer/legal#privacy">Privacy</Link>
+            <Link href="/dealer/legal#cookies">Cookies</Link>
+            <Link href="/dealer/legal#complaints">Complaints</Link>
+          </nav>
+        </div>
+      </footer>
     </div>
   )
 }
