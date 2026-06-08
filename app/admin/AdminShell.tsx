@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   BarChart3,
+  FileCheck2,
   FileText,
   Gavel,
   LayoutDashboard,
@@ -19,6 +20,7 @@ const navigation = [
   { label: 'Auctions', href: '/admin/auctions', icon: Gavel },
   { label: 'Dealers', href: '/admin/dealers', icon: Store },
   { label: 'Deals', href: '/admin/deals', icon: BarChart3 },
+  { label: 'Contracts', href: '/admin/contracts', icon: FileCheck2 },
 ]
 
 export default function AdminShell({

@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, BriefcaseBusiness, LayoutDashboard } from 'lucide-react'
+import { Bell, BriefcaseBusiness, FileCheck2, LayoutDashboard } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
 import LogoutButton from '@/app/dealer/LogoutButton'
 
 const navigation = [
   { href: '/sales', label: 'Deal pipeline', icon: LayoutDashboard },
+  { href: '/sales/contracts', label: 'Contracts', icon: FileCheck2 },
   { href: '/sales/notifications', label: 'Notifications', icon: Bell },
 ]
 

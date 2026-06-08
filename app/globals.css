@@ -131,3 +131,24 @@ select:-webkit-autofill {
     background-color: #ffffff !important;
   }
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  header,
+  footer,
+  nav {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  section {
+    box-shadow: none !important;
+  }
+}
