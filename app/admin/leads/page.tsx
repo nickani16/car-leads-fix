@@ -22,34 +22,61 @@ export default async function AdminLeadsPage({
 }) {
   const params = await searchParams
   const { adminClient } = await requireAdmin()
-  const { data } = await adminClient
+  const query = (params.q || '').trim().toLowerCase()
+  const safeQuery = query.replace(/[^a-z0-9åäöüé@+().\s-]/gi, ' ').trim()
+
+  let filteredQuery = adminClient
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,miles,phone,email,status,source,origin_country,created_at'
+      'id,reg,make,model,model_year,miles,phone,email,status,source,origin_country,pickup_city,pickup_postal_code,created_at'
     )
     .order('created_at', { ascending: false })
     .limit(1000)
 
-  const leads = data || []
-  const query = (params.q || '').trim().toLowerCase()
-  const filtered = leads.filter((lead) => {
-    const matchesQuery =
-      !query ||
-      [
-        lead.reg,
-        lead.make,
-        lead.model,
-        lead.email,
-        lead.phone,
-        lead.id,
-      ].some((value) => String(value || '').toLowerCase().includes(query))
-    const country = lead.origin_country || lead.source || ''
-    const matchesCountry = !params.country || country === params.country
-    const matchesStatus =
-      !params.status ||
-      String(lead.status || 'New').toLowerCase() === params.status.toLowerCase()
-    return matchesQuery && matchesCountry && matchesStatus
-  })
+  if (safeQuery) {
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        safeQuery
+      )
+    ) {
+      filteredQuery = filteredQuery.eq('id', safeQuery)
+    } else {
+      const searchPattern = `%${safeQuery}%`
+      filteredQuery = filteredQuery.or(
+        [
+          `reg.ilike.${searchPattern}`,
+          `make.ilike.${searchPattern}`,
+          `model.ilike.${searchPattern}`,
+          `email.ilike.${searchPattern}`,
+          `phone.ilike.${searchPattern}`,
+          `pickup_city.ilike.${searchPattern}`,
+          `pickup_postal_code.ilike.${searchPattern}`,
+        ].join(',')
+      )
+    }
+  }
+
+  if (params.status) {
+    filteredQuery = filteredQuery.eq('status', params.status)
+  }
+
+  if (params.country) {
+    filteredQuery = filteredQuery.or(
+      `origin_country.eq.${params.country},source.eq.${params.country}`
+    )
+  }
+
+  const [{ data }, { data: filterData }] = await Promise.all([
+    filteredQuery,
+    adminClient
+      .from('leads')
+      .select('status,source,origin_country')
+      .order('created_at', { ascending: false })
+      .limit(5000),
+  ])
+
+  const filtered = data || []
+  const leads = filterData || []
 
   const countries = Array.from(
     new Set(
@@ -72,7 +99,7 @@ export default async function AdminLeadsPage({
 
       <AdminFilters
         search={params.q}
-        searchPlaceholder="Search registration, make, model, email, phone or lead ID"
+        searchPlaceholder="Search registration, make, model, email, phone, city or postal code"
       >
         <FilterSelect
           name="country"
@@ -96,7 +123,7 @@ export default async function AdminLeadsPage({
 
       <div className="mb-4 flex items-center justify-between text-sm text-[#73797c]">
         <span>{filtered.length} leads found</span>
-        <span>{leads.length} total</span>
+        <span>{leads.length} loaded</span>
       </div>
 
       {filtered.length ? (
@@ -165,4 +192,3 @@ export default async function AdminLeadsPage({
     </main>
   )
 }
-

@@ -46,7 +46,10 @@ export function AdminFilters({
   children?: React.ReactNode
 }) {
   return (
-    <form className="mb-6 flex flex-col gap-3 rounded-[18px] border border-[#deddd7] bg-white p-4 shadow-[0_8px_24px_rgba(32,33,36,.04)] lg:flex-row">
+    <form
+      method="get"
+      className="mb-6 flex flex-col gap-3 rounded-[18px] border border-[#deddd7] bg-white p-4 shadow-[0_8px_24px_rgba(32,33,36,.04)] lg:flex-row"
+    >
       <label className="relative min-w-0 flex-1">
         <Search
           size={17}
@@ -60,7 +63,10 @@ export function AdminFilters({
         />
       </label>
       {children}
-      <button className="h-11 rounded-full bg-[#242424] px-6 text-sm text-white">
+      <button
+        type="submit"
+        className="h-11 rounded-full bg-[#242424] px-6 text-sm text-white"
+      >
         Apply filters
       </button>
     </form>
@@ -164,4 +170,3 @@ export function DetailGrid({
     </dl>
   )
 }
-

@@ -22,6 +22,7 @@ import {
   X,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type Lead = {
   id: string
@@ -286,6 +287,11 @@ export default function DealerPage() {
           lead.variant,
           lead.source,
           lead.status,
+          lead.pickup_city,
+          vehicleValueInEnglish(lead.fuel_type),
+          vehicleValueInEnglish(lead.gearbox),
+          vehicleValueInEnglish(lead.body_type),
+          vehicleValueInEnglish(lead.damage),
         ].some((value) =>
           value?.toLowerCase().includes(query)
         )
@@ -305,14 +311,15 @@ export default function DealerPage() {
         (bidsByLead[lead.id] || []).some(
           (item) => item.dealer_id === currentUserId
         )
-      const normalizedFuel = lead.fuel_type?.toLowerCase() || ''
+      const normalizedFuel =
+        vehicleValueInEnglish(lead.fuel_type)?.toLowerCase() || ''
       const matchesQuickCategory =
         !quickCategory ||
         (quickCategory === 'electric' &&
-          ['electric', 'el', 'elektro'].includes(normalizedFuel)) ||
+          normalizedFuel === 'electric') ||
         (quickCategory === 'hybrid' && normalizedFuel.includes('hybrid')) ||
         (quickCategory === 'suv' &&
-          lead.body_type?.toLowerCase() === 'suv')
+          vehicleValueInEnglish(lead.body_type)?.toLowerCase() === 'suv')
 
       return (
         matchesView &&
@@ -657,12 +664,14 @@ export default function DealerPage() {
                   label="Fuel"
                   value={fuelFilter}
                   options={filterOptions.fuels}
+                  translateOptions
                   onChange={setFuelFilter}
                 />
                 <FilterSelect
                   label="Transmission"
                   value={gearboxFilter}
                   options={filterOptions.gearboxes}
+                  translateOptions
                   onChange={setGearboxFilter}
                 />
                 <label className="block">
@@ -1055,11 +1064,17 @@ export default function DealerPage() {
                       value={selectedLead.first_registration}
                     />
                     <Detail label="VIN" value={selectedLead.vin} />
-                    <Detail label="Body type" value={selectedLead.body_type} />
-                    <Detail label="Fuel type" value={selectedLead.fuel_type} />
+                    <Detail
+                      label="Body type"
+                      value={vehicleValueInEnglish(selectedLead.body_type)}
+                    />
+                    <Detail
+                      label="Fuel type"
+                      value={vehicleValueInEnglish(selectedLead.fuel_type)}
+                    />
                     <Detail
                       label="Drivetrain"
-                      value={selectedLead.drivetrain}
+                      value={vehicleValueInEnglish(selectedLead.drivetrain)}
                     />
                     <Detail
                       label="Power"
@@ -1075,10 +1090,13 @@ export default function DealerPage() {
                     />
                     <Detail label="Colour" value={selectedLead.color} />
                     <Detail label="Owners" value={selectedLead.owners} />
-                    <Detail label="Service history" value={selectedLead.service} />
+                    <Detail
+                      label="Service history"
+                      value={vehicleValueInEnglish(selectedLead.service)}
+                    />
                     <Detail
                       label="Imported vehicle"
-                      value={selectedLead.importCar}
+                      value={vehicleValueInEnglish(selectedLead.importCar)}
                     />
                     <Detail
                       label="Inspection valid until"
@@ -1088,13 +1106,34 @@ export default function DealerPage() {
                       label="Keys"
                       value={selectedLead.keys_count}
                     />
-                    <Detail label="Brakes" value={selectedLead.brakes} />
-                    <Detail label="Damage" value={selectedLead.damage} />
-                    <Detail label="Gearbox" value={selectedLead.gearbox} />
-                    <Detail label="Tires" value={selectedLead.tires} />
-                    <Detail label="Extra tire set" value={selectedLead.tireset} />
-                    <Detail label="Towbar" value={selectedLead.towbar} />
-                    <Detail label="Warnings" value={selectedLead.warnings} />
+                    <Detail
+                      label="Brakes"
+                      value={vehicleValueInEnglish(selectedLead.brakes)}
+                    />
+                    <Detail
+                      label="Damage"
+                      value={vehicleValueInEnglish(selectedLead.damage)}
+                    />
+                    <Detail
+                      label="Gearbox"
+                      value={vehicleValueInEnglish(selectedLead.gearbox)}
+                    />
+                    <Detail
+                      label="Tires"
+                      value={vehicleValueInEnglish(selectedLead.tires)}
+                    />
+                    <Detail
+                      label="Extra tire set"
+                      value={vehicleValueInEnglish(selectedLead.tireset)}
+                    />
+                    <Detail
+                      label="Towbar"
+                      value={vehicleValueInEnglish(selectedLead.towbar)}
+                    />
+                    <Detail
+                      label="Warnings"
+                      value={vehicleValueInEnglish(selectedLead.warnings)}
+                    />
                   </div>
                   {selectedLead.damage_description && (
                     <div className="mt-3 rounded-[5px] border border-amber-200 bg-amber-50 px-4 py-3">
@@ -1444,11 +1483,13 @@ function FilterSelect({
   label,
   value,
   options,
+  translateOptions = false,
   onChange,
 }: {
   label: string
   value: string
   options: string[]
+  translateOptions?: boolean
   onChange: (value: string) => void
 }) {
   return (
@@ -1463,7 +1504,13 @@ function FilterSelect({
       >
         <option value="">All {label.toLowerCase()}</option>
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option} value={option}>
+            {label === 'Country'
+              ? countryNames.of(option.toUpperCase()) || option
+              : translateOptions
+                ? vehicleValueInEnglish(option)
+                : option}
+          </option>
         ))}
       </select>
     </label>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { canonicalVehicleValue } from '@/lib/vehicle-translation'
 
 function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
@@ -37,10 +38,10 @@ export async function POST(request: Request) {
       make,
       model: text(form, 'model'),
       model_year: text(form, 'modelYear'),
-      body_type: text(form, 'bodyType'),
-      fuel_type: text(form, 'fuelType'),
-      gearbox: text(form, 'gearbox'),
-      drivetrain: text(form, 'drivetrain'),
+      body_type: canonicalVehicleValue(text(form, 'bodyType')),
+      fuel_type: canonicalVehicleValue(text(form, 'fuelType')),
+      gearbox: canonicalVehicleValue(text(form, 'gearbox')),
+      drivetrain: canonicalVehicleValue(text(form, 'drivetrain')),
       miles: text(form, 'miles'),
       pickup_city: text(form, 'pickupCity'),
       pickup_postal_code: text(form, 'pickupPostalCode'),
@@ -109,19 +110,19 @@ export async function POST(request: Request) {
       color: text(form, 'color') || null,
       owners: text(form, 'owners'),
       importCar: text(form, 'importCar'),
-      service: text(form, 'service'),
+      service: canonicalVehicleValue(text(form, 'service')),
       inspection_valid_until:
         text(form, 'inspectionValidUntil') || null,
       keys_count: text(form, 'keysCount'),
       brakes: text(form, 'brakes'),
-      damage: text(form, 'damage'),
+      damage: canonicalVehicleValue(text(form, 'damage')),
       damage_description: text(form, 'damageDescription') || null,
-      warnings: text(form, 'warnings'),
-      tires: text(form, 'tires'),
+      warnings: canonicalVehicleValue(text(form, 'warnings')),
+      tires: canonicalVehicleValue(text(form, 'tires')),
       tireset: text(form, 'tireset'),
-      towbar: text(form, 'towbar'),
+      towbar: canonicalVehicleValue(text(form, 'towbar')),
       equipment: text(form, 'equipment') || null,
-      sellTime: text(form, 'sellTime'),
+      sellTime: canonicalVehicleValue(text(form, 'sellTime')),
       phone,
       email,
       source: originCountry,
