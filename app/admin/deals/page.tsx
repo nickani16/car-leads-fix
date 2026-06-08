@@ -44,7 +44,7 @@ export default async function AdminDealsPage({
         .select('id,deal_id,status,blockers,template_version,generated_at'),
       adminClient
         .from('contract_documents_v2')
-        .select('id,deal_id,document_type,status'),
+        .select('id,deal_id,document_type,status,version'),
       adminClient
         .from('platform_legal_entities')
         .select(
@@ -61,10 +61,22 @@ export default async function AdminDealsPage({
   const packetMap = new Map(
     (packets || []).map((packet) => [packet.deal_id, packet])
   )
-  const documentCountMap = (documents || []).reduce<Record<string, number>>(
+  const activeDocumentCountMap = (documents || []).reduce<Record<string, number>>(
     (counts, document) => {
-      counts[document.deal_id] = (counts[document.deal_id] || 0) + 1
+      if (document.status !== 'void') {
+        counts[document.deal_id] = (counts[document.deal_id] || 0) + 1
+      }
       return counts
+    },
+    {}
+  )
+  const latestVersionMap = (documents || []).reduce<Record<string, number>>(
+    (versions, document) => {
+      versions[document.deal_id] = Math.max(
+        versions[document.deal_id] || 0,
+        Number(document.version || 0)
+      )
+      return versions
     },
     {}
   )
@@ -191,7 +203,10 @@ export default async function AdminDealsPage({
                 ].includes(deal.status) && (
                   <ContractPacketStatus
                     packet={packetMap.get(deal.id)}
-                    documentCount={documentCountMap[deal.id] || 0}
+                    activeDocumentCount={
+                      activeDocumentCountMap[deal.id] || 0
+                    }
+                    latestVersion={latestVersionMap[deal.id] || 1}
                   />
                 )}
               </article>

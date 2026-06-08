@@ -11,7 +11,8 @@ const blockerLabels: Record<string, string> = {
 
 export default function ContractPacketStatus({
   packet,
-  documentCount,
+  activeDocumentCount,
+  latestVersion,
 }: {
   packet:
     | {
@@ -21,7 +22,8 @@ export default function ContractPacketStatus({
         generated_at: string
       }
     | undefined
-  documentCount: number
+  activeDocumentCount: number
+  latestVersion: number
 }) {
   if (!packet) {
     return (
@@ -60,7 +62,8 @@ export default function ContractPacketStatus({
           </div>
           <p className="mt-1 flex items-center gap-2 text-xs text-[#697074]">
             <FileText size={14} />
-            {documentCount} locked drafts · {packet.template_version}
+            {activeDocumentCount} current documents · version {latestVersion} ·{' '}
+            {packet.template_version}
           </p>
           {blockers.length > 0 && (
             <ul className="mt-3 space-y-1 text-xs text-amber-900">
