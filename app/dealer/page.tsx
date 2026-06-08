@@ -433,35 +433,32 @@ export default function DealerPage() {
     setSubmittingBid(true)
     setErrorMessage('')
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-
-    if (userError || !user) {
-      setErrorMessage('Your session has expired. Please sign in again.')
-      setSubmittingBid(false)
-      return
-    }
-
-    const { data: newBid, error } = await supabase
-      .from('bids')
-      .insert({
-        lead_id: selectedLead.id,
+    const response = await fetch('/api/bids', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        leadId: selectedLead.id,
         amount,
-        dealer_id: user.id,
-      })
-      .select('id,lead_id,amount,dealer_id,created_at')
-      .single()
+        termsAccepted: bidTermsAccepted,
+      }),
+    })
 
-    if (error) {
-      console.error(error)
-      setErrorMessage('Your bid could not be submitted. Please try again.')
+    const result = (await response.json().catch(() => ({}))) as {
+      bid?: Bid
+      error?: string
+    }
+
+    if (!response.ok || !result.bid) {
+      setErrorMessage(
+        result.error || 'Your bid could not be submitted. Please try again.'
+      )
       setSubmittingBid(false)
       return
     }
 
-    const savedBid = newBid as Bid
+    const savedBid = result.bid
     setSelectedBids((current) => sortNewestFirst([savedBid, ...current]))
     setAllBids((current) => sortNewestFirst([savedBid, ...current]))
     setBid('')
