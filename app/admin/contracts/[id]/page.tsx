@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation'
 import { requireAdmin } from '@/lib/admin-auth'
 import ContractDocumentView from '@/app/components/ContractDocumentView'
 
+export const metadata = {
+  title: 'Contract draft',
+}
+
 export default async function AdminContractDetailPage({
   params,
 }: {

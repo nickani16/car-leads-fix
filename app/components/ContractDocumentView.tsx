@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
-import { Badge } from '@/app/admin/AdminUI'
+import BrandLogo from '@/app/components/BrandLogo'
 import PrintContractButton from './PrintContractButton'
 
 type ContractDocument = {
   id: string
+  deal_id: string
   document_type: string
   version: number
   status: string
@@ -54,8 +55,8 @@ const money = new Intl.NumberFormat('en-IE', {
 })
 
 const documentNames: Record<string, string> = {
-  seller_purchase_agreement: 'Seller agreement',
-  buyer_resale_agreement: 'Buyer agreement',
+  seller_purchase_agreement: 'Vehicle Purchase Agreement',
+  buyer_resale_agreement: 'Vehicle Sale Agreement',
 }
 
 function objectValue<T>(snapshot: Record<string, unknown>, key: string): T {
@@ -75,10 +76,9 @@ export default function ContractDocumentView({
   const autorell = objectValue<Party>(snapshot, 'autorell')
   const seller = objectValue<Party>(snapshot, 'seller')
   const buyer = objectValue<Party>(snapshot, 'buyer')
-  const otherParty = document.document_type === 'seller_purchase_agreement'
-    ? seller
-    : buyer
-  const otherPartyTitle =
+  const counterparty =
+    document.document_type === 'seller_purchase_agreement' ? seller : buyer
+  const counterpartyTitle =
     document.document_type === 'seller_purchase_agreement' ? 'Seller' : 'Buyer'
   const blockers = Array.isArray(snapshot.blockers)
     ? snapshot.blockers.filter((item): item is string => typeof item === 'string')
@@ -87,155 +87,193 @@ export default function ContractDocumentView({
   const sentOrSigned = ['sent', 'signed'].includes(document.status)
 
   return (
-    <main className="mx-auto max-w-[1120px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
-      <Link
-        href={backHref}
-        className="mb-6 inline-flex items-center gap-2 text-sm text-[#62686c]"
-      >
-        <ArrowLeft size={16} />
-        Back to contracts
-      </Link>
+    <main className="contract-review mx-auto max-w-[1100px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+      <div className="contract-toolbar mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <Link
+          href={backHref}
+          className="inline-flex items-center gap-2 text-sm text-[#62686c]"
+        >
+          <ArrowLeft size={16} />
+          Back to contracts
+        </Link>
+        <PrintContractButton />
+      </div>
 
-      <section className="overflow-hidden rounded-[24px] border border-[#deddd7] bg-white shadow-[0_24px_70px_rgba(32,33,36,.07)]">
-        <header className="border-b border-[#e7e5df] bg-[#faf9f6] px-7 py-6">
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#73797c]">
-                Autorell contract draft
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em]">
-                {documentNames[document.document_type] || document.document_type}
-              </h1>
-              <p className="mt-2 text-sm text-[#62686c]">
-                Version {document.version} · {document.template_version}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge label={document.status} tone={ready ? 'green' : 'amber'} />
-              <Badge label="locked snapshot" tone="gray" />
-            </div>
+      <article className="contract-sheet relative overflow-hidden bg-white">
+        {!sentOrSigned && (
+          <div className="contract-watermark" aria-hidden="true">
+            DRAFT
           </div>
-          {!sentOrSigned && (
-            <div className="mt-6 rounded-[16px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <strong>DRAFT - NOT FOR SIGNATURE.</strong>{' '}
-              {ready
-                ? 'Required data is complete, but legal wording and the signing workflow must still be approved.'
-                : 'This document cannot be sent until all blockers are cleared and legal wording is approved.'}
-            </div>
-          )}
+        )}
+
+        <header className="contract-document-header">
+          <BrandLogo />
+          <div className="contract-reference">
+            <p>Document reference</p>
+            <strong>{document.id.slice(0, 8).toUpperCase()}</strong>
+            <span>Version {document.version}</span>
+          </div>
         </header>
 
-        <div className="grid gap-6 p-7 lg:grid-cols-2">
-          <Panel title="Vehicle">
-            <Data label="Registration" value={vehicle.reg} />
-            <Data label="Vehicle" value={`${vehicle.make || ''} ${vehicle.model || ''}`} />
+        <section className="contract-title-block">
+          <p className="contract-kicker">Autorell transaction document</p>
+          <h1>{documentNames[document.document_type] || 'Vehicle Agreement'}</h1>
+          <p>
+            Deal reference {document.deal_id} · Generated{' '}
+            {new Date(document.created_at).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
+        </section>
+
+        {!sentOrSigned && (
+          <section className={`contract-notice ${ready ? 'contract-notice-ready' : ''}`}>
+            <strong>DRAFT - NOT FOR SIGNATURE</strong>
+            <p>
+              {ready
+                ? 'Required transaction data is complete. Final legal wording and signing approval remain outstanding.'
+                : 'Required transaction information is incomplete. This document has no signing effect.'}
+            </p>
+          </section>
+        )}
+
+        <section className="contract-section">
+          <SectionHeading number="01" title="Contracting parties" />
+          <div className="contract-party-grid">
+            <PartyCard title="Autorell" party={autorell} />
+            <PartyCard title={counterpartyTitle} party={counterparty} />
+          </div>
+        </section>
+
+        <section className="contract-section">
+          <SectionHeading number="02" title="Vehicle" />
+          <dl className="contract-data-grid">
+            <Data label="Registration" value={vehicle.reg} important />
+            <Data
+              label="Make and model"
+              value={[vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+              important
+            />
             <Data label="Model year" value={vehicle.model_year} />
             <Data label="Mileage" value={vehicle.miles} />
             <Data label="VIN" value={vehicle.vin} />
             <Data label="Fuel" value={vehicle.fuel_type} />
-            <Data label="Gearbox" value={vehicle.gearbox} />
+            <Data label="Transmission" value={vehicle.gearbox} />
             <Data label="Declared condition" value={vehicle.damage} />
-            <Data label="Damage notes" value={vehicle.damage_description} />
-          </Panel>
-
-          <Panel title="Pricing">
-            <Data label="Currency" value={pricing.currency || 'EUR'} />
-            <Data label="Winning bid" value={formatMoney(pricing.winning_bid_amount)} />
-            <Data label="Seller net amount" value={formatMoney(pricing.seller_net_amount)} />
-            <Data label="Autorell fee" value={formatMoney(pricing.commission_amount)} />
-            <Data label="Transport" value={formatMoney(pricing.transport_fee)} />
-            <Data label="Export/documentation" value={formatMoney(pricing.export_document_fee)} />
-            <Data label="Buyer total" value={formatMoney(pricing.buyer_total_amount)} />
-          </Panel>
-
-          <Panel title="Autorell">
-            <Data label="Legal name" value={autorell.legal_name} />
-            <Data label="Registration number" value={autorell.registration_number} />
-            <Data label="VAT number" value={autorell.vat_number} />
-            <Data label="Registered address" value={autorell.registered_address} />
-            <Data label="Country" value={autorell.country_code} />
-            <Data label="Email" value={autorell.email} />
-          </Panel>
-
-          <Panel title={otherPartyTitle}>
-            <Data label="Legal name" value={otherParty.legal_name} />
-            <Data label="Registration number" value={otherParty.registration_number} />
-            <Data label="VAT number" value={otherParty.vat_number} />
-            <Data label="Registered address" value={otherParty.registered_address} />
-            <Data label="Country" value={otherParty.country_code} />
-            <Data label="Email" value={otherParty.email} />
-            <Data label="Phone" value={otherParty.phone} />
-          </Panel>
-        </div>
-
-        <section className="border-t border-[#e7e5df] p-7">
-          <div className="flex items-start gap-3 rounded-[16px] bg-[#f6f8f9] p-5">
-            <ShieldCheck className="mt-0.5 text-[#52768a]" size={20} />
-            <div className="min-w-0">
-              <h2 className="font-semibold">Integrity record</h2>
-              <p className="mt-1 break-all text-xs text-[#62686c]">
-                SHA-256: {document.content_hash}
-              </p>
-              <p className="mt-2 text-xs text-[#62686c]">
-                Created {new Date(document.created_at).toLocaleString('sv-SE')}
-              </p>
-            </div>
-          </div>
-
-          {blockers.length > 0 && (
-            <div className="mt-5 rounded-[16px] border border-amber-200 bg-amber-50 p-5">
-              <h2 className="font-semibold text-amber-950">
-                Remaining blockers
-              </h2>
-              <ul className="mt-3 space-y-1 text-sm text-amber-900">
-                {blockers.map((blocker) => (
-                  <li key={blocker}>{blocker.replaceAll('_', ' ')}</li>
-                ))}
-              </ul>
+          </dl>
+          {vehicle.damage_description && (
+            <div className="contract-note">
+              <span>Condition notes</span>
+              <p>{vehicle.damage_description}</p>
             </div>
           )}
         </section>
-      </section>
 
-      <PrintContractButton />
+        <section className="contract-section">
+          <SectionHeading number="03" title="Commercial terms" />
+          <div className="contract-price-box">
+            {document.document_type === 'seller_purchase_agreement' ? (
+              <>
+                <PriceLine label="Purchase price payable to seller" value={pricing.seller_net_amount} primary />
+                <PriceLine label="Winning dealer bid" value={pricing.winning_bid_amount} />
+              </>
+            ) : (
+              <>
+                <PriceLine label="Vehicle price" value={pricing.winning_bid_amount} />
+                <PriceLine label="Autorell buyer fee" value={pricing.commission_amount} />
+                <PriceLine label="Transport" value={pricing.transport_fee} />
+                <PriceLine label="Export and documentation" value={pricing.export_document_fee} />
+                <PriceLine label="Total payable by buyer" value={pricing.buyer_total_amount} primary />
+              </>
+            )}
+            <p className="contract-currency">Currency: {pricing.currency || 'EUR'}</p>
+          </div>
+        </section>
+
+        <section className="contract-section">
+          <SectionHeading number="04" title="Transaction framework" />
+          <div className="contract-clauses">
+            <Clause title="Vehicle and disclosures" text="The vehicle identity, mileage, declared condition and supporting information shown in this document form part of the transaction record." />
+            <Clause title="Payment and completion" text="Payment, collection, document release and completion are subject to Autorell's final approved transaction terms and verification requirements." />
+            <Clause title="Risk and ownership" text="Risk and ownership transfer at the point specified in the final signed agreement and handover documentation." />
+            <Clause title="Status of this draft" text="This generated document is a locked transaction snapshot. It is not binding until released through the approved signing workflow and signed by the required parties." />
+          </div>
+        </section>
+
+        {blockers.length > 0 && (
+          <section className="contract-section contract-blockers">
+            <SectionHeading number="05" title="Outstanding information" />
+            <ul>
+              {blockers.map((blocker) => (
+                <li key={blocker}>{blocker.replaceAll('_', ' ')}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <footer className="contract-integrity">
+          <ShieldCheck size={19} />
+          <div>
+            <strong>Document integrity record</strong>
+            <p>SHA-256 {document.content_hash}</p>
+            <p>Template {document.template_version} · Status {document.status}</p>
+          </div>
+        </footer>
+      </article>
     </main>
   )
 }
 
-function Panel({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
+function SectionHeading({ number, title }: { number: string; title: string }) {
   return (
-    <section className="rounded-[18px] border border-[#deddd7] bg-[#fbfaf7] p-5">
-      <h2 className="mb-4 text-sm font-semibold">{title}</h2>
-      <dl className="space-y-3">{children}</dl>
-    </section>
-  )
-}
-
-function Data({
-  label,
-  value,
-}: {
-  label: string
-  value?: string | number | null
-}) {
-  return (
-    <div>
-      <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#858a8c]">
-        {label}
-      </dt>
-      <dd className="mt-0.5 break-words text-sm text-[#242424]">
-        {value || 'Missing'}
-      </dd>
+    <div className="contract-section-heading">
+      <span>{number}</span>
+      <h2>{title}</h2>
     </div>
   )
 }
 
-function formatMoney(value?: string | number | null) {
-  return money.format(Number(value || 0))
+function PartyCard({ title, party }: { title: string; party: Party }) {
+  return (
+    <section className="contract-party-card">
+      <p className="contract-party-label">{title}</p>
+      <h3>{party.legal_name || 'Information pending'}</h3>
+      {party.registration_number && <p>Registration no. {party.registration_number}</p>}
+      {party.vat_number && <p>VAT no. {party.vat_number}</p>}
+      {party.registered_address && <p>{party.registered_address}</p>}
+      {party.country_code && <p>{party.country_code}</p>}
+      {party.email && <p>{party.email}</p>}
+      {party.phone && <p>{party.phone}</p>}
+    </section>
+  )
+}
+
+function Data({ label, value, important = false }: { label: string; value?: string | number | null; important?: boolean }) {
+  if (!value) return null
+  return (
+    <div className={important ? 'contract-data-important' : ''}>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  )
+}
+
+function PriceLine({ label, value, primary = false }: { label: string; value?: string | number | null; primary?: boolean }) {
+  return (
+    <div className={primary ? 'contract-price-primary' : ''}>
+      <span>{label}</span>
+      <strong>{money.format(Number(value || 0))}</strong>
+    </div>
+  )
+}
+
+function Clause({ title, text }: { title: string; text: string }) {
+  return (
+    <div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </div>
+  )
 }

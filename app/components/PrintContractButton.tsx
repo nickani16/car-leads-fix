@@ -7,7 +7,7 @@ export default function PrintContractButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#242424] px-5 py-3 text-sm text-white print:hidden"
+      className="inline-flex items-center gap-2 rounded-full bg-[#242424] px-5 py-3 text-sm text-white print:hidden"
     >
       <FileText size={16} />
       Print / save as PDF

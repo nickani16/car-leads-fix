@@ -11,9 +11,12 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Autorell – Sälj din bil tryggt och enkelt',
+  title: {
+    default: 'Autorell',
+    template: '%s | Autorell',
+  },
   description:
-    'Skapa en fordonsprofil och få bud från Autorells europeiska handlarnätverk.',
+    'Autorell connects vehicle sellers with a verified European dealer network.',
 }
 
 export default function RootLayout({
@@ -22,10 +25,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="sv"
-      className={`${dmSans.variable} h-full antialiased`}
-    >
+    <html lang="sv" className={`${dmSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {children}
         <CookieConsent />

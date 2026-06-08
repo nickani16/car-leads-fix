@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation'
 import { requireSales } from '@/lib/sales-auth'
 import ContractDocumentView from '@/app/components/ContractDocumentView'
 
+export const metadata = {
+  title: 'Contract draft',
+}
+
 export default async function SalesContractDetailPage({
   params,
 }: {
