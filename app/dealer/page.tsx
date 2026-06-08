@@ -88,6 +88,11 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 })
 
+const BUYER_FEE_PERCENT = 0.03
+const MINIMUM_BUYER_FEE = 500
+const ESTIMATED_TRANSPORT_FEE = 800
+const EXPORT_DOCUMENT_FEE = 200
+
 function getCreatedAtTime(createdAt: string | null) {
   if (!createdAt) return 0
   const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(createdAt)
@@ -152,6 +157,7 @@ export default function DealerPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [submittingBid, setSubmittingBid] = useState(false)
+  const [bidTermsAccepted, setBidTermsAccepted] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [now, setNow] = useState(0)
 
@@ -400,6 +406,7 @@ export default function DealerPage() {
   async function openLead(lead: Lead) {
     setSelectedLead(lead)
     setBid('')
+    setBidTermsAccepted(false)
     setSelectedBids(sortNewestFirst(bidsByLead[lead.id] || []))
   }
 
@@ -409,6 +416,11 @@ export default function DealerPage() {
     const amount = Number(bid)
     if (!Number.isFinite(amount) || amount <= 0) {
       setErrorMessage('Enter a valid bid amount.')
+      return
+    }
+
+    if (!bidTermsAccepted) {
+      setErrorMessage('Confirm the binding bid terms before submitting.')
       return
     }
 
@@ -452,8 +464,24 @@ export default function DealerPage() {
     setSelectedBids((current) => sortNewestFirst([savedBid, ...current]))
     setAllBids((current) => sortNewestFirst([savedBid, ...current]))
     setBid('')
+    setBidTermsAccepted(false)
     setSubmittingBid(false)
   }
+
+  const enteredBidAmount = Number(bid)
+  const validBidAmount =
+    Number.isFinite(enteredBidAmount) && enteredBidAmount > 0
+      ? enteredBidAmount
+      : 0
+  const estimatedBuyerFee = validBidAmount
+    ? Math.max(MINIMUM_BUYER_FEE, validBidAmount * BUYER_FEE_PERCENT)
+    : 0
+  const estimatedBuyerTotal = validBidAmount
+    ? validBidAmount +
+      estimatedBuyerFee +
+      ESTIMATED_TRANSPORT_FEE +
+      EXPORT_DOCUMENT_FEE
+    : 0
 
   return (
     <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
@@ -1108,6 +1136,56 @@ export default function DealerPage() {
                       />
                     </div>
 
+                    <div className="mt-4 overflow-hidden rounded-[14px] border border-[#d7e8f2] bg-white">
+                      <div className="border-b border-[#e5edf1] bg-[#eff8fd] px-4 py-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#52616b]">
+                          Estimated purchase summary
+                        </p>
+                      </div>
+                      <dl className="space-y-2 px-4 py-4 text-sm">
+                        <BidCostRow
+                          label="Your binding bid"
+                          value={moneyFormatter.format(validBidAmount)}
+                        />
+                        <BidCostRow
+                          label="Autorell buyer fee (3%, min. €500)"
+                          value={moneyFormatter.format(estimatedBuyerFee)}
+                        />
+                        <BidCostRow
+                          label="Estimated transport"
+                          value={moneyFormatter.format(
+                            ESTIMATED_TRANSPORT_FEE
+                          )}
+                        />
+                        <BidCostRow
+                          label="Export & documentation"
+                          value={moneyFormatter.format(EXPORT_DOCUMENT_FEE)}
+                        />
+                        <div className="my-3 border-t border-[#deddd7]" />
+                        <BidCostRow
+                          label="Estimated total"
+                          value={moneyFormatter.format(estimatedBuyerTotal)}
+                          total
+                        />
+                      </dl>
+                    </div>
+
+                    <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[10px] border border-[#deddd7] bg-white px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={bidTermsAccepted}
+                        onChange={(event) =>
+                          setBidTermsAccepted(event.target.checked)
+                        }
+                        className="mt-0.5 h-4 w-4 accent-[#242424]"
+                      />
+                      <span className="text-xs leading-5 text-[#52616b]">
+                        I understand that this is a binding purchase offer and
+                        that the final transport cost is confirmed based on the
+                        vehicle route.
+                      </span>
+                    </label>
+
                     {errorMessage && (
                       <p className="mt-3 rounded-[5px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                         {errorMessage}
@@ -1117,7 +1195,11 @@ export default function DealerPage() {
                     <button
                       type="button"
                       onClick={submitBid}
-                      disabled={submittingBid || !bid}
+                      disabled={
+                        submittingBid ||
+                        !validBidAmount ||
+                        !bidTermsAccepted
+                      }
                       className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#B4D9EF] px-4 text-sm font-normal text-[#242424] shadow-lg transition hover:bg-[#C9E6F6] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Gavel size={17} />
@@ -1127,7 +1209,7 @@ export default function DealerPage() {
                     <p className="mt-3 flex items-start gap-2 text-xs leading-5 text-slate-400">
                       <ShieldCheck size={14} className="mt-0.5 shrink-0" />
                       Your bid is binding and linked to your approved dealer
-                      account.
+                      account. Fees are shown before submission.
                     </p>
                   </div>
                 )}
@@ -1287,6 +1369,27 @@ function Detail({ label, value }: { label: string; value?: string }) {
       <p className="mt-1 text-sm font-semibold text-slate-700">
         {value || 'Not specified'}
       </p>
+    </div>
+  )
+}
+
+function BidCostRow({
+  label,
+  value,
+  total = false,
+}: {
+  label: string
+  value: string
+  total?: boolean
+}) {
+  return (
+    <div
+      className={`flex items-center justify-between gap-4 ${
+        total ? 'text-base font-semibold text-[#242424]' : 'text-[#52616b]'
+      }`}
+    >
+      <dt>{label}</dt>
+      <dd className="shrink-0 font-semibold text-[#242424]">{value}</dd>
     </div>
   )
 }
