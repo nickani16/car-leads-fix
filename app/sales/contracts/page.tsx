@@ -1,65 +1,106 @@
 import Link from 'next/link'
-import { ArrowRight, FileText } from 'lucide-react'
+import { ArrowRight, CarFront, FileText } from 'lucide-react'
 import { requireSales } from '@/lib/sales-auth'
 import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
 
+const createdDate = new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
 export default async function SalesContractsPage() {
   const { adminClient } = await requireSales()
-  const { data } = await adminClient
-    .from('contract_documents_v2')
-    .select(
-      'id,deal_id,document_type,version,status,template_version,content_hash,created_at'
-    )
-    .neq('status', 'void')
-    .order('created_at', { ascending: false })
+  const [{ data }, { data: deals }, { data: leads }] = await Promise.all([
+    adminClient
+      .from('contract_documents_v2')
+      .select(
+        'id,deal_id,document_type,version,status,template_version,content_hash,created_at'
+      )
+      .neq('status', 'void')
+      .order('created_at', { ascending: false }),
+    adminClient.from('deals').select('id,lead_id'),
+    adminClient.from('leads').select('id,reg,make,model,model_year'),
+  ])
 
+  const dealMap = new Map((deals || []).map((deal) => [deal.id, deal]))
+  const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
   const documents = data || []
 
   return (
     <main className="mx-auto max-w-[1180px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
       <AdminPageHeader
         eyebrow="Contract review"
-        title="Current contract drafts"
-        description="Review locked buyer and seller draft documents before any e-signing process is enabled."
+        title="Transaction agreements"
+        description="Every document is connected to a vehicle and transaction. Drafts must be checked before they are sent to the seller or winning buyer for signature."
       />
 
       {documents.length ? (
         <div className="grid gap-4">
-          {documents.map((document) => (
-            <Link
-              key={document.id}
-              href={`/sales/contracts/${document.id}`}
-              className="flex flex-col justify-between gap-4 rounded-[18px] border border-[#deddd7] bg-white p-5 transition hover:border-[#B4D9EF] sm:flex-row sm:items-center"
-            >
-              <div className="flex items-start gap-4">
-                <div className="grid h-11 w-11 place-items-center rounded-full bg-[#eaf6fc] text-[#52768a]">
-                  <FileText size={18} />
+          {documents.map((document) => {
+            const deal = dealMap.get(document.deal_id)
+            const lead = deal ? leadMap.get(deal.lead_id) : undefined
+            const documentName =
+              document.document_type === 'seller_purchase_agreement'
+                ? 'Seller agreement'
+                : 'Buyer agreement'
+
+            return (
+              <Link
+                key={document.id}
+                href={`/sales/contracts/${document.id}`}
+                className="grid gap-4 rounded-[18px] border border-[#deddd7] bg-white p-5 transition hover:border-[#8dbdd8] sm:grid-cols-[1fr_auto] sm:items-center"
+              >
+                <div className="flex min-w-0 items-start gap-4">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf6fc] text-[#52768a]">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-semibold">{documentName}</h2>
+                      <Badge
+                        label={document.status}
+                        tone={
+                          document.status === 'signed'
+                            ? 'green'
+                            : document.status === 'ready'
+                              ? 'blue'
+                              : 'amber'
+                        }
+                      />
+                    </div>
+                    <p className="mt-2 flex items-center gap-2 text-sm text-[#3e464a]">
+                      <CarFront size={15} />
+                      <strong>{lead?.reg || 'Unknown registration'}</strong>
+                      <span className="text-[#73797c]">
+                        {[lead?.make, lead?.model, lead?.model_year]
+                          .filter(Boolean)
+                          .join(' ') || 'Vehicle details incomplete'}
+                      </span>
+                    </p>
+                    <p className="mt-2 text-xs text-[#73797c]">
+                      Transaction {document.deal_id.slice(0, 8).toUpperCase()} ·
+                      Version {document.version} · {formatDate(document.created_at)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold">
-                    {document.document_type.replaceAll('_', ' ')}
-                  </h2>
-                  <p className="mt-1 text-xs text-[#62686c]">
-                    Version {document.version} · {document.template_version}
-                  </p>
-                  <p className="mt-1 max-w-xl truncate text-xs text-[#858a8c]">
-                    {document.content_hash}
-                  </p>
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <span className="text-xs text-[#73797c]">Open agreement</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge
-                  label={document.status}
-                  tone={document.status === 'ready' ? 'green' : 'amber'}
-                />
-                <ArrowRight size={16} />
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
       ) : (
         <AdminEmpty text="No current contract drafts yet." />
       )}
     </main>
   )
+}
+
+function formatDate(value: string) {
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime())
+    ? 'Date unavailable'
+    : createdDate.format(parsed)
 }
