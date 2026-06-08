@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import BrandLogo from '@/app/components/BrandLogo'
 import styles from './dealer-apply.module.css'
 
 const initialForm = {
@@ -70,8 +71,11 @@ export default function DealerApplyPage() {
   if (isSubmitted) {
     return (
       <main className={styles.page}>
+        <Link href="/" className={styles.topLogo} aria-label="Autorell home">
+          <BrandLogo />
+        </Link>
         <section className={styles.successCard}>
-          <div className={styles.successIcon}>✓</div>
+          <div className={styles.successIcon}>&#10003;</div>
 
           <p className={styles.eyebrow}>APPLICATION RECEIVED</p>
 
@@ -97,12 +101,12 @@ export default function DealerApplyPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.glowOne} />
-      <div className={styles.glowTwo} />
+      <Link href="/" className={styles.topLogo} aria-label="Autorell home">
+        <BrandLogo />
+      </Link>
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
-          <p className={styles.brand}>AUTORELL</p>
           <p className={styles.eyebrow}>DEALER NETWORK</p>
 
           <h1>Join the Autorell dealer network.</h1>
@@ -113,9 +117,9 @@ export default function DealerApplyPage() {
           </p>
 
           <div className={styles.featureList}>
-            <p><span>✓</span> Verified vehicle opportunities</p>
-            <p><span>✓</span> Transparent 24-hour bidding</p>
-            <p><span>✓</span> Secure professional dealer access</p>
+            <p><span>&#10003;</span> Verified vehicle opportunities</p>
+            <p><span>&#10003;</span> Transparent 24-hour bidding</p>
+            <p><span>&#10003;</span> Secure professional dealer access</p>
           </div>
         </div>
 

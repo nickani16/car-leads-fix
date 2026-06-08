@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
@@ -13,14 +12,15 @@ import {
   ImageIcon,
   MapPin,
   RefreshCw,
+  RotateCcw,
   Search,
   ShieldCheck,
+  SlidersHorizontal,
   TrendingUp,
   Users,
   X,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import LogoutButton from './LogoutButton'
 
 type Lead = {
   id: string
@@ -61,6 +61,7 @@ type Lead = {
 
 type Dealer = {
   company_name: string | null
+  contact_person?: string | null
   email: string
   country?: string | null
 }
@@ -71,7 +72,6 @@ type Bid = {
   amount: number | string
   dealer_id?: string | null
   created_at: string
-  dealers?: Dealer | Dealer[] | null
 }
 
 const supabase = createClient()
@@ -118,11 +118,6 @@ function getBiddingStatus(createdAt: string | null, now: number) {
   return `${hours}h ${minutes}m remaining`
 }
 
-function dealerLabel(bid: Bid) {
-  const dealer = Array.isArray(bid.dealers) ? bid.dealers[0] : bid.dealers
-  return dealer?.company_name || dealer?.email || 'Verified dealer'
-}
-
 function sortNewestFirst(bids: Bid[]) {
   return [...bids].sort(
     (first, second) =>
@@ -142,6 +137,16 @@ export default function DealerPage() {
   const [bid, setBid] = useState('')
   const [search, setSearch] = useState('')
   const [auctionView, setAuctionView] = useState<'active' | 'closed'>('active')
+  const [countryFilter, setCountryFilter] = useState('')
+  const [makeFilter, setMakeFilter] = useState('')
+  const [fuelFilter, setFuelFilter] = useState('')
+  const [gearboxFilter, setGearboxFilter] = useState('')
+  const [maxKilometers, setMaxKilometers] = useState('')
+  const [myBidsOnly, setMyBidsOnly] = useState(false)
+  const [quickCategory, setQuickCategory] = useState<
+    '' | 'electric' | 'hybrid' | 'suv'
+  >('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [submittingBid, setSubmittingBid] = useState(false)
@@ -179,20 +184,18 @@ export default function DealerPage() {
 
     const [leadsResult, bidsResult, dealerResult] = await Promise.all([
       supabase
-        .from('leads')
+        .from('dealer_leads')
         .select(
           'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,sellTime,owners,service,damage,damage_description,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,images,status'
         )
         .order('created_at', { ascending: false }),
       supabase
         .from('bids')
-        .select(
-          'id,lead_id,amount,dealer_id,created_at,dealers(company_name,email)'
-        )
+        .select('id,lead_id,amount,dealer_id,created_at')
         .order('created_at', { ascending: false }),
       supabase
         .from('dealers')
-        .select('company_name,email,country')
+        .select('company_name,contact_person,email,country')
         .eq('user_id', user.id)
         .single(),
     ])
@@ -262,10 +265,97 @@ export default function DealerPage() {
         ].some((value) =>
           value?.toLowerCase().includes(query)
         )
+      const kilometers = Number(lead.miles) * 10
+      const matchesCountry =
+        !countryFilter || lead.source === countryFilter
+      const matchesMake = !makeFilter || lead.make === makeFilter
+      const matchesFuel = !fuelFilter || lead.fuel_type === fuelFilter
+      const matchesGearbox =
+        !gearboxFilter || lead.gearbox === gearboxFilter
+      const matchesMileage =
+        !maxKilometers ||
+        (Number.isFinite(kilometers) &&
+          kilometers <= Number(maxKilometers))
+      const matchesMyBids =
+        !myBidsOnly ||
+        (bidsByLead[lead.id] || []).some(
+          (item) => item.dealer_id === currentUserId
+        )
+      const normalizedFuel = lead.fuel_type?.toLowerCase() || ''
+      const matchesQuickCategory =
+        !quickCategory ||
+        (quickCategory === 'electric' &&
+          ['electric', 'el', 'elektro'].includes(normalizedFuel)) ||
+        (quickCategory === 'hybrid' && normalizedFuel.includes('hybrid')) ||
+        (quickCategory === 'suv' &&
+          lead.body_type?.toLowerCase() === 'suv')
 
-      return matchesView && matchesSearch
+      return (
+        matchesView &&
+        matchesSearch &&
+        matchesCountry &&
+        matchesMake &&
+        matchesFuel &&
+        matchesGearbox &&
+        matchesMileage &&
+        matchesMyBids &&
+        matchesQuickCategory
+      )
     })
-  }, [auctionView, now, search, sortedLeads])
+  }, [
+    auctionView,
+    bidsByLead,
+    countryFilter,
+    currentUserId,
+    fuelFilter,
+    gearboxFilter,
+    makeFilter,
+    maxKilometers,
+    myBidsOnly,
+    now,
+    quickCategory,
+    search,
+    sortedLeads,
+  ])
+
+  const filterOptions = useMemo(
+    () => ({
+      countries: Array.from(
+        new Set(leads.map((lead) => lead.source).filter(Boolean))
+      ).sort() as string[],
+      makes: Array.from(
+        new Set(leads.map((lead) => lead.make).filter(Boolean))
+      ).sort() as string[],
+      fuels: Array.from(
+        new Set(leads.map((lead) => lead.fuel_type).filter(Boolean))
+      ).sort() as string[],
+      gearboxes: Array.from(
+        new Set(leads.map((lead) => lead.gearbox).filter(Boolean))
+      ).sort() as string[],
+    }),
+    [leads]
+  )
+
+  const activeFilterCount = [
+    countryFilter,
+    makeFilter,
+    fuelFilter,
+    gearboxFilter,
+    maxKilometers,
+    myBidsOnly ? 'yes' : '',
+    quickCategory,
+  ].filter(Boolean).length
+
+  function resetFilters() {
+    setCountryFilter('')
+    setMakeFilter('')
+    setFuelFilter('')
+    setGearboxFilter('')
+    setMaxKilometers('')
+    setMyBidsOnly(false)
+    setQuickCategory('')
+    setSearch('')
+  }
 
   const activeAuctionCount = leads.filter(
     (lead) => !isBiddingClosed(lead.created_at, now)
@@ -346,9 +436,7 @@ export default function DealerPage() {
         amount,
         dealer_id: user.id,
       })
-      .select(
-        'id,lead_id,amount,dealer_id,created_at,dealers(company_name,email)'
-      )
+      .select('id,lead_id,amount,dealer_id,created_at')
       .single()
 
     if (error) {
@@ -366,50 +454,26 @@ export default function DealerPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f2f4f7] text-slate-950">
-      <header className="relative overflow-hidden border-b border-white/10 bg-[#07111f] text-white">
-        <div className="pointer-events-none absolute -right-24 -top-40 h-80 w-80 rounded-full bg-blue-600/20 blur-3xl" />
-        <div className="pointer-events-none absolute left-1/3 top-0 h-px w-1/3 bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
-        <div className="relative mx-auto flex max-w-[1440px] items-center justify-between gap-5 px-5 py-5 sm:px-8 lg:px-12">
-          <div className="flex items-center gap-4">
-            <Image
-              src="/autorell-logo.png"
-              alt="Autorell"
-              width={180}
-              height={52}
-              priority
-              className="h-10 w-auto sm:h-11"
-            />
-            <div>
-              <p className="hidden text-xs text-slate-400 md:block">
-                European Dealer Network
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-[5px] border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-300 sm:flex">
-              <ShieldCheck size={15} />
-              {dealer?.company_name || 'Approved dealer'}
-            </div>
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
-
+    <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
       <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
-        <section className="relative mb-7 overflow-hidden rounded-[12px] border border-slate-800 bg-[#0b1627] px-6 py-7 text-white shadow-[0_24px_70px_rgba(15,23,42,0.16)] sm:px-8 lg:px-10 lg:py-9">
-          <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-blue-600/20 blur-3xl" />
+        <section className="relative mb-7 overflow-hidden rounded-[24px] border border-[#deddd7] bg-white px-6 py-7 shadow-[0_24px_70px_rgba(32,33,36,.07)] sm:px-8 lg:px-10 lg:py-9">
+          <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full border-[44px] border-[#B4D9EF]/45" />
           <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-300">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.22em] text-[#70767a]">
               Private dealer marketplace
             </p>
             <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl lg:text-[42px]">
               Welcome back
-              {dealer?.company_name ? `, ${dealer.company_name}` : ''}
+              {dealer
+                ? `, ${
+                    dealer.contact_person ||
+                    dealer.company_name ||
+                    dealer.email.split('@')[0]
+                  }`
+                : ''}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#697278] sm:text-base">
               Your personal bidding overview and the latest verified vehicle
               opportunities across Europe.
             </p>
@@ -419,7 +483,7 @@ export default function DealerPage() {
             type="button"
             onClick={() => fetchPortalData(true)}
             disabled={refreshing}
-            className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-[5px] border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/15 disabled:opacity-60 lg:self-auto"
+            className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-full border border-[#d8d7d1] bg-[#f8f7f3] px-5 text-sm font-normal text-[#242424] transition hover:border-[#242424] disabled:opacity-60 lg:self-auto"
           >
             <RefreshCw
               size={16}
@@ -457,7 +521,7 @@ export default function DealerPage() {
           />
         </section>
 
-        <section className="overflow-hidden rounded-[12px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.055)]">
+        <section className="overflow-hidden rounded-[24px] border border-[#deddd7] bg-white shadow-[0_18px_50px_rgba(32,33,36,.055)]">
           <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 xl:flex-row xl:items-center sm:px-7">
             <div>
               <h2 className="text-lg font-bold">
@@ -472,13 +536,13 @@ export default function DealerPage() {
             </div>
 
             <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
-              <div className="flex rounded-[7px] border border-slate-200 bg-slate-100 p-1">
+              <div className="flex rounded-full border border-[#deddd7] bg-[#f3f2ee] p-1">
                 <button
                   type="button"
                   onClick={() => setAuctionView('active')}
-                  className={`flex-1 rounded-[5px] px-4 py-2 text-sm font-bold transition sm:flex-none ${
+                  className={`flex-1 rounded-full px-4 py-2 text-sm font-normal transition sm:flex-none ${
                     auctionView === 'active'
-                      ? 'bg-white text-blue-700 shadow-sm'
+                      ? 'bg-[#B4D9EF] text-[#242424] shadow-sm'
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -487,7 +551,7 @@ export default function DealerPage() {
                 <button
                   type="button"
                   onClick={() => setAuctionView('closed')}
-                  className={`flex-1 rounded-[5px] px-4 py-2 text-sm font-bold transition sm:flex-none ${
+                  className={`flex-1 rounded-full px-4 py-2 text-sm font-normal transition sm:flex-none ${
                     auctionView === 'closed'
                       ? 'bg-white text-slate-800 shadow-sm'
                       : 'text-slate-500 hover:text-slate-800'
@@ -506,10 +570,166 @@ export default function DealerPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search registration or country"
-                  className="h-11 w-full rounded-[5px] border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                  className="h-11 w-full rounded-full border border-[#d8d7d1] bg-[#fbfbf9] pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#8dbdd8] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/35"
                 />
               </label>
+
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                className={`inline-flex h-11 items-center justify-center gap-2 border px-4 text-sm font-semibold transition ${
+                  filtersOpen || activeFilterCount
+                    ? 'border-[#B4D9EF] bg-[#B4D9EF] text-[#242424]'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <SlidersHorizontal size={16} />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#242424] px-1 text-[10px] text-white">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
             </div>
+          </div>
+
+          {filtersOpen && (
+            <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-5 sm:px-7">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <FilterSelect
+                  label="Country"
+                  value={countryFilter}
+                  options={filterOptions.countries}
+                  onChange={setCountryFilter}
+                />
+                <FilterSelect
+                  label="Make"
+                  value={makeFilter}
+                  options={filterOptions.makes}
+                  onChange={setMakeFilter}
+                />
+                <FilterSelect
+                  label="Fuel"
+                  value={fuelFilter}
+                  options={filterOptions.fuels}
+                  onChange={setFuelFilter}
+                />
+                <FilterSelect
+                  label="Transmission"
+                  value={gearboxFilter}
+                  options={filterOptions.gearboxes}
+                  onChange={setGearboxFilter}
+                />
+                <label className="block">
+                  <span className="mb-2 block text-xs font-semibold text-slate-500">
+                    Maximum mileage
+                  </span>
+                  <select
+                    value={maxKilometers}
+                    onChange={(event) =>
+                      setMaxKilometers(event.target.value)
+                    }
+                    className="h-11 w-full rounded-[14px] border border-[#d8d7d1] bg-white px-3 text-sm text-slate-700 outline-none focus:border-[#8dbdd8]"
+                  >
+                    <option value="">Any mileage</option>
+                    <option value="50000">Up to 50,000 km</option>
+                    <option value="100000">Up to 100,000 km</option>
+                    <option value="150000">Up to 150,000 km</option>
+                    <option value="200000">Up to 200,000 km</option>
+                  </select>
+                </label>
+                <div className="flex flex-col justify-end gap-2">
+                  <label className="flex h-11 cursor-pointer items-center gap-2 rounded-full border border-[#d8d7d1] bg-white px-4 text-sm font-normal text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={myBidsOnly}
+                      onChange={(event) =>
+                        setMyBidsOnly(event.target.checked)
+                      }
+                      className="accent-[#242424]"
+                    />
+                    My bids only
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                <p className="text-sm text-slate-500">
+                  Showing <strong>{filteredLeads.length}</strong> matching
+                  vehicles
+                </p>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="inline-flex h-9 items-center gap-2 border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw size={14} />
+                  Reset filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3 sm:px-7">
+            <QuickFilter
+              active={
+                !fuelFilter &&
+                !makeFilter &&
+                !myBidsOnly &&
+                !quickCategory &&
+                !maxKilometers
+              }
+              label="All vehicles"
+              onClick={() => {
+                setFuelFilter('')
+                setMakeFilter('')
+                setMyBidsOnly(false)
+                setQuickCategory('')
+                setMaxKilometers('')
+              }}
+            />
+            <QuickFilter
+              active={quickCategory === 'electric'}
+              label="Electric"
+              onClick={() =>
+                setQuickCategory((value) =>
+                  value === 'electric' ? '' : 'electric'
+                )
+              }
+            />
+            <QuickFilter
+              active={quickCategory === 'hybrid'}
+              label="Hybrid"
+              onClick={() =>
+                setQuickCategory((value) =>
+                  value === 'hybrid' ? '' : 'hybrid'
+                )
+              }
+            />
+            <QuickFilter
+              active={quickCategory === 'suv'}
+              label="SUV"
+              onClick={() =>
+                setQuickCategory((value) =>
+                  value === 'suv' ? '' : 'suv'
+                )
+              }
+            />
+            <QuickFilter
+              active={myBidsOnly}
+              label="My bids"
+              onClick={() => setMyBidsOnly((value) => !value)}
+            />
+            <QuickFilter
+              active={maxKilometers === '100000'}
+              label="Under 100,000 km"
+              onClick={() =>
+                setMaxKilometers((value) =>
+                  value === '100000' ? '' : '100000'
+                )
+              }
+            />
           </div>
 
           {errorMessage && !selectedLead && (
@@ -523,7 +743,7 @@ export default function DealerPage() {
               <div className="text-center">
                 <RefreshCw
                   size={25}
-                  className="mx-auto mb-3 animate-spin text-blue-600"
+                  className="mx-auto mb-3 animate-spin text-[#242424]"
                 />
                 <p className="text-sm font-medium text-slate-500">
                   Loading vehicle opportunities...
@@ -657,7 +877,7 @@ export default function DealerPage() {
                       <button
                         type="button"
                         onClick={() => openLead(lead)}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-[5px] bg-[#0b5cff] px-4 text-sm font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-[#004bd6] hover:shadow-md hover:shadow-blue-500/20"
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#242424] px-5 text-sm font-normal text-white shadow-sm transition hover:bg-[#111111]"
                       >
                         {closed ? 'View result' : 'View & bid'}
                         <ArrowRight size={15} />
@@ -673,11 +893,11 @@ export default function DealerPage() {
 
       {selectedLead && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 p-3 backdrop-blur-sm sm:p-6">
-          <div className="mx-auto my-3 w-full max-w-5xl overflow-hidden rounded-[12px] border border-white/10 bg-white shadow-2xl sm:my-8">
+          <div className="mx-auto my-3 w-full max-w-5xl overflow-hidden rounded-[24px] border border-white/10 bg-white shadow-2xl sm:my-8">
             <div className="flex items-start justify-between border-b border-slate-100 px-5 py-5 sm:px-7">
               <div>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+                  <span className="rounded-full bg-[#B4D9EF] px-2.5 py-1 text-xs font-medium text-[#242424]">
                     {selectedLead.source || 'Europe'}
                   </span>
                   <span
@@ -713,7 +933,7 @@ export default function DealerPage() {
                   setBid('')
                   setErrorMessage('')
                 }}
-                className="grid h-10 w-10 place-items-center rounded-[5px] bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+                className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f1ed] text-slate-500 transition hover:bg-[#e7e5df] hover:text-slate-900"
                 aria-label="Close vehicle details"
               >
                 <X size={20} />
@@ -725,7 +945,7 @@ export default function DealerPage() {
                 <section>
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="flex items-center gap-2 font-bold">
-                      <Camera size={18} className="text-blue-600" />
+                      <Camera size={18} className="text-[#242424]" />
                       Vehicle photos
                     </h3>
                     <span className="text-xs text-slate-400">
@@ -838,8 +1058,8 @@ export default function DealerPage() {
                     </div>
                   )}
                   {selectedLead.equipment && (
-                    <div className="mt-3 rounded-[5px] border border-blue-100 bg-blue-50 px-4 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue-700">
+                    <div className="mt-3 rounded-[14px] border border-[#c9e3f2] bg-[#eff8fd] px-4 py-3">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#52616b]">
                         Key equipment
                       </p>
                       <p className="mt-1 text-sm leading-6 text-blue-950">
@@ -851,7 +1071,7 @@ export default function DealerPage() {
               </div>
 
               <aside className="bg-slate-50/60 p-5 sm:p-7">
-                <div className="mb-6 rounded-[7px] border border-slate-800 bg-[#07111f] p-5 text-white shadow-lg shadow-slate-900/10">
+                <div className="mb-6 rounded-[18px] border border-[#deddd7] bg-[#242424] p-5 text-white shadow-lg shadow-slate-900/10">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
                     Current highest bid
                   </p>
@@ -882,7 +1102,7 @@ export default function DealerPage() {
                         value={bid}
                         onChange={(event) => setBid(event.target.value)}
                         placeholder="Enter amount"
-                        className="h-14 w-full rounded-[5px] border border-slate-200 bg-white pl-9 pr-4 text-lg font-bold outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                        className="h-14 w-full rounded-[14px] border border-slate-200 bg-white pl-9 pr-4 text-lg font-semibold outline-none transition focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/35"
                       />
                     </div>
 
@@ -896,7 +1116,7 @@ export default function DealerPage() {
                       type="button"
                       onClick={submitBid}
                       disabled={submittingBid || !bid}
-                      className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[5px] bg-[#0b5cff] px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-[#004bd6] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#B4D9EF] px-4 text-sm font-normal text-[#242424] shadow-lg transition hover:bg-[#C9E6F6] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Gavel size={17} />
                       {submittingBid ? 'Submitting bid...' : 'Submit secure bid'}
@@ -942,7 +1162,9 @@ export default function DealerPage() {
                         >
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-slate-700">
-                              {dealerLabel(item)}
+                              {item.dealer_id === currentUserId
+                                ? 'Your bid'
+                                : 'Anonymous dealer'}
                             </p>
                             <p className="mt-0.5 text-[11px] text-slate-400">
                               {index === 0 ? 'Latest bid · ' : ''}
@@ -1009,21 +1231,21 @@ function StatCard({
   accent: 'blue' | 'emerald' | 'violet' | 'amber'
 }) {
   const accentClasses = {
-    blue: 'bg-blue-50 text-blue-600',
+    blue: 'bg-[#B4D9EF] text-[#242424]',
     emerald: 'bg-emerald-50 text-emerald-600',
     violet: 'bg-violet-50 text-violet-600',
     amber: 'bg-amber-50 text-amber-600',
   }
 
   return (
-    <div className="group border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_34px_rgba(15,23,42,0.08)] rounded-[8px]">
+    <div className="group rounded-[18px] border border-[#deddd7] bg-white p-5 shadow-[0_8px_24px_rgba(32,33,36,.04)] transition hover:-translate-y-0.5 hover:border-[#c9c7c0] hover:shadow-[0_14px_34px_rgba(32,33,36,.08)]">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
         </div>
         <div
-          className={`grid h-11 w-11 place-items-center rounded-[5px] ${accentClasses[accent]}`}
+          className={`grid h-11 w-11 place-items-center rounded-[12px] ${accentClasses[accent]}`}
         >
           {icon}
         </div>
@@ -1056,7 +1278,7 @@ function DataItem({
 
 function Detail({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="rounded-[5px] border border-slate-200 bg-slate-50 px-4 py-3">
+    <div className="rounded-[14px] border border-[#deddd7] bg-[#f8f7f3] px-4 py-3">
       <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">
         {label}
       </p>
@@ -1064,5 +1286,59 @@ function Detail({ label, value }: { label: string; value?: string }) {
         {value || 'Not specified'}
       </p>
     </div>
+  )
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: string[]
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-xs font-semibold text-slate-500">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-full rounded-[14px] border border-[#d8d7d1] bg-white px-3 text-sm text-slate-700 outline-none focus:border-[#8dbdd8]"
+      >
+        <option value="">All {label.toLowerCase()}</option>
+        {options.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function QuickFilter({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 border px-4 py-2 text-xs font-semibold transition ${
+        active
+          ? 'border-[#242424] bg-[#242424] text-white'
+          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+      }`}
+    >
+      {label}
+    </button>
   )
 }

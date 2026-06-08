@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Archivo } from 'next/font/google'
+import { DM_Sans } from 'next/font/google'
 import './globals.css'
 
-const archivo = Archivo({
-  variable: '--font-archivo',
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
   subsets: ['latin'],
-  weight: ['400', '600'],
+  weight: ['400', '500', '600'],
   display: 'swap',
 })
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="sv"
-      className={`${archivo.variable} h-full antialiased`}
+      className={`${dmSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

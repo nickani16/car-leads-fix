@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import DealerShell from './DealerShell'
 
 export default async function DealerLayout({
   children,
@@ -18,7 +19,7 @@ export default async function DealerLayout({
 
   const { data: dealer, error } = await supabase
     .from('dealers')
-    .select('status')
+    .select('status,company_name,contact_person,email,country')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -30,5 +31,5 @@ export default async function DealerLayout({
     redirect('/login?status=pending')
   }
 
-  return children
+  return <DealerShell dealer={dealer}>{children}</DealerShell>
 }

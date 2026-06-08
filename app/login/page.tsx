@@ -1,10 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import BrandLogo from '@/app/components/BrandLogo'
 import styles from './login.module.css'
 
 export default function LoginPage() {
@@ -17,19 +17,29 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get('status')
+    const timer = window.setTimeout(() => {
+      const status = new URLSearchParams(window.location.search).get('status')
 
-    if (status === 'pending') {
-      setStatusMessage(
-        'Your application is under review. Access will be available once your dealer account has been approved.'
-      )
-    }
+      if (status === 'pending') {
+        setStatusMessage(
+          'Your application is under review. Access will be available once your dealer account has been approved.'
+        )
+      }
 
-    if (status === 'dealer-not-found') {
-      setStatusMessage(
-        'No dealer profile was found for this account. Please contact Autorell support.'
-      )
-    }
+      if (status === 'dealer-not-found') {
+        setStatusMessage(
+          'No dealer profile was found for this account. Please contact Autorell support.'
+        )
+      }
+
+      if (status === 'password-updated') {
+        setStatusMessage(
+          'Your password has been updated. You can now sign in with your new password.'
+        )
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -63,14 +73,9 @@ export default function LoginPage() {
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
-          <Image
-            src="/autorell-logo.png"
-            alt="Autorell"
-            width={190}
-            height={55}
-            priority
-            className={styles.logo}
-          />
+          <Link href="/" className={styles.logo} aria-label="Autorell home">
+            <BrandLogo />
+          </Link>
 
           <div className={styles.badge}>European dealer network</div>
 
@@ -136,29 +141,32 @@ export default function LoginPage() {
               </div>
             </label>
 
-            <label className={styles.label}>
-              Password
+            <div className={styles.passwordHeader}>
+              <span>Password</span>
+              <Link href="/forgot-password" className={styles.forgotLink}>
+                Forgot password?
+              </Link>
+            </div>
 
-              <div className={styles.inputWrapper}>
-                <svg
-                  className={styles.inputIcon}
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M7 10V8a5 5 0 0 1 10 0v2m-11 0h12v10H6V10Z" />
-                </svg>
+            <div className={styles.inputWrapper}>
+              <svg
+                className={styles.inputIcon}
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M7 10V8a5 5 0 0 1 10 0v2m-11 0h12v10H6V10Z" />
+              </svg>
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  required
-                  className={styles.input}
-                />
-              </div>
-            </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                required
+                className={styles.input}
+              />
+            </div>
 
             {statusMessage && (
               <div role="status" className={styles.statusMessage}>

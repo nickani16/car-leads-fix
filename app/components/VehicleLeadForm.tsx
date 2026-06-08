@@ -11,6 +11,7 @@ import {
   Upload,
   X,
 } from 'lucide-react'
+import PublicHeader from './PublicHeader'
 
 export type FormLocale = 'sv' | 'de' | 'en'
 
@@ -391,13 +392,15 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
   if (submitted) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#07111f] px-5">
-        <div className="w-full max-w-xl rounded-[12px] bg-white p-10 text-center shadow-2xl">
-          <CheckCircle2 className="mx-auto text-emerald-600" size={48} />
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-blue-600">{t.successLabel}</p>
-          <h1 className="mt-3 text-3xl font-bold">{t.successTitle}</h1>
-          <p className="mt-4 text-slate-500">{t.successText}</p>
-          <a href="https://autorell.com/" className="mt-7 inline-flex h-12 items-center gap-2 rounded-[5px] bg-blue-600 px-6 font-bold text-white">
+      <main className="grid min-h-screen place-items-center bg-[#f7f5ef] px-5">
+        <div className="w-full max-w-xl rounded-[24px] border border-[#e0ded7] bg-white p-10 text-center shadow-[0_25px_80px_rgba(32,33,36,.1)]">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#B4D9EF]">
+            <CheckCircle2 className="text-[#242424]" size={30} />
+          </span>
+          <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-[#60666b]">{t.successLabel}</p>
+          <h1 className="mt-3 text-3xl font-semibold text-[#202124]">{t.successTitle}</h1>
+          <p className="mt-4 text-[#68727a]">{t.successText}</p>
+          <a href="https://autorell.com/" className="mt-8 inline-flex h-13 items-center gap-2 rounded-full bg-[#242424] px-7 font-normal text-white">
             {t.home}<ArrowRight size={16} />
           </a>
         </div>
@@ -406,30 +409,23 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f2f4f7] text-slate-950">
-      <header className="bg-[#07111f] text-white">
-        <div className="mx-auto flex max-w-[1320px] items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
-          <Image src="/autorell-logo.png" alt="Autorell" width={180} height={52} priority className="h-10 w-auto" />
-          <span className="hidden text-xs font-normal tracking-wide text-slate-400 sm:block">
-            {t.secure}
-          </span>
-        </div>
-      </header>
+    <main className="min-h-screen bg-[#f7f5ef] text-[#202124]">
+      <PublicHeader locale={locale} />
 
-      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-10 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-12 lg:py-16 xl:gap-20">
+      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-12 lg:py-20 xl:gap-20">
         <aside className="lg:pt-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0b5cff]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-[#535a60]">
             {t.market}
           </p>
-          <h1 className="mt-6 max-w-xl text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#0a1628] sm:text-5xl lg:text-[58px]">
+          <h1 className="mt-6 max-w-xl text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#202124] sm:text-5xl lg:text-[58px]">
             {t.hero}
           </h1>
-          <p className="mt-7 max-w-lg text-base font-normal leading-7 text-slate-500">
+          <p className="mt-7 max-w-lg text-base font-normal leading-7 text-[#68727a]">
             {t.intro}
           </p>
 
-          <div className="mt-10 max-w-lg border-y border-slate-200 py-6">
-            <h2 className="text-base font-semibold tracking-tight text-slate-900">
+          <div className="mt-10 max-w-lg border-y border-[#dedcd5] py-7">
+            <h2 className="text-base font-medium tracking-tight text-[#202124]">
               {c.benefitTitle}
             </h2>
             <p className="mt-2 text-sm font-normal leading-6 text-slate-500">
@@ -439,9 +435,11 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
               {c.trust.map(([title]) => (
                 <span
                   key={title}
-                  className="flex items-center gap-2 text-xs font-normal text-slate-600"
+                  className="flex items-center gap-2 text-xs font-normal text-[#646c72]"
                 >
-                  <Check size={13} className="text-[#0b5cff]" />
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-[#B4D9EF]">
+                    <Check size={11} className="text-[#242424]" />
+                  </span>
                   {title}
                 </span>
               ))}
@@ -460,10 +458,10 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                 <span
                   className={`relative z-10 grid h-7 w-7 place-items-center rounded-full border text-[11px] font-semibold ${
                     step > index + 1
-                      ? 'border-[#0b5cff] bg-[#0b5cff] text-white'
+                      ? 'border-[#242424] bg-[#242424] text-white'
                       : step === index + 1
-                        ? 'border-[#0b5cff] bg-white text-[#0b5cff]'
-                        : 'border-slate-300 bg-[#f2f4f7] text-slate-400'
+                        ? 'border-[#242424] bg-[#B4D9EF] text-[#242424]'
+                        : 'border-[#d2d0ca] bg-[#f7f5ef] text-[#999b98]'
                   }`}
                 >
                   {step > index + 1 ? <Check size={13} /> : index + 1}
@@ -482,12 +480,12 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
           </div>
         </aside>
 
-        <section className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.07)]">
-          <div className="border-b border-slate-100 px-6 py-6 sm:px-10">
-            <div className="mb-3 flex justify-between text-xs font-bold text-slate-400">
+        <section className="overflow-hidden rounded-[24px] border border-[#dfddd6] bg-white shadow-[0_24px_70px_rgba(32,33,36,.08)]">
+          <div className="border-b border-[#eceae5] px-6 py-6 sm:px-10">
+            <div className="mb-3 flex justify-between text-xs font-medium text-[#8b8e8b]">
               <span>{t.step} {step} {t.of} 4</span><span>{step * 25}%</span>
             </div>
-            <div className="h-px bg-slate-200"><div className="h-px bg-[#0b5cff] transition-all" style={{ width: `${step * 25}%` }} /></div>
+            <div className="h-1 overflow-hidden rounded-full bg-[#eceae5]"><div className="h-full rounded-full bg-[#B4D9EF] transition-all" style={{ width: `${step * 25}%` }} /></div>
           </div>
 
           <form onSubmit={submit} className="p-6 sm:p-10">
@@ -537,23 +535,23 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
             {step === 4 && (
               <Section eyebrow={t.finalEyebrow} title={t.finalTitle} intro={t.finalIntro}>
-                <label className="grid min-h-44 cursor-pointer place-items-center rounded-[5px] border border-dashed border-slate-300 bg-slate-50/60 p-5 text-center transition hover:border-[#0b5cff] hover:bg-blue-50/30">
-                  <div><Upload className="mx-auto text-[#0b5cff]" /><p className="mt-3 font-semibold">{t.upload}</p><p className="mt-1 text-sm font-normal text-slate-500">{t.uploadHelp}</p><p className="mt-2 text-xs font-semibold text-[#0b5cff]">{images.length}/12 {t.photos}</p></div>
+                <label className="grid min-h-44 cursor-pointer place-items-center rounded-[18px] border border-dashed border-[#c9c8c2] bg-[#faf9f6] p-5 text-center transition hover:border-[#8dbdd8] hover:bg-[#f4f9fc]">
+                  <div><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#B4D9EF]"><Upload className="text-[#242424]" size={20} /></span><p className="mt-4 font-medium">{t.upload}</p><p className="mt-1 text-sm font-normal text-[#737b81]">{t.uploadHelp}</p><p className="mt-2 text-xs font-medium text-[#4f5960]">{images.length}/12 {t.photos}</p></div>
                   <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={addImages} />
                 </label>
-                {images.length > 0 && <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((image) => <div key={image.id} className="relative overflow-hidden rounded-[5px]"><Image src={image.url} alt="" width={240} height={160} unoptimized className="h-28 w-full object-cover" /><button type="button" onClick={() => setImages((current) => current.filter((item) => item.id !== image.id))} className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-[5px] bg-white/90"><X size={14} /></button></div>)}</div>}
+                {images.length > 0 && <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((image) => <div key={image.id} className="relative overflow-hidden rounded-[14px]"><Image src={image.url} alt="" width={240} height={160} unoptimized className="h-28 w-full object-cover" /><button type="button" onClick={() => setImages((current) => current.filter((item) => item.id !== image.id))} className="absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-white/90 shadow"><X size={14} /></button></div>)}</div>}
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">
                   <Field label={t.phone}><input type="tel" autoComplete="tel" className="form-control" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></Field>
                   <Field label={t.email}><input type="email" autoComplete="email" className="form-control" value={form.email} onChange={(e) => update('email', e.target.value)} /></Field>
                 </div>
-                <label className="mt-5 flex items-start gap-3 border-t border-slate-200 pt-5 text-sm font-normal leading-6 text-slate-600"><input type="checkbox" className="mt-1 accent-blue-600" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-semibold text-blue-600 underline" href="https://autorell.com/policies/privacy-policy" target="_blank">{t.privacyLink}</a>.</span></label>
+                <label className="mt-5 flex items-start gap-3 border-t border-[#e3e1dc] pt-5 text-sm font-normal leading-6 text-[#626b72]"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-medium text-[#242424] underline" href="https://autorell.com/policies/privacy-policy" target="_blank">{t.privacyLink}</a>.</span></label>
               </Section>
             )}
 
-            {error && <div className="mt-6 rounded-[5px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
-            <div className="mt-8 flex justify-between border-t border-slate-100 pt-6">
-              {step > 1 ? <button type="button" onClick={previous} className="inline-flex h-12 items-center gap-2 rounded-[5px] border border-slate-300 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"><ArrowLeft size={16} />{t.back}</button> : <span />}
-              {step < 4 ? <button type="button" onClick={next} className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#0b5cff] px-6 text-sm font-semibold text-white transition hover:bg-[#004bd6]">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#0b5cff] px-6 text-sm font-semibold text-white transition hover:bg-[#004bd6] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
+            {error && <div className="mt-6 rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
+            <div className="mt-8 flex justify-between border-t border-[#eceae5] pt-6">
+              {step > 1 ? <button type="button" onClick={previous} className="inline-flex h-12 items-center gap-2 rounded-full border border-[#d4d2cc] px-5 text-sm font-normal text-[#4a5055] transition hover:bg-[#f6f5f1]"><ArrowLeft size={16} />{t.back}</button> : <span />}
+              {step < 4 ? <button type="button" onClick={next} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111]">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
             </div>
             <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-normal text-slate-400">
               <LockKeyhole size={12} />
@@ -562,12 +560,22 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
           </form>
         </section>
       </div>
+
+      <footer className="border-t border-[#dedcd5] bg-[#f1f0eb]">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-5 py-7 text-xs text-[#7d817f] sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
+          <p>© {new Date().getFullYear()} Autorell AB</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <span>{t.secure}</span>
+            <span>{c.footer}</span>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
 
 function Section({ eyebrow, title, intro, children }: { eyebrow: string; title: string; intro: string; children: React.ReactNode }) {
-  return <div><p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0b5cff]">{eyebrow}</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] sm:text-[32px]">{title}</h2><p className="mb-8 mt-3 text-sm font-normal leading-6 text-slate-500">{intro}</p>{children}</div>
+  return <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#656c71]">{eyebrow}</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#202124] sm:text-[32px]">{title}</h2><p className="mb-8 mt-3 text-sm font-normal leading-6 text-[#727a80]">{intro}</p>{children}</div>
 }
 
 function Grid({ children }: { children: React.ReactNode }) {
@@ -575,7 +583,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 }
 
 function Field({ label, optional, children }: { label: string; optional?: string; children: React.ReactNode }) {
-  return <label className="block"><span className="mb-2.5 flex justify-between text-sm font-semibold text-slate-700">{label}{optional && <small className="font-normal text-slate-400">{optional}</small>}</span>{children}</label>
+  return <label className="block"><span className="mb-2.5 flex justify-between text-sm font-normal text-[#3d4348]">{label}{optional && <small className="font-normal text-[#999c9d]">{optional}</small>}</span>{children}</label>
 }
 
 function Choice({ label, value, values, choose, onChange, optionalLabel }: { label: string; value: string; values: readonly string[]; choose: string; onChange: (value: string) => void; optionalLabel?: string }) {
