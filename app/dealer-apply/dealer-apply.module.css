@@ -3,7 +3,7 @@
   min-height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 124px 24px 64px;
+  padding: 56px 24px 64px;
   color: #202124;
   background: #f7f5ef;
 }
@@ -18,13 +18,6 @@
   border-radius: 50%;
   content: '';
   pointer-events: none;
-}
-
-.topLogo {
-  position: absolute;
-  z-index: 2;
-  top: 42px;
-  left: max(24px, calc((100vw - 1180px) / 2));
 }
 
 .layout {
@@ -325,12 +318,7 @@
 
 @media (max-width: 600px) {
   .page {
-    padding: 100px 14px 28px;
-  }
-
-  .topLogo {
-    top: 30px;
-    left: 22px;
+    padding: 28px 14px;
   }
 
   .introduction {

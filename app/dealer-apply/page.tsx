@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
-import BrandLogo from '@/app/components/BrandLogo'
+import PublicHeader from '@/app/components/PublicHeader'
 import styles from './dealer-apply.module.css'
 
 const initialForm = {
@@ -78,67 +78,65 @@ export default function DealerApplyPage() {
 
   if (isSubmitted) {
     return (
-      <main className={styles.page}>
-        <Link href="/" className={styles.topLogo} aria-label="Autorell home">
-          <BrandLogo />
-        </Link>
-        <section className={styles.successCard}>
-          <div className={styles.successIcon}>&#10003;</div>
+      <>
+        <PublicHeader />
+        <main className={styles.page}>
+          <section className={styles.successCard}>
+            <div className={styles.successIcon}>&#10003;</div>
 
-          <p className={styles.eyebrow}>APPLICATION RECEIVED</p>
+            <p className={styles.eyebrow}>APPLICATION RECEIVED</p>
 
-          <h1>Thank you for applying</h1>
+            <h1>Thank you for applying</h1>
 
-          <p>
-            Your dealer application has been submitted successfully. Our team
-            will review your company information before activating your access.
-          </p>
+            <p>
+              Your dealer application has been submitted successfully. Our team
+              will review your company information before activating your access.
+            </p>
 
-          <div className={styles.notice}>
-            You will not be able to access the Dealer Portal until your
-            application has been approved.
-          </div>
+            <div className={styles.notice}>
+              You will not be able to access the Dealer Portal until your
+              application has been approved.
+            </div>
 
-          <Link href="/login" className={styles.secondaryButton}>
-            Return to Dealer Login
-          </Link>
-        </section>
-      </main>
+            <Link href="/login" className={styles.secondaryButton}>
+              Return to Dealer Login
+            </Link>
+          </section>
+        </main>
+      </>
     )
   }
 
   return (
-    <main className={styles.page}>
-      <Link href="/" className={styles.topLogo} aria-label="Autorell home">
-        <BrandLogo />
-      </Link>
+    <>
+      <PublicHeader />
+      <main className={styles.page}>
+        <section className={styles.layout}>
+          <div className={styles.introduction}>
+            <p className={styles.eyebrow}>DEALER NETWORK</p>
 
-      <section className={styles.layout}>
-        <div className={styles.introduction}>
-          <p className={styles.eyebrow}>DEALER NETWORK</p>
+            <h1>Join the Autorell dealer network.</h1>
 
-          <h1>Join the Autorell dealer network.</h1>
+            <p className={styles.introText}>
+              Apply for access to verified vehicle opportunities across Europe.
+              Every application is reviewed before access is granted.
+            </p>
 
-          <p className={styles.introText}>
-            Apply for access to verified vehicle opportunities across Europe.
-            Every application is reviewed before access is granted.
-          </p>
-
-          <div className={styles.featureList}>
-            <p><span>&#10003;</span> Verified vehicle opportunities</p>
-            <p><span>&#10003;</span> Transparent 24-hour bidding</p>
-            <p><span>&#10003;</span> Secure professional dealer access</p>
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <p className={styles.eyebrow}>DEALER APPLICATION</p>
-            <h2>Create your dealer account</h2>
-            <p>Enter your company details. All applications are reviewed.</p>
+            <div className={styles.featureList}>
+              <p><span>&#10003;</span> Verified vehicle opportunities</p>
+              <p><span>&#10003;</span> Transparent 24-hour bidding</p>
+              <p><span>&#10003;</span> Secure professional dealer access</p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <p className={styles.eyebrow}>DEALER APPLICATION</p>
+              <h2>Create your dealer account</h2>
+              <p>Enter your company details. All applications are reviewed.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.twoColumns}>
               <label>
                 Company name
@@ -341,9 +339,10 @@ export default function DealerApplyPage() {
             <p className={styles.loginLink}>
               Already approved? <Link href="/login">Sign in here</Link>
             </p>
-          </form>
-        </div>
-      </section>
-    </main>
+            </form>
+          </div>
+        </section>
+      </main>
+    </>
   )
 }
