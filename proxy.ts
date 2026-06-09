@@ -8,6 +8,14 @@ const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.se': 'www.autorell.se',
 }
 
+const MARKET_HOSTS = {
+  sv: 'www.autorell.se',
+  de: 'www.autorell.de',
+  en: 'www.autorell.com',
+} as const
+
+type Market = keyof typeof MARKET_HOSTS
+
 function getHostname(request: NextRequest) {
   const forwardedHost = request.headers.get('x-forwarded-host')
   const host = forwardedHost || request.headers.get('host') || ''
@@ -28,9 +36,38 @@ function redirectToHost(
   return NextResponse.redirect(url, status)
 }
 
+function redirectToMarket(request: NextRequest, market: Market) {
+  const url = request.nextUrl.clone()
+  url.protocol = 'https:'
+  url.hostname = MARKET_HOSTS[market]
+  url.port = ''
+  url.searchParams.delete('market')
+
+  const response = NextResponse.redirect(url, 307)
+  response.cookies.set('autorell-market', market, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+    sameSite: 'lax',
+    secure: true,
+  })
+
+  return response
+}
+
 export function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
+  const selectedMarket = request.nextUrl.searchParams.get('market')
+
+  if (
+    methodCanRedirect &&
+    (selectedMarket === 'sv' ||
+      selectedMarket === 'de' ||
+      selectedMarket === 'en')
+  ) {
+    return redirectToMarket(request, selectedMarket)
+  }
 
   if (methodCanRedirect && (hostname === 'autorell.eu' || hostname === 'www.autorell.eu')) {
     return redirectToHost(request, 'www.autorell.com', 308)
@@ -53,6 +90,16 @@ export function proxy(request: NextRequest) {
   }
 
   if (hostname === 'www.autorell.com') {
+    const preferredMarket = request.cookies.get('autorell-market')?.value
+
+    if (preferredMarket === 'sv' || preferredMarket === 'de') {
+      return redirectToHost(request, MARKET_HOSTS[preferredMarket], 307)
+    }
+
+    if (preferredMarket === 'en') {
+      return NextResponse.rewrite(new URL('/eu', request.url))
+    }
+
     const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
 
     if (country === 'SE') {

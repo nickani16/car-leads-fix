@@ -35,21 +35,21 @@ const markets: Array<{
     code: 'SE',
     label: 'Svenska',
     description: 'Sverige',
-    href: 'https://www.autorell.se/',
+    href: 'https://www.autorell.se/?market=sv',
   },
   {
     locale: 'de',
     code: 'DE',
     label: 'Deutsch',
     description: 'Deutschland',
-    href: 'https://www.autorell.de/',
+    href: 'https://www.autorell.de/?market=de',
   },
   {
     locale: 'en',
     code: 'EU',
     label: 'English',
     description: 'Europe',
-    href: 'https://www.autorell.com/',
+    href: 'https://www.autorell.com/?market=en',
   },
 ]
 
@@ -538,12 +538,12 @@ export default function PublicHeader({
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
                 Välj marknad
               </p>
-              <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {markets.map((market) => (
                   <a
                     key={market.locale}
                     href={market.href}
-                    className={`flex min-h-20 flex-col items-center justify-center gap-2 rounded-[12px] border text-xs transition ${
+                    className={`flex min-h-14 items-center gap-3 rounded-[12px] border px-3.5 text-sm transition ${
                       market.locale === activeLocale
                         ? 'border-[#8ebdd8] bg-[#eaf5fb] text-[#202124]'
                         : 'border-[#dcdad3] bg-white text-[#62686c]'
@@ -553,21 +553,29 @@ export default function PublicHeader({
                       locale={market.locale}
                       className="h-[20px] w-[30px]"
                     />
-                    <span className="font-medium">{market.code}</span>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block font-medium leading-4">
+                        {market.label}
+                      </strong>
+                      <span className="mt-0.5 block text-[10px] uppercase tracking-[0.12em] text-[#7b878c]">
+                        {market.code}
+                      </span>
+                    </span>
+                    {market.locale === activeLocale && (
+                      <span
+                        className="h-2 w-2 rounded-full bg-[#5f9fbe]"
+                        aria-label="Aktiv marknad"
+                      />
+                    )}
                   </a>
                 ))}
               </div>
 
-              <SocialIcons />
-              <div className="mt-5 flex items-center justify-between text-sm text-[#62686c]">
-                <span className="flex items-center gap-2">
-                  <MarketFlag
-                    locale={language.locale}
-                    className="h-[14px] w-[21px]"
-                  />
-                  {language.label}
+              <div className="mt-5 flex items-center justify-between border-t border-[#dcdad3] pt-5">
+                <SocialIcons />
+                <span className="text-sm font-medium text-[#62686c]">
+                  Autorell AB
                 </span>
-                <span>Autorell Europe</span>
               </div>
             </div>
           </div>
