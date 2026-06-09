@@ -95,7 +95,8 @@ label {
 }
 
 .testimonial-track {
-  animation: testimonial-scroll 34s linear infinite;
+  animation: testimonial-scroll 42s linear infinite;
+  will-change: transform;
 }
 
 .testimonial-track:hover {

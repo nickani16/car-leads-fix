@@ -4,16 +4,23 @@ import Link from 'next/link'
 import {
   ArrowRight,
   BadgeCheck,
+  Building2,
   CarFront,
   ChevronRight,
+  CircleDollarSign,
   CircleCheck,
   Clock3,
+  Gavel,
   Globe2,
+  Handshake,
   Headphones,
   MonitorSmartphone,
+  ScanSearch,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   Truck,
+  UserRound,
   Zap,
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
@@ -75,11 +82,14 @@ export default function HomePage() {
                 <ChevronRight className="h-5 w-5" />
               </a>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-[#435a70] sm:mt-10 sm:flex sm:flex-wrap sm:gap-x-7 sm:text-sm">
+            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-[16px] border border-white/80 bg-white/90 px-4 py-3.5 text-xs text-[#334c5d] shadow-[0_12px_35px_rgba(32,33,36,.1)] backdrop-blur-md sm:mt-10 sm:flex sm:w-fit sm:flex-wrap sm:gap-x-7 sm:rounded-full sm:px-5 sm:py-3 sm:text-sm">
               {['Kostnadsfritt', 'Ingen bindning', 'Tar cirka 3 minuter'].map(
                 (item) => (
-                  <span key={item} className="flex items-center gap-2">
-                    <CircleCheck className="h-4 w-4 text-[#242424]" />
+                  <span
+                    key={item}
+                    className="flex items-center gap-2 last:col-span-2 sm:last:col-span-1"
+                  >
+                    <CircleCheck className="h-4 w-4 shrink-0 text-[#4f8ca8]" />
                     {item}
                   </span>
                 ),
@@ -213,7 +223,7 @@ export default function HomePage() {
 
       <section
         id="varfor-autorell"
-        className="relative overflow-hidden bg-[#f5f1e8] py-16 sm:py-28"
+        className="relative overflow-hidden bg-[#f5f1e8] pb-16 pt-16 sm:pb-20 sm:pt-24"
       >
         <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
         <div className="absolute -right-24 top-10 h-72 w-72 rounded-full border-[52px] border-white/45" />
@@ -319,33 +329,131 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid border-b border-[#dce5ec] py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16 lg:py-20">
-            <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7b8c9b]">
-                Autorell Dealer Network
-              </p>
-              <h3 className="mt-4 text-[30px] leading-[1.12] tracking-[-0.04em] text-[#202124] sm:mt-5 sm:text-4xl">
-                Professionell bilhandel, samlad på en plats.
+          <div className="mt-14 overflow-hidden rounded-[26px] border border-white/80 bg-white/70 shadow-[0_28px_85px_rgba(32,33,36,.08)] backdrop-blur-sm sm:mt-18 sm:rounded-[32px]">
+            <div className="border-b border-[#dfe6e5] px-5 py-9 text-center sm:px-10 sm:py-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#d5e2e5] bg-[#f4fafc] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4f7484]">
+                <Gavel className="h-3.5 w-3.5" />
+                Marketplace bids
+              </span>
+              <h3 className="mx-auto mt-5 max-w-4xl text-[32px] leading-[1.06] tracking-[-0.045em] text-[#202124] sm:text-[46px]">
+                En bättre affär börjar när båda sidor får rätt förutsättningar.
               </h3>
-              <p className="mt-4 max-w-2xl leading-7 text-[#607286]">
-                För handlare erbjuder Autorell ett fokuserat flöde av fordon
-                med information som gör det enklare att bedöma och agera.
+              <p className="mx-auto mt-4 max-w-2xl leading-7 text-[#64757b]">
+                Autorell samlar information, efterfrågan och bud i ett tydligt
+                flöde. Mindre friktion för säljaren, bättre beslutsunderlag för
+                handlaren.
               </p>
             </div>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0">
-              <Link
-                href="/dealer-apply"
-                className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 font-normal text-white transition hover:bg-[#111111]"
-              >
-                För bilhandlare
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex min-h-13 items-center justify-center px-5 font-normal text-[#242424]"
-              >
-                Logga in
-              </Link>
+
+            <div className="grid lg:grid-cols-[1fr_.72fr_1fr]">
+              <div className="p-6 sm:p-9 lg:p-10">
+                <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#ddecf3] text-[#315f73]">
+                  <UserRound className="h-5 w-5" />
+                </span>
+                <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#718086]">
+                  För dig som säljer
+                </p>
+                <h4 className="mt-3 text-2xl tracking-[-0.035em] text-[#202124]">
+                  Räckvidd utan mer arbete.
+                </h4>
+                <div className="mt-6 space-y-4">
+                  {[
+                    {
+                      icon: ScanSearch,
+                      text: 'En fordonsprofil når flera relevanta köpare.',
+                    },
+                    {
+                      icon: CircleDollarSign,
+                      text: 'Marknadens bud gör värdet tydligare.',
+                    },
+                    {
+                      icon: ShieldCheck,
+                      text: 'Du väljer själv om och när du vill sälja.',
+                    },
+                  ].map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex gap-3">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#5f96ad]" />
+                      <p className="text-sm leading-6 text-[#5c6d73]">{text}</p>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/salj-bil"
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#242424]"
+                >
+                  Värdera din bil
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-y border-[#dfe6e5] bg-[#22272a] p-7 text-white lg:min-h-full lg:border-x lg:border-y-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(180,217,239,.18),transparent_47%)]" />
+                <div className="relative w-full max-w-[245px]">
+                  <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/10 bg-white/[.07] shadow-[0_20px_55px_rgba(0,0,0,.2)]">
+                    <Handshake className="h-8 w-8 text-[#b4d9ef]" />
+                  </div>
+                  <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[.06] p-5 text-center backdrop-blur-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                      Autorell matchning
+                    </p>
+                    <p className="mt-3 text-xl tracking-[-0.03em]">
+                      Ett fordon.
+                      <span className="block">Flera relevanta bud.</span>
+                    </p>
+                    <div className="mt-5 flex items-end justify-center gap-1">
+                      {[35, 54, 43, 72, 61, 88].map((height, index) => (
+                        <span
+                          key={height}
+                          className={`w-4 rounded-t-sm ${
+                            index === 5 ? 'bg-[#b4d9ef]' : 'bg-white/18'
+                          }`}
+                          style={{ height }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 sm:p-9 lg:p-10">
+                <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#eee8dc] text-[#665d4e]">
+                  <Building2 className="h-5 w-5" />
+                </span>
+                <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#718086]">
+                  För professionella handlare
+                </p>
+                <h4 className="mt-3 text-2xl tracking-[-0.035em] text-[#202124]">
+                  Rätt bilar. Tydligare beslut.
+                </h4>
+                <div className="mt-6 space-y-4">
+                  {[
+                    {
+                      icon: BadgeCheck,
+                      text: 'Strukturerade fordonsuppgifter inför varje bud.',
+                    },
+                    {
+                      icon: TrendingUp,
+                      text: 'Ett fokuserat flöde utifrån verklig efterfrågan.',
+                    },
+                    {
+                      icon: Zap,
+                      text: 'Snabbare väg från bedömning till affär.',
+                    },
+                  ].map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex gap-3">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#8a7b61]" />
+                      <p className="text-sm leading-6 text-[#5c6d73]">{text}</p>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/dealer-apply"
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#242424]"
+                >
+                  Bli en del av nätverket
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
