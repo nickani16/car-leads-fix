@@ -3,9 +3,12 @@
 import Link from 'next/link'
 import {
   ArrowRight,
+  Building2,
   ChevronDown,
+  Headphones,
   LogIn,
   Menu,
+  ShieldCheck,
   Store,
   X,
 } from 'lucide-react'
@@ -166,36 +169,130 @@ export default function PublicHeader({
               <BrandLogo />
             </Link>
 
-            <nav className="hidden items-center gap-7 lg:flex xl:gap-9">
-              {content.links.map(([href, label]) => (
+            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
+              {content.links.slice(0, 2).map(([href, label], index) => (
                 <Link
                   key={href}
                   href={href}
-                  className="relative py-3 text-sm font-normal text-[#303030] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#B4D9EF] after:transition-transform hover:text-[#111111] hover:after:scale-x-100"
+                  className="group flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
                 >
+                  <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
+                    0{index + 1}
+                  </span>
                   {label}
                 </Link>
               ))}
+
+              <div className="group relative">
+                <button
+                  type="button"
+                  className="flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:px-5"
+                >
+                  <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
+                    03
+                  </span>
+                  {content.dealerLabel}
+                  <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
+                </button>
+
+                <div className="pointer-events-none absolute left-1/2 top-full w-[620px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <div className="overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
+                    <div className="grid grid-cols-[1.05fr_.95fr]">
+                      <div className="bg-[#eef6fa] p-7">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424]">
+                          <Building2 className="h-5 w-5" />
+                        </div>
+                        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.18em] text-[#68808e]">
+                          Autorell Dealer Network
+                        </p>
+                        <h3 className="mt-2 max-w-[260px] text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124]">
+                          Better vehicles. Clearer decisions.
+                        </h3>
+                        <p className="mt-3 max-w-[290px] text-sm leading-6 text-[#5c707b]">
+                          Verified vehicle profiles and efficient European
+                          bidding for professional buyers.
+                        </p>
+                        <Link
+                          href="/dealer-apply"
+                          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#202124]"
+                        >
+                          {content.partner}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+
+                      <div className="p-5">
+                        <Link
+                          href="/login"
+                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
+                        >
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
+                            <LogIn className="h-4.5 w-4.5" />
+                          </span>
+                          <span>
+                            <strong className="block text-sm font-medium text-[#202124]">
+                              {content.login}
+                            </strong>
+                            <span className="mt-1 block text-xs text-[#78858b]">
+                              Access auctions and your account
+                            </span>
+                          </span>
+                        </Link>
+                        <Link
+                          href="/dealer/legal"
+                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
+                        >
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
+                            <ShieldCheck className="h-4.5 w-4.5" />
+                          </span>
+                          <span>
+                            <strong className="block text-sm font-medium text-[#202124]">
+                              Dealer terms
+                            </strong>
+                            <span className="mt-1 block text-xs text-[#78858b]">
+                              Bidding, fees and platform rules
+                            </span>
+                          </span>
+                        </Link>
+                        <Link
+                          href="/kontakt"
+                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
+                        >
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
+                            <Headphones className="h-4.5 w-4.5" />
+                          </span>
+                          <span>
+                            <strong className="block text-sm font-medium text-[#202124]">
+                              Personal support
+                            </strong>
+                            <span className="mt-1 block text-xs text-[#78858b]">
+                              Speak with the Autorell team
+                            </span>
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <Link
-                href="/dealer-apply"
-                className="relative py-3 text-sm font-normal text-[#303030] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#B4D9EF] after:transition-transform hover:text-[#111111] hover:after:scale-x-100"
+                href={content.links[2][0]}
+                className="flex min-h-10 items-center rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
               >
-                {content.partner}
+                {content.links[2][1]}
               </Link>
             </nav>
 
-            <div className="hidden items-center gap-3 lg:flex">
-              <Link
-                href="/login"
-                className="px-3 py-3 text-sm font-normal text-[#242424]"
-              >
-                {content.login}
-              </Link>
+            <div className="hidden items-center gap-3 xl:flex">
               <Link
                 href={content.ctaHref}
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#B4D9EF] px-6 text-sm font-normal text-[#242424] shadow-[0_8px_22px_rgba(94,154,190,.2)] transition hover:-translate-y-0.5 hover:bg-[#C9E6F6]"
+                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#242424] pl-6 pr-2 text-sm font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
                 {content.cta}
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
+                  <ArrowRight className="h-4 w-4" />
+                </span>
               </Link>
             </div>
 
@@ -204,7 +301,7 @@ export default function PublicHeader({
               onClick={() => setOpen((value) => !value)}
               aria-label={open ? 'Stäng meny' : 'Öppna meny'}
               aria-expanded={open}
-              className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition lg:hidden ${
+              className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition xl:hidden ${
                 open
                   ? 'border-[#242424] bg-[#242424] text-white'
                   : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
@@ -217,7 +314,7 @@ export default function PublicHeader({
         </header>
 
         <div
-          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] lg:hidden ${
+          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] xl:hidden ${
             open
               ? 'pointer-events-auto translate-y-0 opacity-100'
               : 'pointer-events-none -translate-y-3 opacity-0'
