@@ -208,20 +208,20 @@ export default function PublicHeader({
                   <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
                 </button>
 
-                <div className="pointer-events-none absolute left-1/2 top-full w-[620px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                <div className="pointer-events-none absolute left-1/2 top-full w-[760px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[820px]">
                   <div className="overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
-                    <div className="grid grid-cols-[1.05fr_.95fr]">
-                      <div className="bg-[#eef6fa] p-7">
+                    <div className="grid grid-cols-[1.12fr_.88fr]">
+                      <div className="min-w-0 bg-[#eef6fa] p-7 2xl:p-8">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424]">
                           <Building2 className="h-5 w-5" />
                         </div>
                         <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.18em] text-[#68808e]">
                           Autorell Dealer Network
                         </p>
-                        <h3 className="mt-2 max-w-[260px] text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124]">
+                        <h3 className="mt-2 max-w-[360px] whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124] 2xl:text-[27px]">
                           Better vehicles. Clearer decisions.
                         </h3>
-                        <p className="mt-3 max-w-[290px] text-sm leading-6 text-[#5c707b]">
+                        <p className="mt-3 max-w-[390px] whitespace-normal text-sm leading-6 text-[#5c707b]">
                           Verified vehicle profiles and efficient European
                           bidding for professional buyers.
                         </p>
@@ -234,7 +234,7 @@ export default function PublicHeader({
                         </Link>
                       </div>
 
-                      <div className="p-5">
+                      <div className="min-w-0 p-5">
                         <Link
                           href="/login"
                           className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
@@ -242,11 +242,11 @@ export default function PublicHeader({
                           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
                             <LogIn className="h-4.5 w-4.5" />
                           </span>
-                          <span>
+                          <span className="min-w-0">
                             <strong className="block text-sm font-medium text-[#202124]">
                               {content.login}
                             </strong>
-                            <span className="mt-1 block text-xs text-[#78858b]">
+                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
                               Access auctions and your account
                             </span>
                           </span>
@@ -258,11 +258,11 @@ export default function PublicHeader({
                           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
                             <ShieldCheck className="h-4.5 w-4.5" />
                           </span>
-                          <span>
+                          <span className="min-w-0">
                             <strong className="block text-sm font-medium text-[#202124]">
                               Dealer terms
                             </strong>
-                            <span className="mt-1 block text-xs text-[#78858b]">
+                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
                               Bidding, fees and platform rules
                             </span>
                           </span>
@@ -274,11 +274,11 @@ export default function PublicHeader({
                           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
                             <Headphones className="h-4.5 w-4.5" />
                           </span>
-                          <span>
+                          <span className="min-w-0">
                             <strong className="block text-sm font-medium text-[#202124]">
                               Personal support
                             </strong>
-                            <span className="mt-1 block text-xs text-[#78858b]">
+                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
                               Speak with the Autorell team
                             </span>
                           </span>
