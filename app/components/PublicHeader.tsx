@@ -76,6 +76,7 @@ export default function PublicHeader({
           links: [
             ['/de', 'Auto verkaufen'],
             ['/#sa-fungerar-det', 'So funktioniert es'],
+            ['/foretag', 'Unternehmen'],
             ['/vanliga-fragor', 'Häufige Fragen'],
             ['/kontakt', 'Kontakt'],
           ],
@@ -93,6 +94,7 @@ export default function PublicHeader({
             links: [
               ['/eu', 'Sell your car'],
               ['/#sa-fungerar-det', 'How it works'],
+              ['/foretag', 'Business'],
               ['/vanliga-fragor', 'FAQ'],
               ['/kontakt', 'Contact'],
             ],
@@ -109,6 +111,7 @@ export default function PublicHeader({
             links: [
               ['/salj-bil', 'Sälj din bil'],
               ['/#sa-fungerar-det', 'Så fungerar det'],
+              ['/foretag', 'Företag'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakt'],
             ],
@@ -183,13 +186,23 @@ export default function PublicHeader({
                 </Link>
               ))}
 
+              <Link
+                href={content.links[2][0]}
+                className="group flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
+              >
+                <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
+                  03
+                </span>
+                {content.links[2][1]}
+              </Link>
+
               <div className="group relative">
                 <button
                   type="button"
                   className="flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
-                    03
+                    04
                   </span>
                   {content.dealerLabel}
                   <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
@@ -277,10 +290,10 @@ export default function PublicHeader({
               </div>
 
               <Link
-                href={content.links[2][0]}
+                href={content.links[3][0]}
                 className="flex min-h-10 items-center rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
               >
-                {content.links[2][1]}
+                {content.links[3][1]}
               </Link>
             </nav>
 
