@@ -159,6 +159,56 @@ select:-webkit-autofill {
   box-shadow: 0 24px 70px rgba(32, 33, 36, 0.08);
 }
 
+@keyframes business-orbit {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, 12px, 0) rotate(4deg);
+  }
+}
+
+@keyframes business-orbit-reverse {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-8px, -10px, 0) rotate(-4deg);
+  }
+}
+
+.business-orbit {
+  animation: business-orbit 12s ease-in-out infinite;
+}
+
+.business-orbit-reverse {
+  animation: business-orbit-reverse 15s ease-in-out infinite;
+}
+
+.business-card {
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+
+.business-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(180, 217, 239, 0.9);
+  box-shadow: 0 24px 65px rgba(32, 33, 36, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .business-orbit,
+  .business-orbit-reverse {
+    animation: none;
+  }
+
+  .business-card {
+    transition: none;
+  }
+}
+
 .contract-watermark {
   position: absolute;
   right: -34px;

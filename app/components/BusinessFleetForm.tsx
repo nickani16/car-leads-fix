@@ -50,14 +50,14 @@ export default function BusinessFleetForm() {
 
   if (sent) {
     return (
-      <div className="flex min-h-[610px] flex-col items-center justify-center bg-white p-8 text-center sm:p-12">
+      <div className="flex min-h-[520px] min-w-0 flex-col items-center justify-center bg-white p-6 text-center sm:min-h-[610px] sm:p-12">
         <span className="grid h-16 w-16 place-items-center rounded-full bg-[#B4D9EF]">
           <CheckCircle2 className="h-7 w-7" />
         </span>
         <p className="mt-8 text-xs font-medium uppercase tracking-[0.18em] text-[#71818a]">
           Förfrågan mottagen
         </p>
-        <h2 className="mt-3 max-w-md text-3xl tracking-[-0.04em]">
+        <h2 className="mt-3 max-w-md break-words text-[28px] tracking-[-0.04em] sm:text-3xl">
           Vi återkommer med ett första upplägg.
         </h2>
         <p className="mt-4 max-w-md leading-7 text-[#65737b]">
@@ -69,12 +69,12 @@ export default function BusinessFleetForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-9 lg:p-10">
+    <form onSubmit={handleSubmit} className="min-w-0 bg-white/95 p-5 backdrop-blur sm:p-9 lg:p-10">
       <div className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#71818a]">
           Inled en dialog
         </p>
-        <h2 className="mt-3 text-3xl tracking-[-0.04em] text-[#202124]">
+        <h2 className="mt-3 break-words text-[27px] leading-tight tracking-[-0.04em] text-[#202124] sm:text-3xl">
           Berätta om er fordonsportfölj.
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-6 text-[#65737b]">
@@ -83,7 +83,7 @@ export default function BusinessFleetForm() {
         </p>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-5 sm:grid-cols-2">
         <Field label="Företagsnamn" name="company" required />
         <Field
           label="Kontaktperson"
@@ -121,7 +121,7 @@ export default function BusinessFleetForm() {
             'Annat',
           ]}
         />
-        <label className="block sm:col-span-2">
+        <label className="block min-w-0 sm:col-span-2">
           <span className="mb-2 block text-sm text-[#3d4247]">
             Önskad tidsplan
           </span>
@@ -136,7 +136,7 @@ export default function BusinessFleetForm() {
         </label>
       </div>
 
-      <label className="mt-5 block">
+      <label className="mt-5 block min-w-0">
         <span className="mb-2 block text-sm text-[#3d4247]">
           Övrig information
         </span>
@@ -148,14 +148,14 @@ export default function BusinessFleetForm() {
         />
       </label>
 
-      <label className="mt-5 flex items-start gap-3 text-xs leading-5 text-[#72777c]">
+      <label className="mt-5 flex min-w-0 items-start gap-3 text-xs leading-5 text-[#72777c]">
         <input
           type="checkbox"
           name="privacy"
           required
           className="mt-1 h-4 w-4 accent-[#242424]"
         />
-        <span>
+        <span className="min-w-0 break-words">
           Jag har läst{' '}
           <Link href="/integritet" target="_blank" className="underline">
             integritetspolicyn
@@ -196,7 +196,7 @@ function Field({
   required?: boolean
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-sm text-[#3d4247]">{label}</span>
       <input
         name={name}
@@ -219,7 +219,7 @@ function Select({
   options: string[]
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-sm text-[#3d4247]">{label}</span>
       <select name={name} required className="contact-control">
         <option value="">Välj ett alternativ</option>
