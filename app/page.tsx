@@ -102,21 +102,68 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="sa-fungerar-det" className="bg-[#f8f5ee] py-16 sm:py-32">
-        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="max-w-2xl">
-            <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#242424]">
-              Så fungerar Autorell
-            </span>
-            <h2 className="mt-4 text-[34px] leading-[1.08] tracking-[-0.045em] text-[#202124] sm:text-5xl">
-              Från bil till affär i tre enkla steg
-            </h2>
-            <p className="mt-4 text-base leading-7 text-[#5d6c7c] sm:mt-5 sm:text-lg sm:leading-8">
-              Vi har gjort processen enkel för dig och samtidigt byggt ett
-              bättre beslutsunderlag för handlarna.
-            </p>
+      <section
+        id="sa-fungerar-det"
+        className="relative overflow-hidden bg-[#eef5f7] py-16 sm:py-28"
+      >
+        <div className="absolute -left-28 top-16 h-72 w-72 rounded-full border-[55px] border-white/45" />
+        <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-[#dcecf3]/70 blur-3xl" />
+
+        <div className="relative mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+            <div className="max-w-3xl">
+              <span className="inline-flex items-center rounded-full border border-[#c8dce5] bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#496878]">
+                Så fungerar Autorell
+              </span>
+              <h2 className="mt-6 text-[38px] leading-[1.04] tracking-[-0.052em] text-[#202124] sm:text-5xl lg:text-[58px]">
+                Från första uppgift till rätt affär.
+              </h2>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#5b6e77] sm:text-lg sm:leading-8">
+                En genomtänkt process som gör det enkelt för dig att sälja och
+                enkelt för rätt handlare att lämna ett seriöst erbjudande.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/80 bg-white/65 shadow-[0_18px_55px_rgba(32,33,36,.06)] backdrop-blur-sm">
+              {[
+                ['3 min', 'att komma igång'],
+                ['24 h', 'aktiv marknad'],
+                ['0 kr', 'att använda'],
+              ].map(([value, label]) => (
+                <div
+                  key={label}
+                  className="border-r border-[#dce5e8] px-3 py-5 text-center last:border-r-0 sm:px-5"
+                >
+                  <strong className="block text-xl tracking-[-0.035em] text-[#202124] sm:text-2xl">
+                    {value}
+                  </strong>
+                  <span className="mt-1 block text-[10px] leading-4 text-[#718087] sm:text-xs">
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+
           <ProcessSteps />
+
+          <div className="mt-10 flex flex-col items-start justify-between gap-6 rounded-[20px] bg-[#242424] px-6 py-7 text-white shadow-[0_24px_65px_rgba(32,33,36,.16)] sm:flex-row sm:items-center sm:px-9">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                Redo när du är
+              </p>
+              <p className="mt-2 text-xl tracking-[-0.025em] sm:text-2xl">
+                Börja med bilen. Vi tar hand om resten.
+              </p>
+            </div>
+            <Link
+              href="/salj-bil"
+              className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#b4d9ef] px-6 text-sm font-medium text-[#242424] transition hover:-translate-y-0.5 hover:bg-[#c9e6f6] sm:w-auto"
+            >
+              Värdera din bil
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
