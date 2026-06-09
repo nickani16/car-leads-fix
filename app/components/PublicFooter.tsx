@@ -48,6 +48,7 @@ export default function PublicFooter() {
             links={[
               ['Värdera din bil', '/salj-bil'],
               ['Så fungerar det', '/#sa-fungerar-det'],
+              ['Om Autorell', '/om-oss'],
               ['Företagsförsäljning', '/foretag'],
               ['Vanliga frågor', '/vanliga-fragor'],
             ]}

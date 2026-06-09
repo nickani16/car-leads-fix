@@ -53,7 +53,7 @@ export default function HomePage() {
         <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
 
         <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
-          <div className="max-w-[720px]">
+          <div className="w-full min-w-0 max-w-[720px]">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8d6cf] bg-white/82 px-3.5 py-2 text-xs text-[#242424] shadow-[0_8px_25px_rgba(32,33,36,.07)] backdrop-blur-md sm:mb-7 sm:px-4 sm:text-sm">
               <Sparkles className="h-4 w-4 text-[#242424]" />
               En smartare väg till nästa bilaffär
@@ -82,14 +82,14 @@ export default function HomePage() {
                 <ChevronRight className="h-5 w-5" />
               </a>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-[16px] border border-white/80 bg-white/90 px-4 py-3.5 text-xs text-[#334c5d] shadow-[0_12px_35px_rgba(32,33,36,.1)] backdrop-blur-md sm:mt-10 sm:flex sm:w-fit sm:flex-wrap sm:gap-x-7 sm:rounded-full sm:px-5 sm:py-3 sm:text-sm">
+            <div className="mt-6 flex max-w-[390px] flex-wrap gap-2 text-xs sm:mt-10 sm:max-w-none sm:gap-2.5 sm:text-sm">
               {['Kostnadsfritt', 'Ingen bindning', 'Tar cirka 3 minuter'].map(
                 (item) => (
                   <span
                     key={item}
-                    className="flex items-center gap-2 last:col-span-2 sm:last:col-span-1"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 bg-[#202124]/80 px-3.5 text-white shadow-[0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-md sm:border-[#d9e1e4] sm:bg-white/88 sm:px-4 sm:text-[#334c5d] sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
                   >
-                    <CircleCheck className="h-4 w-4 shrink-0 text-[#4f8ca8]" />
+                    <CircleCheck className="h-4 w-4 shrink-0 text-[#b4d9ef] sm:text-[#4f8ca8]" />
                     {item}
                   </span>
                 ),

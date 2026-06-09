@@ -217,7 +217,7 @@ export default function PublicHeader({
             links: [
               ['/salj-bil', 'Sälj din bil'],
               ['/#sa-fungerar-det', 'Så fungerar det'],
-              ['/foretag', 'Företag'],
+              ['/om-oss', 'Om oss'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakt'],
             ],

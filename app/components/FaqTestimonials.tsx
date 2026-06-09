@@ -63,6 +63,24 @@ const testimonials = [
     name: 'Kundomdöme',
     detail: 'Bil såld via Autorell',
   },
+  {
+    quote:
+      'Jag fick en tydlig bild av marknadens intresse och kunde ta beslutet i min egen takt.',
+    name: 'Kundomdöme',
+    detail: 'Bud mottagna via Autorell',
+  },
+  {
+    quote:
+      'All information fanns samlad och jag slapp lägga tid på flera separata kontakter.',
+    name: 'Kundomdöme',
+    detail: 'Bil presenterad via Autorell',
+  },
+  {
+    quote:
+      'Det bästa var kombinationen av en digital process och möjligheten att få personlig hjälp.',
+    name: 'Kundomdöme',
+    detail: 'Bilägare hos Autorell',
+  },
 ]
 
 const tickerReviews = [
