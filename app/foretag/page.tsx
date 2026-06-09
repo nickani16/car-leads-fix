@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import BusinessFleetForm from '../components/BusinessFleetForm'
+import PublicBreadcrumbs from '../components/PublicBreadcrumbs'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
@@ -80,49 +81,56 @@ export default function BusinessPage() {
         <div className="business-orbit-reverse absolute bottom-[-120px] right-[-100px] h-[270px] w-[270px] rounded-full border-[38px] border-[#B4D9EF]/55 sm:bottom-[-180px] sm:right-[34%] sm:h-[380px] sm:w-[380px] sm:border-[52px]" />
         <div className="absolute left-[12%] top-20 h-24 w-24 rounded-full bg-white/65 blur-2xl sm:h-40 sm:w-40" />
 
-        <div className="relative mx-auto flex min-h-[820px] max-w-[1440px] items-start px-5 pb-[360px] pt-16 sm:min-h-[900px] sm:px-8 sm:pb-[430px] sm:pt-24 lg:min-h-[760px] lg:items-center lg:px-12 lg:py-20 xl:px-16">
-          <div className="min-w-0 max-w-full lg:max-w-[690px]">
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#cddde5] bg-white/75 px-3.5 py-2 text-[11px] font-medium text-[#465c68] shadow-[0_10px_30px_rgba(60,84,96,.07)] backdrop-blur sm:px-4 sm:text-xs">
-              <Building2 className="h-4 w-4" />
-              Autorell för företag
-            </div>
-            <h1 className="mt-6 max-w-full text-[39px] leading-[1.01] tracking-[-0.052em] [overflow-wrap:anywhere] min-[390px]:text-[43px] sm:mt-7 sm:text-6xl lg:text-[76px]">
-              En strukturerad väg ut ur fordonsinnehavet.
-            </h1>
-            <p className="mt-5 max-w-2xl text-[16px] leading-7 text-[#526b78] sm:mt-7 sm:text-xl sm:leading-8">
-              För företag, leasingaktörer och vagnparksägare som vill avyttra
-              enstaka bilar eller hela flottor med större räckvidd, tydlig
-              kontroll och en ansvarig partner genom hela affären.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:mt-10 sm:flex-row">
-              <a
-                href="#foretagskontakt"
-                className="group inline-flex min-h-14 w-full items-center justify-between gap-3 rounded-[16px] bg-[#242424] pl-6 pr-3 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111] sm:w-auto sm:justify-center sm:rounded-full sm:px-7"
-              >
-                Diskutera er fordonsflotta
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#242424] sm:hidden">
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-                <ArrowRight className="hidden h-4 w-4 sm:block" />
-              </a>
-              <a
-                href="#process"
-                className="inline-flex min-h-14 w-full items-center justify-center rounded-[16px] border border-[#bfcfd7] bg-white/75 px-6 text-sm font-medium shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur transition hover:bg-white sm:w-auto sm:rounded-full sm:px-7"
-              >
-                Se hur processen fungerar
-              </a>
-            </div>
-            <div className="mt-7 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[#cad8df] pt-6 text-[12px] text-[#52646e] sm:mt-10 sm:grid-cols-3 sm:gap-4 sm:pt-7 sm:text-sm">
-              {[
-                'En dedikerad kontakt',
-                'Sverige och Europa',
-                'Anpassat efter volym',
-              ].map((item) => (
-                <span key={item} className="flex min-w-0 items-center gap-2">
-                  <Check className="h-4 w-4 shrink-0" />
-                  {item}
-                </span>
-              ))}
+        <div className="relative mx-auto flex min-h-[820px] max-w-[1440px] items-start px-5 pb-[360px] pt-5 sm:min-h-[900px] sm:px-8 sm:pb-[430px] sm:pt-7 lg:min-h-[760px] lg:px-12 lg:py-7 xl:px-16">
+          <div className="flex min-w-0 max-w-full flex-col lg:min-h-[706px] lg:w-full">
+            <PublicBreadcrumbs
+              items={[{ label: 'Företag' }]}
+              className="mb-12 sm:mb-16 lg:mb-0"
+            />
+
+            <div className="min-w-0 lg:my-auto lg:max-w-[690px]">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#cddde5] bg-white/75 px-3.5 py-2 text-[11px] font-medium text-[#465c68] shadow-[0_10px_30px_rgba(60,84,96,.07)] backdrop-blur sm:px-4 sm:text-xs">
+                <Building2 className="h-4 w-4" />
+                Autorell för företag
+              </div>
+              <h1 className="mt-6 max-w-full text-[39px] leading-[1.01] tracking-[-0.052em] [overflow-wrap:anywhere] min-[390px]:text-[43px] sm:mt-7 sm:text-6xl lg:text-[76px]">
+                En strukturerad väg ut ur fordonsinnehavet.
+              </h1>
+              <p className="mt-5 max-w-2xl text-[16px] leading-7 text-[#526b78] sm:mt-7 sm:text-xl sm:leading-8">
+                För företag, leasingaktörer och vagnparksägare som vill avyttra
+                enstaka bilar eller hela flottor med större räckvidd, tydlig
+                kontroll och en ansvarig partner genom hela affären.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:mt-10 sm:flex-row">
+                <a
+                  href="#foretagskontakt"
+                  className="group inline-flex min-h-14 w-full items-center justify-between gap-3 rounded-[16px] bg-[#242424] pl-6 pr-3 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111] sm:w-auto sm:justify-center sm:rounded-full sm:px-7"
+                >
+                  Diskutera er fordonsflotta
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#242424] sm:hidden">
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
+                  <ArrowRight className="hidden h-4 w-4 sm:block" />
+                </a>
+                <a
+                  href="#process"
+                  className="inline-flex min-h-14 w-full items-center justify-center rounded-[16px] border border-[#bfcfd7] bg-white/75 px-6 text-sm font-medium shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur transition hover:bg-white sm:w-auto sm:rounded-full sm:px-7"
+                >
+                  Se hur processen fungerar
+                </a>
+              </div>
+              <div className="mt-7 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[#cad8df] pt-6 text-[12px] text-[#52646e] sm:mt-10 sm:grid-cols-3 sm:gap-4 sm:pt-7 sm:text-sm">
+                {[
+                  'En dedikerad kontakt',
+                  'Sverige och Europa',
+                  'Anpassat efter volym',
+                ].map((item) => (
+                  <span key={item} className="flex min-w-0 items-center gap-2">
+                    <Check className="h-4 w-4 shrink-0" />
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
