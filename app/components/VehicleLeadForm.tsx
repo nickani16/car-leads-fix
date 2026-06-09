@@ -298,6 +298,10 @@ const emptyForm = {
 
 type FormState = typeof emptyForm
 
+const SWEDISH_MILEAGE_LIMIT = 10_000
+const SWEDISH_MILEAGE_LIMIT_MESSAGE =
+  'Vårt nätverk av europeiska återförsäljare fokuserar för närvarande på fordon med upp till 10 000 mil. Tyvärr innebär det att vi inte kan erbjuda försäljning eller förmedling av bilar som överstiger denna gräns.'
+
 const conversionCopy = {
   sv: {
     promise: 'En tryggare väg till rätt pris',
@@ -362,6 +366,8 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
   const source = form.pickupCountry
   const distanceUnit = locale === 'sv' ? 'mil' : 'km'
+  const mileageLimitExceeded =
+    locale === 'sv' && Number(form.miles) > SWEDISH_MILEAGE_LIMIT
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
@@ -377,6 +383,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
   function validate() {
     if (step === 1 && (!form.reg || !form.make || !form.model || !form.modelYear || !form.miles || !form.pickupCity || !form.pickupPostalCode || !form.pickupCountry)) return t.errors.vehicle
+    if (step === 1 && mileageLimitExceeded) return SWEDISH_MILEAGE_LIMIT_MESSAGE
     if (step === 2 && (!form.bodyType || !form.fuelType || !form.gearbox || !form.drivetrain)) return t.errors.technical
     if (step === 3 && (!form.service || !form.damage || !form.warnings || !form.sellTime)) return t.errors.condition
     if (step === 3 && form.damage !== o.damage[0] && !form.damageDescription) return t.errors.damage
@@ -546,7 +553,25 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                   <Field label={t.model}><input className="form-control" value={form.model} onChange={(e) => update('model', e.target.value)} /></Field>
                   <Field label={t.variant} optional={t.optional}><input className="form-control" value={form.variant} onChange={(e) => update('variant', e.target.value)} /></Field>
                   <Field label={t.year}><select className="form-control" value={form.modelYear} onChange={(e) => update('modelYear', e.target.value)}><option value="">{t.selectYear}</option>{YEARS.map((year) => <option key={year}>{year}</option>)}</select></Field>
-                  <Field label={t.mileage}><div className="relative"><input type="number" min="0" className="form-control pr-14" value={form.miles} onChange={(e) => update('miles', e.target.value)} /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{distanceUnit}</span></div></Field>
+                  <Field label={t.mileage}>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0"
+                        aria-invalid={mileageLimitExceeded}
+                        aria-describedby={mileageLimitExceeded ? 'mileage-limit-message' : undefined}
+                        className={`form-control pr-14 ${mileageLimitExceeded ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
+                        value={form.miles}
+                        onChange={(e) => update('miles', e.target.value)}
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{distanceUnit}</span>
+                    </div>
+                    {mileageLimitExceeded && (
+                      <p id="mileage-limit-message" className="mt-2 text-sm font-medium leading-6 text-red-700">
+                        {SWEDISH_MILEAGE_LIMIT_MESSAGE}
+                      </p>
+                    )}
+                  </Field>
                   <Field label={t.firstRegistration} optional={t.optional}><input type="date" className="form-control" value={form.firstRegistration} onChange={(e) => update('firstRegistration', e.target.value)} /></Field>
                   <Field label={t.pickupCity}><input autoComplete="address-level2" className="form-control" value={form.pickupCity} onChange={(e) => update('pickupCity', e.target.value)} /></Field>
                   <Field label={t.pickupPostalCode}><input autoComplete="postal-code" className="form-control uppercase" value={form.pickupPostalCode} onChange={(e) => update('pickupPostalCode', e.target.value.toUpperCase())} /></Field>
@@ -603,7 +628,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
             {error && <div className="mt-6 rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
             <div className="mt-8 flex justify-between border-t border-[#eceae5] pt-6">
               {step > 1 ? <button type="button" onClick={previous} className="inline-flex h-12 items-center gap-2 rounded-full border border-[#d4d2cc] px-5 text-sm font-normal text-[#4a5055] transition hover:bg-[#f6f5f1]"><ArrowLeft size={16} />{t.back}</button> : <span />}
-              {step < 4 ? <button type="button" onClick={next} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111]">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
+              {step < 4 ? <button type="button" onClick={next} disabled={mileageLimitExceeded} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
             </div>
             <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-normal text-slate-400">
               <LockKeyhole size={12} />
