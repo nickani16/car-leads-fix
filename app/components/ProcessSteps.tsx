@@ -59,7 +59,7 @@ export default function ProcessSteps() {
         aria-hidden="true"
       />
 
-      <div className="grid items-start gap-4 lg:grid-cols-3 lg:gap-5">
+      <div className="grid items-stretch gap-4 lg:grid-cols-3 lg:gap-5">
         {steps.map(
           (
             {
@@ -80,7 +80,7 @@ export default function ProcessSteps() {
             return (
               <article
                 key={number}
-                className={`group relative overflow-hidden rounded-[22px] border bg-white transition-all duration-300 sm:rounded-[26px] ${
+                className={`group relative h-full overflow-hidden rounded-[22px] border bg-white transition-all duration-300 sm:rounded-[26px] ${
                   isOpen
                     ? 'border-[#9fc8dc] shadow-[0_28px_80px_rgba(32,33,36,.13)]'
                     : 'border-white/80 shadow-[0_18px_55px_rgba(32,33,36,.075)] hover:-translate-y-1.5 hover:shadow-[0_28px_70px_rgba(32,33,36,.11)]'
@@ -88,7 +88,7 @@ export default function ProcessSteps() {
               >
                 <div className={`h-2 w-full ${accent}`} />
 
-                <div className="relative p-6 sm:p-8 lg:min-h-[390px] lg:p-9">
+                <div className="relative flex h-full flex-col p-6 sm:p-8 lg:min-h-[390px] lg:p-9">
                   <div className="flex items-center justify-between">
                     <span
                       className={`relative z-10 grid h-[72px] w-[72px] place-items-center rounded-full border-[7px] border-[#eef5f7] ${iconStyle}`}
@@ -110,7 +110,7 @@ export default function ProcessSteps() {
                     {text}
                   </p>
 
-                  <div className="mt-6 flex flex-wrap gap-2">
+                  <div className="mt-6 flex flex-wrap content-start gap-2 lg:min-h-[58px]">
                     {highlights.map((highlight) => (
                       <span
                         key={highlight}
@@ -140,7 +140,7 @@ export default function ProcessSteps() {
                     type="button"
                     onClick={() => setOpenStep(isOpen ? null : index)}
                     aria-expanded={isOpen}
-                    className="mt-7 flex w-full items-center justify-between border-t border-[#e2e8ea] pt-5 text-sm font-medium text-[#28373d]"
+                    className="mt-auto flex w-full items-center justify-between border-t border-[#e2e8ea] pt-5 text-sm font-medium text-[#28373d]"
                   >
                     <span>{isOpen ? 'Visa mindre' : 'Läs mer om steget'}</span>
                     <span
