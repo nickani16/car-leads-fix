@@ -12,13 +12,117 @@ import {
   Store,
   X,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 
 type PublicHeaderProps = {
   transparentAtTop?: boolean
   locale?: 'sv' | 'de' | 'en'
+}
+
+type MarketLocale = NonNullable<PublicHeaderProps['locale']>
+
+const markets: Array<{
+  locale: MarketLocale
+  code: string
+  label: string
+  description: string
+  href: string
+}> = [
+  {
+    locale: 'sv',
+    code: 'SE',
+    label: 'Svenska',
+    description: 'Sverige',
+    href: 'https://www.autorell.se/',
+  },
+  {
+    locale: 'de',
+    code: 'DE',
+    label: 'Deutsch',
+    description: 'Deutschland',
+    href: 'https://www.autorell.de/',
+  },
+  {
+    locale: 'en',
+    code: 'EU',
+    label: 'English',
+    description: 'Europe',
+    href: 'https://www.autorell.com/',
+  },
+]
+
+function getLocaleFromHostname(
+  hostname: string,
+  fallback: MarketLocale,
+): MarketLocale {
+  const normalizedHostname = hostname.toLowerCase()
+
+  if (normalizedHostname.endsWith('autorell.de')) return 'de'
+  if (normalizedHostname.endsWith('autorell.com')) return 'en'
+  if (normalizedHostname.endsWith('autorell.se')) return 'sv'
+
+  return fallback
+}
+
+function subscribeToHostname() {
+  return () => {}
+}
+
+function MarketFlag({
+  locale,
+  className = '',
+}: {
+  locale: MarketLocale
+  className?: string
+}) {
+  if (locale === 'sv') {
+    return (
+      <span
+        className={`relative block overflow-hidden rounded-[3px] bg-[#1769aa] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
+        aria-hidden="true"
+      >
+        <span className="absolute inset-y-0 left-[31%] w-[13%] bg-[#f7cf32]" />
+        <span className="absolute inset-x-0 top-[42%] h-[17%] bg-[#f7cf32]" />
+      </span>
+    )
+  }
+
+  if (locale === 'de') {
+    return (
+      <span
+        className={`grid overflow-hidden rounded-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
+        aria-hidden="true"
+      >
+        <span className="bg-[#181818]" />
+        <span className="bg-[#d52b1e]" />
+        <span className="bg-[#f3c623]" />
+      </span>
+    )
+  }
+
+  return (
+    <span
+      className={`relative block overflow-hidden rounded-[3px] bg-[#1747a6] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
+      aria-hidden="true"
+    >
+      {Array.from({ length: 8 }, (_, index) => {
+        const angle = (index / 8) * Math.PI * 2
+
+        return (
+          <span
+            key={index}
+            className="absolute h-[2px] w-[2px] rounded-full bg-[#ffd83d]"
+            style={{
+              left: `${50 + Math.cos(angle) * 26}%`,
+              top: `${50 + Math.sin(angle) * 29}%`,
+            }}
+          />
+        )
+      })}
+    </span>
+  )
 }
 
 export default function PublicHeader({
@@ -29,6 +133,11 @@ export default function PublicHeader({
   const [visible, setVisible] = useState(true)
   const [atTop, setAtTop] = useState(true)
   const lastScrollY = useRef(0)
+  const activeLocale = useSyncExternalStore(
+    subscribeToHostname,
+    () => getLocaleFromHostname(window.location.hostname, locale),
+    () => locale,
+  )
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,13 +171,9 @@ export default function PublicHeader({
 
   const transparent = transparentAtTop && atTop && !open
   const language =
-    locale === 'de'
-      ? { label: 'Deutsch', flag: '🇩🇪' }
-      : locale === 'en'
-        ? { label: 'English', flag: '🇪🇺' }
-        : { label: 'Svenska', flag: '🇸🇪' }
+    markets.find((market) => market.locale === activeLocale) || markets[0]
   const content =
-    locale === 'de'
+    activeLocale === 'de'
       ? {
           message: 'Sicherer Fahrzeugverkauf in ganz Europa',
           menuLabel: 'Navigation',
@@ -86,7 +191,7 @@ export default function PublicHeader({
           cta: 'Auto bewerten',
           ctaHref: '/de',
         }
-      : locale === 'en'
+      : activeLocale === 'en'
         ? {
             message: 'Safe vehicle sales across Europe',
             menuLabel: 'Navigation',
@@ -145,13 +250,52 @@ export default function PublicHeader({
               <Link href="/login" className="hover:underline">
                 {content.login}
               </Link>
-              <button type="button" className="flex items-center gap-2">
-                <span className="text-sm leading-none" aria-hidden="true">
-                  {language.flag}
-                </span>
-                <span>{language.label}</span>
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
+              <details className="group/language relative">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full px-2 py-1 transition hover:bg-white/35 [&::-webkit-details-marker]:hidden">
+                  <MarketFlag
+                    locale={language.locale}
+                    className="h-[14px] w-[21px]"
+                  />
+                  <span className="font-semibold tracking-[0.01em]">
+                    {language.code}
+                  </span>
+                  <span>{language.label}</span>
+                  <ChevronDown className="h-3.5 w-3.5 transition group-open/language:rotate-180" />
+                </summary>
+
+                <div className="absolute right-0 top-full z-20 w-[238px] pt-3">
+                  <div className="overflow-hidden rounded-[18px] border border-[#d9e1e5] bg-white p-2 text-[#202124] shadow-[0_22px_60px_rgba(32,33,36,.18)]">
+                    <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
+                      Välj marknad
+                    </p>
+                    {markets.map((market) => (
+                      <a
+                        key={market.locale}
+                        href={market.href}
+                        className={`flex items-center gap-3 rounded-[12px] px-3 py-2.5 transition hover:bg-[#f2f6f7] ${
+                          market.locale === activeLocale ? 'bg-[#eef6fa]' : ''
+                        }`}
+                      >
+                        <MarketFlag
+                          locale={market.locale}
+                          className="h-[20px] w-[30px] shrink-0"
+                        />
+                        <span className="min-w-0 flex-1">
+                          <strong className="block text-sm font-medium">
+                            {market.label}
+                          </strong>
+                          <span className="block text-[11px] text-[#7a878d]">
+                            {market.description}
+                          </span>
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-[0.08em] text-[#70818a]">
+                          {market.code}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
         </div>
@@ -391,10 +535,36 @@ export default function PublicHeader({
             </div>
 
             <div className="mt-auto border-t border-[#dcdad3] pt-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
+                Välj marknad
+              </p>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {markets.map((market) => (
+                  <a
+                    key={market.locale}
+                    href={market.href}
+                    className={`flex min-h-20 flex-col items-center justify-center gap-2 rounded-[12px] border text-xs transition ${
+                      market.locale === activeLocale
+                        ? 'border-[#8ebdd8] bg-[#eaf5fb] text-[#202124]'
+                        : 'border-[#dcdad3] bg-white text-[#62686c]'
+                    }`}
+                  >
+                    <MarketFlag
+                      locale={market.locale}
+                      className="h-[20px] w-[30px]"
+                    />
+                    <span className="font-medium">{market.code}</span>
+                  </a>
+                ))}
+              </div>
+
               <SocialIcons />
               <div className="mt-5 flex items-center justify-between text-sm text-[#62686c]">
                 <span className="flex items-center gap-2">
-                  <span aria-hidden="true">{language.flag}</span>
+                  <MarketFlag
+                    locale={language.locale}
+                    className="h-[14px] w-[21px]"
+                  />
                   {language.label}
                 </span>
                 <span>Autorell Europe</span>
