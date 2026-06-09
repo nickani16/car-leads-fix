@@ -172,12 +172,12 @@ export default function PublicHeader({
               <BrandLogo />
             </Link>
 
-            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
+            <nav className="absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
               {content.links.slice(0, 2).map(([href, label], index) => (
                 <Link
                   key={href}
                   href={href}
-                  className="group flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
+                  className="group flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
                     0{index + 1}
@@ -188,7 +188,7 @@ export default function PublicHeader({
 
               <Link
                 href={content.links[2][0]}
-                className="group flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
+                className="group flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
               >
                 <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
                   03
@@ -199,7 +199,7 @@ export default function PublicHeader({
               <div className="group relative">
                 <button
                   type="button"
-                  className="flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:px-5"
+                  className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
                     04
@@ -291,7 +291,7 @@ export default function PublicHeader({
 
               <Link
                 href={content.links[3][0]}
-                className="flex min-h-10 items-center rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:px-5"
+                className="flex min-h-10 shrink-0 items-center rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
               >
                 {content.links[3][1]}
               </Link>
