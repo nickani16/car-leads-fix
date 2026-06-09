@@ -3,10 +3,19 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
+  BadgeCheck,
+  CarFront,
   ChevronRight,
   CircleCheck,
+  Clock3,
+  Globe2,
+  Headphones,
   LockKeyhole,
+  MonitorSmartphone,
   Sparkles,
+  TrendingUp,
+  Truck,
+  Zap,
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
 import FaqTestimonials from './components/FaqTestimonials'
@@ -81,22 +90,58 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative z-10 border-b border-[#dce5ee] bg-white">
+      <section className="relative z-10 overflow-hidden bg-[#202427] text-white">
+        <div className="absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#b4d9ef]/70 to-transparent" />
+        <div className="absolute -right-20 -top-32 h-72 w-72 rounded-full bg-[#b4d9ef]/10 blur-3xl" />
+
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
-            ['Sverige + Europa', 'Handlarnätverk'],
-            ['24 timmar', 'Aktiv budgivning'],
-            ['100%', 'Digital process'],
-            ['Personlig', 'Support hela vägen'],
-          ].map(([value, label]) => (
+            {
+              value: 'Sverige + Europa',
+              label: 'Ett bredare handlarnätverk',
+              note: 'Din bil når relevanta köpare över flera marknader.',
+              icon: Globe2,
+            },
+            {
+              value: '24 timmar',
+              label: 'Fokuserad budgivning',
+              note: 'Handlarna får en tydlig period att bedöma och agera.',
+              icon: Clock3,
+            },
+            {
+              value: '100% digitalt',
+              label: 'Från uppgifter till bud',
+              note: 'Följ processen enkelt utan onödiga mellansteg.',
+              icon: MonitorSmartphone,
+            },
+            {
+              value: 'Personlig support',
+              label: 'En människa hela vägen',
+              note: 'Vi finns nära till hands när affären behöver oss.',
+              icon: Headphones,
+            },
+          ].map(({ value, label, note, icon: Icon }, index) => (
             <div
               key={label}
-              className="flex min-h-28 flex-col justify-center border-b border-[#dce5ee] px-4 py-5 odd:border-r first:pl-0 lg:min-h-36 lg:border-b-0 lg:border-r lg:px-10 lg:last:border-r-0"
+              className="group relative min-h-[190px] border-b border-white/10 px-3 py-7 odd:border-r sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
             >
-              <strong className="text-xl tracking-[-0.025em] text-[#242424] sm:text-2xl">
+              <div className="flex items-center justify-between">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[.06] text-[#b4d9ef] transition group-hover:bg-[#b4d9ef] group-hover:text-[#202427] sm:h-11 sm:w-11">
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30">
+                  0{index + 1}
+                </span>
+              </div>
+              <strong className="mt-7 block max-w-[230px] text-xl leading-tight tracking-[-0.035em] text-white sm:text-[25px]">
                 {value}
               </strong>
-              <span className="mt-1 text-sm text-[#5d6c7c]">{label}</span>
+              <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.13em] text-[#b4d9ef]">
+                {label}
+              </span>
+              <p className="mt-3 hidden max-w-[245px] text-sm leading-6 text-white/52 sm:block">
+                {note}
+              </p>
             </div>
           ))}
         </div>
@@ -167,55 +212,111 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="varfor-autorell" className="bg-white py-16 sm:py-32">
-        <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
-          <div className="grid overflow-hidden bg-[#f4efe5] lg:min-h-[720px] lg:grid-cols-[.92fr_1.08fr]">
-            <div className="flex flex-col justify-between px-5 py-10 sm:px-12 sm:py-16 lg:px-16 lg:py-20">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#242424]">
-                  Autorell
-                </p>
-                <h2 className="mt-6 max-w-xl text-[34px] leading-[1.06] tracking-[-0.05em] text-[#202124] sm:mt-8 sm:text-5xl lg:text-[62px]">
-                  Din bil hör hemma på en större marknad.
-                </h2>
-                <p className="mt-5 max-w-lg text-base leading-7 text-[#536a7f] sm:mt-7 sm:text-lg sm:leading-8">
-                  Vi för samman svenska bilägare med professionella köpare i
-                  Europa. Du får större räckvidd utan att affären blir mer
-                  komplicerad.
-                </p>
-                <Link
-                  href="/salj-bil"
-                  className="mt-10 inline-flex items-center gap-3 border-b-2 border-[#242424] pb-2 font-normal text-[#242424] transition hover:gap-5"
-                >
-                  Börja med din bil
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-              </div>
+      <section
+        id="varfor-autorell"
+        className="relative overflow-hidden bg-[#f5f1e8] py-16 sm:py-28"
+      >
+        <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
+        <div className="absolute -right-24 top-10 h-72 w-72 rounded-full border-[52px] border-white/45" />
 
-              <div className="mt-12 grid grid-cols-3 border-t border-[#cad9e4] pt-6 sm:mt-20 sm:pt-8">
-                <div>
-                  <strong className="block text-xl text-[#202124] sm:text-2xl">3 min</strong>
-                  <span className="mt-1 block text-xs text-[#6b7e90]">att komma igång</span>
-                </div>
-                <div className="border-l border-[#cad9e4] pl-5 sm:pl-8">
-                  <strong className="block text-xl text-[#202124] sm:text-2xl">24 h</strong>
-                  <span className="mt-1 block text-xs text-[#6b7e90]">aktiv marknad</span>
-                </div>
-                <div className="border-l border-[#cad9e4] pl-5 sm:pl-8">
-                  <strong className="block text-xl text-[#202124] sm:text-2xl">EU</strong>
-                  <span className="mt-1 block text-xs text-[#6b7e90]">räckvidd</span>
-                </div>
-              </div>
+        <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
+          <div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-end lg:gap-20">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#d4d0c7] bg-white/65 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c625f]">
+                <TrendingUp className="h-3.5 w-3.5" />
+                Efterfrågan i nätverket
+              </span>
+              <h2 className="mt-6 text-[38px] leading-[1.02] tracking-[-0.052em] text-[#202124] sm:text-5xl lg:text-[58px]">
+                Bilar som får handlare att titta en gång till.
+              </h2>
+              <p className="mt-5 text-base leading-7 text-[#596a70] sm:text-lg sm:leading-8">
+                Vårt nätverk söker allt från familjebilar och elbilar till
+                premium- och transportfordon. Lägg upp bilen så matchar vi den
+                mot de handlare som är mest relevanta.
+              </p>
+              <Link
+                href="/salj-bil"
+                className="mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.14)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
+              >
+                Se intresset för din bil
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
 
-            <div className="relative min-h-[380px] sm:min-h-[520px] lg:min-h-full">
-              <Image
-                src="/autorell-home-hero.webp"
-                alt="Bil redo för en europeisk marknad"
-                fill
-                className="object-cover object-[58%_center]"
-                sizes="(max-width: 1024px) 100vw, 55vw"
-              />
+            <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white/70 shadow-[0_30px_90px_rgba(32,33,36,.1)] backdrop-blur-sm sm:rounded-[30px]">
+              <div className="relative overflow-hidden bg-[#23282b] px-5 py-7 text-white sm:px-8 sm:py-9">
+                <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#b4d9ef]/15 blur-2xl" />
+                <CarFront className="absolute -bottom-16 right-3 h-56 w-56 text-white/[.035] sm:right-12 sm:h-64 sm:w-64" />
+
+                <div className="relative flex items-start justify-between gap-5">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                      Sökes just nu
+                    </p>
+                    <h3 className="mt-2 text-2xl tracking-[-0.035em] sm:text-[32px]">
+                      Fordon för flera marknader
+                    </h3>
+                  </div>
+                  <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-2 text-xs text-white/65 sm:inline-flex">
+                    <span className="h-2 w-2 rounded-full bg-[#8fc6a5]" />
+                    Aktiv efterfrågan
+                  </span>
+                </div>
+
+                <div className="relative mt-7 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  {[
+                    { label: 'SUV & crossover', icon: CarFront },
+                    { label: 'El & hybrid', icon: Zap },
+                    { label: 'Premium', icon: BadgeCheck },
+                    { label: 'Transport', icon: Truck },
+                  ].map(({ label, icon: Icon }) => (
+                    <div
+                      key={label}
+                      className="rounded-[15px] border border-white/10 bg-white/[.055] p-3.5 sm:min-h-[112px] sm:p-4"
+                    >
+                      <Icon className="h-5 w-5 text-[#b4d9ef]" />
+                      <span className="mt-5 block text-sm leading-5 text-white/85">
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-5 py-7 sm:px-8 sm:py-9">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#748087]">
+                      Populära märken
+                    </p>
+                    <p className="mt-2 text-lg tracking-[-0.02em] text-[#242424]">
+                      Märken som ofta efterfrågas av handlare
+                    </p>
+                  </div>
+                  <span className="text-xs text-[#7a878c]">
+                    Efterfrågan varierar per modell
+                  </span>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                  {[
+                    'Volvo',
+                    'Volkswagen',
+                    'BMW',
+                    'Mercedes-Benz',
+                    'Audi',
+                    'Tesla',
+                  ].map((brand) => (
+                    <div
+                      key={brand}
+                      className="flex min-h-14 items-center justify-between rounded-[14px] border border-[#e0e3e1] bg-white px-4 text-sm font-medium text-[#303638] shadow-[0_8px_22px_rgba(32,33,36,.035)] transition hover:-translate-y-0.5 hover:border-[#b7d8e8]"
+                    >
+                      {brand}
+                      <CircleCheck className="h-4 w-4 text-[#78a8bd]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
