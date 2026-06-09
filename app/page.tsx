@@ -10,7 +10,6 @@ import {
   Clock3,
   Globe2,
   Headphones,
-  LockKeyhole,
   MonitorSmartphone,
   Sparkles,
   TrendingUp,
@@ -90,9 +89,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative z-10 overflow-hidden bg-[#202427] text-white">
-        <div className="absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#b4d9ef]/70 to-transparent" />
-        <div className="absolute -right-20 -top-32 h-72 w-72 rounded-full bg-[#b4d9ef]/10 blur-3xl" />
+      <section className="relative z-10 overflow-hidden border-y border-[#dce7eb] bg-[#f7faf9]">
+        <div className="absolute -left-20 -top-32 h-72 w-72 rounded-full bg-[#b4d9ef]/35 blur-3xl" />
+        <div className="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-[#efe5cf]/45 blur-3xl" />
 
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
@@ -123,23 +122,23 @@ export default function HomePage() {
           ].map(({ value, label, note, icon: Icon }, index) => (
             <div
               key={label}
-              className="group relative min-h-[190px] border-b border-white/10 px-3 py-7 odd:border-r sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
+              className="group relative min-h-[190px] border-b border-[#dce7eb] px-3 py-7 odd:border-r odd:border-[#dce7eb] sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:border-[#dce7eb] lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
             >
               <div className="flex items-center justify-between">
-                <span className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[.06] text-[#b4d9ef] transition group-hover:bg-[#b4d9ef] group-hover:text-[#202427] sm:h-11 sm:w-11">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-[#cfe0e7] bg-white text-[#4f8298] shadow-[0_8px_22px_rgba(51,83,96,.07)] transition group-hover:-translate-y-0.5 group-hover:bg-[#b4d9ef] group-hover:text-[#202427] sm:h-11 sm:w-11">
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30">
+                <span className="text-[10px] font-semibold tracking-[0.2em] text-[#a5b3b8]">
                   0{index + 1}
                 </span>
               </div>
-              <strong className="mt-7 block max-w-[230px] text-xl leading-tight tracking-[-0.035em] text-white sm:text-[25px]">
+              <strong className="mt-7 block max-w-[230px] text-xl leading-tight tracking-[-0.035em] text-[#202124] sm:text-[25px]">
                 {value}
               </strong>
-              <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.13em] text-[#b4d9ef]">
+              <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.13em] text-[#4f8298]">
                 {label}
               </span>
-              <p className="mt-3 hidden max-w-[245px] text-sm leading-6 text-white/52 sm:block">
+              <p className="mt-3 hidden max-w-[245px] text-sm leading-6 text-[#687980] sm:block">
                 {note}
               </p>
             </div>
@@ -352,58 +351,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-[#dce5ec] bg-[#f6fbfe] py-16 sm:py-24">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-5 sm:px-8 lg:grid-cols-[.85fr_1.15fr] lg:items-center lg:px-12">
-          <div>
-            <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#B4D9EF] text-[#242424]">
-              <LockKeyhole size={21} />
-            </span>
-            <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[#6a7882]">
-              Din integritet
-            </p>
-            <h2 className="mt-4 max-w-xl text-[34px] leading-[1.08] tracking-[-0.045em] sm:text-5xl">
-              Vi förmedlar bilen, inte dina kontaktuppgifter.
-            </h2>
-          </div>
-
-          <div className="rounded-[18px] border border-[#d7e8f2] bg-white p-5 shadow-[0_18px_55px_rgba(32,33,36,.055)] sm:rounded-[24px] sm:p-9">
-            <p className="text-base leading-7 text-[#4f606b] sm:text-lg sm:leading-8">
-              Ditt telefonnummer och din e-post säljs inte och visas inte för
-              dealers under budgivningen. Godkända handlare bedömer
-              fordonsprofilen. Kontaktuppgifter delas först när det behövs för
-              att genomföra en affär som du har valt att gå vidare med.
-            </p>
-            <div className="mt-7 grid gap-3 text-sm text-[#52616b] sm:grid-cols-2">
-              {[
-                'Anonyma dealers i budgivningen',
-                'Inga sålda kontaktlistor',
-                'Endast relevanta fordonsuppgifter',
-                'Du väljer om du vill sälja',
-              ].map((item) => (
-                <span key={item} className="flex items-center gap-2">
-                  <CircleCheck size={16} className="text-[#609bbb]" />
-                  {item}
-                </span>
-              ))}
-            </div>
-            <Link
-              href="/integritet"
-              className="mt-8 inline-flex items-center gap-2 border-b border-[#242424] pb-1 text-sm text-[#242424]"
-            >
-              Läs vår integritetspolicy
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       <FaqTestimonials />
 
-      <section className="bg-white px-5 pb-16 sm:px-8 sm:pb-32 lg:px-12">
-        <div className="relative mx-auto max-w-[1220px] overflow-hidden rounded-[20px] bg-[#B4D9EF] px-6 py-11 sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
+      <section className="bg-white px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
+        <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#B4D9EF] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
           <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[55px] border-white/25" />
-          <div className="relative flex flex-col items-start justify-between gap-9 lg:flex-row lg:items-center">
-            <div>
+          <div className="absolute -bottom-36 -left-20 h-72 w-72 rounded-full bg-white/20 blur-2xl" />
+          <div className="relative flex flex-col items-center">
+            <div className="flex flex-col items-center">
               <p className="text-xs font-semibold uppercase tracking-[0.17em] text-[#242424]">
                 Din bil. Ditt beslut.
               </p>
@@ -416,7 +371,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/salj-bil"
-              className="inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:rounded-full sm:font-normal"
+              className="mt-8 inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:rounded-full sm:font-normal"
             >
               Värdera min bil
               <ArrowRight className="h-5 w-5" />

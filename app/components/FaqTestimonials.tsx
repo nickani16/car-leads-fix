@@ -35,6 +35,11 @@ const questions = [
     answer:
       'När du accepterat ett erbjudande hjälper vi dig vidare med nästa steg och ser till att processen blir tydlig och trygg.',
   },
+  {
+    question: 'Vilka personuppgifter ser bilhandlarna?',
+    answer:
+      'Under budgivningen bedömer handlarna fordonsprofilen, inte dina privata kontaktuppgifter. Ditt namn, telefonnummer, din e-post och andra känsliga uppgifter visas inte för handlarna. Kontaktuppgifter delas först när det behövs för en affär som du själv har valt att gå vidare med.',
+  },
 ]
 
 // Replace these examples with verified customer reviews before launch.
