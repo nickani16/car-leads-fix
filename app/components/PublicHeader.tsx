@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
+import SocialIcons from './SocialIcons'
 
 type PublicHeaderProps = {
   transparentAtTop?: boolean
@@ -389,12 +390,15 @@ export default function PublicHeader({
               </div>
             </div>
 
-            <div className="mt-auto flex items-center justify-between border-t border-[#dcdad3] pt-6 text-sm text-[#62686c]">
-              <span className="flex items-center gap-2">
-                <span aria-hidden="true">{language.flag}</span>
-                {language.label}
-              </span>
-              <span>Autorell Europe</span>
+            <div className="mt-auto border-t border-[#dcdad3] pt-6">
+              <SocialIcons />
+              <div className="mt-5 flex items-center justify-between text-sm text-[#62686c]">
+                <span className="flex items-center gap-2">
+                  <span aria-hidden="true">{language.flag}</span>
+                  {language.label}
+                </span>
+                <span>Autorell Europe</span>
+              </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import BrandLogo from './BrandLogo'
+import SocialIcons from './SocialIcons'
 
 export default function PublicFooter() {
   return (
@@ -73,6 +74,7 @@ export default function PublicFooter() {
               <p className="max-w-[240px] leading-6 text-[#72736f]">
                 Personlig support för både bilägare och handlare.
               </p>
+              <SocialIcons className="pt-2" />
             </div>
           </div>
         </div>
