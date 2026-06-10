@@ -452,6 +452,13 @@ export default function PublicHeader({
           <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-5 text-[10px] font-medium tracking-[0.02em] sm:px-8 md:text-xs lg:px-12 xl:px-16">
             <span>{content.message}</span>
             <div className="hidden items-center gap-6 md:flex">
+              <Link
+                href="/kontakt"
+                className="inline-flex items-center gap-1.5 hover:underline"
+              >
+                <Headphones className="h-3.5 w-3.5" />
+                {content.links[5][1]}
+              </Link>
               <Link href="/dealer-apply" className="hover:underline">
                 {content.partner}
               </Link>
@@ -533,6 +540,7 @@ export default function PublicHeader({
                 menu={sellerMenu}
                 onNavigate={handleSectionLink}
                 align="start"
+                icon={ScanSearch}
               />
               <DesktopMenu
                 number="02"
@@ -540,6 +548,7 @@ export default function PublicHeader({
                 href={content.links[1][0]}
                 menu={processMenu}
                 onNavigate={handleSectionLink}
+                icon={Route}
               />
 
               <DesktopMenu
@@ -548,6 +557,7 @@ export default function PublicHeader({
                 href={content.links[2][0]}
                 menu={companyMenu}
                 onNavigate={handleSectionLink}
+                icon={Building2}
               />
 
               <div className="group relative">
@@ -656,13 +666,6 @@ export default function PublicHeader({
 
             <div className="hidden items-center gap-2 xl:flex">
               <Link
-                href="/kontakt"
-                className="hidden min-h-12 items-center justify-center gap-2 rounded-full border border-[#9fc9de] bg-[#e8f4fa] px-4 text-sm font-medium text-[#294b5b] shadow-[0_10px_24px_rgba(73,126,151,.08)] transition hover:-translate-y-0.5 hover:bg-[#d9edf7] min-[1380px]:inline-flex"
-              >
-                <Headphones className="h-4 w-4" />
-                {content.links[5][1]}
-              </Link>
-              <Link
                 href={content.ctaHref}
                 className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-2 text-sm font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
@@ -735,7 +738,7 @@ export default function PublicHeader({
             <Link
               href="/kontakt"
               onClick={() => setOpen(false)}
-              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#a9cfe1] bg-[#e8f4fa] px-5 text-base font-medium text-[#294b5b]"
+              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#242424] bg-[#242424] px-5 text-base font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.16)]"
             >
               <span className="flex items-center gap-3">
                 <Headphones className="h-5 w-5" />
@@ -840,6 +843,7 @@ function DesktopMenu({
   menu,
   onNavigate,
   align = 'center',
+  icon: MenuIcon,
 }: {
   number: string
   label: string
@@ -847,6 +851,7 @@ function DesktopMenu({
   menu: DesktopMenuData
   onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
   align?: 'start' | 'center'
+  icon: LucideIcon
 }) {
   return (
     <div className="group relative">
@@ -870,7 +875,7 @@ function DesktopMenu({
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
           <div className="min-w-0 bg-[#eef6fa] p-7">
             <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
-              <CarFront className="h-5 w-5" />
+              <MenuIcon className="h-5 w-5" />
             </span>
             <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
               {menu.eyebrow}
