@@ -82,18 +82,25 @@ export default function HomePage() {
                 <ChevronRight className="h-5 w-5" />
               </a>
             </div>
-            <div className="mt-6 flex max-w-[390px] flex-wrap gap-2 text-xs sm:mt-10 sm:max-w-none sm:gap-2.5 sm:text-sm">
-              {['Kostnadsfritt', 'Ingen bindning', 'Tar cirka 3 minuter'].map(
-                (item) => (
+            <div className="mt-6 grid w-full max-w-[420px] grid-cols-3 gap-1.5 sm:mt-10 sm:flex sm:max-w-none sm:flex-wrap sm:gap-2.5 sm:text-sm">
+              {[
+                { label: 'Kostnadsfritt' },
+                { label: 'Ingen bindning' },
+                { label: 'Tar cirka 3 minuter', mobileLabel: 'Cirka 3 min' },
+              ].map(({ label, mobileLabel }) => (
                   <span
-                    key={item}
-                    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/15 bg-[#202124]/80 px-3.5 text-white shadow-[0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-md sm:border-[#d9e1e4] sm:bg-white/88 sm:px-4 sm:text-[#334c5d] sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
+                    key={label}
+                    className="inline-flex min-h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-white/15 bg-[#202124]/80 px-1.5 text-[9px] text-white shadow-[0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-md min-[390px]:gap-1.5 min-[390px]:px-2 min-[390px]:text-[10px] sm:min-h-9 sm:justify-start sm:gap-2 sm:border-[#d9e1e4] sm:bg-white/88 sm:px-4 sm:text-sm sm:text-[#334c5d] sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
                   >
-                    <CircleCheck className="h-4 w-4 shrink-0 text-[#b4d9ef] sm:text-[#4f8ca8]" />
-                    {item}
+                    <CircleCheck className="h-3 w-3 shrink-0 text-[#b4d9ef] min-[390px]:h-3.5 min-[390px]:w-3.5 sm:h-4 sm:w-4 sm:text-[#4f8ca8]" />
+                    <span className={mobileLabel ? 'sm:hidden' : undefined}>
+                      {mobileLabel || label}
+                    </span>
+                    {mobileLabel && (
+                      <span className="hidden sm:inline">{label}</span>
+                    )}
                   </span>
-                ),
-              )}
+                ))}
             </div>
           </div>
         </div>
