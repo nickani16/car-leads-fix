@@ -16,15 +16,23 @@ const footerCopy = {
     sellerTitle: 'Sälja bil',
     sellerLinks: [
       ['Kontrollera din bil', '/salj-bil'],
-      ['Så fungerar det', '/#sa-fungerar-det'],
-      ['Om Autorell', '/om-oss'],
-      ['Företagsförsäljning', '/foretag'],
+      ['Exportprocessen', '/#sa-fungerar-det'],
+      ['Trygg affär', '/trygg-affar'],
       ['Vanliga frågor', '/vanliga-fragor'],
+    ] as [string, string][],
+    businessTitle: 'Företag',
+    businessLinks: [
+      ['Företagslösningar', '/foretag'],
+      ['Varför välja Autorell', '/foretag#process'],
+      ['Starta ett pilotflöde', '/foretag#foretagskontakt'],
+      ['Om Autorell', '/om-oss'],
     ] as [string, string][],
     dealerTitle: 'Handlare',
     dealerLinks: [
-      ['Bli partner', '/dealer-apply'],
-      ['Dealer login', '/login'],
+      ['För bilhandlare', '/for-handlare'],
+      ['Ansök som handlare', '/dealer-apply'],
+      ['Handlarvillkor', '/dealer-terms'],
+      ['Logga in', '/login'],
     ] as [string, string][],
     contact: 'Kontakt',
     support: 'Personlig support för svenska säljare och europeiska handlare.',
@@ -46,9 +54,15 @@ const footerCopy = {
       ['Über Autorell', '/om-oss'],
       ['FAQ', '/de#faq'],
     ] as [string, string][],
+    businessTitle: 'Unternehmen',
+    businessLinks: [
+      ['Unternehmenslösungen', '/foretag'],
+      ['Über Autorell', '/om-oss'],
+    ] as [string, string][],
     dealerTitle: 'Händler',
     dealerLinks: [
       ['Händler werden', '/dealer-apply'],
+      ['Händlerbedingungen', '/dealer-terms'],
       ['Händler-Login', '/login'],
     ] as [string, string][],
     contact: 'Kontakt',
@@ -71,9 +85,15 @@ const footerCopy = {
       ['About Autorell', '/om-oss'],
       ['FAQ', '/eu#faq'],
     ] as [string, string][],
+    businessTitle: 'Business',
+    businessLinks: [
+      ['Business solutions', '/foretag'],
+      ['About Autorell', '/om-oss'],
+    ] as [string, string][],
     dealerTitle: 'Dealers',
     dealerLinks: [
       ['Become a partner', '/dealer-apply'],
+      ['Dealer terms', '/dealer-terms'],
       ['Dealer login', '/login'],
     ] as [string, string][],
     contact: 'Contact',
@@ -125,7 +145,7 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.3fr_.7fr_.7fr_.9fr] lg:gap-16">
+        <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-10">
           <p className="max-w-sm text-2xl leading-9 tracking-[-0.025em] text-[#2b2b2a]">
             {t.statement}
           </p>
@@ -133,6 +153,10 @@ export default function PublicFooter({
           <FooterColumn
             title={t.sellerTitle}
             links={t.sellerLinks}
+          />
+          <FooterColumn
+            title={t.businessTitle}
+            links={t.businessLinks}
           />
           <FooterColumn
             title={t.dealerTitle}

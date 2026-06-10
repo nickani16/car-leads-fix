@@ -17,7 +17,6 @@ import {
   MonitorSmartphone,
   ScanSearch,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
   Truck,
   UserRound,
@@ -54,10 +53,6 @@ export default function HomePage() {
 
         <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
           <div className="w-full min-w-0 max-w-[720px]">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8d6cf] bg-white/82 px-3.5 py-2 text-xs text-[#242424] shadow-[0_8px_25px_rgba(32,33,36,.07)] backdrop-blur-md sm:mb-7 sm:px-4 sm:text-sm">
-              <Sparkles className="h-4 w-4 text-[#242424]" />
-              Sälj tryggt. Nå fler professionella köpare.
-            </div>
             <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
               Sälj bilen i Sverige.
               <span className="block text-[#242424]">Nå professionella köpare i Europa.</span>

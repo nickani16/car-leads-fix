@@ -9,6 +9,7 @@ import {
   CircleHelp,
   FileCheck2,
   Gavel,
+  Handshake,
   Headphones,
   LogIn,
   Menu,
@@ -195,7 +196,8 @@ export default function PublicHeader({
           links: [
             ['/de#fahrzeuge', 'Fahrzeuge'],
             ['/de#ablauf', 'So funktioniert es'],
-            ['/om-oss', 'Über Autorell'],
+            ['/foretag', 'Unternehmen'],
+            ['/dealer-apply', 'Für Händler'],
             ['/de#faq', 'FAQ'],
             ['/kontakt', 'Kontakt'],
           ],
@@ -213,7 +215,8 @@ export default function PublicHeader({
             links: [
               ['/eu#fahrzeuge', 'Vehicles'],
               ['/eu#ablauf', 'How buying works'],
-              ['/om-oss', 'About Autorell'],
+              ['/foretag', 'Business'],
+              ['/dealer-apply', 'For dealers'],
               ['/eu#faq', 'FAQ'],
               ['/kontakt', 'Contact'],
             ],
@@ -230,7 +233,8 @@ export default function PublicHeader({
             links: [
               ['/salj-bil', 'Sälj din bil'],
               ['/#sa-fungerar-det', 'Exportprocessen'],
-              ['/om-oss', 'Om oss'],
+              ['/foretag', 'Företag'],
+              ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakt'],
             ],
@@ -255,16 +259,16 @@ export default function PublicHeader({
               icon: ScanSearch,
             },
             {
+              href: '/trygg-affar',
+              label: 'Trygg affär',
+              text: 'Så skyddas uppgifter, beslut och betalning.',
+              icon: ShieldCheck,
+            },
+            {
               href: '/vanliga-fragor',
               label: 'Vanliga frågor',
               text: 'Kriterier, budgivning och trygghet.',
               icon: CircleHelp,
-            },
-            {
-              href: '/kontakt',
-              label: 'Prata med Autorell',
-              text: 'Få hjälp innan du registrerar bilen.',
-              icon: Headphones,
             },
           ],
         }
@@ -360,6 +364,59 @@ export default function PublicHeader({
                   ? 'Antworten für professionelle Käufer.'
                   : 'Answers for professional buyers.',
               icon: CircleHelp,
+            },
+          ],
+        }
+  const companyMenu =
+    activeLocale === 'sv'
+      ? {
+          eyebrow: 'För professionella säljare',
+          title: 'Europeisk avsättning för svenska fordonsportföljer.',
+          text: 'För inbyten, leasingreturer, hyrbilsflottor och återkommande fordonsvolym.',
+          cta: 'Se företagslösningen',
+          ctaHref: '/foretag',
+          items: [
+            {
+              href: '/foretag',
+              label: 'Varför företag väljer Autorell',
+              text: 'Räckvidd, fordonsdata och ett samordnat flöde.',
+              icon: Building2,
+            },
+            {
+              href: '/foretag#process',
+              label: 'B2B-processen',
+              text: 'Från fordonslista till transport och export.',
+              icon: Route,
+            },
+            {
+              href: '/foretag#foretagskontakt',
+              label: 'Starta ett pilotflöde',
+              text: 'Beskriv volym, fordonstyper och tidsplan.',
+              icon: Handshake,
+            },
+          ],
+        }
+      : {
+          eyebrow: activeLocale === 'de' ? 'Professionelle Verkäufer' : 'Professional sellers',
+          title:
+            activeLocale === 'de'
+              ? 'Europäische Reichweite für schwedische Fahrzeugportfolios.'
+              : 'European reach for Swedish vehicle portfolios.',
+          text:
+            activeLocale === 'de'
+              ? 'Für Inzahlungnahmen, Leasingrückläufer und Flotten.'
+              : 'For trade-ins, lease returns and recurring fleet volume.',
+          cta: activeLocale === 'de' ? 'Unternehmenslösung' : 'Business solution',
+          ctaHref: '/foretag',
+          items: [
+            {
+              href: '/foretag',
+              label: activeLocale === 'de' ? 'Für Unternehmen' : 'For businesses',
+              text:
+                activeLocale === 'de'
+                  ? 'Strukturierte europäische Fahrzeugvermarktung.'
+                  : 'Structured European vehicle remarketing.',
+              icon: Building2,
             },
           ],
         }
@@ -475,6 +532,7 @@ export default function PublicHeader({
                 href={content.links[0][0]}
                 menu={sellerMenu}
                 onNavigate={handleSectionLink}
+                align="start"
               />
               <DesktopMenu
                 number="02"
@@ -484,19 +542,17 @@ export default function PublicHeader({
                 onNavigate={handleSectionLink}
               />
 
-              <Link
+              <DesktopMenu
+                number="03"
+                label={content.links[2][1]}
                 href={content.links[2][0]}
-                className="group flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
-              >
-                <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
-                  03
-                </span>
-                {content.links[2][1]}
-              </Link>
+                menu={companyMenu}
+                onNavigate={handleSectionLink}
+              />
 
               <div className="group relative">
                 <Link
-                  href="/dealer-apply"
+                  href={activeLocale === 'sv' ? '/for-handlare' : '/dealer-apply'}
                   className="flex min-h-10 shrink-0 appearance-none items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
@@ -550,7 +606,7 @@ export default function PublicHeader({
                           </span>
                         </Link>
                         <Link
-                          href="/dealer/legal"
+                          href="/dealer-terms"
                           className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
                         >
                           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
@@ -588,10 +644,13 @@ export default function PublicHeader({
               </div>
 
               <Link
-                href={content.links[3][0]}
-                className="flex min-h-10 shrink-0 items-center rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
+                href={content.links[4][0]}
+                className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
               >
-                {content.links[3][1]}
+                <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
+                  05
+                </span>
+                {content.links[4][1]}
               </Link>
             </nav>
 
@@ -761,12 +820,14 @@ function DesktopMenu({
   href,
   menu,
   onNavigate,
+  align = 'center',
 }: {
   number: string
   label: string
   href: string
   menu: DesktopMenuData
   onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
+  align?: 'start' | 'center'
 }) {
   return (
     <div className="group relative">
@@ -782,7 +843,11 @@ function DesktopMenu({
         <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
       </a>
 
-      <div className="pointer-events-none absolute left-1/2 top-full w-[720px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[780px]">
+      <div
+        className={`pointer-events-none absolute top-full w-[720px] translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[780px] ${
+          align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2'
+        }`}
+      >
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
           <div className="min-w-0 bg-[#eef6fa] p-7">
             <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
