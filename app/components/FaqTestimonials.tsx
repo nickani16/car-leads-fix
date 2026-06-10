@@ -14,7 +14,7 @@ const questions = [
   {
     question: 'Vilka bilar tar Autorell emot?',
     answer:
-      'I den första lanseringen tar vi emot bilar som finns i Sverige, är från årsmodell 2018 eller nyare, har gått högst 10 000 mil och är körbara utan allvarliga tekniska fel.',
+      'Vi arbetar med en tydlig köpbox för plats, årsmodell, miltal och tekniskt skick. Den aktuella gränsen visas när du kontrollerar bilen.',
   },
   {
     question: 'Är registrering och budgivning kostnadsfri?',

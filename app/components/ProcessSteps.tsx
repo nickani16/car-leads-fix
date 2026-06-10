@@ -19,10 +19,10 @@ const steps = [
     icon: CarFront,
     eyebrow: 'Kvalificering',
     title: 'Kontrollera om bilen passar',
-    text: 'Vi tar initialt emot svenska bilar från 2018, med högst 10 000 mil och gott tekniskt skick.',
+    text: 'Vi börjar med att kontrollera om bilen matchar vår aktuella köpbox och efterfrågan i nätverket.',
     details:
       'Den första kontrollen säkerställer att bilen finns i Sverige, är körbar och saknar allvarliga motor-, växellåds-, läckage- eller krockproblem.',
-    highlights: ['2018 eller nyare', 'Max 10 000 mil'],
+    highlights: ['Svenskt ursprung', 'Tydlig köpbox'],
     accent: 'bg-[#dceefa]',
     iconStyle: 'bg-[#b4d9ef] text-[#20333e]',
   },

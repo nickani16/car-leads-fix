@@ -31,7 +31,7 @@ import PublicFooter from './components/PublicFooter'
 export const metadata: Metadata = {
   title: 'Autorell | Sälj utvalda svenska bilar till Europa',
   description:
-    'Autorell matchar utvalda svenska bilar från 2018 med verifierade professionella köpare i Sverige och Europa.',
+    'Autorell matchar utvalda svenska bilar med verifierade professionella köpare i Sverige och Europa.',
 }
 
 export default function HomePage() {
@@ -56,15 +56,15 @@ export default function HomePage() {
           <div className="w-full min-w-0 max-w-[720px]">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8d6cf] bg-white/82 px-3.5 py-2 text-xs text-[#242424] shadow-[0_8px_25px_rgba(32,33,36,.07)] backdrop-blur-md sm:mb-7 sm:px-4 sm:text-sm">
               <Sparkles className="h-4 w-4 text-[#242424]" />
-              Svensk bil. Europeisk efterfrågan.
+              Sälj tryggt. Nå fler professionella köpare.
             </div>
             <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
               Sälj bilen i Sverige.
               <span className="block text-[#242424]">Nå professionella köpare i Europa.</span>
             </h1>
             <p className="mt-5 max-w-[590px] text-[16px] leading-7 text-[#4e6377] sm:mt-7 sm:text-xl sm:leading-8">
-              För bilar från 2018, med högst 10 000 mil och gott tekniskt
-              skick. Kostnadsfri registrering och budgivning inom 24 timmar.
+              Vi kvalificerar bilen, presenterar den för verifierade handlare
+              och samlar bud under 24 fokuserade timmar.
             </p>
             <div className="mt-7 grid gap-3 sm:mt-10 sm:flex sm:flex-row">
               <Link
@@ -84,9 +84,9 @@ export default function HomePage() {
             </div>
             <div className="mt-6 grid w-full max-w-[420px] grid-cols-3 gap-1.5 sm:mt-10 sm:flex sm:max-w-none sm:flex-wrap sm:gap-2.5 sm:text-sm">
               {[
-                { label: 'Årsmodell 2018+' },
-                { label: 'Max 10 000 mil' },
-                { label: 'Kostnadsfri kontroll', mobileLabel: 'Kostnadsfritt' },
+                { label: 'Kostnadsfritt' },
+                { label: 'Ingen bindning' },
+                { label: 'Budgivning i 24 timmar', mobileLabel: '24 h budgivning' },
               ].map(({ label, mobileLabel }) => (
                   <span
                     key={label}
@@ -113,15 +113,15 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
             {
-              value: '2018 eller nyare',
-              label: 'Utvalda årsmodeller',
-              note: 'Vi fokuserar på bilar som efterfrågas av vårt professionella nätverk.',
+              value: 'Utvalda bilar',
+              label: 'Kvalificerat utbud',
+              note: 'Vi fokuserar på fordon som matchar verklig efterfrågan i nätverket.',
               icon: Globe2,
             },
             {
-              value: 'Högst 10 000 mil',
-              label: 'Tydlig milgräns',
-              note: 'Bilen behöver ligga inom vår nuvarande europeiska köpbox.',
+              value: 'Tydlig fordonsdata',
+              label: 'Bättre beslutsunderlag',
+              note: 'Skick, historik och kända fel struktureras före budgivningen.',
               icon: Clock3,
             },
             {
@@ -165,7 +165,7 @@ export default function HomePage() {
 
       <section
         id="sa-fungerar-det"
-        className="relative overflow-hidden bg-[#eef5f7] py-16 sm:py-28"
+        className="relative scroll-mt-[124px] overflow-hidden bg-[#eef5f7] py-16 sm:py-28"
       >
         <div className="absolute -left-28 top-16 h-72 w-72 rounded-full border-[55px] border-white/45" />
         <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-[#dcecf3]/70 blur-3xl" />
@@ -187,7 +187,7 @@ export default function HomePage() {
 
             <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/80 bg-white/65 shadow-[0_18px_55px_rgba(32,33,36,.06)] backdrop-blur-sm">
               {[
-                ['2018+', 'årsmodell'],
+                ['6 steg', 'från bil till export'],
                 ['24 h', 'aktiv marknad'],
                 ['0 kr', 'att registrera'],
               ].map(([value, label]) => (
@@ -246,8 +246,8 @@ export default function HomePage() {
                 Utvalda bilar för professionell export.
               </h2>
               <p className="mt-5 text-base leading-7 text-[#596a70] sm:text-lg sm:leading-8">
-                Bilen ska vara från 2018 eller nyare, ha gått högst 10 000 mil,
-                finnas i Sverige och vara körbar utan allvarliga tekniska fel.
+                Vi söker körbara svenska bilar i gott tekniskt skick som
+                matchar aktuell efterfrågan hos professionella köpare.
               </p>
               <Link
                 href="/salj-bil"

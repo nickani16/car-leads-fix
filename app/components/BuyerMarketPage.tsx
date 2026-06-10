@@ -32,7 +32,7 @@ const content = {
       'Deutschland ist zum Start ein Käufermarkt. Fahrzeuge werden in Schweden erfasst und qualifiziert, bevor sie für zugelassene Händler freigeschaltet werden.',
     cards: [
       ['Schwedischer Ursprung', 'Standort, Identität und Fahrzeugprofil werden vor der Auktion erfasst.'],
-      ['Ausgewählte Fahrzeuge', 'Schwerpunkt auf Fahrzeugen ab Modelljahr 2018 mit höchstens 100.000 km.'],
+      ['Ausgewählte Fahrzeuge', 'Fokus auf aktuelle, gefragte Fahrzeuge mit strukturierten Zustandsdaten.'],
       ['Deklarierter Zustand', 'Bekannte Schäden, Warnleuchten, Service und technische Angaben sind strukturiert.'],
       ['Europäische Gebote', 'Zugelassene Händler können Fahrzeuge prüfen, beobachten und Gebote abgeben.'],
     ],
@@ -75,7 +75,7 @@ const content = {
       'At launch, Sweden is the seller market. Vehicles are submitted and qualified in Sweden before approved European dealers receive access.',
     cards: [
       ['Swedish origin', 'Location, identity and vehicle profile are recorded before bidding starts.'],
-      ['Selected vehicles', 'Focused on model year 2018 or newer with no more than 100,000 km.'],
+      ['Selected vehicles', 'Focused on recent, in-demand vehicles with structured condition data.'],
       ['Declared condition', 'Known damage, warnings, service and technical details are structured.'],
       ['European bidding', 'Approved dealers can review, watch and bid on relevant vehicles.'],
     ],

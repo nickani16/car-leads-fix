@@ -4,15 +4,28 @@ import Link from 'next/link'
 import {
   ArrowRight,
   Building2,
+  CarFront,
   ChevronDown,
+  CircleHelp,
+  FileCheck2,
+  Gavel,
   Headphones,
   LogIn,
   Menu,
+  Route,
+  ScanSearch,
   ShieldCheck,
   Store,
   X,
+  type LucideIcon,
 } from 'lucide-react'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 
@@ -215,7 +228,7 @@ export default function PublicHeader({
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',
             links: [
-              ['/salj-bil', 'Kontrollera din bil'],
+              ['/salj-bil', 'Sälj din bil'],
               ['/#sa-fungerar-det', 'Exportprocessen'],
               ['/om-oss', 'Om oss'],
               ['/vanliga-fragor', 'Vanliga frågor'],
@@ -226,6 +239,144 @@ export default function PublicHeader({
             cta: 'Kontrollera bilen',
             ctaHref: '/salj-bil',
           }
+  const sellerMenu =
+    activeLocale === 'sv'
+      ? {
+          eyebrow: 'För dig som säljer',
+          title: 'Från biluppgifter till professionella bud.',
+          text: 'Kontrollera bilen kostnadsfritt och se om den passar aktuell efterfrågan.',
+          cta: 'Starta bilkontrollen',
+          ctaHref: '/salj-bil',
+          items: [
+            {
+              href: '/salj-bil',
+              label: 'Kontrollera din bil',
+              text: 'Börja med bilens viktigaste uppgifter.',
+              icon: ScanSearch,
+            },
+            {
+              href: '/vanliga-fragor',
+              label: 'Vanliga frågor',
+              text: 'Kriterier, budgivning och trygghet.',
+              icon: CircleHelp,
+            },
+            {
+              href: '/kontakt',
+              label: 'Prata med Autorell',
+              text: 'Få hjälp innan du registrerar bilen.',
+              icon: Headphones,
+            },
+          ],
+        }
+      : {
+          eyebrow: activeLocale === 'de' ? 'Schwedische Fahrzeuge' : 'Swedish vehicles',
+          title:
+            activeLocale === 'de'
+              ? 'Ausgewählte Fahrzeuge für professionelle Käufer.'
+              : 'Selected vehicles for professional buyers.',
+          text:
+            activeLocale === 'de'
+              ? 'Strukturierte Fahrzeugdaten und fokussierte Gebotsphasen.'
+              : 'Structured vehicle data and focused bidding windows.',
+          cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
+          ctaHref: activeLocale === 'de' ? '/de#fahrzeuge' : '/eu#fahrzeuge',
+          items: [
+            {
+              href: activeLocale === 'de' ? '/de#fahrzeuge' : '/eu#fahrzeuge',
+              label: activeLocale === 'de' ? 'Fahrzeuge' : 'Vehicles',
+              text:
+                activeLocale === 'de'
+                  ? 'Aktueller Zugang zum schwedischen Angebot.'
+                  : 'Current access to selected Swedish supply.',
+              icon: CarFront,
+            },
+            {
+              href: '/dealer-apply',
+              label: activeLocale === 'de' ? 'Händlerzugang' : 'Dealer access',
+              text:
+                activeLocale === 'de'
+                  ? 'Zugang zum professionellen Käufernetzwerk.'
+                  : 'Join the professional buyer network.',
+              icon: Store,
+            },
+          ],
+        }
+  const processMenu =
+    activeLocale === 'sv'
+      ? {
+          eyebrow: 'Så fungerar Autorell',
+          title: 'Ett tydligt flöde från kontroll till export.',
+          text: 'Följ kvalificering, deklaration, budgivning och affär i sex tydliga steg.',
+          cta: 'Se hela exportprocessen',
+          ctaHref: '/#sa-fungerar-det',
+          items: [
+            {
+              href: '/#sa-fungerar-det',
+              label: 'Exportprocessen',
+              text: 'Se samtliga steg från bil till köpare.',
+              icon: Route,
+            },
+            {
+              href: '/vanliga-fragor',
+              label: 'Budgivning & villkor',
+              text: 'Svar om 24 timmar, kontroll och acceptans.',
+              icon: Gavel,
+            },
+            {
+              href: '/om-oss',
+              label: 'Varför Autorell?',
+              text: 'Idén bakom den europeiska marknadsplatsen.',
+              icon: FileCheck2,
+            },
+          ],
+        }
+      : {
+          eyebrow: activeLocale === 'de' ? 'Der Einkaufsprozess' : 'Buying process',
+          title:
+            activeLocale === 'de'
+              ? 'Von der Fahrzeugprüfung bis zum Export.'
+              : 'From vehicle review to export.',
+          text:
+            activeLocale === 'de'
+              ? 'Ein strukturierter Ablauf für professionelle Käufer.'
+              : 'A structured workflow for professional buyers.',
+          cta: activeLocale === 'de' ? 'Ablauf ansehen' : 'View the process',
+          ctaHref: activeLocale === 'de' ? '/de#ablauf' : '/eu#ablauf',
+          items: [
+            {
+              href: activeLocale === 'de' ? '/de#ablauf' : '/eu#ablauf',
+              label: activeLocale === 'de' ? 'So funktioniert es' : 'How buying works',
+              text:
+                activeLocale === 'de'
+                  ? 'Gebot, Prüfung, Zahlung und Export.'
+                  : 'Bidding, review, payment and export.',
+              icon: Route,
+            },
+            {
+              href: activeLocale === 'de' ? '/de#faq' : '/eu#faq',
+              label: 'FAQ',
+              text:
+                activeLocale === 'de'
+                  ? 'Antworten für professionelle Käufer.'
+                  : 'Answers for professional buyers.',
+              icon: CircleHelp,
+            },
+          ],
+        }
+
+  function handleSectionLink(
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) {
+    if (!href.startsWith('/#') || window.location.pathname !== '/') return
+
+    const target = document.getElementById(href.slice(2))
+    if (!target) return
+
+    event.preventDefault()
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.history.replaceState(null, '', href)
+  }
 
   return (
     <>
@@ -318,18 +469,20 @@ export default function PublicHeader({
             </Link>
 
             <nav className="absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
-              {content.links.slice(0, 2).map(([href, label], index) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="group flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
-                >
-                  <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
-                    0{index + 1}
-                  </span>
-                  {label}
-                </Link>
-              ))}
+              <DesktopMenu
+                number="01"
+                label={content.links[0][1]}
+                href={content.links[0][0]}
+                menu={sellerMenu}
+                onNavigate={handleSectionLink}
+              />
+              <DesktopMenu
+                number="02"
+                label={content.links[1][1]}
+                href={content.links[1][0]}
+                menu={processMenu}
+                onNavigate={handleSectionLink}
+              />
 
               <Link
                 href={content.links[2][0]}
@@ -342,16 +495,16 @@ export default function PublicHeader({
               </Link>
 
               <div className="group relative">
-                <button
-                  type="button"
-                  className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
+                <Link
+                  href="/dealer-apply"
+                  className="flex min-h-10 shrink-0 appearance-none items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
                     04
                   </span>
                   {content.dealerLabel}
                   <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
-                </button>
+                </Link>
 
                 <div className="pointer-events-none absolute left-1/2 top-full w-[760px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[820px]">
                   <div className="overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
@@ -487,7 +640,10 @@ export default function PublicHeader({
                 <Link
                   key={href}
                   href={href}
-                  onClick={() => setOpen(false)}
+                  onClick={(event) => {
+                    setOpen(false)
+                    handleSectionLink(event, href)
+                  }}
                   className="group flex items-center justify-between border-b border-[#dcdad3] py-4 text-[22px] font-medium tracking-[-0.025em] text-[#202124]"
                 >
                   <span>
@@ -582,5 +738,99 @@ export default function PublicHeader({
         </div>
       </div>
     </>
+  )
+}
+
+type DesktopMenuData = {
+  eyebrow: string
+  title: string
+  text: string
+  cta: string
+  ctaHref: string
+  items: Array<{
+    href: string
+    label: string
+    text: string
+    icon: LucideIcon
+  }>
+}
+
+function DesktopMenu({
+  number,
+  label,
+  href,
+  menu,
+  onNavigate,
+}: {
+  number: string
+  label: string
+  href: string
+  menu: DesktopMenuData
+  onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
+}) {
+  return (
+    <div className="group relative">
+      <a
+        href={href}
+        onClick={(event) => onNavigate(event, href)}
+        className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
+      >
+        <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
+          {number}
+        </span>
+        {label}
+        <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
+      </a>
+
+      <div className="pointer-events-none absolute left-1/2 top-full w-[720px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[780px]">
+        <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
+          <div className="min-w-0 bg-[#eef6fa] p-7">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
+              <CarFront className="h-5 w-5" />
+            </span>
+            <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
+              {menu.eyebrow}
+            </p>
+            <h3 className="mt-2 whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124]">
+              {menu.title}
+            </h3>
+            <p className="mt-3 whitespace-normal text-sm leading-6 text-[#5c707b]">
+              {menu.text}
+            </p>
+            <a
+              href={menu.ctaHref}
+              onClick={(event) => onNavigate(event, menu.ctaHref)}
+              className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#202124]"
+            >
+              {menu.cta}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className="min-w-0 p-4">
+            {menu.items.map(({ href: itemHref, label: itemLabel, text, icon: Icon }) => (
+              <a
+                key={`${itemHref}-${itemLabel}`}
+                href={itemHref}
+                onClick={(event) => onNavigate(event, itemHref)}
+                className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
+                  <Icon className="h-4.5 w-4.5" />
+                </span>
+                <span className="min-w-0">
+                  <strong className="block whitespace-normal text-sm font-medium text-[#202124]">
+                    {itemLabel}
+                  </strong>
+                  <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
+                    {text}
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

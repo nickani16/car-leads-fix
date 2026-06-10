@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronRight, Home } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 type BreadcrumbItem = {
   label: string
@@ -16,33 +16,32 @@ export default function PublicBreadcrumbs({
   return (
     <nav
       aria-label="Brödsmulor"
-      className={`flex min-w-0 items-center gap-2 text-xs text-[#667780] ${className}`}
+      className={`inline-flex min-w-0 max-w-full self-start items-center rounded-full border border-white/80 bg-white/68 px-2 py-1.5 text-[11px] text-[#667780] shadow-[0_10px_30px_rgba(32,33,36,.055)] backdrop-blur-xl ${className}`}
     >
       <Link
         href="/"
-        aria-label="Till startsidan"
-        className="group inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/80 bg-white/70 shadow-[0_8px_24px_rgba(32,33,36,.05)] backdrop-blur transition hover:border-[#b9d6e5] hover:bg-white"
+        className="shrink-0 rounded-full px-3 py-1.5 font-medium text-[#52636b] transition hover:bg-white hover:text-[#202124]"
       >
-        <Home className="h-3.5 w-3.5 transition group-hover:text-[#202124]" />
+        Autorell
       </Link>
 
       {items.map((item, index) => {
         const current = index === items.length - 1
 
         return (
-          <span key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-2">
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#9aa6ac]" />
+          <span key={`${item.label}-${index}`} className="flex min-w-0 items-center">
+            <ChevronRight className="h-3 w-3 shrink-0 text-[#a1adb2]" />
             {item.href && !current ? (
               <Link
                 href={item.href}
-                className="truncate rounded-full px-2 py-1.5 transition hover:bg-white/70 hover:text-[#202124]"
+                className="truncate rounded-full px-3 py-1.5 transition hover:bg-white hover:text-[#202124]"
               >
                 {item.label}
               </Link>
             ) : (
               <span
                 aria-current={current ? 'page' : undefined}
-                className="truncate rounded-full border border-[#cbdce4] bg-white/65 px-3 py-1.5 font-medium text-[#314852] backdrop-blur"
+                className="truncate rounded-full bg-[#eaf4f8] px-3 py-1.5 font-medium text-[#314852]"
               >
                 {item.label}
               </span>
