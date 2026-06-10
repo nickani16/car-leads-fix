@@ -17,6 +17,7 @@ import {
   MonitorSmartphone,
   ScanSearch,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   Truck,
   UserRound,
@@ -52,7 +53,11 @@ export default function HomePage() {
         <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
 
         <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
-          <div className="w-full min-w-0 max-w-[720px]">
+          <div className="w-full min-w-0 max-w-[720px] md:translate-y-8">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d3d9d9] bg-white/82 px-3.5 py-2 text-[11px] font-medium text-[#405764] shadow-[0_10px_28px_rgba(32,33,36,.07)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs">
+              <Sparkles className="h-4 w-4 shrink-0 text-[#4f8298]" />
+              <span>Sälj tryggt. Nå fler professionella köpare.</span>
+            </div>
             <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
               Sälj bilen i Sverige.
               <span className="block text-[#242424]">Nå professionella köpare i Europa.</span>
@@ -73,7 +78,7 @@ export default function HomePage() {
                 href="#sa-fungerar-det"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] border border-[#d0cec7] bg-white/85 px-7 text-base font-medium text-[#242424] shadow-[0_10px_28px_rgba(32,33,36,.06)] backdrop-blur-sm transition hover:border-[#242424] hover:bg-white sm:rounded-full sm:font-normal"
               >
-                Så fungerar exporten
+                Hur det funkar
                 <ChevronRight className="h-5 w-5" />
               </a>
             </div>

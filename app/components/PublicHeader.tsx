@@ -232,7 +232,7 @@ export default function PublicHeader({
             dealerLabel: 'För bilhandlare',
             links: [
               ['/salj-bil', 'Sälj din bil'],
-              ['/#sa-fungerar-det', 'Exportprocessen'],
+              ['/#sa-fungerar-det', 'Hur det funkar'],
               ['/foretag', 'Företag'],
               ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
@@ -311,12 +311,12 @@ export default function PublicHeader({
           eyebrow: 'Så fungerar Autorell',
           title: 'Ett tydligt flöde från kontroll till export.',
           text: 'Följ kvalificering, deklaration, budgivning och affär i sex tydliga steg.',
-          cta: 'Se hela exportprocessen',
+          cta: 'Se hur det funkar',
           ctaHref: '/#sa-fungerar-det',
           items: [
             {
               href: '/#sa-fungerar-det',
-              label: 'Exportprocessen',
+              label: 'Steg för steg',
               text: 'Se samtliga steg från bil till köpare.',
               icon: Route,
             },
@@ -654,10 +654,17 @@ export default function PublicHeader({
               </Link>
             </nav>
 
-            <div className="hidden items-center gap-3 xl:flex">
+            <div className="hidden items-center gap-2 xl:flex">
+              <Link
+                href="/kontakt"
+                className="hidden min-h-12 items-center justify-center gap-2 rounded-full border border-[#9fc9de] bg-[#e8f4fa] px-4 text-sm font-medium text-[#294b5b] shadow-[0_10px_24px_rgba(73,126,151,.08)] transition hover:-translate-y-0.5 hover:bg-[#d9edf7] min-[1380px]:inline-flex"
+              >
+                <Headphones className="h-4 w-4" />
+                {content.links[5][1]}
+              </Link>
               <Link
                 href={content.ctaHref}
-                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#242424] pl-6 pr-2 text-sm font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
+                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-2 text-sm font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
                 {content.cta}
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
@@ -695,7 +702,7 @@ export default function PublicHeader({
               {content.privateLabel}
             </p>
             <nav className="mt-3">
-              {content.links.map(([href, label], index) => (
+              {content.links.slice(0, 5).map(([href, label], index) => (
                 <Link
                   key={href}
                   href={href}
@@ -722,6 +729,18 @@ export default function PublicHeader({
               className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#B4D9EF] px-5 text-base font-medium text-[#242424]"
             >
               {content.cta}
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <Link
+              href="/kontakt"
+              onClick={() => setOpen(false)}
+              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#a9cfe1] bg-[#e8f4fa] px-5 text-base font-medium text-[#294b5b]"
+            >
+              <span className="flex items-center gap-3">
+                <Headphones className="h-5 w-5" />
+                {content.links[5][1]} Autorell
+              </span>
               <ArrowRight className="h-5 w-5" />
             </Link>
 

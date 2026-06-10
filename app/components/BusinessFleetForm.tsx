@@ -72,14 +72,14 @@ export default function BusinessFleetForm() {
     <form onSubmit={handleSubmit} className="min-w-0 bg-white/95 p-5 backdrop-blur sm:p-9 lg:p-10">
       <div className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#71818a]">
-          Inled en dialog
+          Starta ett pilotflöde
         </p>
         <h2 className="mt-3 break-words text-[27px] leading-tight tracking-[-0.04em] text-[#202124] sm:text-3xl">
-          Berätta om er fordonsportfölj.
+          Beskriv volymen. Vi föreslår nästa steg.
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-6 text-[#65737b]">
-          Ingen bindning. Vi återkommer med ett anpassat upplägg utifrån volym,
-          fordonstyp och tidsplan.
+          Börja med en mindre portfölj eller ett återkommande flöde. Ingen
+          bindning och ingen lång implementation.
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export default function BusinessFleetForm() {
         disabled={sending}
         className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[#242424] px-8 text-sm font-medium text-white transition hover:bg-[#111111] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
       >
-        {sending ? 'Skickar...' : 'Begär företagskontakt'}
+        {sending ? 'Skickar...' : 'Få ett konkret pilotupplägg'}
         {!sending && <ArrowRight className="h-4 w-4" />}
       </button>
     </form>
