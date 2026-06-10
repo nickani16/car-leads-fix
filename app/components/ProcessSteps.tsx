@@ -5,8 +5,11 @@ import {
   Banknote,
   CarFront,
   Check,
+  FileCheck2,
   Globe2,
   Plus,
+  ShieldCheck,
+  Truck,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -14,38 +17,74 @@ const steps = [
   {
     number: '01',
     icon: CarFront,
-    eyebrow: 'Fordonsprofil',
-    title: 'Beskriv din bil',
-    text: 'Fyll i registreringsnummer och några enkla uppgifter. Det tar bara ett par minuter.',
+    eyebrow: 'Kvalificering',
+    title: 'Kontrollera om bilen passar',
+    text: 'Vi tar initialt emot svenska bilar från 2018, med högst 10 000 mil och gott tekniskt skick.',
     details:
-      'Du skapar en tydlig fordonsprofil med miltal, utrustning, skick, servicehistorik och bilder. Ju bättre underlag du lämnar, desto enklare blir det för handlarna att bedöma bilen och lämna ett seriöst bud.',
-    highlights: ['Cirka 3 minuter', 'Kostnadsfritt'],
+      'Den första kontrollen säkerställer att bilen finns i Sverige, är körbar och saknar allvarliga motor-, växellåds-, läckage- eller krockproblem.',
+    highlights: ['2018 eller nyare', 'Max 10 000 mil'],
     accent: 'bg-[#dceefa]',
     iconStyle: 'bg-[#b4d9ef] text-[#20333e]',
   },
   {
     number: '02',
-    icon: Globe2,
-    eyebrow: 'Europeisk räckvidd',
-    title: 'Vi hittar rätt köpare',
-    text: 'Din bil presenteras för vårt kvalitetssäkrade nätverk av bilhandlare i Europa.',
+    icon: FileCheck2,
+    eyebrow: 'Fordonsdeklaration',
+    title: 'Beskriv bilen korrekt',
+    text: 'Utrustning, service, skick, kända fel och bilder samlas i en strukturerad fordonsprofil.',
     details:
-      'Autorell matchar bilen med professionella handlare som söker just den typen av fordon. Det ger bilen större räckvidd än en vanlig lokal försäljning och skapar konkurrens mellan relevanta köpare.',
-    highlights: ['Verifierade handlare', '24 timmars budgivning'],
+      'Deklarationen blir underlaget för handlarnas bud och följer med i affären. Konkreta uppgifter minskar osäkerheten för både säljare och köpare.',
+    highlights: ['Tydliga uppgifter', 'Obligatoriska bilder'],
     accent: 'bg-[#e8e3d8]',
     iconStyle: 'bg-[#242424] text-white',
   },
   {
     number: '03',
-    icon: Banknote,
-    eyebrow: 'Ditt beslut',
-    title: 'Du väljer erbjudande',
-    text: 'När rätt bud kommer bestämmer du själv om du vill gå vidare. Enkelt och utan press.',
+    icon: Globe2,
+    eyebrow: 'Europeisk budgivning',
+    title: 'Handlare budar i 24 timmar',
+    text: 'Kvalificerade svenska och europeiska handlare bedömer bilen och konkurrerar om den.',
     details:
-      'Efter budgivningen får du ett tydligt erbjudande. Du är aldrig skyldig att acceptera. När du är nöjd hjälper vi till med nästa steg så att betalning, dokumentation och överlämning blir så smidig som möjligt.',
-    highlights: ['Ingen bindning', 'Personlig support'],
+      'Bilen visas endast för verifierade professionella köpare. Buden baseras på fordonsprofilen och gäller under förutsättning att uppgifterna stämmer.',
+    highlights: ['Verifierade handlare', 'Villkorade bud'],
     accent: 'bg-[#dfe9e3]',
     iconStyle: 'bg-[#d5e7dc] text-[#20372b]',
+  },
+  {
+    number: '04',
+    icon: Banknote,
+    eyebrow: 'Ditt beslut',
+    title: 'Acceptera eller avstå',
+    text: 'Efter budgivningen väljer du själv om det högsta budet är tillräckligt bra.',
+    details:
+      'Du är aldrig skyldig att sälja. Om du accepterar skapas nästa del av affären med dokumentation, villkor och tydlig status för båda parter.',
+    highlights: ['Ingen skyldighet', 'Tydligt högsta bud'],
+    accent: 'bg-[#efe6d6]',
+    iconStyle: 'bg-[#eadcc2] text-[#574b38]',
+  },
+  {
+    number: '05',
+    icon: ShieldCheck,
+    eyebrow: 'Kontroll och betalning',
+    title: 'Bilen jämförs med deklarationen',
+    text: 'Efter acceptans kontrolleras att bilen motsvarar uppgifterna som budet baserades på.',
+    details:
+      'Om bilen stämmer fortsätter affären enligt avtalet. Vid en väsentlig avvikelse kan affären pausas, justeras genom en ny överenskommelse eller avbrytas.',
+    highlights: ['Villkorad kontroll', 'Dokumenterat underlag'],
+    accent: 'bg-[#dceefa]',
+    iconStyle: 'bg-[#b4d9ef] text-[#20333e]',
+  },
+  {
+    number: '06',
+    icon: Truck,
+    eyebrow: 'Hämtning och export',
+    title: 'Bilen lämnar Sverige',
+    text: 'När affären är godkänd samordnas hämtning, dokumentation och transport till köparen.',
+    details:
+      'Autorell bygger flödet för gränsöverskridande affärer. Status för betalning, hämtning och dokument ska vara tydlig för säljare, köpare och administration.',
+    highlights: ['Svenskt ursprung', 'Europeisk köpare'],
+    accent: 'bg-[#e8e3d8]',
+    iconStyle: 'bg-[#242424] text-white',
   },
 ]
 
@@ -161,11 +200,11 @@ export default function ProcessSteps() {
       </div>
 
       <div className="mt-5 flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-[#73848b] lg:hidden">
-        <span>Beskriv</span>
+        <span>Kvalificera</span>
         <ArrowRight className="h-3.5 w-3.5" />
-        <span>Matcha</span>
+        <span>Bud</span>
         <ArrowRight className="h-3.5 w-3.5" />
-        <span>Välj</span>
+        <span>Export</span>
       </div>
     </div>
   )

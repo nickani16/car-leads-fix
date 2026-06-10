@@ -53,6 +53,10 @@ type Lead = {
   tireset?: string
   towbar?: string
   warnings?: string
+  is_driveable?: boolean
+  has_engine_transmission_issues?: boolean
+  has_fluid_leaks?: boolean
+  has_serious_collision_damage?: boolean
   brakes?: string
   importCar?: string
   inspection_valid_until?: string
@@ -213,7 +217,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,equipment,equipment_translation_pending,images,status'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -1135,6 +1139,46 @@ export default function DealerPage() {
                     <Detail
                       label="Warnings"
                       value={vehicleValueInEnglish(selectedLead.warnings)}
+                    />
+                    <Detail
+                      label="Driveable"
+                      value={
+                        selectedLead.is_driveable === undefined
+                          ? undefined
+                          : selectedLead.is_driveable
+                            ? 'Yes'
+                            : 'No'
+                      }
+                    />
+                    <Detail
+                      label="Engine or transmission issues"
+                      value={
+                        selectedLead.has_engine_transmission_issues === undefined
+                          ? undefined
+                          : selectedLead.has_engine_transmission_issues
+                            ? 'Yes'
+                            : 'No'
+                      }
+                    />
+                    <Detail
+                      label="Fluid leaks"
+                      value={
+                        selectedLead.has_fluid_leaks === undefined
+                          ? undefined
+                          : selectedLead.has_fluid_leaks
+                            ? 'Yes'
+                            : 'No'
+                      }
+                    />
+                    <Detail
+                      label="Serious collision damage"
+                      value={
+                        selectedLead.has_serious_collision_damage === undefined
+                          ? undefined
+                          : selectedLead.has_serious_collision_damage
+                            ? 'Yes'
+                            : 'No'
+                      }
                     />
                   </div>
                   {selectedLead.damage_description && (

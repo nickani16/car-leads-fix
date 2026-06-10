@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import VehicleLeadForm from '../components/VehicleLeadForm'
+import BuyerMarketPage from '../components/BuyerMarketPage'
 
 export const metadata: Metadata = {
-  title: 'Auto verkaufen | Autorell Deutschland',
+  title: 'Schwedische Fahrzeuge für Händler | Autorell Deutschland',
   description:
-    'Verkaufen Sie Ihr Fahrzeug sicher an das europäische Händlernetz von Autorell.',
+    'Ausgewählte schwedische Fahrzeuge, strukturierte Daten und 24-Stunden-Auktionen für verifizierte Autohändler.',
 }
 
 export default function GermanVehiclePage() {
-  return <VehicleLeadForm locale="de" />
+  return <BuyerMarketPage locale="de" />
 }

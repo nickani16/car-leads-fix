@@ -29,7 +29,7 @@ const BRANDS = [
 ]
 
 const YEARS = Array.from(
-  { length: new Date().getFullYear() - 1979 },
+  { length: new Date().getFullYear() - 2016 },
   (_, index) => String(new Date().getFullYear() + 1 - index)
 )
 
@@ -65,16 +65,16 @@ const EU_COUNTRIES = [
 
 const copy = {
   sv: {
-    market: 'Svensk bilförsäljning',
-    hero: 'Sälj din bil till vårt europeiska handlarnätverk.',
-    intro: 'Fyll i de viktigaste uppgifterna. Det tar normalt 3–5 minuter.',
-    secure: 'Trygg och kostnadsfri förfrågan',
+    market: 'Svensk exportförsäljning',
+    hero: 'Kontrollera om din bil passar Europas professionella köpare.',
+    intro: 'För bilar från 2018, högst 10 000 mil, placerade i Sverige och i gott tekniskt skick.',
+    secure: 'Kostnadsfri kontroll och registrering',
     steps: ['Bilen', 'Teknik', 'Skick', 'Bilder & kontakt'],
     step: 'Steg',
     of: 'av',
     vehicleEyebrow: 'Fordonsidentitet',
-    vehicleTitle: 'Vilken bil vill du sälja?',
-    vehicleIntro: 'Börja med bilens grunduppgifter.',
+    vehicleTitle: 'Uppfyller bilen våra grundkriterier?',
+    vehicleIntro: 'Börja med identitet, årsmodell, miltal och var bilen finns.',
     reg: 'Registreringsnummer',
     make: 'Bilmärke',
     model: 'Modell',
@@ -97,8 +97,12 @@ const copy = {
     power: 'Motoreffekt',
     color: 'Färg',
     conditionEyebrow: 'Historik och skick',
-    conditionTitle: 'Hur är bilens skick?',
-    conditionIntro: 'Svara så korrekt du kan. Det ger tryggare och bättre bud.',
+    conditionTitle: 'Kvalificera bilens tekniska skick',
+    conditionIntro: 'Konkreta svar avgör om bilen kan gå vidare till europeisk budgivning.',
+    driveable: 'Är bilen körbar och trafiksäker?',
+    engineTransmissionIssues: 'Finns problem med motor eller växellåda?',
+    fluidLeaks: 'Finns olje-, kylvätske- eller andra vätskeläckage?',
+    seriousCollisionDamage: 'Har bilen en större eller ej reparerad krockskada?',
     owners: 'Antal tidigare ägare',
     service: 'Servicehistorik',
     damage: 'Skador',
@@ -123,19 +127,20 @@ const copy = {
     termsLink: 'användarvillkoren',
     back: 'Tillbaka',
     next: 'Fortsätt',
-    submit: 'Skicka förfrågan',
+    submit: 'Skicka för granskning',
     sending: 'Skickar...',
     required: 'Obligatoriskt',
     optional: 'Valfritt',
     choose: 'Välj alternativ',
     successLabel: 'Förfrågan mottagen',
-    successTitle: 'Tack! Vi granskar din bil.',
-    successText: 'Vi kontaktar dig när fordonsprofilen är redo för nästa steg.',
+    successTitle: 'Tack! Bilen är skickad för granskning.',
+    successText: 'Vi kontrollerar fordonsprofilen innan en eventuell 24-timmarsbudgivning startas.',
     home: 'Till Autorell',
     errors: {
       vehicle: 'Fyll i registreringsnummer, märke, modell, årsmodell, miltal, ort och postnummer.',
       technical: 'Välj karosstyp, bränsle, växellåda och drivning.',
       condition: 'Fyll i servicehistorik, skador, varningslampor och säljtillfälle.',
+      qualification: 'Bilen behöver vara körbar och utan allvarliga motor-, växellåds-, läckage- eller krockproblem för att gå vidare.',
       damage: 'Beskriv skadorna kort.',
       photos: 'Ladda upp minst 4 bilder.',
       contact: 'Kontrollera telefonnummer, e-post och integritetsgodkännande.',
@@ -167,6 +172,10 @@ const copy = {
     conditionEyebrow: 'Historie und Zustand',
     conditionTitle: 'Wie ist der Zustand des Fahrzeugs?',
     conditionIntro: 'Genaue Angaben schaffen Vertrauen und bessere Gebote.',
+    driveable: 'Ist das Fahrzeug fahrbereit und verkehrssicher?',
+    engineTransmissionIssues: 'Gibt es Motor- oder Getriebeprobleme?',
+    fluidLeaks: 'Gibt es Öl-, Kühlmittel- oder andere Flüssigkeitslecks?',
+    seriousCollisionDamage: 'Hat das Fahrzeug einen schweren oder unreparierten Unfallschaden?',
     owners: 'Vorbesitzer', service: 'Servicehistorie', damage: 'Schäden',
     damageDescription: 'Schäden beschreiben', warnings: 'Warnleuchten',
     tires: 'Reifenzustand', keys: 'Anzahl Schlüssel', towbar: 'Anhängerkupplung',
@@ -189,6 +198,7 @@ const copy = {
       vehicle: 'Bitte Kennzeichen, Marke, Modell, Modelljahr, Kilometerstand, Abholort und Postleitzahl ausfüllen.',
       technical: 'Bitte Karosserie, Kraftstoff, Getriebe und Antrieb wählen.',
       condition: 'Bitte Servicehistorie, Schäden, Warnleuchten und Verkaufszeitpunkt angeben.',
+      qualification: 'Das Fahrzeug muss fahrbereit und frei von schweren Motor-, Getriebe-, Leckage- oder Unfallschäden sein.',
       damage: 'Bitte beschreiben Sie die Schäden kurz.',
       photos: 'Bitte mindestens 4 Bilder hochladen.',
       contact: 'Bitte Telefonnummer, E-Mail und Datenschutzbestätigung prüfen.',
@@ -217,6 +227,10 @@ const copy = {
     drivetrain: 'Drivetrain', power: 'Power', color: 'Colour',
     conditionEyebrow: 'History and condition', conditionTitle: 'What is the vehicle condition?',
     conditionIntro: 'Accurate information builds confidence and stronger bids.',
+    driveable: 'Is the vehicle driveable and roadworthy?',
+    engineTransmissionIssues: 'Are there engine or transmission problems?',
+    fluidLeaks: 'Are there oil, coolant or other fluid leaks?',
+    seriousCollisionDamage: 'Does the vehicle have major or unrepaired collision damage?',
     owners: 'Previous owners', service: 'Service history', damage: 'Damage',
     damageDescription: 'Describe the damage', warnings: 'Warning lights',
     tires: 'Tire condition', keys: 'Number of keys', towbar: 'Towbar',
@@ -239,6 +253,7 @@ const copy = {
       vehicle: 'Enter registration, make, model, model year, mileage, collection city and postal code.',
       technical: 'Select body type, fuel type, transmission and drivetrain.',
       condition: 'Enter service history, damage, warning lights and selling time.',
+      qualification: 'The vehicle must be driveable and free from major engine, transmission, leakage or collision issues.',
       damage: 'Briefly describe the damage.',
       photos: 'Upload at least 4 photos.',
       contact: 'Check your phone number, email and privacy acceptance.',
@@ -292,6 +307,8 @@ const emptyForm = {
   bodyType: '', fuelType: '', gearbox: '',
   drivetrain: '', powerHp: '', color: '', owners: '', service: '',
   damage: '', damageDescription: '', warnings: '', tires: '', keysCount: '',
+  driveable: '', engineTransmissionIssues: '', fluidLeaks: '',
+  seriousCollisionDamage: '',
   towbar: '', sellTime: '', equipment: '', phone: '', email: '',
   privacyAccepted: false,
 }
@@ -299,8 +316,13 @@ const emptyForm = {
 type FormState = typeof emptyForm
 
 const SWEDISH_MILEAGE_LIMIT = 10_000
+const SWEDISH_MIN_MODEL_YEAR = 2018
 const SWEDISH_MILEAGE_LIMIT_MESSAGE =
   'Vårt nätverk av europeiska återförsäljare fokuserar för närvarande på fordon med upp till 10 000 mil. Tyvärr innebär det att vi inte kan erbjuda försäljning eller förmedling av bilar som överstiger denna gräns.'
+const SWEDISH_MODEL_YEAR_MESSAGE =
+  'Autorell tar just nu emot bilar från årsmodell 2018 och framåt.'
+const SWEDISH_LOCATION_MESSAGE =
+  'I den första lanseringen tar Autorell endast emot bilar som finns registrerade och tillgängliga i Sverige.'
 
 const conversionCopy = {
   sv: {
@@ -368,6 +390,21 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const distanceUnit = locale === 'sv' ? 'mil' : 'km'
   const mileageLimitExceeded =
     locale === 'sv' && Number(form.miles) > SWEDISH_MILEAGE_LIMIT
+  const modelYearUnsupported =
+    locale === 'sv' &&
+    Boolean(form.modelYear) &&
+    Number(form.modelYear) < SWEDISH_MIN_MODEL_YEAR
+  const locationUnsupported =
+    locale === 'sv' && Boolean(form.pickupCountry) && form.pickupCountry !== 'SE'
+  const qualificationFailed =
+    locale === 'sv' &&
+    (form.driveable === 'Nej' ||
+      form.engineTransmissionIssues === 'Ja' ||
+      form.fluidLeaks === 'Ja' ||
+      form.seriousCollisionDamage === 'Ja' ||
+      form.warnings === o.warnings[1] ||
+      form.damage === o.damage[2] ||
+      form.damage === o.damage[3])
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
@@ -384,8 +421,11 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   function validate() {
     if (step === 1 && (!form.reg || !form.make || !form.model || !form.modelYear || !form.miles || !form.pickupCity || !form.pickupPostalCode || !form.pickupCountry)) return t.errors.vehicle
     if (step === 1 && mileageLimitExceeded) return SWEDISH_MILEAGE_LIMIT_MESSAGE
+    if (step === 1 && modelYearUnsupported) return SWEDISH_MODEL_YEAR_MESSAGE
+    if (step === 1 && locationUnsupported) return SWEDISH_LOCATION_MESSAGE
     if (step === 2 && (!form.bodyType || !form.fuelType || !form.gearbox || !form.drivetrain)) return t.errors.technical
-    if (step === 3 && (!form.service || !form.damage || !form.warnings || !form.sellTime)) return t.errors.condition
+    if (step === 3 && (!form.service || !form.damage || !form.warnings || !form.sellTime || !form.driveable || !form.engineTransmissionIssues || !form.fluidLeaks || !form.seriousCollisionDamage)) return t.errors.condition
+    if (step === 3 && qualificationFailed) return t.errors.qualification
     if (step === 3 && form.damage !== o.damage[0] && !form.damageDescription) return t.errors.damage
     if (step === 4 && images.length < 4) return t.errors.photos
     if (step === 4 && (!/^[+0-9][0-9\s-]{6,18}$/.test(form.phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) || !form.privacyAccepted)) return t.errors.contact
@@ -430,6 +470,12 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
       importCar: '',
       brakes: '',
       tireset: '',
+      isDriveable: form.driveable === o.yesNo[0],
+      hasEngineTransmissionIssues:
+        form.engineTransmissionIssues === o.yesNo[0],
+      hasFluidLeaks: form.fluidLeaks === o.yesNo[0],
+      hasSeriousCollisionDamage:
+        form.seriousCollisionDamage === o.yesNo[0],
     }
     Object.entries(apiValues).forEach(([key, value]) => payload.append(key, String(value)))
     images.forEach((image) => payload.append('images', image.file))
@@ -559,24 +605,35 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                         type="number"
                         min="0"
                         aria-invalid={mileageLimitExceeded}
-                        aria-describedby={mileageLimitExceeded ? 'mileage-limit-message' : undefined}
                         className={`form-control pr-14 ${mileageLimitExceeded ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''}`}
                         value={form.miles}
                         onChange={(e) => update('miles', e.target.value)}
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{distanceUnit}</span>
                     </div>
-                    {mileageLimitExceeded && (
-                      <p id="mileage-limit-message" className="mt-2 text-sm font-medium leading-6 text-red-700">
-                        {SWEDISH_MILEAGE_LIMIT_MESSAGE}
-                      </p>
-                    )}
                   </Field>
                   <Field label={t.firstRegistration} optional={t.optional}><input type="date" className="form-control" value={form.firstRegistration} onChange={(e) => update('firstRegistration', e.target.value)} /></Field>
                   <Field label={t.pickupCity}><input autoComplete="address-level2" className="form-control" value={form.pickupCity} onChange={(e) => update('pickupCity', e.target.value)} /></Field>
                   <Field label={t.pickupPostalCode}><input autoComplete="postal-code" className="form-control uppercase" value={form.pickupPostalCode} onChange={(e) => update('pickupPostalCode', e.target.value.toUpperCase())} /></Field>
-                  <Field label={t.pickupCountry}><select className="form-control" value={form.pickupCountry} onChange={(e) => update('pickupCountry', e.target.value)}><option value="">{t.choose}</option>{EU_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></Field>
+                  <Field label={t.pickupCountry}>
+                    {locale === 'sv' ? (
+                      <div className="form-control flex items-center text-[#4d5960]">
+                        Sverige
+                      </div>
+                    ) : (
+                      <select className="form-control" value={form.pickupCountry} onChange={(e) => update('pickupCountry', e.target.value)}><option value="">{t.choose}</option>{EU_COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select>
+                    )}
+                  </Field>
                 </Grid>
+                {(modelYearUnsupported || mileageLimitExceeded || locationUnsupported) && (
+                  <div className="mt-6 rounded-[16px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
+                    {modelYearUnsupported
+                      ? SWEDISH_MODEL_YEAR_MESSAGE
+                      : mileageLimitExceeded
+                        ? SWEDISH_MILEAGE_LIMIT_MESSAGE
+                        : SWEDISH_LOCATION_MESSAGE}
+                  </div>
+                )}
               </Section>
             )}
 
@@ -598,6 +655,10 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                 <Grid>
                   <Field label={t.owners} optional={t.optional}><input type="number" min="0" className="form-control" value={form.owners} onChange={(e) => update('owners', e.target.value)} /></Field>
                   <Choice label={t.service} value={form.service} values={o.service} choose={t.choose} onChange={(v) => update('service', v)} />
+                  <Choice label={t.driveable} value={form.driveable} values={o.yesNo} choose={t.choose} onChange={(v) => update('driveable', v)} />
+                  <Choice label={t.engineTransmissionIssues} value={form.engineTransmissionIssues} values={o.yesNo} choose={t.choose} onChange={(v) => update('engineTransmissionIssues', v)} />
+                  <Choice label={t.fluidLeaks} value={form.fluidLeaks} values={o.yesNo} choose={t.choose} onChange={(v) => update('fluidLeaks', v)} />
+                  <Choice label={t.seriousCollisionDamage} value={form.seriousCollisionDamage} values={o.yesNo} choose={t.choose} onChange={(v) => update('seriousCollisionDamage', v)} />
                   <Choice label={t.damage} value={form.damage} values={o.damage} choose={t.choose} onChange={(v) => update('damage', v)} />
                   <Choice label={t.warnings} value={form.warnings} values={o.warnings} choose={t.choose} onChange={(v) => update('warnings', v)} />
                   <Choice label={t.tires} value={form.tires} values={o.tires} choose={t.choose} onChange={(v) => update('tires', v)} optionalLabel={t.optional} />
@@ -607,6 +668,18 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                   {form.damage && form.damage !== o.damage[0] && <div className="sm:col-span-2"><Field label={t.damageDescription}><textarea rows={3} className="form-control resize-none" value={form.damageDescription} onChange={(e) => update('damageDescription', e.target.value)} /></Field></div>}
                   <div className="sm:col-span-2"><Field label={t.equipment} optional={t.optional}><textarea rows={3} className="form-control resize-none" value={form.equipment} onChange={(e) => update('equipment', e.target.value)} /></Field></div>
                 </Grid>
+                {qualificationFailed && (
+                  <div className="mt-6 rounded-[16px] border border-amber-200 bg-amber-50 px-5 py-4">
+                    <p className="font-medium text-amber-950">
+                      Bilen passar tyvärr inte våra nuvarande exportkriterier.
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-amber-800">
+                      Vi tar just nu endast emot körbara bilar i gott tekniskt
+                      skick, utan allvarliga motor-, växellåds-, läckage- eller
+                      krockproblem.
+                    </p>
+                  </div>
+                )}
               </Section>
             )}
 
@@ -628,7 +701,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
             {error && <div className="mt-6 rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>}
             <div className="mt-8 flex justify-between border-t border-[#eceae5] pt-6">
               {step > 1 ? <button type="button" onClick={previous} className="inline-flex h-12 items-center gap-2 rounded-full border border-[#d4d2cc] px-5 text-sm font-normal text-[#4a5055] transition hover:bg-[#f6f5f1]"><ArrowLeft size={16} />{t.back}</button> : <span />}
-              {step < 4 ? <button type="button" onClick={next} disabled={mileageLimitExceeded} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
+              {step < 4 ? <button type="button" onClick={next} disabled={mileageLimitExceeded || modelYearUnsupported || locationUnsupported || qualificationFailed} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45">{t.next}<ArrowRight size={16} /></button> : <button type="submit" disabled={loading} className="inline-flex h-12 items-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-normal text-white transition hover:bg-[#111111] disabled:opacity-60">{loading ? t.sending : t.submit}<ArrowRight size={16} /></button>}
             </div>
             <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-normal text-slate-400">
               <LockKeyhole size={12} />

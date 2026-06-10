@@ -12,14 +12,14 @@ import { useEffect, useState } from 'react'
 
 const questions = [
   {
-    question: 'Hur värderas min bil?',
+    question: 'Vilka bilar tar Autorell emot?',
     answer:
-      'Vi använder informationen du lämnar för att presentera bilen för relevanta handlare. Intresset från marknaden hjälper oss att hitta ett aktuellt och konkurrenskraftigt pris.',
+      'I den första lanseringen tar vi emot bilar som finns i Sverige, är från årsmodell 2018 eller nyare, har gått högst 10 000 mil och är körbara utan allvarliga tekniska fel.',
   },
   {
-    question: 'Är värderingen kostnadsfri?',
+    question: 'Är registrering och budgivning kostnadsfri?',
     answer:
-      'Ja. Det kostar ingenting att registrera bilen eller ta emot ett erbjudande.',
+      'Ja. Det kostar ingenting att kontrollera kriterierna, registrera bilen eller ta emot dealerbud.',
   },
   {
     question: 'Måste jag acceptera ett erbjudande?',
@@ -27,14 +27,14 @@ const questions = [
       'Nej. Du bestämmer alltid själv om och när du vill sälja bilen.',
   },
   {
-    question: 'Hur lång tid tar processen?',
+    question: 'Hur länge pågår budgivningen?',
     answer:
-      'Det tar vanligtvis några minuter att registrera bilen. Därefter matchas den med relevanta köpare och budgivningen kan pågå i upp till 24 timmar.',
+      'När fordonsprofilen har granskats kan den publiceras för en fokuserad budgivning på upp till 24 timmar.',
   },
   {
-    question: 'Hur fungerar betalning och överlämning?',
+    question: 'Vad händer efter ett accepterat bud?',
     answer:
-      'När du accepterat ett erbjudande hjälper vi dig vidare med nästa steg och ser till att processen blir tydlig och trygg.',
+      'Avtal och nästa steg dokumenteras. Bilen behöver motsvara deklarationen innan betalning, hämtning och export kan slutföras.',
   },
   {
     question: 'Vilka personuppgifter ser bilhandlarna?',
@@ -127,8 +127,8 @@ export default function FaqTestimonials() {
               Tydliga svar före ditt beslut.
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-7 text-[#68787e] sm:text-base">
-              Det viktigaste om värdering, budgivning, betalning och hur vi
-              hanterar dina uppgifter.
+              Det viktigaste om fordonskriterier, europeisk budgivning,
+              kontroll, betalning och export.
             </p>
 
             <div className="mt-8 space-y-2">

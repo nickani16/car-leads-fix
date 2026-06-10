@@ -125,6 +125,46 @@ export default async function AdminLeadDetailPage({
                 { label: 'Damage', value: lead.damage },
                 { label: 'Damage details', value: lead.damage_description },
                 { label: 'Warnings', value: lead.warnings },
+                {
+                  label: 'Driveable',
+                  value:
+                    lead.is_driveable === null ||
+                    lead.is_driveable === undefined
+                      ? undefined
+                      : lead.is_driveable
+                        ? 'Yes'
+                        : 'No',
+                },
+                {
+                  label: 'Engine or transmission issues',
+                  value:
+                    lead.has_engine_transmission_issues === null ||
+                    lead.has_engine_transmission_issues === undefined
+                      ? undefined
+                      : lead.has_engine_transmission_issues
+                        ? 'Yes'
+                        : 'No',
+                },
+                {
+                  label: 'Fluid leaks',
+                  value:
+                    lead.has_fluid_leaks === null ||
+                    lead.has_fluid_leaks === undefined
+                      ? undefined
+                      : lead.has_fluid_leaks
+                        ? 'Yes'
+                        : 'No',
+                },
+                {
+                  label: 'Serious collision damage',
+                  value:
+                    lead.has_serious_collision_damage === null ||
+                    lead.has_serious_collision_damage === undefined
+                      ? undefined
+                      : lead.has_serious_collision_damage
+                        ? 'Yes'
+                        : 'No',
+                },
                 { label: 'Brakes', value: lead.brakes },
                 { label: 'Tires', value: lead.tires },
                 { label: 'Extra tire set', value: lead.tireset },

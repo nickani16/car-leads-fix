@@ -5,7 +5,8 @@ import FaqPageClient from './FaqPageClient'
 
 export const metadata: Metadata = {
   title: 'Vanliga frågor | Autorell',
-  description: 'Svar på vanliga frågor om värdering, budgivning, trygghet och Autorell Dealer Network.',
+  description:
+    'Svar om fordonskriterier, 24 timmars budgivning, kontroll, betalning, hämtning och export från Sverige.',
 }
 
 export default function FaqPage() {
@@ -20,7 +21,8 @@ export default function FaqPage() {
             Vad undrar du över?
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#626e78]">
-            Här hittar du svar om värderingen, försäljningen och hur Autorell fungerar för bilägare och handlare.
+            Här hittar du svar om fordonskriterier, 24 timmars budgivning,
+            kontroll, betalning, hämtning och export från Sverige.
           </p>
           <FaqPageClient />
         </div>

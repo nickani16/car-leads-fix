@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import VehicleLeadForm from '../components/VehicleLeadForm'
 
 export const metadata: Metadata = {
-  title: 'Sälj din bil | Autorell Sverige',
+  title: 'Kontrollera om din bil passar | Autorell Sverige',
   description:
-    'Sälj din bil tryggt till Autorells europeiska handlarnätverk.',
+    'För svenska bilar från 2018, högst 10 000 mil och gott tekniskt skick. Kostnadsfri registrering och europeisk dealerbudgivning.',
 }
 
 export default function SwedishVehiclePage() {

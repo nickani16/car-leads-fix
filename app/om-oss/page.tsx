@@ -20,24 +20,24 @@ import PublicHeader from '../components/PublicHeader'
 export const metadata: Metadata = {
   title: 'Om oss',
   description:
-    'Lär känna Autorell och vår idé om en enklare, öppnare och mer relevant marknadsplats för bilägare och professionella handlare.',
+    'Lär känna Autorell och vår idé om en strukturerad exportplattform för utvalda svenska bilar och professionella europeiska handlare.',
 }
 
 const principles = [
   {
     icon: ScanSearch,
-    title: 'Bättre information',
-    text: 'En tydlig fordonsprofil gör det enklare för seriösa köpare att bedöma bilen och lämna relevanta bud.',
+    title: 'Kvalificerade bilar',
+    text: 'Vi börjar med en tydlig köpbox för årsmodell, miltal, plats och tekniskt skick innan bilen når handlarna.',
   },
   {
     icon: ShieldCheck,
-    title: 'Kontroll hos säljaren',
-    text: 'Bilägaren bestämmer alltid om ett erbjudande är rätt. Tekniken ska ge valmöjligheter, inte skapa press.',
+    title: 'Korrekt deklaration',
+    text: 'En strukturerad fordonsdeklaration ger köparen bättre underlag och blir en del av den villkorade affären.',
   },
   {
     icon: Globe2,
-    title: 'Rätt räckvidd',
-    text: 'Efterfrågan stannar inte vid en kommungräns. Vi matchar bilen mot marknader där den faktiskt är relevant.',
+    title: 'Europeisk efterfrågan',
+    text: 'Sverige är säljarlandet. Professionella köpare kan finnas på flera europeiska marknader.',
   },
 ]
 
@@ -60,19 +60,19 @@ export default function AboutPage() {
                 Om Autorell
               </span>
               <h1 className="mt-7 max-w-3xl text-[44px] leading-[.99] tracking-[-0.055em] sm:text-6xl lg:text-[76px]">
-                Bilmarknaden kan fungera bättre för båda sidor.
+                Svensk bilhandel kan få större europeisk räckvidd.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-[#526a76] sm:text-xl">
-                Autorell bygger en digital marknadsplats där bilägare får
-                större räckvidd och professionella handlare får bättre
-                beslutsunderlag. Enklare att sälja. Enklare att köpa rätt.
+                Autorell bygger ett exportflöde där utvalda svenska bilar
+                möter verifierade professionella köpare genom fordonsdata,
+                24 timmars budgivning och en tydlig affärsprocess.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/salj-bil"
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111]"
                 >
-                  Värdera din bil
+                  Kontrollera din bil
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
@@ -91,10 +91,10 @@ export default function AboutPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                        Autorell marketplace
+                        Autorell export network
                       </p>
                       <p className="mt-2 text-xl tracking-[-0.03em]">
-                        Ett bättre beslutsflöde
+                        Från svensk bil till europeisk affär
                       </p>
                     </div>
                     <Gavel className="h-6 w-6 text-white/35" />
@@ -105,7 +105,7 @@ export default function AboutPage() {
                       <UserRound className="h-5 w-5 text-[#b4d9ef]" />
                       <p className="mt-5 text-sm">Bilägare</p>
                       <p className="mt-1 text-xs leading-5 text-white/50">
-                        En tydlig profil
+                        Kvalificerad bil
                       </p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-white/35" />
@@ -113,14 +113,14 @@ export default function AboutPage() {
                       <Building2 className="h-5 w-5 text-[#d8c8a8]" />
                       <p className="mt-5 text-sm">Handlare</p>
                       <p className="mt-1 text-xs leading-5 text-white/50">
-                        Relevanta objekt
+                        Europeiska bud
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-4 rounded-[16px] border border-[#b4d9ef]/20 bg-[#b4d9ef]/10 p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-white/60">Marknadsintresse</span>
+                      <span className="text-xs text-white/60">24 timmars budgivning</span>
                       <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.15em] text-[#b4d9ef]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#8fd0ad]" />
                         Aktivt
@@ -142,9 +142,9 @@ export default function AboutPage() {
 
                 <div className="grid grid-cols-3 gap-2 pt-4 sm:gap-3 sm:pt-6">
                   {[
-                    ['Digitalt', 'Ett samlat flöde'],
-                    ['Relevant', 'Rätt köpare'],
-                    ['Personligt', 'Support vid behov'],
+                    ['Sverige', 'Säljarland'],
+                    ['Europa', 'Köparnätverk'],
+                    ['Villkorat', 'Kontroll före export'],
                   ].map(([value, label]) => (
                     <div
                       key={value}
@@ -171,13 +171,12 @@ export default function AboutPage() {
                 Varför vi finns
               </p>
               <h2 className="mt-5 text-[36px] leading-[1.04] tracking-[-0.048em] sm:text-5xl">
-                Mindre osäkerhet. Mer relevans.
+                Färre fel objekt. Bättre underlag.
               </h2>
               <p className="mt-5 text-base leading-8 text-[#64747a]">
-                En bilaffär innehåller många beslut men informationen är ofta
-                utspridd och kontakterna för många. Vår roll är att göra
-                processen tydligare utan att ta beslutet från människorna i
-                affären.
+                Gränsöverskridande bilhandel kräver mer än en annons. Vår roll
+                är att samla kvalificering, deklaration, bud, avtal och
+                affärsstatus i ett sammanhängande system.
               </p>
             </div>
 
@@ -209,10 +208,10 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
           <div className="max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-              Två sidor. En marknadsplats.
+              Sverige som startmarknad
             </p>
             <h2 className="mt-5 text-[38px] leading-[1.04] tracking-[-0.05em] sm:text-5xl">
-              Innovation är värdefull först när vardagen blir enklare.
+              Ett digitalt system för en verklig exportaffär.
             </h2>
           </div>
 
@@ -223,9 +222,9 @@ export default function AboutPage() {
                 För dig som äger bilen
               </h3>
               <p className="mt-4 max-w-xl leading-7 text-white/60">
-                Du beskriver bilen en gång och får tillgång till efterfrågan
-                från professionella köpare. Du slipper jaga kontakter och
-                behåller kontrollen över beslutet.
+                Du kontrollerar först om bilen passar, deklarerar skicket och
+                får tillgång till konkurrerande bud från verifierade
+                professionella köpare.
               </p>
             </article>
             <article className="rounded-[24px] border border-white/10 bg-white/[.045] p-6 sm:p-9">
@@ -234,9 +233,9 @@ export default function AboutPage() {
                 För professionella köpare
               </h3>
               <p className="mt-4 max-w-xl leading-7 text-white/60">
-                Handlare får ett mer fokuserat fordonsflöde och strukturerad
-                information som gör det snabbare att bedöma, prioritera och
-                lämna bud.
+                Handlare får ett fokuserat flöde av utvalda svenska bilar och
+                strukturerad information för att bedöma, prioritera och lämna
+                villkorade bud.
               </p>
             </article>
           </div>
@@ -248,8 +247,8 @@ export default function AboutPage() {
             <div>
               <h3 className="text-xl tracking-[-0.03em]">Autorell i mitten</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
-                Vi bygger tekniken, kvalitetssäkrar flödet och finns nära när
-                en digital process behöver mänskligt stöd.
+                Vi bygger tekniken, kvalificerar fordonsflödet och samordnar
+                status för avtal, kontroll, betalning, hämtning och export.
               </p>
             </div>
             <HeartHandshake className="hidden h-8 w-8 text-[#b4d9ef]/55 sm:block" />
@@ -261,18 +260,19 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1120px] px-5 text-center sm:px-8">
           <BadgeCheck className="mx-auto h-7 w-7 text-[#4f7f94]" />
           <h2 className="mx-auto mt-6 max-w-3xl text-[36px] leading-[1.05] tracking-[-0.048em] sm:text-5xl">
-            Vi vill förtjäna nästa bilaffär, inte ta den för given.
+            Vi bygger exportflödet steg för steg, med Sverige först.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl leading-8 text-[#65747a]">
-            Börja med bilen eller ansök till handlarnätverket. Resten av
-            upplevelsen ska visa varför Autorell är värt ett försök.
+            Svenska säljare börjar med fordonskriterierna. Europeiska handlare
+            ansöker till köparnätverket. Varje ny marknad öppnas först när
+            kontroll, betalning och logistik kan genomföras på riktigt.
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/salj-bil"
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-medium text-white"
             >
-              Värdera din bil
+              Kontrollera din bil
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link

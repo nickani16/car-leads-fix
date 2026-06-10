@@ -4,21 +4,26 @@ import Link from 'next/link'
 import { ArrowRight, ChevronDown, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-const categories = ['Alla', 'Värdering', 'Försäljning', 'Trygghet', 'Bilhandlare']
+const categories = ['Alla', 'Kriterier', 'Budgivning', 'Export', 'Trygghet', 'Bilhandlare']
 
 const questions = [
-  ['Värdering', 'Hur värderas min bil?', 'Bilens uppgifter och skick presenteras för relevanta professionella köpare. Marknadens intresse ger ett aktuellt underlag för erbjudandet.'],
-  ['Värdering', 'Kostar det något att värdera bilen?', 'Nej. Det är kostnadsfritt att registrera bilen och ta emot ett erbjudande.'],
-  ['Värdering', 'Vilka uppgifter behöver jag lämna?', 'Du behöver bland annat registreringsnummer, miltal, information om skick och utrustning samt tydliga bilder av bilen.'],
-  ['Försäljning', 'Måste jag acceptera det högsta budet?', 'Nej. Du bestämmer alltid själv om du vill acceptera ett erbjudande och gå vidare med försäljningen.'],
-  ['Försäljning', 'Hur länge pågår budgivningen?', 'Budgivningen är normalt öppen i upp till 24 timmar från att fordonsprofilen publiceras.'],
-  ['Försäljning', 'Vad händer när jag accepterar ett erbjudande?', 'Vi hjälper dig vidare med kontakt, dokumentation, betalning och planering av överlämningen.'],
-  ['Försäljning', 'Kan jag sälja en bil med finansiering?', 'Det kan vara möjligt. Ange information om eventuell kvarvarande finansiering så hjälper vi dig att bedöma nästa steg.'],
+  ['Kriterier', 'Vilka bilar tar Autorell emot?', 'Vi tar initialt emot bilar som finns i Sverige, är från årsmodell 2018 eller nyare, har gått högst 10 000 mil och är körbara utan allvarliga motor-, växellåds-, läckage- eller krockproblem.'],
+  ['Kriterier', 'Varför tar ni inte emot alla bilar?', 'Autorell bygger först ett fokuserat exportflöde för bilar som har tydlig efterfrågan hos professionella europeiska köpare. Kriterierna kan utvecklas när nätverket växer.'],
+  ['Kriterier', 'Vilka uppgifter behöver jag lämna?', 'Du behöver bland annat registreringsnummer, miltal, servicehistorik, tekniskt skick, kända fel, utrustning och tydliga bilder av bilen.'],
+  ['Kriterier', 'Kan jag sälja en bil med motorfel eller aktiva varningslampor?', 'Inte i den första versionen. Bilar med allvarliga motor- eller växellådsproblem, betydande läckage, större krockskador eller allvarliga varningslampor går inte vidare till budgivning.'],
+  ['Budgivning', 'Kostar det något att registrera bilen?', 'Nej. Det är kostnadsfritt att kontrollera kriterierna, registrera bilen och ta emot dealerbud.'],
+  ['Budgivning', 'Måste jag acceptera det högsta budet?', 'Nej. Du bestämmer alltid själv om du vill acceptera ett erbjudande och gå vidare med försäljningen.'],
+  ['Budgivning', 'Hur länge pågår budgivningen?', 'Budgivningen är normalt öppen i upp till 24 timmar från att den granskade fordonsprofilen publiceras.'],
+  ['Budgivning', 'Vilka kan lägga bud?', 'Endast verifierade professionella bilhandlare som har godkänts för Autorell Dealer Network. Sverige är säljarlandet vid lansering, medan köparna kan finnas i Sverige och övriga Europa.'],
+  ['Export', 'Vad händer när jag accepterar ett erbjudande?', 'Ett villkorat affärsflöde startar med avtal, kontroll av bilen mot fordonsdeklarationen, betalningsstatus, hämtning och exportdokumentation.'],
+  ['Export', 'Vad händer om bilen inte stämmer med deklarationen?', 'Affären kan pausas. Mindre avvikelser kräver en ny frivillig överenskommelse. Vid en väsentlig avvikelse kan köparen ha rätt att avstå enligt avtalet.'],
+  ['Export', 'Hämtar Autorell bilen i Tyskland?', 'Nej. I den första lanseringen tar vi endast emot säljarbilar som finns i Sverige. Den tyska och engelska marknaden riktar sig initialt till professionella köpare av svenska fordon.'],
+  ['Export', 'Kan jag sälja en bil med finansiering?', 'Det kan vara möjligt, men kvarvarande finansiering behöver deklareras och hanteras innan ägarbyte och export kan slutföras.'],
   ['Trygghet', 'Kan handlarna se mina kontaktuppgifter?', 'Nej. Din telefon och e-post visas inte öppet för handlarna i dealer-portalen.'],
   ['Trygghet', 'Hur kontrolleras bilhandlarna?', 'Handlare ansöker om tillgång och deras företagsuppgifter granskas innan de får använda nätverket.'],
-  ['Trygghet', 'Är ett erbjudande bindande?', 'Du är inte bunden innan du uttryckligen har accepterat erbjudandet och kommit överens om affären.'],
+  ['Trygghet', 'Är ett dealerbud villkorat?', 'Ja. Budet baseras på fordonsdeklarationen och förutsätter att bilens identitet och skick motsvarar uppgifterna som lämnats.'],
   ['Bilhandlare', 'Hur ansöker mitt företag om tillgång?', 'Använd dealer-ansökan och fyll i företagets kontakt- och registreringsuppgifter. Vi återkommer efter granskning.'],
-  ['Bilhandlare', 'Vilka fordon visas i portalen?', 'Portalen visar aktuella fordonsprofiler från Autorells marknader med den information som behövs för att bedöma och lägga bud.'],
+  ['Bilhandlare', 'Vilka fordon visas i portalen?', 'Portalen visar kvalificerade svenska fordonsprofiler med strukturerad information om identitet, historik, skick, kända fel, bilder och upphämtningsplats.'],
 ] as const
 
 export default function FaqPageClient() {

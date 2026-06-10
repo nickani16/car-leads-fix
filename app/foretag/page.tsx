@@ -21,7 +21,7 @@ import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
 export const metadata: Metadata = {
-  title: 'Företagsförsäljning och fordonsflottor',
+  title: 'B2B-export för inbyten, leasingreturer och fordonsflottor',
   description:
     'Autorell hjälper företag, leasingbolag och vagnparksägare att avyttra enstaka fordon eller hela fordonsflottor genom ett europeiskt köparnätverk.',
 }
@@ -94,19 +94,19 @@ export default function BusinessPage() {
                 Autorell för företag
               </div>
               <h1 className="mt-6 max-w-full text-[39px] leading-[1.01] tracking-[-0.052em] [overflow-wrap:anywhere] min-[390px]:text-[43px] sm:mt-7 sm:text-6xl lg:text-[76px]">
-                En strukturerad väg ut ur fordonsinnehavet.
+                Europeisk avsättning för svenska fordonsportföljer.
               </h1>
               <p className="mt-5 max-w-2xl text-[16px] leading-7 text-[#526b78] sm:mt-7 sm:text-xl sm:leading-8">
-                För företag, leasingaktörer och vagnparksägare som vill avyttra
-                enstaka bilar eller hela flottor med större räckvidd, tydlig
-                kontroll och en ansvarig partner genom hela affären.
+                För bilhandlare, leasingaktörer, hyrbilsbolag och flottägare
+                som vill ge utvalda svenska fordon tillgång till professionell
+                efterfrågan i Europa.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:mt-10 sm:flex-row">
                 <a
                   href="#foretagskontakt"
                   className="group inline-flex min-h-14 w-full items-center justify-between gap-3 rounded-[16px] bg-[#242424] pl-6 pr-3 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111] sm:w-auto sm:justify-center sm:rounded-full sm:px-7"
                 >
-                  Diskutera er fordonsflotta
+                  Diskutera ert fordonsflöde
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#242424] sm:hidden">
                     <ArrowRight className="h-4 w-4" />
                   </span>
@@ -116,14 +116,14 @@ export default function BusinessPage() {
                   href="#process"
                   className="inline-flex min-h-14 w-full items-center justify-center rounded-[16px] border border-[#bfcfd7] bg-white/75 px-6 text-sm font-medium shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur transition hover:bg-white sm:w-auto sm:rounded-full sm:px-7"
                 >
-                  Se hur processen fungerar
+                  Se B2B-processen
                 </a>
               </div>
               <div className="mt-7 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[#cad8df] pt-6 text-[12px] text-[#52646e] sm:mt-10 sm:grid-cols-3 sm:gap-4 sm:pt-7 sm:text-sm">
                 {[
-                  'En dedikerad kontakt',
-                  'Sverige och Europa',
-                  'Anpassat efter volym',
+                  'Sverige som ursprungsmarknad',
+                  'Europeiskt köparnätverk',
+                  'Enstaka bilar eller återkommande volym',
                 ].map((item) => (
                   <span key={item} className="flex min-w-0 items-center gap-2">
                     <Check className="h-4 w-4 shrink-0" />
@@ -139,10 +139,10 @@ export default function BusinessPage() {
       <section className="relative z-10 border-y border-[#e0e7ea] bg-white/95 shadow-[0_-18px_50px_rgba(32,33,36,.04)] backdrop-blur">
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 lg:grid-cols-4">
           {[
-            ['Företagsflottor', 'Planerad avyttring'],
-            ['Leasingreturer', 'Effektiv remarketing'],
-            ['Transportbilar', 'Bredare köparmarknad'],
-            ['Enstaka objekt', 'Samma strukturerade process'],
+            ['Inbyteslager', 'Fordon utanför den egna lagerstrategin'],
+            ['Leasingreturer', 'Strukturerad europeisk remarketing'],
+            ['Företagsflottor', 'Planerad och återkommande avyttring'],
+            ['Enstaka objekt', 'Samma kvalificerade exportprocess'],
           ].map(([title, text]) => (
             <div
               key={title}
@@ -164,12 +164,12 @@ export default function BusinessPage() {
                 Byggt för professionella säljare
               </p>
               <h2 className="mt-4 max-w-full text-[32px] leading-[1.08] tracking-[-0.045em] [overflow-wrap:anywhere] sm:mt-5 sm:text-5xl">
-                Mer än en försäljning. Ett komplett avyttringsflöde.
+                B2B skapar volymen bakom exportnätverket.
               </h2>
               <p className="mt-5 text-base leading-7 text-[#65737b] sm:mt-6 sm:text-lg sm:leading-8">
-                När många fordon ska säljas behöver processen fungera för
-                ekonomi, administration, förare och ledning samtidigt. Autorell
-                samlar arbetet i ett tydligt flöde med löpande återkoppling.
+                Privatbilar hjälper oss utveckla kundresan. Återkommande
+                inbyten, leasingreturer och flottor skapar den stabila
+                fordonsvolym som europeiska köpare behöver.
               </p>
             </div>
 
@@ -182,13 +182,13 @@ export default function BusinessPage() {
                 },
                 {
                   icon: CarFront,
-                  title: 'Flexibel volym',
-                  text: 'Från ett fåtal tjänstebilar till återkommande leasingreturer och hela flottor.',
+                  title: 'Återkommande volym',
+                  text: 'Från utvalda enstaka objekt till månatliga inbyten, leasingreturer och flottor.',
                 },
                 {
                   icon: BadgeCheck,
-                  title: 'Kvalificerade köpare',
-                  text: 'Fordonen matchas mot relevanta professionella aktörer, inte en öppen kontaktlista.',
+                  title: 'Kvalificerade fordon och köpare',
+                  text: 'Både fordonsflödet och handlarna granskas innan de möts i budgivningen.',
                 },
                 {
                   icon: Globe2,
@@ -217,7 +217,7 @@ export default function BusinessPage() {
               Från fordonslista till genomförd affär
             </p>
             <h2 className="mt-4 max-w-full text-[32px] leading-[1.08] tracking-[-0.045em] [overflow-wrap:anywhere] sm:mt-5 sm:text-5xl">
-              Sex steg. En sammanhållen process.
+              Från fordonslista till europeisk köpare.
             </h2>
           </div>
 
@@ -316,11 +316,12 @@ export default function BusinessPage() {
               Företagskontakt
             </p>
             <h2 className="mt-4 max-w-full text-[32px] leading-[1.08] tracking-[-0.045em] [overflow-wrap:anywhere] sm:mt-5 sm:text-5xl">
-              Börja med ett konfidentiellt samtal.
+              Börja med er fordonslista.
             </h2>
             <p className="mt-5 text-base leading-7 text-[#65737b] sm:mt-6 sm:text-lg sm:leading-8">
-              Beskriv volymen och er tidsplan. Vi återkommer med frågor och ett
-              första förslag på hur portföljen kan hanteras.
+              Beskriv fordonstyper, volym och tidsplan. Vi bedömer vilka objekt
+              som passar nätverkets aktuella köpbox och föreslår ett första
+              pilotflöde.
             </p>
             <div className="mt-10 border-t border-[#d8d7d1] pt-7">
               <p className="text-sm text-[#707874]">Föredrar ni e-post?</p>
@@ -345,14 +346,14 @@ export default function BusinessPage() {
           <div>
             <p className="text-sm text-[#707b80]">Säljer ni en privat bil?</p>
             <p className="mt-1 text-xl tracking-[-0.025em]">
-              Starta en kostnadsfri värdering på några minuter.
+              Kontrollera om bilen passar våra svenska exportkriterier.
             </p>
           </div>
           <Link
             href="/salj-bil"
             className="inline-flex items-center gap-3 text-sm font-medium"
           >
-            Värdera din bil
+            Kontrollera din bil
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

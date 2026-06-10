@@ -5,7 +5,94 @@ import { ArrowRight } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 
-export default function PublicFooter() {
+type FooterLocale = 'sv' | 'de' | 'en'
+
+const footerCopy = {
+  sv: {
+    description: 'En enklare och tryggare väg mellan svenska bilägare och professionella köpare i Europa.',
+    question: 'Har du en bil som passar vårt exportnätverk?',
+    cta: 'Kontrollera din bil',
+    statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
+    sellerTitle: 'Sälja bil',
+    sellerLinks: [
+      ['Kontrollera din bil', '/salj-bil'],
+      ['Så fungerar det', '/#sa-fungerar-det'],
+      ['Om Autorell', '/om-oss'],
+      ['Företagsförsäljning', '/foretag'],
+      ['Vanliga frågor', '/vanliga-fragor'],
+    ] as [string, string][],
+    dealerTitle: 'Handlare',
+    dealerLinks: [
+      ['Bli partner', '/dealer-apply'],
+      ['Dealer login', '/login'],
+    ] as [string, string][],
+    contact: 'Kontakt',
+    support: 'Personlig support för svenska säljare och europeiska handlare.',
+    contactLink: 'Kontakta oss',
+    privacy: 'Integritetspolicy',
+    cookies: 'Cookies',
+    terms: 'Användarvillkor',
+    cookieSettings: 'Cookieinställningar',
+  },
+  de: {
+    description: 'Ein fokussierter Zugang zu ausgewählten schwedischen Fahrzeugen für professionelle Käufer.',
+    question: 'Möchten Sie auf schwedische Fahrzeugauktionen zugreifen?',
+    cta: 'Händlerzugang beantragen',
+    statement: 'Schwedische Fahrzeuge. Professionelle Käufer in Europa.',
+    sellerTitle: 'Fahrzeuge',
+    sellerLinks: [
+      ['Fahrzeuge aus Schweden', '/de#fahrzeuge'],
+      ['So funktioniert der Einkauf', '/de#ablauf'],
+      ['Über Autorell', '/om-oss'],
+      ['FAQ', '/de#faq'],
+    ] as [string, string][],
+    dealerTitle: 'Händler',
+    dealerLinks: [
+      ['Händler werden', '/dealer-apply'],
+      ['Händler-Login', '/login'],
+    ] as [string, string][],
+    contact: 'Kontakt',
+    support: 'Persönlicher Support für professionelle europäische Käufer.',
+    contactLink: 'Kontakt aufnehmen',
+    privacy: 'Datenschutz',
+    cookies: 'Cookies',
+    terms: 'Nutzungsbedingungen',
+    cookieSettings: 'Cookie-Einstellungen',
+  },
+  en: {
+    description: 'Focused access to selected Swedish vehicles for professional European buyers.',
+    question: 'Want access to Swedish vehicle auctions?',
+    cta: 'Apply for dealer access',
+    statement: 'Swedish vehicles. Professional buyers across Europe.',
+    sellerTitle: 'Vehicles',
+    sellerLinks: [
+      ['Vehicles from Sweden', '/eu#fahrzeuge'],
+      ['How buying works', '/eu#ablauf'],
+      ['About Autorell', '/om-oss'],
+      ['FAQ', '/eu#faq'],
+    ] as [string, string][],
+    dealerTitle: 'Dealers',
+    dealerLinks: [
+      ['Become a partner', '/dealer-apply'],
+      ['Dealer login', '/login'],
+    ] as [string, string][],
+    contact: 'Contact',
+    support: 'Personal support for professional European buyers.',
+    contactLink: 'Contact us',
+    privacy: 'Privacy policy',
+    cookies: 'Cookies',
+    terms: 'Terms of use',
+    cookieSettings: 'Cookie settings',
+  },
+} as const
+
+export default function PublicFooter({
+  locale = 'sv',
+}: {
+  locale?: FooterLocale
+}) {
+  const t = footerCopy[locale]
+
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
       <div
@@ -21,18 +108,18 @@ export default function PublicFooter() {
           <div>
             <BrandLogo />
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#666864]">
-              En enklare och tryggare väg mellan bilägare och professionella köpare.
+              {t.description}
             </p>
           </div>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <p className="max-w-xs text-sm leading-6 text-[#666864]">
-              Nyfiken på vad din bil kan vara värd?
+              {t.question}
             </p>
             <Link
-              href="/salj-bil"
+              href={locale === 'sv' ? '/salj-bil' : '/dealer-apply'}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-normal text-white transition hover:bg-[#111111]"
             >
-              Starta värderingen
+              {t.cta}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -40,40 +127,31 @@ export default function PublicFooter() {
 
         <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.3fr_.7fr_.7fr_.9fr] lg:gap-16">
           <p className="max-w-sm text-2xl leading-9 tracking-[-0.025em] text-[#2b2b2a]">
-            Bilaffärer med större räckvidd och mindre krångel.
+            {t.statement}
           </p>
 
           <FooterColumn
-            title="Sälja bil"
-            links={[
-              ['Värdera din bil', '/salj-bil'],
-              ['Så fungerar det', '/#sa-fungerar-det'],
-              ['Om Autorell', '/om-oss'],
-              ['Företagsförsäljning', '/foretag'],
-              ['Vanliga frågor', '/vanliga-fragor'],
-            ]}
+            title={t.sellerTitle}
+            links={t.sellerLinks}
           />
           <FooterColumn
-            title="Handlare"
-            links={[
-              ['Bli partner', '/dealer-apply'],
-              ['Dealer login', '/login'],
-            ]}
+            title={t.dealerTitle}
+            links={t.dealerLinks}
           />
 
           <div>
             <h3 className="text-xs font-medium uppercase tracking-[0.18em] text-[#898a85]">
-              Kontakt
+              {t.contact}
             </h3>
             <div className="mt-6 flex flex-col gap-4 text-sm">
               <a href="mailto:info@autorell.com" className="transition hover:opacity-55">
                 info@autorell.com
               </a>
               <Link href="/kontakt" className="transition hover:opacity-55">
-                Kontakta oss
+                {t.contactLink}
               </Link>
               <p className="max-w-[240px] leading-6 text-[#72736f]">
-                Personlig support för både bilägare och handlare.
+                {t.support}
               </p>
               <SocialIcons className="pt-2" />
             </div>
@@ -84,13 +162,13 @@ export default function PublicFooter() {
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link href="/integritet" className="transition hover:text-[#242424]">
-              Integritetspolicy
+              {t.privacy}
             </Link>
             <Link href="/cookies" className="transition hover:text-[#242424]">
-              Cookies
+              {t.cookies}
             </Link>
             <Link href="/villkor" className="transition hover:text-[#242424]">
-              Användarvillkor
+              {t.terms}
             </Link>
             <button
               type="button"
@@ -101,7 +179,7 @@ export default function PublicFooter() {
               }
               className="transition hover:text-[#242424]"
             >
-              Cookieinställningar
+              {t.cookieSettings}
             </button>
           </div>
         </div>

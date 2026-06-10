@@ -7,6 +7,10 @@ function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
 }
 
+function boolean(form: FormData, key: string) {
+  return text(form, key).toLowerCase() === 'true'
+}
+
 export async function POST(request: Request) {
   try {
     const form = await request.formData()
@@ -47,6 +51,20 @@ export async function POST(request: Request) {
       pickup_postal_code: text(form, 'pickupPostalCode'),
     }
     const originCountry = text(form, 'source').toUpperCase()
+    const modelYear = Number(requiredFields.model_year)
+    const mileage = Number(requiredFields.miles)
+    const isDriveable = boolean(form, 'isDriveable')
+    const hasEngineTransmissionIssues = boolean(
+      form,
+      'hasEngineTransmissionIssues'
+    )
+    const hasFluidLeaks = boolean(form, 'hasFluidLeaks')
+    const hasSeriousCollisionDamage = boolean(
+      form,
+      'hasSeriousCollisionDamage'
+    )
+    const warnings = canonicalVehicleValue(text(form, 'warnings'))
+    const damage = canonicalVehicleValue(text(form, 'damage'))
 
     if (
       Object.values(requiredFields).some((value) => !value) ||
@@ -54,6 +72,29 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { error: 'Obligatoriska fordonsuppgifter saknas.' },
+        { status: 400 }
+      )
+    }
+
+    if (
+      originCountry !== 'SE' ||
+      !Number.isFinite(modelYear) ||
+      modelYear < 2018 ||
+      !Number.isFinite(mileage) ||
+      mileage > 10_000 ||
+      !isDriveable ||
+      hasEngineTransmissionIssues ||
+      hasFluidLeaks ||
+      hasSeriousCollisionDamage ||
+      warnings === 'Warning lights present' ||
+      damage === 'Significant damage' ||
+      damage === 'Accident damage'
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Bilen uppfyller inte Autorells nuvarande exportkriterier.',
+        },
         { status: 400 }
       )
     }
@@ -115,9 +156,13 @@ export async function POST(request: Request) {
         text(form, 'inspectionValidUntil') || null,
       keys_count: text(form, 'keysCount'),
       brakes: text(form, 'brakes'),
-      damage: canonicalVehicleValue(text(form, 'damage')),
+      damage,
       damage_description: text(form, 'damageDescription') || null,
-      warnings: canonicalVehicleValue(text(form, 'warnings')),
+      warnings,
+      is_driveable: isDriveable,
+      has_engine_transmission_issues: hasEngineTransmissionIssues,
+      has_fluid_leaks: hasFluidLeaks,
+      has_serious_collision_damage: hasSeriousCollisionDamage,
       tires: canonicalVehicleValue(text(form, 'tires')),
       tireset: text(form, 'tireset'),
       towbar: canonicalVehicleValue(text(form, 'towbar')),

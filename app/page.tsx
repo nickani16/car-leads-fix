@@ -29,9 +29,9 @@ import ProcessSteps from './components/ProcessSteps'
 import PublicFooter from './components/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Autorell | Sälj din bil tryggt till rätt pris',
+  title: 'Autorell | Sälj utvalda svenska bilar till Europa',
   description:
-    'Sälj din bil enkelt och tryggt. Autorell matchar ditt fordon med kvalitetssäkrade bilhandlare i Sverige och Europa.',
+    'Autorell matchar utvalda svenska bilar från 2018 med verifierade professionella köpare i Sverige och Europa.',
 }
 
 export default function HomePage() {
@@ -56,37 +56,37 @@ export default function HomePage() {
           <div className="w-full min-w-0 max-w-[720px]">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8d6cf] bg-white/82 px-3.5 py-2 text-xs text-[#242424] shadow-[0_8px_25px_rgba(32,33,36,.07)] backdrop-blur-md sm:mb-7 sm:px-4 sm:text-sm">
               <Sparkles className="h-4 w-4 text-[#242424]" />
-              En smartare väg till nästa bilaffär
+              Svensk bil. Europeisk efterfrågan.
             </div>
             <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
-              Sälj din bil.
-              <span className="block text-[#242424]">Vi hittar rätt köpare.</span>
+              Sälj bilen i Sverige.
+              <span className="block text-[#242424]">Nå professionella köpare i Europa.</span>
             </h1>
             <p className="mt-5 max-w-[590px] text-[16px] leading-7 text-[#4e6377] sm:mt-7 sm:text-xl sm:leading-8">
-              Autorell matchar din bil med kvalitetssäkrade handlare i Sverige
-              och Europa, så att du kan sälja tryggt, enkelt och till rätt pris.
+              För bilar från 2018, med högst 10 000 mil och gott tekniskt
+              skick. Kostnadsfri registrering och budgivning inom 24 timmar.
             </p>
             <div className="mt-7 grid gap-3 sm:mt-10 sm:flex sm:flex-row">
               <Link
                 href="/salj-bil"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-[#B4D9EF] px-7 text-base font-medium text-[#242424] shadow-[0_14px_30px_rgba(94,154,190,.18)] transition hover:-translate-y-0.5 hover:bg-[#C9E6F6] sm:rounded-full sm:font-normal"
               >
-                Värdera din bil
+                Kontrollera om bilen passar
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
                 href="#sa-fungerar-det"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] border border-[#d0cec7] bg-white/85 px-7 text-base font-medium text-[#242424] shadow-[0_10px_28px_rgba(32,33,36,.06)] backdrop-blur-sm transition hover:border-[#242424] hover:bg-white sm:rounded-full sm:font-normal"
               >
-                Så fungerar det
+                Så fungerar exporten
                 <ChevronRight className="h-5 w-5" />
               </a>
             </div>
             <div className="mt-6 grid w-full max-w-[420px] grid-cols-3 gap-1.5 sm:mt-10 sm:flex sm:max-w-none sm:flex-wrap sm:gap-2.5 sm:text-sm">
               {[
-                { label: 'Kostnadsfritt' },
-                { label: 'Ingen bindning' },
-                { label: 'Tar cirka 3 minuter', mobileLabel: 'Cirka 3 min' },
+                { label: 'Årsmodell 2018+' },
+                { label: 'Max 10 000 mil' },
+                { label: 'Kostnadsfri kontroll', mobileLabel: 'Kostnadsfritt' },
               ].map(({ label, mobileLabel }) => (
                   <span
                     key={label}
@@ -113,27 +113,27 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
             {
-              value: 'Sverige + Europa',
-              label: 'Ett bredare handlarnätverk',
-              note: 'Din bil når relevanta köpare över flera marknader.',
+              value: '2018 eller nyare',
+              label: 'Utvalda årsmodeller',
+              note: 'Vi fokuserar på bilar som efterfrågas av vårt professionella nätverk.',
               icon: Globe2,
             },
             {
-              value: '24 timmar',
-              label: 'Fokuserad budgivning',
-              note: 'Handlarna får en tydlig period att bedöma och agera.',
+              value: 'Högst 10 000 mil',
+              label: 'Tydlig milgräns',
+              note: 'Bilen behöver ligga inom vår nuvarande europeiska köpbox.',
               icon: Clock3,
             },
             {
-              value: '100% digitalt',
-              label: 'Från uppgifter till bud',
-              note: 'Följ processen enkelt utan onödiga mellansteg.',
+              value: '24 timmar',
+              label: 'Europeisk budgivning',
+              note: 'Verifierade handlare får en fokuserad period att bedöma och buda.',
               icon: MonitorSmartphone,
             },
             {
-              value: 'Personlig support',
-              label: 'En människa hela vägen',
-              note: 'Vi finns nära till hands när affären behöver oss.',
+              value: 'Kontroll & export',
+              label: 'Efter accepterat bud',
+              note: 'Affären fortsätter med villkorad kontroll, betalning och hämtning.',
               icon: Headphones,
             },
           ].map(({ value, label, note, icon: Icon }, index) => (
@@ -174,22 +174,22 @@ export default function HomePage() {
           <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
             <div className="max-w-3xl">
               <span className="inline-flex items-center rounded-full border border-[#c8dce5] bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#496878]">
-                Så fungerar Autorell
+                Från svensk bil till europeisk affär
               </span>
               <h2 className="mt-6 text-[38px] leading-[1.04] tracking-[-0.052em] text-[#202124] sm:text-5xl lg:text-[58px]">
-                Från första uppgift till rätt affär.
+                Sex tydliga steg. Ett sammanhållet exportflöde.
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-7 text-[#5b6e77] sm:text-lg sm:leading-8">
-                En genomtänkt process som gör det enkelt för dig att sälja och
-                enkelt för rätt handlare att lämna ett seriöst erbjudande.
+                Vi kvalificerar bilen innan den visas, samlar strukturerad
+                fordonsdata och låter verifierade handlare konkurrera om den.
               </p>
             </div>
 
             <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/80 bg-white/65 shadow-[0_18px_55px_rgba(32,33,36,.06)] backdrop-blur-sm">
               {[
-                ['3 min', 'att komma igång'],
+                ['2018+', 'årsmodell'],
                 ['24 h', 'aktiv marknad'],
-                ['0 kr', 'att använda'],
+                ['0 kr', 'att registrera'],
               ].map(([value, label]) => (
                 <div
                   key={label}
@@ -214,14 +214,14 @@ export default function HomePage() {
                 Redo när du är
               </p>
               <p className="mt-2 text-xl tracking-[-0.025em] sm:text-2xl">
-                Börja med bilen. Vi tar hand om resten.
+                Börja med en snabb kontroll av bilen.
               </p>
             </div>
             <Link
               href="/salj-bil"
               className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#b4d9ef] px-6 text-sm font-medium text-[#242424] transition hover:-translate-y-0.5 hover:bg-[#c9e6f6] sm:w-auto"
             >
-              Värdera din bil
+              Kontrollera bilen
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -240,21 +240,20 @@ export default function HomePage() {
             <div className="max-w-xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#d4d0c7] bg-white/65 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5c625f]">
                 <TrendingUp className="h-3.5 w-3.5" />
-                Efterfrågan i nätverket
+                Vilka bilar söker vi?
               </span>
               <h2 className="mt-6 text-[38px] leading-[1.02] tracking-[-0.052em] text-[#202124] sm:text-5xl lg:text-[58px]">
-                Bilar som får handlare att titta en gång till.
+                Utvalda bilar för professionell export.
               </h2>
               <p className="mt-5 text-base leading-7 text-[#596a70] sm:text-lg sm:leading-8">
-                Vårt nätverk söker allt från familjebilar och elbilar till
-                premium- och transportfordon. Lägg upp bilen så matchar vi den
-                mot de handlare som är mest relevanta.
+                Bilen ska vara från 2018 eller nyare, ha gått högst 10 000 mil,
+                finnas i Sverige och vara körbar utan allvarliga tekniska fel.
               </p>
               <Link
                 href="/salj-bil"
                 className="mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.14)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
-                Se intresset för din bil
+                Kontrollera om bilen passar
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -267,15 +266,15 @@ export default function HomePage() {
                 <div className="relative flex items-start justify-between gap-5">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                      Sökes just nu
+                      Aktuell köpbox
                     </p>
                     <h3 className="mt-2 text-2xl tracking-[-0.035em] sm:text-[32px]">
-                      Fordon för flera marknader
+                      Bilar med europeisk efterfrågan
                     </h3>
                   </div>
                   <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-2 text-xs text-white/65 sm:inline-flex">
                     <span className="h-2 w-2 rounded-full bg-[#8fc6a5]" />
-                    Aktiv efterfrågan
+                    Sverige som ursprung
                   </span>
                 </div>
 
@@ -303,10 +302,10 @@ export default function HomePage() {
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#748087]">
-                      Populära märken
+                      Ofta relevanta märken
                     </p>
                     <p className="mt-2 text-lg tracking-[-0.02em] text-[#242424]">
-                      Märken som ofta efterfrågas av handlare
+                      Exempel från vårt europeiska köparnätverk
                     </p>
                   </div>
                   <span className="text-xs text-[#7a878c]">
@@ -340,15 +339,15 @@ export default function HomePage() {
             <div className="border-b border-[#dfe6e5] px-5 py-9 text-center sm:px-10 sm:py-12">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#d5e2e5] bg-[#f4fafc] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4f7484]">
                 <Gavel className="h-3.5 w-3.5" />
-                Marketplace bids
+                Svensk exportbudgivning
               </span>
               <h3 className="mx-auto mt-5 max-w-4xl text-[32px] leading-[1.06] tracking-[-0.045em] text-[#202124] sm:text-[46px]">
-                En bättre affär börjar när båda sidor får rätt förutsättningar.
+                Rätt fordonsdata skapar tryggare bud och bättre exportaffärer.
               </h3>
               <p className="mx-auto mt-4 max-w-2xl leading-7 text-[#64757b]">
-                Autorell samlar information, efterfrågan och bud i ett tydligt
-                flöde. Mindre friktion för säljaren, bättre beslutsunderlag för
-                handlaren.
+                Säljaren deklarerar bilen i Sverige. Verifierade handlare
+                bedömer samma underlag och lämnar villkorade bud under 24
+                timmar.
               </p>
             </div>
 
@@ -361,21 +360,21 @@ export default function HomePage() {
                   För dig som säljer
                 </p>
                 <h4 className="mt-3 text-2xl tracking-[-0.035em] text-[#202124]">
-                  Räckvidd utan mer arbete.
+                  Europeisk räckvidd från Sverige.
                 </h4>
                 <div className="mt-6 space-y-4">
                   {[
                     {
                       icon: ScanSearch,
-                      text: 'En fordonsprofil når flera relevanta köpare.',
+                      text: 'En kvalificerad fordonsprofil når relevanta europeiska köpare.',
                     },
                     {
                       icon: CircleDollarSign,
-                      text: 'Marknadens bud gör värdet tydligare.',
+                      text: '24 timmars budgivning ger ett tydligt marknadsunderlag.',
                     },
                     {
                       icon: ShieldCheck,
-                      text: 'Du väljer själv om och när du vill sälja.',
+                      text: 'Du accepterar endast om det högsta budet känns rätt.',
                     },
                   ].map(({ icon: Icon, text }) => (
                     <div key={text} className="flex gap-3">
@@ -388,7 +387,7 @@ export default function HomePage() {
                   href="/salj-bil"
                   className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#242424]"
                 >
-                  Värdera din bil
+                  Kontrollera din bil
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -404,8 +403,8 @@ export default function HomePage() {
                       Autorell matchning
                     </p>
                     <p className="mt-3 text-xl tracking-[-0.03em]">
-                      Ett fordon.
-                      <span className="block">Flera relevanta bud.</span>
+                      Svensk bil.
+                      <span className="block">Europeiska dealerbud.</span>
                     </p>
                     <div className="mt-5 flex items-end justify-center gap-1">
                       {[35, 54, 43, 72, 61, 88].map((height, index) => (
@@ -430,21 +429,21 @@ export default function HomePage() {
                   För professionella handlare
                 </p>
                 <h4 className="mt-3 text-2xl tracking-[-0.035em] text-[#202124]">
-                  Rätt bilar. Tydligare beslut.
+                  Kvalificerade bilar. Tydligare beslut.
                 </h4>
                 <div className="mt-6 space-y-4">
                   {[
                     {
                       icon: BadgeCheck,
-                      text: 'Strukturerade fordonsuppgifter inför varje bud.',
+                      text: 'Strukturerade uppgifter om skick, historik och kända fel.',
                     },
                     {
                       icon: TrendingUp,
-                      text: 'Ett fokuserat flöde utifrån verklig efterfrågan.',
+                      text: 'Ett fokuserat flöde av utvalda svenska fordon.',
                     },
                     {
                       icon: Zap,
-                      text: 'Snabbare väg från bedömning till affär.',
+                      text: 'Villkorad kontroll innan betalning och export slutförs.',
                     },
                   ].map(({ icon: Icon, text }) => (
                     <div key={text} className="flex gap-3">
@@ -478,17 +477,17 @@ export default function HomePage() {
                 Din bil. Ditt beslut.
               </p>
               <h2 className="mt-4 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] text-[#202124] sm:text-5xl">
-                Se vad marknaden är beredd att betala.
+                Kontrollera om din bil passar Europas köpare.
               </h2>
               <p className="mt-4 max-w-xl leading-7 text-[#34526c]">
-                Börja med en kostnadsfri värdering. Det tar bara några minuter.
+                Kostnadsfri registrering för utvalda svenska bilar.
               </p>
             </div>
             <Link
               href="/salj-bil"
               className="mt-8 inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:rounded-full sm:font-normal"
             >
-              Värdera min bil
+              Kontrollera min bil
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
