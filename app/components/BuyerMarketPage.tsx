@@ -264,7 +264,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         </div>
       </section>
 
-      <section className="px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
+      <section id="dealer-network" className="scroll-mt-28 px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
         <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-[32px] bg-[#202427] text-white shadow-[0_35px_90px_rgba(32,36,39,.16)]">
           <div className="absolute -right-40 -top-52 h-[560px] w-[560px] rounded-full border-[80px] border-[#b4d9ef]/10" />
           <div className="relative grid gap-12 p-7 sm:p-12 lg:grid-cols-[.8fr_1.2fr] lg:p-16">
@@ -278,7 +278,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
               <p className="mt-6 max-w-xl leading-8 text-white/58">{t.networkText}</p>
             </div>
 
-            <div className="relative flex min-h-[390px] items-center justify-center">
+            <div className="relative hidden min-h-[390px] items-center justify-center lg:flex">
               <div className="absolute h-[330px] w-[330px] rounded-full border border-white/10" />
               <div className="absolute h-[220px] w-[220px] rounded-full border border-[#b4d9ef]/20" />
               <div className="absolute h-[110px] w-[110px] rounded-full bg-[#b4d9ef] shadow-[0_0_80px_rgba(180,217,239,.25)]" />
@@ -305,6 +305,34 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                   </div>
                 )
               })}
+            </div>
+
+            <div className="lg:hidden">
+              <div className="mx-auto grid h-28 w-28 place-items-center rounded-full bg-[#b4d9ef] text-center text-[#202124] shadow-[0_0_70px_rgba(180,217,239,.2)]">
+                <div>
+                  <Globe2 className="mx-auto h-6 w-6" />
+                  <p className="mt-1 text-sm font-semibold">Autorell</p>
+                </div>
+              </div>
+              <div className="relative mx-auto -mt-1 h-8 w-px bg-white/15" />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {t.markets.map(([market, text, state]) => (
+                  <div
+                    key={market}
+                    className="min-w-0 rounded-[18px] border border-white/10 bg-white/[.075] p-5 backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-2 w-2 shrink-0 rounded-full ${
+                          state === 'active' ? 'bg-[#8ed1a8]' : 'bg-[#b4d9ef]'
+                        }`}
+                      />
+                      <strong className="text-base font-medium">{market}</strong>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-white/48">{text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -72,6 +72,8 @@ export default function ContactForm({
   locale?: ContactLocale
 }) {
   const t = contactCopy[locale]
+  const privacyHref =
+    locale === 'de' ? '/datenschutz' : locale === 'en' ? '/privacy' : '/integritet'
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -154,7 +156,7 @@ export default function ContactForm({
         <input type="checkbox" name="privacy" required className="mt-1 h-4 w-4 accent-[#242424]" />
         <span>
           {t.privacyStart}{' '}
-          <Link href="/integritet" target="_blank" className="underline">
+          <Link href={privacyHref} target="_blank" className="underline">
             {t.privacyLink}
           </Link>{' '}
           {t.privacyEnd}

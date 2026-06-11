@@ -124,6 +124,12 @@ export default function PublicFooter({
         : 'https://www.autorell.se/'
   const contactHref =
     locale === 'en' ? '/contact' : '/kontakt'
+  const homeLabel =
+    locale === 'de'
+      ? 'Autorell Startseite'
+      : locale === 'en'
+        ? 'Autorell home'
+        : 'Autorell startsida'
   const privacyHref =
     locale === 'de' ? '/datenschutz' : locale === 'en' ? '/privacy' : '/integritet'
   const termsHref =
@@ -146,7 +152,7 @@ export default function PublicFooter({
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
         <div className="flex flex-col gap-10 border-b border-[#d9d7d0] py-14 lg:flex-row lg:items-center lg:justify-between lg:py-16">
           <div>
-            <a href={homeHref} aria-label="Autorell startsida">
+            <a href={homeHref} aria-label={homeLabel}>
               <BrandLogo />
             </a>
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#666864]">

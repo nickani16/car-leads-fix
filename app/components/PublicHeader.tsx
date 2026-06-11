@@ -67,6 +67,45 @@ const markets: Array<{
   },
 ]
 
+const marketNames = {
+  sv: {
+    selector: 'Välj marknad',
+    home: 'Autorell startsida',
+    openMenu: 'Öppna meny',
+    closeMenu: 'Stäng meny',
+    activeMarket: 'Aktiv marknad',
+    options: {
+      sv: ['Svenska', 'Sverige'],
+      de: ['Tyska', 'Tyskland'],
+      en: ['Engelska', 'Europa'],
+    },
+  },
+  de: {
+    selector: 'Markt wählen',
+    home: 'Autorell Startseite',
+    openMenu: 'Navigation öffnen',
+    closeMenu: 'Navigation schließen',
+    activeMarket: 'Aktiver Markt',
+    options: {
+      sv: ['Schwedisch', 'Schweden'],
+      de: ['Deutsch', 'Deutschland'],
+      en: ['Englisch', 'Europa'],
+    },
+  },
+  en: {
+    selector: 'Choose market',
+    home: 'Autorell home',
+    openMenu: 'Open navigation',
+    closeMenu: 'Close navigation',
+    activeMarket: 'Active market',
+    options: {
+      sv: ['Swedish', 'Sweden'],
+      de: ['German', 'Germany'],
+      en: ['English', 'Europe'],
+    },
+  },
+} as const
+
 function getLocaleFromHostname(
   hostname: string,
   fallback: MarketLocale,
@@ -184,8 +223,14 @@ export default function PublicHeader({
   }, [open])
 
   const transparent = transparentAtTop && atTop && !open
-  const language =
-    markets.find((market) => market.locale === activeLocale) || markets[0]
+  const marketCopy = marketNames[activeLocale]
+  const localizedMarkets = markets.map((market) => {
+    const [label, description] = marketCopy.options[market.locale]
+    return { ...market, label, description }
+  })
+  const localizedLanguage =
+    localizedMarkets.find((market) => market.locale === activeLocale) ||
+    localizedMarkets[0]
   const homeHref =
     activeLocale === 'de'
       ? 'https://www.autorell.de/'
@@ -477,7 +522,7 @@ export default function PublicHeader({
             <span>{content.message}</span>
             <div className="hidden items-center gap-6 md:flex">
               <Link
-                href="/kontakt"
+                href={content.links[5][0]}
                 className="inline-flex items-center gap-1.5 hover:underline"
               >
                 <Headphones className="h-3.5 w-3.5" />
@@ -492,22 +537,22 @@ export default function PublicHeader({
               <details className="group/language relative">
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full px-2 py-1 transition hover:bg-white/35 [&::-webkit-details-marker]:hidden">
                   <MarketFlag
-                    locale={language.locale}
+                    locale={localizedLanguage.locale}
                     className="h-[14px] w-[21px]"
                   />
                   <span className="font-semibold tracking-[0.01em]">
-                    {language.code}
+                    {localizedLanguage.code}
                   </span>
-                  <span>{language.label}</span>
+                  <span>{localizedLanguage.label}</span>
                   <ChevronDown className="h-3.5 w-3.5 transition group-open/language:rotate-180" />
                 </summary>
 
                 <div className="absolute right-0 top-full z-20 w-[238px] pt-3">
                   <div className="overflow-hidden rounded-[18px] border border-[#d9e1e5] bg-white p-2 text-[#202124] shadow-[0_22px_60px_rgba(32,33,36,.18)]">
                     <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
-                      Välj marknad
+                      {marketCopy.selector}
                     </p>
-                    {markets.map((market) => (
+                    {localizedMarkets.map((market) => (
                       <a
                         key={market.locale}
                         href={market.href}
@@ -549,7 +594,7 @@ export default function PublicHeader({
           <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 md:h-[88px] lg:px-12 xl:px-16">
             <a
               href={homeHref}
-              aria-label="Autorell startsida"
+              aria-label={marketCopy.home}
               className="inline-flex shrink-0 items-center"
               onClick={() => setOpen(false)}
             >
@@ -712,7 +757,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => setOpen((value) => !value)}
-              aria-label={open ? 'Stäng meny' : 'Öppna meny'}
+              aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
               aria-expanded={open}
               className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition xl:hidden ${
                 open
@@ -806,10 +851,10 @@ export default function PublicHeader({
 
             <div className="mt-auto border-t border-[#dcdad3] pt-6">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
-                Välj marknad
+                {marketCopy.selector}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                {markets.map((market) => (
+                {localizedMarkets.map((market) => (
                   <a
                     key={market.locale}
                     href={market.href}
@@ -834,7 +879,7 @@ export default function PublicHeader({
                     {market.locale === activeLocale && (
                       <span
                         className="h-2 w-2 rounded-full bg-[#5f9fbe]"
-                        aria-label="Aktiv marknad"
+                        aria-label={marketCopy.activeMarket}
                       />
                     )}
                   </a>
