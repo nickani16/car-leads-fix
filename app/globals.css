@@ -122,9 +122,141 @@ label {
   animation: market-console-float 9s ease-in-out infinite;
 }
 
+@keyframes buyer-quality-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes buyer-live-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes buyer-console-row {
+  0%, 14% {
+    opacity: 0.52;
+    transform: translate3d(0, 4px, 0);
+  }
+  22%, 86% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  94%, 100% {
+    opacity: 0.52;
+    transform: translate3d(0, 4px, 0);
+  }
+}
+
+@keyframes buyer-network-ring {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+}
+
+@keyframes buyer-network-node {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+.buyer-quality-track {
+  animation: buyer-quality-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.buyer-live-dot {
+  animation: buyer-live-pulse 2.4s ease-in-out infinite;
+}
+
+.buyer-console-row {
+  animation: buyer-console-row 9s ease-in-out infinite;
+}
+
+.buyer-console-row-2 {
+  animation-delay: 0.7s;
+}
+
+.buyer-console-row-3 {
+  animation-delay: 1.4s;
+}
+
+.buyer-network-ring {
+  animation: buyer-network-ring 6s ease-in-out infinite;
+}
+
+.buyer-network-ring-delayed {
+  animation-delay: 1.5s;
+}
+
+.buyer-network-core {
+  animation: buyer-live-pulse 4s ease-in-out infinite;
+}
+
+.buyer-network-node {
+  animation: buyer-network-node 6s ease-in-out infinite;
+}
+
+.buyer-network-node-2 {
+  animation-delay: 1.2s;
+}
+
+.buyer-network-node-3 {
+  animation-delay: 2.4s;
+}
+
+.buyer-quality-card::after {
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.72) 48%,
+    transparent 76%
+  );
+  content: "";
+  height: 180%;
+  left: -90%;
+  pointer-events: none;
+  position: absolute;
+  top: -40%;
+  transform: rotate(12deg);
+  transition: left 700ms ease;
+  width: 45%;
+}
+
+.buyer-quality-card:hover::after {
+  left: 145%;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .market-console-float {
+  .market-console-float,
+  .buyer-quality-track,
+  .buyer-live-dot,
+  .buyer-console-row,
+  .buyer-network-ring,
+  .buyer-network-core,
+  .buyer-network-node {
     animation: none;
+  }
+
+  .buyer-quality-card::after {
+    display: none;
   }
 }
 /* Fix för Samsung / Android WebView som gör text vit */

@@ -2,19 +2,20 @@ import Link from 'next/link'
 import {
   ArrowRight,
   BarChart3,
+  BatteryCharging,
   Building2,
+  CalendarRange,
   CarFront,
   Check,
   ChevronRight,
   CircleDot,
-  Database,
   FileCheck2,
   Gavel,
+  Gauge,
   Globe2,
   LockKeyhole,
   Route,
   Search,
-  ShieldCheck,
   Sparkles,
 } from 'lucide-react'
 import PublicFooter from './PublicFooter'
@@ -25,32 +26,32 @@ type BuyerLocale = 'de' | 'en'
 const content = {
   de: {
     eyebrow: 'B2B-Fahrzeugmarkt für Autohändler',
-    titleTop: 'Fahrzeuge handeln.',
-    titleBottom: 'Europa verbinden.',
+    titleTop: 'Besser einkaufen.',
+    titleBottom: 'Europaweit handeln.',
     intro:
-      'Autorell entwickelt den digitalen B2B-Marktplatz für den professionellen Fahrzeughandel. Geprüfte Händler, strukturierte Fahrzeugdaten und effiziente Online-Auktionen in einem europäischen Netzwerk.',
+      'Ausgewählte Fahrzeuge ab Baujahr 2018, mit weniger als 100.000 km und klaren Fahrzeugdaten. Für Händler, die modernen Bestand digital und grenzüberschreitend einkaufen möchten.',
     primary: 'Händlerzugang beantragen',
     secondary: 'Plattform entdecken',
     platformLabel: 'Autorell Market Intelligence',
     platformTitle: 'Europäischer Fahrzeugmarkt',
     live: 'Live-Marktplatz',
-    sourceLabel: 'Beschaffungsnetzwerk',
-    sourceValue: 'Europaweit aufgebaut',
-    dataLabel: 'Datenstandard',
-    dataValue: 'Einheitliche Profile',
+    sourceLabel: 'Fahrzeugauswahl',
+    sourceValue: 'Ab Baujahr 2018',
+    dataLabel: 'Laufleistung',
+    dataValue: 'Unter 100.000 km',
     dealerLabel: 'Zugang',
     dealerValue: 'Geprüfte Händler',
-    bidLabel: 'Auktionsformat',
-    bidValue: 'Digital & fokussiert',
-    marketEyebrow: 'Eine Plattform. Mehr Markt.',
-    marketTitle: 'Gebaut für den nächsten europäischen Fahrzeughandel.',
+    bidLabel: 'Schwerpunkt',
+    bidValue: 'Modern & elektrifiziert',
+    marketEyebrow: 'Qualität vor Volumen',
+    marketTitle: 'Ein klarer Standard für jedes Fahrzeug.',
     marketText:
-      'Der grenzüberschreitende Fahrzeugeinkauf ist heute fragmentiert. Autorell verbindet Angebot, Daten, Gebote und Transaktionsstatus in einem professionellen digitalen Ablauf.',
+      'Premium bedeutet für uns nicht nur Sportwagen. Es bedeutet jüngere, relevante Fahrzeuge mit nachvollziehbaren Daten, marktgerechter Laufleistung und guter Wiederverkaufsperspektive.',
     pillars: [
-      ['Europäische Beschaffung', 'Neue Angebotsmärkte erschließen und relevante Fahrzeuge zentral prüfen.'],
-      ['Strukturierte Fahrzeugdaten', 'Zustand, Historie, Dokumente und bekannte Abweichungen vergleichbar darstellen.'],
-      ['Digitale B2B-Auktionen', 'In klaren Zeitfenstern bieten und Einkaufsentscheidungen effizient koordinieren.'],
-      ['Verifiziertes Netzwerk', 'Zugang für geprüfte Händler und professionelle Marktteilnehmer.'],
+      ['Baujahr 2018 oder neuer', 'Ein fokussiertes Angebot moderner Fahrzeuge mit relevanter Nachfrage im europäischen Handel.'],
+      ['Unter 100.000 Kilometer', 'Laufleistung als klarer Qualitätsfilter für Bestand, Finanzierung und Wiederverkauf.'],
+      ['Elektrifiziert & zukunftsfähig', 'Wachsender Fokus auf Elektro-, Hybrid- und moderne effiziente Antriebe.'],
+      ['Strukturiert dokumentiert', 'Vergleichbare Angaben zu Zustand, Historie, Dokumenten und bekannten Abweichungen.'],
     ],
     networkEyebrow: 'Autorell Dealer Network',
     networkTitle: 'Von lokalem Bestand zu europäischer Nachfrage.',
@@ -62,24 +63,24 @@ const content = {
       ['Europa', 'Weitere Märkte im Aufbau', 'next'],
     ],
     flowEyebrow: 'Der digitale Einkaufsfluss',
-    flowTitle: 'Weniger Reibung zwischen Fahrzeug und Bestand.',
+    flowTitle: 'Vom Händlerzugang zum Gebot. Klar und digital.',
     steps: [
       ['Zugang erhalten', 'Unternehmen verifizieren und professionelles Händlerkonto aktivieren.'],
       ['Fahrzeuge entdecken', 'Relevantes Angebot anhand strukturierter Profile effizient bewerten.'],
       ['Digital bieten', 'Gebote transparent innerhalb der aktiven Auktionsphase abgeben.'],
-      ['Geschäft koordinieren', 'Entscheidung, Dokumente, Zahlung und Logistik im Prozess verfolgen.'],
+      ['Abwicklung koordinieren', 'Entscheidung, Dokumente, Zahlung und Logistik in einem klaren Prozess verfolgen.'],
     ],
     trustEyebrow: 'Warum Händler Autorell wählen',
-    trustTitle: 'Mehr als Fahrzeuganzeigen.',
+    trustTitle: 'Ein besserer Einkaufskanal für modernen Bestand.',
     trustText:
       'Autorell wird als Handelsinfrastruktur entwickelt: datenorientiert, grenzüberschreitend und auf professionelle Entscheidungen ausgerichtet.',
     trustItems: [
-      'Professioneller B2B-Zugang statt offener Kleinanzeigen',
-      'Vergleichbare Informationen für schnellere Einkaufsentscheidungen',
-      'Digitale Gebote und klarer Transaktionsstatus',
-      'Plattformarchitektur für mehrere europäische Märkte',
-      'Persönlicher Support bei komplexen Geschäftsschritten',
-      'Ein Netzwerk, das mit Ihrem Beschaffungsbedarf wächst',
+      'Kuratiertes Angebot statt unübersichtlicher Fahrzeuganzeigen',
+      'Klare Auswahlkriterien: 2018+, unter 100.000 km und guter Zustand',
+      'Vergleichbare Daten für schnellere Einkaufsentscheidungen',
+      'Digitale Gebote und transparenter Transaktionsstatus',
+      'Persönlicher Support bei grenzüberschreitenden Geschäftsschritten',
+      'Eine Plattform, die mit neuen europäischen Märkten wächst',
     ],
     ctaEyebrow: 'Frühen Zugang sichern',
     cta: 'Ihr Zugang zum europäischen Fahrzeugmarkt.',
@@ -88,32 +89,32 @@ const content = {
   },
   en: {
     eyebrow: 'Swedish vehicle sourcing for European dealers',
-    titleTop: 'Source better vehicles.',
-    titleBottom: 'Trade across Europe.',
+    titleTop: 'Better vehicles.',
+    titleBottom: 'Built for your inventory.',
     intro:
-      'Autorell gives professional dealers access to selected Swedish vehicles through structured data, focused online auctions and a digital cross-border buying workflow.',
+      'Selected vehicles from 2018 onwards, below 100,000 km and presented through clear vehicle data. Built for dealers sourcing modern inventory across borders.',
     primary: 'Apply for dealer access',
     secondary: 'Explore the platform',
     platformLabel: 'Autorell Market Intelligence',
     platformTitle: 'Swedish supply. European reach.',
     live: 'Marketplace live',
-    sourceLabel: 'Current supply',
-    sourceValue: 'Vehicles in Sweden',
-    dataLabel: 'Data standard',
-    dataValue: 'Structured profiles',
+    sourceLabel: 'Vehicle selection',
+    sourceValue: 'Model year 2018+',
+    dataLabel: 'Mileage',
+    dataValue: 'Below 100,000 km',
     dealerLabel: 'Access',
     dealerValue: 'Verified dealers',
-    bidLabel: 'Auction format',
-    bidValue: 'Digital & focused',
-    marketEyebrow: 'One platform. Better sourcing.',
-    marketTitle: 'A professional route into the Swedish vehicle market.',
+    bidLabel: 'Focus',
+    bidValue: 'Modern & electrified',
+    marketEyebrow: 'Quality before volume',
+    marketTitle: 'A clear standard behind every vehicle.',
     marketText:
-      'Autorell turns selected Swedish vehicle supply into a clear buying experience for European dealers, connecting vehicle information, bidding and transaction progress.',
+      'Premium does not only mean sports cars. To us, it means newer, relevant vehicles with transparent information, sensible mileage and strong resale potential.',
     pillars: [
-      ['Selected Swedish supply', 'Access relevant vehicles from a highly digitalised Nordic automotive market.'],
-      ['Structured vehicle data', 'Review condition, history, documents and known discrepancies in a consistent format.'],
-      ['Focused online auctions', 'Bid within clear time windows and coordinate purchasing decisions efficiently.'],
-      ['Verified dealer network', 'A professional marketplace built for approved automotive businesses.'],
+      ['Model year 2018 or newer', 'A focused supply of modern vehicles with relevant demand across European markets.'],
+      ['Below 100,000 kilometres', 'Mileage used as a clear quality filter for inventory, financing and resale.'],
+      ['Electrified and future-ready', 'A growing focus on electric, hybrid and modern efficient powertrains.'],
+      ['Structured documentation', 'Comparable information on condition, history, documents and known discrepancies.'],
     ],
     networkEyebrow: 'Autorell Dealer Network',
     networkTitle: 'Swedish vehicles. European dealer demand.',
@@ -125,7 +126,7 @@ const content = {
       ['Europe', 'More markets to follow', 'next'],
     ],
     flowEyebrow: 'The digital buying flow',
-    flowTitle: 'Less friction between vehicle and inventory.',
+    flowTitle: 'From dealer access to bidding. Clear and digital.',
     steps: [
       ['Get approved', 'Verify your business and activate professional dealer access.'],
       ['Discover vehicles', 'Evaluate relevant supply through structured vehicle profiles.'],
@@ -133,16 +134,16 @@ const content = {
       ['Coordinate the deal', 'Follow decisions, documents, payment and logistics in one process.'],
     ],
     trustEyebrow: 'Why dealers choose Autorell',
-    trustTitle: 'More than vehicle listings.',
+    trustTitle: 'A better sourcing channel for modern inventory.',
     trustText:
       'Autorell is being built as trading infrastructure: data-led, cross-border and designed around professional purchasing decisions.',
     trustItems: [
-      'Professional B2B access instead of open classifieds',
-      'Comparable information for faster buying decisions',
-      'Digital bidding and clear transaction progress',
-      'Selected supply from the Swedish vehicle market',
-      'Personal support through complex deal stages',
-      'A network designed to expand across Europe',
+      'Curated supply instead of crowded vehicle classifieds',
+      'Clear criteria: 2018+, below 100,000 km and good condition',
+      'Comparable data for faster purchasing decisions',
+      'Digital bidding and transparent transaction progress',
+      'Personal support through cross-border deal stages',
+      'A platform designed to expand across European markets',
     ],
     ctaEyebrow: 'Secure early access',
     cta: 'Build your next sourcing channel with Autorell.',
@@ -151,7 +152,7 @@ const content = {
   },
 } as const
 
-const pillarIcons = [Globe2, Database, Gavel, ShieldCheck]
+const pillarIcons = [CalendarRange, Gauge, BatteryCharging, FileCheck2]
 const stepIcons = [Building2, Search, Gavel, Route]
 
 export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
@@ -221,6 +222,35 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             </div>
           ))}
         </div>
+
+        <div className="relative overflow-hidden border-t border-[#d8dddc] bg-[#202427] py-3.5 text-white">
+          <div className="buyer-quality-track flex w-max items-center">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                className="flex shrink-0 items-center"
+                aria-hidden={copy === 1}
+              >
+                {[
+                  locale === 'de' ? 'Baujahr 2018+' : 'Model year 2018+',
+                  locale === 'de' ? 'Unter 100.000 km' : 'Below 100,000 km',
+                  locale === 'de' ? 'Elektro & Hybrid' : 'Electric & hybrid',
+                  locale === 'de' ? 'Strukturierte Daten' : 'Structured data',
+                  locale === 'de' ? 'Nur für Händler' : 'Dealer-only access',
+                  locale === 'de' ? 'Digitale Gebote' : 'Digital bidding',
+                ].map((item) => (
+                  <div
+                    key={`${copy}-${item}`}
+                    className="flex shrink-0 items-center gap-4 px-5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/72 sm:px-8 sm:text-[11px]"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#b4d9ef]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="py-20 sm:py-28">
@@ -242,12 +272,13 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                 return (
                   <article
                     key={title}
-                    className={`group rounded-[26px] border p-7 transition duration-300 hover:-translate-y-1 sm:p-8 ${
+                    className={`buyer-quality-card group relative overflow-hidden rounded-[26px] border p-7 transition duration-300 hover:-translate-y-1 sm:p-8 ${
                       index === 0
                         ? 'border-[#b9d7e6] bg-[#dfeff7]'
                         : 'border-[#deddd7] bg-white shadow-[0_18px_55px_rgba(32,33,36,.045)]'
                     }`}
                   >
+                    <span className="absolute -right-12 -top-12 h-32 w-32 rounded-full border-[20px] border-[#b4d9ef]/15 transition duration-500 group-hover:scale-110" />
                     <div className="flex items-center justify-between">
                       <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-[#345d70] shadow-[0_8px_25px_rgba(32,33,36,.07)]">
                         <Icon className="h-5 w-5" />
@@ -279,9 +310,9 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             </div>
 
             <div className="relative hidden min-h-[390px] items-center justify-center lg:flex">
-              <div className="absolute h-[330px] w-[330px] rounded-full border border-white/10" />
-              <div className="absolute h-[220px] w-[220px] rounded-full border border-[#b4d9ef]/20" />
-              <div className="absolute h-[110px] w-[110px] rounded-full bg-[#b4d9ef] shadow-[0_0_80px_rgba(180,217,239,.25)]" />
+              <div className="buyer-network-ring absolute h-[330px] w-[330px] rounded-full border border-white/10" />
+              <div className="buyer-network-ring buyer-network-ring-delayed absolute h-[220px] w-[220px] rounded-full border border-[#b4d9ef]/20" />
+              <div className="buyer-network-core absolute h-[110px] w-[110px] rounded-full bg-[#b4d9ef] shadow-[0_0_80px_rgba(180,217,239,.25)]" />
               <div className="relative z-10 text-center text-[#202124]">
                 <Globe2 className="mx-auto h-7 w-7" />
                 <p className="mt-2 text-sm font-semibold">Autorell</p>
@@ -295,7 +326,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                 return (
                   <div
                     key={market}
-                    className={`absolute ${positions[index]} w-[185px] rounded-[18px] border border-white/10 bg-white/[.075] p-4 backdrop-blur-md sm:w-[215px]`}
+                    className={`buyer-network-node buyer-network-node-${index + 1} absolute ${positions[index]} w-[185px] rounded-[18px] border border-white/10 bg-white/[.075] p-4 backdrop-blur-md sm:w-[215px]`}
                   >
                     <div className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${state === 'active' ? 'bg-[#8ed1a8]' : 'bg-[#b4d9ef]'}`} />
@@ -359,7 +390,8 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             {t.steps.map(([title, text], index) => {
               const Icon = stepIcons[index]
               return (
-                <article key={title} className="relative min-h-[310px] bg-[#f8f7f3] p-7 sm:p-8">
+                <article key={title} className="group relative min-h-[310px] overflow-hidden bg-[#f8f7f3] p-7 transition duration-300 hover:bg-white sm:p-8">
+                  <span className="absolute left-0 top-0 h-1 w-0 bg-[#8fc5df] transition-all duration-500 group-hover:w-full" />
                   <div className="flex items-center justify-between">
                     <Icon className="h-5 w-5 text-[#527d90]" />
                     <span className="text-[10px] tracking-[0.18em] text-[#9ba3a6]">0{index + 1}</span>
@@ -438,14 +470,14 @@ function MarketConsole({
   const rows =
     locale === 'de'
       ? [
-          ['01', 'Premium SUV', 'DE / EU', 'Auktion offen'],
-          ['02', 'Electric vehicle', 'SE / DE', 'Daten geprüft'],
-          ['03', 'Business fleet', 'EU', 'In Vorbereitung'],
+          ['01', 'Elektro-SUV · 2022', 'SE / DE', 'Auktion offen'],
+          ['02', 'Touring · 2021', 'SE / EU', 'Daten geprüft'],
+          ['03', 'Business Fleet · 2020', 'EU', 'In Vorbereitung'],
         ]
       : [
-          ['01', 'Premium SUV', 'Sweden', 'Auction open'],
-          ['02', 'Electric vehicle', 'Sweden', 'Data verified'],
-          ['03', 'Business fleet', 'Sweden', 'Preparing'],
+          ['01', 'Electric SUV · 2022', 'Sweden', 'Auction open'],
+          ['02', 'Touring · 2021', 'Sweden', 'Data verified'],
+          ['03', 'Business fleet · 2020', 'Sweden', 'Preparing'],
         ]
 
   return (
@@ -458,7 +490,7 @@ function MarketConsole({
             <p className="mt-2 text-lg tracking-[-0.03em] sm:text-xl">{t.platformTitle}</p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-[9px] text-white/65 sm:text-[10px]">
-            <CircleDot className="h-3.5 w-3.5 text-[#8ed1a8]" />
+            <CircleDot className="buyer-live-dot h-3.5 w-3.5 text-[#8ed1a8]" />
             {t.live}
           </span>
         </div>
@@ -480,7 +512,10 @@ function MarketConsole({
 
           <div className="mt-5 space-y-2">
             {rows.map(([number, vehicle, market, status], index) => (
-              <div key={number} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 rounded-[13px] border border-[#e0e3e0] bg-white px-3 py-3.5">
+              <div
+                key={number}
+                className={`buyer-console-row buyer-console-row-${index + 1} grid grid-cols-[28px_1fr_auto] items-center gap-3 rounded-[13px] border border-[#e0e3e0] bg-white px-3 py-3.5`}
+              >
                 <span className="text-[9px] tracking-[0.14em] text-[#9aa3a6]">{number}</span>
                 <div>
                   <p className="text-xs font-medium sm:text-sm">{vehicle}</p>

@@ -2,9 +2,9 @@ import BuyerMarketPage from '../components/BuyerMarketPage'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'Swedish Car Auctions for European Dealers | Autorell',
+  title: 'Modern Vehicles for European Car Dealers | Autorell',
   description:
-    'Source selected Swedish vehicles through structured data, online dealer auctions and a digital cross-border buying platform built for European car dealers.',
+    'Source selected vehicles from 2018 onwards, below 100,000 km, with structured data and digital B2B auctions for professional European dealers.',
   path: '/',
   locale: 'en',
   keywords: [
@@ -15,6 +15,8 @@ export const metadata = createPublicMetadata({
     'car sourcing platform',
     'wholesale vehicles Europe',
     'dealer vehicle auctions',
+    'electric vehicles for dealers',
+    'modern used cars wholesale',
   ],
 })
 
