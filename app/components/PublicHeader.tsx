@@ -287,7 +287,7 @@ export default function PublicHeader({
               ['/foretag', 'Företag'],
               ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
-              ['/kontakt', 'Kontakt'],
+              ['/kontakt', 'Kontakta oss'],
             ],
             partner: 'Bli bilhandlare',
             login: 'Logga in',
@@ -820,7 +820,7 @@ export default function PublicHeader({
             >
               <span className="flex items-center gap-3">
                 <Headphones className="h-5 w-5" />
-                {content.links[5][1]} Autorell
+                {content.links[5][1]}
               </span>
               <ArrowRight className="h-5 w-5" />
             </Link>
