@@ -126,6 +126,11 @@ export default function ContactForm({
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-7 sm:p-10 lg:p-12">
+      <input type="hidden" name="locale" value={locale} />
+      <label className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+        Website
+        <input name="website" tabIndex={-1} autoComplete="off" />
+      </label>
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label={t.name} name="name" autoComplete="name" required />
         <Field label={t.email} name="email" type="email" autoComplete="email" required />

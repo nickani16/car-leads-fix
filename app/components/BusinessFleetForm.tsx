@@ -70,6 +70,11 @@ export default function BusinessFleetForm() {
 
   return (
     <form onSubmit={handleSubmit} className="min-w-0 bg-white/95 p-5 backdrop-blur sm:p-9 lg:p-10">
+      <input type="hidden" name="locale" value="sv" />
+      <label className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+        Website
+        <input name="website" tabIndex={-1} autoComplete="off" />
+      </label>
       <div className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#71818a]">
           Starta ett pilotflöde
