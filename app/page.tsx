@@ -1,5 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
@@ -24,18 +26,65 @@ import {
   Zap,
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
+import BuyerMarketPage from './components/BuyerMarketPage'
 import FaqTestimonials from './components/FaqTestimonials'
 import ProcessSteps from './components/ProcessSteps'
 import PublicFooter from './components/PublicFooter'
 
-export const metadata = createPublicMetadata({
-  title: 'Sälj din bil till handlare i Europa | Autorell',
-  description:
-    'Sälj din bil genom kostnadsfri registrering och budgivning från verifierade handlare i Sverige och Europa. Du väljer om du vill acceptera.',
-  path: '/',
-})
+async function getRootMarket() {
+  const requestHeaders = await headers()
+  const hostname = (
+    requestHeaders.get('host') ||
+    requestHeaders.get('x-forwarded-host') ||
+    ''
+  )
+    .split(',')[0]
+    .trim()
+    .split(':')[0]
+    .toLowerCase()
 
-export default function HomePage() {
+  if (hostname.endsWith('autorell.de')) return 'de'
+  if (hostname.endsWith('autorell.com')) return 'en'
+  return 'sv'
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const market = await getRootMarket()
+
+  if (market === 'de') {
+    return createPublicMetadata({
+      title: 'Schwedische Fahrzeuge für Händler | Autorell Deutschland',
+      description:
+        'Ausgewählte schwedische Fahrzeuge, strukturierte Daten und 24-Stunden-Auktionen für verifizierte Autohändler.',
+      path: '/',
+      locale: 'de',
+    })
+  }
+
+  if (market === 'en') {
+    return createPublicMetadata({
+      title: 'Swedish vehicles for European dealers | Autorell',
+      description:
+        'Selected Swedish vehicles, structured data and 24-hour bidding for verified European dealers.',
+      path: '/',
+      locale: 'en',
+    })
+  }
+
+  return createPublicMetadata({
+    title: 'Sälj din bil till handlare i Europa | Autorell',
+    description:
+      'Sälj din bil genom kostnadsfri registrering och budgivning från verifierade handlare i Sverige och Europa. Du väljer om du vill acceptera.',
+    path: '/',
+  })
+}
+
+export default async function HomePage() {
+  const market = await getRootMarket()
+
+  if (market === 'de') return <BuyerMarketPage locale="de" />
+  if (market === 'en') return <BuyerMarketPage locale="en" />
+
   return (
     <main className="min-h-screen overflow-hidden bg-white text-[#202124]">
       <PublicHeader transparentAtTop />

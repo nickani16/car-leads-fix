@@ -66,8 +66,10 @@ const LEGACY_DEALER_PATHS = {
 } as const
 
 function getHostname(request: NextRequest) {
-  const forwardedHost = request.headers.get('x-forwarded-host')
-  const host = forwardedHost || request.headers.get('host') || ''
+  const host =
+    request.headers.get('host') ||
+    request.headers.get('x-forwarded-host') ||
+    ''
 
   return host.split(',')[0].trim().split(':')[0].toLowerCase()
 }

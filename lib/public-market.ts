@@ -1,7 +1,7 @@
-import type { MetadataRoute } from 'next'
+export type PublicMarket = 'sv' | 'de' | 'en'
 
-const marketPages = [
-  {
+const marketConfig = {
+  sv: {
     host: 'https://www.autorell.se',
     paths: [
       '',
@@ -18,8 +18,9 @@ const marketPages = [
       '/cookies',
       '/villkor',
     ],
+    priorityPath: '/salj-bil',
   },
-  {
+  de: {
     host: 'https://www.autorell.de',
     paths: [
       '',
@@ -35,8 +36,9 @@ const marketPages = [
       '/cookies',
       '/nutzungsbedingungen',
     ],
+    priorityPath: '/fahrzeuge',
   },
-  {
+  en: {
     host: 'https://www.autorell.com',
     paths: [
       '',
@@ -52,25 +54,26 @@ const marketPages = [
       '/cookies',
       '/terms',
     ],
+    priorityPath: '/vehicles',
   },
-] as const
+} as const
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date()
-
-  return marketPages.flatMap(({ host, paths }) =>
-    paths.map((path) => ({
-      url: `${host}${path}`,
-      lastModified,
-      changeFrequency: path === '' ? 'weekly' : 'monthly',
-      priority:
-        path === ''
-          ? 1
-          : path === '/salj-bil' ||
-              path === '/fahrzeuge' ||
-              path === '/vehicles'
-            ? 0.9
-            : 0.7,
-    })),
+export function getPublicMarket(request: Request): PublicMarket {
+  const hostname = (
+    request.headers.get('host') ||
+    request.headers.get('x-forwarded-host') ||
+    ''
   )
+    .split(',')[0]
+    .trim()
+    .split(':')[0]
+    .toLowerCase()
+
+  if (hostname.endsWith('autorell.de')) return 'de'
+  if (hostname.endsWith('autorell.com')) return 'en'
+  return 'sv'
+}
+
+export function getPublicMarketConfig(market: PublicMarket) {
+  return marketConfig[market]
 }

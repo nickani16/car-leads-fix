@@ -44,10 +44,12 @@ export default async function RootLayout({
 }>) {
   const requestHeaders = await headers()
   const hostname = (
-    requestHeaders.get('x-forwarded-host') ||
     requestHeaders.get('host') ||
+    requestHeaders.get('x-forwarded-host') ||
     ''
   )
+    .split(',')[0]
+    .trim()
     .split(':')[0]
     .toLowerCase()
   const language = hostname.endsWith('autorell.de')
