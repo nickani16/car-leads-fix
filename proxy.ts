@@ -16,6 +16,15 @@ const MARKET_HOSTS = {
 
 type Market = keyof typeof MARKET_HOSTS
 
+const MARKET_BY_HOST: Record<string, Market> = {
+  'www.autorell.se': 'sv',
+  'www.autorell.de': 'de',
+  'www.autorell.com': 'en',
+}
+
+const SEARCH_CRAWLER_PATTERN =
+  /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|applebot/i
+
 const DEALER_MARKET_ROUTES = {
   de: new Map([
     ['/fahrzeuge', 'vehicles'],
@@ -88,12 +97,18 @@ function redirectToHost(
 }
 
 function redirectToMarket(request: NextRequest, market: Market) {
+  const hostname = getHostname(request)
+  const targetHostname = MARKET_HOSTS[market]
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
-  url.hostname = MARKET_HOSTS[market]
+  url.hostname = targetHostname
   url.port = ''
-  url.searchParams.delete('market')
 
+  if (hostname !== targetHostname) {
+    return NextResponse.redirect(url, 307)
+  }
+
+  url.searchParams.delete('market')
   const response = NextResponse.redirect(url, 307)
   response.cookies.set('autorell-market', market, {
     httpOnly: true,
@@ -104,6 +119,25 @@ function redirectToMarket(request: NextRequest, market: Market) {
   })
 
   return response
+}
+
+function getPreferredMarket(request: NextRequest): Market | null {
+  const preferredMarket = request.cookies.get('autorell-market')?.value
+
+  return preferredMarket === 'sv' ||
+    preferredMarket === 'de' ||
+    preferredMarket === 'en'
+    ? preferredMarket
+    : null
+}
+
+function getCountryMarket(request: NextRequest): Market | null {
+  const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
+
+  if (!country) return null
+  if (country === 'SE') return 'sv'
+  if (country === 'DE') return 'de'
+  return 'en'
 }
 
 export function proxy(request: NextRequest) {
@@ -144,47 +178,39 @@ export function proxy(request: NextRequest) {
     }
 
     const marketPage = DEALER_MARKET_ROUTES[locale].get(pathname)
-    if (!marketPage) return NextResponse.next()
-
-    const localizedUrl = request.nextUrl.clone()
-    localizedUrl.pathname = `/dealer-market/${locale}/${marketPage}`
-    return NextResponse.rewrite(localizedUrl)
+    if (marketPage) {
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = `/dealer-market/${locale}/${marketPage}`
+      return NextResponse.rewrite(localizedUrl)
+    }
   }
 
   if (pathname !== '/') {
     return NextResponse.next()
   }
 
-  if (hostname === 'www.autorell.se') {
-    return NextResponse.next()
+  const currentMarket = MARKET_BY_HOST[hostname]
+  const preferredMarket = getPreferredMarket(request)
+  const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
+    request.headers.get('user-agent') || '',
+  )
+  const countryMarket = isSearchCrawler ? null : getCountryMarket(request)
+  const targetMarket = preferredMarket || countryMarket
+
+  if (
+    currentMarket &&
+    targetMarket &&
+    targetMarket !== currentMarket
+  ) {
+    return redirectToHost(request, MARKET_HOSTS[targetMarket], 307)
+  }
+
+  if (hostname === 'www.autorell.com') {
+    return NextResponse.rewrite(new URL('/eu', request.url))
   }
 
   if (hostname === 'www.autorell.de') {
     return NextResponse.rewrite(new URL('/de', request.url))
-  }
-
-  if (hostname === 'www.autorell.com') {
-    const preferredMarket = request.cookies.get('autorell-market')?.value
-
-    if (preferredMarket === 'sv' || preferredMarket === 'de') {
-      return redirectToHost(request, MARKET_HOSTS[preferredMarket], 307)
-    }
-
-    if (preferredMarket === 'en') {
-      return NextResponse.rewrite(new URL('/eu', request.url))
-    }
-
-    const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
-
-    if (country === 'SE') {
-      return redirectToHost(request, 'www.autorell.se', 307)
-    }
-
-    if (country === 'DE') {
-      return redirectToHost(request, 'www.autorell.de', 307)
-    }
-
-    return NextResponse.rewrite(new URL('/eu', request.url))
   }
 
   return NextResponse.next()
