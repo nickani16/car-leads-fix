@@ -13,11 +13,13 @@ export function createPublicMetadata({
   description,
   path,
   locale = 'sv',
+  keywords,
 }: {
   title: string
   description: string
   path: string
   locale?: PublicLocale
+  keywords?: string[]
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
   const canonical = `${hosts[locale]}${normalizedPath}`
@@ -25,6 +27,7 @@ export function createPublicMetadata({
   return {
     title: { absolute: title },
     description,
+    keywords,
     alternates: {
       canonical,
       languages: {

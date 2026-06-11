@@ -51,19 +51,19 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
   de: {
     vehicles: {
       path: '/fahrzeuge',
-      title: 'Schwedische Fahrzeuge für deutsche Händler | Autorell',
+      title: 'Fahrzeugbörse für Autohändler | Autorell Deutschland',
       description:
-        'Entdecken Sie ausgewählte Fahrzeuge aus Schweden mit strukturierten Zustandsdaten, transparenter Historie und Zugang für geprüfte deutsche Autohändler.',
-      eyebrow: 'Fahrzeuge aus Schweden',
-      heading: 'Neue Beschaffungsmöglichkeiten für deutsche Autohändler.',
+        'Digitale Fahrzeugbörse für Autohändler mit qualifiziertem Angebot, strukturierten Fahrzeugdaten, B2B-Auktionen und europaweiter Beschaffung.',
+      eyebrow: 'Fahrzeugangebot für Händler',
+      heading: 'Neue Beschaffungsmöglichkeiten für Ihren Fahrzeugbestand.',
       intro:
-        'Autorell erschließt für deutsche Händler einen fokussierten Zugang zu ausgewählten Fahrzeugen aus Schweden. Klare Daten helfen Ihnen, schneller zu prüfen, zu priorisieren und zu bieten.',
+        'Autorell baut für deutsche Händler einen fokussierten Zugang zu qualifiziertem europäischem Fahrzeugangebot auf. Klare Daten helfen Ihnen, schneller zu prüfen, zu priorisieren und zu bieten.',
       primary: 'Händlerzugang beantragen',
       primaryHref: '/dealer-apply',
       facts: ['Standort Schweden', 'Geprüfte Händlerkonten', 'Strukturierte Zustandsdaten'],
       sections: [
         {
-          title: 'Relevantes schwedisches Angebot',
+          title: 'Relevantes Fahrzeugangebot',
           text: 'Fahrzeuge werden nach Alter, Laufleistung, Zustand und professioneller Nachfrage qualifiziert, bevor sie in die Gebotsphase gelangen.',
         },
         {
@@ -72,7 +72,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         },
         {
           title: 'Für den deutschen Bestand',
-          text: 'Das Angebot richtet sich an Händler, die ihr lokales Sourcing um gefragte Fahrzeuge aus dem schwedischen Markt ergänzen möchten.',
+          text: 'Das Angebot richtet sich an Händler, die ihr lokales Sourcing um gefragte Fahrzeuge aus europäischen Märkten ergänzen möchten.',
         },
         {
           title: 'Entscheiden mit besserer Datengrundlage',
@@ -82,11 +82,11 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
     },
     process: {
       path: '/so-funktionierts',
-      title: 'Fahrzeuge aus Schweden kaufen: Ablauf | Autorell',
+      title: 'Online-Fahrzeugauktionen für Händler: Ablauf | Autorell',
       description:
-        'So kaufen deutsche Händler Fahrzeuge über Autorell: Händlerprüfung, Fahrzeugdaten, Gebot, Verkäuferentscheidung, Zahlung, Abholung und Export.',
+        'So kaufen Autohändler Fahrzeuge über Autorell: Händlerprüfung, Fahrzeugdaten, Online-Gebot, Entscheidung, Zahlung, Abholung und Logistik.',
       eyebrow: 'Der Einkaufsprozess',
-      heading: 'Von Schweden in Ihren Fahrzeugbestand.',
+      heading: 'Vom digitalen Gebot in Ihren Fahrzeugbestand.',
       intro:
         'Ein klarer B2B-Prozess verbindet Händlerprüfung, Gebot, Fahrzeugabgleich, Zahlung und grenzüberschreitende Abholung.',
       primary: 'Als Händler registrieren',
@@ -174,9 +174,9 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
     },
     faq: {
       path: '/faq',
-      title: 'FAQ für deutsche Autohändler | Autorell',
+      title: 'FAQ zur B2B-Fahrzeugbörse für Autohändler | Autorell',
       description:
-        'Antworten für deutsche Händler zu Fahrzeugen aus Schweden, Händlerprüfung, Geboten, Gebühren, Zahlung, Abholung und Export über Autorell.',
+        'Antworten für Autohändler zu Fahrzeugangebot, Händlerprüfung, Online-Auktionen, Gebühren, Zahlung, Abholung und europäischer Logistik.',
       eyebrow: 'Häufige Fragen',
       heading: 'Antworten für Ihren Einkauf über Autorell.',
       intro:

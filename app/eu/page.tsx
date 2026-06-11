@@ -2,11 +2,20 @@ import BuyerMarketPage from '../components/BuyerMarketPage'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'Swedish vehicles for European dealers | Autorell',
+  title: 'Swedish Car Auctions for European Dealers | Autorell',
   description:
-    'Selected Swedish vehicles, structured data and 24-hour bidding for verified European dealers.',
+    'Source selected Swedish vehicles through structured data, online dealer auctions and a digital cross-border buying platform built for European car dealers.',
   path: '/',
   locale: 'en',
+  keywords: [
+    'Swedish car auctions',
+    'vehicles from Sweden',
+    'European dealer marketplace',
+    'B2B car auctions',
+    'car sourcing platform',
+    'wholesale vehicles Europe',
+    'dealer vehicle auctions',
+  ],
 })
 
 export default function EuropeanVehiclePage() {

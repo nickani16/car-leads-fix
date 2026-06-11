@@ -195,9 +195,9 @@ export default function PublicHeader({
   const content =
     activeLocale === 'de'
       ? {
-          message: 'Ausgewählte Fahrzeuge aus Schweden für europäische Händler',
+          message: 'Digitaler B2B-Fahrzeugmarkt für professionelle Händler',
           menuLabel: 'Navigation',
-          privateLabel: 'Schwedische Fahrzeuge',
+          privateLabel: 'Europäischer Fahrzeughandel',
           dealerLabel: 'Über Autorell',
           links: [
             ['/fahrzeuge', 'Fahrzeuge'],
@@ -279,14 +279,14 @@ export default function PublicHeader({
           ],
         }
       : {
-          eyebrow: activeLocale === 'de' ? 'Schwedische Fahrzeuge' : 'Swedish vehicles',
+          eyebrow: activeLocale === 'de' ? 'Europäischer Fahrzeugmarkt' : 'Swedish vehicles',
           title:
             activeLocale === 'de'
-              ? 'Ausgewählte Fahrzeuge für professionelle Käufer.'
+              ? 'Fahrzeuge, Daten und digitale Auktionen für Händler.'
               : 'Selected vehicles for professional buyers.',
           text:
             activeLocale === 'de'
-              ? 'Strukturierte Fahrzeugdaten und fokussierte Gebotsphasen.'
+              ? 'Professioneller B2B-Zugang zu wachsendem europäischem Angebot.'
               : 'Structured vehicle data and focused bidding windows.',
           cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
           ctaHref: activeLocale === 'de' ? '/fahrzeuge' : '/vehicles',
@@ -296,7 +296,7 @@ export default function PublicHeader({
               label: activeLocale === 'de' ? 'Fahrzeuge' : 'Vehicles',
               text:
                 activeLocale === 'de'
-                  ? 'Aktueller Zugang zum schwedischen Angebot.'
+                  ? 'Aktueller Zugang zu qualifiziertem Fahrzeugangebot.'
                   : 'Current access to selected Swedish supply.',
               icon: CarFront,
             },
@@ -406,7 +406,7 @@ export default function PublicHeader({
           eyebrow: activeLocale === 'de' ? 'Für professionelle Händler' : 'For professional dealers',
           title:
             activeLocale === 'de'
-              ? 'Mehr Klarheit beim Einkauf schwedischer Fahrzeuge.'
+              ? 'Mehr Klarheit im europäischen Fahrzeugeinkauf.'
               : 'A clearer way to source Swedish vehicles.',
           text:
             activeLocale === 'de'
@@ -608,7 +608,7 @@ export default function PublicHeader({
                         </p>
                         <h3 className="mt-2 max-w-[360px] whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124] 2xl:text-[27px]">
                           {activeLocale === 'de'
-                            ? 'Schwedische Fahrzeuge. Klarere Entscheidungen.'
+                            ? 'Europäischer Handel. Klarere Entscheidungen.'
                             : 'Swedish vehicles. Clearer decisions.'}
                         </h3>
                         <p className="mt-3 max-w-[390px] whitespace-normal text-sm leading-6 text-[#5c707b]">

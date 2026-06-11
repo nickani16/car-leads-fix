@@ -43,13 +43,13 @@ const footerCopy = {
     cookieSettings: 'Cookieinställningar',
   },
   de: {
-    description: 'Ausgewählte schwedische Fahrzeuge für verifizierte Autohändler in Deutschland.',
-    question: 'Möchten Sie schwedische Fahrzeuge für Ihren Bestand einkaufen?',
+    description: 'Der digitale B2B-Fahrzeugmarkt für verifizierte Autohändler in Deutschland und Europa.',
+    question: 'Möchten Sie neue europäische Beschaffungsmärkte erschließen?',
     cta: 'Händlerzugang beantragen',
-    statement: 'Schwedische Fahrzeugquelle. Für professionelle Händler in Deutschland.',
+    statement: 'Fahrzeuge handeln. Europa verbinden.',
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge aus Schweden', '/fahrzeuge'],
+      ['Fahrzeuge entdecken', '/fahrzeuge'],
       ['So funktioniert der Einkauf', '/so-funktionierts'],
       ['Vorteile für Händler', '/vorteile'],
       ['Häufige Fragen', '/faq'],
