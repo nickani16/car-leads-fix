@@ -1,10 +1,12 @@
-import type { Metadata } from 'next'
+import { createPublicMetadata } from '@/lib/public-seo'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata: Metadata = {
-  title: 'Cookiepolicy | Autorell',
-  description: 'Information om kakor på Autorells webbplats.',
-}
+export const metadata = createPublicMetadata({
+  title: 'Cookiepolicy och cookieinställningar | Autorell',
+  description:
+    'Information om nödvändiga cookies, säkerhet, sessionshantering, framtida analysverktyg och hur du hanterar cookies på Autorell.',
+  path: '/cookies',
+})
 
 const sections = [
   {
@@ -66,4 +68,3 @@ export default function CookiesPage() {
     />
   )
 }
-

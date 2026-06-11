@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
   BadgeCheck,
@@ -21,11 +21,12 @@ import PublicBreadcrumbs from '../components/PublicBreadcrumbs'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
-export const metadata: Metadata = {
+export const metadata = createPublicMetadata({
   title: 'Fordonsremarketing för företag | Autorell',
   description:
     'Ett strukturerat B2B-flöde för bilhandlare, leasingbolag och fordonsflottor som vill nå professionella köpare i Sverige och Europa.',
-}
+  path: '/foretag',
+})
 
 const portfolioTypes = [
   ['Inbyten', 'Fordon utanför den egna lagerstrategin'],
@@ -384,7 +385,7 @@ export default function BusinessPage() {
           <div>
             <p className="text-sm text-[#707b80]">Gäller det en privat bil?</p>
             <p className="mt-1 text-xl tracking-[-0.025em]">
-              Kontrollera bilen kostnadsfritt och se om den passar.
+              Registrera bilen kostnadsfritt och se om den passar våra kriterier.
             </p>
           </div>
           <Link

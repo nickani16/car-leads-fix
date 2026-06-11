@@ -1,14 +1,16 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicMetadata } from '@/lib/public-seo'
 import { ArrowRight, Clock3, Mail, MessageCircle, Store } from 'lucide-react'
 import ContactForm from '../components/ContactForm'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
-export const metadata: Metadata = {
-  title: 'Kontakta Autorell',
-  description: 'Kontakta Autorell om bilvärdering, ett pågående ärende eller dealer-portalen.',
-}
+export const metadata = createPublicMetadata({
+  title: 'Kontakta Autorell | Säljare, företag och handlare',
+  description:
+    'Kontakta Autorell om att sälja bil, ett pågående ärende, företagslösningar, handlaråtkomst eller teknisk support.',
+  path: '/kontakt',
+})
 
 export default function ContactPage() {
   return (

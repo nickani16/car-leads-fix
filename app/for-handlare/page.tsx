@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
   BadgeCheck,
@@ -14,11 +14,12 @@ import PublicBreadcrumbs from '../components/PublicBreadcrumbs'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
-export const metadata: Metadata = {
-  title: 'För bilhandlare | Autorell Dealer Network',
+export const metadata = createPublicMetadata({
+  title: 'Köp svenska bilar som bilhandlare | Autorell',
   description:
     'Köp kvalificerade svenska fordon genom strukturerad fordonsdata, fokuserad budgivning och ett tydligt exportflöde.',
-}
+  path: '/for-handlare',
+})
 
 const benefits = [
   {

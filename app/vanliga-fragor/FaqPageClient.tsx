@@ -11,7 +11,7 @@ const questions = [
   ['Kriterier', 'Varför tar ni inte emot alla bilar?', 'Autorell bygger först ett fokuserat exportflöde för bilar som har tydlig efterfrågan hos professionella europeiska köpare. Kriterierna kan utvecklas när nätverket växer.'],
   ['Kriterier', 'Vilka uppgifter behöver jag lämna?', 'Du behöver bland annat registreringsnummer, miltal, servicehistorik, tekniskt skick, kända fel, utrustning och tydliga bilder av bilen.'],
   ['Kriterier', 'Kan jag sälja en bil med motorfel eller aktiva varningslampor?', 'Inte i den första versionen. Bilar med allvarliga motor- eller växellådsproblem, betydande läckage, större krockskador eller allvarliga varningslampor går inte vidare till budgivning.'],
-  ['Budgivning', 'Kostar det något att registrera bilen?', 'Nej. Det är kostnadsfritt att kontrollera kriterierna, registrera bilen och ta emot dealerbud.'],
+  ['Budgivning', 'Kostar det något att registrera bilen?', 'Nej. Det är kostnadsfritt att registrera bilen, se kriterierna och ta emot dealerbud.'],
   ['Budgivning', 'Måste jag acceptera det högsta budet?', 'Nej. Du bestämmer alltid själv om du vill acceptera ett erbjudande och gå vidare med försäljningen.'],
   ['Budgivning', 'Hur länge pågår budgivningen?', 'Budgivningen är normalt öppen i upp till 24 timmar från att den granskade fordonsprofilen publiceras.'],
   ['Budgivning', 'Vilka kan lägga bud?', 'Endast verifierade professionella bilhandlare som har godkänts för Autorell Dealer Network. Sverige är säljarlandet vid lansering, medan köparna kan finnas i Sverige och övriga Europa.'],

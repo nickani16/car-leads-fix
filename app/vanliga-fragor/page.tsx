@@ -1,13 +1,14 @@
-import type { Metadata } from 'next'
+import { createPublicMetadata } from '@/lib/public-seo'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 import FaqPageClient from './FaqPageClient'
 
-export const metadata: Metadata = {
-  title: 'Vanliga frågor | Autorell',
+export const metadata = createPublicMetadata({
+  title: 'Vanliga frågor om att sälja bil | Autorell',
   description:
     'Svar om fordonskriterier, 24 timmars budgivning, kontroll, betalning, hämtning och export från Sverige.',
-}
+  path: '/vanliga-fragor',
+})
 
 export default function FaqPage() {
   return (

@@ -1,6 +1,6 @@
-import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
   BadgeCheck,
@@ -28,11 +28,12 @@ import FaqTestimonials from './components/FaqTestimonials'
 import ProcessSteps from './components/ProcessSteps'
 import PublicFooter from './components/PublicFooter'
 
-export const metadata: Metadata = {
-  title: 'Autorell | Sälj utvalda svenska bilar till Europa',
+export const metadata = createPublicMetadata({
+  title: 'Sälj din bil till handlare i Europa | Autorell',
   description:
-    'Autorell matchar utvalda svenska bilar med verifierade professionella köpare i Sverige och Europa.',
-}
+    'Sälj din bil genom kostnadsfri registrering och budgivning från verifierade handlare i Sverige och Europa. Du väljer om du vill acceptera.',
+  path: '/',
+})
 
 export default function HomePage() {
   return (
@@ -71,7 +72,7 @@ export default function HomePage() {
                 href="/salj-bil"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-[#B4D9EF] px-7 text-base font-medium text-[#242424] shadow-[0_14px_30px_rgba(94,154,190,.18)] transition hover:-translate-y-0.5 hover:bg-[#C9E6F6] sm:rounded-full sm:font-normal"
               >
-                Kontrollera om bilen passar
+                Sälj din bil
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
@@ -221,7 +222,7 @@ export default function HomePage() {
               href="/salj-bil"
               className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#b4d9ef] px-6 text-sm font-medium text-[#242424] transition hover:-translate-y-0.5 hover:bg-[#c9e6f6] sm:w-auto"
             >
-              Kontrollera bilen
+              Sälj din bil
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -253,7 +254,7 @@ export default function HomePage() {
                 href="/salj-bil"
                 className="mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.14)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
-                Kontrollera om bilen passar
+                Sälj din bil
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -387,7 +388,7 @@ export default function HomePage() {
                   href="/salj-bil"
                   className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#242424]"
                 >
-                  Kontrollera din bil
+                  Sälj din bil
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -477,7 +478,7 @@ export default function HomePage() {
                 Din bil. Ditt beslut.
               </p>
               <h2 className="mt-4 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] text-[#202124] sm:text-5xl">
-                Kontrollera om din bil passar Europas köpare.
+                Se om din bil kan nå professionella köpare i Europa.
               </h2>
               <p className="mt-4 max-w-xl leading-7 text-[#34526c]">
                 Kostnadsfri registrering för utvalda svenska bilar.
@@ -487,7 +488,7 @@ export default function HomePage() {
               href="/salj-bil"
               className="mt-8 inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:rounded-full sm:font-normal"
             >
-              Kontrollera min bil
+              Sälj min bil
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>

@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
   BadgeCheck,
@@ -17,11 +17,12 @@ import PublicBreadcrumbs from '../components/PublicBreadcrumbs'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
-export const metadata: Metadata = {
-  title: 'Om oss',
+export const metadata = createPublicMetadata({
+  title: 'Om Autorell | Europeisk marknadsplats för bilar',
   description:
     'Lär känna Autorell och vår idé om en strukturerad exportplattform för utvalda svenska bilar och professionella europeiska handlare.',
-}
+  path: '/om-oss',
+})
 
 const principles = [
   {
@@ -72,7 +73,7 @@ export default function AboutPage() {
                   href="/salj-bil"
                   className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111]"
                 >
-                  Kontrollera din bil
+                  Sälj din bil
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
@@ -272,7 +273,7 @@ export default function AboutPage() {
               href="/salj-bil"
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-medium text-white"
             >
-              Kontrollera din bil
+              Sälj din bil
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link

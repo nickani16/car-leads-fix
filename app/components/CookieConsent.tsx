@@ -2,12 +2,75 @@
 
 import Link from 'next/link'
 import { Cookie, Settings2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
 
 type ConsentChoice = 'necessary' | 'all'
+type CookieLocale = 'sv' | 'de' | 'en'
+
+const cookieCopy = {
+  sv: {
+    close: 'Stäng cookieinställningar',
+    title: 'Dina cookieinställningar',
+    text: 'Vi använder nödvändiga cookies för säkerhet, inloggning och webbplatsens funktioner. Med ditt val kan vi även tillåta framtida anonym statistik. Vi använder inte marknadsföringscookies idag.',
+    necessaryTitle: 'Nödvändiga cookies',
+    necessaryText: 'Krävs för säkerhet, formulär och inloggning. Kan inte stängas av.',
+    analyticsTitle: 'Analyscookies',
+    analyticsText: 'Används endast efter godkännande om Autorell inför anonym webbstatistik.',
+    policyStart: 'Läs mer i vår',
+    policy: 'cookiepolicy',
+    policyEnd: 'Du kan ändra ditt val när som helst via footern.',
+    accept: 'Acceptera alla',
+    necessary: 'Endast nödvändiga',
+    hide: 'Dölj inställningar',
+    customize: 'Anpassa',
+  },
+  de: {
+    close: 'Cookie-Einstellungen schließen',
+    title: 'Ihre Cookie-Einstellungen',
+    text: 'Wir verwenden notwendige Cookies für Sicherheit, Anmeldung und Website-Funktionen. Mit Ihrer Auswahl können Sie außerdem zukünftige anonyme Statistiken erlauben. Marketing-Cookies verwenden wir derzeit nicht.',
+    necessaryTitle: 'Notwendige Cookies',
+    necessaryText: 'Für Sicherheit, Formulare und Anmeldung erforderlich. Sie können nicht deaktiviert werden.',
+    analyticsTitle: 'Analyse-Cookies',
+    analyticsText: 'Werden nur nach Zustimmung verwendet, falls Autorell anonyme Webstatistiken einführt.',
+    policyStart: 'Mehr erfahren Sie in unserer',
+    policy: 'Cookie-Richtlinie',
+    policyEnd: 'Sie können Ihre Auswahl jederzeit im Footer ändern.',
+    accept: 'Alle akzeptieren',
+    necessary: 'Nur notwendige',
+    hide: 'Einstellungen ausblenden',
+    customize: 'Anpassen',
+  },
+  en: {
+    close: 'Close cookie settings',
+    title: 'Your cookie settings',
+    text: 'We use essential cookies for security, sign-in and website functionality. You may also allow future anonymous analytics. We do not currently use marketing cookies.',
+    necessaryTitle: 'Essential cookies',
+    necessaryText: 'Required for security, forms and sign-in. These cannot be disabled.',
+    analyticsTitle: 'Analytics cookies',
+    analyticsText: 'Used only with consent if Autorell introduces anonymous website analytics.',
+    policyStart: 'Learn more in our',
+    policy: 'cookie policy',
+    policyEnd: 'You can change your choice at any time in the footer.',
+    accept: 'Accept all',
+    necessary: 'Essential only',
+    hide: 'Hide settings',
+    customize: 'Customise',
+  },
+} as const
+
+function getCookieLocale(): CookieLocale {
+  const hostname = window.location.hostname.toLowerCase()
+  if (hostname.endsWith('autorell.de')) return 'de'
+  if (hostname.endsWith('autorell.com')) return 'en'
+  return 'sv'
+}
+
+function subscribeToHostname() {
+  return () => {}
+}
 
 function readConsent() {
   return document.cookie
@@ -29,6 +92,12 @@ function saveConsent(choice: ConsentChoice) {
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const locale = useSyncExternalStore(
+    subscribeToHostname,
+    getCookieLocale,
+    () => 'sv' as CookieLocale,
+  )
+  const t = cookieCopy[locale]
 
   useEffect(() => {
     const initialCheck = window.setTimeout(() => {
@@ -77,7 +146,7 @@ export default function CookieConsent() {
                     setSettingsOpen(false)
                   }}
                   className="grid h-10 w-10 place-items-center rounded-full border border-[#deddd7] text-[#62686c] lg:hidden"
-                  aria-label="Stäng cookieinställningar"
+                  aria-label={t.close}
                 >
                   <X size={18} />
                 </button>
@@ -88,34 +157,31 @@ export default function CookieConsent() {
               id="cookie-title"
               className="mt-5 text-2xl tracking-[-0.03em] text-[#242424]"
             >
-              Dina cookieinställningar
+              {t.title}
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#62686c]">
-              Vi använder nödvändiga cookies för säkerhet, inloggning och
-              webbplatsens funktioner. Med ditt val kan vi även tillåta
-              framtida anonym statistik. Vi använder inte
-              marknadsföringscookies idag.
+              {t.text}
             </p>
 
             {settingsOpen && (
               <div className="mt-5 grid gap-3">
                 <ConsentCategory
-                  title="Nödvändiga cookies"
-                  description="Krävs för säkerhet, formulär och inloggning. Kan inte stängas av."
+                  title={t.necessaryTitle}
+                  description={t.necessaryText}
                   active
                   locked
                 />
                 <ConsentCategory
-                  title="Analyscookies"
-                  description="Används endast efter godkännande om Autorell inför anonym webbstatistik."
+                  title={t.analyticsTitle}
+                  description={t.analyticsText}
                   active={false}
                 />
                 <p className="text-xs leading-5 text-[#7b8184]">
-                  Läs mer i vår{' '}
+                  {t.policyStart}{' '}
                   <Link href="/cookies" className="underline underline-offset-2">
-                    cookiepolicy
+                    {t.policy}
                   </Link>
-                  . Du kan ändra ditt val när som helst via footern.
+                  . {t.policyEnd}
                 </p>
               </div>
             )}
@@ -127,14 +193,14 @@ export default function CookieConsent() {
               onClick={() => choose('all')}
               className="min-h-12 rounded-full bg-[#242424] px-6 text-sm text-white transition hover:bg-[#111111]"
             >
-              Acceptera alla
+              {t.accept}
             </button>
             <button
               type="button"
               onClick={() => choose('necessary')}
               className="min-h-12 rounded-full border border-[#cfcfca] bg-white px-6 text-sm text-[#242424] transition hover:border-[#242424]"
             >
-              Endast nödvändiga
+              {t.necessary}
             </button>
             <button
               type="button"
@@ -142,7 +208,7 @@ export default function CookieConsent() {
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#eff8fd] px-6 text-sm text-[#242424]"
             >
               <Settings2 size={16} />
-              {settingsOpen ? 'Dölj inställningar' : 'Anpassa'}
+              {settingsOpen ? t.hide : t.customize}
             </button>
           </div>
         </div>

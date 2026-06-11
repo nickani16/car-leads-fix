@@ -25,7 +25,7 @@ const BRANDS = [
   'MG', 'MINI', 'Mitsubishi', 'NIO', 'Nissan', 'Opel', 'Peugeot', 'Polestar',
   'Porsche', 'Renault', 'Rolls-Royce', 'Saab', 'SEAT', 'Škoda', 'Smart',
   'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'XPeng',
-  'Other',
+  'ZEEKR', 'Other',
 ]
 
 const YEARS = Array.from(
@@ -65,16 +65,16 @@ const EU_COUNTRIES = [
 
 const copy = {
   sv: {
-    market: 'Svensk exportförsäljning',
-    hero: 'Kontrollera om din bil passar Europas professionella köpare.',
-    intro: 'För bilar från 2018, högst 10 000 mil, placerade i Sverige och i gott tekniskt skick.',
-    secure: 'Kostnadsfri kontroll och registrering',
+    market: 'Sälj din bil till professionella köpare',
+    hero: 'Sälj din bil till verifierade handlare i Sverige och Europa.',
+    intro: 'Fyll i bilens uppgifter kostnadsfritt. I formuläret ser du om bilen uppfyller våra grundkriterier för årsmodell, miltal, plats och tekniskt skick.',
+    secure: 'Kostnadsfri registrering utan bindning',
     steps: ['Bilen', 'Teknik', 'Skick', 'Bilder & kontakt'],
     step: 'Steg',
     of: 'av',
     vehicleEyebrow: 'Fordonsidentitet',
-    vehicleTitle: 'Uppfyller bilen våra grundkriterier?',
-    vehicleIntro: 'Börja med identitet, årsmodell, miltal och var bilen finns.',
+    vehicleTitle: 'Berätta vilken bil du vill sälja',
+    vehicleIntro: 'Börja med registrering, årsmodell, miltal och var bilen finns. Vi tar för närvarande emot bilar från 2018 och nyare.',
     reg: 'Registreringsnummer',
     make: 'Bilmärke',
     model: 'Modell',

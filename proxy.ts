@@ -16,6 +16,19 @@ const MARKET_HOSTS = {
 
 type Market = keyof typeof MARKET_HOSTS
 
+const LOCALIZED_PUBLIC_PATHS = new Set([
+  '/cookies',
+  '/foretag',
+  '/for-handlare',
+  '/integritet',
+  '/kontakt',
+  '/om-oss',
+  '/salj-bil',
+  '/trygg-affar',
+  '/vanliga-fragor',
+  '/villkor',
+])
+
 function getHostname(request: NextRequest) {
   const forwardedHost = request.headers.get('x-forwarded-host')
   const host = forwardedHost || request.headers.get('host') || ''
@@ -77,7 +90,20 @@ export function proxy(request: NextRequest) {
     return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
-  if (request.nextUrl.pathname !== '/') {
+  const pathname = request.nextUrl.pathname
+
+  if (
+    methodCanRedirect &&
+    LOCALIZED_PUBLIC_PATHS.has(pathname) &&
+    (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
+  ) {
+    const locale = hostname === 'www.autorell.de' ? 'de' : 'en'
+    const localizedUrl = request.nextUrl.clone()
+    localizedUrl.pathname = `/intl-market/${locale}${pathname}`
+    return NextResponse.rewrite(localizedUrl)
+  }
+
+  if (pathname !== '/') {
     return NextResponse.next()
   }
 

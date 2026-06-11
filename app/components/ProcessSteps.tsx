@@ -18,8 +18,8 @@ const steps = [
     number: '01',
     icon: CarFront,
     eyebrow: 'Kvalificering',
-    title: 'Kontrollera om bilen passar',
-    text: 'Vi börjar med att kontrollera om bilen matchar vår aktuella köpbox och efterfrågan i nätverket.',
+    title: 'Registrera bilen',
+    text: 'Börja med bilens viktigaste uppgifter. Formuläret visar om den matchar vår aktuella köpbox och efterfrågan i nätverket.',
     details:
       'Den första kontrollen säkerställer att bilen finns i Sverige, är körbar och saknar allvarliga motor-, växellåds-, läckage- eller krockproblem.',
     highlights: ['Svenskt ursprung', 'Tydlig köpbox'],

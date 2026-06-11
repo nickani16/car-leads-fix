@@ -14,12 +14,12 @@ const questions = [
   {
     question: 'Vilka bilar tar Autorell emot?',
     answer:
-      'Vi arbetar med en tydlig köpbox för plats, årsmodell, miltal och tekniskt skick. Den aktuella gränsen visas när du kontrollerar bilen.',
+      'Vi arbetar med en tydlig köpbox för plats, årsmodell, miltal och tekniskt skick. De aktuella gränserna visas när du registrerar bilen.',
   },
   {
     question: 'Är registrering och budgivning kostnadsfri?',
     answer:
-      'Ja. Det kostar ingenting att kontrollera kriterierna, registrera bilen eller ta emot dealerbud.',
+      'Ja. Det kostar ingenting att registrera bilen, se kriterierna eller ta emot dealerbud.',
   },
   {
     question: 'Måste jag acceptera ett erbjudande?',

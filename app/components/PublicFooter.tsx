@@ -11,12 +11,12 @@ const footerCopy = {
   sv: {
     description: 'En enklare och tryggare väg mellan svenska bilägare och professionella köpare i Europa.',
     question: 'Har du en bil som passar vårt exportnätverk?',
-    cta: 'Kontrollera din bil',
+    cta: 'Sälj din bil',
     statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
     sellerTitle: 'Sälja bil',
     sellerLinks: [
-      ['Kontrollera din bil', '/salj-bil'],
-      ['Exportprocessen', '/#sa-fungerar-det'],
+      ['Sälj din bil', '/salj-bil'],
+      ['Hur det fungerar', '/#sa-fungerar-det'],
       ['Trygg affär', '/trygg-affar'],
       ['Vanliga frågor', '/vanliga-fragor'],
     ] as [string, string][],
@@ -49,10 +49,10 @@ const footerCopy = {
     statement: 'Schwedische Fahrzeuge. Professionelle Käufer in Europa.',
     sellerTitle: 'Fahrzeuge',
     sellerLinks: [
-      ['Fahrzeuge aus Schweden', '/de#fahrzeuge'],
-      ['So funktioniert der Einkauf', '/de#ablauf'],
+      ['Fahrzeuge aus Schweden', '/#fahrzeuge'],
+      ['So funktioniert der Einkauf', '/#ablauf'],
       ['Über Autorell', '/om-oss'],
-      ['FAQ', '/de#faq'],
+      ['FAQ', '/vanliga-fragor'],
     ] as [string, string][],
     businessTitle: 'Unternehmen',
     businessLinks: [
@@ -61,6 +61,7 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Händler',
     dealerLinks: [
+      ['Für Autohändler', '/for-handlare'],
       ['Händler werden', '/dealer-apply'],
       ['Händlerbedingungen', '/dealer-terms'],
       ['Händler-Login', '/login'],
@@ -80,10 +81,10 @@ const footerCopy = {
     statement: 'Swedish vehicles. Professional buyers across Europe.',
     sellerTitle: 'Vehicles',
     sellerLinks: [
-      ['Vehicles from Sweden', '/eu#fahrzeuge'],
-      ['How buying works', '/eu#ablauf'],
+      ['Vehicles from Sweden', '/#fahrzeuge'],
+      ['How buying works', '/#ablauf'],
       ['About Autorell', '/om-oss'],
-      ['FAQ', '/eu#faq'],
+      ['FAQ', '/vanliga-fragor'],
     ] as [string, string][],
     businessTitle: 'Business',
     businessLinks: [
@@ -92,6 +93,7 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Dealers',
     dealerLinks: [
+      ['For professional dealers', '/for-handlare'],
       ['Become a partner', '/dealer-apply'],
       ['Dealer terms', '/dealer-terms'],
       ['Dealer login', '/login'],
@@ -112,6 +114,12 @@ export default function PublicFooter({
   locale?: FooterLocale
 }) {
   const t = footerCopy[locale]
+  const homeHref =
+    locale === 'de'
+      ? 'https://www.autorell.de/'
+      : locale === 'en'
+        ? 'https://www.autorell.com/'
+        : 'https://www.autorell.se/'
 
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
@@ -126,7 +134,9 @@ export default function PublicFooter({
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
         <div className="flex flex-col gap-10 border-b border-[#d9d7d0] py-14 lg:flex-row lg:items-center lg:justify-between lg:py-16">
           <div>
-            <BrandLogo />
+            <a href={homeHref} aria-label="Autorell startsida">
+              <BrandLogo />
+            </a>
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#666864]">
               {t.description}
             </p>

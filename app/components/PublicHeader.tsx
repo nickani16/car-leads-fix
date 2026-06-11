@@ -186,6 +186,12 @@ export default function PublicHeader({
   const transparent = transparentAtTop && atTop && !open
   const language =
     markets.find((market) => market.locale === activeLocale) || markets[0]
+  const homeHref =
+    activeLocale === 'de'
+      ? 'https://www.autorell.de/'
+      : activeLocale === 'en'
+        ? 'https://www.autorell.com/'
+        : 'https://www.autorell.se/'
   const content =
     activeLocale === 'de'
       ? {
@@ -193,12 +199,12 @@ export default function PublicHeader({
           menuLabel: 'Navigation',
           privateLabel: 'Schwedische Fahrzeuge',
           dealerLabel: 'Für Händler',
-          links: [
-            ['/de#fahrzeuge', 'Fahrzeuge'],
-            ['/de#ablauf', 'So funktioniert es'],
-            ['/foretag', 'Unternehmen'],
-            ['/dealer-apply', 'Für Händler'],
-            ['/de#faq', 'FAQ'],
+            links: [
+              ['/#fahrzeuge', 'Fahrzeuge'],
+              ['/#ablauf', 'So funktioniert es'],
+              ['/foretag', 'Unternehmen'],
+              ['/for-handlare', 'Für Händler'],
+              ['/vanliga-fragor', 'FAQ'],
             ['/kontakt', 'Kontakt'],
           ],
           partner: 'Händler werden',
@@ -213,11 +219,11 @@ export default function PublicHeader({
             privateLabel: 'Swedish vehicles',
             dealerLabel: 'For dealers',
             links: [
-              ['/eu#fahrzeuge', 'Vehicles'],
-              ['/eu#ablauf', 'How buying works'],
+              ['/#fahrzeuge', 'Vehicles'],
+              ['/#ablauf', 'How buying works'],
               ['/foretag', 'Business'],
-              ['/dealer-apply', 'For dealers'],
-              ['/eu#faq', 'FAQ'],
+              ['/for-handlare', 'For dealers'],
+              ['/vanliga-fragor', 'FAQ'],
               ['/kontakt', 'Contact'],
             ],
             partner: 'Become a dealer',
@@ -240,7 +246,7 @@ export default function PublicHeader({
             ],
             partner: 'Bli bilhandlare',
             login: 'Logga in',
-            cta: 'Kontrollera bilen',
+            cta: 'Sälj din bil',
             ctaHref: '/salj-bil',
           }
   const sellerMenu =
@@ -248,14 +254,14 @@ export default function PublicHeader({
       ? {
           eyebrow: 'För dig som säljer',
           title: 'Från biluppgifter till professionella bud.',
-          text: 'Kontrollera bilen kostnadsfritt och se om den passar aktuell efterfrågan.',
-          cta: 'Starta bilkontrollen',
+          text: 'Registrera bilen kostnadsfritt och se om den passar aktuell efterfrågan.',
+          cta: 'Börja sälja din bil',
           ctaHref: '/salj-bil',
           items: [
             {
               href: '/salj-bil',
-              label: 'Kontrollera din bil',
-              text: 'Börja med bilens viktigaste uppgifter.',
+              label: 'Sälj din bil',
+              text: 'Börja med bilens viktigaste uppgifter och se aktuella kriterier.',
               icon: ScanSearch,
             },
             {
@@ -283,10 +289,10 @@ export default function PublicHeader({
               ? 'Strukturierte Fahrzeugdaten und fokussierte Gebotsphasen.'
               : 'Structured vehicle data and focused bidding windows.',
           cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
-          ctaHref: activeLocale === 'de' ? '/de#fahrzeuge' : '/eu#fahrzeuge',
+          ctaHref: '/#fahrzeuge',
           items: [
             {
-              href: activeLocale === 'de' ? '/de#fahrzeuge' : '/eu#fahrzeuge',
+              href: '/#fahrzeuge',
               label: activeLocale === 'de' ? 'Fahrzeuge' : 'Vehicles',
               text:
                 activeLocale === 'de'
@@ -345,10 +351,10 @@ export default function PublicHeader({
               ? 'Ein strukturierter Ablauf für professionelle Käufer.'
               : 'A structured workflow for professional buyers.',
           cta: activeLocale === 'de' ? 'Ablauf ansehen' : 'View the process',
-          ctaHref: activeLocale === 'de' ? '/de#ablauf' : '/eu#ablauf',
+          ctaHref: '/#ablauf',
           items: [
             {
-              href: activeLocale === 'de' ? '/de#ablauf' : '/eu#ablauf',
+              href: '/#ablauf',
               label: activeLocale === 'de' ? 'So funktioniert es' : 'How buying works',
               text:
                 activeLocale === 'de'
@@ -357,7 +363,7 @@ export default function PublicHeader({
               icon: Route,
             },
             {
-              href: activeLocale === 'de' ? '/de#faq' : '/eu#faq',
+              href: '/vanliga-fragor',
               label: 'FAQ',
               text:
                 activeLocale === 'de'
@@ -523,14 +529,14 @@ export default function PublicHeader({
           }`}
         >
           <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 md:h-[88px] lg:px-12 xl:px-16">
-            <Link
-              href="/"
+            <a
+              href={homeHref}
               aria-label="Autorell startsida"
               className="inline-flex shrink-0 items-center"
               onClick={() => setOpen(false)}
             >
               <BrandLogo />
-            </Link>
+            </a>
 
             <nav className="absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
               <DesktopMenu

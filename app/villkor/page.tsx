@@ -1,10 +1,12 @@
-import type { Metadata } from 'next'
+import { createPublicMetadata } from '@/lib/public-seo'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata: Metadata = {
-  title: 'Användarvillkor | Autorell',
-  description: 'Villkor för värdering och fordonsförmedling genom Autorell.',
-}
+export const metadata = createPublicMetadata({
+  title: 'Användarvillkor för Autorell',
+  description:
+    'Villkor för fordonsprofil, budgivning, säljarens beslut, kontroll, avtal, betalning, hämtning och förmedling genom Autorell.',
+  path: '/villkor',
+})
 
 const sections = [
   {

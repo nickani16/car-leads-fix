@@ -1,10 +1,12 @@
-import type { Metadata } from 'next'
+import { createPublicMetadata } from '@/lib/public-seo'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata: Metadata = {
-  title: 'Integritetspolicy | Autorell',
-  description: 'Så behandlar Autorell personuppgifter.',
-}
+export const metadata = createPublicMetadata({
+  title: 'Integritetspolicy och personuppgifter | Autorell',
+  description:
+    'Läs hur Autorell behandlar personuppgifter, vilka uppgifter som delas, rättsliga grunder, lagring och dina rättigheter enligt GDPR.',
+  path: '/integritet',
+})
 
 const sections = [
   {
@@ -105,4 +107,3 @@ export default function PrivacyPage() {
     />
   )
 }
-
