@@ -43,25 +43,26 @@ const footerCopy = {
     cookieSettings: 'Cookieinställningar',
   },
   de: {
-    description: 'Ein fokussierter Zugang zu ausgewählten schwedischen Fahrzeugen für professionelle Käufer.',
-    question: 'Möchten Sie auf schwedische Fahrzeugauktionen zugreifen?',
+    description: 'Ausgewählte schwedische Fahrzeuge für verifizierte Autohändler in Deutschland.',
+    question: 'Möchten Sie schwedische Fahrzeuge für Ihren Bestand einkaufen?',
     cta: 'Händlerzugang beantragen',
-    statement: 'Schwedische Fahrzeuge. Professionelle Käufer in Europa.',
-    sellerTitle: 'Fahrzeuge',
+    statement: 'Schwedische Fahrzeugquelle. Für professionelle Händler in Deutschland.',
+    sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge aus Schweden', '/#fahrzeuge'],
-      ['So funktioniert der Einkauf', '/#ablauf'],
-      ['Über Autorell', '/om-oss'],
-      ['FAQ', '/vanliga-fragor'],
+      ['Fahrzeuge aus Schweden', '/fahrzeuge'],
+      ['So funktioniert der Einkauf', '/so-funktionierts'],
+      ['Vorteile für Händler', '/vorteile'],
+      ['Häufige Fragen', '/faq'],
     ] as [string, string][],
-    businessTitle: 'Unternehmen',
+    businessTitle: 'Autorell',
     businessLinks: [
-      ['Unternehmenslösungen', '/foretag'],
-      ['Über Autorell', '/om-oss'],
+      ['Über Autorell', '/ueber-autorell'],
+      ['Kontakt', '/kontakt'],
+      ['Datenschutz', '/datenschutz'],
+      ['Cookies', '/cookies'],
     ] as [string, string][],
-    dealerTitle: 'Händler',
+    dealerTitle: 'Dealer Network',
     dealerLinks: [
-      ['Für Autohändler', '/for-handlare'],
       ['Händler werden', '/dealer-apply'],
       ['Händlerbedingungen', '/dealer-terms'],
       ['Händler-Login', '/login'],
@@ -76,24 +77,25 @@ const footerCopy = {
   },
   en: {
     description: 'Focused access to selected Swedish vehicles for professional European buyers.',
-    question: 'Want access to Swedish vehicle auctions?',
+    question: 'Looking to source Swedish vehicles for your inventory?',
     cta: 'Apply for dealer access',
-    statement: 'Swedish vehicles. Professional buyers across Europe.',
-    sellerTitle: 'Vehicles',
+    statement: 'Selected Swedish supply. Built for professional European dealers.',
+    sellerTitle: 'Vehicles & buying',
     sellerLinks: [
-      ['Vehicles from Sweden', '/#fahrzeuge'],
-      ['How buying works', '/#ablauf'],
-      ['About Autorell', '/om-oss'],
-      ['FAQ', '/vanliga-fragor'],
+      ['Vehicles from Sweden', '/vehicles'],
+      ['How buying works', '/how-it-works'],
+      ['Dealer benefits', '/dealer-benefits'],
+      ['Frequently asked questions', '/faq'],
     ] as [string, string][],
-    businessTitle: 'Business',
+    businessTitle: 'Autorell',
     businessLinks: [
-      ['Business solutions', '/foretag'],
-      ['About Autorell', '/om-oss'],
+      ['About Autorell', '/about'],
+      ['Contact', '/contact'],
+      ['Privacy policy', '/privacy'],
+      ['Cookies', '/cookies'],
     ] as [string, string][],
-    dealerTitle: 'Dealers',
+    dealerTitle: 'Dealer Network',
     dealerLinks: [
-      ['For professional dealers', '/for-handlare'],
       ['Become a partner', '/dealer-apply'],
       ['Dealer terms', '/dealer-terms'],
       ['Dealer login', '/login'],
@@ -120,6 +122,16 @@ export default function PublicFooter({
       : locale === 'en'
         ? 'https://www.autorell.com/'
         : 'https://www.autorell.se/'
+  const contactHref =
+    locale === 'en' ? '/contact' : '/kontakt'
+  const privacyHref =
+    locale === 'de' ? '/datenschutz' : locale === 'en' ? '/privacy' : '/integritet'
+  const termsHref =
+    locale === 'de'
+      ? '/nutzungsbedingungen'
+      : locale === 'en'
+        ? '/terms'
+        : '/villkor'
 
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
@@ -181,7 +193,7 @@ export default function PublicFooter({
               <a href="mailto:info@autorell.com" className="transition hover:opacity-55">
                 info@autorell.com
               </a>
-              <Link href="/kontakt" className="transition hover:opacity-55">
+              <Link href={contactHref} className="transition hover:opacity-55">
                 {t.contactLink}
               </Link>
               <p className="max-w-[240px] leading-6 text-[#72736f]">
@@ -195,13 +207,13 @@ export default function PublicFooter({
         <div className="flex flex-col gap-4 border-t border-[#d9d7d0] py-7 text-xs text-[#858681] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/integritet" className="transition hover:text-[#242424]">
+            <Link href={privacyHref} className="transition hover:text-[#242424]">
               {t.privacy}
             </Link>
             <Link href="/cookies" className="transition hover:text-[#242424]">
               {t.cookies}
             </Link>
-            <Link href="/villkor" className="transition hover:text-[#242424]">
+            <Link href={termsHref} className="transition hover:text-[#242424]">
               {t.terms}
             </Link>
             <button

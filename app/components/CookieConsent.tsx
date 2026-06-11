@@ -89,13 +89,17 @@ function saveConsent(choice: ConsentChoice) {
   )
 }
 
-export default function CookieConsent() {
+export default function CookieConsent({
+  initialLocale = 'sv',
+}: {
+  initialLocale?: CookieLocale
+}) {
   const [visible, setVisible] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const locale = useSyncExternalStore(
     subscribeToHostname,
     getCookieLocale,
-    () => 'sv' as CookieLocale,
+    () => initialLocale,
   )
   const t = cookieCopy[locale]
 

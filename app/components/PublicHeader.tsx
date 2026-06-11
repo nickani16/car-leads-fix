@@ -198,13 +198,13 @@ export default function PublicHeader({
           message: 'Ausgewählte Fahrzeuge aus Schweden für europäische Händler',
           menuLabel: 'Navigation',
           privateLabel: 'Schwedische Fahrzeuge',
-          dealerLabel: 'Für Händler',
-            links: [
-              ['/#fahrzeuge', 'Fahrzeuge'],
-              ['/#ablauf', 'So funktioniert es'],
-              ['/foretag', 'Unternehmen'],
-              ['/for-handlare', 'Für Händler'],
-              ['/vanliga-fragor', 'FAQ'],
+          dealerLabel: 'Über Autorell',
+          links: [
+            ['/fahrzeuge', 'Fahrzeuge'],
+            ['/so-funktionierts', 'So funktioniert es'],
+            ['/vorteile', 'Vorteile'],
+            ['/ueber-autorell', 'Über Autorell'],
+            ['/faq', 'FAQ'],
             ['/kontakt', 'Kontakt'],
           ],
           partner: 'Händler werden',
@@ -217,14 +217,14 @@ export default function PublicHeader({
             message: 'Selected Swedish vehicles for professional European buyers',
             menuLabel: 'Navigation',
             privateLabel: 'Swedish vehicles',
-            dealerLabel: 'For dealers',
+            dealerLabel: 'About Autorell',
             links: [
-              ['/#fahrzeuge', 'Vehicles'],
-              ['/#ablauf', 'How buying works'],
-              ['/foretag', 'Business'],
-              ['/for-handlare', 'For dealers'],
-              ['/vanliga-fragor', 'FAQ'],
-              ['/kontakt', 'Contact'],
+              ['/vehicles', 'Vehicles'],
+              ['/how-it-works', 'How it works'],
+              ['/dealer-benefits', 'Dealer benefits'],
+              ['/about', 'About Autorell'],
+              ['/faq', 'FAQ'],
+              ['/contact', 'Contact'],
             ],
             partner: 'Become a dealer',
             login: 'Dealer login',
@@ -289,10 +289,10 @@ export default function PublicHeader({
               ? 'Strukturierte Fahrzeugdaten und fokussierte Gebotsphasen.'
               : 'Structured vehicle data and focused bidding windows.',
           cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
-          ctaHref: '/#fahrzeuge',
+          ctaHref: activeLocale === 'de' ? '/fahrzeuge' : '/vehicles',
           items: [
             {
-              href: '/#fahrzeuge',
+              href: activeLocale === 'de' ? '/fahrzeuge' : '/vehicles',
               label: activeLocale === 'de' ? 'Fahrzeuge' : 'Vehicles',
               text:
                 activeLocale === 'de'
@@ -351,10 +351,10 @@ export default function PublicHeader({
               ? 'Ein strukturierter Ablauf für professionelle Käufer.'
               : 'A structured workflow for professional buyers.',
           cta: activeLocale === 'de' ? 'Ablauf ansehen' : 'View the process',
-          ctaHref: '/#ablauf',
+          ctaHref: activeLocale === 'de' ? '/so-funktionierts' : '/how-it-works',
           items: [
             {
-              href: '/#ablauf',
+              href: activeLocale === 'de' ? '/so-funktionierts' : '/how-it-works',
               label: activeLocale === 'de' ? 'So funktioniert es' : 'How buying works',
               text:
                 activeLocale === 'de'
@@ -363,7 +363,7 @@ export default function PublicHeader({
               icon: Route,
             },
             {
-              href: '/vanliga-fragor',
+              href: '/faq',
               label: 'FAQ',
               text:
                 activeLocale === 'de'
@@ -403,26 +403,44 @@ export default function PublicHeader({
           ],
         }
       : {
-          eyebrow: activeLocale === 'de' ? 'Professionelle Verkäufer' : 'Professional sellers',
+          eyebrow: activeLocale === 'de' ? 'Für professionelle Händler' : 'For professional dealers',
           title:
             activeLocale === 'de'
-              ? 'Europäische Reichweite für schwedische Fahrzeugportfolios.'
-              : 'European reach for Swedish vehicle portfolios.',
+              ? 'Mehr Klarheit beim Einkauf schwedischer Fahrzeuge.'
+              : 'A clearer way to source Swedish vehicles.',
           text:
             activeLocale === 'de'
-              ? 'Für Inzahlungnahmen, Leasingrückläufer und Flotten.'
-              : 'For trade-ins, lease returns and recurring fleet volume.',
-          cta: activeLocale === 'de' ? 'Unternehmenslösung' : 'Business solution',
-          ctaHref: '/foretag',
+              ? 'Strukturierte Daten, fokussierte Gebote und ein professioneller Geschäftsraum.'
+              : 'Structured data, focused bidding and a professional deal room.',
+          cta: activeLocale === 'de' ? 'Vorteile entdecken' : 'Explore dealer benefits',
+          ctaHref: activeLocale === 'de' ? '/vorteile' : '/dealer-benefits',
           items: [
             {
-              href: '/foretag',
-              label: activeLocale === 'de' ? 'Für Unternehmen' : 'For businesses',
+              href: activeLocale === 'de' ? '/vorteile' : '/dealer-benefits',
+              label: activeLocale === 'de' ? 'Vorteile für Händler' : 'Dealer benefits',
               text:
                 activeLocale === 'de'
-                  ? 'Strukturierte europäische Fahrzeugvermarktung.'
-                  : 'Structured European vehicle remarketing.',
+                  ? 'Warum professionelle Käufer Autorell nutzen.'
+                  : 'Why professional buyers use Autorell.',
               icon: Building2,
+            },
+            {
+              href: '/dealer-apply',
+              label: activeLocale === 'de' ? 'Händlerzugang' : 'Dealer access',
+              text:
+                activeLocale === 'de'
+                  ? 'Unternehmen verifizieren und Zugang beantragen.'
+                  : 'Verify your business and apply for access.',
+              icon: Handshake,
+            },
+            {
+              href: activeLocale === 'de' ? '/kontakt' : '/contact',
+              label: activeLocale === 'de' ? 'Einkauf besprechen' : 'Talk to our team',
+              text:
+                activeLocale === 'de'
+                  ? 'Fragen zu Fahrzeugen, Export und Zugang.'
+                  : 'Questions about vehicles, export and access.',
+              icon: Headphones,
             },
           ],
         }
@@ -568,7 +586,7 @@ export default function PublicHeader({
 
               <div className="group relative">
                 <Link
-                  href={activeLocale === 'sv' ? '/for-handlare' : '/dealer-apply'}
+                  href={activeLocale === 'sv' ? '/for-handlare' : content.links[3][0]}
                   className="flex min-h-10 shrink-0 appearance-none items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
@@ -589,11 +607,14 @@ export default function PublicHeader({
                           Autorell Dealer Network
                         </p>
                         <h3 className="mt-2 max-w-[360px] whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124] 2xl:text-[27px]">
-                          Better vehicles. Clearer decisions.
+                          {activeLocale === 'de'
+                            ? 'Schwedische Fahrzeuge. Klarere Entscheidungen.'
+                            : 'Swedish vehicles. Clearer decisions.'}
                         </h3>
                         <p className="mt-3 max-w-[390px] whitespace-normal text-sm leading-6 text-[#5c707b]">
-                          Verified vehicle profiles and efficient European
-                          bidding for professional buyers.
+                          {activeLocale === 'de'
+                            ? 'Strukturierte Fahrzeugprofile und ein fokussierter Einkaufsprozess für professionelle Händler.'
+                            : 'Structured vehicle profiles and focused European bidding for professional buyers.'}
                         </p>
                         <Link
                           href="/dealer-apply"
@@ -617,7 +638,9 @@ export default function PublicHeader({
                               {content.login}
                             </strong>
                             <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              Access auctions and your account
+                              {activeLocale === 'de'
+                                ? 'Auktionen und Konto öffnen'
+                                : 'Access auctions and your account'}
                             </span>
                           </span>
                         </Link>
@@ -630,15 +653,17 @@ export default function PublicHeader({
                           </span>
                           <span className="min-w-0">
                             <strong className="block text-sm font-medium text-[#202124]">
-                              Dealer terms
+                              {activeLocale === 'de' ? 'Händlerbedingungen' : 'Dealer terms'}
                             </strong>
                             <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              Bidding, fees and platform rules
+                              {activeLocale === 'de'
+                                ? 'Gebote, Gebühren und Plattformregeln'
+                                : 'Bidding, fees and platform rules'}
                             </span>
                           </span>
                         </Link>
                         <Link
-                          href="/kontakt"
+                          href={content.links[5][0]}
                           className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
                         >
                           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
@@ -646,10 +671,12 @@ export default function PublicHeader({
                           </span>
                           <span className="min-w-0">
                             <strong className="block text-sm font-medium text-[#202124]">
-                              Personal support
+                              {activeLocale === 'de' ? 'Persönlicher Support' : 'Personal support'}
                             </strong>
                             <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              Speak with the Autorell team
+                              {activeLocale === 'de'
+                                ? 'Sprechen Sie mit dem Autorell-Team'
+                                : 'Speak with the Autorell team'}
                             </span>
                           </span>
                         </Link>
@@ -742,7 +769,7 @@ export default function PublicHeader({
             </Link>
 
             <Link
-              href="/kontakt"
+              href={content.links[5][0]}
               onClick={() => setOpen(false)}
               className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#242424] bg-[#242424] px-5 text-base font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.16)]"
             >

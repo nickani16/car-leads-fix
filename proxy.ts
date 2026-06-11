@@ -16,18 +16,54 @@ const MARKET_HOSTS = {
 
 type Market = keyof typeof MARKET_HOSTS
 
-const LOCALIZED_PUBLIC_PATHS = new Set([
-  '/cookies',
-  '/foretag',
-  '/for-handlare',
-  '/integritet',
-  '/kontakt',
-  '/om-oss',
-  '/salj-bil',
-  '/trygg-affar',
-  '/vanliga-fragor',
-  '/villkor',
-])
+const DEALER_MARKET_ROUTES = {
+  de: new Map([
+    ['/fahrzeuge', 'vehicles'],
+    ['/so-funktionierts', 'process'],
+    ['/vorteile', 'benefits'],
+    ['/ueber-autorell', 'about'],
+    ['/faq', 'faq'],
+    ['/kontakt', 'contact'],
+    ['/datenschutz', 'privacy'],
+    ['/nutzungsbedingungen', 'terms'],
+    ['/cookies', 'cookies'],
+  ]),
+  en: new Map([
+    ['/vehicles', 'vehicles'],
+    ['/how-it-works', 'process'],
+    ['/dealer-benefits', 'benefits'],
+    ['/about', 'about'],
+    ['/faq', 'faq'],
+    ['/contact', 'contact'],
+    ['/privacy', 'privacy'],
+    ['/terms', 'terms'],
+    ['/cookies', 'cookies'],
+  ]),
+} as const
+
+const LEGACY_DEALER_PATHS = {
+  de: new Map([
+    ['/salj-bil', '/fahrzeuge'],
+    ['/trygg-affar', '/vorteile'],
+    ['/vanliga-fragor', '/faq'],
+    ['/foretag', '/vorteile'],
+    ['/for-handlare', '/vorteile'],
+    ['/om-oss', '/ueber-autorell'],
+    ['/integritet', '/datenschutz'],
+    ['/villkor', '/nutzungsbedingungen'],
+  ]),
+  en: new Map([
+    ['/salj-bil', '/vehicles'],
+    ['/trygg-affar', '/dealer-benefits'],
+    ['/vanliga-fragor', '/faq'],
+    ['/foretag', '/dealer-benefits'],
+    ['/for-handlare', '/dealer-benefits'],
+    ['/om-oss', '/about'],
+    ['/kontakt', '/contact'],
+    ['/integritet', '/privacy'],
+    ['/villkor', '/terms'],
+  ]),
+} as const
 
 function getHostname(request: NextRequest) {
   const forwardedHost = request.headers.get('x-forwarded-host')
@@ -94,12 +130,22 @@ export function proxy(request: NextRequest) {
 
   if (
     methodCanRedirect &&
-    LOCALIZED_PUBLIC_PATHS.has(pathname) &&
     (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
   ) {
     const locale = hostname === 'www.autorell.de' ? 'de' : 'en'
+    const legacyTarget = LEGACY_DEALER_PATHS[locale].get(pathname)
+
+    if (legacyTarget) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = legacyTarget
+      return NextResponse.redirect(redirectUrl, 308)
+    }
+
+    const marketPage = DEALER_MARKET_ROUTES[locale].get(pathname)
+    if (!marketPage) return NextResponse.next()
+
     const localizedUrl = request.nextUrl.clone()
-    localizedUrl.pathname = `/intl-market/${locale}${pathname}`
+    localizedUrl.pathname = `/dealer-market/${locale}/${marketPage}`
     return NextResponse.rewrite(localizedUrl)
   }
 

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -116,22 +115,14 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
     <main className="overflow-hidden bg-white text-[#202124]">
       <PublicHeader locale={locale} />
 
-      <section className="relative isolate overflow-hidden bg-[#f7f2e8] lg:min-h-[720px]">
-        <Image
-          src="/autorell-home-hero.webp"
-          alt=""
-          fill
-          priority
-          className="object-cover object-[70%_center]"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#fcfaf5_0%,rgba(252,250,245,.98)_38%,rgba(252,250,245,.7)_58%,rgba(252,250,245,.08)_82%)] max-md:bg-[linear-gradient(180deg,#fcfaf5_0%,rgba(252,250,245,.96)_52%,rgba(32,33,36,.18)_100%)]" />
-
-        <div className="relative mx-auto flex min-h-[720px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 lg:items-center lg:px-12 lg:py-20 xl:px-16">
+      <section className="relative isolate overflow-hidden bg-[#f4f1ea]">
+        <div className="absolute inset-x-0 top-0 h-px bg-[#dcd9d1]" />
+        <div className="pointer-events-none absolute -right-48 top-12 h-[620px] w-[620px] rounded-full border-[88px] border-[#b4d9ef]/35" />
+        <div className="relative mx-auto grid min-h-[720px] max-w-[1440px] items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.04fr_.96fr] lg:px-12 lg:py-20 xl:px-16">
           <div className="max-w-[720px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d5d7d2] bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#536b76] backdrop-blur">
-              <Globe2 className="h-4 w-4" />
-              {t.eyebrow}
+            <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#d5d7d2] bg-white/80 px-3 py-2 text-[9px] font-semibold uppercase leading-4 tracking-[0.13em] text-[#536b76] backdrop-blur sm:px-4 sm:text-[11px] sm:tracking-[0.16em]">
+              <Globe2 className="h-4 w-4 shrink-0" />
+              <span className="min-w-0">{t.eyebrow}</span>
             </span>
             <h1 className="mt-7 text-[44px] leading-[.99] tracking-[-0.055em] sm:text-6xl lg:text-[76px]">
               {t.title}
@@ -164,6 +155,73 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                   {fact}
                 </span>
               ))}
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-[590px] lg:ml-auto">
+            <div className="absolute -inset-5 rounded-[38px] bg-white/45 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-[#202427] p-5 text-white shadow-[0_35px_90px_rgba(32,36,39,.22)] sm:p-7">
+              <div className="flex items-center justify-between border-b border-white/10 pb-5">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                    Autorell Dealer Market
+                  </p>
+                  <p className="mt-2 text-xl tracking-[-0.035em]">
+                    {locale === 'de' ? 'Fahrzeugbeschaffung' : 'Vehicle sourcing'}
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-[11px] text-white/70">
+                  <span className="h-2 w-2 rounded-full bg-[#8ed1a8]" />
+                  {locale === 'de' ? 'Markt aktiv' : 'Market active'}
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-[22px] bg-[#f7f6f2] p-5 text-[#202124] sm:p-6">
+                <div className="flex items-start justify-between gap-5">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a888e]">
+                      {locale === 'de' ? 'Schwedisches Angebot' : 'Swedish supply'}
+                    </p>
+                    <p className="mt-2 text-2xl tracking-[-0.04em]">
+                      {locale === 'de' ? 'Ausgewählt für Ihren Bestand' : 'Selected for your inventory'}
+                    </p>
+                  </div>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#b4d9ef]">
+                    <CarFront className="h-5 w-5" />
+                  </span>
+                </div>
+                <div className="mt-7 grid grid-cols-3 gap-2">
+                  {[
+                    locale === 'de' ? 'Fahrzeugdaten' : 'Vehicle data',
+                    locale === 'de' ? 'Zustand' : 'Condition',
+                    locale === 'de' ? 'Dokumente' : 'Documents',
+                  ].map((label) => (
+                    <div key={label} className="rounded-[13px] border border-[#e1e4e2] bg-white px-3 py-4">
+                      <Check className="h-4 w-4 text-[#4f8ca8]" />
+                      <p className="mt-3 text-[11px] leading-4 text-[#68777c]">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[18px] border border-white/10 bg-white/[.055] p-5">
+                  <Gavel className="h-5 w-5 text-[#b4d9ef]" />
+                  <p className="mt-7 text-2xl tracking-[-0.04em]">24 h</p>
+                  <p className="mt-1 text-xs text-white/50">
+                    {locale === 'de' ? 'Fokussierte Gebotsphase' : 'Focused bidding window'}
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-white/10 bg-white/[.055] p-5">
+                  <ShieldCheck className="h-5 w-5 text-[#b4d9ef]" />
+                  <p className="mt-7 text-2xl tracking-[-0.04em]">
+                    {locale === 'de' ? 'Verifiziert' : 'Verified'}
+                  </p>
+                  <p className="mt-1 text-xs text-white/50">
+                    {locale === 'de' ? 'Professionelles Netzwerk' : 'Professional dealer network'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -235,7 +293,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         <div className="mx-auto grid max-w-[1320px] gap-10 px-5 sm:px-8 lg:grid-cols-[.8fr_1.2fr] lg:px-12">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#718188]">
-              Sweden first
+              {locale === 'de' ? 'Qualität vor Volumen' : 'Quality before volume'}
             </p>
             <h2 className="mt-5 text-[36px] leading-[1.05] tracking-[-0.048em] sm:text-5xl">
               {t.criteria}
