@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from '../login/login.module.css'
 
@@ -17,15 +16,21 @@ export default function ForgotPasswordPage() {
     setErrorMessage('')
     setIsLoading(true)
 
-    const supabase = createClient()
-    const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo,
+    const response = await fetch('/api/auth/password-recovery', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email.trim() }),
     })
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string
+    }
 
-    if (error) {
-      setErrorMessage('The reset email could not be sent. Please try again.')
+    if (!response.ok) {
+      setErrorMessage(
+        result.error || 'The reset email could not be sent. Please try again.',
+      )
       setIsLoading(false)
       return
     }
