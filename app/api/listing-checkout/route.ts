@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const { data: lead, error: leadError } = await supabase
       .from('leads')
       .select(
-        'id,email,make,model,auction_ends_at,auction_closed_at,auction_outcome'
+        'id,email,make,model,status,auction_ends_at,auction_closed_at,auction_outcome'
       )
       .eq('seller_access_token_hash', hashSellerAccessToken(token))
       .single()
@@ -37,17 +37,9 @@ export async function POST(request: Request) {
       )
     }
 
-    const auctionEnded =
-      lead.auction_closed_at ||
-      (lead.auction_ends_at &&
-        new Date(lead.auction_ends_at).getTime() <= Date.now())
-
-    if (!auctionEnded) {
+    if (lead.status === 'Rejected' || lead.status === 'Cancelled') {
       return NextResponse.json(
-        {
-          error:
-            'Det kostnadsfria 24-timmarsfönstret måste avslutas först.',
-        },
+        { error: 'Den här bilen kan inte aktivera ett annonspaket.' },
         { status: 409 }
       )
     }
@@ -64,6 +56,24 @@ export async function POST(request: Request) {
         {
           error:
             'Bilen har redan en pågående affär och kan inte förlängas just nu.',
+        },
+        { status: 409 }
+      )
+    }
+
+    const { data: existingOrder } = await supabase
+      .from('seller_listing_orders')
+      .select('id,status,package')
+      .eq('lead_id', lead.id)
+      .eq('status', 'paid')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (existingOrder) {
+      return NextResponse.json(
+        {
+          error: 'Ett annonspaket är redan köpt för bilen.',
         },
         { status: 409 }
       )

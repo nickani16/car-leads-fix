@@ -1,5 +1,6 @@
 import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getStripe } from '@/lib/stripe'
 
 export const listingPackages = {
   extended_7d: {
@@ -50,14 +51,59 @@ export async function fulfillListingCheckout(
     throw new Error('Listing order was not found')
   }
 
-  if (order.status === 'paid') return true
+  if (order.status === 'paid' || order.status === 'refunded') return true
 
   const listingPackage = listingPackages[packageId]
-  const activatedAt = new Date()
-  const expiresAt = new Date(
-    activatedAt.getTime() +
-      listingPackage.durationDays * 24 * 60 * 60 * 1000
-  )
+  const { data: lead, error: leadReadError } = await supabase
+    .from('leads')
+    .select('status')
+    .eq('id', leadId)
+    .single()
+
+  if (leadReadError || !lead) {
+    throw new Error('Vehicle lead was not found')
+  }
+
+  if (lead.status === 'Rejected' || lead.status === 'Cancelled') {
+    const paymentIntent =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id || null
+
+    if (paymentIntent) {
+      await getStripe().refunds.create(
+        {
+          payment_intent: paymentIntent,
+          metadata: {
+            leadId,
+            reason: 'vehicle_not_approved',
+          },
+        },
+        { idempotencyKey: `rejected-listing-${session.id}` }
+      )
+    }
+
+    await supabase
+      .from('seller_listing_orders')
+      .update({
+        status: 'refunded',
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id: paymentIntent,
+        paid_at: new Date().toISOString(),
+      })
+      .eq('id', orderId)
+
+    return true
+  }
+
+  const shouldActivateNow = lead.status === 'Active'
+  const activatedAt = shouldActivateNow ? new Date() : null
+  const expiresAt = activatedAt
+    ? new Date(
+        activatedAt.getTime() +
+          listingPackage.durationDays * 24 * 60 * 60 * 1000
+      )
+    : null
 
   const { count: dealerReach } = await supabase
     .from('dealers')
@@ -67,10 +113,11 @@ export async function fulfillListingCheckout(
   const { error: leadError } = await supabase
     .from('leads')
     .update({
-      auction_starts_at: activatedAt.toISOString(),
-      auction_ends_at: expiresAt.toISOString(),
-      auction_closed_at: null,
-      auction_outcome: null,
+      auction_starts_at: activatedAt?.toISOString() || null,
+      auction_ends_at: expiresAt?.toISOString() || null,
+      ...(shouldActivateNow
+        ? { auction_closed_at: null, auction_outcome: null }
+        : {}),
       listing_plan: packageId,
       listing_priority: listingPackage.priority,
       dealer_reach_snapshot: dealerReach || 0,
@@ -91,9 +138,9 @@ export async function fulfillListingCheckout(
       stripe_checkout_session_id: session.id,
       stripe_payment_intent_id: paymentIntent,
       dealer_reach_snapshot: dealerReach || 0,
-      paid_at: activatedAt.toISOString(),
-      activated_at: activatedAt.toISOString(),
-      expires_at: expiresAt.toISOString(),
+      paid_at: new Date().toISOString(),
+      activated_at: activatedAt?.toISOString() || null,
+      expires_at: expiresAt?.toISOString() || null,
     })
     .eq('id', orderId)
     .eq('status', 'pending')

@@ -179,12 +179,10 @@ export async function POST(request: Request) {
       source: originCountry,
       origin_country: originCountry,
       images: imageUrls,
-      status: 'New',
+      status: 'Pending review',
       seller_access_token_hash: sellerAccess.hash,
-      auction_starts_at: new Date().toISOString(),
-      auction_ends_at: new Date(
-        Date.now() + 24 * 60 * 60 * 1000
-      ).toISOString(),
+      auction_starts_at: null,
+      auction_ends_at: null,
       listing_plan: 'free_24h',
       dealer_reach_snapshot: approvedDealerCount || 0,
     }
@@ -208,28 +206,64 @@ export async function POST(request: Request) {
       const fromEmail =
         process.env.NOTIFICATION_FROM_EMAIL ||
         'Autorell <noreply@autorell.com>'
+      const reviewFromEmail =
+        process.env.LEAD_REVIEW_FROM_EMAIL ||
+        'Autorell Review <review@autorell.com>'
+      const reviewToEmail =
+        process.env.LEAD_REVIEW_TO_EMAIL ||
+        'nikolai.parkkila@outlook.com'
       const sellerPortalUrl = new URL(
         `/saljarportal/${sellerAccess.token}`,
         request.url
       ).toString()
+      const adminReviewUrl = new URL(
+        `/admin/leads/${insertedLead.id}`,
+        request.url
+      ).toString()
       await resend.emails.send({
-        from: fromEmail,
-        to: 'nikolai.parkkila@outlook.com',
-        subject: `Ny fordonslead: ${make} ${lead.model}`,
+        from: reviewFromEmail,
+        to: reviewToEmail,
+        subject: `Granska ny bil: ${make} ${lead.model} · ${lead.reg}`,
         html: `
-          <h2>${make} ${lead.model} ${lead.variant || ''}</h2>
-          <p><strong>Registrering:</strong> ${lead.reg}</p>
-          <p><strong>Årsmodell:</strong> ${lead.model_year}</p>
-          <p><strong>Miltal:</strong> ${lead.miles} mil</p>
-          <p><strong>Upphämtningsort:</strong> ${lead.pickup_postal_code} ${lead.pickup_city}</p>
-          <p><strong>Bränsle:</strong> ${lead.fuel_type}</p>
-          <p><strong>Växellåda:</strong> ${lead.gearbox}</p>
-          <p><strong>Drivning:</strong> ${lead.drivetrain}</p>
-          <p><strong>Skick:</strong> ${lead.damage}</p>
-          <p><strong>Telefon:</strong> ${phone}</p>
-          <p><strong>E-post:</strong> ${email}</p>
-          <p><strong>Bilder:</strong> ${imageUrls.length}</p>
-          <p><a href="${sellerPortalUrl}">Öppna säljarens privata uppföljning</a></p>
+          <!doctype html>
+          <html lang="sv">
+            <body style="margin:0;background:#f3f2ee;color:#202124;font-family:Arial,sans-serif;">
+              <div style="max-width:680px;margin:0 auto;padding:36px 18px;">
+                <div style="background:#202528;color:#fff;border-radius:24px;padding:30px;">
+                  <p style="margin:0 0 12px;color:#B4D9EF;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Ny bil väntar på granskning</p>
+                  <h1 style="margin:0;font-size:30px;">${make} ${lead.model} ${lead.variant || ''}</h1>
+                  <p style="margin:10px 0 0;color:#ffffff99;">${lead.model_year} · ${lead.reg} · ${lead.miles} mil</p>
+                  <a href="${adminReviewUrl}" style="display:inline-block;margin-top:24px;border-radius:999px;background:#B4D9EF;color:#202124;text-decoration:none;padding:14px 22px;font-weight:700;">Granska och godkänn bilen</a>
+                </div>
+                <div style="margin-top:14px;background:#fff;border:1px solid #deddd7;border-radius:24px;padding:30px;">
+                  <h2 style="margin:0 0 18px;">Fordonsuppgifter</h2>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="7" style="font-size:14px;">
+                    <tr><td style="color:#737b81;">Registrering</td><td><strong>${lead.reg}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Årsmodell</td><td><strong>${lead.model_year}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Miltal</td><td><strong>${lead.miles} mil</strong></td></tr>
+                    <tr><td style="color:#737b81;">Plats</td><td><strong>${lead.pickup_postal_code} ${lead.pickup_city}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Kaross</td><td><strong>${lead.body_type}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Bränsle</td><td><strong>${lead.fuel_type}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Växellåda</td><td><strong>${lead.gearbox}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Drivning</td><td><strong>${lead.drivetrain}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Service</td><td><strong>${lead.service || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Skador</td><td><strong>${lead.damage || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Skadebeskrivning</td><td><strong>${lead.damage_description || 'Ingen'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Varningslampor</td><td><strong>${lead.warnings || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Körbar</td><td><strong>${lead.is_driveable ? 'Ja' : 'Nej'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Motor/växellådsproblem</td><td><strong>${lead.has_engine_transmission_issues ? 'Ja' : 'Nej'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Vätskeläckage</td><td><strong>${lead.has_fluid_leaks ? 'Ja' : 'Nej'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Allvarlig krockskada</td><td><strong>${lead.has_serious_collision_damage ? 'Ja' : 'Nej'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Bilder</td><td><strong>${imageUrls.length} st</strong></td></tr>
+                  </table>
+                  <h2 style="margin:28px 0 12px;">Kund</h2>
+                  <p style="margin:0 0 6px;"><strong>${email}</strong></p>
+                  <p style="margin:0;">${phone}</p>
+                  <p style="margin:24px 0 0;color:#8a9296;font-size:12px;">Bilen är inte synlig för handlare innan en administratör godkänner den.</p>
+                </div>
+              </div>
+            </body>
+          </html>
         `,
       })
 
@@ -243,11 +277,12 @@ export async function POST(request: Request) {
           `Vehicle: ${make} ${lead.model} ${lead.variant || ''}`.trim(),
           `Registration number: ${lead.reg}`,
           '',
-          'Your first 24 hours of bidding are included at no cost.',
-          'Use your private link to follow time remaining, verified dealer reach, vehicle views, bids and the highest bid.',
+          'Autorell will now review the vehicle details and images before publishing the listing. This normally takes around 1–2 hours.',
+          'Your first 24 hours of bidding are included at no cost and start only after approval.',
+          'Use your private link to follow the review status, selected package, vehicle views, bids and the highest bid.',
           sellerPortalUrl,
           '',
-          'Optional extensions after the free bidding period:',
+          'You can choose a longer package immediately. Paid time starts only after Autorell approves the vehicle:',
           '7 days: SEK 100',
           'Premium 30 days with priority placement: SEK 290',
           `${sellerPortalUrl}#packages`,
@@ -266,14 +301,14 @@ export async function POST(request: Request) {
                   <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#52768a;">Your private seller link</p>
                   <h1 style="margin:0;font-size:30px;line-height:1.15;">Follow your vehicle on the market.</h1>
                   <p style="margin:18px 0 0;color:#66737a;line-height:1.7;">
-                    Your ${make} ${lead.model} has been registered. The first 24 hours of bidding are included at no cost. Your private view shows time remaining, verified dealer reach, views, bids and the highest bid.
+                    Your ${make} ${lead.model} has been registered. Autorell will review the details and images before publishing it. This normally takes around 1–2 hours. Your selected package starts only after approval.
                   </p>
                   <div style="margin:26px 0;padding:18px;border-radius:16px;background:#eef6fa;">
                     <strong>${make} ${lead.model} ${lead.variant || ''}</strong><br />
                     <span style="color:#68777f;font-size:14px;">${lead.model_year} · ${lead.reg}</span>
                   </div>
                   <a href="${sellerPortalUrl}" style="display:inline-block;border-radius:999px;background:#202124;color:#ffffff;text-decoration:none;padding:15px 24px;font-weight:600;">
-                    Open my private vehicle page
+                    Follow the review and choose a package
                   </a>
                   <div style="margin-top:30px;border-top:1px solid #e4e3de;padding-top:26px;">
                     <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#52768a;">Need more time?</p>
@@ -295,7 +330,7 @@ export async function POST(request: Request) {
                         </td>
                       </tr>
                     </table>
-                    <a href="${sellerPortalUrl}#packages" style="display:inline-block;margin-top:18px;color:#202124;font-weight:600;">View extension options →</a>
+                    <a href="${sellerPortalUrl}#packages" style="display:inline-block;margin-top:18px;color:#202124;font-weight:600;">Choose a package now →</a>
                   </div>
                   <p style="margin:24px 0 0;color:#8a9296;font-size:12px;line-height:1.6;">
                     This link is personal and provides access to information about your vehicle. Do not share it with anyone else.

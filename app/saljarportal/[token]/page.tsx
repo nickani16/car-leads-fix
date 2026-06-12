@@ -62,7 +62,7 @@ export default async function SellerPortalPage({
   const { data: lead } = await supabase
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,created_at,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,listing_plan,dealer_reach_snapshot'
+      'id,reg,make,model,model_year,status,created_at,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,listing_plan,dealer_reach_snapshot'
     )
     .eq('seller_access_token_hash', hashSellerAccessToken(token))
     .single()
@@ -102,8 +102,12 @@ export default async function SellerPortalPage({
     (bids || []).map((bid) => bid.dealer_id).filter(Boolean)
   ).size
   const highestBid = bidAmounts.length ? Math.max(...bidAmounts) : null
-  const isActive = !lead.auction_closed_at
-  const canUpgrade = !isActive && !activeDeal
+  const isPendingReview = lead.status === 'Pending review'
+  const isActive = lead.status === 'Active' && !lead.auction_closed_at
+  const hasPackageOrder = Boolean(
+    orders?.some((order) => order.status === 'paid')
+  )
+  const canUpgrade = !activeDeal && !hasPackageOrder
   const bidMoney = new Intl.NumberFormat('sv-SE', {
     style: 'currency',
     currency: 'EUR',
@@ -170,7 +174,11 @@ export default async function SellerPortalPage({
                     isActive ? 'bg-emerald-400' : 'bg-white/40'
                   }`}
                 />
-                {isActive ? 'Aktiv budgivning' : 'Budgivningen är avslutad'}
+                {isPendingReview
+                  ? 'Väntar på Autorells granskning'
+                  : isActive
+                    ? 'Aktiv budgivning'
+                    : 'Budgivningen är avslutad'}
               </div>
             </div>
             <div className="rounded-[22px] border border-white/10 bg-white/7 p-6">
@@ -185,8 +193,14 @@ export default async function SellerPortalPage({
                     : 'Kostnadsfria 24 timmar'}
               </p>
               <div className="mt-7 border-t border-white/10 pt-5">
-                <p className="text-xs text-white/45">Slutar</p>
-                <p className="mt-2 text-sm">{formatDate(lead.auction_ends_at)}</p>
+                <p className="text-xs text-white/45">
+                  {isPendingReview ? 'Beräknad granskningstid' : 'Slutar'}
+                </p>
+                <p className="mt-2 text-sm">
+                  {isPendingReview
+                    ? 'Cirka 1–2 timmar'
+                    : formatDate(lead.auction_ends_at)}
+                </p>
               </div>
             </div>
           </div>
@@ -244,8 +258,8 @@ export default async function SellerPortalPage({
               Förläng bara när du behöver det.
             </h2>
             <p className="mt-4 leading-7 text-[#697278]">
-              Du ser räckvidd, visningar och bud här. Betalda paket aktiveras
-              först efter den kostnadsfria perioden.
+              Välj paket direkt. Tiden börjar räknas först när Autorell har
+              granskat och godkänt bilen.
             </p>
           </div>
 

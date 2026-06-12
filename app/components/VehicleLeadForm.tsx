@@ -8,13 +8,14 @@ import {
   ArrowRight,
   Check,
   Clock3,
+  Crown,
   LockKeyhole,
-  Radio,
   ShieldCheck,
   Upload,
   X,
 } from 'lucide-react'
 import PublicHeader from './PublicHeader'
+import ListingPackageCheckoutButton from './ListingPackageCheckoutButton'
 
 export type FormLocale = 'sv' | 'de' | 'en'
 
@@ -418,55 +419,55 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const successView =
     locale === 'sv'
       ? {
-          live: 'Budgivningen är live',
-          title: 'Din bil är nu ute på marknaden.',
-          text: 'Verifierade bilhandlare kan nu se fordonsprofilen och lämna bud. Din privata säljarportal uppdateras när aktivitet sker.',
+          live: 'Mottagen för granskning',
+          title: 'Vi granskar bilen innan publicering.',
+          text: 'Autorell kontrollerar uppgifterna och bilderna innan bilen visas för handlare. Det tar normalt cirka 1–2 timmar.',
           portal: 'Öppna säljarportalen',
           vehicle: 'Registrerad bil',
           facts: [
-            'Öppen för verifierade handlare',
-            'Kostnadsfria 24 timmar',
+            'Granskas av Autorell',
+            'Publiceras efter godkännande',
             'Kontaktuppgifterna är skyddade',
           ],
           steps: [
-            ['01', 'Profilen är publicerad', 'Bilens uppgifter är synliga för godkända köpare.'],
-            ['02', 'Bud samlas löpande', 'Följ visningar, bud och högsta bud i portalen.'],
-            ['03', 'Du bestämmer', 'Du väljer själv om du vill gå vidare med ett bud.'],
+            ['01', 'Autorell granskar', 'Vi kontrollerar uppgifter, skick och bilder inom cirka 1–2 timmar.'],
+            ['02', 'Marknaden öppnas', 'Efter godkännande visas bilen för verifierade handlare.'],
+            ['03', 'Du följer allt', 'Din privata portal visar paket, aktivitet och bud.'],
           ],
         }
       : locale === 'de'
         ? {
-            live: 'Die Auktion ist live',
-            title: 'Ihr Fahrzeug ist jetzt am Markt.',
-            text: 'Verifizierte Händler können das Fahrzeugprofil jetzt sehen und Gebote abgeben. Ihr privates Verkäuferportal wird bei neuer Aktivität aktualisiert.',
+            live: 'Zur Prüfung eingegangen',
+            title: 'Wir prüfen das Fahrzeug vor der Veröffentlichung.',
+            text: 'Autorell prüft die Angaben und Bilder, bevor Händler das Fahrzeug sehen. Dies dauert normalerweise etwa 1–2 Stunden.',
             portal: 'Verkäuferportal öffnen',
             vehicle: 'Registriertes Fahrzeug',
             facts: [
-              'Für verifizierte Händler geöffnet',
-              '24 Stunden kostenlos',
+              'Prüfung durch Autorell',
+              'Veröffentlichung nach Freigabe',
               'Kontaktdaten bleiben geschützt',
             ],
             steps: [
-              ['01', 'Profil veröffentlicht', 'Die Fahrzeugdaten sind für zugelassene Käufer sichtbar.'],
-              ['02', 'Gebote in Echtzeit', 'Aufrufe, Gebote und das Höchstgebot erscheinen im Portal.'],
-              ['03', 'Sie entscheiden', 'Sie entscheiden selbst, ob Sie ein Gebot annehmen.'],
+              ['01', 'Autorell prüft', 'Wir prüfen Angaben, Zustand und Bilder in etwa 1–2 Stunden.'],
+              ['02', 'Markt wird geöffnet', 'Nach Freigabe sehen verifizierte Händler das Fahrzeug.'],
+              ['03', 'Alles im Blick', 'Ihr Portal zeigt Paket, Aktivität und Gebote.'],
             ],
           }
         : {
-            live: 'The auction is live',
-            title: 'Your vehicle is now on the market.',
-            text: 'Verified dealers can now view the vehicle profile and place bids. Your private seller portal updates as activity comes in.',
+            live: 'Received for review',
+            title: 'We review the vehicle before publishing it.',
+            text: 'Autorell checks the details and images before dealers can see the vehicle. This normally takes around 1–2 hours.',
             portal: 'Open seller portal',
             vehicle: 'Registered vehicle',
             facts: [
-              'Open to verified dealers',
-              '24 hours free',
+              'Reviewed by Autorell',
+              'Published after approval',
               'Contact details stay protected',
             ],
             steps: [
-              ['01', 'Profile published', 'The vehicle details are visible to approved buyers.'],
-              ['02', 'Bids collected live', 'Track views, bids and the highest bid in the portal.'],
-              ['03', 'You decide', 'You decide whether to proceed with an offer.'],
+              ['01', 'Autorell reviews', 'We check the details, condition and images in around 1–2 hours.'],
+              ['02', 'The market opens', 'After approval, verified dealers can view the vehicle.'],
+              ['03', 'Track everything', 'Your private portal shows the package, activity and bids.'],
             ],
           }
 
@@ -693,7 +694,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                 </p>
                 <div className="mt-8 grid gap-3">
                   {[
-                    { icon: Radio, label: successView.facts[0] },
+                    { icon: ShieldCheck, label: successView.facts[0] },
                     { icon: Clock3, label: successView.facts[1] },
                     { icon: ShieldCheck, label: successView.facts[2] },
                   ].map(({ icon: Icon, label }) => (
@@ -709,6 +710,65 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
               </div>
             </div>
           </section>
+
+          {sellerPortalUrl ? (
+            <section className="mt-6 rounded-[28px] border border-[#deddd7] bg-white p-6 sm:p-8">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#52768a]">
+                  Välj räckvidd direkt
+                </p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">
+                  Starta med rätt paket från första dagen.
+                </h2>
+                <p className="mt-3 leading-7 text-[#697278]">
+                  Paketet börjar räknas först när Autorell har granskat och
+                  godkänt bilen. Du förlorar alltså ingen annonstid medan du
+                  väntar.
+                </p>
+              </div>
+              <div className="mt-7 grid gap-4 lg:grid-cols-3">
+                <article className="rounded-[22px] border border-[#deddd7] bg-[#faf9f6] p-6">
+                  <Clock3 size={21} className="text-[#4f8fb5]" />
+                  <h3 className="mt-5 text-xl font-semibold">24 timmar</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#697278]">
+                    Kostnadsfri introduktion till verifierade handlare.
+                  </p>
+                  <p className="mt-6 text-2xl font-semibold">0 kr</p>
+                </article>
+                <article className="rounded-[22px] border border-[#c9dce7] bg-[#f4f9fc] p-6">
+                  <Clock3 size={21} className="text-[#397fa8]" />
+                  <h3 className="mt-5 text-xl font-semibold">7 dagar</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#617681]">
+                    Mer tid för fler handlare att bedöma och lägga bud.
+                  </p>
+                  <p className="mt-6 text-2xl font-semibold">100 kr</p>
+                  <ListingPackageCheckoutButton
+                    token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
+                    packageId="extended_7d"
+                    label="Välj 7 dagar"
+                  />
+                </article>
+                <article className="relative overflow-hidden rounded-[22px] border border-[#8fc4e2] bg-[#eaf5fb] p-6">
+                  <div className="absolute right-0 top-0 h-28 w-28 translate-x-8 -translate-y-8 rounded-full bg-[#B4D9EF]" />
+                  <Crown size={21} className="relative text-[#276d96]" />
+                  <h3 className="relative mt-5 text-xl font-semibold">
+                    Premium 30 dagar
+                  </h3>
+                  <p className="relative mt-2 text-sm leading-6 text-[#526d7c]">
+                    Längre exponering med prioriterad placering i handlarflödet.
+                  </p>
+                  <p className="relative mt-6 text-2xl font-semibold">290 kr</p>
+                  <div className="relative">
+                    <ListingPackageCheckoutButton
+                      token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
+                      packageId="premium_30d"
+                      label="Välj Premium"
+                    />
+                  </div>
+                </article>
+              </div>
+            </section>
+          ) : null}
 
           <section className="mt-6 grid gap-4 sm:grid-cols-3">
             {successView.steps.map(([number, title, text]) => (

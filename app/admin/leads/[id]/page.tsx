@@ -8,6 +8,7 @@ import {
   DetailGrid,
 } from '../../AdminUI'
 import LeadLocationForm from './LeadLocationForm'
+import LeadReviewActions from './LeadReviewActions'
 import LeadTranslationForm from './LeadTranslationForm'
 
 export default async function AdminLeadDetailPage({
@@ -40,6 +41,8 @@ export default async function AdminLeadDetailPage({
         description={`${lead.reg || 'No registration'} · Lead ${lead.id}`}
         backHref="/admin/leads"
       />
+
+      <LeadReviewActions leadId={lead.id} status={lead.status} />
 
       <LeadLocationForm
         leadId={lead.id}
