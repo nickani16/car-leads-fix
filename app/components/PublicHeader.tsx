@@ -277,7 +277,7 @@ export default function PublicHeader({
             ctaHref: '/dealer-apply',
           }
         : {
-            message: 'Utvalda svenska bilar för professionella köpare i Europa',
+            message: 'Sälj din bil till högsta bud',
             menuLabel: 'Meny',
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',

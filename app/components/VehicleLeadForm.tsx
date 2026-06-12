@@ -544,13 +544,13 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
             <p className="mt-2 text-sm font-normal leading-6 text-slate-500">
               {c.benefitText}
             </p>
-            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-3">
               {c.trust.map(([title]) => (
                 <span
                   key={title}
-                  className="flex items-center gap-2 text-xs font-normal text-[#646c72]"
+                  className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-[9px] font-normal text-[#646c72] min-[390px]:text-[10px] sm:gap-2 sm:text-xs"
                 >
-                  <span className="grid h-5 w-5 place-items-center rounded-full bg-[#B4D9EF]">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#B4D9EF]">
                     <Check size={11} className="text-[#242424]" />
                   </span>
                   {title}

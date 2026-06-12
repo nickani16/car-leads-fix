@@ -172,7 +172,10 @@ export default async function HomePage() {
             </div>
             <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
               Sälj bilen i Sverige.
-              <span className="block text-[#242424]">Nå professionella köpare i Europa.</span>
+              <span className="block text-[#242424]">
+                <span className="whitespace-nowrap">Nå professionella</span>{' '}
+                köpare i Europa.
+              </span>
             </h1>
             <p className="mt-5 max-w-[590px] text-[16px] leading-7 text-[#4e6377] sm:mt-7 sm:text-xl sm:leading-8">
               Vi kvalificerar bilen, presenterar den för verifierade handlare
