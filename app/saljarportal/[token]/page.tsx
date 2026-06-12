@@ -150,7 +150,9 @@ export default async function SellerPortalPage({
             <div>
               <p className="font-medium">Betalningen är registrerad.</p>
               <p className="mt-1 text-sm text-emerald-800">
-                Din nya budgivningsperiod är aktiverad och synlig nedan.
+                {isPendingReview
+                  ? 'Paketet är reserverat och startar först när Autorell har godkänt bilen.'
+                  : 'Din nya budgivningsperiod är aktiverad och synlig nedan.'}
               </p>
             </div>
           </div>
@@ -209,9 +211,9 @@ export default async function SellerPortalPage({
         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              label: 'Verifierad räckvidd',
-              value: lead.dealer_reach_snapshot || 0,
-              detail: 'godkända handlare',
+              label: 'Handlarnätverk',
+              value: 'Europa',
+              detail: 'verifierade professionella köpare',
               icon: Users,
             },
             {
