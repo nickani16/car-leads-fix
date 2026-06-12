@@ -166,6 +166,14 @@ export function proxy(request: NextRequest) {
 
   if (
     methodCanRedirect &&
+    pathname.startsWith('/salj-bil/') &&
+    (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
+  ) {
+    return redirectToHost(request, MARKET_HOSTS.sv, 308)
+  }
+
+  if (
+    methodCanRedirect &&
     (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
   ) {
     const locale = hostname === 'www.autorell.de' ? 'de' : 'en'

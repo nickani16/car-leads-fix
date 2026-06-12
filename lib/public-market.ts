@@ -1,4 +1,10 @@
+import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
+
 export type PublicMarket = 'sv' | 'de' | 'en'
+
+const swedishLocalSeoPaths = swedishLocalSeoLocations.map(
+  ({ slug }) => `/salj-bil/${slug}`
+)
 
 const marketConfig = {
   sv: {
@@ -17,6 +23,7 @@ const marketConfig = {
       '/integritet',
       '/cookies',
       '/villkor',
+      ...swedishLocalSeoPaths,
     ],
     priorityPath: '/salj-bil',
   },

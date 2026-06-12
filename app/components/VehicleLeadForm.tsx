@@ -10,14 +10,24 @@ import {
   Clock3,
   Crown,
   LockKeyhole,
+  MapPin,
   ShieldCheck,
   Upload,
   X,
 } from 'lucide-react'
 import PublicHeader from './PublicHeader'
+import PublicBreadcrumbs from './PublicBreadcrumbs'
 import ListingPackageCheckoutButton from './ListingPackageCheckoutButton'
+import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
 
 export type FormLocale = 'sv' | 'de' | 'en'
+
+type LocalSeoContent = {
+  city: string
+  county: string
+  areaDescription: string
+  nearby: { name: string; slug: string }[]
+}
 
 const BRANDS = [
   'Abarth', 'Alfa Romeo', 'Alpine', 'Aston Martin', 'Audi', 'Bentley', 'BMW',
@@ -378,13 +388,20 @@ const conversionCopy = {
   },
 } as const
 
-export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
+export default function VehicleLeadForm({
+  locale,
+  localSeo,
+}: {
+  locale: FormLocale
+  localSeo?: LocalSeoContent
+}) {
   const t = copy[locale]
   const o = options[locale]
   const c = conversionCopy[locale]
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({
     ...emptyForm,
+    pickupCity: localSeo?.city || '',
     pickupCountry: locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : '',
   })
   const [images, setImages] = useState<{ id: string; file: File; url: string }[]>([])
@@ -416,6 +433,15 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
+  const pageMarket = localSeo
+    ? `Sälj bil i ${localSeo.city} · ${localSeo.county}`
+    : t.market
+  const pageHero = localSeo
+    ? `Sälj din bil i ${localSeo.city}. Nå fler professionella köpare.`
+    : t.hero
+  const pageIntro = localSeo
+    ? `Registrera bilen kostnadsfritt och låt verifierade bilhandlare i Sverige och Europa bedöma den. Du följer processen digitalt och väljer själv om du vill acceptera ett bud.`
+    : t.intro
   const successView =
     locale === 'sv'
       ? {
@@ -793,14 +819,23 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
       <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-12 lg:py-20 xl:gap-20">
         <aside className="lg:pt-8">
+          {localSeo && (
+            <PublicBreadcrumbs
+              className="mb-7"
+              items={[
+                { label: 'Sälj din bil', href: '/salj-bil' },
+                { label: localSeo.city },
+              ]}
+            />
+          )}
           <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-[#535a60]">
-            {t.market}
+            {pageMarket}
           </p>
           <h1 className="mt-6 max-w-xl text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#202124] sm:text-5xl lg:text-[58px]">
-            {t.hero}
+            {pageHero}
           </h1>
           <p className="mt-7 max-w-lg text-base font-normal leading-7 text-[#68727a]">
-            {t.intro}
+            {pageIntro}
           </p>
 
           <div className="mt-10 max-w-lg border-y border-[#dedcd5] py-7">
@@ -988,6 +1023,109 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
           </form>
         </section>
       </div>
+
+      {locale === 'sv' && (
+        <section className="border-t border-[#dedcd5] bg-white">
+          <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+            {localSeo ? (
+              <>
+                <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-20">
+                  <div>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#65727a]">
+                      Lokal bilförsäljning
+                    </p>
+                    <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-[#202124] sm:text-4xl">
+                      Ett bredare köparnätverk för din bil i {localSeo.city}.
+                    </h2>
+                    <p className="mt-6 max-w-2xl text-base leading-8 text-[#68727a]">
+                      {localSeo.areaDescription}
+                    </p>
+                    <p className="mt-4 max-w-2xl text-base leading-8 text-[#68727a]">
+                      Autorell passar i första hand nyare, körbara bilar från
+                      2018 med högst 10&nbsp;000 mil och ett dokumenterbart
+                      tekniskt skick. Registreringen är kostnadsfri och inte
+                      bindande.
+                    </p>
+                  </div>
+
+                  <div className="rounded-[28px] border border-[#dfe3e3] bg-[#f4f8fa] p-7 sm:p-9">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                      <MapPin size={21} />
+                    </span>
+                    <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em]">
+                      Så fungerar det i {localSeo.city}
+                    </h2>
+                    <ol className="mt-6 space-y-5 text-sm leading-6 text-[#626d73]">
+                      <li className="flex gap-4">
+                        <span className="font-semibold text-[#202124]">01</span>
+                        Fyll i bilens uppgifter, skick och plats samt ladda upp
+                        tydliga bilder.
+                      </li>
+                      <li className="flex gap-4">
+                        <span className="font-semibold text-[#202124]">02</span>
+                        Autorell granskar profilen innan den visas för
+                        verifierade professionella köpare.
+                      </li>
+                      <li className="flex gap-4">
+                        <span className="font-semibold text-[#202124]">03</span>
+                        Du följer aktiviteten och väljer själv om ett bud är
+                        tillräckligt bra.
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="mt-14 border-t border-[#e5e3dd] pt-10">
+                  <h2 className="text-xl font-semibold tracking-[-0.025em]">
+                    Sälj bil i närheten av {localSeo.city}
+                  </h2>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {localSeo.nearby.map((item) => (
+                      <Link
+                        key={item.slug}
+                        href={`/salj-bil/${item.slug}`}
+                        className="rounded-full border border-[#d8d8d3] bg-white px-4 py-2.5 text-sm text-[#4f5c63] transition hover:border-[#8dbdd8] hover:bg-[#f1f8fb] hover:text-[#202124]"
+                      >
+                        Sälj bil i {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#65727a]">
+                  Sälj bil nära dig
+                </p>
+                <div className="mt-4 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+                  <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-[#202124] sm:text-4xl">
+                    Samma trygga process, anpassad efter var bilen finns.
+                  </h2>
+                  <p className="max-w-lg text-sm leading-7 text-[#68727a]">
+                    Välj din kommun för lokal information. Själva registreringen,
+                    granskningen och budprocessen sker digitalt.
+                  </p>
+                </div>
+                <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {swedishLocalSeoLocations.map((location) => (
+                    <Link
+                      key={location.slug}
+                      href={`/salj-bil/${location.slug}`}
+                      className="group flex items-center justify-between rounded-[18px] border border-[#e0dfda] bg-[#faf9f6] px-5 py-4 text-sm text-[#4f5c63] transition hover:border-[#a9cfe3] hover:bg-[#f1f8fb] hover:text-[#202124]"
+                    >
+                      <span>Sälj bil i {location.name}</span>
+                      <ArrowRight
+                        size={15}
+                        className="transition group-hover:translate-x-0.5"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       <footer className="border-t border-[#dedcd5] bg-[#f1f0eb]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-5 py-7 text-xs text-[#7d817f] sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
