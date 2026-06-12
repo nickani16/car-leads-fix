@@ -88,7 +88,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
       eyebrow: 'Der Einkaufsprozess',
       heading: 'Vom digitalen Gebot in Ihren Fahrzeugbestand.',
       intro:
-        'Ein klarer B2B-Prozess verbindet Händlerprüfung, Gebot, Fahrzeugabgleich, Zahlung und grenzüberschreitende Abholung.',
+        'Ein klarer B2B-Prozess verbindet Händlerprüfung, Gebot, Vorabzahlung an Autorell, Fahrzeugprüfung in Schweden und grenzüberschreitende Übergabe.',
       primary: 'Als Händler registrieren',
       primaryHref: '/dealer-apply',
       facts: ['Digitaler Einkauf', 'Klare Entscheidungspunkte', 'Exportfähiger Ablauf'],
@@ -106,12 +106,16 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
           text: 'Sie bieten nach den angezeigten Regeln und sehen den Status Ihrer Teilnahme im Dealer Portal.',
         },
         {
-          title: 'Verkäuferentscheidung und Abgleich',
-          text: 'Nach Annahme wird geprüft, ob Fahrzeug und Dokumentation den Angaben entsprechen, auf denen das Angebot basiert.',
+          title: 'Vertrag und Zahlung an Autorell',
+          text: 'Nach Annahme werden die Transaktionsdokumente unterzeichnet. Der Käufer überweist den bestätigten Gesamtbetrag vor Abholung an Autorell.',
         },
         {
-          title: 'Zahlung, Abholung und Export',
-          text: 'Zahlungsstatus, Abholfreigabe, Transport und Exportdokumente werden im weiteren Geschäftsablauf koordiniert.',
+          title: 'Autorell Verified Inspection',
+          text: 'Nach bestätigtem Geldeingang prüft Autorell das Fahrzeug vor Ort gegen Identität, Laufleistung, Funktion, sichtbaren Zustand und Verkäuferdeklaration.',
+        },
+        {
+          title: 'Freigabe, Abholung und Export',
+          text: 'Bei Übereinstimmung wird die Transaktion abgeschlossen. Bei wesentlichen Abweichungen wird sie pausiert, schriftlich neu vereinbart oder nach Vertrag abgebrochen.',
         },
       ],
     },
@@ -142,7 +146,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         },
         {
           title: 'Grenzüberschreitend gedacht',
-          text: 'Der Prozess berücksichtigt von Beginn an Abholung, Dokumente, Zahlung und den Transport aus Schweden.',
+          text: 'Autorell koordiniert Vertrag, Zahlungseingang, Vor-Ort-Prüfung, schwedische Exportdokumente, Abholung und vereinbarte Logistik.',
         },
       ],
     },
@@ -200,7 +204,11 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         },
         {
           title: 'Wie erfolgen Zahlung und Transport?',
-          text: 'Nach einem bestätigten Geschäft werden Zahlungsfreigabe, Abholung, Transport und erforderliche Dokumente koordiniert.',
+          text: 'Der Käufer überweist den bestätigten Gesamtbetrag vor Abholung an Autorell. Nach Geldeingang und erfolgreicher Fahrzeugprüfung werden Abschluss, Exportdokumente, Abholung und Transport koordiniert.',
+        },
+        {
+          title: 'Was passiert bei einer Abweichung?',
+          text: 'Autorell pausiert die Transaktion. Käufer und Verkäufer können einer dokumentierten Preisanpassung zustimmen. Bei einer wesentlichen oder nicht akzeptierten Abweichung kann Autorell abbrechen und erhaltene Käufergelder zurückzahlen.',
         },
       ],
     },
@@ -245,7 +253,8 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'Händlerkonto', text: 'Unternehmensdaten müssen vollständig und korrekt sein. Der Zugang kann von einer Prüfung und Freigabe abhängig gemacht werden.' },
         { title: 'Fahrzeuginformationen', text: 'Fahrzeugprofile basieren auf verfügbaren Angaben, Erklärungen und Prüfungen. Händler müssen alle offengelegten Informationen vor einem Gebot bewerten.' },
         { title: 'Gebote und Gebühren', text: 'Verbindlichkeit, Gebotsregeln und anwendbare Gebühren ergeben sich aus den aktuellen Händlerbedingungen und dem jeweiligen Angebot.' },
-        { title: 'Zahlung und Abholung', text: 'Zahlungsfrist, Freigabe, Transport, Export und Risikoübergang werden im Transaktionsablauf oder Vertrag festgelegt.' },
+        { title: 'Zahlung vor Ausführung', text: 'Der bestätigte Käufergesamtbetrag ist vor Abholung an Autorell zu zahlen. Verkäuferauszahlung und Fahrzeugfreigabe erfolgen erst nach den vereinbarten Prüf- und Abschlussbedingungen.' },
+        { title: 'Prüfung und Abweichungen', text: 'Autorell gleicht das Fahrzeug mit der Deklaration ab. Abweichungen können zu einer Pause, schriftlichen Preisanpassung oder zum Abbruch mit Rückzahlung erhaltener Käufergelder führen.' },
       ],
     },
     cookies: {
@@ -292,7 +301,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
       eyebrow: 'How buying works',
       heading: 'From Swedish vehicle supply to your inventory.',
       intro:
-        'A clear B2B workflow connects dealer verification, vehicle review, bidding, payment and cross-border collection.',
+        'A clear B2B workflow connects dealer verification, bidding, advance funding to Autorell, inspection in Sweden and cross-border handover.',
       primary: 'Create a dealer account',
       primaryHref: '/dealer-apply',
       facts: ['Digital sourcing', 'Clear decision stages', 'Cross-border workflow'],
@@ -300,8 +309,9 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'Verify your dealership', text: 'Company, VAT and contact information are reviewed before buyer access is activated.' },
         { title: 'Review the complete vehicle profile', text: 'Assess images, technical data, declared condition, known faults and available documents.' },
         { title: 'Bid during the active window', text: 'Place bids under the displayed rules and follow your activity through the Dealer Portal.' },
-        { title: 'Seller decision and verification', text: 'After acceptance, the vehicle and documentation are checked against the information behind the offer.' },
-        { title: 'Payment, collection and export', text: 'Payment status, release, transport and export documents are coordinated through the transaction workflow.' },
+        { title: 'Contract and payment to Autorell', text: 'After acceptance, the transaction documents are signed and the buyer transfers the confirmed total to Autorell before collection.' },
+        { title: 'Autorell Verified Inspection', text: 'After cleared funds, Autorell checks the vehicle on site against its identity, mileage, operation, visible condition and seller declaration.' },
+        { title: 'Release, collection and export', text: 'If the vehicle matches, the transaction completes. A material discrepancy pauses the deal for written adjustment or cancellation under the contract.' },
       ],
     },
     benefits: {
@@ -320,7 +330,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'A new sourcing market', text: 'Add selected vehicles from a highly digitalised Nordic automotive market to your purchasing mix.' },
         { title: 'Less fragmented information', text: 'Review consistent vehicle profiles instead of chasing incomplete listings and disconnected sellers.' },
         { title: 'Verified counterparties', text: 'Dealer access and transaction stages operate within a professional B2B framework.' },
-        { title: 'Cross-border by design', text: 'Collection, documentation, payment and transport from Sweden are considered from the start.' },
+        { title: 'Cross-border by design', text: 'Autorell coordinates contracts, receipt of funds, on-site inspection, Swedish export documents, collection and agreed logistics.' },
       ],
     },
     about: {
@@ -354,7 +364,8 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'Who can bid?', text: 'Only approved professional buyers with an active Autorell dealer account can participate.' },
         { title: 'What vehicle information is provided?', text: 'Profiles include available technical data, images, declared condition, known faults and documentation.' },
         { title: 'How are fees communicated?', text: 'Applicable buyer fees and rules are displayed in the dealer terms or before participation in a vehicle opportunity.' },
-        { title: 'How do payment and transport work?', text: 'Following a confirmed transaction, payment release, collection, transport and required documents are coordinated.' },
+        { title: 'How do payment and transport work?', text: 'The buyer transfers the confirmed total to Autorell before collection. After cleared funds and a successful inspection, Autorell coordinates completion, export documents, collection and transport.' },
+        { title: 'What happens if the vehicle differs from its declaration?', text: 'Autorell pauses the transaction. Buyer and seller may accept a documented price adjustment. For a material or unresolved discrepancy, Autorell may cancel and return buyer funds received.' },
       ],
     },
     contact: {
@@ -398,7 +409,8 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'Dealer accounts', text: 'Company information must be complete and accurate. Access may require review and approval.' },
         { title: 'Vehicle information', text: 'Profiles rely on available declarations, records and inspections. Dealers must review disclosed information before bidding.' },
         { title: 'Bids and fees', text: 'Binding status, bidding rules and applicable fees follow the current Dealer Terms and vehicle opportunity.' },
-        { title: 'Payment and collection', text: 'Payment deadlines, release, transport, export and risk transfer are defined in the transaction workflow or contract.' },
+        { title: 'Funding before execution', text: 'The confirmed buyer total is paid to Autorell before collection. Seller payout and vehicle release remain subject to the agreed inspection and completion conditions.' },
+        { title: 'Inspection and discrepancies', text: 'Autorell compares the vehicle with its declaration. A discrepancy may pause the transaction, require a written price adjustment or result in cancellation and return of buyer funds received.' },
       ],
     },
     cookies: {

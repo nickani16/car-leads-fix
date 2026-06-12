@@ -8,15 +8,18 @@ import {
   CarFront,
   Check,
   ChevronRight,
+  CircleDollarSign,
   CircleDot,
   FileCheck2,
   Gavel,
   Gauge,
   Globe2,
+  Handshake,
   LockKeyhole,
-  Route,
+  ScanLine,
   Search,
   Sparkles,
+  Truck,
 } from 'lucide-react'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -26,10 +29,10 @@ type BuyerLocale = 'de' | 'en'
 const content = {
   de: {
     eyebrow: 'B2B-Fahrzeugmarkt für Autohändler',
-    titleTop: 'Besser einkaufen.',
+    titleTop: 'Sicher einkaufen.',
     titleBottom: 'Europaweit handeln.',
     intro:
-      'Ausgewählte Fahrzeuge ab Baujahr 2018, mit weniger als 100.000 km und klaren Fahrzeugdaten. Für Händler, die modernen Bestand digital und grenzüberschreitend einkaufen möchten.',
+      'Ausgewählte Fahrzeuge aus Schweden, professionelle Gebote und eine durch Autorell koordinierte Transaktion. Wir bestätigen den Zahlungseingang, prüfen das Fahrzeug vor Ort und organisieren Export und Übergabe.',
     primary: 'Händlerzugang beantragen',
     secondary: 'Plattform entdecken',
     platformLabel: 'Autorell Market Intelligence',
@@ -62,13 +65,25 @@ const content = {
       ['Schweden', 'Qualifiziertes Fahrzeugangebot', 'active'],
       ['Europa', 'Weitere Märkte im Aufbau', 'next'],
     ],
-    flowEyebrow: 'Der digitale Einkaufsfluss',
-    flowTitle: 'Vom Händlerzugang zum Gebot. Klar und digital.',
+    flowEyebrow: 'Die Autorell Transaktion',
+    flowTitle: 'Vom Gebot bis zur Übergabe. Kontrolliert durch Autorell.',
     steps: [
       ['Zugang erhalten', 'Unternehmen verifizieren und professionelles Händlerkonto aktivieren.'],
-      ['Fahrzeuge entdecken', 'Relevantes Angebot anhand strukturierter Profile effizient bewerten.'],
-      ['Digital bieten', 'Gebote transparent innerhalb der aktiven Auktionsphase abgeben.'],
-      ['Abwicklung koordinieren', 'Entscheidung, Dokumente, Zahlung und Logistik in einem klaren Prozess verfolgen.'],
+      ['Fahrzeug bewerten', 'Deklaration, Bilder, Historie und bekannte Abweichungen vor dem Gebot prüfen.'],
+      ['Gebot & Vertrag', 'Nach Annahme werden Preis, Bedingungen und Parteien vertraglich festgehalten.'],
+      ['Zahlung an Autorell', 'Der Käufer überweist den Gesamtbetrag an Autorell vor Abholung und Abschluss.'],
+      ['Vor-Ort-Prüfung', 'Autorell gleicht Identität, Laufleistung, Funktion und Zustand mit der Deklaration ab.'],
+      ['Freigabe & Export', 'Bei Übereinstimmung schließen wir den Kauf ab und koordinieren Dokumente, Abholung und Export.'],
+    ],
+    assuranceEyebrow: 'Autorell Verified Transaction',
+    assuranceTitle: 'Ihr Geld wird nicht blind in ein unbekanntes Fahrzeug geschickt.',
+    assuranceText:
+      'Der Käufer überweist vor der Abholung an Autorell. Nach bestätigtem Geldeingang prüft Autorell das Fahrzeug in Schweden gegen die Verkaufsdeklaration. Bei einer wesentlichen Abweichung wird die Transaktion pausiert: Die Parteien können schriftlich einen neuen Preis vereinbaren oder Autorell kann den Vorgang abbrechen und die erhaltenen Käufergelder zurückzahlen.',
+    assuranceItems: [
+      ['Zahlung vor Ausführung', 'Autorell bestätigt den Geldeingang, bevor Fahrzeug und Dokumente freigegeben werden.'],
+      ['Prüfung gegen Deklaration', 'VIN, Laufleistung, Warnleuchten, Fahrbereitschaft, Hauptfunktionen, sichtbarer Zustand und dokumentierte Mängel werden abgeglichen.'],
+      ['Klare Abweichungsregel', 'Keine stillen Preisänderungen: Fortsetzung nur nach dokumentierter Zustimmung oder Abbruch nach Vertragsregeln.'],
+      ['Export aus einer Hand', 'Autorell koordiniert schwedische Abmeldung, Exportdokumente, Abholung und vereinbarte Logistik.'],
     ],
     trustEyebrow: 'Warum Händler Autorell wählen',
     trustTitle: 'Ein besserer Einkaufskanal für modernen Bestand.',
@@ -78,8 +93,9 @@ const content = {
       'Kuratiertes Angebot statt unübersichtlicher Fahrzeuganzeigen',
       'Klare Auswahlkriterien: 2018+, unter 100.000 km und guter Zustand',
       'Vergleichbare Daten für schnellere Einkaufsentscheidungen',
-      'Digitale Gebote und transparenter Transaktionsstatus',
-      'Persönlicher Support bei grenzüberschreitenden Geschäftsschritten',
+      'Käuferzahlung vor Abholung und kontrollierter Freigabe',
+      'Autorell Verified Inspection vor dem endgültigen Abschluss',
+      'Koordinierte Verträge, Exportdokumente, Abholung und Transport',
       'Eine Plattform, die mit neuen europäischen Märkten wächst',
     ],
     ctaEyebrow: 'Frühen Zugang sichern',
@@ -89,10 +105,10 @@ const content = {
   },
   en: {
     eyebrow: 'Swedish vehicle sourcing for European dealers',
-    titleTop: 'Better vehicles.',
-    titleBottom: 'Built for your inventory.',
+    titleTop: 'Source with confidence.',
+    titleBottom: 'Trade across Europe.',
     intro:
-      'Selected vehicles from 2018 onwards, below 100,000 km and presented through clear vehicle data. Built for dealers sourcing modern inventory across borders.',
+      'Selected Swedish vehicles, professional bidding and a transaction coordinated by Autorell. We confirm receipt of buyer funds, inspect the vehicle in Sweden and manage the agreed export and handover.',
     primary: 'Apply for dealer access',
     secondary: 'Explore the platform',
     platformLabel: 'Autorell Market Intelligence',
@@ -125,13 +141,25 @@ const content = {
       ['Germany', 'Dealer network & market growth', 'active'],
       ['Europe', 'More markets to follow', 'next'],
     ],
-    flowEyebrow: 'The digital buying flow',
-    flowTitle: 'From dealer access to bidding. Clear and digital.',
+    flowEyebrow: 'The Autorell transaction',
+    flowTitle: 'From bid to handover. Controlled by Autorell.',
     steps: [
       ['Get approved', 'Verify your business and activate professional dealer access.'],
-      ['Discover vehicles', 'Evaluate relevant supply through structured vehicle profiles.'],
-      ['Bid digitally', 'Place transparent bids during the active auction window.'],
-      ['Coordinate the deal', 'Follow decisions, documents, payment and logistics in one process.'],
+      ['Review the vehicle', 'Assess the declaration, images, history and known discrepancies before bidding.'],
+      ['Bid and contract', 'After acceptance, price, conditions and counterparties are fixed in the transaction documents.'],
+      ['Fund the transaction', 'The buyer transfers the confirmed total to Autorell before collection and completion.'],
+      ['On-site inspection', 'Autorell checks identity, mileage, operation and condition against the seller declaration.'],
+      ['Release and export', 'When verified, we complete the purchase and coordinate documents, collection and export.'],
+    ],
+    assuranceEyebrow: 'Autorell Verified Transaction',
+    assuranceTitle: 'Your funds are not sent blindly against an unseen vehicle.',
+    assuranceText:
+      'The buyer transfers funds to Autorell before collection. After cleared funds, Autorell inspects the vehicle in Sweden against the seller declaration. If a material discrepancy is found, the transaction is paused: the parties may agree a revised price in writing, or Autorell may cancel and return the buyer funds received.',
+    assuranceItems: [
+      ['Funded before execution', 'Autorell confirms cleared funds before the vehicle or transaction documents are released.'],
+      ['Checked against the declaration', 'VIN, mileage, warning lights, drivability, principal functions, visible condition and disclosed faults are compared.'],
+      ['A clear discrepancy rule', 'No silent price changes: the deal proceeds only with documented agreement or is cancelled under the contract.'],
+      ['Export coordinated by Autorell', 'We coordinate Swedish deregistration, export documentation, collection and agreed logistics.'],
     ],
     trustEyebrow: 'Why dealers choose Autorell',
     trustTitle: 'A better sourcing channel for modern inventory.',
@@ -141,8 +169,9 @@ const content = {
       'Curated supply instead of crowded vehicle classifieds',
       'Clear criteria: 2018+, below 100,000 km and good condition',
       'Comparable data for faster purchasing decisions',
-      'Digital bidding and transparent transaction progress',
-      'Personal support through cross-border deal stages',
+      'Buyer funding before collection and controlled release',
+      'Autorell Verified Inspection before final completion',
+      'Coordinated contracts, export documents, collection and transport',
       'A platform designed to expand across European markets',
     ],
     ctaEyebrow: 'Secure early access',
@@ -153,7 +182,14 @@ const content = {
 } as const
 
 const pillarIcons = [CalendarRange, Gauge, BatteryCharging, FileCheck2]
-const stepIcons = [Building2, Search, Gavel, Route]
+const stepIcons = [
+  Building2,
+  Search,
+  Gavel,
+  CircleDollarSign,
+  ScanLine,
+  Truck,
+]
 
 export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
   const t = content[locale]
@@ -369,6 +405,49 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         </div>
       </section>
 
+      <section className="bg-[#eef4f5] px-5 py-20 sm:px-8 sm:py-28 lg:px-12">
+        <div className="mx-auto grid max-w-[1320px] overflow-hidden rounded-[32px] border border-white bg-white shadow-[0_30px_90px_rgba(32,33,36,.08)] lg:grid-cols-[.92fr_1.08fr]">
+          <div className="relative overflow-hidden bg-[#dceef7] p-7 sm:p-12 lg:p-16">
+            <div className="absolute -right-28 -top-28 h-72 w-72 rounded-full border-[48px] border-white/35" />
+            <div className="relative">
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-[#202427] text-white shadow-[0_16px_35px_rgba(32,36,39,.18)]">
+                <Handshake className="h-6 w-6" />
+              </span>
+              <p className="mt-10 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#527485]">
+                {t.assuranceEyebrow}
+              </p>
+              <h2 className="mt-5 text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-5xl">
+                {t.assuranceTitle}
+              </h2>
+              <p className="mt-6 max-w-xl text-sm leading-7 text-[#526d78] sm:text-base sm:leading-8">
+                {t.assuranceText}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-px bg-[#e1e3df] sm:grid-cols-2">
+            {t.assuranceItems.map(([title, text], index) => {
+              const Icon = [CircleDollarSign, ScanLine, FileCheck2, Truck][index]
+              return (
+                <article
+                  key={title}
+                  className="group relative min-h-[260px] overflow-hidden bg-[#fbfaf7] p-7 transition duration-300 hover:bg-white sm:p-9"
+                >
+                  <span className="absolute right-6 top-6 text-[10px] tracking-[0.18em] text-[#a0a7a9]">
+                    0{index + 1}
+                  </span>
+                  <Icon className="h-6 w-6 text-[#4e7f94]" />
+                  <div className="absolute bottom-8 left-7 right-7 sm:left-9 sm:right-9">
+                    <h3 className="text-xl tracking-[-0.035em]">{title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-[#68767b]">{text}</p>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
@@ -386,7 +465,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             </Link>
           </div>
 
-          <div className="mt-12 grid gap-px overflow-hidden rounded-[28px] border border-[#dcddd9] bg-[#dcddd9] lg:grid-cols-4">
+          <div className="mt-12 grid gap-px overflow-hidden rounded-[28px] border border-[#dcddd9] bg-[#dcddd9] md:grid-cols-2 lg:grid-cols-3">
             {t.steps.map(([title, text], index) => {
               const Icon = stepIcons[index]
               return (

@@ -128,7 +128,7 @@ export default function DealerLegalPage() {
                 'The highest valid bid at closing becomes the provisional winning bid. If equal bids exist, the earliest valid bid takes priority.',
                 'The seller may accept or reject the provisional winning bid. No sale is completed merely because an auction closes.',
                 'The winning bid remains binding for 48 hours after auction closing unless a different period is shown before bidding.',
-                'After seller acceptance, the dealer must complete requested verification, sign transaction documents and fund the purchase within the stated deadlines.',
+                'After seller acceptance, the dealer must complete requested verification, sign the transaction documents and transfer the complete confirmed buyer total to Autorell within the stated deadline.',
                 'A dealer may dispute its obligation only where vehicle information was materially incorrect, the vehicle cannot lawfully be transferred, or Autorell confirms another contractual exception.',
                 'Autorell may invalidate bids affected by technical errors, fraud, collusion, sanctions restrictions or an unauthorised account.',
               ]}
@@ -173,7 +173,8 @@ export default function DealerLegalPage() {
               items={[
                 'The buyer must pay the complete confirmed total by the deadline shown in the transaction workspace or invoice.',
                 'Vehicle-sized payments should normally be made by verified SEPA bank transfer through Autorell or its regulated payment partner.',
-                'Autorell may delay collection, document release or seller payout until cleared funds, identity checks and required documents are confirmed.',
+                'Cleared buyer funds are required before Autorell collects or inspects the vehicle for completion. Receipt of funds does not by itself complete the vehicle sale.',
+                'Autorell may delay collection, document release, completion or seller payout until cleared funds, identity checks, required documents and the vehicle inspection are confirmed.',
                 'Dealers are responsible for bank charges, currency conversion costs, taxes and payment-provider fees attributable to their payment.',
                 'A payment reference must match the relevant deal. Payments from unverified third parties may be rejected or returned.',
                 'Refunds, where due, are made to the verified originating payment account after permitted deductions.',
@@ -190,9 +191,12 @@ export default function DealerLegalPage() {
             <RuleList
               items={[
                 'Transport prices are estimates until the exact route and collection conditions are confirmed.',
-                'The Autorell Verified Inspection records the vehicle condition at inspection and does not constitute a mechanical warranty.',
+                'The Autorell Verified Inspection compares the vehicle with the seller declaration and normally covers identity, VIN, mileage, warning indicators, drivability, principal functions, visible condition, tyres, brakes where reasonably assessable, keys and disclosed faults.',
+                'The inspection is non-destructive, reflects the vehicle at the time of inspection and does not constitute an unlimited mechanical warranty or guarantee against latent defects.',
                 'The seller must make the vehicle, keys, registration documents and disclosed accessories available at the agreed collection time.',
                 'Vehicle condition, mileage and visible damage may be recorded at collection through photographs and a handover report.',
+                'If a discrepancy is found, Autorell may pause completion while the evidence and commercial impact are assessed.',
+                'A revised price or other adjustment is effective only when documented and accepted by the required parties. Autorell is not required to complete a materially different transaction.',
                 'Risk and responsibility transfer at the point stated in the signed purchase and logistics documents.',
                 'The buyer remains responsible for destination-country registration, local taxes, technical approval and compliance unless expressly included in writing.',
                 'Delays caused by authorities, carriers, weather, incomplete documents or incorrect party information do not automatically create liability for Autorell.',
@@ -213,6 +217,7 @@ export default function DealerLegalPage() {
                 'Autorell may recover documented losses, third-party costs and unpaid fees caused by a default, subject to the final approved terms and applicable law.',
                 'Autorell may suspend bidding privileges while a payment, compliance, fraud or contractual issue is investigated.',
                 'A transaction may be cancelled where the seller rejects the bid, ownership cannot be verified, the vehicle differs materially from its description, payment fails, or completion would be unlawful.',
+                'Where Autorell cancels because of a material or unresolved vehicle discrepancy, buyer funds received for that transaction are returned to the verified originating account, subject only to deductions expressly permitted by the signed agreement and applicable law.',
               ]}
             />
           </LegalSection>

@@ -61,6 +61,11 @@ type DealSnapshot = {
   inspection_name?: string | null
 }
 
+type ContractTerm = {
+  title?: string
+  text?: string
+}
+
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
   currency: 'EUR',
@@ -90,6 +95,15 @@ export default function ContractDocumentView({
   const autorell = objectValue<Party>(snapshot, 'autorell')
   const seller = objectValue<Party>(snapshot, 'seller')
   const buyer = objectValue<Party>(snapshot, 'buyer')
+  const snapshotTerms = Array.isArray(snapshot.terms)
+    ? snapshot.terms.filter(
+        (item): item is ContractTerm =>
+          Boolean(item) &&
+          typeof item === 'object' &&
+          typeof (item as ContractTerm).title === 'string' &&
+          typeof (item as ContractTerm).text === 'string'
+      )
+    : []
   const counterparty =
     document.document_type === 'seller_purchase_agreement' ? seller : buyer
   const counterpartyTitle =
@@ -234,10 +248,16 @@ export default function ContractDocumentView({
         <section className="contract-section">
           <SectionHeading number="04" title="Transaction framework" />
           <div className="contract-clauses">
-            <Clause title="Vehicle and disclosures" text="The vehicle identity, mileage, declared condition and supporting information shown in this document form part of the transaction record." />
-            <Clause title="Payment and completion" text="Payment, collection, document release and completion are subject to Autorell's final approved transaction terms and verification requirements." />
-            <Clause title="Risk and ownership" text="Risk and ownership transfer at the point specified in the final signed agreement and handover documentation." />
-            <Clause title="Status of this draft" text="This generated document is a locked transaction snapshot. It is not binding until released through the approved signing workflow and signed by the required parties." />
+            {(snapshotTerms.length > 0
+              ? snapshotTerms
+              : legacyTerms
+            ).map((term) => (
+              <Clause
+                key={term.title}
+                title={term.title || ''}
+                text={term.text || ''}
+              />
+            ))}
           </div>
         </section>
 
@@ -269,6 +289,25 @@ export default function ContractDocumentView({
     </main>
   )
 }
+
+const legacyTerms: ContractTerm[] = [
+  {
+    title: 'Vehicle and disclosures',
+    text: 'The vehicle identity, mileage, declared condition and supporting information shown in this document form part of the transaction record.',
+  },
+  {
+    title: 'Payment and completion',
+    text: "Payment, collection, document release and completion are subject to Autorell's final approved transaction terms and verification requirements.",
+  },
+  {
+    title: 'Risk and ownership',
+    text: 'Risk and ownership transfer at the point specified in the final signed agreement and handover documentation.',
+  },
+  {
+    title: 'Status of this draft',
+    text: 'This generated document is a locked transaction snapshot. It is not binding until released through the approved signing workflow and signed by the required parties.',
+  },
+]
 
 function formatLocation(
   city?: string | null,

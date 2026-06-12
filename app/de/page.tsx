@@ -2,9 +2,9 @@ import BuyerMarketPage from '../components/BuyerMarketPage'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'Moderne Fahrzeuge für Autohändler | Autorell Deutschland',
+  title: 'Geprüfter Fahrzeugimport für Autohändler | Autorell',
   description:
-    'B2B-Fahrzeugmarkt für Händler: ausgewählte Fahrzeuge ab 2018, unter 100.000 km, strukturierte Daten und digitale Auktionen in Europa.',
+    'Fahrzeuge aus Schweden sicher einkaufen: B2B-Gebote, Zahlung an Autorell, Vor-Ort-Prüfung, Exportdokumente und koordinierte Lieferung.',
   path: '/',
   locale: 'de',
   keywords: [
@@ -15,6 +15,9 @@ export const metadata = createPublicMetadata({
     'Gebrauchtwagen Großhandel',
     'digitale Fahrzeugauktion',
     'Autohändler Plattform',
+    'Fahrzeugimport Schweden',
+    'Gebrauchtwagen Import Händler',
+    'Fahrzeugprüfung vor Export',
     'Elektroautos für Händler',
     'junge Gebrauchtwagen B2B',
   ],
