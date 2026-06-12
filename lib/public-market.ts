@@ -1,9 +1,13 @@
 import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
+import { swedishCounties } from '@/lib/swedish-regions.generated'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
 const swedishLocalSeoPaths = swedishLocalSeoLocations.map(
   ({ slug }) => `/salj-bil/${slug}`
+)
+const swedishCountySeoPaths = swedishCounties.map(
+  ({ slug }) => `/salj-bil/lan/${slug}`
 )
 
 const marketConfig = {
@@ -23,6 +27,7 @@ const marketConfig = {
       '/integritet',
       '/cookies',
       '/villkor',
+      ...swedishCountySeoPaths,
       ...swedishLocalSeoPaths,
     ],
     priorityPath: '/salj-bil',

@@ -18,15 +18,17 @@ import {
 import PublicHeader from './PublicHeader'
 import PublicBreadcrumbs from './PublicBreadcrumbs'
 import ListingPackageCheckoutButton from './ListingPackageCheckoutButton'
-import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
+import { swedishCounties } from '@/lib/swedish-regions.generated'
 
 export type FormLocale = 'sv' | 'de' | 'en'
 
 type LocalSeoContent = {
   city: string
   county: string
+  countySlug: string
   areaDescription: string
   nearby: { name: string; slug: string }[]
+  regionType?: 'municipality' | 'county'
 }
 
 const BRANDS = [
@@ -401,7 +403,8 @@ export default function VehicleLeadForm({
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({
     ...emptyForm,
-    pickupCity: localSeo?.city || '',
+    pickupCity:
+      localSeo?.regionType === 'county' ? '' : localSeo?.city || '',
     pickupCountry: locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : '',
   })
   const [images, setImages] = useState<{ id: string; file: File; url: string }[]>([])
@@ -434,7 +437,9 @@ export default function VehicleLeadForm({
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
   const pageMarket = localSeo
-    ? `Sälj bil i ${localSeo.city} · ${localSeo.county}`
+    ? localSeo.regionType === 'county'
+      ? `Sälj bil i ${localSeo.city} · Sveriges kommuner`
+      : `Sälj bil i ${localSeo.city} · ${localSeo.county}`
     : t.market
   const pageHero = localSeo
     ? `Sälj din bil i ${localSeo.city}. Nå fler professionella köpare.`
@@ -824,6 +829,14 @@ export default function VehicleLeadForm({
               className="mb-7"
               items={[
                 { label: 'Sälj din bil', href: '/salj-bil' },
+                ...(localSeo.regionType === 'municipality'
+                  ? [
+                      {
+                        label: localSeo.county,
+                        href: `/salj-bil/lan/${localSeo.countySlug}`,
+                      },
+                    ]
+                  : []),
                 { label: localSeo.city },
               ]}
             />
@@ -1077,7 +1090,9 @@ export default function VehicleLeadForm({
 
                 <div className="mt-14 border-t border-[#e5e3dd] pt-10">
                   <h2 className="text-xl font-semibold tracking-[-0.025em]">
-                    Sälj bil i närheten av {localSeo.city}
+                    {localSeo.regionType === 'county'
+                      ? `Välj kommun i ${localSeo.city}`
+                      : `Sälj bil i närheten av ${localSeo.city}`}
                   </h2>
                   <div className="mt-5 flex flex-wrap gap-3">
                     {localSeo.nearby.map((item) => (
@@ -1099,21 +1114,21 @@ export default function VehicleLeadForm({
                 </p>
                 <div className="mt-4 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
                   <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-[#202124] sm:text-4xl">
-                    Samma trygga process, anpassad efter var bilen finns.
+                    Sälj din bil lokalt. Nå köpare på en större marknad.
                   </h2>
                   <p className="max-w-lg text-sm leading-7 text-[#68727a]">
-                    Välj din kommun för lokal information. Själva registreringen,
+                    Välj län och därefter din kommun. Registreringen,
                     granskningen och budprocessen sker digitalt.
                   </p>
                 </div>
                 <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {swedishLocalSeoLocations.map((location) => (
+                  {swedishCounties.map((county) => (
                     <Link
-                      key={location.slug}
-                      href={`/salj-bil/${location.slug}`}
+                      key={county.slug}
+                      href={`/salj-bil/lan/${county.slug}`}
                       className="group flex items-center justify-between rounded-[18px] border border-[#e0dfda] bg-[#faf9f6] px-5 py-4 text-sm text-[#4f5c63] transition hover:border-[#a9cfe3] hover:bg-[#f1f8fb] hover:text-[#202124]"
                     >
-                      <span>Sälj bil i {location.name}</span>
+                      <span>{county.name}</span>
                       <ArrowRight
                         size={15}
                         className="transition group-hover:translate-x-0.5"

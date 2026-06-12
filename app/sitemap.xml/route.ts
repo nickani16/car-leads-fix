@@ -12,8 +12,17 @@ export function GET(request: Request) {
   const urls = config.paths
     .map((path) => {
       const priority =
-        path === '' ? '1' : path === config.priorityPath ? '0.9' : '0.7'
-      const changeFrequency = path === '' ? 'weekly' : 'monthly'
+        path === ''
+          ? '1'
+          : path === config.priorityPath
+            ? '0.9'
+            : path.startsWith('/salj-bil/lan/')
+              ? '0.8'
+              : path.startsWith('/salj-bil/')
+                ? '0.7'
+                : '0.7'
+      const changeFrequency =
+        path === '' || path.startsWith('/salj-bil/') ? 'weekly' : 'monthly'
 
       return [
         '  <url>',

@@ -100,8 +100,10 @@ export default async function LocalSellCarPage({
         localSeo={{
           city: location.name,
           county: location.county,
+          countySlug: location.countySlug,
           areaDescription: location.areaDescription,
           nearby: nearby.map(({ name, slug }) => ({ name, slug })),
+          regionType: 'municipality',
         }}
       />
     </>

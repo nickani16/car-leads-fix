@@ -1,12 +1,26 @@
+import {
+  swedishCounties,
+  swedishMunicipalities,
+  type SwedishCounty,
+} from '@/lib/swedish-regions.generated'
+
 export type SwedishLocalSeoLocation = {
+  code: string
   slug: string
   name: string
+  countyCode: string
   county: string
+  countySlug: string
   areaDescription: string
   nearby: string[]
 }
 
-export const swedishLocalSeoLocations: SwedishLocalSeoLocation[] = [
+type FeaturedLocalSeoLocation = Pick<
+  SwedishLocalSeoLocation,
+  'slug' | 'name' | 'county' | 'areaDescription' | 'nearby'
+>
+
+const featuredLocalSeoLocations: FeaturedLocalSeoLocation[] = [
   {
     slug: 'stockholm',
     name: 'Stockholm',
@@ -241,12 +255,98 @@ export const swedishLocalSeoLocations: SwedishLocalSeoLocation[] = [
   },
 ]
 
+const featuredLocationsBySlug = new Map(
+  featuredLocalSeoLocations.map((location) => [location.slug, location])
+)
+
+const municipalitiesByCounty = new Map<string, typeof swedishMunicipalities>()
+for (const municipality of swedishMunicipalities) {
+  const municipalities =
+    municipalitiesByCounty.get(municipality.countyCode) || []
+  municipalities.push(municipality)
+  municipalitiesByCounty.set(municipality.countyCode, municipalities)
+}
+
+function createAreaDescription(
+  name: string,
+  county: string,
+  code: string
+) {
+  const descriptions = [
+    `För dig som vill sälja bil i ${name} ger Autorell en digital väg till verifierade handlare i Sverige och Europa. Bilens uppgifter samlas, granskas och presenteras i ett jämförbart underlag.`,
+    `I ${name} kan du registrera bilen kostnadsfritt och nå professionella köpare utanför den lokala marknaden. Hela första steget sker digitalt med tydliga uppgifter och bilder.`,
+    `Bilägare i ${name} kan använda Autorell för att samla fordonsdata, skick och bilder på en plats innan bilen granskas för ett bredare handlarnätverk.`,
+    `Från ${name} i ${county} kan en nyare bil presenteras för professionella köpare genom ett strukturerat digitalt flöde, utan att du behöver kontakta flera handlare separat.`,
+    `Autorell gör det enklare att låta flera verifierade handlare bedöma samma bilunderlag i ${name}. Du följer processen digitalt och bestämmer själv om du vill gå vidare.`,
+    `Försäljningen i ${name} börjar med en kostnadsfri fordonsprofil. Efter granskning kan bilen nå relevanta köpare i Sverige och på den europeiska marknaden.`,
+  ]
+
+  return descriptions[Number(code) % descriptions.length]
+}
+
+export const swedishLocalSeoLocations: SwedishLocalSeoLocation[] =
+  swedishMunicipalities.map((municipality) => {
+    const featured = featuredLocationsBySlug.get(municipality.slug)
+    const countyMunicipalities =
+      municipalitiesByCounty.get(municipality.countyCode) || []
+    const municipalityIndex = countyMunicipalities.findIndex(
+      ({ code }) => code === municipality.code
+    )
+    const generatedNearby = [-2, -1, 1, 2]
+      .map((offset) => {
+        const index =
+          (municipalityIndex + offset + countyMunicipalities.length) %
+          countyMunicipalities.length
+        return countyMunicipalities[index]?.slug
+      })
+      .filter(
+        (slug, index, values): slug is string =>
+          Boolean(slug) &&
+          slug !== municipality.slug &&
+          values.indexOf(slug) === index
+      )
+    const nearby =
+      generatedNearby.length > 0
+        ? generatedNearby
+        : ['stockholm', 'goteborg', 'malmo', 'uppsala'].filter(
+            (slug) => slug !== municipality.slug
+          )
+
+    return {
+      ...municipality,
+      areaDescription:
+        featured?.areaDescription ||
+        createAreaDescription(
+          municipality.name,
+          municipality.county,
+          municipality.code
+        ),
+      nearby: featured?.nearby || nearby,
+    }
+  })
+
 const locationsBySlug = new Map(
   swedishLocalSeoLocations.map((location) => [location.slug, location])
 )
 
+const countiesBySlug = new Map(
+  swedishCounties.map((county) => [county.slug, county])
+)
+
 export function getSwedishLocalSeoLocation(slug: string) {
   return locationsBySlug.get(slug)
+}
+
+export function getSwedishCounty(slug: string) {
+  return countiesBySlug.get(slug)
+}
+
+export function getSwedishCountyMunicipalities(
+  county: Pick<SwedishCounty, 'code'>
+) {
+  return swedishLocalSeoLocations.filter(
+    (location) => location.countyCode === county.code
+  )
 }
 
 export function getNearbySwedishLocations(location: SwedishLocalSeoLocation) {
@@ -254,4 +354,3 @@ export function getNearbySwedishLocations(location: SwedishLocalSeoLocation) {
     .map((slug) => locationsBySlug.get(slug))
     .filter((item): item is SwedishLocalSeoLocation => Boolean(item))
 }
-
