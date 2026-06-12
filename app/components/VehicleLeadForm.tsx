@@ -822,8 +822,8 @@ export default function VehicleLeadForm({
     <main className="min-h-screen bg-[#f7f5ef] text-[#202124]">
       <PublicHeader locale={locale} />
 
-      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-12 lg:py-20 xl:gap-20">
-        <aside className="lg:pt-8">
+      <div className="mx-auto grid min-w-0 max-w-[1320px] gap-12 px-5 py-12 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:px-12 lg:py-20 xl:gap-20">
+        <aside className="min-w-0 lg:pt-8">
           {localSeo && (
             <PublicBreadcrumbs
               className="mb-7"
@@ -844,7 +844,7 @@ export default function VehicleLeadForm({
           <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-[#535a60]">
             {pageMarket}
           </p>
-          <h1 className="mt-6 max-w-xl text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#202124] sm:text-5xl lg:text-[58px]">
+          <h1 className="mt-6 max-w-xl break-words text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#202124] sm:text-5xl lg:text-[58px]">
             {pageHero}
           </h1>
           <p className="mt-7 max-w-lg text-base font-normal leading-7 text-[#68727a]">
@@ -907,7 +907,7 @@ export default function VehicleLeadForm({
           </div>
         </aside>
 
-        <section className="overflow-hidden rounded-[24px] border border-[#dfddd6] bg-white shadow-[0_24px_70px_rgba(32,33,36,.08)]">
+        <section className="min-w-0 overflow-hidden rounded-[24px] border border-[#dfddd6] bg-white shadow-[0_24px_70px_rgba(32,33,36,.08)]">
           <div className="border-b border-[#eceae5] px-6 py-6 sm:px-10">
             <div className="mb-3 flex justify-between text-xs font-medium text-[#8b8e8b]">
               <span>{t.step} {step} {t.of} 4</span><span>{step * 25}%</span>
