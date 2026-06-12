@@ -16,7 +16,7 @@ export default function PublicBreadcrumbs({
   return (
     <nav
       aria-label="Brödsmulor"
-      className={`flex w-full min-w-0 max-w-[calc(100vw-2rem)] self-start items-center overflow-hidden rounded-full border border-white/80 bg-white/68 px-2 py-1.5 text-[11px] text-[#667780] shadow-[0_10px_30px_rgba(32,33,36,.055)] backdrop-blur-xl sm:w-fit sm:max-w-full ${className}`}
+      className={`inline-flex w-fit min-w-0 max-w-[calc(100vw-2.5rem)] self-start items-center overflow-hidden rounded-full border border-white/80 bg-white/68 px-2 py-1.5 text-[11px] text-[#667780] shadow-[0_10px_30px_rgba(32,33,36,.055)] backdrop-blur-xl sm:max-w-full ${className}`}
     >
       <Link
         href="/"
@@ -31,7 +31,9 @@ export default function PublicBreadcrumbs({
         return (
           <span
             key={`${item.label}-${index}`}
-            className="flex min-w-0 flex-1 items-center sm:flex-none"
+            className={`flex min-w-0 items-center ${
+              current || index === 0 ? 'shrink-0' : 'shrink'
+            }`}
           >
             <ChevronRight
               className={`h-3 w-3 shrink-0 text-[#a1adb2] ${index === 0 ? 'hidden sm:block' : ''}`}
