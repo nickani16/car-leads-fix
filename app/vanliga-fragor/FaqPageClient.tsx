@@ -67,11 +67,14 @@ export default function FaqPageClient() {
         ))}
       </div>
 
-      <div className="mt-12 grid gap-x-16 lg:grid-cols-2">
+      <div className="mt-12 columns-1 gap-x-16 lg:columns-2">
         {filtered.map(([itemCategory, question, answer]) => {
           const isOpen = open === question
           return (
-            <div key={question} className="border-t border-[#dcdad4]">
+            <div
+              key={question}
+              className="inline-block w-full break-inside-avoid border-t border-[#dcdad4] align-top"
+            >
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? null : question)}
@@ -102,12 +105,20 @@ export default function FaqPageClient() {
         </div>
       )}
 
-      <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-[24px] bg-[#B4D9EF] p-8 sm:flex-row sm:items-center sm:p-10">
-        <div>
+      <div className="relative mt-16 flex min-h-[140px] flex-col items-start justify-between gap-6 overflow-hidden rounded-[24px] bg-[#B4D9EF] p-8 sm:flex-row sm:items-center sm:p-10">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border-[42px] border-white/30"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-5 -top-6 h-36 w-36 rounded-full border-[22px] border-white/35"
+        />
+        <div className="relative z-10">
           <h2 className="text-2xl tracking-[-0.03em]">Hittade du inte svaret?</h2>
           <p className="mt-2 text-sm text-[#56636c]">Skicka din fråga så hjälper vi dig vidare.</p>
         </div>
-        <Link href="/kontakt" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#242424] px-6 text-sm text-white">
+        <Link href="/kontakt" className="relative z-10 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#242424] px-6 text-sm text-white">
           Kontakta oss <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

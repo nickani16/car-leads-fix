@@ -534,7 +534,7 @@ export default async function DealerMarketPage({
         </section>
       ) : (
         <section className="py-16 sm:py-24">
-          <div className={`mx-auto grid max-w-[1320px] gap-4 px-5 sm:px-8 lg:px-12 ${isLegal ? 'lg:grid-cols-1' : 'md:grid-cols-2'}`}>
+          <div className={`mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12 ${isFaq ? 'columns-1 gap-4 md:columns-2' : `grid gap-4 ${isLegal ? 'lg:grid-cols-1' : 'md:grid-cols-2'}`}`}>
             {content.sections.map((section, index) => {
               const Icon = isLegal
                 ? [LockKeyhole, FileCheck2, ShieldCheck, Banknote][index % 4]
@@ -542,7 +542,7 @@ export default async function DealerMarketPage({
 
               if (isFaq) {
                 return (
-                  <details key={section.title} className="group rounded-[20px] border border-[#deddd7] bg-white p-6 open:shadow-[0_18px_50px_rgba(32,33,36,.06)] md:col-span-2">
+                  <details key={section.title} className="group mb-4 inline-block w-full break-inside-avoid rounded-[20px] border border-[#deddd7] bg-white p-6 align-top open:shadow-[0_18px_50px_rgba(32,33,36,.06)]">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-xl font-semibold tracking-[-0.03em]">
                       {section.title}
                       <CircleHelp className="h-5 w-5 shrink-0 text-[#66899a]" />
@@ -573,14 +573,22 @@ export default async function DealerMarketPage({
 
       {!isContact && !isLegal && (
         <section className="px-5 pb-16 sm:px-8 sm:pb-24 lg:px-12">
-          <div className="mx-auto max-w-[1120px] rounded-[26px] bg-[#B4D9EF] px-6 py-12 text-center sm:px-12 sm:py-16">
-            <BadgeCheck className="mx-auto h-7 w-7" />
-            <h2 className="mx-auto mt-5 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] sm:text-5xl">
+          <div className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[26px] bg-[#B4D9EF] px-6 py-12 text-center sm:px-12 sm:py-16">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-28 -top-32 h-80 w-80 rounded-full border-[54px] border-white/25"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-7 -top-8 h-44 w-44 rounded-full border-[26px] border-white/30"
+            />
+            <BadgeCheck className="relative z-10 mx-auto h-7 w-7" />
+            <h2 className="relative z-10 mx-auto mt-5 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] sm:text-5xl">
               {locale === 'de'
                 ? 'Bereit für Ihren Zugang zum schwedischen Fahrzeugmarkt?'
                 : 'Ready to access selected Swedish vehicle supply?'}
             </h2>
-            <Link href="/dealer-apply" className="mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] px-8 text-sm font-medium text-white">
+            <Link href="/dealer-apply" className="relative z-10 mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] px-8 text-sm font-medium text-white">
               {locale === 'de' ? 'Händlerzugang beantragen' : 'Apply for dealer access'}
               <ArrowRight className="h-4 w-4" />
             </Link>
