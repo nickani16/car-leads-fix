@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { canonicalVehicleValue } from '@/lib/vehicle-translation'
+import { createSellerAccessToken } from '@/lib/seller-access'
 
 function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
@@ -103,6 +104,11 @@ export async function POST(request: Request) {
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
+    const sellerAccess = createSellerAccessToken()
+    const { count: approvedDealerCount } = await supabase
+      .from('dealers')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'approved')
 
     const imageUrls: string[] = []
     const files = form
@@ -174,9 +180,20 @@ export async function POST(request: Request) {
       origin_country: originCountry,
       images: imageUrls,
       status: 'New',
+      seller_access_token_hash: sellerAccess.hash,
+      auction_starts_at: new Date().toISOString(),
+      auction_ends_at: new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ).toISOString(),
+      listing_plan: 'free_24h',
+      dealer_reach_snapshot: approvedDealerCount || 0,
     }
 
-    const { error: insertError } = await supabase.from('leads').insert(lead)
+    const { data: insertedLead, error: insertError } = await supabase
+      .from('leads')
+      .insert(lead)
+      .select('id')
+      .single()
 
     if (insertError) {
       console.error('Lead insert error:', insertError)
@@ -209,7 +226,11 @@ export async function POST(request: Request) {
       })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      leadId: insertedLead.id,
+      sellerPortalUrl: `/saljarportal/${sellerAccess.token}`,
+    })
   } catch (error) {
     console.error('Route error:', error)
     return NextResponse.json(

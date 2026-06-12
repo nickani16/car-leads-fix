@@ -41,6 +41,9 @@ type Lead = {
   color?: string
   miles: string
   created_at: string | null
+  auction_ends_at?: string | null
+  listing_plan?: 'free_24h' | 'extended_7d' | 'premium_30d'
+  listing_priority?: number
   source?: string
   pickup_city?: string
   pickup_postal_code?: string
@@ -124,19 +127,32 @@ function getCreatedAtTime(createdAt: string | null) {
   return Number.isFinite(time) ? time : 0
 }
 
-function getBiddingEndsAt(createdAt: string | null) {
-  return new Date(getCreatedAtTime(createdAt) + 24 * 60 * 60 * 1000)
+function getBiddingEndsAt(
+  createdAt: string | null,
+  auctionEndsAt?: string | null
+) {
+  return auctionEndsAt
+    ? new Date(auctionEndsAt)
+    : new Date(getCreatedAtTime(createdAt) + 24 * 60 * 60 * 1000)
 }
 
-function isBiddingClosed(createdAt: string | null, now: number) {
-  const createdAtTime = getCreatedAtTime(createdAt)
-  return createdAtTime === 0 || now >= createdAtTime + 24 * 60 * 60 * 1000
+function isBiddingClosed(
+  createdAt: string | null,
+  now: number,
+  auctionEndsAt?: string | null
+) {
+  const endsAt = getBiddingEndsAt(createdAt, auctionEndsAt).getTime()
+  return !Number.isFinite(endsAt) || endsAt === 0 || now >= endsAt
 }
 
-function getBiddingStatus(createdAt: string | null, now: number) {
+function getBiddingStatus(
+  createdAt: string | null,
+  now: number,
+  auctionEndsAt?: string | null
+) {
   if (!getCreatedAtTime(createdAt)) return 'Archived record'
 
-  const diffMs = getBiddingEndsAt(createdAt).getTime() - now
+  const diffMs = getBiddingEndsAt(createdAt, auctionEndsAt).getTime() - now
 
   if (diffMs <= 0) {
     return 'Bidding closed'
@@ -217,7 +233,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,auction_ends_at,listing_plan,listing_priority,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -267,10 +283,21 @@ export default function DealerPage() {
 
   const sortedLeads = useMemo(() => {
     return [...leads].sort((first, second) => {
-      const firstClosed = isBiddingClosed(first.created_at, now)
-      const secondClosed = isBiddingClosed(second.created_at, now)
+      const firstClosed = isBiddingClosed(
+        first.created_at,
+        now,
+        first.auction_ends_at
+      )
+      const secondClosed = isBiddingClosed(
+        second.created_at,
+        now,
+        second.auction_ends_at
+      )
 
       if (firstClosed !== secondClosed) return firstClosed ? 1 : -1
+      if (!firstClosed && first.listing_priority !== second.listing_priority) {
+        return (second.listing_priority || 0) - (first.listing_priority || 0)
+      }
 
       return (
         getCreatedAtTime(second.created_at) -
@@ -282,7 +309,11 @@ export default function DealerPage() {
   const filteredLeads = useMemo(() => {
     const query = search.trim().toLowerCase()
     return sortedLeads.filter((lead) => {
-      const closed = isBiddingClosed(lead.created_at, now)
+      const closed = isBiddingClosed(
+        lead.created_at,
+        now,
+        lead.auction_ends_at
+      )
       const matchesView = auctionView === 'closed' ? closed : !closed
       const matchesSearch =
         !query ||
@@ -395,7 +426,7 @@ export default function DealerPage() {
   }
 
   const activeAuctionCount = leads.filter(
-    (lead) => !isBiddingClosed(lead.created_at, now)
+    (lead) => !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const closedAuctionCount = leads.length - activeAuctionCount
 
@@ -403,10 +434,11 @@ export default function DealerPage() {
   const myLeadIds = new Set(myBids.map((item) => item.lead_id))
   const myActivePositions = leads.filter(
     (lead) =>
-      myLeadIds.has(lead.id) && !isBiddingClosed(lead.created_at, now)
+      myLeadIds.has(lead.id) &&
+      !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const myLeadingAuctions = leads.filter((lead) => {
-    if (isBiddingClosed(lead.created_at, now)) return false
+    if (isBiddingClosed(lead.created_at, now, lead.auction_ends_at)) return false
     const leadBids = bidsByLead[lead.id] || []
     if (!leadBids.length) return false
     const highest = Math.max(...leadBids.map((item) => Number(item.amount)))
@@ -416,7 +448,7 @@ export default function DealerPage() {
     )
   }).length
   const myWonAuctions = leads.filter((lead) => {
-    if (!isBiddingClosed(lead.created_at, now)) return false
+    if (!isBiddingClosed(lead.created_at, now, lead.auction_ends_at)) return false
     const leadBids = bidsByLead[lead.id] || []
     if (!leadBids.length) return false
     const highest = Math.max(...leadBids.map((item) => Number(item.amount)))
@@ -437,6 +469,11 @@ export default function DealerPage() {
     setBid('')
     setBidTermsAccepted(false)
     setSelectedBids(sortNewestFirst(bidsByLead[lead.id] || []))
+    void fetch('/api/dealer/vehicle-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: lead.id }),
+    })
   }
 
   async function submitBid() {
@@ -453,7 +490,13 @@ export default function DealerPage() {
       return
     }
 
-    if (isBiddingClosed(selectedLead.created_at, now)) {
+    if (
+      isBiddingClosed(
+        selectedLead.created_at,
+        now,
+        selectedLead.auction_ends_at
+      )
+    ) {
       setErrorMessage('Bidding for this vehicle has closed.')
       return
     }
@@ -842,7 +885,11 @@ export default function DealerPage() {
                 {filteredLeads.map((lead) => {
                   const leadBids = bidsByLead[lead.id] || []
                   const highestBid = getHighestBid(lead.id)
-                  const closed = isBiddingClosed(lead.created_at, now)
+                  const closed = isBiddingClosed(
+                    lead.created_at,
+                    now,
+                    lead.auction_ends_at
+                  )
 
                   return (
                     <article
@@ -931,7 +978,11 @@ export default function DealerPage() {
                           {closed ? 'Closed' : 'Live'}
                         </span>
                         <p className="mt-2 text-xs font-medium text-slate-500">
-                          {getBiddingStatus(lead.created_at, now)}
+                          {getBiddingStatus(
+                            lead.created_at,
+                            now,
+                            lead.auction_ends_at
+                          )}
                         </p>
                       </div>
 
@@ -966,12 +1017,20 @@ export default function DealerPage() {
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                      isBiddingClosed(selectedLead.created_at, now)
+                      isBiddingClosed(
+                        selectedLead.created_at,
+                        now,
+                        selectedLead.auction_ends_at
+                      )
                         ? 'bg-slate-100 text-slate-500'
                         : 'bg-emerald-50 text-emerald-700'
                     }`}
                   >
-                    {getBiddingStatus(selectedLead.created_at, now)}
+                    {getBiddingStatus(
+                      selectedLead.created_at,
+                      now,
+                      selectedLead.auction_ends_at
+                    )}
                   </span>
                 </div>
                 <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -1226,7 +1285,11 @@ export default function DealerPage() {
                   </p>
                 </div>
 
-                {!isBiddingClosed(selectedLead.created_at, now) && (
+                {!isBiddingClosed(
+                  selectedLead.created_at,
+                  now,
+                  selectedLead.auction_ends_at
+                ) && (
                   <div className="mb-7">
                     <label className="mb-2 block text-sm font-bold text-slate-700">
                       Your bid

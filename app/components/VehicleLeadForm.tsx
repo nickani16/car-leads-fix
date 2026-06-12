@@ -385,6 +385,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [sellerPortalUrl, setSellerPortalUrl] = useState('')
 
   const source = form.pickupCountry
   const distanceUnit = locale === 'sv' ? 'mil' : 'km'
@@ -484,6 +485,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
       const response = await fetch('/api/submit', { method: 'POST', body: payload })
       const data = await response.json()
       if (!response.ok) return setError(data.error || t.errors.server)
+      setSellerPortalUrl(data.sellerPortalUrl || '')
       setSubmitted(true)
     } catch {
       setError(t.errors.server)
@@ -502,6 +504,15 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
           <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-[#60666b]">{t.successLabel}</p>
           <h1 className="mt-3 text-3xl font-semibold text-[#202124]">{t.successTitle}</h1>
           <p className="mt-4 text-[#68727a]">{t.successText}</p>
+          {sellerPortalUrl ? (
+            <a
+              href={sellerPortalUrl}
+              className="mt-7 inline-flex h-13 items-center gap-2 rounded-full bg-[#B4D9EF] px-7 font-medium text-[#202124]"
+            >
+              Följ budgivningen
+              <ArrowRight size={16} />
+            </a>
+          ) : null}
           <a href="https://autorell.com/" className="mt-8 inline-flex h-13 items-center gap-2 rounded-full bg-[#242424] px-7 font-normal text-white">
             {t.home}<ArrowRight size={16} />
           </a>
