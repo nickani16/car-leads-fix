@@ -122,6 +122,63 @@ label {
   animation: market-console-float 9s ease-in-out infinite;
 }
 
+@keyframes home-market-row {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -4px, 0); }
+}
+
+@keyframes home-demand-bar {
+  0%, 100% {
+    opacity: 0.68;
+    transform: scaleX(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes home-hero-orb {
+  0%, 100% {
+    opacity: 0.65;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(24px, 12px, 0) scale(1.05);
+  }
+}
+
+@keyframes home-signal-card {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -3px, 0); }
+}
+
+.home-market-float {
+  animation: market-console-float 8s ease-in-out infinite;
+}
+
+.home-market-row {
+  animation: home-market-row 5.5s ease-in-out infinite;
+}
+
+.home-demand-bar {
+  animation: home-demand-bar 4.8s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.home-live-dot {
+  animation: buyer-live-pulse 2.4s ease-in-out infinite;
+}
+
+.home-hero-orb {
+  animation: home-hero-orb 11s ease-in-out infinite;
+}
+
+.home-signal-card {
+  animation: home-signal-card 7s ease-in-out infinite;
+}
+
 @keyframes buyer-quality-scroll {
   from {
     transform: translate3d(0, 0, 0);
@@ -246,6 +303,12 @@ label {
 
 @media (prefers-reduced-motion: reduce) {
   .market-console-float,
+  .home-market-float,
+  .home-market-row,
+  .home-demand-bar,
+  .home-live-dot,
+  .home-hero-orb,
+  .home-signal-card,
   .buyer-quality-track,
   .buyer-live-dot,
   .buyer-console-row,

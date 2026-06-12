@@ -118,11 +118,55 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,#fcfaf5_0%,rgba(252,250,245,.98)_33%,rgba(252,250,245,.82)_49%,rgba(252,250,245,.14)_75%,transparent_100%)] max-md:bg-[linear-gradient(180deg,#fcfaf5_0%,rgba(252,250,245,.96)_45%,rgba(252,250,245,.45)_68%,rgba(247,242,232,.06)_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(247,242,232,.42)_0%,transparent_35%)] max-md:bg-[linear-gradient(0deg,rgba(32,33,36,.18)_0%,transparent_35%)]" />
-        <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
+        <div className="home-hero-orb absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
+
+        <div className="home-market-float absolute right-[6%] top-[31%] hidden w-[310px] rounded-[24px] border border-white/65 bg-white/72 p-5 shadow-[0_28px_80px_rgba(32,33,36,.13)] backdrop-blur-xl xl:block">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
+                Autorell market pulse
+              </p>
+              <p className="mt-1.5 text-lg font-medium tracking-[-0.03em]">
+                Europeisk efterfrågan
+              </p>
+            </div>
+            <span className="flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-[10px] font-medium text-[#3c7252]">
+              <span className="home-live-dot h-2 w-2 rounded-full bg-[#76bb91]" />
+              Aktiv
+            </span>
+          </div>
+          <div className="mt-6 space-y-3">
+            {[
+              ['El & hybrid', '82%'],
+              ['SUV & crossover', '71%'],
+              ['Nyare premium', '64%'],
+            ].map(([label, value], index) => (
+              <div
+                key={label}
+                className="home-market-row rounded-[14px] border border-[#e2e8e8] bg-white/70 p-3.5"
+                style={{ animationDelay: `${index * 0.7}s` }}
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#53666f]">{label}</span>
+                  <strong className="font-medium text-[#202124]">{value}</strong>
+                </div>
+                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
+                  <span
+                    className="home-demand-bar block h-full rounded-full bg-[#8ec5df]"
+                    style={{ width: value }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-[10px] leading-4 text-[#7a878c]">
+            Illustrativ marknadssignal för aktuella fordonskategorier.
+          </p>
+        </div>
 
         <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
           <div className="w-full min-w-0 max-w-[720px] md:translate-y-8">
-            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d3d9d9] bg-white/82 px-3.5 py-2 text-[11px] font-medium text-[#405764] shadow-[0_10px_28px_rgba(32,33,36,.07)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d3d9d9] bg-white/82 px-3.5 py-2 text-[11px] font-medium text-[#405764] shadow-[0_10px_28px_rgba(32,33,36,.07)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs md:mb-10 md:translate-y-4">
               <Sparkles className="h-4 w-4 shrink-0 text-[#4f8298]" />
               <span>Sälj tryggt. Nå fler professionella köpare.</span>
             </div>
@@ -158,7 +202,7 @@ export default async function HomePage() {
               ].map(({ label, mobileLabel }) => (
                   <span
                     key={label}
-                    className="inline-flex min-h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-white/15 bg-[#202124]/80 px-1.5 text-[9px] text-white shadow-[0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-md min-[390px]:gap-1.5 min-[390px]:px-2 min-[390px]:text-[10px] sm:min-h-9 sm:justify-start sm:gap-2 sm:border-[#d9e1e4] sm:bg-white/88 sm:px-4 sm:text-sm sm:text-[#334c5d] sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
+                    className="inline-flex min-h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-[#d9e1e4] bg-white/88 px-1.5 text-[9px] text-[#334c5d] shadow-[0_10px_28px_rgba(32,33,36,.12)] backdrop-blur-md min-[390px]:gap-1.5 min-[390px]:px-2 min-[390px]:text-[10px] sm:min-h-9 sm:justify-start sm:gap-2 sm:px-4 sm:text-sm sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
                   >
                     <CircleCheck className="h-3 w-3 shrink-0 text-[#b4d9ef] min-[390px]:h-3.5 min-[390px]:w-3.5 sm:h-4 sm:w-4 sm:text-[#4f8ca8]" />
                     <span className={mobileLabel ? 'sm:hidden' : undefined}>
@@ -207,7 +251,8 @@ export default async function HomePage() {
           ].map(({ value, label, note, icon: Icon }, index) => (
             <div
               key={label}
-              className="group relative min-h-[190px] border-b border-[#dce7eb] px-3 py-7 odd:border-r odd:border-[#dce7eb] sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:border-[#dce7eb] lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
+              className="home-signal-card group relative min-h-[190px] border-b border-[#dce7eb] px-3 py-7 odd:border-r odd:border-[#dce7eb] sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:border-[#dce7eb] lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
+              style={{ animationDelay: `${index * 0.45}s` }}
             >
               <div className="flex items-center justify-between">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-[#cfe0e7] bg-white text-[#4f8298] shadow-[0_8px_22px_rgba(51,83,96,.07)] transition group-hover:-translate-y-0.5 group-hover:bg-[#b4d9ef] group-hover:text-[#202427] sm:h-11 sm:w-11">

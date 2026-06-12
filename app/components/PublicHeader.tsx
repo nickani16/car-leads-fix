@@ -601,7 +601,13 @@ export default function PublicHeader({
               <BrandLogo />
             </a>
 
-            <nav className="absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap rounded-full border border-white/70 bg-white/72 p-1.5 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl xl:flex">
+            <nav
+              className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1.5 transition-[background-color,border-color,box-shadow,border-radius] duration-300 xl:flex ${
+                transparent
+                  ? 'rounded-full border border-white/70 bg-white/72 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl'
+                  : 'border border-transparent bg-transparent shadow-none'
+              }`}
+            >
               <DesktopMenu
                 number="01"
                 label={content.links[0][1]}

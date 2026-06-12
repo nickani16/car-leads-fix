@@ -205,8 +205,15 @@ export async function POST(request: Request) {
 
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY)
+      const fromEmail =
+        process.env.NOTIFICATION_FROM_EMAIL ||
+        'Autorell <noreply@autorell.com>'
+      const sellerPortalUrl = new URL(
+        `/saljarportal/${sellerAccess.token}`,
+        request.url
+      ).toString()
       await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: fromEmail,
         to: 'nikolai.parkkila@outlook.com',
         subject: `Ny fordonslead: ${make} ${lead.model}`,
         html: `
@@ -222,8 +229,59 @@ export async function POST(request: Request) {
           <p><strong>Telefon:</strong> ${phone}</p>
           <p><strong>E-post:</strong> ${email}</p>
           <p><strong>Bilder:</strong> ${imageUrls.length}</p>
+          <p><a href="${sellerPortalUrl}">Öppna säljarens privata uppföljning</a></p>
         `,
       })
+
+      const { error: sellerEmailError } = await resend.emails.send({
+        from: fromEmail,
+        to: email,
+        subject: `Följ budgivningen för din ${make} ${lead.model}`,
+        text: [
+          'Tack för att du registrerade din bil hos Autorell.',
+          '',
+          `Bil: ${make} ${lead.model} ${lead.variant || ''}`.trim(),
+          `Registreringsnummer: ${lead.reg}`,
+          '',
+          'Via din privata länk kan du följa återstående tid, handlarvisningar, mottagna bud och högsta bud.',
+          sellerPortalUrl,
+          '',
+          'Länken är personlig. Dela den inte med någon annan.',
+          '',
+          'Autorell',
+        ].join('\n'),
+        html: `
+          <!doctype html>
+          <html lang="sv">
+            <body style="margin:0;background:#f3f2ee;color:#202124;font-family:Arial,sans-serif;">
+              <div style="max-width:620px;margin:0 auto;padding:40px 20px;">
+                <div style="background:#ffffff;border:1px solid #deddd7;border-radius:24px;padding:36px;">
+                  <p style="margin:0 0 22px;font-size:24px;font-weight:700;letter-spacing:-.5px;">Autorell</p>
+                  <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#52768a;">Din privata säljarvy</p>
+                  <h1 style="margin:0;font-size:30px;line-height:1.15;">Följ din bil på marknaden.</h1>
+                  <p style="margin:18px 0 0;color:#66737a;line-height:1.7;">
+                    Din ${make} ${lead.model} är registrerad. I din privata vy ser du återstående tid, verifierad handlarräckvidd, visningar, bud och högsta bud.
+                  </p>
+                  <div style="margin:26px 0;padding:18px;border-radius:16px;background:#eef6fa;">
+                    <strong>${make} ${lead.model} ${lead.variant || ''}</strong><br />
+                    <span style="color:#68777f;font-size:14px;">${lead.model_year} · ${lead.reg}</span>
+                  </div>
+                  <a href="${sellerPortalUrl}" style="display:inline-block;border-radius:999px;background:#202124;color:#ffffff;text-decoration:none;padding:15px 24px;font-weight:600;">
+                    Följ budgivningen
+                  </a>
+                  <p style="margin:24px 0 0;color:#8a9296;font-size:12px;line-height:1.6;">
+                    Länken är personlig och ger åtkomst till information om din bil. Dela den inte med någon annan.
+                  </p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+      })
+
+      if (sellerEmailError) {
+        console.error('Seller portal email error:', sellerEmailError)
+      }
     }
 
     return NextResponse.json({
