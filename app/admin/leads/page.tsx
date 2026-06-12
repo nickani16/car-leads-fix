@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Mail, Phone } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin-auth'
+import { formatStockholmTimestamp } from '@/lib/date-time'
 import {
   AdminEmpty,
   AdminFilters,
@@ -30,7 +31,7 @@ export default async function AdminLeadsPage({
     .select(
       'id,reg,make,model,model_year,miles,phone,email,status,source,origin_country,pickup_city,pickup_postal_code,created_at'
     )
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false, nullsFirst: false })
     .limit(1000)
 
   if (safeQuery) {
@@ -71,7 +72,7 @@ export default async function AdminLeadsPage({
     adminClient
       .from('leads')
       .select('status,source,origin_country')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false, nullsFirst: false })
       .limit(5000),
   ])
 
@@ -195,9 +196,7 @@ export default async function AdminLeadsPage({
                       <Badge label={lead.status || 'New'} />
                     </td>
                     <td className="px-5 py-4 text-xs text-[#62686c]">
-                      {lead.created_at
-                        ? new Date(lead.created_at).toLocaleString('sv-SE')
-                        : 'Unknown'}
+                      {formatStockholmTimestamp(lead.created_at)}
                     </td>
                     <td className="px-5 py-4 text-right">
                       <Link

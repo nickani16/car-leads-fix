@@ -14,6 +14,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  formatStockholmTimestamp,
+  parseDatabaseTimestamp,
+} from '@/lib/date-time'
 
 type Lead = {
   id: string
@@ -60,33 +64,17 @@ const money = new Intl.NumberFormat('en-IE', {
   maximumFractionDigits: 0,
 })
 
-const date = new Intl.DateTimeFormat('sv-SE', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
-
 function isClosed(createdAt: string | null) {
   const timestamp = parseTimestamp(createdAt)
   return timestamp === null || Date.now() >= timestamp + 24 * 60 * 60 * 1000
 }
 
 function parseTimestamp(value: string | null) {
-  if (!value) return null
-
-  const trimmedValue = value.trim()
-  const normalizedValue = /[+-]\d{2}$/.test(trimmedValue)
-    ? `${trimmedValue}:00`
-    : /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue)
-      ? trimmedValue
-      : `${trimmedValue}Z`
-  const timestamp = new Date(normalizedValue).getTime()
-
-  return Number.isFinite(timestamp) ? timestamp : null
+  return parseDatabaseTimestamp(value)?.getTime() ?? null
 }
 
 function formatTimestamp(value: string | null) {
-  const timestamp = parseTimestamp(value)
-  return timestamp === null ? 'Unknown date' : date.format(new Date(timestamp))
+  return formatStockholmTimestamp(value)
 }
 
 export default async function AdminPage() {
@@ -101,7 +89,7 @@ export default async function AdminPage() {
     supabase
       .from('leads')
       .select('id,reg,make,model,miles,phone,email,status,source,created_at')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false, nullsFirst: false })
       .limit(40),
     supabase.from('bids').select('id,lead_id,amount'),
     supabase

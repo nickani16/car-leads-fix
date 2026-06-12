@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { requireAdmin } from '@/lib/admin-auth'
+import { formatStockholmTimestamp } from '@/lib/date-time'
 import {
   AdminPageHeader,
   Badge,
@@ -81,7 +82,10 @@ export default async function AdminLeadDetailPage({
                 { label: 'Email', value: lead.email },
                 { label: 'Phone', value: lead.phone },
                 { label: 'Sell timing', value: lead.sellTime },
-                { label: 'Submitted', value: lead.created_at },
+                {
+                  label: 'Submitted',
+                  value: formatStockholmTimestamp(lead.created_at),
+                },
               ]}
             />
           </DetailCard>
@@ -214,7 +218,10 @@ export default async function AdminLeadDetailPage({
                       €{Number(bid.amount).toLocaleString()}
                     </p>
                     <p className="mt-1 text-xs text-[#73797c]">
-                      {bid.created_at}
+                      {formatStockholmTimestamp(
+                        bid.created_at,
+                        'Bid time unavailable'
+                      )}
                     </p>
                   </div>
                   {bid.is_winner && <Badge label="Winner" tone="green" />}
