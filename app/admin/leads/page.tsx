@@ -88,6 +88,9 @@ export default async function AdminLeadsPage({
   const statuses = Array.from(
     new Set(leads.map((lead) => lead.status || 'New'))
   ).sort()
+  const pendingReviewCount = leads.filter(
+    (lead) => lead.status === 'Pending review'
+  ).length
 
   return (
     <main className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
@@ -96,6 +99,24 @@ export default async function AdminLeadsPage({
         title="All leads"
         description="Search every customer and vehicle across all Autorell markets. Contact details are restricted to authorised admins."
       />
+
+      <div className="mb-6 flex flex-col justify-between gap-4 rounded-[20px] border border-[#9bc9e4] bg-[#eef7fb] p-5 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-sm font-semibold text-[#202124]">
+            {pendingReviewCount} waiting for publication review
+          </p>
+          <p className="mt-1 text-sm text-[#617681]">
+            Open a vehicle to approve or reject it before dealers can see it.
+          </p>
+        </div>
+        <Link
+          href="/admin/leads?status=Pending%20review"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#202124] px-5 text-sm text-white"
+        >
+          Show review queue
+          <ArrowRight size={15} />
+        </Link>
+      </div>
 
       <AdminFilters
         search={params.q}
@@ -142,7 +163,14 @@ export default async function AdminLeadsPage({
               </thead>
               <tbody className="divide-y divide-[#efede7]">
                 {filtered.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-[#fcfbf8]">
+                  <tr
+                    key={lead.id}
+                    className={
+                      lead.status === 'Pending review'
+                        ? 'bg-[#f0f8fc] hover:bg-[#e8f5fb]'
+                        : 'hover:bg-[#fcfbf8]'
+                    }
+                  >
                     <td className="px-5 py-4">
                       <p className="font-medium text-[#242424]">
                         {lead.make || 'Unknown make'} {lead.model || ''}
@@ -176,7 +204,7 @@ export default async function AdminLeadsPage({
                         href={`/admin/leads/${lead.id}`}
                         className="inline-flex items-center gap-2 rounded-full bg-[#242424] px-4 py-2 text-xs text-white"
                       >
-                        Open
+                        {lead.status === 'Pending review' ? 'Review' : 'Open'}
                         <ArrowRight size={14} />
                       </Link>
                     </td>

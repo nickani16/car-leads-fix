@@ -12,6 +12,7 @@ import {
   Store,
   UserCheck,
 } from 'lucide-react'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type Lead = {
@@ -123,8 +124,16 @@ export default async function AdminPage() {
   const dealers = (dealersResult.data || []) as Dealer[]
   const dealLeadIds = new Set(deals.map((deal) => deal.lead_id))
 
-  const activeLeads = leads.filter((lead) => !isClosed(lead.created_at))
-  const closedLeads = leads.filter((lead) => isClosed(lead.created_at))
+  const pendingReviewLeads = leads.filter(
+    (lead) => lead.status === 'Pending review'
+  )
+  const activeLeads = leads.filter((lead) => lead.status === 'Active')
+  const closedLeads = leads.filter(
+    (lead) =>
+      lead.status !== 'Pending review' &&
+      lead.status !== 'Active' &&
+      isClosed(lead.created_at)
+  )
   const closedWithoutDeal = closedLeads.filter((lead) => !dealLeadIds.has(lead.id))
   const pendingDealers = dealers.filter((dealer) => dealer.status === 'pending')
   const bidCountByLead = bids.reduce<Record<string, number>>((result, bid) => {
@@ -157,8 +166,32 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <Metric icon={<FileText />} label="New leads" value={leads.length} />
+      {pendingReviewLeads.length ? (
+        <section className="mb-7 flex flex-col justify-between gap-5 rounded-[24px] border border-[#8fc4e2] bg-[#eaf5fb] p-6 shadow-[0_18px_55px_rgba(57,127,168,.12)] sm:flex-row sm:items-center sm:p-8">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#397b9f]">
+              Publication review
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+              {pendingReviewLeads.length} {pendingReviewLeads.length === 1 ? 'bil väntar' : 'bilar väntar'} på granskning
+            </h2>
+            <p className="mt-2 text-sm text-[#617681]">
+              Kontrollera uppgifter och bilder innan bilen publiceras för handlare.
+            </p>
+          </div>
+          <Link
+            href="/admin/leads?status=Pending%20review"
+            className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#202124] px-6 text-sm font-medium text-white"
+          >
+            Öppna review queue
+            <ArrowRight size={16} />
+          </Link>
+        </section>
+      ) : null}
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+        <Metric icon={<AlertTriangle />} label="Pending review" value={pendingReviewLeads.length} />
+        <Metric icon={<FileText />} label="All leads" value={leads.length} />
         <Metric icon={<Clock3 />} label="Active auctions" value={activeLeads.length} />
         <Metric icon={<CalendarClock />} label="Closed, no deal" value={closedWithoutDeal.length} />
         <Metric icon={<Store />} label="Pending dealers" value={pendingDealers.length} />
@@ -233,6 +266,23 @@ export default async function AdminPage() {
           description="Items Autorell should review next."
         >
           <div className="space-y-3">
+            {pendingReviewLeads.slice(0, 8).map((lead) => (
+              <Link
+                key={lead.id}
+                href={`/admin/leads/${lead.id}`}
+                className="flex items-center justify-between gap-4 rounded-[16px] border border-[#9bc9e4] bg-[#eef7fb] p-4 transition hover:bg-[#e4f3fb]"
+              >
+                <div>
+                  <p className="font-medium text-[#202124]">
+                    {lead.reg || 'No reg'} · {lead.make || 'Vehicle'} {lead.model || ''}
+                  </p>
+                  <p className="mt-1 text-xs text-[#617681]">
+                    Väntar på godkännande före publicering
+                  </p>
+                </div>
+                <ArrowRight size={17} className="shrink-0" />
+              </Link>
+            ))}
             {closedWithoutDeal.slice(0, 8).map((lead) => (
               <QueueItem
                 key={lead.id}
@@ -249,7 +299,9 @@ export default async function AdminPage() {
                 text={`${dealer.contact_person || 'No contact'} · ${dealer.country || 'No country'}`}
               />
             ))}
-            {!closedWithoutDeal.length && !pendingDealers.length && (
+            {!pendingReviewLeads.length &&
+              !closedWithoutDeal.length &&
+              !pendingDealers.length && (
               <div className="rounded-[16px] border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-800">
                 <CheckCircle2 size={18} className="mb-2" />
                 No urgent admin actions right now.

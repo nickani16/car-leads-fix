@@ -7,6 +7,7 @@ import {
   FileCheck2,
   FileText,
   Gavel,
+  ListChecks,
   LayoutDashboard,
   ShieldCheck,
   Store,
@@ -16,6 +17,11 @@ import LogoutButton from '../dealer/LogoutButton'
 
 const navigation = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  {
+    label: 'Review queue',
+    href: '/admin/leads?status=Pending%20review',
+    icon: ListChecks,
+  },
   { label: 'Leads', href: '/admin/leads', icon: FileText },
   { label: 'Auctions', href: '/admin/auctions', icon: Gavel },
   { label: 'Dealers', href: '/admin/dealers', icon: Store },
@@ -49,7 +55,9 @@ export default function AdminShell({
                 const active =
                   item.href === '/admin'
                     ? pathname === '/admin'
-                    : pathname.startsWith(item.href)
+                    : item.href.startsWith('/admin/leads?')
+                      ? false
+                      : pathname.startsWith(item.href)
                 return (
                   <Link
                     key={item.href}
@@ -87,7 +95,9 @@ export default function AdminShell({
             const active =
               item.href === '/admin'
                 ? pathname === '/admin'
-                : pathname.startsWith(item.href)
+                : item.href.startsWith('/admin/leads?')
+                  ? false
+                  : pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
