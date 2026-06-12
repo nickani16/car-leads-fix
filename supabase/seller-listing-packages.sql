@@ -42,8 +42,8 @@ create table if not exists public.seller_listing_orders (
   lead_id uuid not null references public.leads(id) on delete cascade,
   package text not null
     check (package in ('extended_7d', 'premium_30d')),
-  amount_cents integer not null check (amount_cents in (1000, 2900)),
-  currency text not null default 'EUR' check (currency = 'EUR'),
+  amount_cents integer not null check (amount_cents in (10000, 29000)),
+  currency text not null default 'SEK' check (currency = 'SEK'),
   status text not null default 'pending'
     check (status in ('pending', 'paid', 'failed', 'expired', 'refunded')),
   stripe_checkout_session_id text unique,

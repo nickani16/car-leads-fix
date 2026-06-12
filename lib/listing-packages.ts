@@ -5,7 +5,7 @@ export const listingPackages = {
   extended_7d: {
     name: '7 dagars budgivning',
     description: 'Fortsatt synlighet för verifierade bilhandlare i 7 dagar.',
-    amountCents: 1000,
+    amountCents: 10000,
     durationDays: 7,
     priority: 0,
   },
@@ -13,7 +13,7 @@ export const listingPackages = {
     name: 'Premium 30 dagar',
     description:
       'Prioriterad placering och utökad synlighet för verifierade bilhandlare i 30 dagar.',
-    amountCents: 2900,
+    amountCents: 29000,
     durationDays: 30,
     priority: 100,
   },

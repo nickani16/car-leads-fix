@@ -236,41 +236,72 @@ export async function POST(request: Request) {
       const { error: sellerEmailError } = await resend.emails.send({
         from: fromEmail,
         to: email,
-        subject: `Följ budgivningen för din ${make} ${lead.model}`,
+        subject: `Your Autorell vehicle link: ${make} ${lead.model}`,
         text: [
-          'Tack för att du registrerade din bil hos Autorell.',
+          'Thank you for registering your vehicle with Autorell.',
           '',
-          `Bil: ${make} ${lead.model} ${lead.variant || ''}`.trim(),
-          `Registreringsnummer: ${lead.reg}`,
+          `Vehicle: ${make} ${lead.model} ${lead.variant || ''}`.trim(),
+          `Registration number: ${lead.reg}`,
           '',
-          'Via din privata länk kan du följa återstående tid, handlarvisningar, mottagna bud och högsta bud.',
+          'Your first 24 hours of bidding are included at no cost.',
+          'Use your private link to follow time remaining, verified dealer reach, vehicle views, bids and the highest bid.',
           sellerPortalUrl,
           '',
-          'Länken är personlig. Dela den inte med någon annan.',
+          'Optional extensions after the free bidding period:',
+          '7 days: SEK 100',
+          'Premium 30 days with priority placement: SEK 290',
+          `${sellerPortalUrl}#packages`,
           '',
-          'Autorell',
+          'This link is personal. Do not share it with anyone else.',
+          '',
+          'This is an automated email from Autorell and cannot be replied to.',
         ].join('\n'),
         html: `
           <!doctype html>
-          <html lang="sv">
+          <html lang="en">
             <body style="margin:0;background:#f3f2ee;color:#202124;font-family:Arial,sans-serif;">
               <div style="max-width:620px;margin:0 auto;padding:40px 20px;">
                 <div style="background:#ffffff;border:1px solid #deddd7;border-radius:24px;padding:36px;">
                   <p style="margin:0 0 22px;font-size:24px;font-weight:700;letter-spacing:-.5px;">Autorell</p>
-                  <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#52768a;">Din privata säljarvy</p>
-                  <h1 style="margin:0;font-size:30px;line-height:1.15;">Följ din bil på marknaden.</h1>
+                  <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#52768a;">Your private seller link</p>
+                  <h1 style="margin:0;font-size:30px;line-height:1.15;">Follow your vehicle on the market.</h1>
                   <p style="margin:18px 0 0;color:#66737a;line-height:1.7;">
-                    Din ${make} ${lead.model} är registrerad. I din privata vy ser du återstående tid, verifierad handlarräckvidd, visningar, bud och högsta bud.
+                    Your ${make} ${lead.model} has been registered. The first 24 hours of bidding are included at no cost. Your private view shows time remaining, verified dealer reach, views, bids and the highest bid.
                   </p>
                   <div style="margin:26px 0;padding:18px;border-radius:16px;background:#eef6fa;">
                     <strong>${make} ${lead.model} ${lead.variant || ''}</strong><br />
                     <span style="color:#68777f;font-size:14px;">${lead.model_year} · ${lead.reg}</span>
                   </div>
                   <a href="${sellerPortalUrl}" style="display:inline-block;border-radius:999px;background:#202124;color:#ffffff;text-decoration:none;padding:15px 24px;font-weight:600;">
-                    Följ budgivningen
+                    Open my private vehicle page
                   </a>
+                  <div style="margin-top:30px;border-top:1px solid #e4e3de;padding-top:26px;">
+                    <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#52768a;">Need more time?</p>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="width:50%;padding-right:6px;vertical-align:top;">
+                          <div style="border:1px solid #deddd7;border-radius:16px;padding:18px;">
+                            <strong style="font-size:18px;">7 days</strong>
+                            <p style="margin:7px 0 14px;color:#66737a;font-size:13px;line-height:1.5;">Continue standard dealer exposure after the free period.</p>
+                            <strong>SEK 100</strong>
+                          </div>
+                        </td>
+                        <td style="width:50%;padding-left:6px;vertical-align:top;">
+                          <div style="border:1px solid #9bc9e4;border-radius:16px;background:#eef7fb;padding:18px;">
+                            <strong style="font-size:18px;">Premium 30 days</strong>
+                            <p style="margin:7px 0 14px;color:#526d7c;font-size:13px;line-height:1.5;">Longer exposure with priority placement.</p>
+                            <strong>SEK 290</strong>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                    <a href="${sellerPortalUrl}#packages" style="display:inline-block;margin-top:18px;color:#202124;font-weight:600;">View extension options →</a>
+                  </div>
                   <p style="margin:24px 0 0;color:#8a9296;font-size:12px;line-height:1.6;">
-                    Länken är personlig och ger åtkomst till information om din bil. Dela den inte med någon annan.
+                    This link is personal and provides access to information about your vehicle. Do not share it with anyone else.
+                  </p>
+                  <p style="margin:18px 0 0;border-top:1px solid #eceae5;padding-top:18px;color:#9aa0a4;font-size:11px;line-height:1.6;">
+                    This is an automated email from Autorell and cannot be replied to.
                   </p>
                 </div>
               </div>

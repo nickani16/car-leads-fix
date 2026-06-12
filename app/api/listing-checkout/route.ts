@@ -87,11 +87,11 @@ export async function POST(request: Request) {
     const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
       customer_email: lead.email || undefined,
-      payment_method_types: ['card', 'sepa_debit'],
+      payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
-            currency: 'eur',
+            currency: 'sek',
             unit_amount: selectedPackage.amountCents,
             product_data: {
               name: selectedPackage.name,

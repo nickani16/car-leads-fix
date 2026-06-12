@@ -102,9 +102,14 @@ export default async function SellerPortalPage({
   const highestBid = bidAmounts.length ? Math.max(...bidAmounts) : null
   const isActive = !lead.auction_closed_at
   const canUpgrade = !isActive && !activeDeal
-  const money = new Intl.NumberFormat('sv-SE', {
+  const bidMoney = new Intl.NumberFormat('sv-SE', {
     style: 'currency',
     currency: 'EUR',
+    maximumFractionDigits: 0,
+  })
+  const packageMoney = new Intl.NumberFormat('sv-SE', {
+    style: 'currency',
+    currency: 'SEK',
     maximumFractionDigits: 0,
   })
 
@@ -207,7 +212,7 @@ export default async function SellerPortalPage({
             },
             {
               label: 'Högsta bud',
-              value: highestBid ? money.format(highestBid) : 'Inget ännu',
+              value: highestBid ? bidMoney.format(highestBid) : 'Inget ännu',
               detail: 'uppdateras löpande',
               icon: BarChart3,
             },
@@ -228,7 +233,7 @@ export default async function SellerPortalPage({
           ))}
         </section>
 
-        <section className="mt-12">
+        <section id="packages" className="mt-12 scroll-mt-24">
           <div className="max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#697278]">
               Mer tid på marknaden
@@ -250,7 +255,7 @@ export default async function SellerPortalPage({
               </p>
               <div className="mt-2 flex items-end justify-between gap-4">
                 <h3 className="text-2xl font-semibold">Fortsatt budgivning</h3>
-                <p className="text-3xl font-semibold">€10</p>
+                <p className="text-3xl font-semibold">100 kr</p>
               </div>
               <p className="mt-4 text-sm leading-6 text-[#697278]">
                 Bilen återöppnas för verifierade handlare i sju dagar. Alla
@@ -273,7 +278,7 @@ export default async function SellerPortalPage({
                 <h3 className="text-2xl font-semibold">
                   Prioriterad placering
                 </h3>
-                <p className="text-3xl font-semibold">€29</p>
+                <p className="text-3xl font-semibold">290 kr</p>
               </div>
               <p className="relative mt-4 text-sm leading-6 text-[#526d7c]">
                 Längre exponering och högre placering i handlarflödet, med
@@ -324,7 +329,7 @@ export default async function SellerPortalPage({
                   </div>
                   <div className="text-left sm:text-right">
                     <p className="font-medium">
-                      {money.format(order.amount_cents / 100)}
+                      {packageMoney.format(order.amount_cents / 100)}
                     </p>
                     <p className="mt-1 text-sm capitalize text-[#788087]">
                       {order.status === 'paid'
