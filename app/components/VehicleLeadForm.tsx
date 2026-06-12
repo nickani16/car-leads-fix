@@ -1,13 +1,16 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCircle2,
+  Clock3,
   LockKeyhole,
+  Radio,
+  ShieldCheck,
   Upload,
   X,
 } from 'lucide-react'
@@ -314,6 +317,8 @@ const emptyForm = {
 }
 
 type FormState = typeof emptyForm
+type FieldKey = keyof FormState | 'images'
+type FieldErrors = Partial<Record<FieldKey, string>>
 
 const SWEDISH_MILEAGE_LIMIT = 10_000
 const SWEDISH_MIN_MODEL_YEAR = 2018
@@ -383,6 +388,7 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   })
   const [images, setImages] = useState<{ id: string; file: File; url: string }[]>([])
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [sellerPortalUrl, setSellerPortalUrl] = useState('')
@@ -409,6 +415,60 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
+  const successView =
+    locale === 'sv'
+      ? {
+          live: 'Budgivningen är live',
+          title: 'Din bil är nu ute på marknaden.',
+          text: 'Verifierade bilhandlare kan nu se fordonsprofilen och lämna bud. Din privata säljarportal uppdateras när aktivitet sker.',
+          portal: 'Öppna säljarportalen',
+          vehicle: 'Registrerad bil',
+          facts: [
+            'Öppen för verifierade handlare',
+            'Kostnadsfria 24 timmar',
+            'Kontaktuppgifterna är skyddade',
+          ],
+          steps: [
+            ['01', 'Profilen är publicerad', 'Bilens uppgifter är synliga för godkända köpare.'],
+            ['02', 'Bud samlas löpande', 'Följ visningar, bud och högsta bud i portalen.'],
+            ['03', 'Du bestämmer', 'Du väljer själv om du vill gå vidare med ett bud.'],
+          ],
+        }
+      : locale === 'de'
+        ? {
+            live: 'Die Auktion ist live',
+            title: 'Ihr Fahrzeug ist jetzt am Markt.',
+            text: 'Verifizierte Händler können das Fahrzeugprofil jetzt sehen und Gebote abgeben. Ihr privates Verkäuferportal wird bei neuer Aktivität aktualisiert.',
+            portal: 'Verkäuferportal öffnen',
+            vehicle: 'Registriertes Fahrzeug',
+            facts: [
+              'Für verifizierte Händler geöffnet',
+              '24 Stunden kostenlos',
+              'Kontaktdaten bleiben geschützt',
+            ],
+            steps: [
+              ['01', 'Profil veröffentlicht', 'Die Fahrzeugdaten sind für zugelassene Käufer sichtbar.'],
+              ['02', 'Gebote in Echtzeit', 'Aufrufe, Gebote und das Höchstgebot erscheinen im Portal.'],
+              ['03', 'Sie entscheiden', 'Sie entscheiden selbst, ob Sie ein Gebot annehmen.'],
+            ],
+          }
+        : {
+            live: 'The auction is live',
+            title: 'Your vehicle is now on the market.',
+            text: 'Verified dealers can now view the vehicle profile and place bids. Your private seller portal updates as activity comes in.',
+            portal: 'Open seller portal',
+            vehicle: 'Registered vehicle',
+            facts: [
+              'Open to verified dealers',
+              '24 hours free',
+              'Contact details stay protected',
+            ],
+            steps: [
+              ['01', 'Profile published', 'The vehicle details are visible to approved buyers.'],
+              ['02', 'Bids collected live', 'Track views, bids and the highest bid in the portal.'],
+              ['03', 'You decide', 'You decide whether to proceed with an offer.'],
+            ],
+          }
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -416,32 +476,112 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
+    setFieldErrors((current) => {
+      if (!current[key]) return current
+      const nextErrors = { ...current }
+      delete nextErrors[key]
+      return nextErrors
+    })
     setError('')
   }
 
+  function requiredMessage(label: string) {
+    if (locale === 'de') return `${label} ist erforderlich.`
+    if (locale === 'en') return `${label} is required.`
+    return `${label} är obligatoriskt.`
+  }
+
   function validate() {
-    if (step === 1 && (!form.reg || !form.make || !form.model || !form.modelYear || !form.miles || !form.pickupCity || !form.pickupPostalCode || !form.pickupCountry)) return t.errors.vehicle
-    if (step === 1 && mileageLimitExceeded) return SWEDISH_MILEAGE_LIMIT_MESSAGE
-    if (step === 1 && modelYearUnsupported) return SWEDISH_MODEL_YEAR_MESSAGE
-    if (step === 1 && locationUnsupported) return SWEDISH_LOCATION_MESSAGE
-    if (step === 2 && (!form.bodyType || !form.fuelType || !form.gearbox || !form.drivetrain)) return t.errors.technical
-    if (step === 3 && (!form.service || !form.damage || !form.warnings || !form.sellTime || !form.driveable || !form.engineTransmissionIssues || !form.fluidLeaks || !form.seriousCollisionDamage)) return t.errors.condition
-    if (step === 3 && qualificationFailed) return t.errors.qualification
-    if (step === 3 && form.damage !== o.damage[0] && !form.damageDescription) return t.errors.damage
-    if (step === 4 && images.length < 4) return t.errors.photos
-    if (step === 4 && (!/^[+0-9][0-9\s-]{6,18}$/.test(form.phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) || !form.privacyAccepted)) return t.errors.contact
-    return ''
+    const errors: FieldErrors = {}
+    const requireField = (key: keyof FormState, label: string) => {
+      if (!form[key]) errors[key] = requiredMessage(label)
+    }
+
+    if (step === 1) {
+      requireField('reg', t.reg)
+      requireField('make', t.make)
+      requireField('model', t.model)
+      requireField('modelYear', t.year)
+      requireField('miles', t.mileage)
+      requireField('pickupCity', t.pickupCity)
+      requireField('pickupPostalCode', t.pickupPostalCode)
+      requireField('pickupCountry', t.pickupCountry)
+      if (mileageLimitExceeded) errors.miles = SWEDISH_MILEAGE_LIMIT_MESSAGE
+      if (modelYearUnsupported) errors.modelYear = SWEDISH_MODEL_YEAR_MESSAGE
+      if (locationUnsupported) errors.pickupCountry = SWEDISH_LOCATION_MESSAGE
+    }
+
+    if (step === 2) {
+      requireField('bodyType', t.body)
+      requireField('fuelType', t.fuel)
+      requireField('gearbox', t.gearbox)
+      requireField('drivetrain', t.drivetrain)
+    }
+
+    if (step === 3) {
+      requireField('service', t.service)
+      requireField('driveable', t.driveable)
+      requireField('engineTransmissionIssues', t.engineTransmissionIssues)
+      requireField('fluidLeaks', t.fluidLeaks)
+      requireField('seriousCollisionDamage', t.seriousCollisionDamage)
+      requireField('damage', t.damage)
+      requireField('warnings', t.warnings)
+      requireField('sellTime', t.sellTime)
+      if (form.damage && form.damage !== o.damage[0] && !form.damageDescription) {
+        errors.damageDescription = t.errors.damage
+      }
+    }
+
+    if (step === 4) {
+      if (images.length < 4) errors.images = t.errors.photos
+      if (!/^[+0-9][0-9\s-]{6,18}$/.test(form.phone)) {
+        errors.phone =
+          locale === 'sv'
+            ? 'Ange ett giltigt telefonnummer.'
+            : locale === 'de'
+              ? 'Geben Sie eine gültige Telefonnummer ein.'
+              : 'Enter a valid phone number.'
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+        errors.email =
+          locale === 'sv'
+            ? 'Ange en giltig e-postadress.'
+            : locale === 'de'
+              ? 'Geben Sie eine gültige E-Mail-Adresse ein.'
+              : 'Enter a valid email address.'
+      }
+      if (!form.privacyAccepted) {
+        errors.privacyAccepted = requiredMessage(t.privacy)
+      }
+    }
+
+    return errors
+  }
+
+  function showValidationErrors(errors: FieldErrors) {
+    setFieldErrors(errors)
+    const firstKey = Object.keys(errors)[0] as FieldKey | undefined
+    if (!firstKey) return false
+    setError('')
+    requestAnimationFrame(() => {
+      const field = document.getElementById(`field-${firstKey}`)
+      field?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      field?.querySelector<HTMLElement>('input, select, textarea, button')?.focus()
+    })
+    return true
   }
 
   function next() {
-    const message = validate()
-    if (message) return setError(message)
+    if (showValidationErrors(validate())) return
+    if (step === 3 && qualificationFailed) return setError(t.errors.qualification)
     setStep((value) => Math.min(value + 1, 4))
+    setFieldErrors({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function previous() {
     setError('')
+    setFieldErrors({})
     setStep((value) => Math.max(value - 1, 1))
   }
 
@@ -454,13 +594,17 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
       id: crypto.randomUUID(), file, url: URL.createObjectURL(file),
     }))])
     event.target.value = ''
+    setFieldErrors((current) => {
+      const nextErrors = { ...current }
+      delete nextErrors.images
+      return nextErrors
+    })
     setError('')
   }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
-    const message = validate()
-    if (message) return setError(message)
+    if (showValidationErrors(validate())) return
     setLoading(true)
 
     const payload = new FormData()
@@ -496,26 +640,88 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
   if (submitted) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f7f5ef] px-5">
-        <div className="w-full max-w-xl rounded-[24px] border border-[#e0ded7] bg-white p-10 text-center shadow-[0_25px_80px_rgba(32,33,36,.1)]">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#B4D9EF]">
-            <CheckCircle2 className="text-[#242424]" size={30} />
-          </span>
-          <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-[#60666b]">{t.successLabel}</p>
-          <h1 className="mt-3 text-3xl font-semibold text-[#202124]">{t.successTitle}</h1>
-          <p className="mt-4 text-[#68727a]">{t.successText}</p>
-          {sellerPortalUrl ? (
-            <a
-              href={sellerPortalUrl}
-              className="mt-7 inline-flex h-13 items-center gap-2 rounded-full bg-[#B4D9EF] px-7 font-medium text-[#202124]"
-            >
-              Följ budgivningen
-              <ArrowRight size={16} />
-            </a>
-          ) : null}
-          <a href="https://autorell.com/" className="mt-8 inline-flex h-13 items-center gap-2 rounded-full bg-[#242424] px-7 font-normal text-white">
-            {t.home}<ArrowRight size={16} />
-          </a>
+      <main className="min-h-screen bg-[#f4f3ee] text-[#202124]">
+        <PublicHeader locale={locale} />
+        <div className="mx-auto max-w-[1180px] px-5 py-10 sm:px-8 lg:py-16">
+          <section className="relative overflow-hidden rounded-[32px] bg-[#202528] text-white shadow-[0_30px_100px_rgba(32,37,40,.2)]">
+            <div className="absolute -right-20 -top-24 h-80 w-80 rounded-full border border-white/10" />
+            <div className="absolute -right-6 -top-8 h-56 w-56 rounded-full border border-white/10" />
+            <div className="relative grid gap-10 p-7 sm:p-10 lg:grid-cols-[1.15fr_.85fr] lg:p-14">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-4 py-2 text-sm">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                  {successView.live}
+                </span>
+                <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.24em] text-[#B4D9EF]">
+                  {t.successLabel}
+                </p>
+                <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">
+                  {successView.title}
+                </h1>
+                <p className="mt-5 max-w-xl text-base leading-7 text-white/65">
+                  {successView.text}
+                </p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  {sellerPortalUrl ? (
+                    <a
+                      href={sellerPortalUrl}
+                      className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#B4D9EF] px-7 font-medium text-[#202124] transition hover:bg-white"
+                    >
+                      {successView.portal}
+                      <ArrowRight size={17} />
+                    </a>
+                  ) : null}
+                  <Link
+                    href="/"
+                    className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full border border-white/15 px-7 font-medium text-white transition hover:bg-white/10"
+                  >
+                    {t.home}
+                    <ArrowRight size={17} />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="rounded-[24px] border border-white/10 bg-white/7 p-6 backdrop-blur sm:p-7">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                  {successView.vehicle}
+                </p>
+                <p className="mt-4 text-3xl font-semibold tracking-[-0.04em]">
+                  {form.make} {form.model}
+                </p>
+                <p className="mt-2 text-white/55">
+                  {form.modelYear} · {form.reg}
+                </p>
+                <div className="mt-8 grid gap-3">
+                  {[
+                    { icon: Radio, label: successView.facts[0] },
+                    { icon: Clock3, label: successView.facts[1] },
+                    { icon: ShieldCheck, label: successView.facts[2] },
+                  ].map(({ icon: Icon, label }) => (
+                    <div
+                      key={label}
+                      className="flex items-center gap-3 rounded-[16px] border border-white/8 bg-black/10 px-4 py-3.5 text-sm text-white/75"
+                    >
+                      <Icon size={17} className="text-[#B4D9EF]" />
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-4 sm:grid-cols-3">
+            {successView.steps.map(([number, title, text]) => (
+              <article
+                key={number}
+                className="rounded-[22px] border border-[#deddd7] bg-white p-6"
+              >
+                <span className="text-xs font-medium text-[#4f8fb5]">{number}</span>
+                <h2 className="mt-5 text-lg font-semibold">{title}</h2>
+                <p className="mt-2 text-sm leading-6 text-[#737b81]">{text}</p>
+              </article>
+            ))}
+          </section>
         </div>
       </main>
     )
@@ -605,12 +811,12 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
             {step === 1 && (
               <Section eyebrow={t.vehicleEyebrow} title={t.vehicleTitle} intro={t.vehicleIntro}>
                 <Grid>
-                  <Field label={t.reg}><input className="form-control uppercase" value={form.reg} onChange={(e) => update('reg', e.target.value.toUpperCase())} /></Field>
-                  <Field label={t.make}><select className="form-control" value={form.make} onChange={(e) => update('make', e.target.value)}><option value="">{t.selectBrand}</option>{BRANDS.map((brand) => <option key={brand} value={brand}>{brand === 'Other' ? otherBrandLabel : brand}</option>)}</select></Field>
-                  <Field label={t.model}><input className="form-control" value={form.model} onChange={(e) => update('model', e.target.value)} /></Field>
+                  <Field label={t.reg} fieldKey="reg" error={fieldErrors.reg}><input className="form-control uppercase" value={form.reg} onChange={(e) => update('reg', e.target.value.toUpperCase())} /></Field>
+                  <Field label={t.make} fieldKey="make" error={fieldErrors.make}><select className="form-control" value={form.make} onChange={(e) => update('make', e.target.value)}><option value="">{t.selectBrand}</option>{BRANDS.map((brand) => <option key={brand} value={brand}>{brand === 'Other' ? otherBrandLabel : brand}</option>)}</select></Field>
+                  <Field label={t.model} fieldKey="model" error={fieldErrors.model}><input className="form-control" value={form.model} onChange={(e) => update('model', e.target.value)} /></Field>
                   <Field label={t.variant} optional={t.optional}><input className="form-control" value={form.variant} onChange={(e) => update('variant', e.target.value)} /></Field>
-                  <Field label={t.year}><select className="form-control" value={form.modelYear} onChange={(e) => update('modelYear', e.target.value)}><option value="">{t.selectYear}</option>{YEARS.map((year) => <option key={year}>{year}</option>)}</select></Field>
-                  <Field label={t.mileage}>
+                  <Field label={t.year} fieldKey="modelYear" error={fieldErrors.modelYear}><select className="form-control" value={form.modelYear} onChange={(e) => update('modelYear', e.target.value)}><option value="">{t.selectYear}</option>{YEARS.map((year) => <option key={year}>{year}</option>)}</select></Field>
+                  <Field label={t.mileage} fieldKey="miles" error={fieldErrors.miles}>
                     <div className="relative">
                       <input
                         type="number"
@@ -624,9 +830,9 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
                     </div>
                   </Field>
                   <Field label={t.firstRegistration} optional={t.optional}><input type="date" className="form-control" value={form.firstRegistration} onChange={(e) => update('firstRegistration', e.target.value)} /></Field>
-                  <Field label={t.pickupCity}><input autoComplete="address-level2" className="form-control" value={form.pickupCity} onChange={(e) => update('pickupCity', e.target.value)} /></Field>
-                  <Field label={t.pickupPostalCode}><input autoComplete="postal-code" className="form-control uppercase" value={form.pickupPostalCode} onChange={(e) => update('pickupPostalCode', e.target.value.toUpperCase())} /></Field>
-                  <Field label={t.pickupCountry}>
+                  <Field label={t.pickupCity} fieldKey="pickupCity" error={fieldErrors.pickupCity}><input autoComplete="address-level2" className="form-control" value={form.pickupCity} onChange={(e) => update('pickupCity', e.target.value)} /></Field>
+                  <Field label={t.pickupPostalCode} fieldKey="pickupPostalCode" error={fieldErrors.pickupPostalCode}><input autoComplete="postal-code" className="form-control uppercase" value={form.pickupPostalCode} onChange={(e) => update('pickupPostalCode', e.target.value.toUpperCase())} /></Field>
+                  <Field label={t.pickupCountry} fieldKey="pickupCountry" error={fieldErrors.pickupCountry}>
                     {locale === 'sv' ? (
                       <div className="form-control flex items-center text-[#4d5960]">
                         Sverige
@@ -651,10 +857,10 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
             {step === 2 && (
               <Section eyebrow={t.technicalEyebrow} title={t.technicalTitle} intro={t.technicalIntro}>
                 <Grid>
-                  <Choice label={t.body} value={form.bodyType} values={o.body} choose={t.choose} onChange={(v) => update('bodyType', v)} />
-                  <Choice label={t.fuel} value={form.fuelType} values={o.fuel} choose={t.choose} onChange={(v) => update('fuelType', v)} />
-                  <Choice label={t.gearbox} value={form.gearbox} values={o.gearbox} choose={t.choose} onChange={(v) => update('gearbox', v)} />
-                  <Choice label={t.drivetrain} value={form.drivetrain} values={o.drivetrain} choose={t.choose} onChange={(v) => update('drivetrain', v)} />
+                  <Choice fieldKey="bodyType" error={fieldErrors.bodyType} label={t.body} value={form.bodyType} values={o.body} choose={t.choose} onChange={(v) => update('bodyType', v)} />
+                  <Choice fieldKey="fuelType" error={fieldErrors.fuelType} label={t.fuel} value={form.fuelType} values={o.fuel} choose={t.choose} onChange={(v) => update('fuelType', v)} />
+                  <Choice fieldKey="gearbox" error={fieldErrors.gearbox} label={t.gearbox} value={form.gearbox} values={o.gearbox} choose={t.choose} onChange={(v) => update('gearbox', v)} />
+                  <Choice fieldKey="drivetrain" error={fieldErrors.drivetrain} label={t.drivetrain} value={form.drivetrain} values={o.drivetrain} choose={t.choose} onChange={(v) => update('drivetrain', v)} />
                   <Field label={t.power} optional={t.optional}><div className="relative"><input type="number" className="form-control pr-12" value={form.powerHp} onChange={(e) => update('powerHp', e.target.value)} /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">{powerUnit}</span></div></Field>
                   <Field label={t.color} optional={t.optional}><input className="form-control" value={form.color} onChange={(e) => update('color', e.target.value)} /></Field>
                 </Grid>
@@ -665,18 +871,18 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
               <Section eyebrow={t.conditionEyebrow} title={t.conditionTitle} intro={t.conditionIntro}>
                 <Grid>
                   <Field label={t.owners} optional={t.optional}><input type="number" min="0" className="form-control" value={form.owners} onChange={(e) => update('owners', e.target.value)} /></Field>
-                  <Choice label={t.service} value={form.service} values={o.service} choose={t.choose} onChange={(v) => update('service', v)} />
-                  <Choice label={t.driveable} value={form.driveable} values={o.yesNo} choose={t.choose} onChange={(v) => update('driveable', v)} />
-                  <Choice label={t.engineTransmissionIssues} value={form.engineTransmissionIssues} values={o.yesNo} choose={t.choose} onChange={(v) => update('engineTransmissionIssues', v)} />
-                  <Choice label={t.fluidLeaks} value={form.fluidLeaks} values={o.yesNo} choose={t.choose} onChange={(v) => update('fluidLeaks', v)} />
-                  <Choice label={t.seriousCollisionDamage} value={form.seriousCollisionDamage} values={o.yesNo} choose={t.choose} onChange={(v) => update('seriousCollisionDamage', v)} />
-                  <Choice label={t.damage} value={form.damage} values={o.damage} choose={t.choose} onChange={(v) => update('damage', v)} />
-                  <Choice label={t.warnings} value={form.warnings} values={o.warnings} choose={t.choose} onChange={(v) => update('warnings', v)} />
+                  <Choice fieldKey="service" error={fieldErrors.service} label={t.service} value={form.service} values={o.service} choose={t.choose} onChange={(v) => update('service', v)} />
+                  <Choice fieldKey="driveable" error={fieldErrors.driveable} label={t.driveable} value={form.driveable} values={o.yesNo} choose={t.choose} onChange={(v) => update('driveable', v)} />
+                  <Choice fieldKey="engineTransmissionIssues" error={fieldErrors.engineTransmissionIssues} label={t.engineTransmissionIssues} value={form.engineTransmissionIssues} values={o.yesNo} choose={t.choose} onChange={(v) => update('engineTransmissionIssues', v)} />
+                  <Choice fieldKey="fluidLeaks" error={fieldErrors.fluidLeaks} label={t.fluidLeaks} value={form.fluidLeaks} values={o.yesNo} choose={t.choose} onChange={(v) => update('fluidLeaks', v)} />
+                  <Choice fieldKey="seriousCollisionDamage" error={fieldErrors.seriousCollisionDamage} label={t.seriousCollisionDamage} value={form.seriousCollisionDamage} values={o.yesNo} choose={t.choose} onChange={(v) => update('seriousCollisionDamage', v)} />
+                  <Choice fieldKey="damage" error={fieldErrors.damage} label={t.damage} value={form.damage} values={o.damage} choose={t.choose} onChange={(v) => update('damage', v)} />
+                  <Choice fieldKey="warnings" error={fieldErrors.warnings} label={t.warnings} value={form.warnings} values={o.warnings} choose={t.choose} onChange={(v) => update('warnings', v)} />
                   <Choice label={t.tires} value={form.tires} values={o.tires} choose={t.choose} onChange={(v) => update('tires', v)} optionalLabel={t.optional} />
                   <Choice label={t.keys} value={form.keysCount} values={['1', '2', '3+']} choose={t.choose} onChange={(v) => update('keysCount', v)} optionalLabel={t.optional} />
                   <Choice label={t.towbar} value={form.towbar} values={o.yesNo} choose={t.choose} onChange={(v) => update('towbar', v)} optionalLabel={t.optional} />
-                  <Choice label={t.sellTime} value={form.sellTime} values={o.sell} choose={t.choose} onChange={(v) => update('sellTime', v)} />
-                  {form.damage && form.damage !== o.damage[0] && <div className="sm:col-span-2"><Field label={t.damageDescription}><textarea rows={3} className="form-control resize-none" value={form.damageDescription} onChange={(e) => update('damageDescription', e.target.value)} /></Field></div>}
+                  <Choice fieldKey="sellTime" error={fieldErrors.sellTime} label={t.sellTime} value={form.sellTime} values={o.sell} choose={t.choose} onChange={(v) => update('sellTime', v)} />
+                  {form.damage && form.damage !== o.damage[0] && <div className="sm:col-span-2"><Field label={t.damageDescription} fieldKey="damageDescription" error={fieldErrors.damageDescription}><textarea rows={3} className="form-control resize-none" value={form.damageDescription} onChange={(e) => update('damageDescription', e.target.value)} /></Field></div>}
                   <div className="sm:col-span-2"><Field label={t.equipment} optional={t.optional}><textarea rows={3} className="form-control resize-none" value={form.equipment} onChange={(e) => update('equipment', e.target.value)} /></Field></div>
                 </Grid>
                 {qualificationFailed && (
@@ -696,16 +902,17 @@ export default function VehicleLeadForm({ locale }: { locale: FormLocale }) {
 
             {step === 4 && (
               <Section eyebrow={t.finalEyebrow} title={t.finalTitle} intro={t.finalIntro}>
-                <label className="grid min-h-44 cursor-pointer place-items-center rounded-[18px] border border-dashed border-[#c9c8c2] bg-[#faf9f6] p-5 text-center transition hover:border-[#8dbdd8] hover:bg-[#f4f9fc]">
+                <label id="field-images" className={`grid min-h-44 cursor-pointer place-items-center rounded-[18px] border border-dashed p-5 text-center transition hover:border-[#8dbdd8] hover:bg-[#f4f9fc] ${fieldErrors.images ? 'border-red-500 bg-red-50/50 ring-3 ring-red-100' : 'border-[#c9c8c2] bg-[#faf9f6]'}`}>
                   <div><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#B4D9EF]"><Upload className="text-[#242424]" size={20} /></span><p className="mt-4 font-medium">{t.upload}</p><p className="mt-1 text-sm font-normal text-[#737b81]">{t.uploadHelp}</p><p className="mt-2 text-xs font-medium text-[#4f5960]">{images.length}/12 {t.photos}</p></div>
                   <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={addImages} />
                 </label>
+                {fieldErrors.images && <p className="mt-2 text-sm font-medium text-red-600">{fieldErrors.images}</p>}
                 {images.length > 0 && <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((image) => <div key={image.id} className="relative overflow-hidden rounded-[14px]"><Image src={image.url} alt="" width={240} height={160} unoptimized className="h-28 w-full object-cover" /><button type="button" onClick={() => setImages((current) => current.filter((item) => item.id !== image.id))} className="absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-white/90 shadow"><X size={14} /></button></div>)}</div>}
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                  <Field label={t.phone}><input type="tel" autoComplete="tel" className="form-control" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></Field>
-                  <Field label={t.email}><input type="email" autoComplete="email" className="form-control" value={form.email} onChange={(e) => update('email', e.target.value)} /></Field>
+                  <Field label={t.phone} fieldKey="phone" error={fieldErrors.phone}><input type="tel" autoComplete="tel" className="form-control" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></Field>
+                  <Field label={t.email} fieldKey="email" error={fieldErrors.email}><input type="email" autoComplete="email" className="form-control" value={form.email} onChange={(e) => update('email', e.target.value)} /></Field>
                 </div>
-                <label className="mt-5 flex items-start gap-3 border-t border-[#e3e1dc] pt-5 text-sm font-normal leading-6 text-[#626b72]"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-medium text-[#242424] underline" href="/integritet" target="_blank">{t.privacyLink}</a> {t.termsJoin} <a className="font-medium text-[#242424] underline" href="/villkor" target="_blank">{t.termsLink}</a>.</span></label>
+                <label id="field-privacyAccepted" className={`mt-5 flex items-start gap-3 border-t pt-5 text-sm font-normal leading-6 ${fieldErrors.privacyAccepted ? 'border-red-300 text-red-700' : 'border-[#e3e1dc] text-[#626b72]'}`}><input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} /><span>{t.privacy} <a className="font-medium text-[#242424] underline" href="/integritet" target="_blank">{t.privacyLink}</a> {t.termsJoin} <a className="font-medium text-[#242424] underline" href="/villkor" target="_blank">{t.termsLink}</a>.{fieldErrors.privacyAccepted && <span className="mt-1 block font-medium text-red-600">{fieldErrors.privacyAccepted}</span>}</span></label>
               </Section>
             )}
 
@@ -743,10 +950,10 @@ function Grid({ children }: { children: React.ReactNode }) {
   return <div className="grid gap-5 sm:grid-cols-2">{children}</div>
 }
 
-function Field({ label, optional, children }: { label: string; optional?: string; children: React.ReactNode }) {
-  return <label className="block"><span className="mb-2.5 flex justify-between text-sm font-normal text-[#3d4348]">{label}{optional && <small className="font-normal text-[#999c9d]">{optional}</small>}</span>{children}</label>
+function Field({ label, optional, children, fieldKey, error }: { label: string; optional?: string; children: React.ReactNode; fieldKey?: FieldKey; error?: string }) {
+  return <label id={fieldKey ? `field-${fieldKey}` : undefined} className={`block ${error ? '[&_.form-control]:border-red-500 [&_.form-control]:ring-3 [&_.form-control]:ring-red-100' : ''}`}><span className="mb-2.5 flex justify-between text-sm font-normal text-[#3d4348]">{label}{optional && <small className="font-normal text-[#999c9d]">{optional}</small>}</span>{children}{error && <span className="mt-2 block text-sm font-medium text-red-600">{error}</span>}</label>
 }
 
-function Choice({ label, value, values, choose, onChange, optionalLabel }: { label: string; value: string; values: readonly string[]; choose: string; onChange: (value: string) => void; optionalLabel?: string }) {
-  return <Field label={label} optional={optionalLabel}><select className="form-control" value={value} onChange={(e) => onChange(e.target.value)}><option value="">{choose}</option>{values.map((item) => <option key={item}>{item}</option>)}</select></Field>
+function Choice({ label, value, values, choose, onChange, optionalLabel, fieldKey, error }: { label: string; value: string; values: readonly string[]; choose: string; onChange: (value: string) => void; optionalLabel?: string; fieldKey?: FieldKey; error?: string }) {
+  return <Field label={label} optional={optionalLabel} fieldKey={fieldKey} error={error}><select className="form-control" value={value} onChange={(e) => onChange(e.target.value)}><option value="">{choose}</option>{values.map((item) => <option key={item}>{item}</option>)}</select></Field>
 }

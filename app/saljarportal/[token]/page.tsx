@@ -16,6 +16,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { fulfillListingCheckout, listingPackages } from '@/lib/listing-packages'
 import { hashSellerAccessToken } from '@/lib/seller-access'
+import BrandLogo from '@/app/components/BrandLogo'
 import CheckoutButton from './CheckoutButton'
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat('sv-SE', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: 'Europe/Stockholm',
   }).format(new Date(value))
 }
 
@@ -117,8 +119,8 @@ export default async function SellerPortalPage({
     <main className="min-h-screen bg-[#f4f3ee] text-[#202124]">
       <header className="border-b border-black/8 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-5 py-5 sm:px-8">
-          <Link href="/" className="text-2xl font-semibold tracking-[-0.04em]">
-            Autorell
+          <Link href="/" aria-label="Till Autorells startsida">
+            <BrandLogo />
           </Link>
           <Link
             href="/kontakt"
