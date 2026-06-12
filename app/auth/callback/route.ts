@@ -4,11 +4,25 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const tokenHash = requestUrl.searchParams.get('token_hash')
+  const type = requestUrl.searchParams.get('type')
   const next = requestUrl.searchParams.get('next') || '/dealer'
-  const safeNext = next.startsWith('/') ? next : '/dealer'
+  const safeNext =
+    next.startsWith('/') && !next.startsWith('//') ? next : '/dealer'
+  const supabase = await createClient()
+
+  if (tokenHash && type === 'recovery') {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'recovery',
+    })
+
+    if (!error) {
+      return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+    }
+  }
 
   if (code) {
-    const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
