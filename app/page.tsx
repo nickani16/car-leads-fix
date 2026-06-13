@@ -15,7 +15,6 @@ import {
   Gavel,
   Globe2,
   Handshake,
-  Headphones,
   MonitorSmartphone,
   ScanSearch,
   ShieldCheck,
@@ -92,7 +91,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return createPublicMetadata({
     title: 'Sälj din bil till handlare i Europa | Autorell',
     description:
-      'Sälj din bil genom kostnadsfri registrering och budgivning från verifierade handlare i Sverige och Europa. Du väljer om du vill acceptera.',
+      'Sälj bilen till verifierade handlare i Europa. Autorell samordnar budgivning, kontroll, betalning, hämtning, dokument och export.',
     path: '/',
   })
 }
@@ -179,7 +178,8 @@ export default async function HomePage() {
             </h1>
             <p className="mt-5 max-w-[590px] text-[16px] leading-7 text-[#4e6377] sm:mt-7 sm:text-xl sm:leading-8">
               Vi kvalificerar bilen, presenterar den för verifierade handlare
-              och samlar bud under 24 fokuserade timmar.
+              och samlar bud under 24 timmar. Accepterar du ett bud samordnar
+              Autorell kontroll, betalning, hämtning och export.
             </p>
             <div className="mt-7 grid gap-3 sm:mt-10 sm:flex sm:flex-row">
               <Link
@@ -246,10 +246,10 @@ export default async function HomePage() {
               icon: MonitorSmartphone,
             },
             {
-              value: 'Kontroll & export',
+              value: 'Vi löser resten',
               label: 'Efter accepterat bud',
-              note: 'Affären fortsätter med villkorad kontroll, betalning och hämtning.',
-              icon: Headphones,
+              note: 'Autorell samordnar kontroll, betalning, hämtning, dokument och export.',
+              icon: Truck,
             },
           ].map(({ value, label, note, icon: Icon }, index) => (
             <div
@@ -298,6 +298,7 @@ export default async function HomePage() {
               <p className="mt-5 max-w-2xl text-base leading-7 text-[#5b6e77] sm:text-lg sm:leading-8">
                 Vi kvalificerar bilen innan den visas, samlar strukturerad
                 fordonsdata och låter verifierade handlare konkurrera om den.
+                När du accepterar tar vi affären vidare hela vägen.
               </p>
             </div>
 
@@ -324,22 +325,39 @@ export default async function HomePage() {
 
           <ProcessSteps />
 
-          <div className="mt-10 flex flex-col items-start justify-between gap-6 rounded-[20px] bg-[#242424] px-6 py-7 text-white shadow-[0_24px_65px_rgba(32,33,36,.16)] sm:flex-row sm:items-center sm:px-9">
-            <div>
+          <div className="relative mt-10 overflow-hidden rounded-[20px] bg-[#242424] px-6 py-7 text-white shadow-[0_24px_65px_rgba(32,33,36,.16)] sm:px-9 sm:py-9">
+            <div className="business-orbit absolute -right-20 -top-28 h-64 w-64 rounded-full border-[42px] border-white/[.055]" />
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                Redo när du är
+                Efter accepterat bud
               </p>
-              <p className="mt-2 text-xl tracking-[-0.025em] sm:text-2xl">
-                Börja med en snabb kontroll av bilen.
+              <p className="mt-2 text-2xl leading-tight tracking-[-0.035em] sm:text-3xl">
+                Du säljer bilen. Autorell samordnar genomförandet.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-white/60">
+                Vi kontrollerar bilen mot deklarationen och koordinerar
+                betalning, hämtning, dokumentation och export till köparen.
               </p>
             </div>
-            <Link
-              href="/salj-bil"
-              className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#b4d9ef] px-6 text-sm font-medium text-[#242424] transition hover:-translate-y-0.5 hover:bg-[#c9e6f6] sm:w-auto"
-            >
-              Sälj din bil
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+              <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[480px]">
+                {[
+                  ['01', 'Kontroll på plats'],
+                  ['02', 'Betalning & avtal'],
+                  ['03', 'Hämtning & export'],
+                ].map(([number, label]) => (
+                  <div
+                    key={number}
+                    className="rounded-[14px] border border-white/10 bg-white/[.055] px-4 py-4 backdrop-blur-sm"
+                  >
+                    <span className="text-[10px] text-[#b4d9ef]">{number}</span>
+                    <strong className="mt-3 block text-sm font-medium text-white/88">
+                      {label}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -490,7 +508,7 @@ export default async function HomePage() {
                     },
                     {
                       icon: ShieldCheck,
-                      text: 'Du accepterar endast om det högsta budet känns rätt.',
+                      text: 'Efter acceptans samordnar Autorell kontroll, betalning, hämtning och export.',
                     },
                   ].map(({ icon: Icon, text }) => (
                     <div key={text} className="flex gap-3">
@@ -510,6 +528,7 @@ export default async function HomePage() {
 
               <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-y border-[#dfe6e5] bg-[#22272a] p-7 text-white lg:min-h-full lg:border-x lg:border-y-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(180,217,239,.18),transparent_47%)]" />
+                <div className="trust-ring absolute -right-20 -top-20 h-52 w-52 rounded-full border-[32px] border-[#b4d9ef]/10" />
                 <div className="relative w-full max-w-[245px]">
                   <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/10 bg-white/[.07] shadow-[0_20px_55px_rgba(0,0,0,.2)]">
                     <Handshake className="h-8 w-8 text-[#b4d9ef]" />

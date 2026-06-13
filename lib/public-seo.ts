@@ -14,15 +14,21 @@ export function createPublicMetadata({
   path,
   locale = 'sv',
   keywords,
+  languagePaths,
 }: {
   title: string
   description: string
   path: string
   locale?: PublicLocale
   keywords?: string[]
+  languagePaths?: Partial<Record<PublicLocale, string>>
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
   const canonical = `${hosts[locale]}${normalizedPath}`
+  const localizedPath = (targetLocale: PublicLocale) => {
+    const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
+    return targetPath === '/' ? '' : targetPath
+  }
 
   return {
     title: { absolute: title },
@@ -31,10 +37,10 @@ export function createPublicMetadata({
     alternates: {
       canonical,
       languages: {
-        'sv-SE': `${hosts.sv}${normalizedPath}`,
-        'de-DE': `${hosts.de}${normalizedPath}`,
-        en: `${hosts.en}${normalizedPath}`,
-        'x-default': `${hosts.en}${normalizedPath}`,
+        'sv-SE': `${hosts.sv}${localizedPath('sv')}`,
+        'de-DE': `${hosts.de}${localizedPath('de')}`,
+        en: `${hosts.en}${localizedPath('en')}`,
+        'x-default': `${hosts.en}${localizedPath('en')}`,
       },
     },
     openGraph: {
