@@ -27,6 +27,7 @@ import {
 import PublicHeader from './components/PublicHeader'
 import BuyerMarketPage from './components/BuyerMarketPage'
 import FaqTestimonials from './components/FaqTestimonials'
+import HomeMarketPulse from './components/HomeMarketPulse'
 import ProcessSteps from './components/ProcessSteps'
 import PublicFooter from './components/PublicFooter'
 
@@ -119,49 +120,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(247,242,232,.42)_0%,transparent_35%)] max-md:bg-[linear-gradient(0deg,rgba(32,33,36,.18)_0%,transparent_35%)]" />
         <div className="home-hero-orb absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
 
-        <div className="home-market-float absolute right-[3%] top-[31%] hidden w-[280px] rounded-[24px] border border-white/65 bg-white/72 p-4 shadow-[0_28px_80px_rgba(32,33,36,.13)] backdrop-blur-xl min-[1120px]:block xl:right-[6%] xl:w-[310px] xl:p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
-                Autorell market pulse
-              </p>
-              <p className="mt-1.5 text-lg font-medium tracking-[-0.03em]">
-                Europeisk efterfrågan
-              </p>
-            </div>
-            <span className="flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-[10px] font-medium text-[#3c7252]">
-              <span className="home-live-dot h-2 w-2 rounded-full bg-[#76bb91]" />
-              Aktiv
-            </span>
-          </div>
-          <div className="mt-6 space-y-3">
-            {[
-              ['El & hybrid', '82%'],
-              ['SUV & crossover', '71%'],
-              ['Nyare premium', '64%'],
-            ].map(([label, value], index) => (
-              <div
-                key={label}
-                className="home-market-row rounded-[14px] border border-[#e2e8e8] bg-white/70 p-3.5"
-                style={{ animationDelay: `${index * 0.7}s` }}
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#53666f]">{label}</span>
-                  <strong className="font-medium text-[#202124]">{value}</strong>
-                </div>
-                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
-                  <span
-                    className="home-demand-bar block h-full rounded-full bg-[#8ec5df]"
-                    style={{ width: value }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-[10px] leading-4 text-[#7a878c]">
-            Illustrativ marknadssignal för aktuella fordonskategorier.
-          </p>
-        </div>
+        <HomeMarketPulse />
 
         <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
           <div className="w-full min-w-0 max-w-[720px] md:translate-y-8">
