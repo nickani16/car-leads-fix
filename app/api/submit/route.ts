@@ -66,10 +66,12 @@ export async function POST(request: Request) {
     )
     const warnings = canonicalVehicleValue(text(form, 'warnings'))
     const damage = canonicalVehicleValue(text(form, 'damage'))
+    const tireSet = canonicalVehicleValue(text(form, 'tireset'))
 
     if (
       Object.values(requiredFields).some((value) => !value) ||
-      !/^[A-Z]{2}$/.test(originCountry)
+      !/^[A-Z]{2}$/.test(originCountry) ||
+      !tireSet
     ) {
       return NextResponse.json(
         { error: 'Obligatoriska fordonsuppgifter saknas.' },
@@ -170,7 +172,7 @@ export async function POST(request: Request) {
       has_fluid_leaks: hasFluidLeaks,
       has_serious_collision_damage: hasSeriousCollisionDamage,
       tires: canonicalVehicleValue(text(form, 'tires')),
-      tireset: text(form, 'tireset'),
+      tireset: tireSet,
       towbar: canonicalVehicleValue(text(form, 'towbar')),
       equipment: text(form, 'equipment') || null,
       sellTime: canonicalVehicleValue(text(form, 'sellTime')),
@@ -250,6 +252,8 @@ export async function POST(request: Request) {
                     <tr><td style="color:#737b81;">Skador</td><td><strong>${lead.damage || 'Ej angivet'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Skadebeskrivning</td><td><strong>${lead.damage_description || 'Ingen'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Varningslampor</td><td><strong>${lead.warnings || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Däckens skick</td><td><strong>${lead.tires || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Däckuppsättningar</td><td><strong>${lead.tireset || 'Ej angivet'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Körbar</td><td><strong>${lead.is_driveable ? 'Ja' : 'Nej'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Motor/växellådsproblem</td><td><strong>${lead.has_engine_transmission_issues ? 'Ja' : 'Nej'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Vätskeläckage</td><td><strong>${lead.has_fluid_leaks ? 'Ja' : 'Nej'}</strong></td></tr>

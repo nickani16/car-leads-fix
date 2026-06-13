@@ -1188,7 +1188,7 @@ export default function DealerPage() {
                       value={vehicleValueInEnglish(selectedLead.tires)}
                     />
                     <Detail
-                      label="Extra tire set"
+                      label="Tire sets included"
                       value={vehicleValueInEnglish(selectedLead.tireset)}
                     />
                     <Detail

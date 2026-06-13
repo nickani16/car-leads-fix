@@ -125,6 +125,7 @@ const copy = {
     damageDescription: 'Beskriv skadorna',
     warnings: 'Varningslampor',
     tires: 'Däckens skick',
+    tireSets: 'Däckuppsättningar som medföljer',
     keys: 'Antal nycklar',
     towbar: 'Dragkrok',
     sellTime: 'När vill du sälja?',
@@ -194,7 +195,9 @@ const copy = {
     seriousCollisionDamage: 'Hat das Fahrzeug einen schweren oder unreparierten Unfallschaden?',
     owners: 'Vorbesitzer', service: 'Servicehistorie', damage: 'Schäden',
     damageDescription: 'Schäden beschreiben', warnings: 'Warnleuchten',
-    tires: 'Reifenzustand', keys: 'Anzahl Schlüssel', towbar: 'Anhängerkupplung',
+    tires: 'Reifenzustand',
+    tireSets: 'Mitgelieferte Reifensätze',
+    keys: 'Anzahl Schlüssel', towbar: 'Anhängerkupplung',
     sellTime: 'Wann möchten Sie verkaufen?', equipment: 'Wichtige Ausstattung (optional)',
     finalEyebrow: 'Fotos und Kontakt', finalTitle: 'Der letzte Schritt',
     finalIntro: 'Gute Fotos helfen Händlern, präzisere Gebote abzugeben.',
@@ -249,7 +252,9 @@ const copy = {
     seriousCollisionDamage: 'Does the vehicle have major or unrepaired collision damage?',
     owners: 'Previous owners', service: 'Service history', damage: 'Damage',
     damageDescription: 'Describe the damage', warnings: 'Warning lights',
-    tires: 'Tire condition', keys: 'Number of keys', towbar: 'Towbar',
+    tires: 'Tire condition',
+    tireSets: 'Tire sets included',
+    keys: 'Number of keys', towbar: 'Towbar',
     sellTime: 'When do you want to sell?', equipment: 'Key equipment (optional)',
     finalEyebrow: 'Photos and contact', finalTitle: 'The final step',
     finalIntro: 'Good photos help dealers submit more accurate bids.',
@@ -288,6 +293,12 @@ const options = {
     damage: ['Inga kända skador', 'Mindre kosmetiska skador', 'Större skador', 'Krockskada'],
     warnings: ['Inga varningslampor', 'Varningslampor finns'],
     tires: ['Nya', 'Bra skick', 'Slitna'],
+    tireSets: [
+      'Endast sommardäck',
+      'Endast vinterdäck',
+      'Sommar- och vinterdäck',
+      'Året runt-däck',
+    ],
     yesNo: ['Ja', 'Nej'],
     sell: ['Så snart som möjligt', 'Inom 1–2 veckor', 'Inom en månad', 'Inom 2–3 månader', 'Osäker'],
   },
@@ -300,6 +311,12 @@ const options = {
     damage: ['Keine bekannten Schäden', 'Kleine kosmetische Schäden', 'Größere Schäden', 'Unfallschaden'],
     warnings: ['Keine Warnleuchten', 'Warnleuchten aktiv'],
     tires: ['Neu', 'Guter Zustand', 'Abgenutzt'],
+    tireSets: [
+      'Nur Sommerreifen',
+      'Nur Winterreifen',
+      'Sommer- und Winterreifen',
+      'Ganzjahresreifen',
+    ],
     yesNo: ['Ja', 'Nein'],
     sell: ['So schnell wie möglich', 'Innerhalb 1–2 Wochen', 'Innerhalb eines Monats', 'Innerhalb 2–3 Monaten', 'Unsicher'],
   },
@@ -312,6 +329,12 @@ const options = {
     damage: ['No known damage', 'Minor cosmetic damage', 'Significant damage', 'Accident damage'],
     warnings: ['No warning lights', 'Warning lights present'],
     tires: ['New', 'Good condition', 'Worn'],
+    tireSets: [
+      'Summer tires only',
+      'Winter tires only',
+      'Summer and winter tires',
+      'All-season tires',
+    ],
     yesNo: ['Yes', 'No'],
     sell: ['As soon as possible', 'Within 1–2 weeks', 'Within one month', 'Within 2–3 months', 'Not sure'],
   },
@@ -322,7 +345,8 @@ const emptyForm = {
   firstRegistration: '', pickupCity: '', pickupPostalCode: '', pickupCountry: '',
   bodyType: '', fuelType: '', gearbox: '',
   drivetrain: '', powerHp: '', color: '', owners: '', service: '',
-  damage: '', damageDescription: '', warnings: '', tires: '', keysCount: '',
+  damage: '', damageDescription: '', warnings: '', tires: '', tireset: '',
+  keysCount: '',
   driveable: '', engineTransmissionIssues: '', fluidLeaks: '',
   seriousCollisionDamage: '',
   towbar: '', sellTime: '', equipment: '', phone: '', email: '',
@@ -558,6 +582,7 @@ export default function VehicleLeadForm({
       requireField('seriousCollisionDamage', t.seriousCollisionDamage)
       requireField('damage', t.damage)
       requireField('warnings', t.warnings)
+      requireField('tireset', t.tireSets)
       requireField('sellTime', t.sellTime)
       if (form.damage && form.damage !== o.damage[0] && !form.damageDescription) {
         errors.damageDescription = t.errors.damage
@@ -646,7 +671,6 @@ export default function VehicleLeadForm({
       miles: locale === 'sv' ? form.miles : String(Number(form.miles) / 10),
       importCar: '',
       brakes: '',
-      tireset: '',
       isDriveable: form.driveable === o.yesNo[0],
       hasEngineTransmissionIssues:
         form.engineTransmissionIssues === o.yesNo[0],
@@ -987,6 +1011,7 @@ export default function VehicleLeadForm({
                   <Choice fieldKey="damage" error={fieldErrors.damage} label={t.damage} value={form.damage} values={o.damage} choose={t.choose} onChange={(v) => update('damage', v)} />
                   <Choice fieldKey="warnings" error={fieldErrors.warnings} label={t.warnings} value={form.warnings} values={o.warnings} choose={t.choose} onChange={(v) => update('warnings', v)} />
                   <Choice label={t.tires} value={form.tires} values={o.tires} choose={t.choose} onChange={(v) => update('tires', v)} optionalLabel={t.optional} />
+                  <Choice fieldKey="tireset" error={fieldErrors.tireset} label={t.tireSets} value={form.tireset} values={o.tireSets} choose={t.choose} onChange={(v) => update('tireset', v)} />
                   <Choice label={t.keys} value={form.keysCount} values={['1', '2', '3+']} choose={t.choose} onChange={(v) => update('keysCount', v)} optionalLabel={t.optional} />
                   <Choice label={t.towbar} value={form.towbar} values={o.yesNo} choose={t.choose} onChange={(v) => update('towbar', v)} optionalLabel={t.optional} />
                   <Choice fieldKey="sellTime" error={fieldErrors.sellTime} label={t.sellTime} value={form.sellTime} values={o.sell} choose={t.choose} onChange={(v) => update('sellTime', v)} />

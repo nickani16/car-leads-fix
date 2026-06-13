@@ -174,7 +174,7 @@ export default async function AdminLeadDetailPage({
                 },
                 { label: 'Brakes', value: lead.brakes },
                 { label: 'Tires', value: lead.tires },
-                { label: 'Extra tire set', value: lead.tireset },
+                { label: 'Tire sets included', value: lead.tireset },
                 { label: 'Keys', value: lead.keys_count },
                 { label: 'Imported', value: lead.importCar },
                 { label: 'Inspection', value: lead.inspection_valid_until },
