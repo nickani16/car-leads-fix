@@ -9,6 +9,7 @@ import {
   DetailGrid,
 } from '../../AdminUI'
 import LeadLocationForm from './LeadLocationForm'
+import LeadFinanceReviewForm from './LeadFinanceReviewForm'
 import LeadReviewActions from './LeadReviewActions'
 import LeadTranslationForm from './LeadTranslationForm'
 
@@ -50,6 +51,20 @@ export default async function AdminLeadDetailPage({
         initialCity={lead.pickup_city}
         initialPostalCode={lead.pickup_postal_code}
         initialCountry={lead.origin_country || lead.source}
+      />
+
+      <LeadFinanceReviewForm
+        leadId={lead.id}
+        financeStatus={lead.finance_status}
+        provider={lead.finance_provider}
+        agreementReference={lead.finance_agreement_reference}
+        estimatedBalance={lead.finance_estimated_balance}
+        contactConsent={lead.finance_contact_consent}
+        initialReviewStatus={lead.finance_review_status}
+        initialSettlementAmount={lead.finance_settlement_amount}
+        initialSettlementValidUntil={lead.finance_settlement_valid_until}
+        initialReleaseReference={lead.finance_release_reference}
+        initialNotes={lead.finance_admin_notes}
       />
 
       <LeadTranslationForm
@@ -105,6 +120,47 @@ export default async function AdminLeadDetailPage({
                 { label: 'Pickup city', value: lead.pickup_city },
                 { label: 'Pickup postal code', value: lead.pickup_postal_code },
                 { label: 'Source', value: lead.source },
+              ]}
+            />
+          </DetailCard>
+
+          <DetailCard title="Ownership and finance">
+            <DetailGrid
+              items={[
+                { label: 'Seller declaration', value: lead.finance_status },
+                { label: 'Finance provider', value: lead.finance_provider },
+                {
+                  label: 'Agreement reference',
+                  value: lead.finance_agreement_reference,
+                },
+                {
+                  label: 'Estimated outstanding balance',
+                  value: lead.finance_estimated_balance,
+                },
+                {
+                  label: 'Consent to contact provider',
+                  value: lead.finance_contact_consent ? 'Yes' : 'No',
+                },
+                {
+                  label: 'Finance review status',
+                  value: lead.finance_review_status,
+                },
+                {
+                  label: 'Confirmed settlement amount',
+                  value: lead.finance_settlement_amount,
+                },
+                {
+                  label: 'Settlement valid until',
+                  value: lead.finance_settlement_valid_until,
+                },
+                {
+                  label: 'Release reference',
+                  value: lead.finance_release_reference,
+                },
+                {
+                  label: 'Internal notes',
+                  value: lead.finance_admin_notes,
+                },
               ]}
             />
           </DetailCard>

@@ -37,6 +37,10 @@ type Vehicle = {
   gearbox?: string | null
   damage?: string | null
   damage_description?: string | null
+  finance_status?: string | null
+  finance_provider?: string | null
+  finance_settlement_amount?: number | string | null
+  finance_release_reference?: string | null
 }
 
 type Pricing = {
@@ -205,6 +209,16 @@ export default function ContractDocumentView({
             <Data label={copy.fuel} value={vehicle.fuel_type} />
             <Data label={copy.transmission} value={vehicle.gearbox} />
             <Data label={copy.declaredCondition} value={vehicle.damage} />
+            <Data
+              label={copy.financeStatus}
+              value={formatFinanceStatus(vehicle.finance_status, language)}
+            />
+            {isSellerAgreement && (
+              <Data
+                label={copy.financeProvider}
+                value={vehicle.finance_provider}
+              />
+            )}
           </dl>
           {vehicle.damage_description && (
             <div className="contract-note">
@@ -359,6 +373,8 @@ const contractCopy = {
     fuel: 'Bränsle',
     transmission: 'Växellåda',
     declaredCondition: 'Deklarerat skick',
+    financeStatus: 'Ägande och finansiering',
+    financeProvider: 'Finansbolag',
     conditionNotes: 'Anteckningar om skick',
     commercialTerms: 'Kommersiella villkor',
     sellerPrice: 'Köpeskilling till säljaren',
@@ -406,6 +422,8 @@ const contractCopy = {
     fuel: 'Fuel',
     transmission: 'Transmission',
     declaredCondition: 'Declared condition',
+    financeStatus: 'Ownership and finance',
+    financeProvider: 'Finance provider',
     conditionNotes: 'Condition notes',
     commercialTerms: 'Commercial terms',
     sellerPrice: 'Purchase price payable to seller',
@@ -462,6 +480,30 @@ function formatLocation(
   fallback = 'Pending'
 ) {
   return [postalCode, city, country].filter(Boolean).join(' ') || fallback
+}
+
+function formatFinanceStatus(
+  status?: string | null,
+  language: 'sv' | 'en' = 'en'
+) {
+  if (!status) return null
+  const labels = {
+    sv: {
+      owned_outright: 'Fullt betald',
+      vehicle_finance: 'Fordonskredit eller avbetalning',
+      unsecured_loan: 'Privatlån utan bilen som säkerhet',
+      leasing: 'Leasing',
+      unknown: 'Inte verifierat',
+    },
+    en: {
+      owned_outright: 'Owned outright',
+      vehicle_finance: 'Vehicle finance or hire purchase',
+      unsecured_loan: 'Unsecured personal loan',
+      leasing: 'Lease',
+      unknown: 'Not verified',
+    },
+  } as const
+  return labels[language][status as keyof (typeof labels)[typeof language]] || status
 }
 
 function SectionHeading({ number, title }: { number: string; title: string }) {

@@ -138,6 +138,16 @@ const copy = {
     photos: 'bilder',
     phone: 'Telefonnummer',
     email: 'E-postadress',
+    financeTitle: 'Ägande och finansiering',
+    financeIntro: 'Detta påverkar inte om du får skicka in bilen. Uppgifterna hjälper Autorell att planera en säker lösen- och ägarövergång om du accepterar ett bud.',
+    financeStatus: 'Hur är bilen finansierad?',
+    financeProvider: 'Finansbolag eller bank',
+    financeReference: 'Avtals- eller lånenummer',
+    financeBalance: 'Ungefärligt kvarvarande belopp',
+    financeBalanceHelp: 'En uppskattning räcker. Autorell begär ett aktuellt lösenbelopp före affären.',
+    financeConsent: 'Jag ger Autorell tillåtelse att kontakta finansbolaget för att verifiera finansieringen och begära lösenbelopp om jag går vidare med ett bud.',
+    financeNotice: 'Autorell betalar i förekommande fall finansbolaget direkt. Ett överskott betalas till dig. Om skulden är högre än köpeskillingen behöver mellanskillnaden lösas före överlämning.',
+    leasingNotice: 'En leasingbil kan bara säljas om leasingbolaget skriftligen godkänner lösen eller utköp. Autorell granskar detta innan affären kan genomföras.',
     privacy: 'Jag har läst',
     privacyLink: 'integritetspolicyn',
     termsJoin: 'och accepterar',
@@ -161,6 +171,7 @@ const copy = {
       damage: 'Beskriv skadorna kort.',
       photos: 'Ladda upp minst 4 bilder.',
       contact: 'Kontrollera telefonnummer, e-post och integritetsgodkännande.',
+      finance: 'Fyll i finansbolag och godkänn att Autorell får verifiera finansieringen.',
       server: 'Något gick fel. Försök igen.',
     },
   },
@@ -204,6 +215,16 @@ const copy = {
     upload: 'Fahrzeugfotos hochladen',
     uploadHelp: 'Mindestens 4, maximal 12 Bilder. Max. 10 MB pro Bild.',
     photos: 'Bilder', phone: 'Telefonnummer', email: 'E-Mail-Adresse',
+    financeTitle: 'Eigentum und Finanzierung',
+    financeIntro: 'Diese Angaben helfen Autorell, eine sichere Ablösung und Eigentumsübertragung zu planen, falls Sie ein Gebot annehmen.',
+    financeStatus: 'Wie ist das Fahrzeug finanziert?',
+    financeProvider: 'Finanzierungsgesellschaft oder Bank',
+    financeReference: 'Vertrags- oder Kreditnummer',
+    financeBalance: 'Geschätzter Restbetrag',
+    financeBalanceHelp: 'Eine Schätzung genügt. Autorell fordert vor Abschluss einen aktuellen Ablösebetrag an.',
+    financeConsent: 'Ich ermächtige Autorell, die Finanzierung zu prüfen und bei Bedarf einen Ablösebetrag anzufordern.',
+    financeNotice: 'Autorell zahlt gegebenenfalls direkt an den Finanzierer. Ein Überschuss wird an Sie ausgezahlt; eine Unterdeckung muss vor Übergabe ausgeglichen werden.',
+    leasingNotice: 'Ein Leasingfahrzeug kann nur mit schriftlicher Zustimmung des Leasinggebers verkauft werden.',
     privacy: 'Ich habe die',
     privacyLink: 'Datenschutzerklärung gelesen',
     termsJoin: 'und akzeptiere die',
@@ -221,6 +242,7 @@ const copy = {
       damage: 'Bitte beschreiben Sie die Schäden kurz.',
       photos: 'Bitte mindestens 4 Bilder hochladen.',
       contact: 'Bitte Telefonnummer, E-Mail und Datenschutzbestätigung prüfen.',
+      finance: 'Bitte Finanzierer angeben und die Prüfung der Finanzierung erlauben.',
       server: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
     },
   },
@@ -261,6 +283,16 @@ const copy = {
     upload: 'Upload vehicle photos',
     uploadHelp: 'Minimum 4, maximum 12 images. Max 10 MB each.',
     photos: 'photos', phone: 'Phone number', email: 'Email address',
+    financeTitle: 'Ownership and finance',
+    financeIntro: 'These details help Autorell plan a secure settlement and title transfer if you accept a bid.',
+    financeStatus: 'How is the vehicle financed?',
+    financeProvider: 'Finance company or bank',
+    financeReference: 'Agreement or loan reference',
+    financeBalance: 'Estimated outstanding balance',
+    financeBalanceHelp: 'An estimate is enough. Autorell requests a current settlement figure before completion.',
+    financeConsent: 'I authorise Autorell to verify the finance and request a settlement figure if required.',
+    financeNotice: 'Where applicable, Autorell pays the finance provider directly. Any surplus is paid to you; any shortfall must be covered before handover.',
+    leasingNotice: 'A leased vehicle can only be sold with the leasing company’s written approval for settlement or purchase.',
     privacy: 'I have read the',
     privacyLink: 'privacy policy',
     termsJoin: 'and accept the',
@@ -278,6 +310,7 @@ const copy = {
       damage: 'Briefly describe the damage.',
       photos: 'Upload at least 4 photos.',
       contact: 'Check your phone number, email and privacy acceptance.',
+      finance: 'Enter the finance provider and authorise Autorell to verify the finance.',
       server: 'Something went wrong. Please try again.',
     },
   },
@@ -350,6 +383,8 @@ const emptyForm = {
   driveable: '', engineTransmissionIssues: '', fluidLeaks: '',
   seriousCollisionDamage: '',
   towbar: '', sellTime: '', equipment: '', phone: '', email: '',
+  financeStatus: '', financeProvider: '', financeAgreementReference: '',
+  financeEstimatedBalance: '', financeContactConsent: false,
   privacyAccepted: false,
 }
 
@@ -458,6 +493,33 @@ export default function VehicleLeadForm({
       form.damage === o.damage[2] ||
       form.damage === o.damage[3])
   const powerUnit = locale === 'sv' ? 'hk' : locale === 'de' ? 'PS' : 'hp'
+  const currencyUnit = locale === 'sv' ? 'SEK' : 'EUR'
+  const financeOptions =
+    locale === 'sv'
+      ? [
+          ['owned_outright', 'Bilen är fullt betald och ägs av mig'],
+          ['vehicle_finance', 'Billån eller avbetalning med bilen som säkerhet'],
+          ['unsecured_loan', 'Privatlån utan bilen som säkerhet'],
+          ['leasing', 'Privat- eller företagsleasing'],
+          ['unknown', 'Jag är osäker'],
+        ]
+      : locale === 'de'
+        ? [
+            ['owned_outright', 'Vollständig bezahlt und in meinem Eigentum'],
+            ['vehicle_finance', 'Fahrzeugfinanzierung oder Ratenkredit'],
+            ['unsecured_loan', 'Unbesicherter Privatkredit'],
+            ['leasing', 'Privat- oder Gewerbeleasing'],
+            ['unknown', 'Ich bin nicht sicher'],
+          ]
+        : [
+            ['owned_outright', 'Fully paid and owned by me'],
+            ['vehicle_finance', 'Vehicle finance or secured hire purchase'],
+            ['unsecured_loan', 'Unsecured personal loan'],
+            ['leasing', 'Private or business lease'],
+            ['unknown', 'I am not sure'],
+          ]
+  const securedFinance =
+    form.financeStatus === 'vehicle_finance' || form.financeStatus === 'leasing'
   const otherBrandLabel =
     locale === 'sv' ? 'Annat' : locale === 'de' ? 'Sonstige' : 'Other'
   const pageMarket = localSeo
@@ -590,6 +652,13 @@ export default function VehicleLeadForm({
     }
 
     if (step === 4) {
+      requireField('financeStatus', t.financeStatus)
+      if (securedFinance) {
+        requireField('financeProvider', t.financeProvider)
+        if (!form.financeContactConsent) {
+          errors.financeContactConsent = t.errors.finance
+        }
+      }
       if (images.length < 4) errors.images = t.errors.photos
       if (!/^[+0-9][0-9\s-]{6,18}$/.test(form.phone)) {
         errors.phone =
@@ -1035,6 +1104,55 @@ export default function VehicleLeadForm({
 
             {step === 4 && (
               <Section eyebrow={t.finalEyebrow} title={t.finalTitle} intro={t.finalIntro}>
+                <div className="mb-7 rounded-[20px] border border-[#c9e3f2] bg-[#f1f8fc] p-5 sm:p-6">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                      <ShieldCheck size={18} />
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-[#202124]">{t.financeTitle}</h3>
+                      <p className="mt-1 text-sm leading-6 text-[#62727b]">{t.financeIntro}</p>
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                    <Field label={t.financeStatus} fieldKey="financeStatus" error={fieldErrors.financeStatus}>
+                      <select className="form-control" value={form.financeStatus} onChange={(event) => update('financeStatus', event.target.value)}>
+                        <option value="">{t.choose}</option>
+                        {financeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </Field>
+                    {securedFinance && (
+                      <Field label={t.financeProvider} fieldKey="financeProvider" error={fieldErrors.financeProvider}>
+                        <input className="form-control" value={form.financeProvider} onChange={(event) => update('financeProvider', event.target.value)} />
+                      </Field>
+                    )}
+                    {securedFinance && (
+                      <Field label={t.financeReference} optional={t.optional}>
+                        <input className="form-control" value={form.financeAgreementReference} onChange={(event) => update('financeAgreementReference', event.target.value)} />
+                      </Field>
+                    )}
+                    {securedFinance && (
+                      <Field label={t.financeBalance} optional={t.optional}>
+                        <div className="relative">
+                          <input type="number" min="0" className="form-control pr-16" value={form.financeEstimatedBalance} onChange={(event) => update('financeEstimatedBalance', event.target.value)} />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#8a9296]">{currencyUnit}</span>
+                        </div>
+                        <span className="mt-2 block text-xs leading-5 text-[#7c878d]">{t.financeBalanceHelp}</span>
+                      </Field>
+                    )}
+                  </div>
+                  {securedFinance && (
+                    <>
+                      <div className={`mt-5 rounded-[14px] border px-4 py-3 text-sm leading-6 ${form.financeStatus === 'leasing' ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-[#d7e8f1] bg-white text-[#526873]'}`}>
+                        {form.financeStatus === 'leasing' ? t.leasingNotice : t.financeNotice}
+                      </div>
+                      <label id="field-financeContactConsent" className={`mt-4 flex items-start gap-3 text-sm leading-6 ${fieldErrors.financeContactConsent ? 'text-red-700' : 'text-[#53636c]'}`}>
+                        <input type="checkbox" className="mt-1 h-4 w-4 accent-[#242424]" checked={form.financeContactConsent} onChange={(event) => update('financeContactConsent', event.target.checked)} />
+                        <span>{t.financeConsent}{fieldErrors.financeContactConsent && <span className="mt-1 block font-medium text-red-600">{fieldErrors.financeContactConsent}</span>}</span>
+                      </label>
+                    </>
+                  )}
+                </div>
                 <label id="field-images" className={`grid min-h-44 cursor-pointer place-items-center rounded-[18px] border border-dashed p-5 text-center transition hover:border-[#8dbdd8] hover:bg-[#f4f9fc] ${fieldErrors.images ? 'border-red-500 bg-red-50/50 ring-3 ring-red-100' : 'border-[#c9c8c2] bg-[#faf9f6]'}`}>
                   <div><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#B4D9EF]"><Upload className="text-[#242424]" size={20} /></span><p className="mt-4 font-medium">{t.upload}</p><p className="mt-1 text-sm font-normal text-[#737b81]">{t.uploadHelp}</p><p className="mt-2 text-xs font-medium text-[#4f5960]">{images.length}/12 {t.photos}</p></div>
                   <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="hidden" onChange={addImages} />

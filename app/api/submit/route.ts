@@ -12,6 +12,14 @@ function boolean(form: FormData, key: string) {
   return text(form, key).toLowerCase() === 'true'
 }
 
+const financeStatuses = new Set([
+  'owned_outright',
+  'vehicle_finance',
+  'unsecured_loan',
+  'leasing',
+  'unknown',
+])
+
 export async function POST(request: Request) {
   try {
     const form = await request.formData()
@@ -67,14 +75,40 @@ export async function POST(request: Request) {
     const warnings = canonicalVehicleValue(text(form, 'warnings'))
     const damage = canonicalVehicleValue(text(form, 'damage'))
     const tireSet = canonicalVehicleValue(text(form, 'tireset'))
+    const financeStatus = text(form, 'financeStatus')
+    const financeProvider = text(form, 'financeProvider')
+    const financeAgreementReference = text(form, 'financeAgreementReference')
+    const financeContactConsent = boolean(form, 'financeContactConsent')
+    const financeEstimatedBalanceText = text(form, 'financeEstimatedBalance')
+    const financeEstimatedBalance = financeEstimatedBalanceText
+      ? Number(financeEstimatedBalanceText)
+      : null
+    const securedFinance =
+      financeStatus === 'vehicle_finance' || financeStatus === 'leasing'
 
     if (
       Object.values(requiredFields).some((value) => !value) ||
       !/^[A-Z]{2}$/.test(originCountry) ||
-      !tireSet
+      !tireSet ||
+      !financeStatuses.has(financeStatus)
     ) {
       return NextResponse.json(
         { error: 'Obligatoriska fordonsuppgifter saknas.' },
+        { status: 400 }
+      )
+    }
+
+    if (
+      (securedFinance && (!financeProvider || !financeContactConsent)) ||
+      (financeEstimatedBalance !== null &&
+        (!Number.isFinite(financeEstimatedBalance) ||
+          financeEstimatedBalance < 0))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Finansieringsuppgifterna är ofullständiga eller ogiltiga.',
+        },
         { status: 400 }
       )
     }
@@ -176,6 +210,20 @@ export async function POST(request: Request) {
       towbar: canonicalVehicleValue(text(form, 'towbar')),
       equipment: text(form, 'equipment') || null,
       sellTime: canonicalVehicleValue(text(form, 'sellTime')),
+      finance_status: financeStatus,
+      finance_provider: securedFinance ? financeProvider : null,
+      finance_agreement_reference:
+        securedFinance && financeAgreementReference
+          ? financeAgreementReference
+          : null,
+      finance_estimated_balance:
+        securedFinance ? financeEstimatedBalance : null,
+      finance_contact_consent:
+        securedFinance && financeContactConsent,
+      finance_review_status:
+        securedFinance || financeStatus === 'unknown'
+        ? 'needs_review'
+        : 'not_required',
       phone,
       email,
       source: originCountry,
@@ -254,6 +302,11 @@ export async function POST(request: Request) {
                     <tr><td style="color:#737b81;">Varningslampor</td><td><strong>${lead.warnings || 'Ej angivet'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Däckens skick</td><td><strong>${lead.tires || 'Ej angivet'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Däckuppsättningar</td><td><strong>${lead.tireset || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Ägande/finansiering</td><td><strong>${lead.finance_status}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Finansbolag</td><td><strong>${lead.finance_provider || 'Ej aktuellt'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Avtalsreferens</td><td><strong>${lead.finance_agreement_reference || 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Uppskattad skuld</td><td><strong>${lead.finance_estimated_balance !== null ? `${lead.finance_estimated_balance.toLocaleString('sv-SE')} ${originCountry === 'SE' ? 'SEK' : 'EUR'}` : 'Ej angivet'}</strong></td></tr>
+                    <tr><td style="color:#737b81;">Samtycke till kontroll</td><td><strong>${lead.finance_contact_consent ? 'Ja' : 'Ej aktuellt'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Körbar</td><td><strong>${lead.is_driveable ? 'Ja' : 'Nej'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Motor/växellådsproblem</td><td><strong>${lead.has_engine_transmission_issues ? 'Ja' : 'Nej'}</strong></td></tr>
                     <tr><td style="color:#737b81;">Vätskeläckage</td><td><strong>${lead.has_fluid_leaks ? 'Ja' : 'Nej'}</strong></td></tr>
