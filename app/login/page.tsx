@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+  const [statusHeading, setStatusHeading] = useState('Account access')
   const [isLoading, setIsLoading] = useState(false)
   const [requestedPath, setRequestedPath] = useState('')
 
@@ -53,6 +54,13 @@ export default function LoginPage() {
       if (status === 'sales-required') {
         setStatusMessage(
           'This account does not have access to the Autorell Sales Portal.'
+        )
+      }
+
+      if (status === 'inactive') {
+        setStatusHeading('Session ended securely')
+        setStatusMessage(
+          'You were signed out automatically after 15 minutes without activity. Sign in again to continue.'
         )
       }
     }, 0)
@@ -207,7 +215,7 @@ export default function LoginPage() {
 
             {statusMessage && (
               <div role="status" className={styles.statusMessage}>
-                <strong>Account access pending</strong>
+                <strong>{statusHeading}</strong>
                 <span>{statusMessage}</span>
               </div>
             )}

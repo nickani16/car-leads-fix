@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import InactivityLogout from '@/app/components/InactivityLogout'
 import AdminShell from './AdminShell'
 
 export default async function AdminLayout({
@@ -29,9 +30,11 @@ export default async function AdminLayout({
   }
 
   return (
-    <AdminShell role={adminUser.role} email={user.email || 'Admin'}>
-      {children}
-    </AdminShell>
+    <>
+      <InactivityLogout />
+      <AdminShell role={adminUser.role} email={user.email || 'Admin'}>
+        {children}
+      </AdminShell>
+    </>
   )
 }
-

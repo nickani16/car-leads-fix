@@ -602,7 +602,7 @@ export default function PublicHeader({
             </a>
 
             <nav
-              className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1.5 transition-[background-color,border-color,box-shadow,border-radius] duration-300 xl:flex ${
+              className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1 transition-[background-color,border-color,box-shadow,border-radius] duration-300 min-[1120px]:flex xl:p-1.5 ${
                 transparent
                   ? 'rounded-full border border-white/70 bg-white/72 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl'
                   : 'border border-transparent bg-transparent shadow-none'
@@ -638,7 +638,7 @@ export default function PublicHeader({
               <div className="group relative">
                 <Link
                   href={activeLocale === 'sv' ? '/for-handlare' : content.links[3][0]}
-                  className="flex min-h-10 shrink-0 appearance-none items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
+                  className="flex min-h-10 shrink-0 appearance-none items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
                 >
                   <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
                     04
@@ -739,7 +739,7 @@ export default function PublicHeader({
 
               <Link
                 href={content.links[4][0]}
-                className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] 2xl:px-5"
+                className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
               >
                 <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
                   05
@@ -748,10 +748,10 @@ export default function PublicHeader({
               </Link>
             </nav>
 
-            <div className="hidden items-center gap-2 xl:flex">
+            <div className="hidden items-center gap-2 min-[1120px]:flex">
               <Link
                 href={content.ctaHref}
-                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-2 text-sm font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
+                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#242424] pl-4 pr-1.5 text-xs font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111] xl:min-h-12 xl:gap-3 xl:pl-5 xl:pr-2 xl:text-sm"
               >
                 {content.cta}
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
@@ -765,7 +765,7 @@ export default function PublicHeader({
               onClick={() => setOpen((value) => !value)}
               aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
               aria-expanded={open}
-              className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition xl:hidden ${
+              className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition min-[1120px]:hidden ${
                 open
                   ? 'border-[#242424] bg-[#242424] text-white'
                   : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
@@ -778,7 +778,7 @@ export default function PublicHeader({
         </header>
 
         <div
-          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] xl:hidden ${
+          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] min-[1120px]:hidden ${
             open
               ? 'pointer-events-auto translate-y-0 opacity-100'
               : 'pointer-events-none -translate-y-3 opacity-0'
@@ -942,7 +942,7 @@ function DesktopMenu({
       <a
         href={href}
         onClick={(event) => onNavigate(event, href)}
-        className="flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-[13px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] 2xl:px-5"
+        className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
       >
         <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
           {number}

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import InactivityLogout from '@/app/components/InactivityLogout'
 import DealerShell from './DealerShell'
 
 export default async function DealerLayout({
@@ -31,5 +32,10 @@ export default async function DealerLayout({
     redirect('/login?status=pending')
   }
 
-  return <DealerShell dealer={dealer}>{children}</DealerShell>
+  return (
+    <>
+      <InactivityLogout />
+      <DealerShell dealer={dealer}>{children}</DealerShell>
+    </>
+  )
 }

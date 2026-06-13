@@ -119,7 +119,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(247,242,232,.42)_0%,transparent_35%)] max-md:bg-[linear-gradient(0deg,rgba(32,33,36,.18)_0%,transparent_35%)]" />
         <div className="home-hero-orb absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
 
-        <div className="home-market-float absolute right-[6%] top-[31%] hidden w-[310px] rounded-[24px] border border-white/65 bg-white/72 p-5 shadow-[0_28px_80px_rgba(32,33,36,.13)] backdrop-blur-xl xl:block">
+        <div className="home-market-float absolute right-[3%] top-[31%] hidden w-[280px] rounded-[24px] border border-white/65 bg-white/72 p-4 shadow-[0_28px_80px_rgba(32,33,36,.13)] backdrop-blur-xl min-[1120px]:block xl:right-[6%] xl:w-[310px] xl:p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
@@ -169,7 +169,7 @@ export default async function HomePage() {
               <Sparkles className="h-4 w-4 shrink-0 text-[#4f8298]" />
               <span>Sälj tryggt. Nå fler professionella köpare.</span>
             </div>
-            <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[76px]">
+            <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[64px] xl:text-[76px]">
               Sälj bilen i Sverige.
               <span className="block text-[#242424]">
                 <span className="whitespace-nowrap">Nå professionella</span>{' '}
