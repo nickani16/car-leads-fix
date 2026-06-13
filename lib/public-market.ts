@@ -1,5 +1,9 @@
 import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
 import { swedishCounties } from '@/lib/swedish-regions.generated'
+import {
+  europeanDealerCountries,
+  germanDealerCities,
+} from '@/lib/international-dealer-seo'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
@@ -8,6 +12,12 @@ const swedishLocalSeoPaths = swedishLocalSeoLocations.map(
 )
 const swedishCountySeoPaths = swedishCounties.map(
   ({ slug }) => `/salj-bil/lan/${slug}`
+)
+const germanDealerSeoPaths = germanDealerCities.map(
+  ({ slug }) => `/haendler/${slug}`
+)
+const europeanDealerSeoPaths = europeanDealerCountries.map(
+  ({ slug }) => `/dealers/${slug}`
 )
 
 const marketConfig = {
@@ -47,6 +57,8 @@ const marketConfig = {
       '/datenschutz',
       '/cookies',
       '/nutzungsbedingungen',
+      '/haendler',
+      ...germanDealerSeoPaths,
     ],
     priorityPath: '/fahrzeuge',
   },
@@ -65,6 +77,8 @@ const marketConfig = {
       '/privacy',
       '/cookies',
       '/terms',
+      '/dealers',
+      ...europeanDealerSeoPaths,
     ],
     priorityPath: '/vehicles',
   },

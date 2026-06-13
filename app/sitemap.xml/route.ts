@@ -18,11 +18,20 @@ export function GET(request: Request) {
             ? '0.9'
             : path.startsWith('/salj-bil/lan/')
               ? '0.8'
-              : path.startsWith('/salj-bil/')
-                ? '0.7'
+            : path.startsWith('/salj-bil/')
+              ? '0.7'
+              : path === '/haendler' || path === '/dealers'
+                ? '0.9'
+                : path.startsWith('/haendler/') || path.startsWith('/dealers/')
+                  ? '0.75'
                 : '0.7'
       const changeFrequency =
-        path === '' || path.startsWith('/salj-bil/') ? 'weekly' : 'monthly'
+        path === '' ||
+        path.startsWith('/salj-bil/') ||
+        path.startsWith('/haendler') ||
+        path.startsWith('/dealers')
+          ? 'weekly'
+          : 'monthly'
 
       return [
         '  <url>',

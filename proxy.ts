@@ -177,6 +177,17 @@ export function proxy(request: NextRequest) {
     (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
   ) {
     const locale = hostname === 'www.autorell.de' ? 'de' : 'en'
+    const dealerSeoBase = locale === 'de' ? '/haendler' : '/dealers'
+
+    if (pathname === dealerSeoBase || pathname.startsWith(`${dealerSeoBase}/`)) {
+      const slug = pathname === dealerSeoBase
+        ? 'index'
+        : pathname.slice(dealerSeoBase.length + 1)
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = `/dealer-seo/${locale}/${slug}`
+      return NextResponse.rewrite(localizedUrl)
+    }
+
     const legacyTarget = LEGACY_DEALER_PATHS[locale].get(pathname)
 
     if (legacyTarget) {

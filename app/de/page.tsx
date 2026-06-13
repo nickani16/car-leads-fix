@@ -2,9 +2,9 @@ import BuyerMarketPage from '../components/BuyerMarketPage'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'Geprüfter Fahrzeugimport für Autohändler | Autorell',
+  title: 'B2B Fahrzeugmarkt für Autohändler | Autorell',
   description:
-    'Fahrzeuge aus Schweden sicher einkaufen: B2B-Gebote, Zahlung an Autorell, Vor-Ort-Prüfung, Exportdokumente und koordinierte Lieferung.',
+    'Moderne Fahrzeuge über digitale B2B-Auktionen einkaufen. Autorell koordiniert Prüfung, Zahlung, Dokumente, Abholung und europaweiten Export.',
   path: '/',
   locale: 'de',
   keywords: [

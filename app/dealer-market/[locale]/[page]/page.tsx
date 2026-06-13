@@ -276,7 +276,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
   en: {
     vehicles: {
       path: '/vehicles',
-      title: 'Swedish vehicles for European dealers | Autorell',
+      title: 'European vehicle sourcing for dealers | Autorell',
       description:
         'Source selected Swedish vehicles with structured condition data, professional bidding and access for verified European automotive dealers.',
       eyebrow: 'Vehicle sourcing from Sweden',

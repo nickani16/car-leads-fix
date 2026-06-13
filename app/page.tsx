@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'de') {
     return createPublicMetadata({
-      title: 'B2B Fahrzeugmarkt für Autohändler | Autorell Deutschland',
+      title: 'B2B Fahrzeugmarkt für Autohändler | Autorell',
       description:
         'Digitaler B2B-Fahrzeugmarkt für Autohändler: geprüfte Fahrzeuge, strukturierte Daten, Online-Auktionen und europaweite Beschaffung mit Autorell.',
       path: '/',
@@ -72,14 +72,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'en') {
     return createPublicMetadata({
-      title: 'Swedish Car Auctions for European Dealers | Autorell',
+      title: 'European Vehicle Sourcing for Dealers | Autorell',
       description:
-        'Source selected Swedish vehicles through structured data, online dealer auctions and a digital cross-border buying platform built for European car dealers.',
+        'Source selected modern vehicles through structured B2B auctions, verified inspections and cross-border transactions coordinated by Autorell.',
       path: '/',
       locale: 'en',
       keywords: [
-        'Swedish car auctions',
-        'vehicles from Sweden',
+        'European vehicle sourcing',
+        'modern vehicles for dealers',
         'European dealer marketplace',
         'B2B car auctions',
         'car sourcing platform',

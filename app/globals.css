@@ -368,6 +368,72 @@ select:-webkit-autofill {
   }
 }
 
+@keyframes dealer-seo-orbit {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-18px, 14px, 0) rotate(4deg);
+  }
+}
+
+@keyframes dealer-seo-console {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@keyframes dealer-seo-bar {
+  from {
+    transform: scaleX(0.08);
+    opacity: 0.35;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dealer-seo-live {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(142, 209, 168, 0.42);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(142, 209, 168, 0);
+  }
+}
+
+.dealer-seo-orbit {
+  animation: dealer-seo-orbit 13s ease-in-out infinite;
+}
+
+.dealer-seo-console {
+  animation: dealer-seo-console 7s ease-in-out infinite;
+}
+
+.dealer-seo-bar {
+  animation: dealer-seo-bar 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dealer-seo-live {
+  animation: dealer-seo-live 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dealer-seo-orbit,
+  .dealer-seo-console,
+  .dealer-seo-bar,
+  .dealer-seo-live {
+    animation: none;
+  }
+}
+
 .contract-sheet {
   border: 1px solid #d9d7d0;
   border-radius: 4px;

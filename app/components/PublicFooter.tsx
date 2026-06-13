@@ -63,6 +63,7 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Dealer Network',
     dealerLinks: [
+      ['Händlerstandorte', '/haendler'],
       ['Händler werden', '/dealer-apply'],
       ['Händlerbedingungen', '/dealer-terms'],
       ['Händler-Login', '/login'],
@@ -96,6 +97,7 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Dealer Network',
     dealerLinks: [
+      ['Dealer markets', '/dealers'],
       ['Become a partner', '/dealer-apply'],
       ['Dealer terms', '/dealer-terms'],
       ['Dealer login', '/login'],

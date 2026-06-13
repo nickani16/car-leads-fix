@@ -2,9 +2,9 @@ import BuyerMarketPage from '../components/BuyerMarketPage'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'Inspected Swedish Vehicles for European Dealers | Autorell',
+  title: 'European Vehicle Sourcing for Dealers | Autorell',
   description:
-    'Source Swedish vehicles through B2B bidding with buyer funds secured, on-site inspection, contracts, export documents and coordinated collection.',
+    'Source selected modern vehicles through structured B2B auctions, verified inspections and cross-border transactions coordinated by Autorell.',
   path: '/',
   locale: 'en',
   keywords: [
