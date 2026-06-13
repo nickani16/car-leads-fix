@@ -2,7 +2,11 @@
 
 import { FileText } from 'lucide-react'
 
-export default function PrintContractButton() {
+export default function PrintContractButton({
+  locale = 'en',
+}: {
+  locale?: 'sv' | 'en'
+}) {
   return (
     <button
       type="button"
@@ -10,7 +14,7 @@ export default function PrintContractButton() {
       className="inline-flex items-center gap-2 rounded-full bg-[#242424] px-5 py-3 text-sm text-white print:hidden"
     >
       <FileText size={16} />
-      Print / save as PDF
+      {locale === 'sv' ? 'Skriv ut / spara som PDF' : 'Print / save as PDF'}
     </button>
   )
 }

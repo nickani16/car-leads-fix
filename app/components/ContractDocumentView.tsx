@@ -66,14 +66,8 @@ type ContractTerm = {
   text?: string
 }
 
-const money = new Intl.NumberFormat('en-IE', {
-  style: 'currency',
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-})
-
 const documentNames: Record<string, string> = {
-  seller_purchase_agreement: 'Vehicle Purchase Agreement',
+  seller_purchase_agreement: 'Köpeavtal för fordon',
   buyer_resale_agreement: 'Vehicle Sale Agreement',
 }
 
@@ -89,6 +83,15 @@ export default function ContractDocumentView({
   backHref: string
 }) {
   const snapshot = document.snapshot || {}
+  const isSellerAgreement =
+    document.document_type === 'seller_purchase_agreement'
+  const language = isSellerAgreement ? 'sv' : 'en'
+  const copy = contractCopy[language]
+  const money = new Intl.NumberFormat(language === 'sv' ? 'sv-SE' : 'en-IE', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  })
   const vehicle = objectValue<Vehicle>(snapshot, 'vehicle')
   const pricing = objectValue<Pricing>(snapshot, 'pricing')
   const deal = objectValue<DealSnapshot>(snapshot, 'deal')
@@ -104,10 +107,8 @@ export default function ContractDocumentView({
           typeof (item as ContractTerm).text === 'string'
       )
     : []
-  const counterparty =
-    document.document_type === 'seller_purchase_agreement' ? seller : buyer
-  const counterpartyTitle =
-    document.document_type === 'seller_purchase_agreement' ? 'Seller' : 'Buyer'
+  const counterparty = isSellerAgreement ? seller : buyer
+  const counterpartyTitle = isSellerAgreement ? copy.seller : copy.buyer
   const blockers = Array.isArray(snapshot.blockers)
     ? snapshot.blockers.filter((item): item is string => typeof item === 'string')
     : []
@@ -123,134 +124,176 @@ export default function ContractDocumentView({
           className="inline-flex items-center gap-2 text-sm text-[#62686c]"
         >
           <ArrowLeft size={16} />
-          Back to contracts
+          {copy.back}
         </Link>
-        <PrintContractButton />
+        <PrintContractButton locale={language} />
       </div>
 
       <article className="contract-sheet relative overflow-hidden bg-white">
         {!sentOrSigned && !finalApproved && (
           <div className="contract-watermark" aria-hidden="true">
-            DRAFT
+            {copy.watermark}
           </div>
         )}
 
         <header className="contract-document-header">
           <BrandLogo />
           <div className="contract-reference">
-            <p>Document reference</p>
+            <p>{copy.documentReference}</p>
             <strong>{document.id.slice(0, 8).toUpperCase()}</strong>
-            <span>Version {document.version}</span>
+            <span>
+              {copy.version} {document.version}
+            </span>
           </div>
         </header>
 
         <section className="contract-title-block">
-          <p className="contract-kicker">Autorell transaction document</p>
+          <p className="contract-kicker">{copy.kicker}</p>
           <h1>{documentNames[document.document_type] || 'Vehicle Agreement'}</h1>
           <p>
-            Deal reference {document.deal_id} · Generated{' '}
-            {new Date(document.created_at).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            })}
+            {copy.dealReference} {document.deal_id} · {copy.generated}{' '}
+            {new Date(document.created_at).toLocaleDateString(
+              language === 'sv' ? 'sv-SE' : 'en-GB',
+              {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              }
+            )}
           </p>
         </section>
 
         {!sentOrSigned && (
           <section className={`contract-notice ${ready ? 'contract-notice-ready' : ''}`}>
             <strong>
-              {finalApproved
-                ? 'FINAL VERSION - APPROVED FOR SIGNATURE'
-                : 'DRAFT - NOT FOR SIGNATURE'}
+              {finalApproved ? copy.finalVersion : copy.draft}
             </strong>
             <p>
               {finalApproved
-                ? 'Autorell has approved this exact document version for the electronic signing workflow. It becomes executed only after all required signatures have been completed.'
+                ? copy.finalNotice
                 : ready
-                ? 'Required transaction data is complete. Final legal wording and signing approval remain outstanding.'
-                : 'Required transaction information is incomplete. This document has no signing effect.'}
+                ? copy.readyNotice
+                : copy.incompleteNotice}
             </p>
           </section>
         )}
 
         <section className="contract-section">
-          <SectionHeading number="01" title="Contracting parties" />
+          <SectionHeading number="01" title={copy.parties} />
           <div className="contract-party-grid">
-            <PartyCard title="Autorell" party={autorell} />
-            <PartyCard title={counterpartyTitle} party={counterparty} />
+            <PartyCard title="Autorell" party={autorell} copy={copy} />
+            <PartyCard
+              title={counterpartyTitle}
+              party={counterparty}
+              copy={copy}
+            />
           </div>
         </section>
 
         <section className="contract-section">
-          <SectionHeading number="02" title="Vehicle" />
+          <SectionHeading number="02" title={copy.vehicle} />
           <dl className="contract-data-grid">
-            <Data label="Registration" value={vehicle.reg} important />
+            <Data label={copy.registration} value={vehicle.reg} important />
             <Data
-              label="Make and model"
+              label={copy.makeModel}
               value={[vehicle.make, vehicle.model].filter(Boolean).join(' ')}
               important
             />
-            <Data label="Model year" value={vehicle.model_year} />
-            <Data label="Mileage" value={vehicle.miles} />
+            <Data label={copy.modelYear} value={vehicle.model_year} />
+            <Data label={copy.mileage} value={vehicle.miles} />
             <Data label="VIN" value={vehicle.vin} />
-            <Data label="Fuel" value={vehicle.fuel_type} />
-            <Data label="Transmission" value={vehicle.gearbox} />
-            <Data label="Declared condition" value={vehicle.damage} />
+            <Data label={copy.fuel} value={vehicle.fuel_type} />
+            <Data label={copy.transmission} value={vehicle.gearbox} />
+            <Data label={copy.declaredCondition} value={vehicle.damage} />
           </dl>
           {vehicle.damage_description && (
             <div className="contract-note">
-              <span>Condition notes</span>
+              <span>{copy.conditionNotes}</span>
               <p>{vehicle.damage_description}</p>
             </div>
           )}
         </section>
 
         <section className="contract-section">
-          <SectionHeading number="03" title="Commercial terms" />
+          <SectionHeading number="03" title={copy.commercialTerms} />
           <div className="contract-price-box">
             {document.document_type === 'seller_purchase_agreement' ? (
               <>
-                <PriceLine label="Purchase price payable to seller" value={pricing.seller_net_amount} primary />
-                <PriceLine label="Winning dealer bid" value={pricing.winning_bid_amount} />
+                <PriceLine
+                  label={copy.sellerPrice}
+                  value={pricing.seller_net_amount}
+                  primary
+                  money={money}
+                />
+                <PriceLine
+                  label={copy.winningBid}
+                  value={pricing.winning_bid_amount}
+                  money={money}
+                />
               </>
             ) : (
               <>
-                <PriceLine label="Vehicle price" value={pricing.winning_bid_amount} />
-                <PriceLine label="Autorell buyer fee" value={pricing.commission_amount} />
+                <PriceLine
+                  label="Vehicle price"
+                  value={pricing.winning_bid_amount}
+                  money={money}
+                />
+                <PriceLine
+                  label="Autorell buyer fee"
+                  value={pricing.commission_amount}
+                  money={money}
+                />
                 <PriceLine
                   label={deal.inspection_name || 'Autorell Verified Inspection'}
                   value={pricing.inspection_fee || deal.inspection_fee}
+                  money={money}
                 />
-                <PriceLine label="Transport" value={pricing.transport_fee} />
-                <PriceLine label="Export and documentation" value={pricing.export_document_fee} />
-                <PriceLine label="Total payable by buyer" value={pricing.buyer_total_amount} primary />
+                <PriceLine
+                  label="Transport"
+                  value={pricing.transport_fee}
+                  money={money}
+                />
+                <PriceLine
+                  label="Export and documentation"
+                  value={pricing.export_document_fee}
+                  money={money}
+                />
+                <PriceLine
+                  label="Total payable by buyer"
+                  value={pricing.buyer_total_amount}
+                  primary
+                  money={money}
+                />
               </>
             )}
-            <p className="contract-currency">Currency: {pricing.currency || 'EUR'}</p>
             <p className="contract-currency">
-              Route:{' '}
+              {copy.currency}: {pricing.currency || 'EUR'}
+            </p>
+            <p className="contract-currency">
+              {copy.route}:{' '}
               {formatLocation(
                 deal.origin_city,
                 deal.origin_postal_code,
-                deal.origin_country
+                deal.origin_country,
+                copy.pending
               )}{' '}
               →{' '}
               {formatLocation(
                 deal.destination_city,
                 deal.destination_postal_code,
-                deal.destination_country
+                deal.destination_country,
+                copy.pending
               )}
             </p>
           </div>
         </section>
 
         <section className="contract-section">
-          <SectionHeading number="04" title="Transaction framework" />
+          <SectionHeading number="04" title={copy.framework} />
           <div className="contract-clauses">
             {(snapshotTerms.length > 0
               ? snapshotTerms
-              : legacyTerms
+              : legacyTerms[language]
             ).map((term) => (
               <Clause
                 key={term.title}
@@ -263,7 +306,7 @@ export default function ContractDocumentView({
 
         {blockers.length > 0 && (
           <section className="contract-section contract-blockers">
-            <SectionHeading number="05" title="Outstanding information" />
+            <SectionHeading number="05" title={copy.outstanding} />
             <ul>
               {blockers.map((blocker) => (
                 <li key={blocker}>{blocker.replaceAll('_', ' ')}</li>
@@ -275,12 +318,14 @@ export default function ContractDocumentView({
         <footer className="contract-integrity">
           <ShieldCheck size={19} />
           <div>
-            <strong>Document integrity record</strong>
+            <strong>{copy.integrity}</strong>
             <p>SHA-256 {document.content_hash}</p>
             <p>
-              Template {document.template_version} · Status {document.status}
+              {copy.template} {document.template_version} · {copy.status}{' '}
+              {copy.statusValues[document.status as keyof typeof copy.statusValues] ||
+                document.status}
               {document.final_approved_at
-                ? ` · Approved ${new Date(document.final_approved_at).toLocaleString('en-GB')}`
+                ? ` · ${copy.approved} ${new Date(document.final_approved_at).toLocaleString(language === 'sv' ? 'sv-SE' : 'en-GB')}`
                 : ''}
             </p>
           </div>
@@ -290,31 +335,133 @@ export default function ContractDocumentView({
   )
 }
 
-const legacyTerms: ContractTerm[] = [
-  {
-    title: 'Vehicle and disclosures',
-    text: 'The vehicle identity, mileage, declared condition and supporting information shown in this document form part of the transaction record.',
+const contractCopy = {
+  sv: {
+    back: 'Tillbaka till avtal',
+    documentReference: 'Dokumentreferens',
+    version: 'Version',
+    kicker: 'Autorell transaktionsavtal',
+    dealReference: 'Affärsreferens',
+    generated: 'Skapat',
+    finalVersion: 'SLUTLIG VERSION - GODKÄND FÖR SIGNERING',
+    draft: 'UTKAST - EJ FÖR SIGNERING',
+    finalNotice: 'Autorell har godkänt denna exakta dokumentversion för elektronisk signering. Avtalet verkställs först när samtliga nödvändiga signaturer har slutförts.',
+    readyNotice: 'Nödvändiga affärsuppgifter är kompletta. Slutligt godkännande för signering återstår.',
+    incompleteNotice: 'Nödvändiga affärsuppgifter saknas. Dokumentet har ingen signeringsverkan.',
+    parties: 'Avtalsparter',
+    seller: 'Säljare',
+    buyer: 'Köpare',
+    vehicle: 'Fordon',
+    registration: 'Registreringsnummer',
+    makeModel: 'Märke och modell',
+    modelYear: 'Årsmodell',
+    mileage: 'Mätarställning',
+    fuel: 'Bränsle',
+    transmission: 'Växellåda',
+    declaredCondition: 'Deklarerat skick',
+    conditionNotes: 'Anteckningar om skick',
+    commercialTerms: 'Kommersiella villkor',
+    sellerPrice: 'Köpeskilling till säljaren',
+    winningBid: 'Vinnande bud från bilhandlare',
+    currency: 'Valuta',
+    route: 'Sträcka',
+    framework: 'Avtalsvillkor',
+    outstanding: 'Uppgifter som saknas',
+    integrity: 'Dokumentets integritet',
+    template: 'Mall',
+    status: 'Status',
+    approved: 'Godkänt',
+    watermark: 'UTKAST',
+    statusValues: {
+      draft: 'utkast',
+      ready: 'klart för granskning',
+      sent: 'skickat',
+      signed: 'signerat',
+      void: 'ersatt',
+    },
+    registrationNo: 'Organisations-/personnummer',
+    vatNo: 'Momsnummer',
+    pending: 'Uppgift saknas',
   },
-  {
-    title: 'Payment and completion',
-    text: "Payment, collection, document release and completion are subject to Autorell's final approved transaction terms and verification requirements.",
+  en: {
+    back: 'Back to contracts',
+    documentReference: 'Document reference',
+    version: 'Version',
+    kicker: 'Autorell transaction document',
+    dealReference: 'Deal reference',
+    generated: 'Generated',
+    finalVersion: 'FINAL VERSION - APPROVED FOR SIGNATURE',
+    draft: 'DRAFT - NOT FOR SIGNATURE',
+    finalNotice: 'Autorell has approved this exact document version for the electronic signing workflow. It becomes executed only after all required signatures have been completed.',
+    readyNotice: 'Required transaction data is complete. Final signing approval remains outstanding.',
+    incompleteNotice: 'Required transaction information is incomplete. This document has no signing effect.',
+    parties: 'Contracting parties',
+    seller: 'Seller',
+    buyer: 'Buyer',
+    vehicle: 'Vehicle',
+    registration: 'Registration',
+    makeModel: 'Make and model',
+    modelYear: 'Model year',
+    mileage: 'Mileage',
+    fuel: 'Fuel',
+    transmission: 'Transmission',
+    declaredCondition: 'Declared condition',
+    conditionNotes: 'Condition notes',
+    commercialTerms: 'Commercial terms',
+    sellerPrice: 'Purchase price payable to seller',
+    winningBid: 'Winning dealer bid',
+    currency: 'Currency',
+    route: 'Route',
+    framework: 'Transaction framework',
+    outstanding: 'Outstanding information',
+    integrity: 'Document integrity record',
+    template: 'Template',
+    status: 'Status',
+    approved: 'Approved',
+    watermark: 'DRAFT',
+    statusValues: {
+      draft: 'draft',
+      ready: 'ready',
+      sent: 'sent',
+      signed: 'signed',
+      void: 'void',
+    },
+    registrationNo: 'Registration no.',
+    vatNo: 'VAT no.',
+    pending: 'Information pending',
   },
-  {
-    title: 'Risk and ownership',
-    text: 'Risk and ownership transfer at the point specified in the final signed agreement and handover documentation.',
-  },
-  {
-    title: 'Status of this draft',
-    text: 'This generated document is a locked transaction snapshot. It is not binding until released through the approved signing workflow and signed by the required parties.',
-  },
-]
+} as const
+
+const legacyTerms: Record<'sv' | 'en', ContractTerm[]> = {
+  sv: [
+    {
+      title: 'Fordon och uppgifter',
+      text: 'Fordonets identitet, mätarställning, deklarerade skick och stödjande information i dokumentet ingår i affärens underlag.',
+    },
+    {
+      title: 'Betalning och slutförande',
+      text: 'Betalning, hämtning, utlämning av handlingar och slutförande följer Autorells slutligt godkända transaktionsvillkor och kontrollkrav.',
+    },
+  ],
+  en: [
+    {
+      title: 'Vehicle and disclosures',
+      text: 'The vehicle identity, mileage, declared condition and supporting information shown in this document form part of the transaction record.',
+    },
+    {
+      title: 'Payment and completion',
+      text: "Payment, collection, document release and completion are subject to Autorell's final approved transaction terms and verification requirements.",
+    },
+  ],
+}
 
 function formatLocation(
   city?: string | null,
   postalCode?: string | null,
-  country?: string | null
+  country?: string | null,
+  fallback = 'Pending'
 ) {
-  return [postalCode, city, country].filter(Boolean).join(' ') || 'Pending'
+  return [postalCode, city, country].filter(Boolean).join(' ') || fallback
 }
 
 function SectionHeading({ number, title }: { number: string; title: string }) {
@@ -326,13 +473,29 @@ function SectionHeading({ number, title }: { number: string; title: string }) {
   )
 }
 
-function PartyCard({ title, party }: { title: string; party: Party }) {
+function PartyCard({
+  title,
+  party,
+  copy,
+}: {
+  title: string
+  party: Party
+  copy: (typeof contractCopy)[keyof typeof contractCopy]
+}) {
   return (
     <section className="contract-party-card">
       <p className="contract-party-label">{title}</p>
-      <h3>{party.legal_name || 'Information pending'}</h3>
-      {party.registration_number && <p>Registration no. {party.registration_number}</p>}
-      {party.vat_number && <p>VAT no. {party.vat_number}</p>}
+      <h3>{party.legal_name || copy.pending}</h3>
+      {party.registration_number && (
+        <p>
+          {copy.registrationNo} {party.registration_number}
+        </p>
+      )}
+      {party.vat_number && (
+        <p>
+          {copy.vatNo} {party.vat_number}
+        </p>
+      )}
       {party.registered_address && <p>{party.registered_address}</p>}
       {party.country_code && <p>{party.country_code}</p>}
       {party.email && <p>{party.email}</p>}
@@ -351,7 +514,17 @@ function Data({ label, value, important = false }: { label: string; value?: stri
   )
 }
 
-function PriceLine({ label, value, primary = false }: { label: string; value?: string | number | null; primary?: boolean }) {
+function PriceLine({
+  label,
+  value,
+  primary = false,
+  money,
+}: {
+  label: string
+  value?: string | number | null
+  primary?: boolean
+  money: Intl.NumberFormat
+}) {
   return (
     <div className={primary ? 'contract-price-primary' : ''}>
       <span>{label}</span>
