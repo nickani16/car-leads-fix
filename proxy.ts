@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
@@ -24,6 +25,9 @@ const MARKET_BY_HOST: Record<string, Market> = {
 
 const SEARCH_CRAWLER_PATTERN =
   /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|applebot/i
+const EU_BUYER_MARKET_CODES = new Set(
+  euBuyerMarkets.map((market) => market.code),
+)
 
 const DEALER_MARKET_ROUTES = {
   de: new Map([
@@ -178,6 +182,35 @@ export function proxy(request: NextRequest) {
   ) {
     const locale = hostname === 'www.autorell.de' ? 'de' : 'en'
     const dealerSeoBase = locale === 'de' ? '/haendler' : '/dealers'
+
+    if (locale === 'en') {
+      const segments = pathname.split('/').filter(Boolean)
+      const marketCode = segments[0]
+
+      if (marketCode && EU_BUYER_MARKET_CODES.has(marketCode)) {
+        const market = euBuyerMarkets.find(
+          (item) => item.code === marketCode,
+        )
+        const isMarketHub = segments.length === 1
+        const isMarketCity =
+          segments.length === 3 && segments[1] === 'dealers'
+
+        if (isMarketHub || isMarketCity) {
+          const localizedUrl = request.nextUrl.clone()
+          localizedUrl.pathname = `/eu-buyer/${marketCode}/${
+            isMarketHub ? 'index' : segments[2]
+          }`
+          const requestHeaders = new Headers(request.headers)
+          requestHeaders.set(
+            'x-autorell-language',
+            market?.language ?? 'en',
+          )
+          return NextResponse.rewrite(localizedUrl, {
+            request: { headers: requestHeaders },
+          })
+        }
+      }
+    }
 
     if (pathname === dealerSeoBase || pathname.startsWith(`${dealerSeoBase}/`)) {
       const slug = pathname === dealerSeoBase

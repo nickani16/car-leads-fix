@@ -24,12 +24,17 @@ export function GET(request: Request) {
                 ? '0.9'
                 : path.startsWith('/haendler/') || path.startsWith('/dealers/')
                   ? '0.75'
+                  : /^\/[a-z]{2}$/.test(path)
+                    ? '0.85'
+                    : /^\/[a-z]{2}\/dealers\//.test(path)
+                      ? '0.75'
                 : '0.7'
       const changeFrequency =
         path === '' ||
         path.startsWith('/salj-bil/') ||
         path.startsWith('/haendler') ||
-        path.startsWith('/dealers')
+        path.startsWith('/dealers') ||
+        /^\/[a-z]{2}(\/dealers\/.*)?$/.test(path)
           ? 'weekly'
           : 'monthly'
 

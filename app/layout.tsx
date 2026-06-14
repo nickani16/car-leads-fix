@@ -74,17 +74,22 @@ export default async function RootLayout({
     .trim()
     .split(':')[0]
     .toLowerCase()
-  const language = hostname.endsWith('autorell.de')
+  const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const marketLanguage = hostname.endsWith('autorell.de')
     ? 'de'
     : hostname.endsWith('autorell.com')
       ? 'en'
       : 'sv'
+  const documentLanguage = requestedLanguage || marketLanguage
 
   return (
-    <html lang={language} className={`${dmSans.variable} h-full antialiased`}>
+    <html
+      lang={documentLanguage}
+      className={`${dmSans.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         {children}
-        <CookieConsent initialLocale={language} />
+        <CookieConsent initialLocale={marketLanguage} />
       </body>
     </html>
   )

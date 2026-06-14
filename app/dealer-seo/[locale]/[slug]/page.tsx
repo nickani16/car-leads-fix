@@ -27,6 +27,10 @@ import {
   getDealerSeoLocations,
   getDealerSeoPublicPath,
 } from '@/lib/international-dealer-seo'
+import {
+  getEuBuyerMarketByCountrySlug,
+  getEuBuyerPath,
+} from '@/lib/eu-buyer-markets'
 
 type RouteProps = {
   params: Promise<{ locale: string; slug: string }>
@@ -457,15 +461,25 @@ export default async function DealerSeoPage({ params }: RouteProps) {
             {locations
               .filter(({ slug: itemSlug }) => itemSlug !== location?.slug)
               .slice(0, location ? 9 : locations.length)
-              .map((item) => (
-                <Link key={item.slug} href={getDealerSeoPublicPath(locale, item.slug)} className="group flex min-h-24 items-center justify-between rounded-[20px] border border-[#deddd7] bg-white px-6 py-5 transition hover:-translate-y-0.5 hover:border-[#b4d9ef] hover:shadow-[0_16px_40px_rgba(32,33,36,.06)]">
-                  <span>
-                    <strong className="block text-lg font-medium">{item.name}</strong>
-                    <span className="mt-1 block text-xs text-[#849096]">{item.region}</span>
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-[#62879a] transition group-hover:translate-x-1" />
-                </Link>
-              ))}
+              .map((item) => {
+                const localizedMarket =
+                  locale === 'en'
+                    ? getEuBuyerMarketByCountrySlug(item.slug)
+                    : null
+                const itemPath = localizedMarket
+                  ? getEuBuyerPath(localizedMarket)
+                  : getDealerSeoPublicPath(locale, item.slug)
+
+                return (
+                  <Link key={item.slug} href={itemPath} className="group flex min-h-24 items-center justify-between rounded-[20px] border border-[#deddd7] bg-white px-6 py-5 transition hover:-translate-y-0.5 hover:border-[#b4d9ef] hover:shadow-[0_16px_40px_rgba(32,33,36,.06)]">
+                    <span>
+                      <strong className="block text-lg font-medium">{item.name}</strong>
+                      <span className="mt-1 block text-xs text-[#849096]">{item.region}</span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-[#62879a] transition group-hover:translate-x-1" />
+                  </Link>
+                )
+              })}
           </div>
         </div>
       </section>
