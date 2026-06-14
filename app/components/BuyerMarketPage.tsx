@@ -545,7 +545,7 @@ function HeroVehicleVisual({
             fill
             priority
             sizes="(max-width: 1023px) 100vw, 48vw"
-            className="object-cover object-[69%_center]"
+            className="object-cover object-right"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,27,31,.03)_28%,rgba(20,27,31,.7)_100%)]" />
 
