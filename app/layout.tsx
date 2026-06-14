@@ -87,7 +87,7 @@ export default async function RootLayout({
       lang={documentLanguage}
       className={`${dmSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
         <CookieConsent initialLocale={marketLanguage} />
       </body>

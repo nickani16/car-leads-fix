@@ -134,10 +134,10 @@ export default function CookieConsent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="mx-auto max-w-[1180px] overflow-hidden rounded-[22px] border border-[#d7d7d1] bg-white shadow-[0_30px_100px_rgba(32,33,36,.22)]"
+        className="mx-auto w-full max-w-[1180px] overflow-hidden rounded-[22px] border border-[#d7d7d1] bg-white shadow-[0_30px_100px_rgba(32,33,36,.22)]"
       >
-        <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="max-w-3xl">
+        <div className="grid min-w-0 gap-6 p-5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="min-w-0 max-w-3xl">
             <div className="flex items-start justify-between gap-4">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#B4D9EF] text-[#242424]">
                 <Cookie size={20} />
@@ -191,7 +191,7 @@ export default function CookieConsent({
             )}
           </div>
 
-          <div className="flex flex-col gap-2.5 sm:flex-row lg:w-[470px] lg:flex-wrap lg:justify-end">
+          <div className="flex min-w-0 w-full flex-col gap-2.5 sm:flex-row lg:w-[470px] lg:flex-wrap lg:justify-end">
             <button
               type="button"
               onClick={() => choose('all')}

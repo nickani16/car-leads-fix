@@ -196,9 +196,10 @@ export default async function EuBuyerPage({ params }: RouteProps) {
             </Link>
             <Link
               href="/dealer-apply"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#242424] px-5 text-sm font-medium text-white transition hover:-translate-y-0.5"
+              aria-label={copy.apply}
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-[#242424] px-4 text-sm font-medium text-white transition hover:-translate-y-0.5 sm:px-5"
             >
-              {copy.apply}
+              <span className="hidden sm:inline">{copy.apply}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </nav>
