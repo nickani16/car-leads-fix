@@ -604,7 +604,7 @@ export default function PublicHeader({
             <nav
               className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1 transition-[background-color,border-color,box-shadow,border-radius] duration-300 min-[1120px]:flex xl:p-1.5 ${
                 transparent
-                  ? 'rounded-full border border-white/70 bg-white/72 shadow-[0_12px_35px_rgba(32,33,36,.08)] backdrop-blur-xl'
+                  ? 'rounded-[22px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.58))] shadow-[0_18px_55px_rgba(32,33,36,.1),inset_0_1px_0_rgba(255,255,255,.92)] ring-1 ring-black/[.025] backdrop-blur-2xl backdrop-saturate-150'
                   : 'border border-transparent bg-transparent shadow-none'
               }`}
             >

@@ -216,7 +216,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
-          <div className="relative z-10 min-w-0 max-w-[760px]">
+          <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
             <span className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#cbd7da] bg-white/72 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#496674] shadow-[0_10px_30px_rgba(32,33,36,.05)] backdrop-blur sm:text-[11px]">
               <Sparkles className="h-4 w-4 shrink-0 text-[#4b8198]" />
               {t.eyebrow}
