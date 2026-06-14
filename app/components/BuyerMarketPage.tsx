@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -5,7 +6,6 @@ import {
   BatteryCharging,
   Building2,
   CalendarRange,
-  CarFront,
   Check,
   ChevronRight,
   CircleDollarSign,
@@ -15,7 +15,6 @@ import {
   Gauge,
   Globe2,
   Handshake,
-  LockKeyhole,
   ScanLine,
   Search,
   Sparkles,
@@ -237,7 +236,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             </div>
           </div>
 
-          <MarketConsole locale={locale} content={t} />
+          <HeroVehicleVisual locale={locale} content={t} />
         </div>
 
         <div className="relative mx-auto grid max-w-[1440px] grid-cols-2 border-t border-[#d8dddc] bg-white/48 px-5 backdrop-blur sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
@@ -259,34 +258,6 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           ))}
         </div>
 
-        <div className="relative overflow-hidden border-t border-[#d8dddc] bg-[#202427] py-3.5 text-white">
-          <div className="buyer-quality-track flex w-max items-center">
-            {[0, 1].map((copy) => (
-              <div
-                key={copy}
-                className="flex shrink-0 items-center"
-                aria-hidden={copy === 1}
-              >
-                {[
-                  locale === 'de' ? 'Baujahr 2018+' : 'Model year 2018+',
-                  locale === 'de' ? 'Unter 100.000 km' : 'Below 100,000 km',
-                  locale === 'de' ? 'Elektro & Hybrid' : 'Electric & hybrid',
-                  locale === 'de' ? 'Strukturierte Daten' : 'Structured data',
-                  locale === 'de' ? 'Nur für Händler' : 'Dealer-only access',
-                  locale === 'de' ? 'Digitale Gebote' : 'Digital bidding',
-                ].map((item) => (
-                  <div
-                    key={`${copy}-${item}`}
-                    className="flex shrink-0 items-center gap-4 px-5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/72 sm:px-8 sm:text-[11px]"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#b4d9ef]" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       <section className="py-20 sm:py-28">
@@ -539,89 +510,92 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
   )
 }
 
-function MarketConsole({
+function HeroVehicleVisual({
   locale,
   content: t,
 }: {
   locale: BuyerLocale
   content: (typeof content)[BuyerLocale]
 }) {
-  const rows =
+  const stats =
     locale === 'de'
       ? [
-          ['01', 'Elektro-SUV · 2022', 'SE / DE', 'Auktion offen'],
-          ['02', 'Touring · 2021', 'SE / EU', 'Daten geprüft'],
-          ['03', 'Business Fleet · 2020', 'EU', 'In Vorbereitung'],
+          ['Fahrzeugstandard', '2018+'],
+          ['Laufleistung', '< 100.000 km'],
+          ['Transaktion', 'Autorell koordiniert'],
         ]
       : [
-          ['01', 'Electric SUV · 2022', 'Sweden', 'Auction open'],
-          ['02', 'Touring · 2021', 'Sweden', 'Data verified'],
-          ['03', 'Business fleet · 2020', 'Sweden', 'Preparing'],
+          ['Vehicle standard', '2018+'],
+          ['Mileage focus', '< 100,000 km'],
+          ['Transaction', 'Autorell coordinated'],
         ]
 
   return (
-    <div className="relative z-10 mx-auto min-w-0 w-full max-w-[620px] lg:ml-auto">
-      <div className="absolute -inset-6 rounded-[42px] bg-white/50 blur-2xl" />
-      <div className="market-console-float relative overflow-hidden rounded-[30px] border border-white/75 bg-[#202427] p-4 text-white shadow-[0_40px_100px_rgba(32,36,39,.25)] sm:p-6">
-        <div className="flex min-w-0 items-start justify-between gap-3 border-b border-white/10 px-1 pb-5">
-          <div className="min-w-0">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[#b4d9ef]">{t.platformLabel}</p>
-            <p className="mt-2 text-lg tracking-[-0.03em] sm:text-xl">{t.platformTitle}</p>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-[9px] text-white/65 sm:text-[10px]">
-            <CircleDot className="buyer-live-dot h-3.5 w-3.5 text-[#8ed1a8]" />
-            {t.live}
-          </span>
-        </div>
+    <div className="relative z-10 mx-auto w-full max-w-[660px] lg:ml-auto">
+      <div className="absolute -inset-6 rounded-[48px] bg-white/55 blur-2xl" />
+      <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-[#dbe7eb] shadow-[0_42px_110px_rgba(32,36,39,.2)]">
+        <div className="relative aspect-[1.18/1] min-h-[470px] sm:aspect-[1.3/1] sm:min-h-0 lg:aspect-[1.08/1] xl:aspect-[1.18/1]">
+          <Image
+            src="/autorell-volvo-hero.jpg"
+            alt={
+              locale === 'de'
+                ? 'Modernes Elektrofahrzeug aus dem Autorell Fahrzeugangebot'
+                : 'Modern electric vehicle representing Autorell vehicle supply'
+            }
+            fill
+            priority
+            sizes="(max-width: 1023px) 100vw, 48vw"
+            className="object-cover object-[69%_center]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,27,31,.03)_28%,rgba(20,27,31,.7)_100%)]" />
 
-        <div className="mt-4 rounded-[22px] bg-[#f7f6f2] p-4 text-[#202124] sm:p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#829096]">
-                {locale === 'de' ? 'Aktueller Marktzugang' : 'Current market access'}
-              </p>
-              <p className="mt-2 text-xl tracking-[-0.04em] sm:text-2xl">
-                {locale === 'de' ? 'Professionelles Fahrzeugangebot' : 'Professional vehicle supply'}
-              </p>
-            </div>
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#b4d9ef]">
-              <BarChart3 className="h-5 w-5" />
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-5 sm:p-7">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/82 px-3.5 py-2 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#3f5f6d] shadow-[0_10px_30px_rgba(32,33,36,.09)] backdrop-blur-md sm:text-[10px]">
+              <Sparkles className="h-3.5 w-3.5 text-[#4b8198]" />
+              {locale === 'de'
+                ? 'Nordisches Fahrzeugangebot'
+                : 'Nordic vehicle supply'}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#202427]/82 px-3.5 py-2 text-[9px] text-white/82 backdrop-blur-md sm:text-[10px]">
+              <CircleDot className="buyer-live-dot h-3.5 w-3.5 text-[#8ed1a8]" />
+              {t.live}
             </span>
           </div>
 
-          <div className="mt-5 space-y-2">
-            {rows.map(([number, vehicle, market, status], index) => (
-              <div
-                key={number}
-                className={`buyer-console-row buyer-console-row-${index + 1} grid grid-cols-[28px_1fr_auto] items-center gap-3 rounded-[13px] border border-[#e0e3e0] bg-white px-3 py-3.5`}
-              >
-                <span className="text-[9px] tracking-[0.14em] text-[#9aa3a6]">{number}</span>
+          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
+            <div className="market-console-float overflow-hidden rounded-[24px] border border-white/18 bg-[#202427]/88 p-4 text-white shadow-[0_24px_70px_rgba(15,20,23,.35)] backdrop-blur-xl sm:p-5">
+              <div className="flex items-end justify-between gap-5 border-b border-white/10 pb-4">
                 <div>
-                  <p className="text-xs font-medium sm:text-sm">{vehicle}</p>
-                  <p className="mt-0.5 text-[9px] text-[#8a969b]">{market}</p>
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.21em] text-[#b4d9ef] sm:text-[9px]">
+                    {t.platformLabel}
+                  </p>
+                  <p className="mt-2 text-base tracking-[-0.03em] sm:text-lg">
+                    {t.platformTitle}
+                  </p>
                 </div>
-                <span className={`rounded-full px-2.5 py-1.5 text-[8px] font-medium sm:text-[9px] ${index === 0 ? 'bg-[#dff2e6] text-[#3f7452]' : 'bg-[#eef3f5] text-[#60747d]'}`}>
-                  {status}
-                </span>
+                <BarChart3 className="h-5 w-5 shrink-0 text-[#b4d9ef]" />
               </div>
-            ))}
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                {stats.map(([label, value], index) => (
+                  <div
+                    key={label}
+                    className={`rounded-[15px] border p-3 ${
+                      index === 0
+                        ? 'border-[#b4d9ef]/35 bg-[#b4d9ef]/15'
+                        : 'border-white/10 bg-white/[.055]'
+                    }`}
+                  >
+                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/48">
+                      {label}
+                    </p>
+                    <p className="mt-3 text-[11px] font-medium leading-4 text-white/88 sm:text-xs">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {[
-            [CarFront, locale === 'de' ? 'Fahrzeuge' : 'Vehicles'],
-            [FileCheck2, locale === 'de' ? 'Daten' : 'Data'],
-            [LockKeyhole, locale === 'de' ? 'B2B-Zugang' : 'B2B access'],
-          ].map(([Icon, label]) => {
-            const Component = Icon as typeof CarFront
-            return (
-              <div key={label as string} className="rounded-[15px] border border-white/10 bg-white/[.055] p-3 sm:p-4">
-                <Component className="h-4 w-4 text-[#b4d9ef]" />
-                <p className="mt-5 text-[10px] text-white/52 sm:text-xs">{label as string}</p>
-              </div>
-            )
-          })}
         </div>
       </div>
     </div>
