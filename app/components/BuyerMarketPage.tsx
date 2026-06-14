@@ -2,14 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
-  BarChart3,
   BatteryCharging,
   Building2,
   CalendarRange,
   Check,
   ChevronRight,
   CircleDollarSign,
-  CircleDot,
   FileCheck2,
   Gavel,
   Gauge,
@@ -20,6 +18,7 @@ import {
   Sparkles,
   Truck,
 } from 'lucide-react'
+import BuyerHeroMarketPulse from './BuyerHeroMarketPulse'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -198,12 +197,25 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
     <main className="overflow-hidden bg-[#f7f6f2] text-[#202124]">
       <PublicHeader locale={locale} />
 
-      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(180,217,239,.54),transparent_31%),linear-gradient(135deg,#fbfaf6_0%,#f2f0e9_57%,#e9f2f5_100%)]" />
-        <div className="absolute -right-52 -top-60 h-[760px] w-[760px] rounded-full border-[110px] border-white/45" />
-        <div className="absolute -bottom-56 left-[38%] h-[430px] w-[430px] rounded-full bg-[#b4d9ef]/25 blur-3xl" />
+      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea]">
+        <Image
+          src="/autorell-volvo-hero.jpg"
+          alt={
+            locale === 'de'
+              ? 'Modernes Elektrofahrzeug für den europäischen Autorell Handel'
+              : 'Modern electric vehicle for the Autorell European dealer network'
+          }
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[72%_bottom] sm:object-[76%_center] lg:object-right"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.99)_0%,rgba(249,247,242,.96)_43%,rgba(249,247,242,.7)_68%,rgba(238,238,233,.24)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(31,36,39,.28)_0%,transparent_38%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
+        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
+        <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
 
-        <div className="relative mx-auto grid min-h-[760px] max-w-[1440px] items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.03fr_.97fr] lg:px-12 lg:py-24 xl:px-16">
+        <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px]">
             <span className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#cbd7da] bg-white/72 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#496674] shadow-[0_10px_30px_rgba(32,33,36,.05)] backdrop-blur sm:text-[11px]">
               <Sparkles className="h-4 w-4 shrink-0 text-[#4b8198]" />
@@ -236,7 +248,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             </div>
           </div>
 
-          <HeroVehicleVisual locale={locale} content={t} />
+          <BuyerHeroMarketPulse locale={locale} />
         </div>
 
         <div className="relative mx-auto grid max-w-[1440px] grid-cols-2 border-t border-[#d8dddc] bg-white/48 px-5 backdrop-blur sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
@@ -507,97 +519,5 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
 
       <PublicFooter locale={locale} />
     </main>
-  )
-}
-
-function HeroVehicleVisual({
-  locale,
-  content: t,
-}: {
-  locale: BuyerLocale
-  content: (typeof content)[BuyerLocale]
-}) {
-  const stats =
-    locale === 'de'
-      ? [
-          ['Fahrzeugstandard', '2018+'],
-          ['Laufleistung', '< 100.000 km'],
-          ['Transaktion', 'Autorell koordiniert'],
-        ]
-      : [
-          ['Vehicle standard', '2018+'],
-          ['Mileage focus', '< 100,000 km'],
-          ['Transaction', 'Autorell coordinated'],
-        ]
-
-  return (
-    <div className="relative z-10 mx-auto w-full max-w-[660px] lg:ml-auto">
-      <div className="absolute -inset-6 rounded-[48px] bg-white/55 blur-2xl" />
-      <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-[#dbe7eb] shadow-[0_42px_110px_rgba(32,36,39,.2)]">
-        <div className="relative aspect-[1.18/1] min-h-[470px] sm:aspect-[1.3/1] sm:min-h-0 lg:aspect-[1.08/1] xl:aspect-[1.18/1]">
-          <Image
-            src="/autorell-volvo-hero.jpg"
-            alt={
-              locale === 'de'
-                ? 'Modernes Elektrofahrzeug aus dem Autorell Fahrzeugangebot'
-                : 'Modern electric vehicle representing Autorell vehicle supply'
-            }
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 48vw"
-            className="object-cover object-right"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,27,31,.03)_28%,rgba(20,27,31,.7)_100%)]" />
-
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-5 sm:p-7">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/82 px-3.5 py-2 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#3f5f6d] shadow-[0_10px_30px_rgba(32,33,36,.09)] backdrop-blur-md sm:text-[10px]">
-              <Sparkles className="h-3.5 w-3.5 text-[#4b8198]" />
-              {locale === 'de'
-                ? 'Nordisches Fahrzeugangebot'
-                : 'Nordic vehicle supply'}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#202427]/82 px-3.5 py-2 text-[9px] text-white/82 backdrop-blur-md sm:text-[10px]">
-              <CircleDot className="buyer-live-dot h-3.5 w-3.5 text-[#8ed1a8]" />
-              {t.live}
-            </span>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
-            <div className="market-console-float overflow-hidden rounded-[24px] border border-white/18 bg-[#202427]/88 p-4 text-white shadow-[0_24px_70px_rgba(15,20,23,.35)] backdrop-blur-xl sm:p-5">
-              <div className="flex items-end justify-between gap-5 border-b border-white/10 pb-4">
-                <div>
-                  <p className="text-[8px] font-semibold uppercase tracking-[0.21em] text-[#b4d9ef] sm:text-[9px]">
-                    {t.platformLabel}
-                  </p>
-                  <p className="mt-2 text-base tracking-[-0.03em] sm:text-lg">
-                    {t.platformTitle}
-                  </p>
-                </div>
-                <BarChart3 className="h-5 w-5 shrink-0 text-[#b4d9ef]" />
-              </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                {stats.map(([label, value], index) => (
-                  <div
-                    key={label}
-                    className={`rounded-[15px] border p-3 ${
-                      index === 0
-                        ? 'border-[#b4d9ef]/35 bg-[#b4d9ef]/15'
-                        : 'border-white/10 bg-white/[.055]'
-                    }`}
-                  >
-                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/48">
-                      {label}
-                    </p>
-                    <p className="mt-3 text-[11px] font-medium leading-4 text-white/88 sm:text-xs">
-                      {value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
