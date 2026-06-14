@@ -11,11 +11,8 @@ import {
   ChevronRight,
   CircleDollarSign,
   CircleCheck,
-  Clock3,
   Gavel,
-  Globe2,
   Handshake,
-  MonitorSmartphone,
   ScanSearch,
   ShieldCheck,
   Sparkles,
@@ -107,7 +104,7 @@ export default async function HomePage() {
     <main className="min-h-screen overflow-hidden bg-white text-[#202124]">
       <PublicHeader transparentAtTop />
 
-      <section className="relative isolate min-h-[676px] overflow-hidden bg-[#f7f2e8] md:-mt-[124px] md:min-h-[864px] md:pt-[124px] lg:min-h-[864px]">
+      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea] md:-mt-[124px] md:pt-[124px]">
         <Image
           src="/autorell-volvo-hero.jpg"
           alt="Modern elbil vid nordisk arkitektur"
@@ -116,122 +113,69 @@ export default async function HomePage() {
           className="object-cover object-[72%_bottom] sm:object-[76%_center] lg:object-right"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#fcfaf5_0%,rgba(252,250,245,.98)_33%,rgba(252,250,245,.82)_49%,rgba(252,250,245,.14)_75%,transparent_100%)] max-md:bg-[linear-gradient(180deg,#fcfaf5_0%,rgba(252,250,245,.96)_45%,rgba(252,250,245,.45)_68%,rgba(247,242,232,.06)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(247,242,232,.42)_0%,transparent_35%)] max-md:bg-[linear-gradient(0deg,rgba(32,33,36,.18)_0%,transparent_35%)]" />
-        <div className="home-hero-orb absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#B4D9EF]/28 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.99)_0%,rgba(249,247,242,.96)_43%,rgba(249,247,242,.7)_68%,rgba(238,238,233,.24)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(31,36,39,.28)_0%,transparent_38%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
+        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
+        <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
 
-        <HomeMarketPulse />
-
-        <div className="relative mx-auto flex min-h-[676px] max-w-[1440px] items-start px-5 pb-16 pt-16 sm:px-8 md:items-center md:py-24 lg:min-h-[740px] lg:px-12 xl:px-16">
-          <div className="w-full min-w-0 max-w-[720px] md:translate-y-8">
-            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d3d9d9] bg-white/82 px-3.5 py-2 text-[11px] font-medium text-[#405764] shadow-[0_10px_28px_rgba(32,33,36,.07)] backdrop-blur sm:mb-6 sm:px-4 sm:text-xs md:mb-10 md:translate-y-4">
-              <Sparkles className="h-4 w-4 shrink-0 text-[#4f8298]" />
-              <span>Sälj tryggt. Nå fler professionella köpare.</span>
+        <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
+          <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
+            <div className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#cbd7da] bg-white/72 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#496674] shadow-[0_10px_30px_rgba(32,33,36,.05)] backdrop-blur sm:text-[11px]">
+              <Sparkles className="h-4 w-4 shrink-0 text-[#4b8198]" />
+              <span>Sälj tryggt. Nå professionella köpare i Europa.</span>
             </div>
-            <h1 className="max-w-[700px] text-[42px] leading-[.98] tracking-[-0.055em] text-[#202124] min-[390px]:text-[48px] sm:text-6xl lg:text-[64px] xl:text-[76px]">
+            <h1 className="mt-8 text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">
               Sälj bilen i Sverige.
-              <span className="block text-[#242424]">
-                <span className="whitespace-nowrap">Nå professionella</span>{' '}
-                köpare i Europa.
+              <span className="mt-1 block text-[#4f7181]">
+                Nå professionella köpare i Europa.
               </span>
             </h1>
-            <p className="mt-5 max-w-[590px] text-[16px] leading-7 text-[#4e6377] sm:mt-7 sm:text-xl sm:leading-8">
+            <p className="mt-7 max-w-[670px] text-[17px] leading-8 text-[#536a75] sm:text-xl sm:leading-9">
               Vi kvalificerar bilen, presenterar den för verifierade handlare
               och samlar bud under 24 timmar. Accepterar du ett bud samordnar
               Autorell kontroll, betalning, hämtning och export.
             </p>
-            <div className="mt-7 grid gap-3 sm:mt-10 sm:flex sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/salj-bil"
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-[#B4D9EF] px-7 text-base font-medium text-[#242424] shadow-[0_14px_30px_rgba(94,154,190,.18)] transition hover:-translate-y-0.5 hover:bg-[#C9E6F6] sm:rounded-full sm:font-normal"
+                className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] pl-7 pr-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111]"
               >
                 Sälj din bil
-                <ArrowRight className="h-5 w-5" />
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#b4d9ef] text-[#242424] transition group-hover:translate-x-0.5">
+                  <ArrowRight className="h-4 w-4" />
+                </span>
               </Link>
               <a
                 href="#sa-fungerar-det"
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] border border-[#d0cec7] bg-white/85 px-7 text-base font-medium text-[#242424] shadow-[0_10px_28px_rgba(32,33,36,.06)] backdrop-blur-sm transition hover:border-[#242424] hover:bg-white sm:rounded-full sm:font-normal"
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-[#c7c8c3] bg-white/70 px-7 text-sm font-medium backdrop-blur transition hover:bg-white"
               >
                 Hur det funkar
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </a>
             </div>
-            <div className="mt-6 grid w-full max-w-[420px] grid-cols-3 gap-1.5 sm:mt-10 sm:flex sm:max-w-none sm:flex-wrap sm:gap-2.5 sm:text-sm">
-              {[
-                { label: 'Kostnadsfritt' },
-                { label: 'Ingen bindning' },
-                { label: 'Budgivning i 24 timmar', mobileLabel: '24 h budgivning' },
-              ].map(({ label, mobileLabel }) => (
-                  <span
-                    key={label}
-                    className="inline-flex min-h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-[#d9e1e4] bg-white/88 px-1.5 text-[9px] text-[#334c5d] shadow-[0_10px_28px_rgba(32,33,36,.12)] backdrop-blur-md min-[390px]:gap-1.5 min-[390px]:px-2 min-[390px]:text-[10px] sm:min-h-9 sm:justify-start sm:gap-2 sm:px-4 sm:text-sm sm:shadow-[0_8px_24px_rgba(32,33,36,.07)]"
-                  >
-                    <CircleCheck className="h-3 w-3 shrink-0 text-[#b4d9ef] min-[390px]:h-3.5 min-[390px]:w-3.5 sm:h-4 sm:w-4 sm:text-[#4f8ca8]" />
-                    <span className={mobileLabel ? 'sm:hidden' : undefined}>
-                      {mobileLabel || label}
-                    </span>
-                    {mobileLabel && (
-                      <span className="hidden sm:inline">{label}</span>
-                    )}
-                  </span>
-                ))}
-            </div>
           </div>
+
+          <HomeMarketPulse />
         </div>
       </section>
 
-      <section className="relative z-10 overflow-hidden border-y border-[#dce7eb] bg-[#f7faf9]">
-        <div className="absolute -left-20 -top-32 h-72 w-72 rounded-full bg-[#b4d9ef]/35 blur-3xl" />
-        <div className="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-[#efe5cf]/45 blur-3xl" />
-
+      <section className="relative z-10 border-b border-[#d8dddc] bg-white/70">
         <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
-            {
-              value: 'Utvalda bilar',
-              label: 'Kvalificerat utbud',
-              note: 'Vi fokuserar på fordon som matchar verklig efterfrågan i nätverket.',
-              icon: Globe2,
-            },
-            {
-              value: 'Tydlig fordonsdata',
-              label: 'Bättre beslutsunderlag',
-              note: 'Skick, historik och kända fel struktureras före budgivningen.',
-              icon: Clock3,
-            },
-            {
-              value: '24 timmar',
-              label: 'Europeisk budgivning',
-              note: 'Verifierade handlare får en fokuserad period att bedöma och buda.',
-              icon: MonitorSmartphone,
-            },
-            {
-              value: 'Vi löser resten',
-              label: 'Efter accepterat bud',
-              note: 'Autorell samordnar kontroll, betalning, hämtning, dokument och export.',
-              icon: Truck,
-            },
-          ].map(({ value, label, note, icon: Icon }, index) => (
+            ['Fordonsurval', 'Utvalda bilar'],
+            ['Beslutsunderlag', 'Tydlig fordonsdata'],
+            ['Europeisk budgivning', '24 timmar'],
+            ['Efter accepterat bud', 'Vi löser resten'],
+          ].map(([label, value], index) => (
             <div
               key={label}
-              className="home-signal-card group relative min-h-[190px] border-b border-[#dce7eb] px-3 py-7 odd:border-r odd:border-[#dce7eb] sm:px-6 sm:py-9 lg:min-h-[232px] lg:border-b-0 lg:border-r lg:border-[#dce7eb] lg:px-8 lg:py-10 lg:last:border-r-0 xl:px-10"
-              style={{ animationDelay: `${index * 0.45}s` }}
+              className={`py-6 sm:py-8 ${index % 2 ? 'border-l border-[#d8dddc] pl-5 sm:pl-8' : ''} ${index > 1 ? 'border-t border-[#d8dddc] lg:border-t-0' : ''} ${index === 2 ? 'lg:border-l lg:pl-8' : ''}`}
             >
-              <div className="flex items-center justify-between">
-                <span className="grid h-10 w-10 place-items-center rounded-full border border-[#cfe0e7] bg-white text-[#4f8298] shadow-[0_8px_22px_rgba(51,83,96,.07)] transition group-hover:-translate-y-0.5 group-hover:bg-[#b4d9ef] group-hover:text-[#202427] sm:h-11 sm:w-11">
-                  <Icon className="h-[18px] w-[18px]" />
-                </span>
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-[#a5b3b8]">
-                  0{index + 1}
-                </span>
-              </div>
-              <strong className="mt-7 block max-w-[230px] text-xl leading-tight tracking-[-0.035em] text-[#202124] sm:text-[25px]">
-                {value}
-              </strong>
-              <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.13em] text-[#4f8298]">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#879398] sm:text-[10px]">
                 {label}
-              </span>
-              <p className="mt-3 hidden max-w-[245px] text-sm leading-6 text-[#687980] sm:block">
-                {note}
+              </p>
+              <p className="mt-2 text-sm font-medium tracking-[-0.02em] sm:text-lg">
+                {value}
               </p>
             </div>
           ))}

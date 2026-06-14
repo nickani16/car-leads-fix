@@ -46,27 +46,27 @@ export default function HomeMarketPulse() {
   }, [])
 
   return (
-    <div className="home-market-float absolute right-[3%] top-[31%] hidden w-[280px] rounded-[24px] border border-white/65 bg-white/72 p-4 shadow-[0_28px_80px_rgba(32,33,36,.13)] backdrop-blur-xl min-[1120px]:block xl:right-[6%] xl:w-[310px] xl:p-5">
-      <div className="flex items-center justify-between">
-        <div>
+    <aside className="home-market-float relative z-10 w-full min-w-0 max-w-[390px] justify-self-center rounded-[26px] border border-white/70 bg-white/78 p-4 shadow-[0_28px_80px_rgba(23,31,35,.18)] backdrop-blur-xl sm:p-5 lg:justify-self-end">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
             Autorell market pulse
           </p>
-          <p className="mt-1.5 text-lg font-medium tracking-[-0.03em]">
+          <p className="mt-1.5 text-lg font-medium leading-6 tracking-[-0.03em]">
             Europeisk efterfrågan
           </p>
         </div>
-        <span className="flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-[10px] font-medium text-[#3c7252]">
+        <span className="flex shrink-0 items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-[10px] font-medium text-[#3c7252]">
           <span className="home-live-dot h-2 w-2 rounded-full bg-[#76bb91]" />
           Aktiv
         </span>
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-5 space-y-2.5">
         {demandRows.map(({ label, maximum }, index) => (
           <div
             key={label}
-            className="home-market-row rounded-[14px] border border-[#e2e8e8] bg-white/70 p-3.5"
+            className="home-market-row rounded-[15px] border border-[#e2e8e8] bg-white/74 p-3.5"
             style={{ animationDelay: `${index * 0.7}s` }}
           >
             <div className="flex items-center justify-between text-xs">
@@ -85,9 +85,9 @@ export default function HomeMarketPulse() {
         ))}
       </div>
 
-      <p className="mt-4 text-[10px] leading-4 text-[#7a878c]">
+      <p className="mt-3.5 text-[9px] leading-4 text-[#7a878c] sm:text-[10px]">
         Illustrativ marknadssignal för aktuella fordonskategorier.
       </p>
-    </div>
+    </aside>
   )
 }
