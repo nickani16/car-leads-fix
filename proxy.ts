@@ -191,6 +191,11 @@ export function proxy(request: NextRequest) {
         const market = euBuyerMarkets.find(
           (item) => item.code === marketCode,
         )
+        const requestHeaders = new Headers(request.headers)
+        requestHeaders.set(
+          'x-autorell-language',
+          market?.language ?? 'en',
+        )
         const isMarketHub = segments.length === 1
         const isMarketCity =
           segments.length === 3 && segments[1] === 'dealers'
@@ -200,15 +205,14 @@ export function proxy(request: NextRequest) {
           localizedUrl.pathname = `/eu-buyer/${marketCode}/${
             isMarketHub ? 'index' : segments[2]
           }`
-          const requestHeaders = new Headers(request.headers)
-          requestHeaders.set(
-            'x-autorell-language',
-            market?.language ?? 'en',
-          )
           return NextResponse.rewrite(localizedUrl, {
             request: { headers: requestHeaders },
           })
         }
+
+        return NextResponse.next({
+          request: { headers: requestHeaders },
+        })
       }
     }
 

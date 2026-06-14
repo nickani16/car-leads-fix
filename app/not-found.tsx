@@ -1,15 +1,48 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react'
 import BrandLogo from './components/BrandLogo'
+import {
+  notFoundCopy,
+  type NotFoundLanguage,
+} from '@/lib/not-found-copy'
 
-export default function NotFound() {
+const supportedLanguages = new Set<NotFoundLanguage>(
+  Object.keys(notFoundCopy) as NotFoundLanguage[],
+)
+
+export default async function NotFound() {
+  const requestHeaders = await headers()
+  const hostname = (
+    requestHeaders.get('host') ||
+    requestHeaders.get('x-forwarded-host') ||
+    ''
+  )
+    .split(',')[0]
+    .trim()
+    .split(':')[0]
+    .toLowerCase()
+  const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const fallbackLanguage: NotFoundLanguage = hostname.endsWith('autorell.de')
+    ? 'de'
+    : hostname.endsWith('autorell.com')
+      ? 'en'
+      : 'sv'
+  const language =
+    requestedLanguage &&
+    supportedLanguages.has(requestedLanguage as NotFoundLanguage)
+      ? (requestedLanguage as NotFoundLanguage)
+      : fallbackLanguage
+  const copy = notFoundCopy[language]
+  const actionHref = language === 'sv' ? '/salj-bil' : '/dealer-apply'
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f6f4ef] text-[#202124]">
       <div className="absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full border-[70px] border-[#B4D9EF]/55" />
       <div className="absolute -bottom-48 -left-32 h-[460px] w-[460px] rounded-full border-[75px] border-white" />
 
       <header className="relative z-10 mx-auto flex h-24 max-w-[1320px] items-center px-5 sm:px-8 lg:px-12">
-        <Link href="/" aria-label="Autorell startsida">
+        <Link href="/" aria-label={copy.homeAria}>
           <BrandLogo />
         </Link>
       </header>
@@ -20,11 +53,10 @@ export default function NotFound() {
             Error 404
           </p>
           <h1 className="mt-6 max-w-3xl text-[52px] leading-[.98] tracking-[-0.06em] sm:text-7xl lg:text-[92px]">
-            Den här vägen leder inte rätt.
+            {copy.heading}
           </h1>
           <p className="mt-7 max-w-xl text-base leading-7 text-[#5d6c74] sm:text-lg sm:leading-8">
-            Sidan kan ha flyttats eller länken kan vara fel. Du kan gå tillbaka
-            till startsidan eller börja värdera din bil direkt.
+            {copy.description}
           </p>
           <div className="mt-9 grid gap-3 sm:flex">
             <Link
@@ -32,13 +64,13 @@ export default function NotFound() {
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-7 text-white sm:rounded-full"
             >
               <ArrowLeft size={18} />
-              Till startsidan
+              {copy.home}
             </Link>
             <Link
-              href="/salj-bil"
+              href={actionHref}
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-[#B4D9EF] px-7 text-[#242424] sm:rounded-full"
             >
-              Värdera din bil
+              {copy.action}
               <ArrowRight size={18} />
             </Link>
           </div>
@@ -55,7 +87,7 @@ export default function NotFound() {
               404
             </strong>
             <span className="mt-3 block text-sm text-[#6b7479]">
-              Page not found
+              {copy.label}
             </span>
           </div>
         </div>
