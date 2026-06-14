@@ -195,9 +195,9 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
 
   return (
     <main className="overflow-hidden bg-[#f7f6f2] text-[#202124]">
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} transparentAtTop />
 
-      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea]">
+      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea] md:-mt-[124px] md:pt-[124px]">
         <Image
           src="/autorell-volvo-hero.jpg"
           alt={

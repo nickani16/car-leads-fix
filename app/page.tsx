@@ -109,11 +109,11 @@ export default async function HomePage() {
 
       <section className="relative isolate min-h-[676px] overflow-hidden bg-[#f7f2e8] md:-mt-[124px] md:min-h-[864px] md:pt-[124px] lg:min-h-[864px]">
         <Image
-          src="/autorell-home-hero.webp"
-          alt="Premiumbil vid modern nordisk arkitektur"
+          src="/autorell-volvo-hero.jpg"
+          alt="Modern elbil vid nordisk arkitektur"
           fill
           priority
-          className="object-cover object-[68%_center] max-md:object-[66%_bottom]"
+          className="object-cover object-[72%_bottom] sm:object-[76%_center] lg:object-right"
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,#fcfaf5_0%,rgba(252,250,245,.98)_33%,rgba(252,250,245,.82)_49%,rgba(252,250,245,.14)_75%,transparent_100%)] max-md:bg-[linear-gradient(180deg,#fcfaf5_0%,rgba(252,250,245,.96)_45%,rgba(252,250,245,.45)_68%,rgba(247,242,232,.06)_100%)]" />
