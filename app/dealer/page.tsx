@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
+  Archive,
   Award,
   CalendarDays,
   Camera,
@@ -631,11 +632,14 @@ export default function DealerPage() {
               <h2 className="text-lg font-bold">
                 {auctionView === 'active'
                   ? 'Live marketplace'
-                  : 'Closed archive'}
+                  : 'Autorell transaction archive'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {filteredLeads.length} vehicle
-                {filteredLeads.length === 1 ? '' : 's'} shown
+                {auctionView === 'active'
+                  ? `${filteredLeads.length} vehicle${
+                      filteredLeads.length === 1 ? '' : 's'
+                    } shown`
+                  : 'Completed auctions are retained securely by Autorell'}
               </p>
             </div>
 
@@ -665,6 +669,7 @@ export default function DealerPage() {
                 </button>
               </div>
 
+              {auctionView === 'active' && (
               <label className="relative block w-full sm:w-80">
                 <Search
                   size={17}
@@ -677,7 +682,9 @@ export default function DealerPage() {
                   className="h-11 w-full rounded-full border border-[#d8d7d1] bg-[#fbfbf9] pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#8dbdd8] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/35"
                 />
               </label>
+              )}
 
+              {auctionView === 'active' && (
               <button
                 type="button"
                 onClick={() => setFiltersOpen((open) => !open)}
@@ -695,10 +702,11 @@ export default function DealerPage() {
                   </span>
                 )}
               </button>
+              )}
             </div>
           </div>
 
-          {filtersOpen && (
+          {auctionView === 'active' && filtersOpen && (
             <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-5 sm:px-7">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <FilterSelect
@@ -777,6 +785,7 @@ export default function DealerPage() {
             </div>
           )}
 
+          {auctionView === 'active' && (
           <div className="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3 sm:px-7">
             <QuickFilter
               active={
@@ -837,6 +846,7 @@ export default function DealerPage() {
               }
             />
           </div>
+          )}
 
           {portalError && (
             <div className="mx-5 mt-5 rounded-[5px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mx-7">
@@ -844,7 +854,36 @@ export default function DealerPage() {
             </div>
           )}
 
-          {loading ? (
+          {auctionView === 'closed' ? (
+            <div className="p-5 sm:p-7">
+              <div className="relative overflow-hidden rounded-[22px] bg-[#242424] px-6 py-9 text-white sm:px-9 sm:py-11">
+                <div className="absolute -right-12 -top-24 h-64 w-64 rounded-full border-[42px] border-[#B4D9EF]/15" />
+                <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+                  <div className="max-w-2xl">
+                    <div className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#B4D9EF] text-[#242424]">
+                      <Archive size={23} />
+                    </div>
+                    <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B4D9EF]">
+                      Closed market intelligence
+                    </p>
+                    <h3 className="mt-2 text-3xl font-semibold tracking-tight">
+                      10,000+ completed vehicle records
+                    </h3>
+                    <p className="mt-4 max-w-xl text-sm leading-7 text-white/60">
+                      Closed auctions are removed from the live marketplace.
+                      Autorell retains the transaction history internally for
+                      documentation, compliance and market analysis.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                    <ArchivePoint label="Dealer view" value="Live vehicles only" />
+                    <ArchivePoint label="Documentation" value="Retained by Autorell" />
+                    <ArchivePoint label="Buyer privacy" value="Closed bids protected" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : loading ? (
             <div className="grid min-h-72 place-items-center">
               <div className="text-center">
                 <RefreshCw
@@ -861,16 +900,12 @@ export default function DealerPage() {
               <div>
                 <CarFront size={34} className="mx-auto mb-3 text-slate-300" />
                 <h3 className="font-semibold text-slate-700">
-                  {auctionView === 'active'
-                    ? 'No active auctions'
-                    : 'Closed +10k vehicles'}
+                  No active auctions
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
                     ? 'Try a different search.'
-                    : auctionView === 'active'
-                      ? 'New vehicle opportunities will appear here.'
-                      : 'Closed auctions are documented internally by Autorell.'}
+                    : 'New vehicle opportunities will appear here.'}
                 </p>
               </div>
             </div>
@@ -1538,6 +1573,17 @@ function StatCard({
           {icon}
         </div>
       </div>
+    </div>
+  )
+}
+
+function ArchivePoint({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-52 rounded-[14px] border border-white/10 bg-white/6 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-white/85">{value}</p>
     </div>
   )
 }

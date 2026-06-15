@@ -128,7 +128,7 @@ export default function DealerLegalPage() {
                 'The highest valid bid at closing becomes the provisional winning bid. If equal bids exist, the earliest valid bid takes priority.',
                 'The seller may accept or reject the provisional winning bid. No sale is completed merely because an auction closes.',
                 'The winning bid remains binding for 48 hours after auction closing unless a different period is shown before bidding.',
-                'After seller acceptance, the dealer must complete requested verification, sign the transaction documents and transfer the complete confirmed buyer total to Autorell within the stated deadline.',
+                'After seller acceptance, the dealer must complete requested verification, sign the transaction documents and transfer the complete confirmed buyer total to Autorell within three business days of the payment instruction, unless the signed transaction documents state another deadline.',
                 'A dealer may dispute its obligation only where vehicle information was materially incorrect, the vehicle cannot lawfully be transferred, or Autorell confirms another contractual exception.',
                 'Autorell may invalidate bids affected by technical errors, fraud, collusion, sanctions restrictions or an unauthorised account.',
               ]}
@@ -171,7 +171,7 @@ export default function DealerLegalPage() {
           >
             <RuleList
               items={[
-                'The buyer must pay the complete confirmed total by the deadline shown in the transaction workspace or invoice.',
+                'The buyer must pay the complete confirmed total within three business days of Autorell issuing the payment instruction, unless the transaction workspace, invoice or signed agreement expressly states another deadline.',
                 'Vehicle-sized payments should normally be made by verified SEPA bank transfer through Autorell or its regulated payment partner.',
                 'Cleared buyer funds are required before Autorell collects or inspects the vehicle for completion. Receipt of funds does not by itself complete the vehicle sale.',
                 'Autorell may delay collection, document release, completion or seller payout until cleared funds, identity checks, required documents and the vehicle inspection are confirmed.',
