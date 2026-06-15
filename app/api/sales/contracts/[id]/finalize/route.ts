@@ -17,19 +17,23 @@ export async function POST(
   }
 
   const adminClient = createAdminClient()
-  const { data: adminUser } = await adminClient
-    .from('admin_users')
+  const { data: staffUser } = await adminClient
+    .from('staff_users')
     .select('role')
     .eq('user_id', user.id)
+    .eq('role', 'sales')
     .eq('is_active', true)
     .maybeSingle()
 
-  if (!adminUser || !['admin', 'super_admin'].includes(adminUser.role)) {
-    return NextResponse.json({ error: 'Admin access required.' }, { status: 403 })
+  if (!staffUser) {
+    return NextResponse.json(
+      { error: 'Active sales access required.' },
+      { status: 403 }
+    )
   }
 
   const { data, error } = await adminClient.rpc(
-    'approve_final_contract_version',
+    'finalize_contract_version_for_signature',
     {
       p_document_id: id,
       p_actor_user_id: user.id,

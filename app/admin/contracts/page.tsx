@@ -20,7 +20,7 @@ export default async function AdminContractsPage() {
       <AdminPageHeader
         eyebrow="Contract operations"
         title="All contract documents"
-        description="Review draft, ready, void, sent and signed contract snapshots across every deal."
+        description="Monitor draft, sales-finalized, void, sent and signed contract snapshots across every deal. Sales manages completion and signature preparation."
       />
 
       {documents.length ? (
@@ -51,7 +51,7 @@ export default async function AdminContractsPage() {
                 <Badge
                   label={
                     document.final_approved_at
-                      ? 'final approved'
+                      ? 'finalized for signature'
                       : document.status
                   }
                   tone={

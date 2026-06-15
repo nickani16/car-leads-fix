@@ -812,6 +812,43 @@ select:-webkit-autofill {
   line-height: 1.65;
 }
 
+.contract-signature-intro {
+  max-width: 760px;
+  color: #62696c;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.contract-signature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.contract-signature-box {
+  padding: 20px;
+  border: 1px solid #dfddd6;
+  background: #faf9f6;
+}
+
+.contract-signature-name {
+  min-height: 24px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.contract-signature-line {
+  margin-top: 28px;
+  padding-top: 6px;
+  border-top: 1px solid #7e8385;
+  color: #747a7d;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .contract-blockers {
   background: #fffaf0;
 }
@@ -857,7 +894,8 @@ select:-webkit-autofill {
   }
 
   .contract-party-grid,
-  .contract-clauses {
+  .contract-clauses,
+  .contract-signature-grid {
     grid-template-columns: 1fr;
   }
 

@@ -14,7 +14,7 @@ export default async function SalesContractsPage() {
     adminClient
       .from('contract_documents_v2')
       .select(
-        'id,deal_id,document_type,version,status,template_version,content_hash,created_at'
+        'id,deal_id,document_type,version,status,template_version,content_hash,created_at,final_approved_at'
       )
       .neq('status', 'void')
       .order('created_at', { ascending: false }),
@@ -31,7 +31,7 @@ export default async function SalesContractsPage() {
       <AdminPageHeader
         eyebrow="Contract review"
         title="Transaction agreements"
-        description="Every document is connected to a vehicle and transaction. Drafts must be checked before they are sent to the seller or winning buyer for signature."
+        description="Complete both parties, review the two agreements and finalize the locked versions directly for signature. No separate admin approval is required."
       />
 
       {documents.length ? (
@@ -58,11 +58,16 @@ export default async function SalesContractsPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{documentName}</h2>
                       <Badge
-                        label={document.status}
+                        label={
+                          document.final_approved_at
+                            ? 'ready for signature'
+                            : document.status
+                        }
                         tone={
                           document.status === 'signed'
                             ? 'green'
-                            : document.status === 'ready'
+                            : document.final_approved_at ||
+                                document.status === 'ready'
                               ? 'blue'
                               : 'amber'
                         }

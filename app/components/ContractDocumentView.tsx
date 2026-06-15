@@ -318,9 +318,26 @@ export default function ContractDocumentView({
           </div>
         </section>
 
+        <section className="contract-section">
+          <SectionHeading number="05" title={copy.signatures} />
+          <p className="contract-signature-intro">{copy.signatureIntro}</p>
+          <div className="contract-signature-grid">
+            <SignatureBox
+              title="Autorell"
+              name={autorell.legal_name}
+              copy={copy}
+            />
+            <SignatureBox
+              title={counterpartyTitle}
+              name={counterparty.legal_name}
+              copy={copy}
+            />
+          </div>
+        </section>
+
         {blockers.length > 0 && (
           <section className="contract-section contract-blockers">
-            <SectionHeading number="05" title={copy.outstanding} />
+            <SectionHeading number="06" title={copy.outstanding} />
             <ul>
               {blockers.map((blocker) => (
                 <li key={blocker}>{blocker.replaceAll('_', ' ')}</li>
@@ -357,10 +374,10 @@ const contractCopy = {
     kicker: 'Autorell transaktionsavtal',
     dealReference: 'Affärsreferens',
     generated: 'Skapat',
-    finalVersion: 'SLUTLIG VERSION - GODKÄND FÖR SIGNERING',
+    finalVersion: 'SLUTLIG VERSION - KLAR FÖR SIGNERING',
     draft: 'UTKAST - EJ FÖR SIGNERING',
-    finalNotice: 'Autorell har godkänt denna exakta dokumentversion för elektronisk signering. Avtalet verkställs först när samtliga nödvändiga signaturer har slutförts.',
-    readyNotice: 'Nödvändiga affärsuppgifter är kompletta. Slutligt godkännande för signering återstår.',
+    finalNotice: 'Autorells säljare har slutfört och låst denna dokumentversion för signering. Avtalet blir bindande när nödvändiga signaturer har slutförts.',
+    readyNotice: 'Nödvändiga affärsuppgifter är kompletta. Autorells säljare kan nu slutföra versionen för signering.',
     incompleteNotice: 'Nödvändiga affärsuppgifter saknas. Dokumentet har ingen signeringsverkan.',
     parties: 'Avtalsparter',
     seller: 'Säljare',
@@ -382,11 +399,16 @@ const contractCopy = {
     currency: 'Valuta',
     route: 'Sträcka',
     framework: 'Avtalsvillkor',
+    signatures: 'Signering',
+    signatureIntro: 'Genom signering bekräftar parterna att de har läst avtalet och accepterar fordonet, priset och villkoren i denna låsta dokumentversion.',
+    signature: 'Signatur',
+    printedName: 'Namnförtydligande',
+    datePlace: 'Ort och datum',
     outstanding: 'Uppgifter som saknas',
     integrity: 'Dokumentets integritet',
     template: 'Mall',
     status: 'Status',
-    approved: 'Godkänt',
+    approved: 'Slutfört',
     watermark: 'UTKAST',
     statusValues: {
       draft: 'utkast',
@@ -406,10 +428,10 @@ const contractCopy = {
     kicker: 'Autorell transaction document',
     dealReference: 'Deal reference',
     generated: 'Generated',
-    finalVersion: 'FINAL VERSION - APPROVED FOR SIGNATURE',
+    finalVersion: 'FINAL VERSION - READY FOR SIGNATURE',
     draft: 'DRAFT - NOT FOR SIGNATURE',
-    finalNotice: 'Autorell has approved this exact document version for the electronic signing workflow. It becomes executed only after all required signatures have been completed.',
-    readyNotice: 'Required transaction data is complete. Final signing approval remains outstanding.',
+    finalNotice: 'Autorell sales has completed and locked this document version for signature. The agreement becomes binding when the required signatures are completed.',
+    readyNotice: 'Required transaction data is complete. Autorell sales can now finalize this version for signature.',
     incompleteNotice: 'Required transaction information is incomplete. This document has no signing effect.',
     parties: 'Contracting parties',
     seller: 'Seller',
@@ -431,11 +453,16 @@ const contractCopy = {
     currency: 'Currency',
     route: 'Route',
     framework: 'Transaction framework',
+    signatures: 'Signatures',
+    signatureIntro: 'By signing, the parties confirm that they have reviewed and accept the vehicle, price and terms recorded in this locked document version.',
+    signature: 'Signature',
+    printedName: 'Printed name',
+    datePlace: 'Place and date',
     outstanding: 'Outstanding information',
     integrity: 'Document integrity record',
     template: 'Template',
     status: 'Status',
-    approved: 'Approved',
+    approved: 'Finalized',
     watermark: 'DRAFT',
     statusValues: {
       draft: 'draft',
@@ -580,6 +607,26 @@ function Clause({ title, text }: { title: string; text: string }) {
     <div>
       <h3>{title}</h3>
       <p>{text}</p>
+    </div>
+  )
+}
+
+function SignatureBox({
+  title,
+  name,
+  copy,
+}: {
+  title: string
+  name?: string | null
+  copy: (typeof contractCopy)[keyof typeof contractCopy]
+}) {
+  return (
+    <div className="contract-signature-box">
+      <p className="contract-party-label">{title}</p>
+      <p className="contract-signature-name">{name || copy.pending}</p>
+      <div className="contract-signature-line">{copy.signature}</div>
+      <div className="contract-signature-line">{copy.printedName}</div>
+      <div className="contract-signature-line">{copy.datePlace}</div>
     </div>
   )
 }

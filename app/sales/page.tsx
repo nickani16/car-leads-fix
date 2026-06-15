@@ -15,7 +15,7 @@ import { requireSales } from '@/lib/sales-auth'
 import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
 import SellerDecisionActions from './SellerDecisionActions'
 import ContractPacketStatus from './ContractPacketStatus'
-import SellerContractIdentityForm from './SellerContractIdentityForm'
+import ContractPartyDetailsForm from './ContractPartyDetailsForm'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -79,20 +79,30 @@ export default async function SalesPage({
       .select('id,deal_id,status,blockers,template_version,generated_at'),
     adminClient
       .from('contract_documents_v2')
-      .select('id,deal_id,document_type,status,version,created_at')
+      .select(
+        'id,deal_id,document_type,status,version,created_at,final_approved_at'
+      )
       .neq('status', 'void')
       .order('created_at', { ascending: false }),
     adminClient
       .from('contract_parties')
-      .select('deal_id,party_role,legal_name,registered_address,country_code')
-      .eq('party_role', 'seller'),
+      .select(
+        'deal_id,party_role,legal_name,email,phone,registration_number,vat_number,registered_address,country_code'
+      ),
   ])
 
   const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
   const dealerMap = new Map((dealers || []).map((dealer) => [dealer.id, dealer]))
   const packetMap = new Map((packets || []).map((packet) => [packet.deal_id, packet]))
   const sellerPartyMap = new Map(
-    (contractParties || []).map((party) => [party.deal_id, party])
+    (contractParties || [])
+      .filter((party) => party.party_role === 'seller')
+      .map((party) => [party.deal_id, party])
+  )
+  const buyerPartyMap = new Map(
+    (contractParties || [])
+      .filter((party) => party.party_role === 'buyer')
+      .map((party) => [party.deal_id, party])
   )
   const documentsByDeal = (documents || []).reduce<
     Record<string, NonNullable<typeof documents>>
@@ -114,6 +124,7 @@ export default async function SalesPage({
       packet,
       documents: dealDocuments,
       sellerParty: sellerPartyMap.get(deal.id),
+      buyerParty: buyerPartyMap.get(deal.id),
       workflow: getWorkflow(deal.status, packet?.status, dealDocuments),
     }
   })
@@ -185,6 +196,7 @@ export default async function SalesPage({
               packet,
               documents: dealDocuments,
               sellerParty,
+              buyerParty,
               workflow,
             }) => {
               const canRecordDecision = [
@@ -348,16 +360,14 @@ export default async function SalesPage({
                             activeDocumentCount={currentDocuments.length}
                             latestVersion={latestVersion || 1}
                           />
-                          {packet?.status === 'needs_information' && (
-                            <SellerContractIdentityForm
+                          {packet &&
+                            ['needs_information', 'draft_ready'].includes(
+                              packet.status
+                            ) && (
+                            <ContractPartyDetailsForm
                               dealId={deal.id}
-                              initialName={sellerParty?.legal_name}
-                              initialAddress={sellerParty?.registered_address}
-                              initialCountry={
-                                sellerParty?.country_code ||
-                                deal.origin_country ||
-                                'SE'
-                              }
+                              seller={sellerParty}
+                              buyer={buyerParty}
                             />
                           )}
                           {currentDocuments.length > 0 && (
@@ -398,7 +408,7 @@ export default async function SalesPage({
 function getWorkflow(
   dealStatus: string,
   packetStatus: string | undefined,
-  documents: { status: string }[]
+  documents: { status: string; final_approved_at?: string | null }[]
 ) {
   if (['provisional_winner', 'seller_review'].includes(dealStatus)) {
     return {
@@ -417,7 +427,7 @@ function getWorkflow(
       stage: 'information' as const,
       title: 'Complete the missing legal information',
       description:
-        'Confirm the seller identity and address. The agreements cannot be sent before all blockers are cleared.',
+        'Complete the seller and buyer details in one form. Both agreements update together.',
       icon: AlertTriangle,
       tone: 'amber' as const,
       accent: 'border-amber-400 bg-amber-50 text-amber-950',
@@ -425,14 +435,15 @@ function getWorkflow(
   }
 
   if (
-    packetStatus === 'draft_ready' ||
-    documents.some((document) => ['draft', 'ready'].includes(document.status))
+    !documents.some((document) => Boolean(document.final_approved_at)) &&
+    (packetStatus === 'draft_ready' ||
+      documents.some((document) => ['draft', 'ready'].includes(document.status)))
   ) {
     return {
       stage: 'contracts' as const,
       title: 'Review both agreements before signature',
       description:
-        'Check vehicle, parties and amounts in the seller and buyer agreements. Do not send drafts with incorrect information.',
+        'Check both agreements, then finalize the locked versions yourself for signature. No admin approval is required.',
       icon: FileCheck2,
       tone: 'blue' as const,
       accent: 'border-[#79b7d8] bg-[#eff8fd] text-[#264d63]',
