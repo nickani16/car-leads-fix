@@ -792,6 +792,21 @@ export function getEuBuyerPath(market: EuBuyerMarket, citySlug?: string) {
     : `/${market.code}`
 }
 
+export function getEuBuyerHreflang(market: EuBuyerMarket) {
+  return `${market.language}-${market.code.toUpperCase()}`
+}
+
+export function getEuBuyerHubAlternates() {
+  return Object.fromEntries([
+    ['en', 'https://www.autorell.com/'],
+    ...euBuyerMarkets.map((market) => [
+      getEuBuyerHreflang(market),
+      `https://www.autorell.com${getEuBuyerPath(market)}`,
+    ]),
+    ['x-default', 'https://www.autorell.com/dealers'],
+  ])
+}
+
 export function getAllEuBuyerPaths() {
   return euBuyerMarkets.flatMap((market) => [
     getEuBuyerPath(market),

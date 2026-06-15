@@ -26,6 +26,8 @@ import SocialIcons from '@/app/components/SocialIcons'
 import {
   euBuyerMarkets,
   getEuBuyerCopy,
+  getEuBuyerHreflang,
+  getEuBuyerHubAlternates,
   getEuBuyerMarket,
   getEuBuyerPath,
 } from '@/lib/eu-buyer-markets'
@@ -69,9 +71,6 @@ export async function generateMetadata({
   if (!market || (citySlug !== 'index' && !city)) return {}
 
   const copy = getEuBuyerCopy(market.language)
-  const title = city
-    ? `${copy.dealerAccess}: ${city.name}`
-    : `${copy.dealerAccess}: ${market.countryLocal}`
   const description = trimMeta(
     city
       ? `${copy.cityTitle(city.name)}. ${copy.intro}`
@@ -80,31 +79,65 @@ export async function generateMetadata({
   )
   const path = getEuBuyerPath(market, city?.slug)
   const canonical = `${host}${path}`
+  const hreflang = getEuBuyerHreflang(market)
+  const localizedAlternates = city
+    ? { [hreflang]: canonical }
+    : getEuBuyerHubAlternates()
+  const metadataTitle = city
+    ? copy.cityTitle(city.name)
+    : market.homeTitle || copy.countryTitle(market.countryLocal)
 
   return {
-    title: { absolute: trimMeta(`${title} | Autorell`, 68) },
+    title: { absolute: trimMeta(`${metadataTitle} | Autorell`, 68) },
     description,
     keywords: [
       `${copy.dealerAccess} ${city?.name ?? market.countryLocal}`,
+      ...market.demand.map(
+        (demand) => `${demand} ${city?.name ?? market.countryLocal}`
+      ),
+      ...copy.standards,
+      ...market.cities.slice(0, 4).map((marketCity) => marketCity.name),
       `B2B vehicle marketplace ${market.country}`,
-      `Swedish cars for dealers ${market.country}`,
-      'European car dealer auctions',
-      'vehicle sourcing Europe',
+      `Swedish vehicles for dealers ${market.country}`,
     ],
     alternates: {
       canonical,
-      languages: {
-        [market.language]: canonical,
-        'x-default': `${host}/dealers`,
-      },
+      languages: localizedAlternates,
     },
     openGraph: {
-      title: trimMeta(title, 65),
+      title: trimMeta(metadataTitle, 65),
       description,
       url: canonical,
       siteName: 'Autorell',
+      locale: hreflang.replace('-', '_'),
+      images: [
+        {
+          url: `${host}/autorell-volvo-hero.jpg`,
+          width: 1600,
+          height: 1067,
+          alt: `${copy.vehicleTitle} ${market.countryLocal}`,
+        },
+      ],
       type: 'website',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: trimMeta(metadataTitle, 65),
+      description,
+      images: [`${host}/autorell-volvo-hero.jpg`],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
+    category: 'automotive',
   }
 }
 
@@ -126,23 +159,65 @@ export default async function EuBuyerPage({ params }: RouteProps) {
     ? copy.cityTitle(city.name)
     : market.homeTitle || copy.countryTitle(market.countryLocal)
   const demandValues = [86, 74, 67]
+  const organizationId = `${host}/#organization`
+  const websiteId = `${host}/#website`
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
       {
+        '@type': 'Organization',
+        '@id': organizationId,
+        name: 'Autorell AB',
+        url: host,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${host}/icon-512.png`,
+          width: 512,
+          height: 512,
+        },
+        email: 'info@autorell.com',
+        sameAs: [
+          'https://www.instagram.com/autorellgroup/',
+          'https://www.facebook.com/autorell',
+          'https://www.linkedin.com/company/autorell',
+        ],
+        contactPoint: {
+          '@type': 'ContactPoint',
+          telephone: '+46-76-020-26-71',
+          email: 'info@autorell.com',
+          contactType: 'customer support',
+          availableLanguage: [market.language, 'en'],
+          areaServed: 'EU',
+        },
+      },
+      {
+        '@type': 'WebSite',
+        '@id': websiteId,
+        name: 'Autorell',
+        url: host,
+        publisher: { '@id': organizationId },
+        inLanguage: market.language,
+      },
+      {
         '@type': 'Service',
+        '@id': `${host}${path}#service`,
         name: heading,
         serviceType: 'B2B vehicle sourcing and dealer marketplace',
-        provider: {
-          '@type': 'Organization',
-          name: 'Autorell AB',
-          url: host,
-        },
+        provider: { '@id': organizationId },
         areaServed: {
           '@type': city ? 'City' : 'Country',
           name: place,
         },
         url: `${host}${path}`,
+        audience: {
+          '@type': 'BusinessAudience',
+          audienceType: 'Professional vehicle dealers',
+        },
+        offers: {
+          '@type': 'Offer',
+          url: `${host}/dealer-apply`,
+          category: 'Verified dealer access',
+        },
       },
       {
         '@type': 'BreadcrumbList',
@@ -226,6 +301,29 @@ export default async function EuBuyerPage({ params }: RouteProps) {
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
         <div className="relative mx-auto grid min-h-[820px] max-w-[1440px] items-start gap-10 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[740px]">
+            <nav
+              aria-label="Breadcrumb"
+              className="mb-5 flex flex-wrap items-center gap-2 text-xs text-[#687c85]"
+            >
+              <Link href="/dealers" className="transition hover:text-[#202124]">
+                {copy.allMarkets}
+              </Link>
+              <span aria-hidden="true">/</span>
+              {city ? (
+                <>
+                  <Link
+                    href={getEuBuyerPath(market)}
+                    className="transition hover:text-[#202124]"
+                  >
+                    {market.countryLocal}
+                  </Link>
+                  <span aria-hidden="true">/</span>
+                  <span aria-current="page">{city.name}</span>
+                </>
+              ) : (
+                <span aria-current="page">{market.countryLocal}</span>
+              )}
+            </nav>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#c7d7dc] bg-white/82 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#4f7181] shadow-[0_12px_35px_rgba(32,33,36,.07)] backdrop-blur">
                 <MapPin className="h-4 w-4" />
@@ -683,7 +781,9 @@ export default async function EuBuyerPage({ params }: RouteProps) {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+        }}
       />
     </main>
   )
