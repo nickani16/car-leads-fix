@@ -1,8 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { Cookie, Settings2, X } from 'lucide-react'
+import {
+  Check,
+  Cookie,
+  LockKeyhole,
+  Settings2,
+  ShieldCheck,
+  X,
+} from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import BrandLogo from './BrandLogo'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
@@ -12,6 +20,9 @@ type CookieLocale = 'sv' | 'de' | 'en'
 
 const cookieCopy = {
   sv: {
+    eyebrow: 'Cookieval',
+    trustTitle: 'Integritet från grunden',
+    trustText: 'Säker åtkomst. Tydliga val. Inga marknadsföringscookies.',
     close: 'Stäng cookieinställningar',
     title: 'Dina cookieinställningar',
     text: 'Vi använder nödvändiga cookies för säkerhet, inloggning och webbplatsens funktioner. Med ditt godkännande mäter vi anonymt hur webbplatsen leder till kontakt och affär. Vi använder inte marknadsföringscookies idag.',
@@ -28,6 +39,9 @@ const cookieCopy = {
     customize: 'Anpassa',
   },
   de: {
+    eyebrow: 'Cookie-Einstellungen',
+    trustTitle: 'Datenschutz von Anfang an',
+    trustText: 'Sicherer Zugang. Klare Auswahl. Keine Marketing-Cookies.',
     close: 'Cookie-Einstellungen schließen',
     title: 'Ihre Cookie-Einstellungen',
     text: 'Wir verwenden notwendige Cookies für Sicherheit, Anmeldung und Website-Funktionen. Mit Ihrer Zustimmung messen wir anonym, wie die Website zu Kontakt und Geschäft führt. Marketing-Cookies verwenden wir derzeit nicht.',
@@ -44,6 +58,9 @@ const cookieCopy = {
     customize: 'Anpassen',
   },
   en: {
+    eyebrow: 'Cookie preferences',
+    trustTitle: 'Privacy by design',
+    trustText: 'Secure access. Clear choices. No marketing cookies.',
     close: 'Close cookie settings',
     title: 'Your cookie settings',
     text: 'We use essential cookies for security, sign-in and website functionality. With your consent, we anonymously measure how the website leads to contact and business. We do not currently use marketing cookies.',
@@ -129,19 +146,18 @@ export default function CookieConsent({
   if (!visible) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-5">
+    <div className="fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-5 lg:p-7">
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="mx-auto w-full max-w-[1180px] overflow-hidden rounded-[22px] border border-[#d7d7d1] bg-white shadow-[0_30px_100px_rgba(32,33,36,.22)]"
+        className="mx-auto w-full max-w-[1120px] overflow-hidden rounded-[26px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(19,35,43,.25)] ring-1 ring-[#d8e3e8]"
       >
-        <div className="grid min-w-0 gap-6 p-5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="min-w-0 max-w-3xl">
-            <div className="flex items-start justify-between gap-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#B4D9EF] text-[#242424]">
-                <Cookie size={20} />
-              </span>
+        <div className="grid min-w-0 lg:grid-cols-[270px_1fr]">
+          <div className="relative overflow-hidden bg-[#20272b] p-5 text-white sm:p-6 lg:p-7">
+            <div className="absolute -right-14 -top-16 h-44 w-44 rounded-full border-[34px] border-[#B4D9EF]/15" />
+            <div className="relative flex items-start justify-between gap-4 lg:block">
+              <BrandLogo inverted />
               {readConsent() && (
                 <button
                   type="button"
@@ -149,7 +165,7 @@ export default function CookieConsent({
                     setVisible(false)
                     setSettingsOpen(false)
                   }}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-[#deddd7] text-[#62686c] lg:hidden"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white lg:hidden"
                   aria-label={t.close}
                 >
                   <X size={18} />
@@ -157,18 +173,57 @@ export default function CookieConsent({
               )}
             </div>
 
-            <h2
-              id="cookie-title"
-              className="mt-5 text-2xl tracking-[-0.03em] text-[#242424]"
-            >
-              {t.title}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#62686c]">
-              {t.text}
-            </p>
+            <div className="relative mt-6 hidden lg:block">
+              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#B4D9EF] text-[#20272b] shadow-[0_12px_30px_rgba(0,0,0,.16)]">
+                <ShieldCheck size={20} />
+              </span>
+              <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
+                {t.trustTitle}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/65">
+                {t.trustText}
+              </p>
+            </div>
+          </div>
+
+          <div className="relative min-w-0 bg-[linear-gradient(145deg,#ffffff_20%,#f1f8fb_100%)] p-5 sm:p-7 lg:p-8">
+            {readConsent() && (
+              <button
+                type="button"
+                onClick={() => {
+                  setVisible(false)
+                  setSettingsOpen(false)
+                }}
+                className="absolute right-5 top-5 hidden h-10 w-10 place-items-center rounded-full border border-[#d9e0e3] bg-white/80 text-[#69757a] transition hover:border-[#9fbfce] hover:text-[#20272b] lg:grid"
+                aria-label={t.close}
+              >
+                <X size={17} />
+              </button>
+            )}
+
+            <div className="max-w-3xl pr-0 lg:pr-10">
+              <div className="flex items-center gap-3 text-[#315f74]">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-white shadow-[0_8px_24px_rgba(49,95,116,.1)] ring-1 ring-[#d7e6ed]">
+                  <Cookie size={17} />
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+                  {t.eyebrow}
+                </span>
+              </div>
+
+              <h2
+                id="cookie-title"
+                className="mt-4 text-2xl font-semibold tracking-[-0.035em] text-[#20272b] sm:text-[28px]"
+              >
+                {t.title}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[#626d72]">
+                {t.text}
+              </p>
+            </div>
 
             {settingsOpen && (
-              <div className="mt-5 grid gap-3">
+              <div className="mt-6 grid gap-3 border-t border-[#dce7eb] pt-5">
                 <ConsentCategory
                   title={t.necessaryTitle}
                   description={t.necessaryText}
@@ -180,40 +235,46 @@ export default function CookieConsent({
                   description={t.analyticsText}
                   active={false}
                 />
-                <p className="text-xs leading-5 text-[#7b8184]">
+                <p className="px-1 text-xs leading-5 text-[#748087]">
                   {t.policyStart}{' '}
-                  <Link href="/cookies" className="underline underline-offset-2">
+                  <Link
+                    href="/cookies"
+                    className="font-semibold text-[#315f74] underline underline-offset-2"
+                  >
                     {t.policy}
                   </Link>
                   . {t.policyEnd}
                 </p>
               </div>
             )}
-          </div>
 
-          <div className="flex min-w-0 w-full flex-col gap-2.5 sm:flex-row lg:w-[470px] lg:flex-wrap lg:justify-end">
-            <button
-              type="button"
-              onClick={() => choose('all')}
-              className="min-h-12 rounded-full bg-[#242424] px-6 text-sm text-white transition hover:bg-[#111111]"
-            >
-              {t.accept}
-            </button>
-            <button
-              type="button"
-              onClick={() => choose('necessary')}
-              className="min-h-12 rounded-full border border-[#cfcfca] bg-white px-6 text-sm text-[#242424] transition hover:border-[#242424]"
-            >
-              {t.necessary}
-            </button>
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((open) => !open)}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#eff8fd] px-6 text-sm text-[#242424]"
-            >
-              <Settings2 size={16} />
-              {settingsOpen ? t.hide : t.customize}
-            </button>
+            <div className="mt-6 flex min-w-0 w-full flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={() => choose('all')}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#20272b] px-6 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(32,39,43,.18)] transition hover:-translate-y-0.5 hover:bg-[#111719]"
+              >
+                <Check size={16} />
+                {t.accept}
+              </button>
+              <button
+                type="button"
+                onClick={() => choose('necessary')}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbd9df] bg-white px-6 text-sm font-semibold text-[#20272b] transition hover:border-[#88afc1] hover:bg-[#f8fcfd]"
+              >
+                <LockKeyhole size={15} />
+                {t.necessary}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen((open) => !open)}
+                aria-expanded={settingsOpen}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[#315f74] transition hover:bg-white/70"
+              >
+                <Settings2 size={16} />
+                {settingsOpen ? t.hide : t.customize}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -233,14 +294,14 @@ function ConsentCategory({
   locked?: boolean
 }) {
   return (
-    <div className="flex items-center justify-between gap-5 rounded-[14px] border border-[#e1e1dc] bg-[#faf9f6] px-4 py-3">
-      <div>
-        <p className="text-sm font-medium text-[#242424]">{title}</p>
-        <p className="mt-1 text-xs leading-5 text-[#73797c]">{description}</p>
+    <div className="flex items-center justify-between gap-5 rounded-[16px] border border-[#dbe5e9] bg-white/80 px-4 py-3.5 shadow-[0_8px_24px_rgba(49,95,116,.05)]">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-[#20272b]">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-[#6d787d]">{description}</p>
       </div>
       <span
         className={`relative h-6 w-11 shrink-0 rounded-full ${
-          active ? 'bg-[#242424]' : 'bg-[#d4d5d2]'
+          active ? 'bg-[#315f74]' : 'bg-[#cfd8dc]'
         }`}
         aria-label={locked ? 'Alltid aktiv' : 'Inaktiv tills godkännande'}
       >
