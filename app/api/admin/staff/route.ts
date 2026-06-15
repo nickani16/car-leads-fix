@@ -3,6 +3,10 @@ import {
   requireSuperAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/password-policy'
 
 const allowedRoles = new Set(['sales', 'operations', 'legal'])
 const usernamePattern = /^[a-z0-9._-]{3,32}$/i
@@ -28,13 +32,13 @@ export async function POST(request: Request) {
     !displayName ||
     !email.includes('@') ||
     !usernamePattern.test(username) ||
-    password.length < 8 ||
+    !isStrongPassword(password) ||
     !allowedRoles.has(role)
   ) {
     return NextResponse.json(
       {
         error:
-          'Name, valid email, username, role and a password of at least 8 characters are required.',
+          `Name, valid email, username and role are required. Password: ${PASSWORD_REQUIREMENTS}`,
       },
       { status: 400 }
     )

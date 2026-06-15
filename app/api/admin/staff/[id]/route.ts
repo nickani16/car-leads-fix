@@ -3,6 +3,10 @@ import {
   requireSuperAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/password-policy'
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -48,9 +52,9 @@ export async function PATCH(
   }
 
   if (body.password) {
-    if (body.password.length < 8) {
+    if (!isStrongPassword(body.password)) {
       return NextResponse.json(
-        { error: 'The temporary password must contain at least 8 characters.' },
+        { error: PASSWORD_REQUIREMENTS },
         { status: 400 }
       )
     }

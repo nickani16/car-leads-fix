@@ -2,7 +2,19 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { KeyRound, Plus, Power, Trash2, UserCog } from 'lucide-react'
+import {
+  Eye,
+  EyeOff,
+  KeyRound,
+  Plus,
+  Power,
+  Trash2,
+  UserCog,
+} from 'lucide-react'
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/password-policy'
 
 type StaffUser = {
   user_id: string
@@ -25,6 +37,8 @@ export default function AccessControlPanel({
   const [busyId, setBusyId] = useState('')
   const [resetUserId, setResetUserId] = useState('')
   const [temporaryPassword, setTemporaryPassword] = useState('')
+  const [showCreatePassword, setShowCreatePassword] = useState(false)
+  const [showResetPassword, setShowResetPassword] = useState(false)
 
   async function createStaff(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -76,8 +90,8 @@ export default function AccessControlPanel({
   }
 
   async function resetPassword(userId: string) {
-    if (temporaryPassword.length < 8) {
-      setMessage('The temporary password must contain at least 8 characters.')
+    if (!isStrongPassword(temporaryPassword)) {
+      setMessage(PASSWORD_REQUIREMENTS)
       return
     }
     await updateStaff(userId, { password: temporaryPassword })
@@ -127,7 +141,6 @@ export default function AccessControlPanel({
             ['displayName', 'Full name', 'Nikolai Parkkila', 'text'],
             ['email', 'Work email', 'name@autorell.com', 'email'],
             ['username', 'Username', 'nikolai', 'text'],
-            ['password', 'Temporary password', 'At least 8 characters', 'password'],
           ].map(([name, label, placeholder, type]) => (
             <label key={name} className="grid gap-1.5 text-sm font-medium">
               {label}
@@ -141,6 +154,35 @@ export default function AccessControlPanel({
               />
             </label>
           ))}
+          <label className="grid gap-1.5 text-sm font-medium">
+            Temporary password
+            <span className="relative">
+              <input
+                name="password"
+                type={showCreatePassword ? 'text' : 'password'}
+                placeholder="Example: Autorell8"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                pattern="(?=.*[A-Z])(?=.*\d).{8,}"
+                title={PASSWORD_REQUIREMENTS}
+                className="min-h-11 w-full rounded-[12px] border border-[#d8d7d1] px-3 pr-11 outline-none transition focus:border-[#78afc9] focus:ring-2 focus:ring-[#dceef7]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCreatePassword((current) => !current)}
+                aria-label={
+                  showCreatePassword ? 'Hide password' : 'Show password'
+                }
+                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#6d777b] hover:bg-[#eef4f6]"
+              >
+                {showCreatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </span>
+            <span className="text-xs font-normal text-[#737d81]">
+              {PASSWORD_REQUIREMENTS}
+            </span>
+          </label>
           <label className="grid gap-1.5 text-sm font-medium">
             Role
             <select
@@ -235,6 +277,7 @@ export default function AccessControlPanel({
                         resetUserId === user.user_id ? '' : user.user_id
                       )
                       setTemporaryPassword('')
+                      setShowResetPassword(false)
                     }}
                     className="grid h-9 w-9 place-items-center rounded-full border border-[#d8d7d1] hover:bg-[#f4f3ef]"
                     title="Reset password"
@@ -253,19 +296,40 @@ export default function AccessControlPanel({
                 </div>
               </div>
               {resetUserId === user.user_id && (
-                <div className="mt-4 flex flex-col gap-2 border-t border-[#e7e5df] pt-4 sm:flex-row">
-                  <input
-                    type="password"
-                    value={temporaryPassword}
-                    onChange={(event) =>
-                      setTemporaryPassword(event.target.value)
-                    }
-                    minLength={8}
-                    autoComplete="new-password"
-                    placeholder="New temporary password"
-                    aria-label="New temporary password"
-                    className="min-h-10 flex-1 rounded-[10px] border border-[#d8d7d1] px-3 text-sm"
-                  />
+                <div className="mt-4 flex flex-col gap-2 border-t border-[#e7e5df] pt-4">
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <span className="relative flex-1">
+                      <input
+                        type={showResetPassword ? 'text' : 'password'}
+                        value={temporaryPassword}
+                        onChange={(event) =>
+                          setTemporaryPassword(event.target.value)
+                        }
+                        minLength={8}
+                        pattern="(?=.*[A-Z])(?=.*\d).{8,}"
+                        title={PASSWORD_REQUIREMENTS}
+                        autoComplete="new-password"
+                        placeholder="New temporary password"
+                        aria-label="New temporary password"
+                        className="min-h-10 w-full rounded-[10px] border border-[#d8d7d1] px-3 pr-11 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowResetPassword((current) => !current)
+                        }
+                        aria-label={
+                          showResetPassword ? 'Hide password' : 'Show password'
+                        }
+                        className="absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#6d777b] hover:bg-[#eef4f6]"
+                      >
+                        {showResetPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </span>
                   <button
                     type="button"
                     onClick={() => resetPassword(user.user_id)}
@@ -273,6 +337,10 @@ export default function AccessControlPanel({
                   >
                     Set password
                   </button>
+                  </div>
+                  <p className="text-xs text-[#737d81]">
+                    {PASSWORD_REQUIREMENTS}
+                  </p>
                 </div>
               )}
             </article>

@@ -3,9 +3,14 @@
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from '../login/login.module.css'
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS,
+} from '@/lib/password-policy'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -13,13 +18,15 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErrorMessage('')
 
-    if (password.length < 8) {
-      setErrorMessage('Password must contain at least 8 characters.')
+    if (!isStrongPassword(password)) {
+      setErrorMessage(PASSWORD_REQUIREMENTS)
       return
     }
 
@@ -72,7 +79,7 @@ export default function ResetPasswordPage() {
             <p className={styles.eyebrow}>NEW PASSWORD</p>
             <h2 className={styles.cardTitle}>Update your password</h2>
             <p className={styles.cardDescription}>
-              Your new password must contain at least 8 characters.
+              {PASSWORD_REQUIREMENTS}
             </p>
           </div>
 
@@ -88,14 +95,24 @@ export default function ResetPasswordPage() {
                   <path d="M7 10V8a5 5 0 0 1 10 0v2m-11 0h12v10H6V10Z" />
                 </svg>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="new-password"
                   minLength={8}
+                  pattern="(?=.*[A-Z])(?=.*\d).{8,}"
+                  title={PASSWORD_REQUIREMENTS}
                   required
                   className={styles.input}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className={styles.passwordToggle}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </label>
 
@@ -110,16 +127,34 @@ export default function ResetPasswordPage() {
                   <path d="M7 10V8a5 5 0 0 1 10 0v2m-11 0h12v10H6V10Z" />
                 </svg>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(event) =>
                     setConfirmPassword(event.target.value)
                   }
                   autoComplete="new-password"
                   minLength={8}
+                  pattern="(?=.*[A-Z])(?=.*\d).{8,}"
+                  title={PASSWORD_REQUIREMENTS}
                   required
                   className={styles.input}
                 />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowConfirmPassword((current) => !current)
+                  }
+                  className={styles.passwordToggle}
+                  aria-label={
+                    showConfirmPassword ? 'Hide password' : 'Show password'
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
               </div>
             </label>
 

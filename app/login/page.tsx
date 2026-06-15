@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Eye, EyeOff } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from './login.module.css'
 
@@ -16,6 +17,8 @@ export default function LoginPage() {
   const [statusHeading, setStatusHeading] = useState('Account access')
   const [isLoading, setIsLoading] = useState(false)
   const [requestedPath, setRequestedPath] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loginExample, setLoginExample] = useState('')
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -66,6 +69,42 @@ export default function LoginPage() {
     }, 0)
 
     return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const examples = ['dealer@company.com', 'nikolai']
+    let exampleIndex = 0
+    let characterIndex = 0
+    let deleting = false
+    let timer: ReturnType<typeof setTimeout>
+
+    function animate() {
+      const example = examples[exampleIndex]
+
+      if (!deleting) {
+        characterIndex += 1
+        setLoginExample(example.slice(0, characterIndex))
+        if (characterIndex === example.length) {
+          deleting = true
+          timer = setTimeout(animate, 1450)
+          return
+        }
+      } else {
+        characterIndex -= 1
+        setLoginExample(example.slice(0, characterIndex))
+        if (characterIndex === 0) {
+          deleting = false
+          exampleIndex = (exampleIndex + 1) % examples.length
+          timer = setTimeout(animate, 350)
+          return
+        }
+      }
+
+      timer = setTimeout(animate, deleting ? 45 : 85)
+    }
+
+    timer = setTimeout(animate, 500)
+    return () => clearTimeout(timer)
   }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -179,7 +218,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   autoComplete="username"
-                  placeholder="dealer@company.com or username"
+                  placeholder={loginExample}
                   required
                   className={styles.input}
                 />
@@ -203,7 +242,7 @@ export default function LoginPage() {
               </svg>
 
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
@@ -211,6 +250,15 @@ export default function LoginPage() {
                 required
                 className={styles.input}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+                className={styles.passwordToggle}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             {statusMessage && (

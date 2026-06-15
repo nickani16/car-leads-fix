@@ -207,6 +207,38 @@
   transition: 160ms ease;
 }
 
+.inputWrapper:has(.passwordToggle) .input {
+  padding-right: 50px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  color: #737b80;
+  background: transparent;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.passwordToggle:hover {
+  color: #202124;
+  background: #edf4f7;
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid #8dbdd8;
+  outline-offset: 2px;
+}
+
 .input::placeholder {
   color: #a0a3a3;
 }
