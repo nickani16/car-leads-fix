@@ -157,10 +157,8 @@ export default async function HomePage() {
 
           <HomeMarketPulse />
         </div>
-      </section>
 
-      <section className="relative z-10 border-b border-[#d8dddc] bg-white/70">
-        <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
+        <div className="relative mx-auto grid max-w-[1440px] grid-cols-2 border-t border-[#d8dddc] bg-white/48 px-5 backdrop-blur sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
             ['Fordonsurval', 'Utvalda bilar'],
             ['Beslutsunderlag', 'Tydlig fordonsdata'],
