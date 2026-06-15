@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
@@ -210,19 +209,11 @@ export default async function EuBuyerPage({ params }: RouteProps) {
         </div>
       </header>
 
-      <section className="relative isolate min-h-[860px] overflow-hidden border-b border-[#d9ddd9] pt-[78px]">
-        <Image
-          src="/autorell-volvo-hero.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[66%_center] sm:object-center"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(249,247,241,.99)_0%,rgba(249,247,241,.94)_36%,rgba(249,247,241,.28)_70%,rgba(32,36,39,.12)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(32,36,39,.26)_0%,transparent_34%)]" />
-        <div className="dealer-seo-orbit absolute -right-52 -top-56 h-[720px] w-[720px] rounded-full border-[96px] border-white/30" />
-        <div className="relative mx-auto grid min-h-[690px] max-w-[1440px] items-center gap-12 px-5 pb-12 pt-14 sm:px-8 lg:grid-cols-[1.03fr_.97fr] lg:px-12">
+      <section className="relative isolate overflow-hidden border-b border-[#d9ddd9] bg-[#f6f5f1] pt-[78px]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_30%,rgba(180,217,239,.62),transparent_25%),radial-gradient(circle_at_46%_82%,rgba(255,255,255,.95),transparent_30%),linear-gradient(135deg,#fbfaf7_0%,#f0efea_55%,#e7f1f4_100%)]" />
+        <div className="absolute inset-0 opacity-[.24] [background-image:radial-gradient(#71858e_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="dealer-seo-orbit absolute -right-60 -top-56 h-[760px] w-[760px] rounded-full border-[105px] border-white/30" />
+        <div className="relative mx-auto grid min-h-[720px] max-w-[1440px] items-center gap-12 px-5 pb-14 pt-14 sm:px-8 lg:grid-cols-[.95fr_1.05fr] lg:px-12">
           <div className="relative z-10 min-w-0 max-w-[740px]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#c7d7dc] bg-white/82 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#4f7181] shadow-[0_12px_35px_rgba(32,33,36,.07)] backdrop-blur">
@@ -271,68 +262,105 @@ export default async function EuBuyerPage({ params }: RouteProps) {
             </div>
           </div>
 
-          <div className="dealer-seo-console relative z-10 mx-auto w-full min-w-0 max-w-[500px] overflow-hidden rounded-[30px] border border-white/75 bg-white/88 p-5 shadow-[0_35px_90px_rgba(32,36,39,.2)] backdrop-blur-xl sm:p-8 lg:ml-auto">
-            <div className="flex items-start justify-between gap-4 border-b border-[#dde2e3] pb-6">
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                  Autorell Market Signal
-                </p>
-                <h2 className="mt-3 [overflow-wrap:anywhere] text-2xl tracking-[-0.04em] text-[#202124]">
-                  {copy.dealerDemand}
-                </h2>
+          <div className="relative z-10 mx-auto min-h-[570px] w-full min-w-0 max-w-[640px]">
+            <div className="absolute left-1/2 top-1/2 h-[490px] w-[490px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/25 sm:h-[540px] sm:w-[540px]" />
+            <div className="absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/30 sm:h-[390px] sm:w-[390px]" />
+            <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/35 sm:h-[245px] sm:w-[245px]" />
+
+            <div className="dealer-seo-console absolute left-1/2 top-1/2 z-20 grid h-32 w-32 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/75 bg-[#b4d9ef] shadow-[0_28px_70px_rgba(63,91,103,.24)] sm:h-40 sm:w-40">
+              <div className="text-center">
+                <Globe2 className="mx-auto h-7 w-7 text-[#294a59]" />
+                <strong className="mt-3 block text-xl tracking-[-0.04em]">
+                  Autorell
+                </strong>
               </div>
-              <span className="inline-flex max-w-[44%] shrink-0 items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-2 text-[10px] leading-4 text-[#567164]">
-                <span className="dealer-seo-live h-2 w-2 shrink-0 rounded-full bg-[#8ed1a8]" />
-                <span className="[overflow-wrap:anywhere]">{copy.liveMarket}</span>
-              </span>
             </div>
-            <div className="mt-6 space-y-4">
-              {market.demand.map((label, index) => (
-                <div
-                  key={label}
-                  className="rounded-[18px] border border-[#dfe3e4] bg-white/76 p-4 shadow-[0_12px_28px_rgba(32,33,36,.045)]"
-                >
-                  <div className="flex min-w-0 items-center justify-between gap-4 text-sm text-[#536b76]">
-                    <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
-                    <span className="font-medium text-[#202124]">
-                      {demandValues[index]}%
-                    </span>
-                  </div>
-                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
-                    <span
-                      className="dealer-seo-bar block h-full origin-left rounded-full bg-[#b4d9ef]"
-                      style={{
-                        width: `${demandValues[index]}%`,
-                        animationDelay: `${index * 180}ms`,
-                      }}
-                    />
-                  </div>
+
+            <div className="absolute left-0 top-[14%] z-10 w-[185px] rounded-[22px] border border-white/75 bg-white/78 p-5 shadow-[0_20px_55px_rgba(43,57,63,.11)] backdrop-blur-xl sm:left-[2%] sm:w-[215px]">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4f6] text-lg">
+                  🇸🇪
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase tracking-[0.17em] text-[#82939a]">
+                    {copy.inspected}
+                  </p>
+                  <strong className="mt-1 block text-base">Autorell</strong>
                 </div>
-              ))}
-            </div>
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-[17px] bg-[#202427] p-4 text-white">
-                <p className="text-[9px] uppercase tracking-[0.16em] text-white/46">
-                  01 / Autorell
-                </p>
-                <strong className="mt-2 block text-lg">2018+</strong>
               </div>
-              <div className="rounded-[17px] bg-[#dceef7] p-4 text-[#202124]">
-                <p className="text-[9px] uppercase tracking-[0.16em] text-[#58717c]">
-                  02 / Autorell
-                </p>
-                <strong className="mt-2 block text-lg">&lt; 100,000 km</strong>
+              <span className="dealer-seo-live absolute -right-1 -top-1 h-3 w-3 rounded-full bg-[#8ed1a8]" />
+            </div>
+
+            <div className="absolute right-0 top-[18%] z-10 w-[180px] rounded-[22px] border border-white/75 bg-white/78 p-5 shadow-[0_20px_55px_rgba(43,57,63,.11)] backdrop-blur-xl sm:right-[1%] sm:w-[220px]">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4f6] text-lg">
+                  {market.flag}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase tracking-[0.17em] text-[#82939a]">
+                    {copy.dealerOnly}
+                  </p>
+                  <strong className="mt-1 block [overflow-wrap:anywhere] text-base">
+                    {place}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute bottom-[4%] left-1/2 z-20 w-[min(94%,440px)] -translate-x-1/2 overflow-hidden rounded-[25px] border border-white/80 bg-white/88 p-5 shadow-[0_28px_70px_rgba(43,57,63,.15)] backdrop-blur-xl sm:p-6">
+              <div className="flex min-w-0 items-start justify-between gap-4 border-b border-[#dfe4e5] pb-4">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#6d8995]">
+                    Autorell Market Intelligence
+                  </p>
+                  <h2 className="mt-2 [overflow-wrap:anywhere] text-xl tracking-[-0.04em]">
+                    {copy.dealerDemand}
+                  </h2>
+                </div>
+                <span className="inline-flex max-w-[42%] shrink-0 items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-2 text-[9px] leading-4 text-[#567164]">
+                  <span className="dealer-seo-live h-2 w-2 shrink-0 rounded-full bg-[#8ed1a8]" />
+                  <span className="[overflow-wrap:anywhere]">{copy.liveMarket}</span>
+                </span>
+              </div>
+              <div className="mt-5 grid gap-4">
+                {market.demand.map((label, index) => (
+                  <div key={label}>
+                    <div className="flex min-w-0 items-center justify-between gap-4 text-xs text-[#536b76]">
+                      <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
+                      <span className="font-medium text-[#202124]">
+                        {demandValues[index]}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
+                      <span
+                        className="dealer-seo-bar block h-full origin-left rounded-full bg-[#83c3df]"
+                        style={{
+                          width: `${demandValues[index]}%`,
+                          animationDelay: `${index * 180}ms`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-        <div className="relative mx-auto grid max-w-[1440px] gap-px border-t border-white/45 bg-white/38 backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative mx-auto grid max-w-[1440px] gap-px border-t border-[#d7dcdd] bg-[#d7dcdd] sm:grid-cols-2 lg:grid-cols-4">
           {copy.standards.map((standard, index) => {
             const Icon = standardIcons[index]
             return (
               <article
                 key={standard}
-                className="min-h-[132px] border-b border-white/45 bg-white/48 px-6 py-7 sm:border-b-0 sm:border-r"
+                className={`min-h-[132px] px-6 py-7 ${
+                  index === 0
+                    ? 'bg-[#e6f4fa]'
+                    : index === 1
+                      ? 'bg-[#f7f8f7]'
+                      : index === 2
+                        ? 'bg-[#eef1f1]'
+                        : 'bg-[#e3e7e8]'
+                }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <Icon className="h-5 w-5 text-[#4e8197]" />
@@ -401,10 +429,10 @@ export default async function EuBuyerPage({ params }: RouteProps) {
                   <span className="absolute -right-12 -top-12 h-36 w-36 rounded-full border-[22px] border-[#b4d9ef]/20 transition duration-700 group-hover:scale-110" />
                   <Icon className="h-6 w-6 text-[#4e7f94]" />
                   <p className="mt-12 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#718690]">
-                    {supportingText}
+                    {standard}
                   </p>
                   <h3 className="mt-4 text-2xl tracking-[-0.04em]">
-                    {standard}
+                    {supportingText}
                   </h3>
                 </article>
               )
@@ -452,24 +480,60 @@ export default async function EuBuyerPage({ params }: RouteProps) {
 
       <section className="bg-[#eef4f5] py-20 sm:py-28">
         <div className="mx-auto grid max-w-[1320px] items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:px-12">
-          <div className="relative min-h-[460px] overflow-hidden rounded-[30px] border border-white/70 shadow-[0_28px_70px_rgba(48,65,72,.12)]">
-            <Image
-              src="/autorell-volvo-hero.jpg"
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 52vw, 100vw"
-              className="object-cover object-[72%_center]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#202427]/70 via-transparent to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 grid grid-cols-2 gap-px bg-white/25 backdrop-blur-md">
-              <div className="bg-[#202427]/70 p-6 text-white">
-                <Gauge className="h-5 w-5 text-[#b4d9ef]" />
-                <strong className="mt-5 block text-xl">{copy.standards[1]}</strong>
+          <div className="relative min-h-[500px] overflow-hidden rounded-[30px] border border-white/70 bg-[#202427] p-5 text-white shadow-[0_28px_70px_rgba(48,65,72,.16)] sm:p-8">
+            <span className="dealer-seo-orbit absolute -right-36 -top-40 h-96 w-96 rounded-full border-[58px] border-white/[.045]" />
+            <div className="relative z-10 flex items-center justify-between gap-4 border-b border-white/10 pb-6">
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                  Autorell Vehicle Intelligence
+                </p>
+                <h3 className="mt-3 text-2xl tracking-[-0.04em]">
+                  {copy.verified}
+                </h3>
               </div>
-              <div className="bg-[#202427]/70 p-6 text-white">
-                <BatteryCharging className="h-5 w-5 text-[#b4d9ef]" />
-                <strong className="mt-5 block text-xl">{copy.standards[3]}</strong>
-              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[.06]">
+                <ScanSearch className="h-5 w-5 text-[#b4d9ef]" />
+              </span>
+            </div>
+            <div className="relative z-10 mt-6 grid gap-3 sm:grid-cols-2">
+              {copy.standards.map((standard, index) => {
+                const Icon = standardIcons[index]
+                return (
+                  <div
+                    key={standard}
+                    className={`min-h-[126px] rounded-[20px] border p-5 ${
+                      index === 0
+                        ? 'border-[#b4d9ef]/60 bg-[#b4d9ef] text-[#202124]'
+                        : 'border-white/10 bg-white/[.055]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <Icon
+                        className={`h-5 w-5 ${
+                          index === 0 ? 'text-[#3e6f85]' : 'text-[#b4d9ef]'
+                        }`}
+                      />
+                      <span
+                        className={`text-[9px] tracking-[0.17em] ${
+                          index === 0 ? 'text-[#52798b]' : 'text-white/30'
+                        }`}
+                      >
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <strong className="mt-7 block text-base font-medium">
+                      {standard}
+                    </strong>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="relative z-10 mt-3 flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-white/[.04] px-5 py-4">
+              <span className="text-xs text-white/52">{copy.inspected}</span>
+              <span className="inline-flex items-center gap-2 text-xs text-[#b4d9ef]">
+                <span className="dealer-seo-live h-2 w-2 rounded-full bg-[#8ed1a8]" />
+                {copy.verified}
+              </span>
             </div>
           </div>
           <div className="max-w-2xl">
