@@ -72,7 +72,7 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    const examples = ['dealer@company.com', 'nikolai']
+    const examples = ['dealer@company.com', 'or username']
     let exampleIndex = 0
     let characterIndex = 0
     let deleting = false
