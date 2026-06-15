@@ -163,7 +163,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <label className={styles.label}>
-              Email address
+              Email address or username
 
               <div className={styles.inputWrapper}>
                 <svg
@@ -175,11 +175,11 @@ export default function LoginPage() {
                 </svg>
 
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  placeholder="dealer@company.com"
+                  autoComplete="username"
+                  placeholder="dealer@company.com or username"
                   required
                   className={styles.input}
                 />

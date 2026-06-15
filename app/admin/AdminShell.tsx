@@ -14,6 +14,7 @@ import {
   Network,
   ShieldCheck,
   Store,
+  UsersRound,
   UserRound,
 } from 'lucide-react'
 import BrandLogo from '../components/BrandLogo'
@@ -29,6 +30,7 @@ const mobileNavigation = [
   { label: 'Leads', href: '/admin/leads', icon: FileText },
   { label: 'Auctions', href: '/admin/auctions', icon: Gavel },
   { label: 'Dealers', href: '/admin/dealers', icon: Store },
+  { label: 'Access', href: '/admin/access', icon: UsersRound },
   { label: 'Deals', href: '/admin/deals', icon: BarChart3 },
   { label: 'Conversions', href: '/admin/conversions', icon: LineChart },
   { label: 'Contracts', href: '/admin/contracts', icon: FileCheck2 },
@@ -65,7 +67,7 @@ const menuGroups = [
     label: 'Network',
     description: 'Dealer access and market performance.',
     icon: Network,
-    paths: ['/admin/dealers', '/admin/conversions'],
+    paths: ['/admin/dealers', '/admin/conversions', '/admin/access'],
     items: [
       {
         label: 'Dealers',
@@ -78,6 +80,12 @@ const menuGroups = [
         text: 'Compare applications, bids and contacts by country.',
         href: '/admin/conversions',
         icon: LineChart,
+      },
+      {
+        label: 'Access control',
+        text: 'Create staff accounts and review admin activity.',
+        href: '/admin/access',
+        icon: UsersRound,
       },
     ],
   },

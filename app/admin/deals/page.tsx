@@ -9,6 +9,7 @@ import {
 import SellerDecisionActions from '@/app/sales/SellerDecisionActions'
 import ContractPacketStatus from '@/app/sales/ContractPacketStatus'
 import PlatformLegalEntityForm from '../PlatformLegalEntityForm'
+import DealAssignmentForm from './DealAssignmentForm'
 
 type SearchParams = Promise<{
   q?: string
@@ -22,7 +23,7 @@ export default async function AdminDealsPage({
   searchParams: SearchParams
 }) {
   const params = await searchParams
-  const { adminClient } = await requireAdmin()
+  const { adminClient, adminUser } = await requireAdmin()
   const [
     { data: deals },
     { data: dealers },
@@ -30,6 +31,7 @@ export default async function AdminDealsPage({
     { data: packets },
     { data: documents },
     { data: platformEntity },
+    { data: salesUsers },
   ] =
     await Promise.all([
       adminClient.from('deals').select('*').order('created_at', {
@@ -52,6 +54,12 @@ export default async function AdminDealsPage({
         )
         .eq('is_active', true)
         .maybeSingle(),
+      adminClient
+        .from('staff_users')
+        .select('user_id,display_name')
+        .eq('role', 'sales')
+        .eq('is_active', true)
+        .order('display_name'),
     ])
 
   const dealerMap = new Map(
@@ -199,6 +207,14 @@ export default async function AdminDealsPage({
                   <Badge label={deal.vat_treatment || 'VAT review pending'} tone="amber" />
                   <Badge label={deal.bid_is_binding ? 'Binding bid' : 'Non-binding'} tone="green" />
                 </div>
+                {adminUser.role === 'super_admin' && (
+                  <DealAssignmentForm
+                    dealId={deal.id}
+                    salesUsers={salesUsers || []}
+                    initialSalesUserId={deal.assigned_sales_user_id}
+                    initialDueAt={deal.action_due_at}
+                  />
+                )}
                 {['provisional_winner', 'seller_review'].includes(
                   deal.status
                 ) && <SellerDecisionActions dealId={deal.id} />}

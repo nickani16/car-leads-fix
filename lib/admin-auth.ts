@@ -30,3 +30,12 @@ export async function requireAdmin() {
   }
 }
 
+export async function requireSuperAdmin() {
+  const auth = await requireAdmin()
+
+  if (auth.adminUser.role !== 'super_admin') {
+    redirect('/admin?status=super-admin-required')
+  }
+
+  return auth
+}

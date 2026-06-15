@@ -7,6 +7,7 @@ import {
   DetailGrid,
 } from '../../AdminUI'
 import DealerStatusActions from '../../DealerStatusActions'
+import DealerAccountControls from './DealerAccountControls'
 
 export default async function AdminDealerDetailPage({
   params,
@@ -14,7 +15,7 @@ export default async function AdminDealerDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { adminClient } = await requireAdmin()
+  const { adminClient, adminUser } = await requireAdmin()
   const { data: dealer } = await adminClient
     .from('dealers')
     .select('*')
@@ -101,6 +102,9 @@ export default async function AdminDealerDetailPage({
               dealerId={dealer.id}
               currentStatus={dealer.status || 'pending'}
             />
+            {adminUser.role === 'super_admin' && (
+              <DealerAccountControls dealerId={dealer.id} />
+            )}
           </DetailCard>
 
           <DetailCard title="Legal acceptance">
@@ -176,4 +180,3 @@ export default async function AdminDealerDetailPage({
     </main>
   )
 }
-

@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  requireSuperAdminRoute,
+  writeAdminAuditLog,
+} from '@/lib/admin-route-auth'
 
 const allowedStatuses = new Set(['approved', 'pending', 'rejected'])
 
@@ -47,3 +51,60 @@ export async function PATCH(
   return NextResponse.json({ success: true })
 }
 
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const auth = await requireSuperAdminRoute()
+  if ('error' in auth) return auth.error
+  const body = (await request.json().catch(() => ({}))) as { reason?: string }
+  const reason = body.reason?.trim() || ''
+
+  if (reason.length < 8) {
+    return NextResponse.json(
+      { error: 'Enter a reason of at least 8 characters.' },
+      { status: 400 }
+    )
+  }
+
+  const { data: dealer } = await auth.adminClient
+    .from('dealers')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (!dealer) {
+    return NextResponse.json({ error: 'Dealer not found.' }, { status: 404 })
+  }
+
+  const { count: dealCount } = await auth.adminClient
+    .from('deals')
+    .select('id', { count: 'exact', head: true })
+    .eq('buyer_dealer_id', id)
+  if (dealCount) {
+    return NextResponse.json(
+      {
+        error:
+          'This account has transaction history and cannot be deleted. Suspend it instead so contracts and accounting remain intact.',
+      },
+      { status: 409 }
+    )
+  }
+
+  const { error } = await auth.adminClient.auth.admin.deleteUser(dealer.user_id)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  await writeAdminAuditLog({
+    adminClient: auth.adminClient,
+    actorUserId: auth.user.id,
+    action: 'dealer_account_deleted',
+    targetType: 'dealer',
+    targetId: id,
+    reason,
+    beforeData: dealer,
+  })
+
+  return NextResponse.json({ success: true })
+}

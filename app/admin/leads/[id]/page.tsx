@@ -12,6 +12,7 @@ import LeadLocationForm from './LeadLocationForm'
 import LeadFinanceReviewForm from './LeadFinanceReviewForm'
 import LeadReviewActions from './LeadReviewActions'
 import LeadTranslationForm from './LeadTranslationForm'
+import BidAdminControls from './BidAdminControls'
 
 export default async function AdminLeadDetailPage({
   params,
@@ -19,7 +20,7 @@ export default async function AdminLeadDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { adminClient } = await requireAdmin()
+  const { adminClient, adminUser } = await requireAdmin()
   const [{ data: lead }, { data: bids }, { data: deal }] = await Promise.all([
     adminClient.from('leads').select('*').eq('id', id).maybeSingle(),
     adminClient
@@ -280,7 +281,15 @@ export default async function AdminLeadDetailPage({
                       )}
                     </p>
                   </div>
-                  {bid.is_winner && <Badge label="Winner" tone="green" />}
+                  <div className="flex items-center gap-2">
+                    {bid.is_winner && <Badge label="Winner" tone="green" />}
+                    {adminUser.role === 'super_admin' && (
+                      <BidAdminControls
+                        bidId={bid.id}
+                        amount={Number(bid.amount)}
+                      />
+                    )}
+                  </div>
                 </div>
               ))}
               {!bids?.length && (

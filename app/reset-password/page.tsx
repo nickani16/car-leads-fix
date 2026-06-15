@@ -40,6 +40,10 @@ export default function ResetPasswordPage() {
       return
     }
 
+    await fetch('/api/auth/password-changed', {
+      method: 'POST',
+      credentials: 'same-origin',
+    })
     await supabase.auth.signOut()
     router.replace('/login?status=password-updated')
     router.refresh()

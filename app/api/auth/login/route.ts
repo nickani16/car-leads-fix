@@ -11,14 +11,32 @@ type LoginRequest = {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as LoginRequest
-    const email = body.email?.trim().toLowerCase() || ''
+    const login = body.email?.trim().toLowerCase() || ''
     const password = body.password || ''
 
-    if (!email || !password) {
+    if (!login || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required.' },
+        { error: 'Email or username and password are required.' },
         { status: 400 }
       )
+    }
+
+    const adminClient = createAdminClient()
+    let email = login
+    if (!login.includes('@')) {
+      const { data: staffAccount } = await adminClient
+        .from('staff_users')
+        .select('email')
+        .ilike('username', login)
+        .eq('is_active', true)
+        .maybeSingle()
+      if (!staffAccount) {
+        return NextResponse.json(
+          { error: 'Invalid email, username or password.' },
+          { status: 401 }
+        )
+      }
+      email = staffAccount.email.toLowerCase()
     }
 
     const supabase = await createClient()
@@ -37,8 +55,6 @@ export async function POST(request: Request) {
     const requestedPath = ['/admin', '/dealer', '/sales'].includes(body.next || '')
       ? body.next || ''
       : ''
-    const adminClient = createAdminClient()
-
     if (requestedPath === '/admin') {
       const { data: adminAccount } = await supabase
         .from('admin_users')
@@ -87,7 +103,7 @@ export async function POST(request: Request) {
     if (requestedPath === '/sales') {
       const { data: staffAccount } = await adminClient
         .from('staff_users')
-        .select('user_id')
+        .select('user_id,must_change_password')
         .eq('user_id', data.user.id)
         .eq('role', 'sales')
         .eq('is_active', true)
@@ -101,7 +117,12 @@ export async function POST(request: Request) {
         )
       }
 
-      return NextResponse.json({ success: true, destination: '/sales' })
+      return NextResponse.json({
+        success: true,
+        destination: staffAccount.must_change_password
+          ? '/reset-password?required=1'
+          : '/sales',
+      })
     }
 
     const { data: adminAccount } = await adminClient
@@ -117,7 +138,7 @@ export async function POST(request: Request) {
 
     const { data: staffAccount } = await adminClient
       .from('staff_users')
-      .select('user_id')
+      .select('user_id,must_change_password')
       .eq('user_id', data.user.id)
       .eq('role', 'sales')
       .eq('is_active', true)
@@ -126,7 +147,9 @@ export async function POST(request: Request) {
     if (staffAccount) {
       return NextResponse.json({
         success: true,
-        destination: '/sales',
+        destination: staffAccount.must_change_password
+          ? '/reset-password?required=1'
+          : '/sales',
       })
     }
 
