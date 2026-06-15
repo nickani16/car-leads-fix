@@ -31,6 +31,7 @@ import {
   getEuBuyerMarket,
   getEuBuyerPath,
 } from '@/lib/eu-buyer-markets'
+import { getImportGuideForMarket } from '@/lib/import-guides'
 
 type RouteProps = {
   params: Promise<{ market: string; city: string }>
@@ -153,6 +154,7 @@ export default async function EuBuyerPage({ params }: RouteProps) {
   if (citySlug !== 'index' && !city) notFound()
 
   const copy = getEuBuyerCopy(market.language)
+  const importGuide = getImportGuideForMarket(market.code)
   const place = city?.name ?? market.countryLocal
   const path = getEuBuyerPath(market, city?.slug)
   const heading = city
@@ -218,6 +220,15 @@ export default async function EuBuyerPage({ params }: RouteProps) {
           url: `${host}/dealer-apply`,
           category: 'Verified dealer access',
         },
+        ...(importGuide
+          ? {
+              subjectOf: {
+                '@type': 'Article',
+                name: importGuide.title,
+                url: `${importGuide.host}${importGuide.publicPath}`,
+              },
+            }
+          : {}),
       },
       {
         '@type': 'BreadcrumbList',
@@ -643,6 +654,38 @@ export default async function EuBuyerPage({ params }: RouteProps) {
           </div>
         </div>
       </section>
+
+      {!city && importGuide && (
+        <section className="bg-white px-5 py-20 sm:px-8 sm:py-24 lg:px-12">
+          <div className="relative mx-auto grid max-w-[1180px] overflow-hidden rounded-[30px] border border-[#c9dfe9] bg-[#e5f3f9] shadow-[0_28px_75px_rgba(54,91,108,.1)] lg:grid-cols-[.72fr_1.28fr]">
+            <div className="relative min-h-[300px] overflow-hidden bg-[#202427] p-8 text-white sm:p-12">
+              <span className="absolute -right-24 -top-28 h-72 w-72 rounded-full border-[46px] border-[#b4d9ef]/10" />
+              <FileCheck2 className="relative h-7 w-7 text-[#b4d9ef]" />
+              <p className="relative mt-10 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                {importGuide.eyebrow}
+              </p>
+              <p className="relative mt-4 text-sm leading-7 text-white/58">
+                {importGuide.updatedLabel}: {importGuide.updatedDate}
+              </p>
+            </div>
+            <div className="relative p-8 sm:p-12 lg:p-14">
+              <h2 className="max-w-3xl text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-5xl">
+                {importGuide.title}
+              </h2>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-[#59707a]">
+                {importGuide.description}
+              </p>
+              <Link
+                href={importGuide.publicPath}
+                className="mt-8 inline-flex min-h-13 items-center justify-center gap-3 rounded-full bg-[#242424] px-7 text-sm font-medium text-white transition hover:-translate-y-0.5"
+              >
+                {importGuide.eyebrow}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">

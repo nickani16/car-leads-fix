@@ -28,6 +28,7 @@ const SEARCH_CRAWLER_PATTERN =
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
+const GERMAN_IMPORT_GUIDE_PATH = '/ratgeber/fahrzeugimport-aus-schweden'
 
 const DEALER_MARKET_ROUTES = {
   de: new Map([
@@ -199,12 +200,16 @@ export function proxy(request: NextRequest) {
         const isMarketHub = segments.length === 1
         const isMarketCity =
           segments.length === 3 && segments[1] === 'dealers'
+        const isMarketGuide =
+          segments.length === 3 &&
+          segments[1] === 'guides' &&
+          segments[2] === 'import-from-sweden'
 
-        if (isMarketHub || isMarketCity) {
+        if (isMarketHub || isMarketCity || isMarketGuide) {
           const localizedUrl = request.nextUrl.clone()
-          localizedUrl.pathname = `/eu-buyer/${marketCode}/${
-            isMarketHub ? 'index' : segments[2]
-          }`
+          localizedUrl.pathname = isMarketGuide
+            ? `/eu-guide/${marketCode}/${segments[2]}`
+            : `/eu-buyer/${marketCode}/${isMarketHub ? 'index' : segments[2]}`
           return NextResponse.rewrite(localizedUrl, {
             request: { headers: requestHeaders },
           })
@@ -214,6 +219,12 @@ export function proxy(request: NextRequest) {
           request: { headers: requestHeaders },
         })
       }
+    }
+
+    if (locale === 'de' && pathname === GERMAN_IMPORT_GUIDE_PATH) {
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = '/eu-guide/de/import-from-sweden'
+      return NextResponse.rewrite(localizedUrl)
     }
 
     if (pathname === dealerSeoBase || pathname.startsWith(`${dealerSeoBase}/`)) {

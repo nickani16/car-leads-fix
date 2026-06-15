@@ -5,6 +5,7 @@ import {
   germanDealerCities,
 } from '@/lib/international-dealer-seo'
 import { getAllEuBuyerPaths } from '@/lib/eu-buyer-markets'
+import { getImportGuidePaths } from '@/lib/import-guides'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
@@ -21,6 +22,8 @@ const europeanDealerSeoPaths = europeanDealerCountries.map(
   ({ slug }) => `/dealers/${slug}`
 )
 const localizedEuBuyerPaths = getAllEuBuyerPaths()
+const germanImportGuidePaths = getImportGuidePaths('de')
+const europeanImportGuidePaths = getImportGuidePaths('en')
 
 const marketConfig = {
   sv: {
@@ -61,6 +64,7 @@ const marketConfig = {
       '/nutzungsbedingungen',
       '/haendler',
       ...germanDealerSeoPaths,
+      ...germanImportGuidePaths,
     ],
     priorityPath: '/fahrzeuge',
   },
@@ -82,6 +86,7 @@ const marketConfig = {
       '/dealers',
       ...europeanDealerSeoPaths,
       ...localizedEuBuyerPaths,
+      ...europeanImportGuidePaths,
     ],
     priorityPath: '/vehicles',
   },

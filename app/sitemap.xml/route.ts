@@ -3,6 +3,10 @@ import {
   getPublicMarketConfig,
 } from '@/lib/public-market'
 import { getEuBuyerHubAlternates } from '@/lib/eu-buyer-markets'
+import {
+  getImportGuideAlternates,
+  importGuides,
+} from '@/lib/import-guides'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +41,8 @@ export function GET(request: Request) {
                     ? '0.85'
                     : /^\/[a-z]{2}\/dealers\//.test(path)
                       ? '0.75'
+                      : path.includes('/guides/') || path.startsWith('/ratgeber/')
+                        ? '0.8'
                 : '0.7'
       const changeFrequency =
         path === '' ||
@@ -46,8 +52,13 @@ export function GET(request: Request) {
         /^\/[a-z]{2}(\/dealers\/.*)?$/.test(path)
           ? 'weekly'
           : 'monthly'
+      const isImportGuide = importGuides.some(
+        (guide) => guide.publicPath === path,
+      )
       const alternates: Record<string, string> | null =
-        market === 'en' && /^\/[a-z]{2}$/.test(path)
+        isImportGuide
+          ? getImportGuideAlternates()
+          : market === 'en' && /^\/[a-z]{2}$/.test(path)
           ? getEuBuyerHubAlternates()
           : path === ''
             ? {

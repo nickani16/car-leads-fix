@@ -21,6 +21,7 @@ import {
 import BuyerHeroMarketPulse from './BuyerHeroMarketPulse'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
+import { getImportGuideForMarket } from '@/lib/import-guides'
 
 type BuyerLocale = 'de' | 'en'
 
@@ -192,6 +193,7 @@ const stepIcons = [
 export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
   const t = content[locale]
   const platformHref = locale === 'de' ? '/vorteile' : '/dealer-benefits'
+  const importGuide = locale === 'de' ? getImportGuideForMarket('de') : null
 
   return (
     <main className="overflow-hidden bg-[#f7f6f2] text-[#202124]">
@@ -468,6 +470,38 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           </div>
         </div>
       </section>
+
+      {importGuide && (
+        <section className="bg-[#eef4f5] px-5 py-20 sm:px-8 sm:py-24 lg:px-12">
+          <div className="relative mx-auto grid max-w-[1180px] overflow-hidden rounded-[30px] border border-white bg-white shadow-[0_28px_80px_rgba(32,33,36,.08)] lg:grid-cols-[.68fr_1.32fr]">
+            <div className="relative min-h-[310px] overflow-hidden bg-[#202427] p-8 text-white sm:p-12">
+              <span className="absolute -right-24 -top-28 h-72 w-72 rounded-full border-[46px] border-[#b4d9ef]/10" />
+              <FileCheck2 className="relative h-7 w-7 text-[#b4d9ef]" />
+              <p className="relative mt-10 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                {importGuide.eyebrow}
+              </p>
+              <p className="relative mt-4 text-sm leading-7 text-white/58">
+                {importGuide.updatedLabel}: {importGuide.updatedDate}
+              </p>
+            </div>
+            <div className="p-8 sm:p-12 lg:p-14">
+              <h2 className="max-w-3xl text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-5xl">
+                {importGuide.title}
+              </h2>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-[#5e727a]">
+                {importGuide.description}
+              </p>
+              <Link
+                href={importGuide.publicPath}
+                className="mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] px-7 text-sm font-medium text-white transition hover:-translate-y-0.5"
+              >
+                Ratgeber lesen
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-[#eef4f5] py-20 sm:py-28">
         <div className="mx-auto grid max-w-[1220px] gap-12 px-5 sm:px-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center lg:px-12">
