@@ -103,7 +103,7 @@ export default function ContractPartyDetailsForm({
         <Save size={18} className="text-[#52768a]" />
       </div>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-2">
+      <div className="mt-5 grid min-w-0 gap-5">
         <PartyFields
           title="Seller"
           icon={<UserRound size={17} />}
@@ -154,13 +154,18 @@ export default function ContractPartyDetailsForm({
       </div>
 
       <button
+        type="submit"
         disabled={loading}
-        className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-[#242424] px-5 text-sm text-white disabled:opacity-60"
+        className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#242424] px-5 py-3 text-center text-sm font-medium text-white disabled:opacity-60"
       >
         <Save size={15} />
         {loading ? 'Saving...' : 'Save details and update agreements'}
       </button>
-      {message && <p className="mt-3 text-xs text-[#62686c]">{message}</p>}
+      {message && (
+        <p className="mt-3 text-xs text-[#62686c]" aria-live="polite">
+          {message}
+        </p>
+      )}
     </form>
   )
 }
@@ -195,25 +200,107 @@ function PartyFields({
   }
 }) {
   const inputClass =
-    'h-10 w-full rounded-[10px] border border-[#d8d7d1] px-3 text-xs outline-none focus:border-[#8dbdd8]'
+    'h-11 min-w-0 w-full rounded-[10px] border border-[#d8d7d1] bg-white px-3 text-sm outline-none focus:border-[#8dbdd8]'
 
   return (
-    <fieldset className="rounded-[14px] border border-[#e5e3dd] bg-[#fafaf8] p-4">
+    <fieldset className="min-w-0 rounded-[14px] border border-[#e5e3dd] bg-[#fafaf8] p-4">
       <legend className="px-2">
         <span className="flex items-center gap-2 text-xs font-semibold">
           {icon}
           {title}
         </span>
       </legend>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input value={values.legalName} onChange={(event) => onChange.legalName(event.target.value)} placeholder="Full legal name" required className={`${inputClass} sm:col-span-2`} />
-        <input value={values.email} onChange={(event) => onChange.email(event.target.value)} type="email" placeholder="Email" required className={inputClass} />
-        <input value={values.phone} onChange={(event) => onChange.phone(event.target.value)} placeholder="Phone" className={inputClass} />
-        <input value={values.registrationNumber} onChange={(event) => onChange.registrationNumber(event.target.value)} placeholder="Personal/company number" className={inputClass} />
-        {showVat && <input value={values.vatNumber} onChange={(event) => onChange.vatNumber(event.target.value)} placeholder="VAT number" required className={inputClass} />}
-        <textarea value={values.address} onChange={(event) => onChange.address(event.target.value)} placeholder="Registered address, postal code and city" required className="min-h-20 w-full rounded-[10px] border border-[#d8d7d1] p-3 text-xs outline-none focus:border-[#8dbdd8] sm:col-span-2" />
-        <input value={values.country} onChange={(event) => onChange.country(event.target.value.toUpperCase())} placeholder="Country code" required maxLength={2} className={`${inputClass} uppercase`} />
+      <div className="grid min-w-0 gap-3">
+        <Field label="Full legal name">
+          <input
+            value={values.legalName}
+            onChange={(event) => onChange.legalName(event.target.value)}
+            placeholder={title === 'Seller' ? 'Seller name' : 'Company name'}
+            autoComplete="name"
+            required
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            value={values.email}
+            onChange={(event) => onChange.email(event.target.value)}
+            type="email"
+            placeholder="name@company.com"
+            autoComplete="email"
+            required
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Phone">
+          <input
+            value={values.phone}
+            onChange={(event) => onChange.phone(event.target.value)}
+            type="tel"
+            placeholder="+46 ..."
+            autoComplete="tel"
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Personal or company number">
+          <input
+            value={values.registrationNumber}
+            onChange={(event) =>
+              onChange.registrationNumber(event.target.value)
+            }
+            placeholder="Registration number"
+            className={inputClass}
+          />
+        </Field>
+        {showVat && (
+          <Field label="VAT number">
+            <input
+              value={values.vatNumber}
+              onChange={(event) => onChange.vatNumber(event.target.value)}
+              placeholder="EU VAT number"
+              required
+              className={inputClass}
+            />
+          </Field>
+        )}
+        <Field label="Registered address">
+          <textarea
+            value={values.address}
+            onChange={(event) => onChange.address(event.target.value)}
+            placeholder="Street, postal code and city"
+            autoComplete="street-address"
+            required
+            className="min-h-24 min-w-0 w-full rounded-[10px] border border-[#d8d7d1] bg-white p-3 text-sm outline-none focus:border-[#8dbdd8]"
+          />
+        </Field>
+        <Field label="Country code">
+          <input
+            value={values.country}
+            onChange={(event) =>
+              onChange.country(event.target.value.toUpperCase())
+            }
+            placeholder="SE"
+            required
+            maxLength={2}
+            className={`${inputClass} uppercase`}
+          />
+        </Field>
       </div>
     </fieldset>
+  )
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="grid min-w-0 gap-1.5 text-xs font-medium text-[#596166]">
+      {label}
+      {children}
+    </label>
   )
 }

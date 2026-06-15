@@ -32,6 +32,8 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_packet_id uuid;
 begin
   if not exists (
     select 1 from public.staff_users
@@ -40,6 +42,27 @@ begin
       and is_active = true
   ) then
     raise exception 'Active sales access is required';
+  end if;
+
+  select id into v_packet_id
+  from public.contract_packets
+  where deal_id = p_deal_id
+  for update;
+
+  if v_packet_id is null then
+    raise exception 'Contract packet was not found';
+  end if;
+
+  if exists (
+    select 1
+    from public.contract_documents_v2
+    where deal_id = p_deal_id
+      and (
+        final_approved_at is not null
+        or status in ('sent', 'signed')
+      )
+  ) then
+    raise exception 'Finalized contract parties cannot be changed';
   end if;
 
   if nullif(trim(p_seller_legal_name), '') is null

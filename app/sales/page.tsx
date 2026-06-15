@@ -211,6 +211,9 @@ export default async function SalesPage({
                   Math.max(latest, Number(document.version || 0)),
                 0
               )
+              const contractsFinalized = currentDocuments.some((document) =>
+                Boolean(document.final_approved_at)
+              )
               const WorkflowIcon = workflow.icon
 
               return (
@@ -283,19 +286,20 @@ export default async function SalesPage({
                         <ContactCard
                           title="Seller"
                           name={sellerParty?.legal_name || 'Name not completed'}
-                          email={lead?.email}
-                          phone={lead?.phone}
+                          email={sellerParty?.email || lead?.email}
+                          phone={sellerParty?.phone || lead?.phone}
                           icon={<UserRound size={17} />}
                         />
                         <ContactCard
                           title="Winning dealer"
                           name={
+                            buyerParty?.legal_name ||
                             dealer?.company_name ||
                             dealer?.contact_person ||
                             'Dealer'
                           }
-                          email={dealer?.email}
-                          phone={dealer?.phone}
+                          email={buyerParty?.email || dealer?.email}
+                          phone={buyerParty?.phone || dealer?.phone}
                           icon={<Building2 size={17} />}
                         />
                       </div>
@@ -361,6 +365,7 @@ export default async function SalesPage({
                             latestVersion={latestVersion || 1}
                           />
                           {packet &&
+                            !contractsFinalized &&
                             ['needs_information', 'draft_ready'].includes(
                               packet.status
                             ) && (
