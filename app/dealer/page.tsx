@@ -319,7 +319,7 @@ export default function DealerPage() {
         now,
         lead.auction_ends_at
       )
-      const matchesView = auctionView === 'closed' ? closed : !closed
+      const matchesView = auctionView === 'active' && !closed
       const matchesSearch =
         !query ||
         [
@@ -433,8 +433,6 @@ export default function DealerPage() {
   const activeAuctionCount = leads.filter(
     (lead) => !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
-  const closedAuctionCount = leads.length - activeAuctionCount
-
   const myBids = allBids.filter((item) => item.dealer_id === currentUserId)
   const myLeadIds = new Set(myBids.map((item) => item.lead_id))
   const myActivePositions = leads.filter(
@@ -663,7 +661,7 @@ export default function DealerPage() {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Closed ({closedAuctionCount})
+                  Closed +10k vehicles
                 </button>
               </div>
 
@@ -865,14 +863,14 @@ export default function DealerPage() {
                 <h3 className="font-semibold text-slate-700">
                   {auctionView === 'active'
                     ? 'No active auctions'
-                    : 'No closed auctions'}
+                    : 'Closed +10k vehicles'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
                     ? 'Try a different search.'
                     : auctionView === 'active'
                       ? 'New vehicle opportunities will appear here.'
-                      : 'Closed auctions will appear in this archive.'}
+                      : 'Closed auctions are documented internally by Autorell.'}
                 </p>
               </div>
             </div>
