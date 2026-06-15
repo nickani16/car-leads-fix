@@ -120,5 +120,19 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
+  const { data: packet } = await adminClient
+    .from('contract_packets')
+    .select('id')
+    .eq('deal_id', id)
+    .maybeSingle()
+  await adminClient.from('contract_events').insert({
+    deal_id: id,
+    packet_id: packet?.id || null,
+    actor_user_id: user.id,
+    actor_role: 'sales',
+    event_type: 'party_details_updated',
+    summary: 'Seller and buyer details updated; new agreement versions created',
+  })
+
   return NextResponse.json({ success: true, result: data })
 }

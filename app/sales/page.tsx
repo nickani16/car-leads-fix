@@ -9,6 +9,7 @@ import {
   FileCheck2,
   Mail,
   Phone,
+  Search,
   UserRound,
 } from 'lucide-react'
 import { requireSales } from '@/lib/sales-auth'
@@ -16,6 +17,7 @@ import { AdminEmpty, AdminPageHeader, Badge } from '@/app/admin/AdminUI'
 import SellerDecisionActions from './SellerDecisionActions'
 import ContractPacketStatus from './ContractPacketStatus'
 import ContractPartyDetailsForm from './ContractPartyDetailsForm'
+import DealWorkflowControls from './DealWorkflowControls'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -27,6 +29,10 @@ const date = new Intl.DateTimeFormat('en-GB', {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
+
+function getCurrentTimestamp() {
+  return Date.now()
+}
 
 type WorkflowStage = 'seller' | 'information' | 'contracts' | 'signing'
 
@@ -47,9 +53,11 @@ const stageLabels: Record<WorkflowStage, string> = {
 export default async function SalesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ stage?: string }>
+  searchParams: Promise<{ stage?: string; q?: string; deal?: string }>
 }) {
-  const { stage } = await searchParams
+  const { stage, q, deal: focusedDealId } = await searchParams
+  const renderedAt = getCurrentTimestamp()
+  const search = q?.trim().toLowerCase() || ''
   const selectedStage = stageOrder.includes(stage as WorkflowStage)
     ? (stage as WorkflowStage)
     : undefined
@@ -61,11 +69,12 @@ export default async function SalesPage({
     { data: packets },
     { data: documents },
     { data: contractParties },
+    { data: salesUsers },
   ] = await Promise.all([
     adminClient
       .from('deals')
       .select(
-        'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,inspection_fee,transport_fee,export_document_fee,buyer_total_amount,origin_country,origin_city,origin_postal_code,destination_country,destination_city,destination_postal_code,seller_decision,seller_decision_at,created_at'
+        'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,inspection_fee,transport_fee,export_document_fee,buyer_total_amount,origin_country,origin_city,origin_postal_code,destination_country,destination_city,destination_postal_code,seller_decision,seller_decision_at,assigned_sales_user_id,action_due_at,created_at'
       )
       .order('created_at', { ascending: false }),
     adminClient
@@ -87,8 +96,14 @@ export default async function SalesPage({
     adminClient
       .from('contract_parties')
       .select(
-        'deal_id,party_role,legal_name,email,phone,registration_number,vat_number,registered_address,country_code'
+        'deal_id,party_role,legal_name,email,phone,registration_number,vat_number,registered_address,country_code,vat_validation_status,vat_validated_at,vat_validation_name'
       ),
+    adminClient
+      .from('staff_users')
+      .select('user_id,display_name')
+      .eq('role', 'sales')
+      .eq('is_active', true)
+      .order('display_name'),
   ])
 
   const leadMap = new Map((leads || []).map((lead) => [lead.id, lead]))
@@ -137,9 +152,26 @@ export default async function SalesPage({
     },
     { seller: 0, information: 0, contracts: 0, signing: 0 }
   )
-  const visibleItems = selectedStage
+  const stageItems = selectedStage
     ? workItems.filter((item) => item.workflow.stage === selectedStage)
     : workItems
+  const visibleItems = stageItems.filter((item) => {
+    if (focusedDealId && item.deal.id !== focusedDealId) return false
+    if (!search) return true
+    return [
+      item.deal.id,
+      item.lead?.reg,
+      item.lead?.make,
+      item.lead?.model,
+      item.sellerParty?.legal_name,
+      item.sellerParty?.email,
+      item.buyerParty?.legal_name,
+      item.buyerParty?.email,
+      item.dealer?.company_name,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search))
+  })
 
   return (
     <main className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
@@ -173,7 +205,37 @@ export default async function SalesPage({
         />
       </section>
 
-      <nav className="mt-7 flex gap-2 overflow-x-auto pb-2" aria-label="Filter work queue">
+      <form
+        method="get"
+        className="mt-7 flex flex-col gap-3 rounded-[18px] border border-[#deddd7] bg-white p-4 sm:flex-row"
+      >
+        {selectedStage && <input type="hidden" name="stage" value={selectedStage} />}
+        <label className="relative min-w-0 flex-1">
+          <Search
+            size={17}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8a8f91]"
+          />
+          <input
+            name="q"
+            defaultValue={q || ''}
+            placeholder="Search registration, seller or buyer"
+            className="h-11 w-full rounded-[12px] border border-[#d8d7d1] bg-[#faf9f6] pl-11 pr-4 text-sm outline-none focus:border-[#8dbdd8]"
+          />
+        </label>
+        <button className="h-11 rounded-full bg-[#242424] px-6 text-sm text-white">
+          Search
+        </button>
+        {(q || focusedDealId) && (
+          <Link
+            href={selectedStage ? `/sales?stage=${selectedStage}` : '/sales'}
+            className="grid h-11 place-items-center rounded-full border border-[#d8d7d1] px-5 text-sm"
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+
+      <nav className="mt-4 flex gap-2 overflow-x-auto pb-2" aria-label="Filter work queue">
         <QueueFilter href="/sales" active={!selectedStage} label="All open" count={workItems.length} />
         {stageOrder.map((item) => (
           <QueueFilter
@@ -214,6 +276,9 @@ export default async function SalesPage({
               const contractsFinalized = currentDocuments.some((document) =>
                 Boolean(document.final_approved_at)
               )
+              const overdue =
+                deal.action_due_at &&
+                new Date(deal.action_due_at).getTime() < renderedAt
               const WorkflowIcon = workflow.icon
 
               return (
@@ -238,8 +303,8 @@ export default async function SalesPage({
                         </div>
                       </div>
                       <Badge
-                        label={stageLabels[workflow.stage]}
-                        tone={workflow.tone}
+                        label={overdue ? 'Overdue' : stageLabels[workflow.stage]}
+                        tone={overdue ? 'red' : workflow.tone}
                       />
                     </div>
                   </div>
@@ -356,7 +421,15 @@ export default async function SalesPage({
                         Complete this step
                       </p>
                       {canRecordDecision ? (
-                        <SellerDecisionActions dealId={deal.id} />
+                        <>
+                          <SellerDecisionActions dealId={deal.id} />
+                          <DealWorkflowControls
+                            dealId={deal.id}
+                            assignedSalesUserId={deal.assigned_sales_user_id}
+                            actionDueAt={deal.action_due_at}
+                            salesUsers={salesUsers || []}
+                          />
+                        </>
                       ) : (
                         <>
                           <ContractPacketStatus
@@ -394,6 +467,12 @@ export default async function SalesPage({
                               ))}
                             </div>
                           )}
+                          <DealWorkflowControls
+                            dealId={deal.id}
+                            assignedSalesUserId={deal.assigned_sales_user_id}
+                            actionDueAt={deal.action_due_at}
+                            salesUsers={salesUsers || []}
+                          />
                         </>
                       )}
                     </section>

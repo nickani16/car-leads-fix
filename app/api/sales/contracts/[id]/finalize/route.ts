@@ -44,5 +44,22 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
+  const { data: document } = await adminClient
+    .from('contract_documents_v2')
+    .select('deal_id,packet_id,version')
+    .eq('id', id)
+    .maybeSingle()
+  if (document) {
+    await adminClient.from('contract_events').insert({
+      deal_id: document.deal_id,
+      packet_id: document.packet_id,
+      document_id: id,
+      actor_user_id: user.id,
+      actor_role: 'sales',
+      event_type: 'contract_finalized',
+      summary: `Agreement version ${document.version} finalized for signature`,
+    })
+  }
+
   return NextResponse.json({ success: true, result: data })
 }

@@ -27,8 +27,8 @@ export default function SalesContractFinalize({
           <p className="text-sm font-semibold">Ready for signature</p>
           <p className="mt-1 text-xs leading-5">
             Sales finalized both agreement versions on{' '}
-            {new Date(finalizedAt).toLocaleString('en-GB')}. Save each document
-            as PDF and send it to the relevant party for signature.
+            {new Date(finalizedAt).toLocaleString('en-GB')}. Use the secure
+            electronic-signature action below to send both agreements.
           </p>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Building2, Save, UserRound } from 'lucide-react'
+import { EU_COUNTRIES } from '@/lib/eu-countries'
 
 type PartyDetails = {
   legal_name?: string | null
@@ -12,6 +13,9 @@ type PartyDetails = {
   vat_number?: string | null
   registered_address?: string | null
   country_code?: string | null
+  vat_validation_status?: string | null
+  vat_validated_at?: string | null
+  vat_validation_name?: string | null
 }
 
 export default function ContractPartyDetailsForm({
@@ -150,6 +154,9 @@ export default function ContractPartyDetailsForm({
             address: (value) => update('buyerAddress', value),
             country: (value) => update('buyerCountry', value),
           }}
+          dealId={dealId}
+          vatValidationStatus={buyer?.vat_validation_status}
+          vatValidationName={buyer?.vat_validation_name}
         />
       </div>
 
@@ -176,6 +183,9 @@ function PartyFields({
   showVat = false,
   values,
   onChange,
+  dealId,
+  vatValidationStatus,
+  vatValidationName,
 }: {
   title: string
   icon: React.ReactNode
@@ -198,7 +208,19 @@ function PartyFields({
     address: (value: string) => void
     country: (value: string) => void
   }
+  dealId?: string
+  vatValidationStatus?: string | null
+  vatValidationName?: string | null
 }) {
+  const [checkingVat, setCheckingVat] = useState(false)
+  const [vatResult, setVatResult] = useState<{
+    status: string
+    name?: string
+  } | null>(
+    vatValidationStatus
+      ? { status: vatValidationStatus, name: vatValidationName || undefined }
+      : null
+  )
   const inputClass =
     'h-11 min-w-0 w-full rounded-[10px] border border-[#d8d7d1] bg-white px-3 text-sm outline-none focus:border-[#8dbdd8]'
 
@@ -254,13 +276,67 @@ function PartyFields({
         </Field>
         {showVat && (
           <Field label="VAT number">
-            <input
-              value={values.vatNumber}
-              onChange={(event) => onChange.vatNumber(event.target.value)}
-              placeholder="EU VAT number"
-              required
-              className={inputClass}
-            />
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+              <input
+                value={values.vatNumber}
+                onChange={(event) => {
+                  onChange.vatNumber(event.target.value)
+                  setVatResult(null)
+                }}
+                placeholder="EU VAT number"
+                required
+                className={inputClass}
+              />
+              <button
+                type="button"
+                disabled={checkingVat || !dealId}
+                onClick={async () => {
+                  if (!dealId) return
+                  setCheckingVat(true)
+                  const response = await fetch(
+                    `/api/sales/deals/${dealId}/vat-check`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        vatNumber: values.vatNumber,
+                        countryCode: values.country,
+                      }),
+                    }
+                  )
+                  const result = (await response.json().catch(() => ({}))) as {
+                    status?: string
+                    name?: string
+                    error?: string
+                  }
+                  setCheckingVat(false)
+                  setVatResult({
+                    status: response.ok ? result.status || 'unavailable' : 'invalid',
+                    name: result.name || result.error,
+                  })
+                }}
+                className="h-11 rounded-full border border-[#8dbdd8] bg-[#eff8fd] px-4 text-xs font-medium text-[#31546a] disabled:opacity-50"
+              >
+                {checkingVat ? 'Checking...' : 'Check VAT'}
+              </button>
+            </div>
+            {vatResult && (
+              <span
+                className={`text-xs ${
+                  vatResult.status === 'valid'
+                    ? 'text-emerald-700'
+                    : vatResult.status === 'unavailable'
+                      ? 'text-amber-700'
+                      : 'text-red-700'
+                }`}
+              >
+                {vatResult.status === 'valid'
+                  ? `Verified${vatResult.name ? `: ${vatResult.name}` : ''}`
+                  : vatResult.status === 'unavailable'
+                    ? 'VIES is temporarily unavailable. Try again later.'
+                    : vatResult.name || 'VAT number was not valid.'}
+              </span>
+            )}
           </Field>
         )}
         <Field label="Registered address">
@@ -274,16 +350,19 @@ function PartyFields({
           />
         </Field>
         <Field label="Country code">
-          <input
+          <select
             value={values.country}
-            onChange={(event) =>
-              onChange.country(event.target.value.toUpperCase())
-            }
-            placeholder="SE"
+            onChange={(event) => onChange.country(event.target.value)}
             required
-            maxLength={2}
-            className={`${inputClass} uppercase`}
-          />
+            className={inputClass}
+          >
+            <option value="">Select country</option>
+            {EU_COUNTRIES.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name} ({code})
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
     </fieldset>

@@ -82,5 +82,14 @@ export async function POST(
     )
   }
 
+  await adminClient.from('contract_events').insert({
+    deal_id: id,
+    actor_user_id: user.id,
+    actor_role: actorRole,
+    event_type: 'seller_decision_recorded',
+    summary: `Seller ${body.decision} the winning offer`,
+    metadata: { notes: body.notes?.trim() || null },
+  })
+
   return NextResponse.json({ success: true, result: data })
 }
