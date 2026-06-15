@@ -26,6 +26,7 @@ const navigation = [
   { label: 'Auctions', href: '/admin/auctions', icon: Gavel },
   { label: 'Dealers', href: '/admin/dealers', icon: Store },
   { label: 'Deals', href: '/admin/deals', icon: BarChart3 },
+  { label: 'Conversions', href: '/admin/conversions', icon: BarChart3 },
   { label: 'Contracts', href: '/admin/contracts', icon: FileCheck2 },
 ]
 

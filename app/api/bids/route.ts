@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { DEALER_TERMS_VERSION } from '@/lib/legal'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { trackConversion } from '@/lib/conversion-tracking'
 
 type BidRequest = {
   leadId?: string
@@ -74,6 +76,25 @@ export async function POST(request: Request) {
     }
 
     const bid = Array.isArray(data) ? data[0] : data
+
+    if (bid?.id) {
+      const { data: dealer } = await createAdminClient()
+        .from('dealers')
+        .select('id,country_code')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      await trackConversion(request, {
+        eventName: 'bid_submitted',
+        countryCode: dealer?.country_code || null,
+        userId: user.id,
+        dealerId: dealer?.id || null,
+        leadId,
+        value: amount,
+        currency: 'EUR',
+        dedupeKey: `bid:${bid.id}`,
+      })
+    }
 
     return NextResponse.json({ success: true, bid })
   } catch (error) {

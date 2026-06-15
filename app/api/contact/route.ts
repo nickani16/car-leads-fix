@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { trackConversion } from '@/lib/conversion-tracking'
 
 type ContactLocale = 'sv' | 'de' | 'en'
 
@@ -251,6 +252,17 @@ export async function POST(request: Request) {
         { status: 500 },
       )
     }
+
+    await trackConversion(request, {
+      eventName: 'contact_submitted',
+      countryCode: market.code === 'EU' ? null : market.code,
+      dedupeKey: `contact:${reference}`,
+      metadata: {
+        reference,
+        subject,
+        locale,
+      },
+    })
 
     return NextResponse.json({ success: true, reference })
   } catch (error) {

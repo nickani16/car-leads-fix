@@ -1,3 +1,5 @@
+'use client'
+
 const socialIcons = [
   {
     label: 'Facebook',
@@ -22,6 +24,37 @@ const socialIcons = [
 ]
 
 export default function SocialIcons({ className = '' }: { className?: string }) {
+  function trackSocialClick(label: string) {
+    if (label !== 'WhatsApp') return
+
+    const consent = document.cookie
+      .split('; ')
+      .find((item) => item.startsWith('autorell_cookie_consent='))
+      ?.split('=')[1]
+
+    if (consent !== 'all') return
+
+    const payload = JSON.stringify({
+      eventName: 'whatsapp_clicked',
+      pageUrl: window.location.href,
+    })
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(
+        '/api/analytics/conversion',
+        new Blob([payload], { type: 'application/json' }),
+      )
+      return
+    }
+
+    void fetch('/api/analytics/conversion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    })
+  }
+
   return (
     <div
       className={`flex items-center gap-2 ${className}`}
@@ -35,6 +68,7 @@ export default function SocialIcons({ className = '' }: { className?: string }) 
           rel="noopener noreferrer"
           aria-label={`Besök Autorell på ${label}`}
           title={label === 'WhatsApp' ? 'WhatsApp: +46 76-020 26 71' : label}
+          onClick={() => trackSocialClick(label)}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d5d4ce] bg-white/70 text-[#626662] transition hover:-translate-y-0.5 hover:border-[#8dbdd8] hover:bg-white hover:text-[#31546a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#52768a]"
         >
           <svg

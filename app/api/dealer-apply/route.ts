@@ -4,6 +4,7 @@ import {
   DEALER_TERMS_VERSION,
   PRIVACY_NOTICE_VERSION,
 } from '@/lib/legal'
+import { trackConversion } from '@/lib/conversion-tracking'
 
 type DealerApplication = {
   companyName?: string
@@ -209,6 +210,24 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+
+  const { data: dealer } = await adminClient
+    .from('dealers')
+    .select('id')
+    .eq('user_id', data.user.id)
+    .maybeSingle()
+
+  await trackConversion(request, {
+    eventName: 'dealer_application_submitted',
+    countryCode,
+    userId: data.user.id,
+    dealerId: dealer?.id || null,
+    dedupeKey: `dealer_application:${data.user.id}`,
+    metadata: {
+      deliveryCity,
+      deliveryPostalCode,
+    },
+  })
 
   return NextResponse.json({ success: true })
 }
