@@ -59,6 +59,28 @@ export async function POST(request: Request) {
     }
 
     if (requestedPath === '/dealer') {
+      const { data: dealerAccount } = await adminClient
+        .from('dealers')
+        .select('status')
+        .eq('user_id', data.user.id)
+        .maybeSingle()
+
+      if (!dealerAccount) {
+        await supabase.auth.signOut()
+        return NextResponse.json(
+          { error: 'No dealer profile was found for this account.' },
+          { status: 403 }
+        )
+      }
+
+      if (dealerAccount.status !== 'approved') {
+        await supabase.auth.signOut()
+        return NextResponse.json(
+          { error: 'Your dealer application is still under review.' },
+          { status: 403 }
+        )
+      }
+
       return NextResponse.json({ success: true, destination: '/dealer' })
     }
 
@@ -101,9 +123,38 @@ export async function POST(request: Request) {
       .eq('is_active', true)
       .maybeSingle()
 
+    if (staffAccount) {
+      return NextResponse.json({
+        success: true,
+        destination: '/sales',
+      })
+    }
+
+    const { data: dealerAccount } = await adminClient
+      .from('dealers')
+      .select('status')
+      .eq('user_id', data.user.id)
+      .maybeSingle()
+
+    if (!dealerAccount) {
+      await supabase.auth.signOut()
+      return NextResponse.json(
+        { error: 'This account does not have portal access.' },
+        { status: 403 }
+      )
+    }
+
+    if (dealerAccount.status !== 'approved') {
+      await supabase.auth.signOut()
+      return NextResponse.json(
+        { error: 'Your dealer application is still under review.' },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json({
       success: true,
-      destination: staffAccount ? '/sales' : '/dealer',
+      destination: '/dealer',
     })
   } catch (error) {
     console.error('Server login error:', error)

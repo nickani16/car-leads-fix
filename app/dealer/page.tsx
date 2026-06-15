@@ -197,7 +197,8 @@ export default function DealerPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [submittingBid, setSubmittingBid] = useState(false)
   const [bidTermsAccepted, setBidTermsAccepted] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [portalError, setPortalError] = useState('')
+  const [bidError, setBidError] = useState('')
   const [now, setNow] = useState(0)
 
   useEffect(() => {
@@ -213,7 +214,7 @@ export default function DealerPage() {
     if (showRefresh) setRefreshing(true)
     else setLoading(true)
 
-    setErrorMessage('')
+    setPortalError('')
 
     const {
       data: { user },
@@ -221,7 +222,7 @@ export default function DealerPage() {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      setErrorMessage('Your session has expired. Please sign in again.')
+      setPortalError('Your session has expired. Please sign in again.')
       setLoading(false)
       setRefreshing(false)
       return
@@ -248,10 +249,14 @@ export default function DealerPage() {
     ])
 
     if (leadsResult.error || bidsResult.error || dealerResult.error) {
-      console.error(
-        leadsResult.error || bidsResult.error || dealerResult.error
+      console.error('Dealer portal load failed', {
+        leads: leadsResult.error,
+        bids: bidsResult.error,
+        dealer: dealerResult.error,
+      })
+      setPortalError(
+        'The marketplace could not be loaded. Refresh the page or sign in again.'
       )
-      setErrorMessage('The portal could not be loaded. Please try again.')
     } else {
       setLeads(leadsResult.data || [])
       setAllBids(sortNewestFirst((bidsResult.data as Bid[]) || []))
@@ -467,6 +472,7 @@ export default function DealerPage() {
   async function openLead(lead: Lead) {
     setSelectedLead(lead)
     setBid('')
+    setBidError('')
     setBidTermsAccepted(false)
     setSelectedBids(sortNewestFirst(bidsByLead[lead.id] || []))
     void fetch('/api/dealer/vehicle-view', {
@@ -481,12 +487,12 @@ export default function DealerPage() {
 
     const amount = Number(bid)
     if (!Number.isFinite(amount) || amount <= 0) {
-      setErrorMessage('Enter a valid bid amount.')
+      setBidError('Enter a valid bid amount.')
       return
     }
 
     if (!bidTermsAccepted) {
-      setErrorMessage('Confirm the binding bid terms before submitting.')
+      setBidError('Confirm the binding bid terms before submitting.')
       return
     }
 
@@ -497,12 +503,12 @@ export default function DealerPage() {
         selectedLead.auction_ends_at
       )
     ) {
-      setErrorMessage('Bidding for this vehicle has closed.')
+      setBidError('Bidding for this vehicle has closed.')
       return
     }
 
     setSubmittingBid(true)
-    setErrorMessage('')
+    setBidError('')
 
     const response = await fetch('/api/bids', {
       method: 'POST',
@@ -522,7 +528,7 @@ export default function DealerPage() {
     }
 
     if (!response.ok || !result.bid) {
-      setErrorMessage(
+      setBidError(
         result.error || 'Your bid could not be submitted. Please try again.'
       )
       setSubmittingBid(false)
@@ -834,9 +840,9 @@ export default function DealerPage() {
             />
           </div>
 
-          {errorMessage && !selectedLead && (
+          {portalError && (
             <div className="mx-5 mt-5 rounded-[5px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mx-7">
-              {errorMessage}
+              {portalError}
             </div>
           )}
 
@@ -1054,7 +1060,7 @@ export default function DealerPage() {
                 onClick={() => {
                   setSelectedLead(null)
                   setBid('')
-                  setErrorMessage('')
+                  setBidError('')
                 }}
                 className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f1ed] text-slate-500 transition hover:bg-[#e7e5df] hover:text-slate-900"
                 aria-label="Close vehicle details"
@@ -1386,9 +1392,9 @@ export default function DealerPage() {
                       </span>
                     </label>
 
-                    {errorMessage && (
+                    {bidError && (
                       <p className="mt-3 rounded-[5px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                        {errorMessage}
+                        {bidError}
                       </p>
                     )}
 
