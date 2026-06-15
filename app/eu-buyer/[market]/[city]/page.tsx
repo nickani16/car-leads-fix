@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
@@ -21,6 +22,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
+import SocialIcons from '@/app/components/SocialIcons'
 import {
   euBuyerMarkets,
   getEuBuyerCopy,
@@ -73,7 +75,7 @@ export async function generateMetadata({
   const description = trimMeta(
     city
       ? `${copy.cityTitle(city.name)}. ${copy.intro}`
-      : `${copy.countryTitle(market.countryLocal)}. ${copy.intro}`,
+      : `${market.homeTitle || copy.countryTitle(market.countryLocal)}. ${copy.intro}`,
     158,
   )
   const path = getEuBuyerPath(market, city?.slug)
@@ -122,7 +124,7 @@ export default async function EuBuyerPage({ params }: RouteProps) {
   const path = getEuBuyerPath(market, city?.slug)
   const heading = city
     ? copy.cityTitle(city.name)
-    : copy.countryTitle(market.countryLocal)
+    : market.homeTitle || copy.countryTitle(market.countryLocal)
   const demandValues = [86, 74, 67]
   const structuredData = {
     '@context': 'https://schema.org',
@@ -182,8 +184,8 @@ export default async function EuBuyerPage({ params }: RouteProps) {
 
   return (
     <main className="overflow-hidden bg-[#f7f6f2] text-[#202124]">
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-white/35 bg-white/74 backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[78px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-white/35 bg-white/72 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-[88px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:min-h-[108px] lg:px-12 xl:px-16">
           <Link href="/" aria-label="Autorell home">
             <BrandLogo />
           </Link>
@@ -209,11 +211,20 @@ export default async function EuBuyerPage({ params }: RouteProps) {
         </div>
       </header>
 
-      <section className="relative isolate overflow-hidden border-b border-[#d9ddd9] bg-[#f6f5f1] pt-[78px]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_30%,rgba(180,217,239,.62),transparent_25%),radial-gradient(circle_at_46%_82%,rgba(255,255,255,.95),transparent_30%),linear-gradient(135deg,#fbfaf7_0%,#f0efea_55%,#e7f1f4_100%)]" />
-        <div className="absolute inset-0 opacity-[.24] [background-image:radial-gradient(#71858e_1px,transparent_1px)] [background-size:28px_28px]" />
-        <div className="dealer-seo-orbit absolute -right-60 -top-56 h-[760px] w-[760px] rounded-full border-[105px] border-white/30" />
-        <div className="relative mx-auto grid min-h-[720px] max-w-[1440px] items-center gap-12 px-5 pb-14 pt-14 sm:px-8 lg:grid-cols-[.95fr_1.05fr] lg:px-12">
+      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea] pt-[88px] lg:pt-[108px]">
+        <Image
+          src="/autorell-volvo-hero.jpg"
+          alt={`${copy.vehicleTitle} ${market.countryLocal}`}
+          fill
+          priority={citySlug === 'index'}
+          className="object-cover object-[72%_bottom] sm:object-[76%_center] lg:object-right"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.99)_0%,rgba(249,247,242,.96)_43%,rgba(249,247,242,.72)_68%,rgba(238,238,233,.3)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.82)_52%,rgba(250,248,243,.2)_78%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(31,36,39,.25)_0%,transparent_38%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.1)_0%,transparent_42%)]" />
+        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
+        <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
+        <div className="relative mx-auto grid min-h-[820px] max-w-[1440px] items-start gap-10 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[740px]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#c7d7dc] bg-white/82 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#4f7181] shadow-[0_12px_35px_rgba(32,33,36,.07)] backdrop-blur">
@@ -224,7 +235,7 @@ export default async function EuBuyerPage({ params }: RouteProps) {
                 {copy.dealerAccess}
               </span>
             </div>
-            <h1 className="mt-8 max-w-[820px] break-words text-[44px] leading-[.94] tracking-[-0.064em] sm:text-7xl lg:text-[80px]">
+            <h1 className="mt-8 max-w-[820px] break-words text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">
               {heading}
             </h1>
             <p className="mt-7 max-w-[680px] [overflow-wrap:anywhere] text-[17px] leading-8 text-[#536b76] sm:text-xl sm:leading-9">
@@ -262,52 +273,8 @@ export default async function EuBuyerPage({ params }: RouteProps) {
             </div>
           </div>
 
-          <div className="relative z-10 mx-auto min-h-[570px] w-full min-w-0 max-w-[640px]">
-            <div className="absolute left-1/2 top-1/2 h-[490px] w-[490px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/25 sm:h-[540px] sm:w-[540px]" />
-            <div className="absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/30 sm:h-[390px] sm:w-[390px]" />
-            <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8299a2]/35 sm:h-[245px] sm:w-[245px]" />
-
-            <div className="dealer-seo-console absolute left-1/2 top-1/2 z-20 grid h-32 w-32 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/75 bg-[#b4d9ef] shadow-[0_28px_70px_rgba(63,91,103,.24)] sm:h-40 sm:w-40">
-              <div className="text-center">
-                <Globe2 className="mx-auto h-7 w-7 text-[#294a59]" />
-                <strong className="mt-3 block text-xl tracking-[-0.04em]">
-                  Autorell
-                </strong>
-              </div>
-            </div>
-
-            <div className="absolute left-0 top-[14%] z-10 w-[185px] rounded-[22px] border border-white/75 bg-white/78 p-5 shadow-[0_20px_55px_rgba(43,57,63,.11)] backdrop-blur-xl sm:left-[2%] sm:w-[215px]">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4f6] text-lg">
-                  🇸🇪
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-[0.17em] text-[#82939a]">
-                    {copy.inspected}
-                  </p>
-                  <strong className="mt-1 block text-base">Autorell</strong>
-                </div>
-              </div>
-              <span className="dealer-seo-live absolute -right-1 -top-1 h-3 w-3 rounded-full bg-[#8ed1a8]" />
-            </div>
-
-            <div className="absolute right-0 top-[18%] z-10 w-[180px] rounded-[22px] border border-white/75 bg-white/78 p-5 shadow-[0_20px_55px_rgba(43,57,63,.11)] backdrop-blur-xl sm:right-[1%] sm:w-[220px]">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4f6] text-lg">
-                  {market.flag}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-[0.17em] text-[#82939a]">
-                    {copy.dealerOnly}
-                  </p>
-                  <strong className="mt-1 block [overflow-wrap:anywhere] text-base">
-                    {place}
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute bottom-[4%] left-1/2 z-20 w-[min(94%,440px)] -translate-x-1/2 overflow-hidden rounded-[25px] border border-white/80 bg-white/88 p-5 shadow-[0_28px_70px_rgba(43,57,63,.15)] backdrop-blur-xl sm:p-6">
+          <div className="relative z-10 w-full min-w-0 max-w-[430px] justify-self-center self-end lg:justify-self-end lg:self-center">
+            <div className="overflow-hidden rounded-[26px] border border-white/80 bg-white/84 p-5 shadow-[0_28px_80px_rgba(23,31,35,.2)] backdrop-blur-xl sm:p-6">
               <div className="flex min-w-0 items-start justify-between gap-4 border-b border-[#dfe4e5] pb-4">
                 <div className="min-w-0">
                   <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#6d8995]">
@@ -342,6 +309,22 @@ export default async function EuBuyerPage({ params }: RouteProps) {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#dfe4e5] pt-4">
+                <div className="rounded-[15px] bg-[#f4f7f7] p-3">
+                  <span className="text-lg">{market.flag}</span>
+                  <p className="mt-2 text-[9px] uppercase tracking-[0.16em] text-[#82939a]">
+                    {copy.dealerOnly}
+                  </p>
+                  <strong className="mt-1 block truncate text-sm">{place}</strong>
+                </div>
+                <div className="rounded-[15px] bg-[#eaf5fa] p-3">
+                  <span className="text-lg">SE</span>
+                  <p className="mt-2 text-[9px] uppercase tracking-[0.16em] text-[#6f8791]">
+                    {copy.inspected}
+                  </p>
+                  <strong className="mt-1 block text-sm">Autorell</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -693,6 +676,7 @@ export default async function EuBuyerPage({ params }: RouteProps) {
             <Link href="/dealer" className="text-white/65 hover:text-white">
               {copy.login}
             </Link>
+            <SocialIcons />
           </div>
         </div>
       </footer>
