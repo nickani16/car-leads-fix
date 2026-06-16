@@ -15,7 +15,6 @@ import {
   Handshake,
   ScanLine,
   Search,
-  Sparkles,
   Truck,
 } from 'lucide-react'
 import BuyerHeroMarketPulse from './BuyerHeroMarketPulse'
@@ -219,8 +218,9 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
-            <span className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#cbd7da] bg-white/72 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#496674] shadow-[0_10px_30px_rgba(32,33,36,.05)] backdrop-blur sm:text-[11px]">
-              <Sparkles className="h-4 w-4 shrink-0 text-[#4b8198]" />
+            <span className="flex max-w-full items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#547382] sm:text-[11px]">
+              <span className="h-px w-10 shrink-0 bg-[#7aaec7]" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7aaec7] shadow-[0_0_0_5px_rgba(180,217,239,.36)]" />
               {t.eyebrow}
             </span>
             <h1 className="mt-8 text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">

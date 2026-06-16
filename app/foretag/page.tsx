@@ -17,7 +17,6 @@ import {
   Truck,
 } from 'lucide-react'
 import BusinessFleetForm from '../components/BusinessFleetForm'
-import PublicBreadcrumbs from '../components/PublicBreadcrumbs'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
@@ -80,10 +79,8 @@ export default function BusinessPage() {
         <div className="business-orbit-reverse absolute -bottom-48 right-[-90px] h-[430px] w-[430px] rounded-full border-[58px] border-[#B4D9EF]/35" />
         <div className="absolute left-[44%] top-[12%] h-64 w-64 rounded-full bg-white/65 blur-3xl" />
 
-        <div className="relative mx-auto max-w-[1440px] px-5 pb-16 pt-5 sm:px-8 sm:pb-24 sm:pt-7 lg:px-12 lg:pb-28 xl:px-16">
-          <PublicBreadcrumbs items={[{ label: 'Företag' }]} />
-
-          <div className="mt-12 grid min-w-0 gap-12 lg:mt-16 lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16">
+        <div className="relative mx-auto max-w-[1440px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-[72px] lg:px-12 lg:pb-28 lg:pt-20 xl:px-16">
+          <div className="grid min-w-0 gap-12 lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#c9dce5] bg-white/75 px-4 py-2 text-xs font-medium text-[#496878] shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur">
                 <Building2 className="h-4 w-4" />
