@@ -220,7 +220,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         <div className="business-orbit absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#b4d9ef]/28 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
-          <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
+          <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-20 xl:translate-y-16">
             <span className="block max-w-full text-[10px] font-semibold uppercase tracking-[0.18em] text-[#547382] sm:text-[11px] sm:tracking-[0.22em]">
               <span className="whitespace-nowrap sm:hidden">
                 {t.mobileEyebrow}
