@@ -26,6 +26,7 @@ type BuyerLocale = 'de' | 'en'
 
 const content = {
   de: {
+    mobileEyebrow: 'Geprüfter B2B-Zugang',
     eyebrow: 'B2B-Fahrzeugmarkt für Autohändler',
     titleTop: 'Sicher einkaufen.',
     titleBottom: 'Europaweit handeln.',
@@ -102,6 +103,7 @@ const content = {
       'Werden Sie Teil des Autorell Dealer Network und erhalten Sie Zugang zu neuen Fahrzeugangeboten, digitalen Auktionen und dem Ausbau unserer europäischen Marktplattform.',
   },
   en: {
+    mobileEyebrow: 'Verified dealer sourcing',
     eyebrow: 'Swedish vehicle sourcing for European dealers',
     titleTop: 'Source with confidence.',
     titleBottom: 'Trade across Europe.',
@@ -209,19 +211,24 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[72%_bottom] sm:object-[76%_center] lg:object-right"
+          className="object-cover object-[84%_bottom] sm:object-[76%_center] lg:object-right"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.99)_0%,rgba(249,247,242,.96)_43%,rgba(249,247,242,.7)_68%,rgba(238,238,233,.24)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(31,36,39,.28)_0%,transparent_38%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.96)_0%,rgba(249,247,242,.9)_42%,rgba(249,247,242,.46)_69%,rgba(238,238,233,.12)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(180,217,239,.28),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
         <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
+        <div className="business-orbit absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#b4d9ef]/28 sm:hidden" />
+        <div className="business-orbit-reverse absolute -right-20 top-24 h-44 w-44 rounded-full border-[26px] border-white/58 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
-            <span className="flex max-w-full items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#547382] sm:text-[11px]">
-              <span className="h-px w-10 shrink-0 bg-[#7aaec7]" />
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7aaec7] shadow-[0_0_0_5px_rgba(180,217,239,.36)]" />
-              {t.eyebrow}
+            <span className="flex max-w-full items-center text-[10px] font-semibold uppercase tracking-[0.18em] text-[#547382] sm:gap-3 sm:text-[11px] sm:tracking-[0.22em]">
+              <span className="whitespace-nowrap sm:hidden">
+                {t.mobileEyebrow}
+              </span>
+              <span className="hidden h-px w-10 shrink-0 bg-[#7aaec7] sm:block" />
+              <span className="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-[#7aaec7] shadow-[0_0_0_5px_rgba(180,217,239,.36)] sm:block" />
+              <span className="hidden sm:inline">{t.eyebrow}</span>
             </span>
             <h1 className="mt-8 text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">
               {t.titleTop}
