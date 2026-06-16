@@ -218,16 +218,13 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
         <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
         <div className="business-orbit absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#b4d9ef]/28 sm:hidden" />
-        <div className="business-orbit-reverse absolute -right-20 top-24 h-44 w-44 rounded-full border-[26px] border-white/58 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-10 xl:translate-y-8">
-            <span className="flex max-w-full items-center text-[10px] font-semibold uppercase tracking-[0.18em] text-[#547382] sm:gap-3 sm:text-[11px] sm:tracking-[0.22em]">
+            <span className="block max-w-full text-[10px] font-semibold uppercase tracking-[0.18em] text-[#547382] sm:text-[11px] sm:tracking-[0.22em]">
               <span className="whitespace-nowrap sm:hidden">
                 {t.mobileEyebrow}
               </span>
-              <span className="hidden h-px w-10 shrink-0 bg-[#7aaec7] sm:block" />
-              <span className="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-[#7aaec7] shadow-[0_0_0_5px_rgba(180,217,239,.36)] sm:block" />
               <span className="hidden sm:inline">{t.eyebrow}</span>
             </span>
             <h1 className="mt-8 text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">
