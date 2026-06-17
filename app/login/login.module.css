@@ -489,10 +489,13 @@
 
 @media (max-width: 520px) {
   .page {
+    display: block;
     justify-content: flex-start;
-    min-height: 100dvh;
-    padding: 20px 14px max(110px, env(safe-area-inset-bottom));
-    overscroll-behavior-y: contain;
+    min-height: auto;
+    overflow-x: clip;
+    overflow-y: visible;
+    padding: 20px 14px calc(48px + env(safe-area-inset-bottom));
+    overscroll-behavior-y: auto;
   }
 
   .introduction {
@@ -508,8 +511,8 @@
     margin: 0 auto;
     width: 100%;
     max-width: 360px;
-    min-height: calc(100dvh - 130px);
-    align-items: center;
+    min-height: 0;
+    align-items: start;
   }
 
   .card {
