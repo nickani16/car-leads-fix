@@ -56,10 +56,9 @@ const benefits = [
 ]
 
 const portalHighlights = [
-  'Aktuella fordon och aktiv budstatus',
-  'Efterfrågesignaler från dealer-nätverket',
-  'Budhistorik och tydliga prisindikationer',
-  'Fordonsdata, bilder, dokument och exportstatus',
+  ['Marknadsöversikt', 'Se aktuella fordon, aktiv budstatus och var efterfrågan rör sig.'],
+  ['Budunderlag', 'Följ budhistorik, prisindikationer och jämförbara datapunkter innan beslut.'],
+  ['Affärsflöde', 'Samla fordonsdata, bilder, dokument, exportstatus och nästa steg på samma plats.'],
 ]
 
 export default function ForDealersPage() {
@@ -103,8 +102,8 @@ export default function ForDealersPage() {
 
       <section className="py-16 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="mb-12 grid gap-8 overflow-hidden rounded-[28px] border border-[#d9e2e5] bg-white shadow-[0_24px_75px_rgba(32,33,36,.08)] lg:grid-cols-[1.05fr_.95fr] lg:items-center">
-            <div className="relative min-h-[300px] overflow-hidden bg-[#dcecf3] sm:min-h-[420px] lg:h-full">
+          <div className="mb-12 grid overflow-hidden rounded-[10px] bg-[#202427] shadow-[0_32px_90px_rgba(32,36,39,.18)] lg:grid-cols-[1.08fr_.92fr]">
+            <div className="relative min-h-[330px] overflow-hidden bg-[#dcecf3] sm:min-h-[500px] lg:h-full">
               <Image
                 src="/data-autorell.webp"
                 alt="Autorell dealerportal med marknadsdata på en laptop"
@@ -112,27 +111,45 @@ export default function ForDealersPage() {
                 sizes="(min-width: 1024px) 52vw, 100vw"
                 className="object-cover"
               />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_42%,rgba(32,36,39,.5)_100%)]" />
+              <div className="absolute bottom-5 left-5 right-5 grid gap-3 rounded-[8px] border border-white/12 bg-[#202427]/82 p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,.22)] backdrop-blur-md sm:left-7 sm:right-7 sm:grid-cols-3">
+                {[
+                  ['Live', 'Budstatus'],
+                  ['Data', 'Fordonsprofil'],
+                  ['Export', 'Dokument'],
+                ].map(([value, label]) => (
+                  <div key={label} className="border-white/10 sm:border-r sm:last:border-r-0">
+                    <strong className="block text-lg tracking-[-0.03em]">{value}</strong>
+                    <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-white/48">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="p-7 sm:p-10 lg:p-12">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#66808c]">
-                Dealer workspace
+            <div className="p-7 text-white sm:p-10 lg:p-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                Autorell dealer intelligence
               </p>
-              <h2 className="mt-5 text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-5xl">
+              <h2 className="mt-5 text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-5xl lg:text-[58px]">
                 Se marknaden innan ni lägger bud.
               </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-[#64757c]">
+              <p className="mt-6 max-w-xl text-base leading-8 text-white/62">
                 Bilhandlare får ett samlat arbetsflöde där fordon, bud,
                 marknadssignaler och dokumentation ligger på samma plats. Det
                 gör inköp snabbare, tydligare och enklare att följa upp.
               </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {portalHighlights.map((item) => (
+              <div className="mt-9 divide-y divide-white/10 border-y border-white/10">
+                {portalHighlights.map(([title, text]) => (
                   <div
-                    key={item}
-                    className="flex min-h-16 items-center gap-3 rounded-[16px] border border-[#dfe5e6] bg-[#f8faf9] px-4 text-sm leading-5 text-[#3f5057]"
+                    key={title}
+                    className="grid gap-2 py-5 sm:grid-cols-[150px_1fr] sm:gap-6"
                   >
-                    <BadgeCheck className="h-4 w-4 shrink-0 text-[#4f8298]" />
-                    <span>{item}</span>
+                    <span className="flex items-center gap-2 text-sm font-medium text-white">
+                      <BadgeCheck className="h-4 w-4 text-[#b4d9ef]" />
+                      {title}
+                    </span>
+                    <span className="text-sm leading-6 text-white/55">{text}</span>
                   </div>
                 ))}
               </div>

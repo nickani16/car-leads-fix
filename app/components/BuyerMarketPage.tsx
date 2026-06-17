@@ -198,10 +198,9 @@ const dealerPortalContent = {
     text:
       'Autorell bündelt Fahrzeugchancen, Gebote, Marktsignale und Dokumentation in einem Arbeitsbereich. So können Einkaufsteams schneller prüfen, priorisieren und jedes Gebot besser nachvollziehen.',
     highlights: [
-      'Aktive Fahrzeuge und Gebotsstatus',
-      'Nachfragesignale aus dem Händlernetzwerk',
-      'Gebotshistorie und klare Preisindikationen',
-      'Fahrzeugdaten, Bilder, Dokumente und Exportstatus',
+      ['Marktübersicht', 'Aktive Fahrzeuge, Gebotsstatus und Nachfragebewegungen vor dem Gebot prüfen.'],
+      ['Gebotsgrundlage', 'Gebotshistorie, Preisindikationen und vergleichbare Datenpunkte nachvollziehen.'],
+      ['Transaktionsfluss', 'Fahrzeugdaten, Bilder, Dokumente, Exportstatus und nächste Schritte an einem Ort.'],
     ],
   },
   en: {
@@ -210,10 +209,9 @@ const dealerPortalContent = {
     text:
       'Autorell brings vehicle opportunities, bids, market signals and documentation into one workspace. Buying teams can review faster, prioritise better and keep every decision traceable.',
     highlights: [
-      'Live vehicles and active bid status',
-      'Demand signals from the dealer network',
-      'Bid history and clear price indicators',
-      'Vehicle data, images, documents and export status',
+      ['Market view', 'Review live vehicles, active bid status and demand movement before you bid.'],
+      ['Bidding context', 'Track bid history, price indications and comparable data points before each decision.'],
+      ['Transaction flow', 'Keep vehicle data, images, documents, export status and next steps in one place.'],
     ],
   },
 } as const
@@ -308,8 +306,8 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
 
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="grid gap-8 overflow-hidden rounded-[30px] border border-[#d9e2e5] bg-[#f8f7f3] shadow-[0_26px_80px_rgba(32,33,36,.08)] lg:grid-cols-[1.04fr_.96fr] lg:items-center">
-            <div className="relative min-h-[310px] overflow-hidden bg-[#dcecf3] sm:min-h-[430px] lg:h-full">
+          <div className="grid overflow-hidden rounded-[10px] bg-[#202427] shadow-[0_32px_90px_rgba(32,36,39,.18)] lg:grid-cols-[1.08fr_.92fr]">
+            <div className="relative min-h-[330px] overflow-hidden bg-[#dcecf3] sm:min-h-[500px] lg:h-full">
               <Image
                 src="/data-autorell.webp"
                 alt={
@@ -321,25 +319,43 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                 sizes="(min-width: 1024px) 52vw, 100vw"
                 className="object-cover"
               />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_42%,rgba(32,36,39,.5)_100%)]" />
+              <div className="absolute bottom-5 left-5 right-5 grid gap-3 rounded-[8px] border border-white/12 bg-[#202427]/82 p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,.22)] backdrop-blur-md sm:left-7 sm:right-7 sm:grid-cols-3">
+                {[
+                  ['Live', locale === 'de' ? 'Gebotsstatus' : 'Bid status'],
+                  ['Data', locale === 'de' ? 'Fahrzeugprofil' : 'Vehicle profile'],
+                  ['Export', locale === 'de' ? 'Dokumente' : 'Documents'],
+                ].map(([value, label]) => (
+                  <div key={label} className="border-white/10 sm:border-r sm:last:border-r-0">
+                    <strong className="block text-lg tracking-[-0.03em]">{value}</strong>
+                    <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-white/48">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="p-7 sm:p-10 lg:p-12">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#66808c]">
+            <div className="p-7 text-white sm:p-10 lg:p-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
                 {portal.eyebrow}
               </p>
               <h2 className="mt-5 text-[40px] leading-[1.02] tracking-[-0.055em] sm:text-6xl">
                 {portal.title}
               </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-[#64757c]">
+              <p className="mt-6 max-w-xl text-base leading-8 text-white/62">
                 {portal.text}
               </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {portal.highlights.map((item) => (
+              <div className="mt-9 divide-y divide-white/10 border-y border-white/10">
+                {portal.highlights.map(([title, text]) => (
                   <div
-                    key={item}
-                    className="flex min-h-16 items-center gap-3 rounded-[16px] border border-[#dfe5e6] bg-white px-4 text-sm leading-5 text-[#3f5057] shadow-[0_8px_24px_rgba(32,33,36,.035)]"
+                    key={title}
+                    className="grid gap-2 py-5 sm:grid-cols-[150px_1fr] sm:gap-6"
                   >
-                    <Check className="h-4 w-4 shrink-0 text-[#4f8298]" />
-                    <span>{item}</span>
+                    <span className="flex items-center gap-2 text-sm font-medium text-white">
+                      <Check className="h-4 w-4 text-[#b4d9ef]" />
+                      {title}
+                    </span>
+                    <span className="text-sm leading-6 text-white/55">{text}</span>
                   </div>
                 ))}
               </div>
