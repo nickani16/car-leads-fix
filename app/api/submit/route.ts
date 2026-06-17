@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { after, NextResponse } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { canonicalVehicleValue } from '@/lib/vehicle-translation'
 import { createSellerAccessToken } from '@/lib/seller-access'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
@@ -19,6 +20,57 @@ const financeStatuses = new Set([
   'leasing',
   'unknown',
 ])
+
+const imageUploadConcurrency = 4
+
+async function uploadLeadImage(
+  supabase: SupabaseClient,
+  file: File,
+  index: number
+) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-')
+  const fileName = `images/${crypto.randomUUID()}-${index}-${safeName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('leads')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type,
+    })
+
+  if (uploadError || !uploadData) {
+    console.error('Upload error:', uploadError)
+    return null
+  }
+
+  const { data: signedUrlData, error: signedUrlError } =
+    await supabase.storage
+      .from('leads')
+      .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7)
+
+  if (signedUrlError || !signedUrlData?.signedUrl) {
+    console.error('Signed URL error:', signedUrlError)
+    return null
+  }
+
+  return signedUrlData.signedUrl
+}
+
+async function uploadLeadImages(supabase: SupabaseClient, files: File[]) {
+  const urls: string[] = []
+
+  for (let start = 0; start < files.length; start += imageUploadConcurrency) {
+    const batch = files.slice(start, start + imageUploadConcurrency)
+    const batchUrls = await Promise.all(
+      batch.map((file, offset) => uploadLeadImage(supabase, file, start + offset))
+    )
+
+    urls.push(...batchUrls.filter((url): url is string => Boolean(url)))
+  }
+
+  return urls
+}
 
 export async function POST(request: Request) {
   try {
@@ -136,50 +188,17 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabase = createAdminClient()
     const sellerAccess = createSellerAccessToken()
     const { count: approvedDealerCount } = await supabase
       .from('dealers')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'approved')
 
-    const imageUrls: string[] = []
     const files = form
       .getAll('images')
       .filter((item): item is File => item instanceof File && item.size > 0)
-
-    for (const [index, file] of files.entries()) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-')
-      const fileName = `images/${crypto.randomUUID()}-${index}-${safeName}`
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('leads')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type,
-        })
-
-      if (uploadError || !uploadData) {
-        console.error('Upload error:', uploadError)
-        continue
-      }
-
-      const { data: signedUrlData, error: signedUrlError } =
-        await supabase.storage
-        .from('leads')
-        .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7)
-
-      if (signedUrlError || !signedUrlData?.signedUrl) {
-        console.error('Signed URL error:', signedUrlError)
-        continue
-      }
-
-      imageUrls.push(signedUrlData.signedUrl)
-    }
+    const imageUrls = await uploadLeadImages(supabase, files)
 
     const lead = {
       ...requiredFields,
@@ -252,7 +271,6 @@ export async function POST(request: Request) {
     }
 
     if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY)
       const fromEmail =
         process.env.NOTIFICATION_FROM_EMAIL ||
         'Autorell <noreply@autorell.com>'
@@ -270,7 +288,10 @@ export async function POST(request: Request) {
         `/admin/leads/${insertedLead.id}`,
         request.url
       ).toString()
-      await resend.emails.send({
+      after(async () => {
+        try {
+          const resend = new Resend(process.env.RESEND_API_KEY)
+          const { error: reviewEmailError } = await resend.emails.send({
         from: reviewFromEmail,
         to: reviewToEmail,
         subject: `Granska ny bil: ${make} ${lead.model} · ${lead.reg}`,
@@ -322,9 +343,13 @@ export async function POST(request: Request) {
             </body>
           </html>
         `,
-      })
+          })
 
-      const { error: sellerEmailError } = await resend.emails.send({
+          if (reviewEmailError) {
+            console.error('Lead review email error:', reviewEmailError)
+          }
+
+          const { error: sellerEmailError } = await resend.emails.send({
         from: fromEmail,
         to: email,
         subject: `Your Autorell vehicle link: ${make} ${lead.model}`,
@@ -400,11 +425,15 @@ export async function POST(request: Request) {
             </body>
           </html>
         `,
-      })
+          })
 
-      if (sellerEmailError) {
-        console.error('Seller portal email error:', sellerEmailError)
-      }
+          if (sellerEmailError) {
+            console.error('Seller portal email error:', sellerEmailError)
+          }
+        } catch (error) {
+          console.error('Lead notification email error:', error)
+        }
+      })
     }
 
     return NextResponse.json({
