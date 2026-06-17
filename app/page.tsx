@@ -44,6 +44,33 @@ async function getRootMarket() {
   return 'sv'
 }
 
+const homeDealerExperienceTiles = [
+  {
+    title: 'Granska',
+    label: 'Vehicle access',
+    text: 'Utvalda svenska fordon med tydliga bilder, data och nästa steg.',
+    href: '/for-handlare',
+    src: '/dealer-handtag.webp',
+    alt: 'Närbild på bildörrhandtag för utvalda Autorell-fordon',
+  },
+  {
+    title: 'Analysera',
+    label: 'Dealer dashboard',
+    text: 'Se marknadssignaler, bud och fordonsprofiler innan beslut.',
+    href: '/for-handlare',
+    src: '/dealer-macbook.webp',
+    alt: 'Autorell dealer dashboard på en laptop',
+  },
+  {
+    title: 'Budsystem',
+    label: 'Enkelt budflöde',
+    text: 'Lägg bud, se avgifter och förstå totalsumman innan budet skickas in.',
+    href: '/for-handlare',
+    src: '/dealer-samsung.webp',
+    alt: 'Autorell enkelt budsystem med budvy och köpsammanfattning',
+  },
+]
+
 export async function generateMetadata(): Promise<Metadata> {
   const market = await getRootMarket()
 
@@ -502,6 +529,71 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="grid w-full bg-[#202427] lg:grid-cols-2">
+          <div className="grid lg:min-h-[760px] lg:grid-rows-2">
+            {homeDealerExperienceTiles.slice(1).map((tile) => (
+              <Link
+                key={tile.title}
+                href={tile.href}
+                className="group relative isolate min-h-[330px] overflow-hidden bg-[#dbe9f1] text-[#202124] outline-none sm:min-h-[430px] lg:min-h-0"
+              >
+                <Image
+                  src={tile.src}
+                  alt={tile.alt}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition duration-700 group-hover:scale-[1.035]"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.16)_42%,rgba(32,36,39,.36)_100%)] transition duration-500 group-hover:bg-[linear-gradient(180deg,rgba(255,255,255,.58)_0%,rgba(255,255,255,.08)_42%,rgba(32,36,39,.48)_100%)]" />
+                <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+                  <div>
+                    <p className="text-[12px] font-medium tracking-[0.02em]">{tile.label}</p>
+                    <h2 className="mt-3 text-[34px] leading-none tracking-[-0.045em] sm:text-5xl">
+                      {tile.title}
+                    </h2>
+                  </div>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                    <ArrowRight className="h-5 w-5" />
+                  </span>
+                </div>
+                <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base">
+                  {tile.text}
+                </p>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href={homeDealerExperienceTiles[0].href}
+            className="group relative isolate min-h-[520px] overflow-hidden bg-[#dcecf3] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
+          >
+            <Image
+              src={homeDealerExperienceTiles[0].src}
+              alt={homeDealerExperienceTiles[0].alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover transition duration-700 group-hover:scale-[1.03]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(244,240,231,.84)_0%,rgba(244,240,231,.42)_28%,rgba(32,36,39,.08)_62%,rgba(32,36,39,.34)_100%)] transition duration-500 group-hover:bg-[linear-gradient(90deg,rgba(244,240,231,.72)_0%,rgba(244,240,231,.3)_28%,rgba(32,36,39,.05)_62%,rgba(32,36,39,.44)_100%)]" />
+            <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+              <div>
+                <p className="text-[12px] font-medium tracking-[0.02em]">{homeDealerExperienceTiles[0].label}</p>
+                <h2 className="mt-3 text-[38px] leading-none tracking-[-0.045em] sm:text-6xl">
+                  {homeDealerExperienceTiles[0].title}
+                </h2>
+              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                <ArrowRight className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base lg:text-[#202124] lg:drop-shadow-none">
+              {homeDealerExperienceTiles[0].text}
+            </p>
+          </Link>
         </div>
       </section>
 

@@ -73,12 +73,12 @@ const dealerExperienceTiles = [
     alt: 'Autorell dealer dashboard på en laptop',
   },
   {
-    title: 'Lägg bud',
-    label: 'Mobile bidding',
-    text: 'Följ bud, avgifter och köpsammanfattning tydligt även på mobil.',
+    title: 'Budsystem',
+    label: 'Enkelt budflöde',
+    text: 'Lägg bud, se avgifter och förstå totalsumman innan ni skickar in.',
     href: '/dealer-apply',
     src: '/dealer-samsung.webp',
-    alt: 'Autorell budvy på mobiltelefoner',
+    alt: 'Autorell enkelt budsystem med budvy och köpsammanfattning',
   },
 ]
 
