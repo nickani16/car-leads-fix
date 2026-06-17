@@ -95,6 +95,16 @@ function imageSizeError(locale: FormLocale) {
   return 'Bilderna Ã¤r fÃ¶r stora. Ladda upp fÃ¤rre eller mindre bilder.'
 }
 
+function singleImageSizeError(locale: FormLocale) {
+  if (locale === 'de') {
+    return 'Ein oder mehrere Bilder sind groesser als 10 MB und wurden nicht hinzugefuegt.'
+  }
+  if (locale === 'en') {
+    return 'One or more photos are larger than 10 MB and were not added.'
+  }
+  return 'En eller flera bilder Ã¤r stÃ¶rre Ã¤n 10 MB och lades inte till.'
+}
+
 function readImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const url = URL.createObjectURL(file)
@@ -787,7 +797,9 @@ export default function VehicleLeadForm({
 
   function addImages(event: React.ChangeEvent<HTMLInputElement>) {
     if (!event.target.files) return
-    const files = Array.from(event.target.files)
+    const selectedFiles = Array.from(event.target.files)
+    const rejectedFiles = selectedFiles.filter((file) => file.size > MAX_IMAGE_FILE_SIZE)
+    const files = selectedFiles
       .filter((file) => file.size <= MAX_IMAGE_FILE_SIZE)
       .slice(0, 12 - images.length)
     setImages((current) => [...current, ...files.map((file) => ({
@@ -799,7 +811,7 @@ export default function VehicleLeadForm({
       delete nextErrors.images
       return nextErrors
     })
-    setError('')
+    setError(rejectedFiles.length ? singleImageSizeError(locale) : '')
   }
 
   async function submit(event: React.FormEvent) {
