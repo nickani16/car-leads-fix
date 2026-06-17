@@ -191,34 +191,68 @@ const stepIcons = [
   Truck,
 ]
 
-const dealerPortalContent = {
+const dealerExperienceContent = {
   de: {
-    eyebrow: 'Dealer workspace',
-    title: 'Den Markt sehen, bevor Sie bieten.',
-    text:
-      'Autorell bündelt Fahrzeugchancen, Gebote, Marktsignale und Dokumentation in einem Arbeitsbereich. So können Einkaufsteams schneller prüfen, priorisieren und jedes Gebot besser nachvollziehen.',
-    highlights: [
-      ['Marktübersicht', 'Aktive Fahrzeuge, Gebotsstatus und Nachfragebewegungen vor dem Gebot prüfen.'],
-      ['Gebotsgrundlage', 'Gebotshistorie, Preisindikationen und vergleichbare Datenpunkte nachvollziehen.'],
-      ['Transaktionsfluss', 'Fahrzeugdaten, Bilder, Dokumente, Exportstatus und nächste Schritte an einem Ort.'],
+    tiles: [
+      {
+        title: 'Prüfen',
+        label: 'Vehicle access',
+        text: 'Ausgewählte Fahrzeuge mit klaren Daten, Bildern und nächsten Schritten.',
+        href: '/fahrzeuge',
+        src: '/dealer-handtag.webp',
+        alt: 'Nahaufnahme eines Fahrzeugtürgriffs für ausgewählte Autorell Fahrzeuge',
+      },
+      {
+        title: 'Analysieren',
+        label: 'Dealer dashboard',
+        text: 'Marktsignale, Gebote und Fahrzeugprofile vor dem Einkauf bewerten.',
+        href: '/vorteile',
+        src: '/dealer-macbook.webp',
+        alt: 'Autorell Dealer Dashboard auf einem Laptop',
+      },
+      {
+        title: 'Bieten',
+        label: 'Mobile bidding',
+        text: 'Gebote, Gebühren und Kaufzusammenfassung auch mobil klar sehen.',
+        href: '/so-funktionierts',
+        src: '/dealer-samsung.webp',
+        alt: 'Autorell Gebotsansicht auf mobilen Geräten',
+      },
     ],
   },
   en: {
-    eyebrow: 'Dealer workspace',
-    title: 'See the market before you bid.',
-    text:
-      'Autorell brings vehicle opportunities, bids, market signals and documentation into one workspace. Buying teams can review faster, prioritise better and keep every decision traceable.',
-    highlights: [
-      ['Market view', 'Review live vehicles, active bid status and demand movement before you bid.'],
-      ['Bidding context', 'Track bid history, price indications and comparable data points before each decision.'],
-      ['Transaction flow', 'Keep vehicle data, images, documents, export status and next steps in one place.'],
+    tiles: [
+      {
+        title: 'Inspect',
+        label: 'Vehicle access',
+        text: 'Selected vehicles with clear data, images and next steps.',
+        href: '/vehicles',
+        src: '/dealer-handtag.webp',
+        alt: 'Close-up of a vehicle door handle for selected Autorell vehicles',
+      },
+      {
+        title: 'Analyse',
+        label: 'Dealer dashboard',
+        text: 'Review market signals, bids and vehicle profiles before buying.',
+        href: '/dealer-benefits',
+        src: '/dealer-macbook.webp',
+        alt: 'Autorell dealer dashboard on a laptop',
+      },
+      {
+        title: 'Bid',
+        label: 'Mobile bidding',
+        text: 'See bids, fees and purchase summaries clearly on mobile.',
+        href: '/how-it-works',
+        src: '/dealer-samsung.webp',
+        alt: 'Autorell bidding view on mobile devices',
+      },
     ],
   },
 } as const
 
 export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
   const t = content[locale]
-  const portal = dealerPortalContent[locale]
+  const dealerExperience = dealerExperienceContent[locale]
   const platformHref = locale === 'de' ? '/vorteile' : '/dealer-benefits'
   const importGuide = locale === 'de' ? getImportGuideForMarket('de') : null
 
@@ -302,67 +336,6 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           ))}
         </div>
 
-      </section>
-
-      <section className="bg-white py-20 sm:py-28">
-        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="grid overflow-hidden rounded-[10px] bg-[#202427] shadow-[0_32px_90px_rgba(32,36,39,.18)] lg:grid-cols-[1.08fr_.92fr]">
-            <div className="relative flex min-h-[330px] items-center justify-center overflow-hidden bg-[#dcecf3] p-4 sm:min-h-[500px] sm:p-8 lg:h-full">
-              <Image
-                src="/data-autorell.webp"
-                alt={
-                  locale === 'de'
-                    ? 'Autorell Händlerportal mit Marktdaten auf einem Laptop'
-                    : 'Autorell dealer portal with market data on a laptop'
-                }
-                width={750}
-                height={500}
-                sizes="(min-width: 1024px) 52vw, 100vw"
-                className="h-auto w-full max-w-[760px] rounded-[8px] object-contain shadow-[0_24px_70px_rgba(32,36,39,.22)]"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_58%,rgba(32,36,39,.28)_100%)]" />
-              <div className="absolute bottom-5 left-5 right-5 grid gap-3 rounded-[8px] border border-white/12 bg-[#202427]/82 p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,.22)] backdrop-blur-md sm:left-7 sm:right-7 sm:grid-cols-3">
-                {[
-                  ['Live', locale === 'de' ? 'Gebotsstatus' : 'Bid status'],
-                  ['Data', locale === 'de' ? 'Fahrzeugprofil' : 'Vehicle profile'],
-                  ['Export', locale === 'de' ? 'Dokumente' : 'Documents'],
-                ].map(([value, label]) => (
-                  <div key={label} className="border-white/10 sm:border-r sm:last:border-r-0">
-                    <strong className="block text-lg tracking-[-0.03em]">{value}</strong>
-                    <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-white/48">
-                      {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-7 text-white sm:p-10 lg:p-12">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                {portal.eyebrow}
-              </p>
-              <h2 className="mt-5 text-[40px] leading-[1.02] tracking-[-0.055em] sm:text-6xl">
-                {portal.title}
-              </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-white/62">
-                {portal.text}
-              </p>
-              <div className="mt-9 divide-y divide-white/10 border-y border-white/10">
-                {portal.highlights.map(([title, text]) => (
-                  <div
-                    key={title}
-                    className="grid gap-2 py-5 sm:grid-cols-[150px_1fr] sm:gap-6"
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium text-white">
-                      <Check className="h-4 w-4 text-[#b4d9ef]" />
-                      {title}
-                    </span>
-                    <span className="text-sm leading-6 text-white/55">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       <section className="py-20 sm:py-28">
@@ -478,6 +451,71 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="grid w-full bg-[#202427] lg:grid-cols-2">
+          <div className="grid lg:min-h-[760px] lg:grid-rows-2">
+            {dealerExperience.tiles.slice(1).map((tile) => (
+              <Link
+                key={tile.title}
+                href={tile.href}
+                className="group relative isolate min-h-[330px] overflow-hidden bg-[#dbe9f1] text-[#202124] outline-none sm:min-h-[430px] lg:min-h-0"
+              >
+                <Image
+                  src={tile.src}
+                  alt={tile.alt}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition duration-700 group-hover:scale-[1.035]"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.16)_42%,rgba(32,36,39,.36)_100%)] transition duration-500 group-hover:bg-[linear-gradient(180deg,rgba(255,255,255,.58)_0%,rgba(255,255,255,.08)_42%,rgba(32,36,39,.48)_100%)]" />
+                <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+                  <div>
+                    <p className="text-[12px] font-medium tracking-[0.02em]">{tile.label}</p>
+                    <h2 className="mt-3 text-[34px] leading-none tracking-[-0.045em] sm:text-5xl">
+                      {tile.title}
+                    </h2>
+                  </div>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                    <ArrowRight className="h-5 w-5" />
+                  </span>
+                </div>
+                <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base">
+                  {tile.text}
+                </p>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href={dealerExperience.tiles[0].href}
+            className="group relative isolate min-h-[520px] overflow-hidden bg-[#dcecf3] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
+          >
+            <Image
+              src={dealerExperience.tiles[0].src}
+              alt={dealerExperience.tiles[0].alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover transition duration-700 group-hover:scale-[1.03]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(244,240,231,.84)_0%,rgba(244,240,231,.42)_28%,rgba(32,36,39,.08)_62%,rgba(32,36,39,.34)_100%)] transition duration-500 group-hover:bg-[linear-gradient(90deg,rgba(244,240,231,.72)_0%,rgba(244,240,231,.3)_28%,rgba(32,36,39,.05)_62%,rgba(32,36,39,.44)_100%)]" />
+            <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+              <div>
+                <p className="text-[12px] font-medium tracking-[0.02em]">{dealerExperience.tiles[0].label}</p>
+                <h2 className="mt-3 text-[38px] leading-none tracking-[-0.045em] sm:text-6xl">
+                  {dealerExperience.tiles[0].title}
+                </h2>
+              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                <ArrowRight className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base lg:text-[#202124] lg:drop-shadow-none">
+              {dealerExperience.tiles[0].text}
+            </p>
+          </Link>
         </div>
       </section>
 

@@ -55,10 +55,31 @@ const benefits = [
   },
 ]
 
-const portalHighlights = [
-  ['Marknadsöversikt', 'Se aktuella fordon, aktiv budstatus och var efterfrågan rör sig.'],
-  ['Budunderlag', 'Följ budhistorik, prisindikationer och jämförbara datapunkter innan beslut.'],
-  ['Affärsflöde', 'Samla fordonsdata, bilder, dokument, exportstatus och nästa steg på samma plats.'],
+const dealerExperienceTiles = [
+  {
+    title: 'Granska',
+    label: 'Vehicle access',
+    text: 'Utvalda svenska fordon med tydliga bilder, data och nästa steg.',
+    href: '/dealer-apply',
+    src: '/dealer-handtag.webp',
+    alt: 'Närbild på bildörrhandtag för utvalda Autorell-fordon',
+  },
+  {
+    title: 'Analysera',
+    label: 'Dealer dashboard',
+    text: 'Se marknadssignaler, bud och fordonsprofiler innan ni tar beslut.',
+    href: '/dealer-apply',
+    src: '/dealer-macbook.webp',
+    alt: 'Autorell dealer dashboard på en laptop',
+  },
+  {
+    title: 'Lägg bud',
+    label: 'Mobile bidding',
+    text: 'Följ bud, avgifter och köpsammanfattning tydligt även på mobil.',
+    href: '/dealer-apply',
+    src: '/dealer-samsung.webp',
+    alt: 'Autorell budvy på mobiltelefoner',
+  },
 ]
 
 export default function ForDealersPage() {
@@ -102,61 +123,6 @@ export default function ForDealersPage() {
 
       <section className="py-16 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="mb-12 grid overflow-hidden rounded-[10px] bg-[#202427] shadow-[0_32px_90px_rgba(32,36,39,.18)] lg:grid-cols-[1.08fr_.92fr]">
-            <div className="relative flex min-h-[330px] items-center justify-center overflow-hidden bg-[#dcecf3] p-4 sm:min-h-[500px] sm:p-8 lg:h-full">
-              <Image
-                src="/data-autorell.webp"
-                alt="Autorell dealerportal med marknadsdata på en laptop"
-                width={750}
-                height={500}
-                sizes="(min-width: 1024px) 52vw, 100vw"
-                className="h-auto w-full max-w-[760px] rounded-[8px] object-contain shadow-[0_24px_70px_rgba(32,36,39,.22)]"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_58%,rgba(32,36,39,.28)_100%)]" />
-              <div className="absolute bottom-5 left-5 right-5 grid gap-3 rounded-[8px] border border-white/12 bg-[#202427]/82 p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,.22)] backdrop-blur-md sm:left-7 sm:right-7 sm:grid-cols-3">
-                {[
-                  ['Live', 'Budstatus'],
-                  ['Data', 'Fordonsprofil'],
-                  ['Export', 'Dokument'],
-                ].map(([value, label]) => (
-                  <div key={label} className="border-white/10 sm:border-r sm:last:border-r-0">
-                    <strong className="block text-lg tracking-[-0.03em]">{value}</strong>
-                    <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-white/48">
-                      {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-7 text-white sm:p-10 lg:p-12">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                Autorell dealer intelligence
-              </p>
-              <h2 className="mt-5 text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-5xl lg:text-[58px]">
-                Se marknaden innan ni lägger bud.
-              </h2>
-              <p className="mt-6 max-w-xl text-base leading-8 text-white/62">
-                Bilhandlare får ett samlat arbetsflöde där fordon, bud,
-                marknadssignaler och dokumentation ligger på samma plats. Det
-                gör inköp snabbare, tydligare och enklare att följa upp.
-              </p>
-              <div className="mt-9 divide-y divide-white/10 border-y border-white/10">
-                {portalHighlights.map(([title, text]) => (
-                  <div
-                    key={title}
-                    className="grid gap-2 py-5 sm:grid-cols-[150px_1fr] sm:gap-6"
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium text-white">
-                      <BadgeCheck className="h-4 w-4 text-[#b4d9ef]" />
-                      {title}
-                    </span>
-                    <span className="text-sm leading-6 text-white/55">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {benefits.map(({ icon: Icon, title, text }) => (
               <article
@@ -171,7 +137,76 @@ export default function ForDealersPage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
 
+      <section className="bg-white">
+        <div className="grid w-full bg-[#202427] lg:grid-cols-2">
+          <div className="grid lg:min-h-[760px] lg:grid-rows-2">
+            {dealerExperienceTiles.slice(1).map((tile) => (
+              <Link
+                key={tile.title}
+                href={tile.href}
+                className="group relative isolate min-h-[330px] overflow-hidden bg-[#dbe9f1] text-[#202124] outline-none sm:min-h-[430px] lg:min-h-0"
+              >
+                <Image
+                  src={tile.src}
+                  alt={tile.alt}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition duration-700 group-hover:scale-[1.035]"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.72)_0%,rgba(255,255,255,.16)_42%,rgba(32,36,39,.36)_100%)] transition duration-500 group-hover:bg-[linear-gradient(180deg,rgba(255,255,255,.58)_0%,rgba(255,255,255,.08)_42%,rgba(32,36,39,.48)_100%)]" />
+                <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+                  <div>
+                    <p className="text-[12px] font-medium tracking-[0.02em]">{tile.label}</p>
+                    <h2 className="mt-3 text-[34px] leading-none tracking-[-0.045em] sm:text-5xl">
+                      {tile.title}
+                    </h2>
+                  </div>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                    <ArrowRight className="h-5 w-5" />
+                  </span>
+                </div>
+                <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base">
+                  {tile.text}
+                </p>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href={dealerExperienceTiles[0].href}
+            className="group relative isolate min-h-[520px] overflow-hidden bg-[#dcecf3] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
+          >
+            <Image
+              src={dealerExperienceTiles[0].src}
+              alt={dealerExperienceTiles[0].alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover transition duration-700 group-hover:scale-[1.03]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(244,240,231,.84)_0%,rgba(244,240,231,.42)_28%,rgba(32,36,39,.08)_62%,rgba(32,36,39,.34)_100%)] transition duration-500 group-hover:bg-[linear-gradient(90deg,rgba(244,240,231,.72)_0%,rgba(244,240,231,.3)_28%,rgba(32,36,39,.05)_62%,rgba(32,36,39,.44)_100%)]" />
+            <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-5 sm:left-8 sm:right-8 sm:top-8">
+              <div>
+                <p className="text-[12px] font-medium tracking-[0.02em]">{dealerExperienceTiles[0].label}</p>
+                <h2 className="mt-3 text-[38px] leading-none tracking-[-0.045em] sm:text-6xl">
+                  {dealerExperienceTiles[0].title}
+                </h2>
+              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                <ArrowRight className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="absolute bottom-6 left-5 right-5 max-w-xl text-[15px] leading-7 text-white drop-shadow-[0_2px_14px_rgba(0,0,0,.5)] sm:left-8 sm:right-8 sm:text-base lg:text-[#202124] lg:drop-shadow-none">
+              {dealerExperienceTiles[0].text}
+            </p>
+          </Link>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-28">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
           <div className="mt-10 grid gap-5 rounded-[24px] bg-[#242424] p-7 text-white sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <div className="flex items-center gap-2 text-[#b4d9ef]">
