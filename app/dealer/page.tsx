@@ -1044,9 +1044,13 @@ export default function DealerPage() {
                       <button
                         type="button"
                         onClick={() => openLead(lead)}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#242424] px-5 text-sm font-normal text-white shadow-sm transition hover:bg-[#111111]"
+                        className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold shadow-sm transition ${
+                          closed
+                            ? 'bg-[#242424] text-white hover:bg-[#111111]'
+                            : 'bg-[#B4D9EF] text-[#202124] ring-1 ring-[#92c4df] hover:bg-[#c9e6f6]'
+                        }`}
                       >
-                        {closed ? 'View result' : 'View & bid'}
+                        {closed ? 'View result' : 'Bid now'}
                         <ArrowRight size={15} />
                       </button>
                     </article>
@@ -1104,18 +1108,39 @@ export default function DealerPage() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedLead(null)
-                  setBid('')
-                  setBidError('')
-                }}
-                className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f1ed] text-slate-500 transition hover:bg-[#e7e5df] hover:text-slate-900"
-                aria-label="Close vehicle details"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                {!isBiddingClosed(
+                  selectedLead.created_at,
+                  now,
+                  selectedLead.auction_ends_at
+                ) && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById('dealer-bid-panel')
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                    className="inline-flex h-10 w-10 items-center justify-center gap-2 rounded-full bg-[#B4D9EF] text-sm font-semibold text-[#202124] ring-1 ring-[#92c4df] transition hover:bg-[#c9e6f6] sm:w-auto sm:px-4"
+                  >
+                    <Gavel size={16} />
+                    <span className="hidden sm:inline">Place bid</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedLead(null)
+                    setBid('')
+                    setBidError('')
+                  }}
+                  className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f1ed] text-slate-500 transition hover:bg-[#e7e5df] hover:text-slate-900"
+                  aria-label="Close vehicle details"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
@@ -1324,7 +1349,7 @@ export default function DealerPage() {
                 </section>
               </div>
 
-              <aside className="bg-slate-50/60 p-5 sm:p-7">
+              <aside className="bg-[#f8fbfd] p-5 sm:p-7">
                 <div className="mb-6 rounded-[18px] border border-[#deddd7] bg-[#242424] p-5 text-white shadow-lg shadow-slate-900/10">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
                     Current highest bid
@@ -1345,7 +1370,23 @@ export default function DealerPage() {
                   now,
                   selectedLead.auction_ends_at
                 ) && (
-                  <div className="mb-7">
+                  <div
+                    id="dealer-bid-panel"
+                    className="mb-7 rounded-[18px] border border-[#b8dced] bg-white p-4 shadow-[0_18px_45px_rgba(32,33,36,.09)] ring-4 ring-[#B4D9EF]/20 sm:p-5"
+                  >
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6f9fba]">
+                          Place bid
+                        </p>
+                        <h3 className="mt-1 text-xl font-semibold tracking-tight text-[#202124]">
+                          Secure your position
+                        </h3>
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                        Live
+                      </span>
+                    </div>
                     <label className="mb-2 block text-sm font-bold text-slate-700">
                       Your bid
                     </label>
@@ -1360,7 +1401,7 @@ export default function DealerPage() {
                         value={bid}
                         onChange={(event) => setBid(event.target.value)}
                         placeholder="Enter amount"
-                        className="h-14 w-full rounded-[14px] border border-slate-200 bg-white pl-9 pr-4 text-lg font-semibold outline-none transition focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/35"
+                        className="h-16 w-full rounded-[16px] border border-[#b8dced] bg-[#fbfdfe] pl-9 pr-4 text-xl font-semibold outline-none transition focus:border-[#6faeca] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/35"
                       />
                     </div>
 
@@ -1506,7 +1547,7 @@ export default function DealerPage() {
                         !validBidAmount ||
                         !bidTermsAccepted
                       }
-                      className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#B4D9EF] px-4 text-sm font-normal text-[#242424] shadow-lg transition hover:bg-[#C9E6F6] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#242424] px-4 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(32,33,36,.24)] transition hover:-translate-y-0.5 hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                     >
                       <Gavel size={17} />
                       {submittingBid ? 'Submitting bid...' : 'Submit secure bid'}

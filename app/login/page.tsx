@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Home, Menu } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from './login.module.css'
+
+const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,13 +20,20 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [requestedPath, setRequestedPath] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberLogin, setRememberLogin] = useState(false)
   const [loginExample, setLoginExample] = useState('')
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      const rememberedLogin = window.localStorage.getItem(REMEMBERED_LOGIN_KEY)
       const searchParams = new URLSearchParams(window.location.search)
       const status = searchParams.get('status')
       const next = searchParams.get('next')
+
+      if (rememberedLogin) {
+        setEmail(rememberedLogin)
+        setRememberLogin(true)
+      }
 
       if (next === '/admin' || next === '/dealer' || next === '/sales') {
         setRequestedPath(next)
@@ -139,6 +148,12 @@ export default function LoginPage() {
         return
       }
 
+      if (rememberLogin) {
+        window.localStorage.setItem(REMEMBERED_LOGIN_KEY, email.trim())
+      } else {
+        window.localStorage.removeItem(REMEMBERED_LOGIN_KEY)
+      }
+
       router.replace(result.destination || '/dealer')
       router.refresh()
     } catch {
@@ -154,6 +169,22 @@ export default function LoginPage() {
     <main className={styles.page}>
       <div className={styles.backgroundGlowOne} />
       <div className={styles.backgroundGlowTwo} />
+
+      <nav className={styles.mobileNav} aria-label="Mobile navigation">
+        <Link href="/" className={styles.mobileLogo} aria-label="Autorell home">
+          <BrandLogo />
+        </Link>
+        <div className={styles.mobileNavActions}>
+          <Link href="/" className={styles.mobileNavLink}>
+            <Home size={16} />
+            <span className={styles.mobileNavText}>Home</span>
+          </Link>
+          <Link href="/dealer-apply" className={styles.mobileMenuButton}>
+            <Menu size={16} />
+            Menu
+          </Link>
+        </div>
+      </nav>
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
@@ -260,6 +291,18 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+
+            <label className={styles.rememberRow}>
+              <input
+                type="checkbox"
+                checked={rememberLogin}
+                onChange={(event) => setRememberLogin(event.target.checked)}
+              />
+              <span>
+                Remember me
+                <small>Save this email or username on this device.</small>
+              </span>
+            </label>
 
             {statusMessage && (
               <div role="status" className={styles.statusMessage}>

@@ -1,5 +1,6 @@
 .page {
   position: relative;
+  box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -26,6 +27,62 @@
 .backgroundGlowOne,
 .backgroundGlowTwo {
   display: none;
+}
+
+.mobileNav {
+  position: relative;
+  z-index: 2;
+  display: none;
+  width: 100%;
+  max-width: min(540px, calc(100vw - 28px));
+  margin: 0 auto 18px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.mobileLogo {
+  display: flex;
+  min-width: 0;
+  max-width: 150px;
+}
+
+.mobileLogo svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mobileNavActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobileNavLink,
+.mobileMenuButton {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 0 13px;
+  color: #242424;
+  background: #ffffff;
+  border: 1px solid #dfddd6;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgba(32, 33, 36, 0.08);
+}
+
+.mobileMenuButton {
+  background: #242424;
+  border-color: #242424;
+  color: #ffffff;
+}
+
+.mobileNavText {
+  display: inline;
 }
 
 .layout {
@@ -239,6 +296,34 @@
   outline-offset: 2px;
 }
 
+.rememberRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: -3px;
+  color: #41474b;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rememberRow input {
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: #242424;
+}
+
+.rememberRow span {
+  display: grid;
+  gap: 2px;
+}
+
+.rememberRow small {
+  color: #858a8c;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .input::placeholder {
   color: #a0a3a3;
 }
@@ -414,15 +499,46 @@
     display: none;
   }
 
+  .mobileNav {
+    display: flex;
+    max-width: 360px;
+  }
+
   .layout {
     margin: 0 auto;
+    width: 100%;
+    max-width: 360px;
     min-height: calc(100dvh - 130px);
     align-items: center;
   }
 
   .card {
+    width: 100%;
+    max-width: 360px;
     padding: 28px 20px;
     border-radius: 22px;
+  }
+
+  .mobileMenuButton {
+    display: none;
+  }
+
+  .mobileNavLink {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .mobileNavText {
+    display: none;
+  }
+
+  .passwordHeader {
+    gap: 12px;
+  }
+
+  .forgotLink {
+    flex-shrink: 0;
   }
 
   .cardTitle {
