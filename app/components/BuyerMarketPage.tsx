@@ -191,8 +191,36 @@ const stepIcons = [
   Truck,
 ]
 
+const dealerPortalContent = {
+  de: {
+    eyebrow: 'Dealer workspace',
+    title: 'Den Markt sehen, bevor Sie bieten.',
+    text:
+      'Autorell bündelt Fahrzeugchancen, Gebote, Marktsignale und Dokumentation in einem Arbeitsbereich. So können Einkaufsteams schneller prüfen, priorisieren und jedes Gebot besser nachvollziehen.',
+    highlights: [
+      'Aktive Fahrzeuge und Gebotsstatus',
+      'Nachfragesignale aus dem Händlernetzwerk',
+      'Gebotshistorie und klare Preisindikationen',
+      'Fahrzeugdaten, Bilder, Dokumente und Exportstatus',
+    ],
+  },
+  en: {
+    eyebrow: 'Dealer workspace',
+    title: 'See the market before you bid.',
+    text:
+      'Autorell brings vehicle opportunities, bids, market signals and documentation into one workspace. Buying teams can review faster, prioritise better and keep every decision traceable.',
+    highlights: [
+      'Live vehicles and active bid status',
+      'Demand signals from the dealer network',
+      'Bid history and clear price indicators',
+      'Vehicle data, images, documents and export status',
+    ],
+  },
+} as const
+
 export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
   const t = content[locale]
+  const portal = dealerPortalContent[locale]
   const platformHref = locale === 'de' ? '/vorteile' : '/dealer-benefits'
   const importGuide = locale === 'de' ? getImportGuideForMarket('de') : null
 
@@ -276,6 +304,48 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           ))}
         </div>
 
+      </section>
+
+      <section className="bg-white py-20 sm:py-28">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
+          <div className="grid gap-8 overflow-hidden rounded-[30px] border border-[#d9e2e5] bg-[#f8f7f3] shadow-[0_26px_80px_rgba(32,33,36,.08)] lg:grid-cols-[1.04fr_.96fr] lg:items-center">
+            <div className="relative min-h-[310px] overflow-hidden bg-[#dcecf3] sm:min-h-[430px] lg:h-full">
+              <Image
+                src="/data-autorell.webp"
+                alt={
+                  locale === 'de'
+                    ? 'Autorell Händlerportal mit Marktdaten auf einem Laptop'
+                    : 'Autorell dealer portal with market data on a laptop'
+                }
+                fill
+                sizes="(min-width: 1024px) 52vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-7 sm:p-10 lg:p-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#66808c]">
+                {portal.eyebrow}
+              </p>
+              <h2 className="mt-5 text-[40px] leading-[1.02] tracking-[-0.055em] sm:text-6xl">
+                {portal.title}
+              </h2>
+              <p className="mt-6 max-w-xl text-base leading-8 text-[#64757c]">
+                {portal.text}
+              </p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {portal.highlights.map((item) => (
+                  <div
+                    key={item}
+                    className="flex min-h-16 items-center gap-3 rounded-[16px] border border-[#dfe5e6] bg-white px-4 text-sm leading-5 text-[#3f5057] shadow-[0_8px_24px_rgba(32,33,36,.035)]"
+                  >
+                    <Check className="h-4 w-4 shrink-0 text-[#4f8298]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="py-20 sm:py-28">

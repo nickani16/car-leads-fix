@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createPublicMetadata } from '@/lib/public-seo'
 import {
   ArrowRight,
@@ -54,6 +55,13 @@ const benefits = [
   },
 ]
 
+const portalHighlights = [
+  'Aktuella fordon och aktiv budstatus',
+  'Efterfrågesignaler från dealer-nätverket',
+  'Budhistorik och tydliga prisindikationer',
+  'Fordonsdata, bilder, dokument och exportstatus',
+]
+
 export default function ForDealersPage() {
   return (
     <main className="overflow-hidden bg-[#f7f5f0] text-[#202124]">
@@ -95,6 +103,42 @@ export default function ForDealersPage() {
 
       <section className="py-16 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
+          <div className="mb-12 grid gap-8 overflow-hidden rounded-[28px] border border-[#d9e2e5] bg-white shadow-[0_24px_75px_rgba(32,33,36,.08)] lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+            <div className="relative min-h-[300px] overflow-hidden bg-[#dcecf3] sm:min-h-[420px] lg:h-full">
+              <Image
+                src="/data-autorell.webp"
+                alt="Autorell dealerportal med marknadsdata på en laptop"
+                fill
+                sizes="(min-width: 1024px) 52vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-7 sm:p-10 lg:p-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#66808c]">
+                Dealer workspace
+              </p>
+              <h2 className="mt-5 text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-5xl">
+                Se marknaden innan ni lägger bud.
+              </h2>
+              <p className="mt-6 max-w-xl text-base leading-8 text-[#64757c]">
+                Bilhandlare får ett samlat arbetsflöde där fordon, bud,
+                marknadssignaler och dokumentation ligger på samma plats. Det
+                gör inköp snabbare, tydligare och enklare att följa upp.
+              </p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {portalHighlights.map((item) => (
+                  <div
+                    key={item}
+                    className="flex min-h-16 items-center gap-3 rounded-[16px] border border-[#dfe5e6] bg-[#f8faf9] px-4 text-sm leading-5 text-[#3f5057]"
+                  >
+                    <BadgeCheck className="h-4 w-4 shrink-0 text-[#4f8298]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {benefits.map(({ icon: Icon, title, text }) => (
               <article
