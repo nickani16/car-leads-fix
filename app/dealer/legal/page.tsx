@@ -147,17 +147,17 @@ export default function DealerLegalPage() {
             </p>
             <div className="my-6 overflow-hidden rounded-[16px] border border-[#d7e8f2]">
               <PriceRow label="Winning bid" value="Example: €20,000" />
-              <PriceRow label="Autorell buyer fee" value="3%, minimum €750" />
+              <PriceRow label="Autorell buyer fee" value="5%, minimum €950" />
               <PriceRow label="Autorell Verified Inspection" value="€249" />
               <PriceRow label="Transport estimate" value="From €850" />
-              <PriceRow label="Export & documentation" value="€250" />
+              <PriceRow label="Export & documentation" value="€149" />
             </div>
             <RuleList
               items={[
-                'The buyer fee is calculated as the greater of 3% of the winning bid or €750.',
+                'The buyer fee is calculated as the greater of 5% of the winning bid or €950.',
                 'The bidding interface displays an estimated buyer total before submission.',
                 'Transport is initially estimated from €850 and is confirmed according to the exact collection city, delivery city, vehicle dimensions, accessibility and carrier availability.',
-                'The €250 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',
+                'The €149 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',
                 'VAT and other taxes depend on the parties, vehicle tax status, route and applicable law. The final invoice and transaction documents control.',
               ]}
             />

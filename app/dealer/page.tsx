@@ -13,6 +13,8 @@ import {
   Gavel,
   ImageIcon,
   MapPin,
+  Minus,
+  Plus,
   RefreshCw,
   RotateCcw,
   Search,
@@ -104,11 +106,23 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 })
 
-const BUYER_FEE_PERCENT = 0.03
-const MINIMUM_BUYER_FEE = 750
+const BUYER_FEE_PERCENT = 0.05
+const MINIMUM_BUYER_FEE = 950
 const VERIFIED_INSPECTION_FEE = 249
 const ESTIMATED_TRANSPORT_FEE = 850
-const EXPORT_DOCUMENT_FEE = 250
+const EXPORT_DOCUMENT_FEE = 149
+
+const inspectionChecklist = [
+  'Vehicle identity, VIN and registration details',
+  'Mileage and dashboard warning indicators',
+  'Drivability and basic operational check',
+  'Engine, transmission and visible fluid leaks',
+  'Visible exterior, interior and damage review',
+  'Tyres, brakes where reasonably assessable and included wheel sets',
+  'Keys, service history and disclosed accessories',
+  'Seller declaration compared with the vehicle on site',
+  'Photo documentation of relevant discrepancies',
+]
 
 const countryNames = new Intl.DisplayNames(['en'], { type: 'region' })
 
@@ -198,6 +212,7 @@ export default function DealerPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [submittingBid, setSubmittingBid] = useState(false)
   const [bidTermsAccepted, setBidTermsAccepted] = useState(false)
+  const [inspectionDetailsOpen, setInspectionDetailsOpen] = useState(false)
   const [portalError, setPortalError] = useState('')
   const [bidError, setBidError] = useState('')
   const [now, setNow] = useState(0)
@@ -472,6 +487,7 @@ export default function DealerPage() {
     setSelectedLead(lead)
     setBid('')
     setBidError('')
+    setInspectionDetailsOpen(false)
     setBidTermsAccepted(false)
     setSelectedBids(sortNewestFirst(bidsByLead[lead.id] || []))
     void fetch('/api/dealer/vehicle-view', {
@@ -1348,11 +1364,21 @@ export default function DealerPage() {
                       />
                     </div>
 
-                    <div className="mt-4 overflow-hidden rounded-[14px] border border-[#d7e8f2] bg-white">
+                    <div className="mt-4 overflow-hidden rounded-[14px] border border-[#d7e8f2] bg-white shadow-[0_10px_28px_rgba(32,33,36,.05)]">
                       <div className="border-b border-[#e5edf1] bg-[#eff8fd] px-4 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#52616b]">
-                          Estimated purchase summary
-                        </p>
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#52616b]">
+                              Estimated purchase summary
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              Fees shown before you submit the binding offer.
+                            </p>
+                          </div>
+                          <p className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#242424]">
+                            EUR
+                          </p>
+                        </div>
                       </div>
                       <dl className="space-y-2 px-4 py-4 text-sm">
                         <BidCostRow
@@ -1360,15 +1386,56 @@ export default function DealerPage() {
                           value={moneyFormatter.format(validBidAmount)}
                         />
                         <BidCostRow
-                          label="Autorell buyer fee (3%, min. €750)"
+                          label="Autorell buyer fee (5%, min. €950)"
                           value={moneyFormatter.format(estimatedBuyerFee)}
                         />
-                        <BidCostRow
-                          label="Autorell Verified Inspection"
-                          value={moneyFormatter.format(
-                            VERIFIED_INSPECTION_FEE
+                        <div>
+                          <div className="flex items-center justify-between gap-4">
+                            <dt className="flex min-w-0 items-center gap-2 text-[#52616b]">
+                              <span>Autorell Verified Inspection</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setInspectionDetailsOpen((open) => !open)
+                                }
+                                className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#cfe2ed] bg-[#eff8fd] text-[#242424] transition hover:border-[#8dbdd8] hover:bg-[#dff0fa]"
+                                aria-expanded={inspectionDetailsOpen}
+                                aria-label={
+                                  inspectionDetailsOpen
+                                    ? 'Hide inspection details'
+                                    : 'Show inspection details'
+                                }
+                              >
+                                {inspectionDetailsOpen ? (
+                                  <Minus size={13} />
+                                ) : (
+                                  <Plus size={13} />
+                                )}
+                              </button>
+                            </dt>
+                            <dd className="shrink-0 font-semibold text-[#242424]">
+                              {moneyFormatter.format(VERIFIED_INSPECTION_FEE)}
+                            </dd>
+                          </div>
+                          {inspectionDetailsOpen && (
+                            <div className="mt-3 rounded-[10px] border border-[#d7e8f2] bg-[#f8fbfd] px-3 py-3">
+                              <p className="text-xs font-semibold text-[#242424]">
+                                Included in the inspection
+                              </p>
+                              <ul className="mt-2 grid gap-1.5 text-xs leading-5 text-slate-600">
+                                {inspectionChecklist.map((item) => (
+                                  <li key={item} className="flex gap-2">
+                                    <ShieldCheck
+                                      size={13}
+                                      className="mt-0.5 shrink-0 text-[#7aaeca]"
+                                    />
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
-                        />
+                        </div>
                         <BidCostRow
                           label={`Estimated transport${
                             selectedLead?.pickup_city &&
