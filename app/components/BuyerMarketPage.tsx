@@ -307,7 +307,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
       <section className="bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
           <div className="grid overflow-hidden rounded-[10px] bg-[#202427] shadow-[0_32px_90px_rgba(32,36,39,.18)] lg:grid-cols-[1.08fr_.92fr]">
-            <div className="relative min-h-[330px] overflow-hidden bg-[#dcecf3] sm:min-h-[500px] lg:h-full">
+            <div className="relative flex min-h-[330px] items-center justify-center overflow-hidden bg-[#dcecf3] p-4 sm:min-h-[500px] sm:p-8 lg:h-full">
               <Image
                 src="/data-autorell.webp"
                 alt={
@@ -315,11 +315,12 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                     ? 'Autorell Händlerportal mit Marktdaten auf einem Laptop'
                     : 'Autorell dealer portal with market data on a laptop'
                 }
-                fill
+                width={750}
+                height={500}
                 sizes="(min-width: 1024px) 52vw, 100vw"
-                className="object-cover"
+                className="h-auto w-full max-w-[760px] rounded-[8px] object-contain shadow-[0_24px_70px_rgba(32,36,39,.22)]"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_42%,rgba(32,36,39,.5)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_58%,rgba(32,36,39,.28)_100%)]" />
               <div className="absolute bottom-5 left-5 right-5 grid gap-3 rounded-[8px] border border-white/12 bg-[#202427]/82 p-4 text-white shadow-[0_18px_55px_rgba(0,0,0,.22)] backdrop-blur-md sm:left-7 sm:right-7 sm:grid-cols-3">
                 {[
                   ['Live', locale === 'de' ? 'Gebotsstatus' : 'Bid status'],
