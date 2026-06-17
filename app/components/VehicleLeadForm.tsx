@@ -79,6 +79,80 @@ const EU_COUNTRIES = [
   ['SE', 'Sweden'],
 ] as const
 
+const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024
+const MAX_SUBMIT_IMAGE_BYTES = 3.4 * 1024 * 1024
+const TARGET_IMAGE_BYTES = 280 * 1024
+const IMAGE_MAX_DIMENSION = 1600
+const IMAGE_QUALITY_STEPS = [0.72, 0.62, 0.52, 0.44]
+
+function imageSizeError(locale: FormLocale) {
+  if (locale === 'de') {
+    return 'Die Bilder sind zu groÃŸ. Bitte laden Sie weniger oder kleinere Bilder hoch.'
+  }
+  if (locale === 'en') {
+    return 'The photos are too large. Please upload fewer or smaller images.'
+  }
+  return 'Bilderna Ã¤r fÃ¶r stora. Ladda upp fÃ¤rre eller mindre bilder.'
+}
+
+function readImage(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const image = document.createElement('img')
+
+    image.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve(image)
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Image could not be loaded.'))
+    }
+    image.src = url
+  })
+}
+
+function canvasToJpeg(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob)
+        else reject(new Error('Image could not be compressed.'))
+      },
+      'image/jpeg',
+      quality
+    )
+  })
+}
+
+async function compressImage(file: File) {
+  const image = await readImage(file)
+  const scale = Math.min(
+    1,
+    IMAGE_MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight)
+  )
+  const canvas = document.createElement('canvas')
+
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+  canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height)
+
+  let smallest: Blob | null = null
+  for (const quality of IMAGE_QUALITY_STEPS) {
+    const blob = await canvasToJpeg(canvas, quality)
+    if (!smallest || blob.size < smallest.size) smallest = blob
+    if (blob.size <= TARGET_IMAGE_BYTES) break
+  }
+
+  if (!smallest) return file
+
+  const name = file.name.replace(/\.[^.]+$/, '') || 'vehicle-photo'
+  return new File([smallest], `${name}.jpg`, {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  })
+}
+
 const copy = {
   sv: {
     market: 'Sälj din bil till professionella köpare',
@@ -213,7 +287,7 @@ const copy = {
     finalEyebrow: 'Fotos und Kontakt', finalTitle: 'Der letzte Schritt',
     finalIntro: 'Gute Fotos helfen Händlern, präzisere Gebote abzugeben.',
     upload: 'Fahrzeugfotos hochladen',
-    uploadHelp: 'Mindestens 4, maximal 12 Bilder. Max. 10 MB pro Bild.',
+    uploadHelp: 'Mindestens 4, maximal 12 Bilder. Fotos werden vor dem Senden automatisch optimiert.',
     photos: 'Bilder', phone: 'Telefonnummer', email: 'E-Mail-Adresse',
     financeTitle: 'Eigentum und Finanzierung',
     financeIntro: 'Diese Angaben helfen Autorell, eine sichere Ablösung und Eigentumsübertragung zu planen, falls Sie ein Gebot annehmen.',
@@ -281,7 +355,7 @@ const copy = {
     finalEyebrow: 'Photos and contact', finalTitle: 'The final step',
     finalIntro: 'Good photos help dealers submit more accurate bids.',
     upload: 'Upload vehicle photos',
-    uploadHelp: 'Minimum 4, maximum 12 images. Max 10 MB each.',
+    uploadHelp: 'Minimum 4, maximum 12 images. Photos are optimized automatically before sending.',
     photos: 'photos', phone: 'Phone number', email: 'Email address',
     financeTitle: 'Ownership and finance',
     financeIntro: 'These details help Autorell plan a secure settlement and title transfer if you accept a bid.',
@@ -714,7 +788,7 @@ export default function VehicleLeadForm({
   function addImages(event: React.ChangeEvent<HTMLInputElement>) {
     if (!event.target.files) return
     const files = Array.from(event.target.files)
-      .filter((file) => file.size <= 10 * 1024 * 1024)
+      .filter((file) => file.size <= MAX_IMAGE_FILE_SIZE)
       .slice(0, 12 - images.length)
     setImages((current) => [...current, ...files.map((file) => ({
       id: crypto.randomUUID(), file, url: URL.createObjectURL(file),
@@ -748,15 +822,39 @@ export default function VehicleLeadForm({
         form.seriousCollisionDamage === o.yesNo[0],
     }
     Object.entries(apiValues).forEach(([key, value]) => payload.append(key, String(value)))
-    images.forEach((image) => payload.append('images', image.file))
 
     try {
+      const compressedImages = await Promise.all(
+        images.map((image) => compressImage(image.file))
+      )
+      const imageBytes = compressedImages.reduce((sum, file) => sum + file.size, 0)
+
+      if (imageBytes > MAX_SUBMIT_IMAGE_BYTES) {
+        setError(imageSizeError(locale))
+        return
+      }
+
+      compressedImages.forEach((file) => payload.append('images', file))
+
       const response = await fetch('/api/submit', { method: 'POST', body: payload })
-      const data = await response.json()
-      if (!response.ok) return setError(data.error || t.errors.server)
+      if (response.status === 413) {
+        setError(imageSizeError(locale))
+        return
+      }
+
+      const body = await response.text()
+      const data = body ? JSON.parse(body) : {}
+
+      if (!response.ok) {
+        return setError(data.error || t.errors.server)
+      }
       setSellerPortalUrl(data.sellerPortalUrl || '')
       setSubmitted(true)
-    } catch {
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        setError(imageSizeError(locale))
+        return
+      }
       setError(t.errors.server)
     } finally {
       setLoading(false)
