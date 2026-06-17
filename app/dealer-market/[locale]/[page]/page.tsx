@@ -7,6 +7,7 @@ import {
   Banknote,
   CarFront,
   Check,
+  Clock3,
   CircleHelp,
   FileCheck2,
   Globe2,
@@ -514,20 +515,59 @@ export default async function DealerMarketPage({
 
       {isContact ? (
         <section className="py-16 sm:py-24">
-          <div className="mx-auto grid max-w-[1180px] gap-5 px-5 sm:px-8 lg:grid-cols-[.7fr_1.3fr] lg:px-12">
-            <aside className="rounded-[24px] bg-[#242424] p-8 text-white">
-              <Mail className="h-6 w-6 text-[#B4D9EF]" />
-              <p className="mt-8 text-xs uppercase tracking-[0.18em] text-[#B4D9EF]">
+          <div className="mx-auto grid max-w-[1240px] gap-8 px-5 sm:px-8 lg:grid-cols-[.78fr_1.22fr] lg:px-12">
+            <aside className="grid gap-5 self-start">
+              <div className="relative overflow-hidden rounded-[28px] bg-[#20272b] p-8 text-white shadow-[0_28px_80px_rgba(32,39,43,.2)]">
+              <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full border-[38px] border-[#B4D9EF]/15" />
+              <Mail className="relative h-6 w-6 text-[#B4D9EF]" />
+              <p className="relative mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-[#B4D9EF]">
                 {locale === 'de' ? 'Direkter Kontakt' : 'Direct contact'}
               </p>
-              <h2 className="mt-3 text-2xl">info@autorell.com</h2>
-              <p className="mt-4 text-sm leading-7 text-white/60">
+              <h2 className="relative mt-3 text-2xl tracking-[-0.035em]">info@autorell.com</h2>
+              <p className="relative mt-4 text-sm leading-7 text-white/65">
                 {locale === 'de'
                   ? 'Für Händlerzugang, Fahrzeuge, Export und laufende Vorgänge.'
                   : 'For dealer access, vehicles, export and active transactions.'}
               </p>
+              <a
+                href="mailto:info@autorell.com"
+                className="relative mt-7 inline-flex items-center gap-2 text-sm font-semibold"
+              >
+                {locale === 'de' ? 'E-Mail senden' : 'Email Autorell'}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              </div>
+              <div className="rounded-[24px] border border-[#dfe4e5] bg-white/88 p-7 shadow-[0_16px_45px_rgba(60,84,96,.055)]">
+                <Clock3 className="h-5 w-5 text-[#315f74]" />
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#7e8a8e]">
+                  {locale === 'de' ? 'Antwortzeit' : 'Response time'}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[#445761]">
+                  {locale === 'de'
+                    ? 'Wir melden uns normalerweise innerhalb eines Werktags.'
+                    : 'We normally respond within one business day.'}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-[#dfe4e5] bg-white/88 p-7 shadow-[0_16px_45px_rgba(60,84,96,.055)]">
+                <Store className="h-5 w-5 text-[#315f74]" />
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#7e8a8e]">
+                  {locale === 'de' ? 'Händlerzugang' : 'Dealer access'}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[#445761]">
+                  {locale === 'de'
+                    ? 'Beantragen Sie Zugang zum Autorell Dealer Network.'
+                    : 'Apply for access to the Autorell Dealer Network.'}
+                </p>
+                <Link
+                  href="/dealer-apply"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#315f74]"
+                >
+                  {locale === 'de' ? 'Zugang beantragen' : 'Apply for access'}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </aside>
-            <div className="overflow-hidden rounded-[24px] border border-[#e0ded7] shadow-[0_24px_70px_rgba(32,33,36,.08)]">
+            <div className="overflow-hidden rounded-[28px] border border-white bg-white shadow-[0_28px_80px_rgba(32,33,36,.1)] ring-1 ring-[#dce6ea]">
               <ContactForm locale={locale} />
             </div>
           </div>

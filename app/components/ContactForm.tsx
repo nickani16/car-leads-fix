@@ -8,6 +8,10 @@ type ContactLocale = 'sv' | 'de' | 'en'
 
 const contactCopy = {
   sv: {
+    eyebrow: 'Skriv till Autorell',
+    formTitle: 'Berätta vad du behöver hjälp med.',
+    formText:
+      'Fyll i uppgifterna så återkommer rätt person från Autorell med nästa steg.',
     error: 'Något gick fel. Försök igen.',
     thanks: 'Tack för ditt meddelande.',
     received: 'Vi har tagit emot din fråga och återkommer så snart vi kan.',
@@ -27,6 +31,10 @@ const contactCopy = {
     send: 'Skicka meddelande',
   },
   de: {
+    eyebrow: 'Autorell kontaktieren',
+    formTitle: 'Wobei können wir helfen?',
+    formText:
+      'Senden Sie Ihre Angaben, damit die richtige Person bei Autorell den nächsten Schritt übernehmen kann.',
     error: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
     thanks: 'Vielen Dank für Ihre Nachricht.',
     received: 'Wir haben Ihre Anfrage erhalten und melden uns so schnell wie möglich.',
@@ -46,6 +54,10 @@ const contactCopy = {
     send: 'Nachricht senden',
   },
   en: {
+    eyebrow: 'Contact Autorell',
+    formTitle: 'Tell us what you need help with.',
+    formText:
+      'Send your details and the right person at Autorell will follow up with the next step.',
     error: 'Something went wrong. Please try again.',
     thanks: 'Thank you for your message.',
     received: 'We have received your enquiry and will respond as soon as possible.',
@@ -125,12 +137,26 @@ export default function ContactForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-7 sm:p-10 lg:p-12">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-[linear-gradient(145deg,#ffffff_0%,#f4fafc_100%)] p-7 sm:p-10 lg:p-12"
+    >
       <input type="hidden" name="locale" value={locale} />
       <label className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
         Website
         <input name="website" tabIndex={-1} autoComplete="off" />
       </label>
+      <div className="mb-8">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#547382]">
+          {t.eyebrow}
+        </p>
+        <h2 className="mt-3 text-3xl tracking-[-0.045em] text-[#202124] sm:text-4xl">
+          {t.formTitle}
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#64737a]">
+          {t.formText}
+        </p>
+      </div>
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label={t.name} name="name" autoComplete="name" required />
         <Field label={t.email} name="email" type="email" autoComplete="email" required />
@@ -175,7 +201,7 @@ export default function ContactForm({
       <button
         type="submit"
         disabled={sending}
-        className="mt-7 inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-8 text-white transition hover:bg-[#111111] disabled:cursor-wait disabled:opacity-60"
+        className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#20272b] px-8 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(32,39,43,.18)] transition hover:-translate-y-0.5 hover:bg-[#111719] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
       >
         {sending ? t.sending : t.send}
         {!sending && <ArrowRight className="h-4 w-4" />}

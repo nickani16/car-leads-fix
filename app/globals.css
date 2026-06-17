@@ -56,20 +56,26 @@ label {
 
 .contact-control {
   width: 100%;
-  min-height: 54px;
-  border: 1px solid #d8d7d1;
-  border-radius: 14px;
-  background: #fbfbf9;
-  padding: 14px 16px;
+  min-height: 56px;
+  border: 1px solid #dce4e7;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  padding: 15px 17px;
   color: #202124;
   outline: none;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  box-shadow: 0 10px 30px rgba(49, 95, 116, 0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.contact-control::placeholder {
+  color: #98a6ad;
 }
 
 .contact-control:focus {
-  border-color: #8dbdd8;
+  border-color: #8bbbd1;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(180, 217, 239, 0.35);
+  box-shadow: 0 0 0 4px rgba(180, 217, 239, 0.34), 0 16px 38px rgba(49, 95, 116, 0.08);
+  transform: translateY(-1px);
 }
 
 .dealer-portal button {
