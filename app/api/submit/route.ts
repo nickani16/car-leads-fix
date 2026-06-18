@@ -365,8 +365,8 @@ export async function POST(request: Request) {
           sellerPortalUrl,
           '',
           'You can choose a longer package immediately. Paid time starts only after Autorell approves the vehicle:',
-          '7 days: SEK 100',
-          'Premium 30 days with priority placement: SEK 290',
+          '5 days: SEK 100',
+          'Premium 15 days with priority placement: SEK 290',
           `${sellerPortalUrl}#packages`,
           '',
           'This link is personal. Do not share it with anyone else.',
@@ -398,14 +398,14 @@ export async function POST(request: Request) {
                       <tr>
                         <td style="width:50%;padding-right:6px;vertical-align:top;">
                           <div style="border:1px solid #deddd7;border-radius:16px;padding:18px;">
-                            <strong style="font-size:18px;">7 days</strong>
+                            <strong style="font-size:18px;">5 days</strong>
                             <p style="margin:7px 0 14px;color:#66737a;font-size:13px;line-height:1.5;">Continue standard dealer exposure after the free period.</p>
                             <strong>SEK 100</strong>
                           </div>
                         </td>
                         <td style="width:50%;padding-left:6px;vertical-align:top;">
                           <div style="border:1px solid #9bc9e4;border-radius:16px;background:#eef7fb;padding:18px;">
-                            <strong style="font-size:18px;">Premium 30 days</strong>
+                            <strong style="font-size:18px;">Premium 15 days</strong>
                             <p style="margin:7px 0 14px;color:#526d7c;font-size:13px;line-height:1.5;">Longer exposure with priority placement.</p>
                             <strong>SEK 290</strong>
                           </div>

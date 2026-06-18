@@ -189,9 +189,9 @@ export default async function SellerPortalPage({
               </p>
               <p className="mt-3 text-xl font-medium">
                 {lead.listing_plan === 'premium_30d'
-                  ? 'Premium 30 dagar'
+                  ? 'Premium 15 dagar'
                   : lead.listing_plan === 'extended_7d'
-                    ? '7 dagars budgivning'
+                    ? '5 dagars budgivning'
                     : 'Kostnadsfria 24 timmar'}
               </p>
               <div className="mt-7 border-t border-white/10 pt-5">
@@ -269,14 +269,14 @@ export default async function SellerPortalPage({
             <article className="rounded-[26px] border border-[#dcdad3] bg-white p-7 sm:p-8">
               <Clock3 size={23} className="text-[#4f8fb5]" />
               <p className="mt-7 text-sm font-medium text-[#687178]">
-                7 dagar
+                5 dagar
               </p>
               <div className="mt-2 flex items-end justify-between gap-4">
                 <h3 className="text-2xl font-semibold">Fortsatt budgivning</h3>
                 <p className="text-3xl font-semibold">100 kr</p>
               </div>
               <p className="mt-4 text-sm leading-6 text-[#697278]">
-                Bilen återöppnas för verifierade handlare i sju dagar. Alla
+                Bilen återöppnas för verifierade handlare i fem dagar. Alla
                 nya visningar och bud syns i den här vyn.
               </p>
               <CheckoutButton
@@ -290,7 +290,7 @@ export default async function SellerPortalPage({
               <div className="absolute right-0 top-0 h-36 w-36 translate-x-10 -translate-y-10 rounded-full bg-[#B4D9EF]" />
               <Crown size={23} className="relative text-[#276d96]" />
               <p className="relative mt-7 text-sm font-medium text-[#51758a]">
-                Premium · 30 dagar
+                Premium · 15 dagar
               </p>
               <div className="relative mt-2 flex items-end justify-between gap-4">
                 <h3 className="text-2xl font-semibold">

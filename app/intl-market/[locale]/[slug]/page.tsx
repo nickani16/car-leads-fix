@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import ContactForm from '@/app/components/ContactForm'
+import PublicContactPage from '@/app/components/PublicContactPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import VehicleLeadForm from '@/app/components/VehicleLeadForm'
@@ -659,6 +660,16 @@ export default async function LocalizedPublicPage({
     LockKeyhole,
     CircleHelp,
   ]
+
+  if (isContact) {
+    return (
+      <main className="overflow-hidden bg-[#f5f3ee] text-[#202124]">
+        <PublicHeader locale={locale} />
+        <PublicContactPage locale={locale} />
+        <PublicFooter locale={locale} />
+      </main>
+    )
+  }
 
   return (
     <main className="overflow-hidden bg-[#f8f7f3] text-[#202124]">

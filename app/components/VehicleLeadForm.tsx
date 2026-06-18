@@ -971,7 +971,7 @@ export default function VehicleLeadForm({
                 </article>
                 <article className="rounded-[22px] border border-[#c9dce7] bg-[#f4f9fc] p-6">
                   <Clock3 size={21} className="text-[#397fa8]" />
-                  <h3 className="mt-5 text-xl font-semibold">7 dagar</h3>
+                  <h3 className="mt-5 text-xl font-semibold">5 dagar</h3>
                   <p className="mt-2 text-sm leading-6 text-[#617681]">
                     Mer tid för fler handlare att bedöma och lägga bud.
                   </p>
@@ -979,14 +979,14 @@ export default function VehicleLeadForm({
                   <ListingPackageCheckoutButton
                     token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
                     packageId="extended_7d"
-                    label="Välj 7 dagar"
+                    label="Välj 5 dagar"
                   />
                 </article>
                 <article className="relative overflow-hidden rounded-[22px] border border-[#8fc4e2] bg-[#eaf5fb] p-6">
                   <div className="absolute right-0 top-0 h-28 w-28 translate-x-8 -translate-y-8 rounded-full bg-[#B4D9EF]" />
                   <Crown size={21} className="relative text-[#276d96]" />
                   <h3 className="relative mt-5 text-xl font-semibold">
-                    Premium 30 dagar
+                    Premium 15 dagar
                   </h3>
                   <p className="relative mt-2 text-sm leading-6 text-[#526d7c]">
                     Längre exponering med prioriterad placering i handlarflödet.

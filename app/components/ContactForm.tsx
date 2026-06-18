@@ -115,7 +115,7 @@ export default function ContactForm({
 
   if (sent) {
     return (
-      <div className="flex min-h-[520px] flex-col items-center justify-center bg-white p-8 text-center sm:p-12">
+      <div className="flex min-h-[620px] flex-col items-center justify-center bg-white p-8 text-center sm:p-12">
         <span className="grid h-16 w-16 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
           <CheckCircle2 className="h-7 w-7" />
         </span>
@@ -139,14 +139,14 @@ export default function ContactForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-[linear-gradient(145deg,#ffffff_0%,#f4fafc_100%)] p-7 sm:p-10 lg:p-12"
+      className="flex h-full min-h-[760px] flex-col bg-[linear-gradient(145deg,#ffffff_0%,#f4fafc_100%)] p-7 sm:p-10 lg:p-12"
     >
       <input type="hidden" name="locale" value={locale} />
       <label className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
         Website
         <input name="website" tabIndex={-1} autoComplete="off" />
       </label>
-      <div className="mb-8">
+      <div className="mb-9 border-b border-[#dce6ea] pb-8">
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#547382]">
           {t.eyebrow}
         </p>
@@ -198,14 +198,25 @@ export default function ContactForm({
         <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={sending}
-        className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[#20272b] px-8 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(32,39,43,.18)] transition hover:-translate-y-0.5 hover:bg-[#111719] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
-      >
-        {sending ? t.sending : t.send}
-        {!sending && <ArrowRight className="h-4 w-4" />}
-      </button>
+      <div className="mt-auto pt-8">
+        <div className="flex flex-col gap-5 border-t border-[#dce6ea] pt-7 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-sm text-xs leading-5 text-[#77848a]">
+            {locale === 'sv'
+              ? 'Din fråga skickas direkt till Autorell och används endast för att hantera ditt ärende.'
+              : locale === 'de'
+                ? 'Ihre Anfrage wird direkt an Autorell gesendet und nur zur Bearbeitung Ihres Anliegens verwendet.'
+                : 'Your enquiry is sent directly to Autorell and used only to handle your request.'}
+          </p>
+          <button
+            type="submit"
+            disabled={sending}
+            className="inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#20272b] px-8 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(32,39,43,.18)] transition hover:-translate-y-0.5 hover:bg-[#111719] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
+          >
+            {sending ? t.sending : t.send}
+            {!sending && <ArrowRight className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
     </form>
   )
 }

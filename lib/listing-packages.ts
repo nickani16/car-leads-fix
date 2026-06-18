@@ -4,18 +4,18 @@ import { getStripe } from '@/lib/stripe'
 
 export const listingPackages = {
   extended_7d: {
-    name: '7 dagars budgivning',
-    description: 'Fortsatt synlighet för verifierade bilhandlare i 7 dagar.',
+    name: '5 dagars budgivning',
+    description: 'Fortsatt synlighet för verifierade bilhandlare i 5 dagar.',
     amountCents: 10000,
-    durationDays: 7,
+    durationDays: 5,
     priority: 0,
   },
   premium_30d: {
-    name: 'Premium 30 dagar',
+    name: 'Premium 15 dagar',
     description:
-      'Prioriterad placering och utökad synlighet för verifierade bilhandlare i 30 dagar.',
+      'Prioriterad placering och utökad synlighet för verifierade bilhandlare i 15 dagar.',
     amountCents: 29000,
-    durationDays: 30,
+    durationDays: 15,
     priority: 100,
   },
 } as const
