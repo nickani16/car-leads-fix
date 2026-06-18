@@ -629,10 +629,6 @@ export default async function DealerMarketPage({
               aria-hidden="true"
               className="pointer-events-none absolute -right-28 -top-32 h-80 w-80 rounded-full border-[54px] border-white/25"
             />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-7 -top-8 h-44 w-44 rounded-full border-[26px] border-white/30"
-            />
             <BadgeCheck className="relative z-10 mx-auto h-7 w-7" />
             <h2 className="relative z-10 mx-auto mt-5 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] sm:text-5xl">
               {locale === 'de'

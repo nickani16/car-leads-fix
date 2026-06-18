@@ -110,10 +110,6 @@ export default function FaqPageClient() {
           aria-hidden="true"
           className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border-[42px] border-white/30"
         />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-5 -top-6 h-36 w-36 rounded-full border-[22px] border-white/35"
-        />
         <div className="relative z-10">
           <h2 className="text-2xl tracking-[-0.03em]">Hittade du inte svaret?</h2>
           <p className="mt-2 text-sm text-[#56636c]">Skicka din fråga så hjälper vi dig vidare.</p>

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import {
-  AlertTriangle,
   ArrowRight,
   Banknote,
   CarFront,
@@ -20,14 +19,17 @@ import {
 
 const sections = [
   { href: '#dealer-terms', label: 'Dealer Terms' },
+  { href: '#platform-use', label: 'Platform Use' },
   { href: '#binding-bids', label: 'Binding Bids' },
   { href: '#fees', label: 'Fees & Pricing' },
   { href: '#payments', label: 'Payments' },
   { href: '#transport', label: 'Transport & Export' },
   { href: '#cancellations', label: 'Cancellations' },
+  { href: '#liability', label: 'Liability' },
   { href: '#privacy', label: 'Privacy' },
   { href: '#cookies', label: 'Cookies' },
   { href: '#complaints', label: 'Complaints' },
+  { href: '#general', label: 'General Provisions' },
 ]
 
 export default function DealerLegalPage() {
@@ -76,17 +78,6 @@ export default function DealerLegalPage() {
         </aside>
 
         <div className="space-y-7">
-          <div className="flex gap-3 rounded-[18px] border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-            <AlertTriangle className="mt-0.5 shrink-0" size={20} />
-            <p>
-              <strong>Launch requirement:</strong> this is Autorell&apos;s
-              operational legal draft. A qualified Swedish/EU commercial
-              lawyer must approve the final wording, company registration
-              number, registered address, governing law and payment-provider
-              setup before commercial launch.
-            </p>
-          </div>
-
           <LegalSection
             id="dealer-terms"
             eyebrow="01"
@@ -96,7 +87,9 @@ export default function DealerLegalPage() {
             <p>
               These terms apply to professional vehicle dealers and authorised
               representatives using the Autorell Dealer Portal. The service is
-              provided by Autorell AB, Sweden (&quot;Autorell&quot;).
+              provided by Autorell AB, company registration number 559556-3774,
+              Paviljongvägen 2, 132 40 Saltsjö-Boo, Sweden
+              (&quot;Autorell&quot;).
             </p>
             <RuleList
               items={[
@@ -112,8 +105,26 @@ export default function DealerLegalPage() {
           </LegalSection>
 
           <LegalSection
-            id="binding-bids"
+            id="platform-use"
             eyebrow="02"
+            title="Account Security & Platform Use"
+            icon={<LockKeyhole size={22} />}
+          >
+            <RuleList
+              items={[
+                'The dealer is responsible for all activity carried out through its account and must protect passwords, authentication links and authorised-user access.',
+                'Suspected unauthorised access, credential compromise or incorrect account permissions must be reported to Autorell without delay.',
+                'The portal may not be used to scrape data, reverse engineer the service, interfere with security controls, manipulate auctions, contact sellers outside the authorised process or introduce malicious code.',
+                'Vehicle data, photographs, market information, software, branding and portal content may be used only for evaluating and completing transactions through Autorell unless written permission states otherwise.',
+                'Autorell may maintain, modify or temporarily suspend the portal for security, compliance, maintenance or operational reasons and does not guarantee uninterrupted or error-free availability.',
+                'Dealers must maintain compatible systems, reliable internet access and current contact details for operational and legal notices.',
+              ]}
+            />
+          </LegalSection>
+
+          <LegalSection
+            id="binding-bids"
+            eyebrow="03"
             title="Binding Bid Rules"
             icon={<Gavel size={22} />}
           >
@@ -137,7 +148,7 @@ export default function DealerLegalPage() {
 
           <LegalSection
             id="fees"
-            eyebrow="03"
+            eyebrow="04"
             title="Buyer Fee & Pricing Policy"
             icon={<Banknote size={22} />}
           >
@@ -165,7 +176,7 @@ export default function DealerLegalPage() {
 
           <LegalSection
             id="payments"
-            eyebrow="04"
+            eyebrow="05"
             title="Payments & Funding"
             icon={<ShieldCheck size={22} />}
           >
@@ -184,7 +195,7 @@ export default function DealerLegalPage() {
 
           <LegalSection
             id="transport"
-            eyebrow="05"
+            eyebrow="06"
             title="Transport, Inspection & Export"
             icon={<Truck size={22} />}
           >
@@ -206,7 +217,7 @@ export default function DealerLegalPage() {
 
           <LegalSection
             id="cancellations"
-            eyebrow="06"
+            eyebrow="07"
             title="Cancellation, Default & Suspension"
             icon={<Scale size={22} />}
           >
@@ -214,7 +225,7 @@ export default function DealerLegalPage() {
               items={[
                 'A binding bid cannot be cancelled merely because the dealer changes its mind, finds another vehicle or cannot arrange onward resale.',
                 'Failure to sign, pay or collect on time may constitute dealer default.',
-                'Autorell may recover documented losses, third-party costs and unpaid fees caused by a default, subject to the final approved terms and applicable law.',
+                'Autorell may recover documented losses, third-party costs and unpaid fees caused by a default, subject to applicable law.',
                 'Autorell may suspend bidding privileges while a payment, compliance, fraud or contractual issue is investigated.',
                 'A transaction may be cancelled where the seller rejects the bid, ownership cannot be verified, the vehicle differs materially from its description, payment fails, or completion would be unlawful.',
                 'Where Autorell cancels because of a material or unresolved vehicle discrepancy, buyer funds received for that transaction are returned to the verified originating account, subject only to deductions expressly permitted by the signed agreement and applicable law.',
@@ -223,8 +234,26 @@ export default function DealerLegalPage() {
           </LegalSection>
 
           <LegalSection
+            id="liability"
+            eyebrow="08"
+            title="Liability, Indemnity & Force Majeure"
+            icon={<Scale size={22} />}
+          >
+            <RuleList
+              items={[
+                'Autorell is responsible for its own contractual obligations but does not manufacture the vehicle and is not responsible for defects or information that could not reasonably be identified from the seller declaration, available records or agreed inspection.',
+                'To the maximum extent permitted by law, Autorell is not liable for indirect or consequential loss, lost profit, lost resale opportunity, loss of goodwill or business interruption.',
+                'Except for fraud, wilful misconduct, gross negligence or liability that cannot legally be limited, Autorell’s aggregate liability relating to a transaction is limited to the fees paid or payable to Autorell for that transaction.',
+                'The dealer is responsible for losses, claims, taxes, penalties and third-party costs caused by its unauthorised account use, inaccurate information, unlawful conduct, destination-country non-compliance or breach of these terms.',
+                'Neither party is liable for delay or failure caused by events outside its reasonable control, including authority action, sanctions, war, cyber incidents, carrier disruption, severe weather, infrastructure failure or labour disputes.',
+                'The affected party must take reasonable steps to limit the impact of a force-majeure event and resume performance when reasonably possible.',
+              ]}
+            />
+          </LegalSection>
+
+          <LegalSection
             id="privacy"
-            eyebrow="07"
+            eyebrow="09"
             title="Dealer Privacy Notice"
             icon={<LockKeyhole size={22} />}
           >
@@ -241,6 +270,7 @@ export default function DealerLegalPage() {
                 'Customer contact details are not disclosed to dealers during public bidding. Required party details may be released after acceptance where necessary to complete the transaction.',
                 'Data is retained only as long as required for accounts, transactions, accounting, disputes, fraud prevention and legal compliance.',
                 'Eligible persons may request access, correction, deletion, restriction, portability or objection, subject to legal limitations.',
+                'A data-protection complaint may also be submitted to the Swedish Authority for Privacy Protection (IMY) or another competent supervisory authority.',
               ]}
             />
             <ContactBox />
@@ -248,7 +278,7 @@ export default function DealerLegalPage() {
 
           <LegalSection
             id="cookies"
-            eyebrow="08"
+            eyebrow="10"
             title="Cookie Policy"
             icon={<Cookie size={22} />}
           >
@@ -258,14 +288,14 @@ export default function DealerLegalPage() {
                 'Preference cookies may remember language, interface and consent choices.',
                 'Analytics, marketing or other non-essential cookies must not be activated before the required consent has been collected.',
                 'Dealers can remove stored cookies through their browser. Blocking essential cookies may prevent login and portal functionality.',
-                'The production cookie inventory must list each cookie, provider, purpose and retention period before non-essential tracking is enabled.',
+                'Current cookie categories, purposes and available choices are described in the cookie settings and cookie policy and are updated when the service changes.',
               ]}
             />
           </LegalSection>
 
           <LegalSection
             id="complaints"
-            eyebrow="09"
+            eyebrow="11"
             title="Complaints & Disputes"
             icon={<CarFront size={22} />}
           >
@@ -274,11 +304,31 @@ export default function DealerLegalPage() {
                 'Dealers should report transaction complaints promptly through Dealer Support and include the deal ID, evidence and requested outcome.',
                 'Vehicle-condition complaints must be documented before repair, resale, dismantling or material alteration wherever reasonably possible.',
                 'The parties must first attempt good-faith commercial resolution through Autorell.',
-                'The final approved terms must specify governing law, competent courts and any agreed arbitration or alternative dispute process.',
+                'Complaints should be submitted without undue delay after the relevant circumstance was discovered and must include reasonable supporting evidence.',
+                'These terms and disputes arising from them are governed by Swedish law. Stockholm District Court is the court of first instance unless mandatory law or a signed transaction agreement requires otherwise.',
                 'The former EU Online Dispute Resolution platform is not referenced because it was discontinued in 2025.',
               ]}
             />
             <ContactBox />
+          </LegalSection>
+
+          <LegalSection
+            id="general"
+            eyebrow="12"
+            title="General Provisions"
+            icon={<FileCheck2 size={22} />}
+          >
+            <RuleList
+              items={[
+                'Autorell may update these terms prospectively. Material changes are communicated through the portal or registered email before they take effect, except urgent legal or security changes that may apply immediately.',
+                'Continued portal use or a new bid after updated terms take effect constitutes acceptance of the updated version. A bid already submitted remains governed by the version accepted when it was placed, unless mandatory law requires otherwise.',
+                'The dealer may not assign its account, bid or contractual rights without Autorell’s written consent. Autorell may assign rights and obligations as part of a corporate reorganisation, financing or transfer of the relevant business.',
+                'If a provision is invalid or unenforceable, it is adjusted or removed only to the extent necessary; the remaining provisions continue in effect.',
+                'A delay in enforcing a right does not waive that right.',
+                'These terms, the accepted vehicle information, applicable fee disclosure and signed transaction documents form the agreement for the relevant use or transaction. If they conflict, the signed transaction document takes priority for that transaction.',
+                'Operational and legal notices may be delivered through the portal or to the dealer’s registered email address. Notices to Autorell may be sent to info@autorell.com.',
+              ]}
+            />
           </LegalSection>
 
           <div className="rounded-[20px] bg-[#242424] p-7 text-white sm:p-9">
@@ -371,7 +421,8 @@ function ContactBox() {
     <div className="rounded-[14px] border border-[#d7e8f2] bg-[#eff8fd] px-5 py-4">
       <p className="font-semibold text-[#242424]">Legal and privacy contact</p>
       <p className="mt-1">
-        Autorell AB, Sweden ·{' '}
+        Autorell AB · 559556-3774 · Paviljongvägen 2, 132 40
+        Saltsjö-Boo, Sweden ·{' '}
         <a className="underline" href="mailto:info@autorell.com">
           info@autorell.com
         </a>

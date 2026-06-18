@@ -144,10 +144,6 @@ export default function PublicFooter({
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
       <div
-        className="pointer-events-none absolute -bottom-36 -right-32 h-[360px] w-[360px] rounded-full border-[48px] border-[#242424]/[0.045] sm:-bottom-44 sm:-right-36 sm:h-[460px] sm:w-[460px] sm:border-[62px]"
-        aria-hidden="true"
-      />
-      <div
         className="pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] rounded-full border-[24px] border-[#B4D9EF]/50 sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px] sm:border-[30px]"
         aria-hidden="true"
       />
