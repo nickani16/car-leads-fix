@@ -1,5 +1,7 @@
-import sharp from 'sharp'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+export const runtime = 'nodejs'
+export const maxDuration = 15
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -64,6 +66,7 @@ export async function GET(
       return new Response(null, { status: 404 })
     }
 
+    const { default: sharp } = await import('sharp')
     const source = Buffer.from(await sourceResponse.arrayBuffer())
     const protectedPreview = await sharp(source, {
       failOn: 'warning',
