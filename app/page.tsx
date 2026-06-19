@@ -23,6 +23,7 @@ import {
 import PublicHeader from './components/PublicHeader'
 import BuyerMarketPage from './components/BuyerMarketPage'
 import FaqTestimonials from './components/FaqTestimonials'
+import HomeMarketPulse from './components/HomeMarketPulse'
 import ProcessSteps from './components/ProcessSteps'
 import PublicFooter from './components/PublicFooter'
 
@@ -225,6 +226,10 @@ export default async function HomePage() {
                 <ChevronRight className="h-4 w-4" />
               </span>
             </Link>
+
+            <div className="sm:col-span-2 lg:col-span-1">
+              <HomeMarketPulse variant="strip" />
+            </div>
           </div>
         </div>
 

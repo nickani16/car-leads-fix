@@ -9,7 +9,11 @@ const demandRows = [
   { label: 'Nyare premium', minimum: 55, maximum: 64 },
 ]
 
-export default function HomeMarketPulse() {
+export default function HomeMarketPulse({
+  variant = 'card',
+}: {
+  variant?: 'card' | 'strip'
+}) {
   const [values, setValues] = useState(() =>
     demandRows.map(({ maximum }) => maximum)
   )
@@ -44,6 +48,51 @@ export default function HomeMarketPulse() {
     animationFrame = window.requestAnimationFrame(animate)
     return () => window.cancelAnimationFrame(animationFrame)
   }, [])
+
+  if (variant === 'strip') {
+    return (
+      <aside className="home-market-float w-full overflow-hidden rounded-[20px] border border-white/75 bg-white/82 p-4 shadow-[0_24px_65px_rgba(23,31,35,.15)] backdrop-blur-xl sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex min-w-[180px] items-center justify-between gap-4 sm:block">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
+                Autorell market pulse
+              </p>
+              <p className="mt-1 text-sm font-medium tracking-[-0.02em]">
+                Efterfrågan i EU
+              </p>
+            </div>
+            <span className="flex items-center gap-2 rounded-full bg-[#edf7f1] px-3 py-1.5 text-[10px] font-medium text-[#3c7252] sm:mt-3 sm:w-fit">
+              <span className="home-live-dot h-2 w-2 rounded-full bg-[#76bb91]" />
+              Aktiv
+            </span>
+          </div>
+          <div className="grid flex-1 gap-2 sm:grid-cols-3">
+            {demandRows.map(({ label, maximum }, index) => (
+              <div
+                key={label}
+                className="home-market-row rounded-[13px] border border-[#e2e8e8] bg-white/80 px-3.5 py-3"
+                style={{ animationDelay: `${index * 0.7}s` }}
+              >
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <span className="truncate text-[#53666f]">{label}</span>
+                  <strong className="font-medium tabular-nums">
+                    {values[index]}%
+                  </strong>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#e8edef]">
+                  <span
+                    className="home-demand-bar block h-full rounded-full bg-[#8ec5df]"
+                    style={{ width: `${maximum}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="home-market-float relative z-10 w-full min-w-0 max-w-[390px] justify-self-center rounded-[26px] border border-white/70 bg-white/78 p-4 shadow-[0_28px_80px_rgba(23,31,35,.18)] backdrop-blur-xl sm:p-5 lg:justify-self-end">

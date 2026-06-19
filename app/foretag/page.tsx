@@ -10,20 +10,19 @@ import {
   FileCheck2,
   Globe2,
   Handshake,
-  Layers3,
-  Route,
   ScanSearch,
   ShieldCheck,
   Truck,
 } from 'lucide-react'
 import BusinessFleetForm from '../components/BusinessFleetForm'
+import BusinessDealerShowcase from '../components/BusinessDealerShowcase'
 import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 
 export const metadata = createPublicMetadata({
   title: 'Sälj företagsbilar i hela Europa | Autorell',
   description:
-    'Autorell säljer företagsbilar till verifierade köpare i hela EU och samordnar budgivning, kontroll, betalning, hämtning och export.',
+    'Autorell testar efterfrågan för företagsbilar hos verifierade köpare i hela EU och samordnar erbjudande, kontroll, betalning, hämtning och export.',
   path: '/foretag',
   keywords: [
     'sälja företagsbilar',
@@ -59,13 +58,13 @@ const process = [
   },
   {
     icon: Globe2,
-    title: 'Köpare i hela EU budar',
-    text: 'Utvalda fordon presenteras för relevanta, verifierade bilhandlare på flera europeiska marknader.',
+    title: 'Vi testar efterfrågan i EU',
+    text: 'Utvalda fordon presenteras anonymt för relevanta, verifierade bilhandlare på flera europeiska marknader.',
   },
   {
     icon: Truck,
     title: 'Vi genomför affären',
-    text: 'Efter ert godkännande samordnar vi kontroll, betalning, hämtning, dokumentation och export.',
+    text: 'När marknaden fungerar lämnar Autorell ett eget erbjudande och samordnar kontroll, betalning, hämtning och export.',
   },
 ]
 
@@ -92,8 +91,8 @@ export default function BusinessPage() {
               <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#526b78] sm:text-xl">
                 Autorell öppnar ert lager, era leasingreturer och
                 företagsfordon mot verifierade europeiska köpare. Vi driver
-                affären från fordonsunderlag och budgivning till kontroll,
-                betalning, hämtning och export.
+                stora och återkommande volymer från fordonsunderlag till
+                kontroll, betalning, hämtning och export.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -116,7 +115,7 @@ export default function BusinessPage() {
                 {[
                   'Börja med utvalda fordon',
                   'Köpare i hela EU',
-                  'Ni godkänner varje affär',
+                  'Kapacitet för stora volymer',
                 ].map((item) => (
                   <span key={item} className="flex items-center gap-2">
                     <Check className="h-4 w-4 shrink-0 text-[#4f8298]" />
@@ -126,76 +125,7 @@ export default function BusinessPage() {
               </div>
             </div>
 
-            <div className="relative min-w-0">
-              <div className="absolute -inset-5 rounded-[36px] bg-white/35 blur-xl" />
-              <div className="relative overflow-hidden rounded-[26px] border border-white/90 bg-[#202124] p-5 text-white shadow-[0_32px_90px_rgba(45,67,78,.22)] sm:p-8">
-                <div className="trust-ring absolute -right-20 -top-24 h-64 w-64 rounded-full border-[40px] border-[#b4d9ef]/10" />
-                <div className="flex items-start justify-between border-b border-white/10 pb-6">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
-                      Europeisk försäljning
-                    </p>
-                    <h2 className="mt-2 text-2xl tracking-[-0.04em]">
-                      Från fordonslista till genomförd affär.
-                    </h2>
-                  </div>
-                  <span className="grid h-11 w-11 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
-                    <Layers3 className="h-5 w-5" />
-                  </span>
-                </div>
-
-                <div className="mt-6 grid grid-cols-3 gap-2">
-                  {[
-                    ['01', 'Underlag'],
-                    ['02', 'EU-bud'],
-                    ['03', 'Export'],
-                  ].map(([number, label]) => (
-                    <div
-                      key={number}
-                      className="rounded-[14px] border border-white/10 bg-white/[0.055] p-3 sm:p-4"
-                    >
-                      <span className="text-[10px] text-white/35">{number}</span>
-                      <strong className="mt-5 block text-xs font-medium sm:text-sm">
-                        {label}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 space-y-2.5">
-                  {[
-                    ['Inbyteslager', 'EU-budgivning', 'Aktiv'],
-                    ['Leasingreturer', 'Kontroll & avtal', 'Nästa'],
-                    ['Företagsflotta', 'Hämtning & export', 'Redo'],
-                  ].map(([type, stage, status], index) => (
-                    <div
-                      key={type}
-                      className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[14px] bg-white px-3.5 py-3.5 text-[#202124] sm:px-5"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-[#e7f3f8] text-xs font-medium text-[#4f8298]">
-                        0{index + 1}
-                      </span>
-                      <span className="min-w-0">
-                        <strong className="block truncate text-sm font-medium">
-                          {type}
-                        </strong>
-                        <span className="mt-0.5 block text-xs text-[#78858b]">
-                          {stage}
-                        </span>
-                      </span>
-                      <span className="rounded-full bg-[#eef5f7] px-2.5 py-1 text-[10px] font-medium text-[#4f6f7e]">
-                        {status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-white/55">
-                  <span>En partner från försäljning till export</span>
-                  <Route className="h-4 w-4 text-[#B4D9EF]" />
-                </div>
-              </div>
-            </div>
+            <BusinessDealerShowcase />
           </div>
         </div>
       </section>
@@ -231,7 +161,7 @@ export default function BusinessPage() {
               <p className="mt-6 text-base leading-8 text-[#65737b] sm:text-lg">
                 Ni väljer vilka fordon som ska säljas. Autorell kvalificerar
                 underlaget, aktiverar relevanta köpare i EU och samordnar
-                genomförandet när ni accepterar ett bud.
+                genomförandet när vårt eget inköpserbjudande accepteras.
               </p>
               <a
                 href="#foretagskontakt"
@@ -262,7 +192,7 @@ export default function BusinessPage() {
                 {
                   icon: Handshake,
                   title: 'Vi tar affären i mål',
-                  text: 'Autorell samordnar kontroll, betalning, hämtning, exportdokument och överlämning efter accepterat bud.',
+                  text: 'Autorell samordnar kontroll, betalning, hämtning, exportdokument och överlämning efter accepterat inköpserbjudande.',
                 },
               ].map(({ icon: Icon, title, text }) => (
                 <article
@@ -297,7 +227,8 @@ export default function BusinessPage() {
             </div>
             <p className="max-w-md text-sm leading-7 text-[#65737b] sm:text-base">
               Börja med en utvald grupp fordon eller ett återkommande flöde.
-              Ni behåller beslutet, Autorell samordnar resten.
+              Ni väljer fordonen och beslutar om Autorells erbjudande. Vi
+              samordnar resten.
             </p>
           </div>
 
@@ -331,14 +262,14 @@ export default function BusinessPage() {
               Ni säljer fordonen. Vi tar affären över gränsen.
             </h2>
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/62 sm:text-lg">
-              Efter accepterat bud kontrollerar vi fordonet mot underlaget och
-              samordnar betalning, hämtning, dokumentation och export till den
-              europeiska köparen.
+              Efter accepterat inköpserbjudande kontrollerar vi fordonet mot
+              underlaget och samordnar betalning, hämtning, dokumentation och
+              export till den europeiska köparen.
             </p>
           </div>
           <div className="grid gap-3">
             {[
-              'Ni väljer fordon och accepterar bud',
+              'Ni väljer fordon och beslutar om Autorells erbjudande',
               'Autorell kontrollerar fordonet mot deklarationen',
               'Vi samordnar betalning, avtal och dokument',
               'Vi koordinerar hämtning och export till köparen',
@@ -374,7 +305,8 @@ export default function BusinessPage() {
             </h2>
             <p className="mt-6 text-base leading-8 text-[#65737b] sm:text-lg">
               Beskriv volym, fordonstyper och tidsplan. Vi återkommer med ett
-              konkret upplägg för kvalificering, EU-budgivning och genomförande.
+              konkret upplägg för kvalificering, europeiskt marknadstest och
+              genomförande.
             </p>
             <div className="mt-9 rounded-[18px] border border-white/80 bg-white/55 p-5">
               <p className="text-sm font-medium">Föredrar ni e-post?</p>
