@@ -7,8 +7,6 @@ import {
   CarFront,
   ChevronDown,
   CircleHelp,
-  FileCheck2,
-  Gavel,
   Handshake,
   Headphones,
   LogIn,
@@ -282,9 +280,9 @@ export default function PublicHeader({
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',
             links: [
-              ['/find-cars', 'Hitta bilar'],
-              ['/#sa-fungerar-det', 'Hur det funkar'],
+              ['/salj-bil', 'Sälj din bil'],
               ['/foretag', 'Företag'],
+              ['/find-cars', 'Hitta bilar'],
               ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakta oss'],
@@ -297,35 +295,29 @@ export default function PublicHeader({
   const sellerMenu =
     activeLocale === 'sv'
       ? {
-          eyebrow: 'Autorell fordonsmarknad',
-          title: 'Se aktuella bilar innan du loggar in.',
-          text: 'Utforska publicerade fordon. Fullständiga uppgifter, priser och bud är låsta för verifierade handlare.',
-          cta: 'Hitta bilar',
-          ctaHref: '/find-cars',
+          eyebrow: 'För privatpersoner',
+          title: 'Sälj bilen. Vi hittar köparen och löser resten.',
+          text: 'Autorell testar bilen hos verifierade EU-handlare och sköter kontroll, betalning, hämtning och export.',
+          cta: 'Sälj din bil',
+          ctaHref: '/salj-bil',
           items: [
             {
-              href: '/find-cars',
-              label: 'Hitta bilar',
-              text: 'Se aktuellt utbud från Sverige och våra europeiska marknader.',
-              icon: CarFront,
-            },
-            {
               href: '/salj-bil',
-              label: 'Sälj din bil',
-              text: 'Börja med bilens viktigaste uppgifter och se aktuella kriterier.',
+              label: 'Starta bilförsäljningen',
+              text: 'Fyll i bilen och kontrollera om den passar vår köpbox.',
               icon: ScanSearch,
             },
             {
-              href: '/salj-lagerbil',
-              label: 'Sälj företagsfordon',
-              text: 'Lagerbilar, leasingreturer, nya elbilar och fordonsflottor – inget konto krävs.',
-              icon: Building2,
+              href: '/#sa-fungerar-det',
+              label: 'Så löser vi affären',
+              text: 'Köparnätverk, erbjudande, kontroll, betalning och hämtning.',
+              icon: Route,
             },
             {
-              href: '/dealer-apply',
-              label: 'Handlaråtkomst',
-              text: 'Ansök för att se fullständiga fordonsdata och lägga bud.',
-              icon: Store,
+              href: '/vanliga-fragor',
+              label: 'Kriterier och frågor',
+              text: 'Årsmodell 2018+, högst 10 000 mil och gott skick.',
+              icon: CircleHelp,
             },
           ],
         }
@@ -380,29 +372,29 @@ export default function PublicHeader({
   const processMenu =
     activeLocale === 'sv'
       ? {
-          eyebrow: 'Så fungerar Autorell',
-          title: 'Ett tydligt flöde från kontroll till export.',
-          text: 'Följ kvalificering, deklaration, budgivning och affär i sex tydliga steg.',
-          cta: 'Se hur det funkar',
-          ctaHref: '/#sa-fungerar-det',
+          eyebrow: 'För företag',
+          title: 'Sälj stora och återkommande fordonsvolymer i Europa.',
+          text: 'För lagerbilar, leasingreturer, företagsflottor och andra professionella fordonsägare.',
+          cta: 'Se företagslösningen',
+          ctaHref: '/foretag',
           items: [
             {
-              href: '/#sa-fungerar-det',
-              label: 'Steg för steg',
-              text: 'Se samtliga steg från bil till köpare.',
-              icon: Route,
+              href: '/foretag',
+              label: 'Företagsförsäljning',
+              text: 'EU-köpare och ett samordnat flöde för många fordon.',
+              icon: Building2,
             },
             {
-              href: '/vanliga-fragor',
-              label: 'Budgivning & villkor',
-              text: 'Svar om 24 timmar, kontroll och acceptans.',
-              icon: Gavel,
+              href: '/salj-lagerbil',
+              label: 'Skicka in ett fordon',
+              text: 'Starta direkt utan att först skapa ett konto.',
+              icon: CarFront,
             },
             {
-              href: '/om-oss',
-              label: 'Varför Autorell?',
-              text: 'Idén bakom Autorells europeiska handelsmodell.',
-              icon: FileCheck2,
+              href: '/foretag#foretagskontakt',
+              label: 'Diskutera större volymer',
+              text: 'Leasingreturer, lager och återkommande flöden.',
+              icon: Handshake,
             },
           ],
         }
@@ -442,35 +434,23 @@ export default function PublicHeader({
   const companyMenu =
     activeLocale === 'sv'
       ? {
-          eyebrow: 'För professionella säljare',
-          title: 'Europeisk avsättning för svenska fordonsportföljer.',
-          text: 'För inbyten, leasingreturer, hyrbilsflottor och återkommande fordonsvolym.',
-          cta: 'Se företagslösningen',
-          ctaHref: '/foretag',
+          eyebrow: 'För verifierade köpare',
+          title: 'Utvalda svenska bilar för professionella handlare.',
+          text: 'Se publikt utbud eller ansök om åtkomst till fullständig data och budgivning.',
+          cta: 'Hitta bilar',
+          ctaHref: '/find-cars',
           items: [
             {
-              href: '/salj-lagerbil',
-              label: 'Skicka in ett företagsfordon',
-              text: 'Starta utan konto med en lagerbil, leasingretur eller företagsbil.',
+              href: '/find-cars',
+              label: 'Hitta bilar',
+              text: 'Se aktuellt utbud från Autorell.',
               icon: CarFront,
             },
             {
-              href: '/foretag',
-              label: 'Varför företag väljer Autorell',
-              text: 'Räckvidd, fordonsdata och ett samordnat flöde.',
-              icon: Building2,
-            },
-            {
-              href: '/foretag#process',
-              label: 'B2B-processen',
-              text: 'Från fordonslista till transport och export.',
-              icon: Route,
-            },
-            {
-              href: '/foretag#foretagskontakt',
-              label: 'Starta ett pilotflöde',
-              text: 'Beskriv volym, fordonstyper och tidsplan.',
-              icon: Handshake,
+              href: '/dealer-apply',
+              label: 'Ansök som bilhandlare',
+              text: 'Få fullständiga fordonsdata och möjlighet att lägga bud.',
+              icon: Store,
             },
           ],
         }
@@ -665,7 +645,7 @@ export default function PublicHeader({
                 href={content.links[1][0]}
                 menu={processMenu}
                 onNavigate={handleSectionLink}
-                icon={Route}
+                icon={activeLocale === 'sv' ? Building2 : Route}
               />
 
               <DesktopMenu
@@ -674,7 +654,7 @@ export default function PublicHeader({
                 href={content.links[2][0]}
                 menu={companyMenu}
                 onNavigate={handleSectionLink}
-                icon={Building2}
+                icon={activeLocale === 'sv' ? CarFront : Building2}
               />
 
               <div className="group relative">
