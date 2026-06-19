@@ -198,7 +198,7 @@ const copy = {
     color: 'Färg',
     conditionEyebrow: 'Historik och skick',
     conditionTitle: 'Kvalificera bilens tekniska skick',
-    conditionIntro: 'Konkreta svar avgör om bilen kan gå vidare till europeisk budgivning.',
+    conditionIntro: 'Konkreta svar avgör om Autorell kan bedöma bilen för europeisk exporthandel.',
     driveable: 'Är bilen körbar och trafiksäker?',
     engineTransmissionIssues: 'Finns problem med motor eller växellåda?',
     fluidLeaks: 'Finns olje-, kylvätske- eller andra vätskeläckage?',
@@ -245,7 +245,7 @@ const copy = {
     choose: 'Välj alternativ',
     successLabel: 'Förfrågan mottagen',
     successTitle: 'Tack! Bilen är skickad för granskning.',
-    successText: 'Vi kontrollerar fordonsprofilen innan en eventuell 24-timmarsbudgivning startas.',
+    successText: 'Vi kontrollerar fordonsprofilen och den europeiska efterfrågan innan vi kan lämna ett villkorat inköpserbjudande.',
     home: 'Till Autorell',
     errors: {
       vehicle: 'Fyll i registreringsnummer, märke, modell, årsmodell, miltal, ort och postnummer.',

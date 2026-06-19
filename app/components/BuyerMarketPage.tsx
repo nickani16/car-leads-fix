@@ -241,7 +241,7 @@ const dealerExperienceContent = {
       {
         title: 'Bidding system',
         label: 'Simple bid flow',
-        text: 'Place a bid, review fees and understand the total before submitting.',
+        text: 'Place a bid, review transaction costs and understand the total before submitting.',
         href: '/how-it-works',
         src: '/dealer-samsung.webp',
         alt: 'Autorell simple bidding system with bid view and purchase summary',

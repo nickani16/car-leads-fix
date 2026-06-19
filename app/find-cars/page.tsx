@@ -26,10 +26,10 @@ const pageCopy = {
       'Se aktuella fordon från Sverige och Europa. Verifierade bilhandlare får tillgång till fullständiga fordonsdata, priser och budgivning.',
     eyebrow: 'Publikt fordonsutbud',
     heading: 'Hitta bilar till salu just nu.',
-    text: 'Utforska aktuellt utbud från våra europeiska marknader. Fullständig fordonsdata, pris och budgivning är tillgängliga för verifierade bilhandlare.',
+    text: 'Utforska svenska fordon som Autorell erbjuder till verifierade bilhandlare i Europa. Fullständig fordonsdata, pris och budgivning kräver godkänt konto.',
     apply: 'Ansök som bilhandlare',
     login: 'Logga in',
-    signals: ['Fordon från flera marknader', 'Verifierade professionella köpare', 'Trygg affär genom Autorell'],
+    signals: ['Svenska exportfordon', 'Verifierade professionella köpare', 'Autorell som avtalspart'],
     live: 'publicerade fordon',
   },
   de: {
@@ -50,10 +50,10 @@ const pageCopy = {
       'Explore current vehicles from Sweden and Europe. Verified dealers get complete vehicle data, pricing and bidding access.',
     eyebrow: 'Public vehicle supply',
     heading: 'Find cars for sale right now.',
-    text: 'Explore current supply across our European markets. Complete vehicle data, pricing and bidding are available to verified professional dealers.',
+    text: 'Explore Swedish vehicles offered by Autorell to verified dealers across Europe. Complete vehicle data, pricing and bidding require an approved account.',
     apply: 'Apply for dealer access',
     login: 'Dealer login',
-    signals: ['Vehicles across European markets', 'Verified professional buyers', 'Managed transactions through Autorell'],
+    signals: ['Swedish export vehicles', 'Verified professional buyers', 'Autorell as contracting seller'],
     live: 'live vehicles',
   },
 } as const
@@ -110,6 +110,7 @@ export default async function FindCarsPage() {
       'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,images'
     )
     .eq('status', 'Active')
+    .not('autorell_purchase_price', 'is', null)
     .is('auction_closed_at', null)
     .gt('auction_ends_at', now)
     .order('listing_priority', { ascending: false })

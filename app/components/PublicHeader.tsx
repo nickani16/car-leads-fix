@@ -277,7 +277,7 @@ export default function PublicHeader({
             ctaHref: '/dealer-apply',
           }
         : {
-            message: 'Sälj din bil till högsta bud',
+            message: 'Sälj din bil direkt till Autorell',
             menuLabel: 'Meny',
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',

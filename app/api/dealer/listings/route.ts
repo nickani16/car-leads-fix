@@ -70,13 +70,7 @@ export async function POST(request: Request) {
     }
 
     const form = await request.formData()
-    const saleFormat =
-      text(form, 'saleFormat') === 'marketplace' ? 'marketplace' : 'auction'
-    const price = Number(
-      saleFormat === 'marketplace'
-        ? text(form, 'buyNowPrice')
-        : text(form, 'reservePrice')
-    )
+    const sellerTargetPrice = Number(text(form, 'sellerTargetPrice'))
     const modelYear = Number(text(form, 'modelYear'))
     const mileageKm = Number(text(form, 'mileageKm'))
     const originCountry = (
@@ -105,12 +99,15 @@ export async function POST(request: Request) {
       !Number.isFinite(mileageKm) ||
       mileageKm < 0 ||
       mileageKm > 2_000_000 ||
-      !Number.isFinite(price) ||
-      price <= 0 ||
-      !/^[A-Z]{2}$/.test(originCountry)
+      !Number.isFinite(sellerTargetPrice) ||
+      sellerTargetPrice <= 0 ||
+      originCountry !== 'SE'
     ) {
       return NextResponse.json(
-        { error: 'Complete the required vehicle and pricing information.' },
+        {
+          error:
+            'Complete the required information. Autorell currently purchases stock located in Sweden.',
+        },
         { status: 400 }
       )
     }
@@ -147,9 +144,10 @@ export async function POST(request: Request) {
         source: originCountry,
         origin_country: originCountry,
         status: 'Pending review',
-        sale_format: saleFormat,
-        reserve_price: saleFormat === 'auction' ? price : null,
-        buy_now_price: saleFormat === 'marketplace' ? price : null,
+        sale_format: 'auction',
+        seller_target_price: sellerTargetPrice,
+        reserve_price: null,
+        buy_now_price: null,
         model_year: modelYear,
         miles: String(Math.round(mileageKm / 10)),
         variant: text(form, 'variant') || null,

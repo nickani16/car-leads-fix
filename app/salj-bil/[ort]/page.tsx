@@ -24,7 +24,7 @@ export async function generateMetadata({
   if (!location) return {}
 
   const title = `Sälj bil i ${location.name} – få bud från handlare | Autorell`
-  const description = `Sälj din bil i ${location.name} kostnadsfritt. Nå verifierade bilhandlare i Sverige och Europa, följ budgivningen och välj själv om du vill sälja.`
+  const description = `Erbjud din bil i ${location.name} till Autorell kostnadsfritt. Vi bedömer europeisk efterfrågan och du väljer själv om du vill acceptera vårt inköpserbjudande.`
   const canonical = `https://www.autorell.se/salj-bil/${location.slug}`
 
   return {

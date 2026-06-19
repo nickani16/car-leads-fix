@@ -9,22 +9,30 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { action, saleFormat, buyNowPrice, reservePrice } =
+  const {
+    action,
+    saleFormat,
+    buyNowPrice,
+    reservePrice,
+    autorellPurchasePrice,
+  } =
     (await request.json()) as {
     action?: 'approve' | 'reject'
     saleFormat?: 'auction' | 'marketplace'
     buyNowPrice?: number | null
     reservePrice?: number | null
+    autorellPurchasePrice?: number | null
   }
 
   if (action !== 'approve' && action !== 'reject') {
     return NextResponse.json({ error: 'Invalid review action.' }, { status: 400 })
   }
 
-  let selectedSaleFormat =
+  const selectedSaleFormat =
     saleFormat === 'marketplace' ? 'marketplace' : 'auction'
   const selectedBuyNowPrice = Number(buyNowPrice)
   const selectedReservePrice = Number(reservePrice)
+  const selectedPurchasePrice = Number(autorellPurchasePrice)
 
   const supabase = await createClient()
   const {
@@ -58,19 +66,31 @@ export async function PATCH(
   }
 
   if (
-    lead.submission_type === 'private_bid' ||
-    (!lead.submission_type && !lead.seller_dealer_id)
-  ) {
-    selectedSaleFormat = 'auction'
-  }
-
-  if (
     action === 'approve' &&
-    selectedSaleFormat === 'marketplace' &&
-    (!Number.isFinite(selectedBuyNowPrice) || selectedBuyNowPrice <= 0)
+    (!Number.isFinite(selectedPurchasePrice) || selectedPurchasePrice <= 0)
   ) {
     return NextResponse.json(
-      { error: 'Enter a valid marketplace price.' },
+      { error: 'Enter the price Autorell will pay the seller.' },
+      { status: 400 }
+    )
+  }
+
+  const selectedSalePrice =
+    selectedSaleFormat === 'marketplace'
+      ? selectedBuyNowPrice
+      : selectedReservePrice
+  const requiredMargin = Math.max(1500, selectedSalePrice * 0.05)
+  if (
+    action === 'approve' &&
+    (!Number.isFinite(selectedSalePrice) ||
+      selectedSalePrice <= 0 ||
+      selectedSalePrice - selectedPurchasePrice < requiredMargin)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          'The buyer price must protect at least EUR 1,500 or 5% gross margin.',
+      },
       { status: 400 }
     )
   }
@@ -157,6 +177,7 @@ export async function PATCH(
     .from('leads')
     .update({
       status: 'Active',
+      autorell_purchase_price: selectedPurchasePrice,
       sale_format: selectedSaleFormat,
       buy_now_price:
         selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,

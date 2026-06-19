@@ -42,6 +42,7 @@ type Deal = {
   id: string
   lead_id: string
   status: string
+  pricing_model: string
   winning_bid_amount: number | string
   commission_amount: number | string
   buyer_total_amount: number | string
@@ -95,7 +96,7 @@ export default async function AdminPage() {
     supabase
       .from('deals')
       .select(
-        'id,lead_id,status,winning_bid_amount,commission_amount,buyer_total_amount,created_at'
+        'id,lead_id,status,pricing_model,winning_bid_amount,commission_amount,buyer_total_amount,created_at'
       )
       .order('created_at', { ascending: false })
       .limit(12),
@@ -303,7 +304,7 @@ export default async function AdminPage() {
         <Panel
           id="deals"
           title="Latest provisional deals"
-          description="Commission and buyer total are calculated by the deal engine."
+          description="Purchase value, resale value and gross trade margin are calculated by the deal engine."
         >
           <div className="space-y-3">
             {deals.map((deal) => (
@@ -317,7 +318,10 @@ export default async function AdminPage() {
                       {money.format(Number(deal.winning_bid_amount))}
                     </p>
                     <p className="mt-1 text-xs text-[#62686c]">
-                      Fee {money.format(Number(deal.commission_amount))} · Buyer total{' '}
+                      {deal.pricing_model === 'trade_margin_v1'
+                        ? 'Gross margin'
+                        : 'Fee'}{' '}
+                      {money.format(Number(deal.commission_amount))} · Buyer total{' '}
                       {money.format(Number(deal.buyer_total_amount))}
                     </p>
                   </div>

@@ -25,9 +25,9 @@ type DealerInfo = {
 }
 
 const navigation = [
-  { href: '/dealer', label: 'Marketplace', icon: Gavel },
-  { href: '/dealer/sell', label: 'Sell vehicle', icon: PlusCircle },
-  { href: '/dealer/sales', label: 'My sales', icon: CarFront },
+  { href: '/dealer', label: 'Autorell stock', icon: Gavel },
+  { href: '/dealer/sell', label: 'Offer stock', icon: PlusCircle },
+  { href: '/dealer/sales', label: 'Stock supplied', icon: CarFront },
   { href: '/dealer/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dealer/support', label: 'Support', icon: HelpCircle },
   { href: '/dealer/profile', label: 'Profile', icon: Building2 },
@@ -148,8 +148,8 @@ export default function DealerShell({
               © {new Date().getFullYear()} Autorell AB
             </p>
             <p className="mt-1">
-              European dealer marketplace · All auction amounts are settled in
-              EUR.
+              European export inventory sold by Autorell · All transaction
+              amounts are settled in EUR.
             </p>
           </div>
           <nav

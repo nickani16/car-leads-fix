@@ -44,6 +44,7 @@ type Vehicle = {
 }
 
 type Pricing = {
+  pricing_model?: string
   currency?: string
   winning_bid_amount?: number | string
   seller_net_amount?: number | string
@@ -98,6 +99,15 @@ export default function ContractDocumentView({
   })
   const vehicle = objectValue<Vehicle>(snapshot, 'vehicle')
   const pricing = objectValue<Pricing>(snapshot, 'pricing')
+  const inferredTradeMargin =
+    Math.abs(
+      Number(pricing.buyer_total_amount || 0) -
+        (Number(pricing.winning_bid_amount || 0) +
+          Number(pricing.transport_fee || 0) +
+          Number(pricing.export_document_fee || 0))
+    ) < 0.01
+  const isTradeMarginPricing =
+    pricing.pricing_model === 'trade_margin_v1' || inferredTradeMargin
   const deal = objectValue<DealSnapshot>(snapshot, 'deal')
   const autorell = objectValue<Party>(snapshot, 'autorell')
   const seller = objectValue<Party>(snapshot, 'seller')
@@ -239,11 +249,13 @@ export default function ContractDocumentView({
                   primary
                   money={money}
                 />
-                <PriceLine
-                  label={copy.winningBid}
-                  value={pricing.winning_bid_amount}
-                  money={money}
-                />
+                {!isTradeMarginPricing && (
+                  <PriceLine
+                    label={copy.winningBid}
+                    value={pricing.winning_bid_amount}
+                    money={money}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -252,16 +264,22 @@ export default function ContractDocumentView({
                   value={pricing.winning_bid_amount}
                   money={money}
                 />
-                <PriceLine
-                  label="Autorell buyer fee"
-                  value={pricing.commission_amount}
-                  money={money}
-                />
-                <PriceLine
-                  label={deal.inspection_name || 'Autorell Verified Inspection'}
-                  value={pricing.inspection_fee || deal.inspection_fee}
-                  money={money}
-                />
+                {!isTradeMarginPricing && (
+                  <>
+                    <PriceLine
+                      label="Autorell buyer fee"
+                      value={pricing.commission_amount}
+                      money={money}
+                    />
+                    <PriceLine
+                      label={
+                        deal.inspection_name || 'Autorell Verified Inspection'
+                      }
+                      value={pricing.inspection_fee || deal.inspection_fee}
+                      money={money}
+                    />
+                  </>
+                )}
                 <PriceLine
                   label="Transport"
                   value={pricing.transport_fee}

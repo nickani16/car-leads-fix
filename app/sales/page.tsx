@@ -74,7 +74,7 @@ export default async function SalesPage({
     adminClient
       .from('deals')
       .select(
-        'id,lead_id,buyer_dealer_id,status,winning_bid_amount,seller_net_amount,commission_amount,inspection_fee,transport_fee,export_document_fee,buyer_total_amount,origin_country,origin_city,origin_postal_code,destination_country,destination_city,destination_postal_code,seller_decision,seller_decision_at,assigned_sales_user_id,action_due_at,created_at'
+        'id,lead_id,buyer_dealer_id,status,pricing_model,winning_bid_amount,seller_net_amount,commission_amount,inspection_fee,transport_fee,export_document_fee,buyer_total_amount,origin_country,origin_city,origin_postal_code,destination_country,destination_city,destination_postal_code,seller_decision,seller_decision_at,assigned_sales_user_id,action_due_at,created_at'
       )
       .order('created_at', { ascending: false }),
     adminClient
@@ -385,7 +385,11 @@ export default async function SalesPage({
                           value={deal.winning_bid_amount}
                         />
                         <MoneyLine
-                          label="Autorell fee"
+                          label={
+                            deal.pricing_model === 'trade_margin_v1'
+                              ? 'Gross trade margin'
+                              : 'Autorell fee'
+                          }
                           value={deal.commission_amount}
                         />
                         <MoneyLine

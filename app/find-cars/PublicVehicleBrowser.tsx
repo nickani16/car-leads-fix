@@ -57,7 +57,7 @@ const copy = {
     login: 'Logga in',
     emptyTitle: 'Nya fordon publiceras snart',
     emptyText:
-      'Godkända fordon från Sverige och fler europeiska marknader visas här så snart de publiceras.',
+      'Svenska fordon som har godkänts för Autorells exporthandel visas här så snart de publiceras.',
     reset: 'Rensa filter',
     accessItems: [
       'VIN och registreringsnummer',
@@ -123,7 +123,7 @@ const copy = {
     login: 'Log in',
     emptyTitle: 'New vehicles are coming soon',
     emptyText:
-      'Approved vehicles from Sweden and additional European markets will appear here when published.',
+      'Swedish vehicles approved for Autorell export trading will appear here when published.',
     reset: 'Reset filters',
     accessItems: [
       'VIN & registration',

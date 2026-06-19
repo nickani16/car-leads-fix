@@ -220,7 +220,7 @@ export default function DealerAnalyticsPage() {
           detail={
             analytics.avgMileage
               ? `${analytics.avgMileage.toLocaleString('en-GB')} km average`
-              : 'Active marketplace vehicles'
+              : 'Active Autorell export vehicles'
           }
         />
       </section>

@@ -62,7 +62,7 @@ export default async function SellerPortalPage({
   const { data: lead } = await supabase
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,status,created_at,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,listing_plan,dealer_reach_snapshot'
+      'id,reg,make,model,model_year,status,created_at,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,listing_plan,dealer_reach_snapshot,autorell_purchase_price'
     )
     .eq('seller_access_token_hash', hashSellerAccessToken(token))
     .single()
@@ -91,7 +91,7 @@ export default async function SellerPortalPage({
         .order('created_at', { ascending: false }),
       supabase
         .from('deals')
-        .select('id,status')
+        .select('id,status,seller_net_amount')
         .eq('lead_id', lead.id)
         .not('status', 'in', '("cancelled","completed")')
         .maybeSingle(),
@@ -101,13 +101,16 @@ export default async function SellerPortalPage({
   const uniqueBidders = new Set(
     (bids || []).map((bid) => bid.dealer_id).filter(Boolean)
   ).size
-  const highestBid = bidAmounts.length ? Math.max(...bidAmounts) : null
+  const autorellOffer = Number(
+    activeDeal?.seller_net_amount || lead.autorell_purchase_price || 0
+  )
   const isPendingReview = lead.status === 'Pending review'
   const isActive = lead.status === 'Active' && !lead.auction_closed_at
   const hasPackageOrder = Boolean(
     orders?.some((order) => order.status === 'paid')
   )
   const canUpgrade = !activeDeal && !hasPackageOrder
+  const showLegacyPackages = Boolean(orders?.length)
   const bidMoney = new Intl.NumberFormat('sv-SE', {
     style: 'currency',
     currency: 'EUR',
@@ -179,8 +182,8 @@ export default async function SellerPortalPage({
                 {isPendingReview
                   ? 'Väntar på Autorells granskning'
                   : isActive
-                    ? 'Aktiv budgivning'
-                    : 'Budgivningen är avslutad'}
+                    ? 'Autorell testar europeisk efterfrågan'
+                    : 'Marknadsbedömningen är avslutad'}
               </div>
             </div>
             <div className="rounded-[22px] border border-white/10 bg-white/7 p-6">
@@ -229,9 +232,11 @@ export default async function SellerPortalPage({
               icon: Gavel,
             },
             {
-              label: 'Högsta bud',
-              value: highestBid ? bidMoney.format(highestBid) : 'Inget ännu',
-              detail: 'uppdateras löpande',
+              label: 'Autorells erbjudande',
+              value: autorellOffer
+                ? bidMoney.format(autorellOffer)
+                : 'Inte lämnat',
+              detail: 'ditt möjliga nettopris från Autorell',
               icon: BarChart3,
             },
           ].map((metric) => (
@@ -251,6 +256,7 @@ export default async function SellerPortalPage({
           ))}
         </section>
 
+        {showLegacyPackages && (
         <section id="packages" className="mt-12 scroll-mt-24">
           <div className="max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#697278]">
@@ -310,6 +316,7 @@ export default async function SellerPortalPage({
             </article>
           </div>
         </section>
+        )}
 
         <section className="mt-12 grid gap-5 rounded-[26px] border border-[#deddd7] bg-white p-7 sm:p-9 lg:grid-cols-[.8fr_1.2fr]">
           <div>

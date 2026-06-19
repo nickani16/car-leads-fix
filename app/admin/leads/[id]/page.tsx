@@ -51,6 +51,8 @@ export default async function AdminLeadDetailPage({
         initialSaleFormat={lead.sale_format}
         initialBuyNowPrice={lead.buy_now_price}
         initialReservePrice={lead.reserve_price}
+        initialSellerTargetPrice={lead.seller_target_price}
+        initialAutorellPurchasePrice={lead.autorell_purchase_price}
         submissionType={lead.submission_type}
       />
 
@@ -89,8 +91,8 @@ export default async function AdminLeadDetailPage({
         <Badge
           label={
             lead.submission_type === 'dealer_marketplace'
-              ? 'Dealer marketplace'
-              : 'Private seller bids'
+              ? 'Dealer stock supply'
+              : 'Private vehicle supply'
           }
           tone={lead.submission_type === 'dealer_marketplace' ? 'blue' : 'amber'}
         />
@@ -126,6 +128,18 @@ export default async function AdminLeadDetailPage({
                   value: lead.seller_dealer_id
                     ? 'Approved dealer'
                     : 'Private seller',
+                },
+                {
+                  label: 'Supplier requested price',
+                  value: lead.seller_target_price
+                    ? `€${Number(lead.seller_target_price).toLocaleString()}`
+                    : undefined,
+                },
+                {
+                  label: 'Autorell purchase price',
+                  value: lead.autorell_purchase_price
+                    ? `€${Number(lead.autorell_purchase_price).toLocaleString()}`
+                    : undefined,
                 },
                 {
                   label: 'Submitted',
@@ -333,7 +347,13 @@ export default async function AdminLeadDetailPage({
                 items={[
                   { label: 'Status', value: deal.status },
                   { label: 'Winning bid', value: `€${deal.winning_bid_amount}` },
-                  { label: 'Commission', value: `€${deal.commission_amount}` },
+                  {
+                    label:
+                      deal.pricing_model === 'trade_margin_v1'
+                        ? 'Gross trade margin'
+                        : 'Commission',
+                    value: `€${deal.commission_amount}`,
+                  },
                   { label: 'Inspection', value: `€${deal.inspection_fee || 0}` },
                   { label: 'Transport', value: `€${deal.transport_fee}` },
                   {

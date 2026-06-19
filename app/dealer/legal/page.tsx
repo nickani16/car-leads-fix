@@ -17,12 +17,8 @@ import {
   DEALER_TERMS_VERSION,
 } from '@/lib/legal'
 import {
-  AUTORELL_BUYER_FEE_PERCENT,
   AUTORELL_ESTIMATED_TRANSPORT_FEE,
   AUTORELL_EXPORT_DOCUMENT_FEE,
-  AUTORELL_INSPECTION_FEE,
-  AUTORELL_MINIMUM_BUYER_FEE,
-  calculateBuyerFee,
 } from '@/lib/deal-pricing'
 
 const sections = [
@@ -158,7 +154,7 @@ export default function DealerLegalPage() {
           <LegalSection
             id="fees"
             eyebrow="04"
-            title="Buyer Fee & Pricing Policy"
+            title="Vehicle Price & Transaction Costs"
             icon={<Banknote size={22} />}
           >
             <p>
@@ -168,12 +164,8 @@ export default function DealerLegalPage() {
             <div className="my-6 overflow-hidden rounded-[16px] border border-[#d7e8f2]">
               <PriceRow label="Winning bid" value="Example: €20,000" />
               <PriceRow
-                label="Autorell buyer fee"
-                value={`3% (minimum €${AUTORELL_MINIMUM_BUYER_FEE}); example €${calculateBuyerFee(20_000)}`}
-              />
-              <PriceRow
-                label="Autorell Verified Inspection"
-                value={`€${AUTORELL_INSPECTION_FEE}`}
+                label="Autorell transaction verification"
+                value="Included in the vehicle price"
               />
               <PriceRow
                 label="Transport estimate"
@@ -186,8 +178,9 @@ export default function DealerLegalPage() {
             </div>
             <RuleList
               items={[
-                `The Autorell buyer fee is ${(AUTORELL_BUYER_FEE_PERCENT * 100).toFixed(0)}% of the vehicle price, with a minimum fee of €${AUTORELL_MINIMUM_BUYER_FEE} per completed transaction.`,
-                'The bidding interface displays an estimated buyer total before submission.',
+                'The submitted bid or displayed fixed price is the vehicle price charged by Autorell. No separate percentage buyer fee is added.',
+                'Autorell purchases the vehicle from the Swedish supplier and resells it to the approved European dealer under separate agreements.',
+                'The bidding interface displays the vehicle price and estimated transaction costs before submission.',
                 'Transport is initially estimated from €850 and is confirmed according to the exact collection city, delivery city, vehicle dimensions, accessibility and carrier availability.',
                 'The €149 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',
                 'VAT and other taxes depend on the parties, vehicle tax status, route and applicable law. The final invoice and transaction documents control.',

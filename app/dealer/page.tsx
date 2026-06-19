@@ -30,8 +30,6 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 import {
   AUTORELL_ESTIMATED_TRANSPORT_FEE,
   AUTORELL_EXPORT_DOCUMENT_FEE,
-  AUTORELL_INSPECTION_FEE,
-  calculateBuyerFee,
   calculateEstimatedBuyerTotal,
 } from '@/lib/deal-pricing'
 
@@ -345,9 +343,9 @@ export default function DealerPage() {
       )
       const matchesView =
         auctionView === 'active'
-          ? lead.submission_type !== 'dealer_marketplace' && !closed
+          ? lead.sale_format !== 'marketplace' && !closed
           : auctionView === 'marketplace'
-            ? lead.submission_type === 'dealer_marketplace' && !closed
+            ? lead.sale_format === 'marketplace' && !closed
             : closed
       const matchesSearch =
         !query ||
@@ -461,12 +459,12 @@ export default function DealerPage() {
 
   const activeAuctionCount = leads.filter(
     (lead) =>
-      lead.submission_type !== 'dealer_marketplace' &&
+      lead.sale_format !== 'marketplace' &&
       !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const marketplaceCount = leads.filter(
     (lead) =>
-      lead.submission_type === 'dealer_marketplace' &&
+      lead.sale_format === 'marketplace' &&
       !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const myBids = allBids.filter((item) => item.dealer_id === currentUserId)
@@ -617,13 +615,11 @@ export default function DealerPage() {
     Number.isFinite(enteredBidAmount) && enteredBidAmount > 0
       ? enteredBidAmount
       : 0
-  const estimatedBuyerFee = calculateBuyerFee(validBidAmount)
   const estimatedBuyerTotal = calculateEstimatedBuyerTotal(validBidAmount)
   const marketplaceVehiclePrice = Number(selectedLead?.buy_now_price || 0)
   const marketplaceBuyerTotal = calculateEstimatedBuyerTotal(
     marketplaceVehiclePrice
   )
-  const marketplaceBuyerFee = calculateBuyerFee(marketplaceVehiclePrice)
 
   return (
     <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
@@ -633,7 +629,7 @@ export default function DealerPage() {
           <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
             <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.22em] text-[#70767a]">
-              Private dealer marketplace
+              Autorell European vehicle supply
             </p>
             <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl lg:text-[42px]">
               Welcome back
@@ -698,9 +694,9 @@ export default function DealerPage() {
             <div>
               <h2 className="text-lg font-bold">
                 {auctionView === 'active'
-                  ? 'Private seller bids'
+                  ? 'Live export auctions'
                   : auctionView === 'marketplace'
-                    ? 'Dealer marketplace'
+                    ? 'Fixed-price export stock'
                     : 'Autorell transaction archive'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -723,7 +719,7 @@ export default function DealerPage() {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Private bids ({activeAuctionCount})
+                  Auctions ({activeAuctionCount})
                 </button>
                 <button
                   type="button"
@@ -734,7 +730,7 @@ export default function DealerPage() {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Dealer marketplace ({marketplaceCount})
+                  Fixed price ({marketplaceCount})
                 </button>
                 <button
                   type="button"
@@ -980,7 +976,7 @@ export default function DealerPage() {
               <div>
                 <CarFront size={34} className="mx-auto mb-3 text-slate-300" />
                 <h3 className="font-semibold text-slate-700">
-                  No active {auctionView === 'marketplace' ? 'dealer listings' : 'private seller bids'}
+                  No active {auctionView === 'marketplace' ? 'fixed-price vehicles' : 'export auctions'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
@@ -1475,12 +1471,8 @@ export default function DealerPage() {
                           value={moneyFormatter.format(marketplaceVehiclePrice)}
                         />
                         <BidCostRow
-                          label="Autorell buyer fee"
-                          value={moneyFormatter.format(marketplaceBuyerFee)}
-                        />
-                        <BidCostRow
-                          label="Autorell Verified Inspection"
-                          value={moneyFormatter.format(AUTORELL_INSPECTION_FEE)}
+                          label="Autorell transaction verification"
+                          value="Included"
                         />
                         <BidCostRow
                           label="Estimated transport"
@@ -1512,8 +1504,8 @@ export default function DealerPage() {
                           className="mt-0.5 h-4 w-4 accent-[#242424]"
                         />
                         <span className="text-xs leading-5 text-[#52616b]">
-                          I accept the binding purchase, dealer terms and buyer
-                          fee policy.
+                          I accept the binding purchase and dealer transaction
+                          terms.
                         </span>
                       </label>
 
@@ -1597,14 +1589,10 @@ export default function DealerPage() {
                           label="Your binding bid"
                           value={moneyFormatter.format(validBidAmount)}
                         />
-                        <BidCostRow
-                          label="Autorell buyer fee (3%, minimum €750)"
-                          value={moneyFormatter.format(estimatedBuyerFee)}
-                        />
                         <div>
                           <div className="flex items-center justify-between gap-4">
                             <dt className="flex min-w-0 items-center gap-2 text-[#52616b]">
-                              <span>Autorell Verified Inspection</span>
+                              <span>Autorell transaction verification</span>
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1626,7 +1614,7 @@ export default function DealerPage() {
                               </button>
                             </dt>
                             <dd className="shrink-0 font-semibold text-[#242424]">
-                              {moneyFormatter.format(AUTORELL_INSPECTION_FEE)}
+                              Included
                             </dd>
                           </div>
                           {inspectionDetailsOpen && (

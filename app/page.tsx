@@ -103,7 +103,7 @@ export async function generateMetadata(): Promise<Metadata> {
       keywords: [
         'European vehicle sourcing',
         'modern vehicles for dealers',
-        'European dealer marketplace',
+        'European vehicle trading platform',
         'B2B car auctions',
         'car sourcing platform',
         'wholesale vehicles Europe',
@@ -115,7 +115,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return createPublicMetadata({
     title: 'Sälj din bil till handlare i Europa | Autorell',
     description:
-      'Sälj bilen till verifierade handlare i Europa. Autorell samordnar budgivning, kontroll, betalning, hämtning, dokument och export.',
+      'Sälj bilen till Autorell. Vi testar efterfrågan hos verifierade EU-handlare och lämnar ett villkorat inköpserbjudande när affären fungerar.',
     path: '/',
   })
 }
@@ -193,8 +193,8 @@ export default async function HomePage() {
           {[
             ['Fordonsurval', 'Utvalda bilar'],
             ['Beslutsunderlag', 'Tydlig fordonsdata'],
-            ['Europeisk budgivning', '24 timmar'],
-            ['Efter accepterat bud', 'Vi löser resten'],
+            ['Europeisk efterfrågan', 'Testas digitalt'],
+            ['Ditt avtal', 'Du säljer till Autorell'],
           ].map(([label, value], index) => (
             <div
               key={label}
@@ -262,10 +262,10 @@ export default async function HomePage() {
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
-                Efter accepterat bud
+                Efter accepterat erbjudande
               </p>
               <p className="mt-2 text-2xl leading-tight tracking-[-0.035em] sm:text-3xl">
-                Du säljer bilen. Autorell samordnar genomförandet.
+                Du säljer bilen till Autorell. Vi säljer den vidare i Europa.
               </p>
               <p className="mt-3 text-sm leading-6 text-white/60">
                 Vi kontrollerar bilen mot deklarationen och koordinerar
@@ -405,7 +405,7 @@ export default async function HomePage() {
             <div className="border-b border-[#dfe6e5] px-5 py-9 text-center sm:px-10 sm:py-12">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#d5e2e5] bg-[#f4fafc] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4f7484]">
                 <Gavel className="h-3.5 w-3.5" />
-                Svensk exportbudgivning
+                Orderstyrd svensk exporthandel
               </span>
               <h3 className="mx-auto mt-5 max-w-4xl text-[32px] leading-[1.06] tracking-[-0.045em] text-[#202124] sm:text-[46px]">
                 Rätt fordonsdata skapar tryggare bud och bättre exportaffärer.
@@ -436,7 +436,7 @@ export default async function HomePage() {
                     },
                     {
                       icon: CircleDollarSign,
-                      text: '24 timmars budgivning ger ett tydligt marknadsunderlag.',
+                      text: 'Europeiska handlarbud ger Autorell ett tydligt marknadsunderlag för inköpserbjudandet.',
                     },
                     {
                       icon: ShieldCheck,
@@ -471,7 +471,7 @@ export default async function HomePage() {
                     </p>
                     <p className="mt-3 text-xl tracking-[-0.03em]">
                       Svensk bil.
-                      <span className="block">Europeiska dealerbud.</span>
+                      <span className="block">Autorells inköpserbjudande.</span>
                     </p>
                     <div className="mt-5 flex items-end justify-center gap-1">
                       {[35, 54, 43, 72, 61, 88].map((height, index) => (

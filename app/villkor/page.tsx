@@ -37,13 +37,13 @@ const sections = [
   },
   {
     id: 'bud',
-    title: 'Bud och säljarens beslut',
+    title: 'Marknadsbedömning och Autorells erbjudande',
     items: [
-      'Dealerbud är erbjudanden till säljaren.',
-      'Säljaren bestämmer själv om ett erbjudande ska accepteras.',
-      'Ett högsta bud innebär inte automatiskt att ett köpeavtal har ingåtts med säljaren.',
+      'Dealerbud används av Autorell som marknadsunderlag och visas inte som direkta erbjudanden från handlaren till privatpersonen.',
+      'Autorell kan lämna ett separat villkorat inköpserbjudande till säljaren.',
+      'Säljaren bestämmer själv om Autorells inköpserbjudande ska accepteras.',
       'Efter accept kan identitets-, ägar-, fordons- och dokumentkontroller krävas.',
-      'Den slutliga affären styrs av separata transaktions- och förmedlingsavtal.',
+      'Säljarens avtal med Autorell och Autorells vidareförsäljning till EU-handlaren är separata transaktioner.',
     ],
   },
   {

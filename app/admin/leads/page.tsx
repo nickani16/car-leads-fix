@@ -110,12 +110,12 @@ export default async function AdminLeadsPage({
         eyebrow="Customer operations"
         title={
           params.type === 'private_bid'
-            ? 'Private seller bids'
+            ? 'Private vehicle supply'
             : params.type === 'dealer_marketplace'
-              ? 'Dealer marketplace'
-              : 'All vehicle intake'
+              ? 'Dealer stock supply'
+              : 'All supply intake'
         }
-        description="Private seller requests and dealer marketplace inventory are kept in separate operational channels."
+        description="Private sellers and Swedish dealers supply vehicles to Autorell. Approved vehicles become Autorell export stock."
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
@@ -127,13 +127,13 @@ export default async function AdminLeadsPage({
         />
         <ChannelLink
           href="/admin/leads?type=private_bid"
-          label="Private seller bids"
+          label="Private supply"
           value={privateCount}
           active={params.type === 'private_bid'}
         />
         <ChannelLink
           href="/admin/leads?type=dealer_marketplace"
-          label="Dealer marketplace"
+          label="Dealer stock"
           value={dealerMarketplaceCount}
           active={params.type === 'dealer_marketplace'}
         />
@@ -238,8 +238,8 @@ export default async function AdminLeadsPage({
                       <Badge
                         label={
                           lead.submission_type === 'dealer_marketplace'
-                            ? 'Dealer marketplace'
-                            : 'Private bids'
+                            ? 'Dealer stock'
+                            : 'Private supply'
                         }
                         tone={
                           lead.submission_type === 'dealer_marketplace'

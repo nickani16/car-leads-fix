@@ -128,7 +128,7 @@ export default async function AdminDealsPage({
       <AdminPageHeader
         eyebrow="Transaction operations"
         title="All deals"
-        description="Track every provisional and completed transaction, buyer, seller value, commission and cross-border route."
+        description="Track Autorell purchase prices, European resale values, gross trade margin and each cross-border transaction."
       />
       <PlatformLegalEntityForm entity={platformEntity} />
       <AdminFilters
@@ -183,7 +183,12 @@ export default async function AdminDealsPage({
                 <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {[
                     ['Winning bid', `€${Number(deal.winning_bid_amount).toLocaleString()}`],
-                    ['Commission', `€${Number(deal.commission_amount).toLocaleString()}`],
+                    [
+                      deal.pricing_model === 'trade_margin_v1'
+                        ? 'Gross margin'
+                        : 'Commission',
+                      `€${Number(deal.commission_amount).toLocaleString()}`,
+                    ],
                     ['Inspection', `€${Number(deal.inspection_fee || 0).toLocaleString()}`],
                     ['Transport', `€${Number(deal.transport_fee).toLocaleString()}`],
                     ['Buyer total', `€${Number(deal.buyer_total_amount).toLocaleString()}`],

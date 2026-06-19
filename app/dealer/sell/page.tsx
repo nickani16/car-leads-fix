@@ -5,12 +5,11 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
+  BadgeEuro,
   Camera,
   CarFront,
   CheckCircle2,
-  Gavel,
   LoaderCircle,
-  ShoppingCart,
   ShieldCheck,
   Star,
   Trash2,
@@ -29,9 +28,6 @@ type SelectedImage = {
 
 export default function DealerSellPage() {
   const router = useRouter()
-  const [saleFormat, setSaleFormat] = useState<'auction' | 'marketplace'>(
-    'auction'
-  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([])
@@ -56,7 +52,6 @@ export default function DealerSellPage() {
     setError('')
 
     const form = new FormData(event.currentTarget)
-    form.set('saleFormat', saleFormat)
     form.delete('images')
     selectedImages.forEach((image) => form.append('images', image.file))
 
@@ -131,54 +126,29 @@ export default function DealerSellPage() {
             Dealer selling
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-            List a vehicle
+            Offer stock to Autorell
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#687177]">
-            Submit the vehicle once. Autorell reviews the information before it
-            becomes visible to approved buyers.
+            Send us a Swedish stock vehicle for export assessment. Autorell
+            decides whether to purchase and offer it to our European buyers.
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-[16px] border border-[#b8dfc5] bg-[#eaf7ee] px-4 py-3 text-sm text-[#176b39]">
           <ShieldCheck size={18} />
-          Admin review before publication
+          No purchase commitment before review
         </div>
       </section>
 
       <form onSubmit={submit} className="space-y-6">
         <FormSection
-          icon={<Gavel size={19} />}
-          title="Choose selling method"
-          description="The selected price remains private until Autorell approves the listing."
+          icon={<BadgeEuro size={19} />}
+          title="Your expected net price"
+          description="This is the amount your company would like to receive from Autorell. It is never shown to European buyers."
         >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormatButton
-              active={saleFormat === 'auction'}
-              icon={<Gavel size={20} />}
-              title="Timed auction"
-              text="Approved dealers compete with binding bids."
-              onClick={() => setSaleFormat('auction')}
-            />
-            <FormatButton
-              active={saleFormat === 'marketplace'}
-              icon={<ShoppingCart size={20} />}
-              title="Fixed price"
-              text="The first approved buyer can submit a binding purchase."
-              onClick={() => setSaleFormat('marketplace')}
-            />
-          </div>
-          <div className="mt-5 max-w-md">
-            <Field
-              label={
-                saleFormat === 'auction'
-                  ? 'Reserve price (EUR)'
-                  : 'Fixed vehicle price (EUR)'
-              }
-              required
-            >
+          <div className="max-w-md">
+            <Field label="Expected net price from Autorell (EUR)" required>
               <input
-                name={
-                  saleFormat === 'auction' ? 'reservePrice' : 'buyNowPrice'
-                }
+                name="sellerTargetPrice"
                 type="number"
                 min="1"
                 step="1"
@@ -187,6 +157,10 @@ export default function DealerSellPage() {
                 placeholder="Example: 18 500"
               />
             </Field>
+            <p className="mt-3 text-xs leading-5 text-[#687177]">
+              Autorell may accept, decline or return with a different purchase
+              offer after assessing European demand and transaction costs.
+            </p>
           </div>
         </FormSection>
 
@@ -402,6 +376,7 @@ export default function DealerSellPage() {
                 required
                 maxLength={2}
                 defaultValue="SE"
+                readOnly
                 className={inputClass}
               />
             </Field>
@@ -503,7 +478,8 @@ export default function DealerSellPage() {
             <div>
               <p className="font-semibold">Submit for Autorell review</p>
               <p className="mt-1 text-sm text-white/60">
-                The vehicle is not published until an administrator approves it.
+                Submission is not a listing or purchase agreement. Autorell
+                first evaluates the vehicle and possible export margin.
               </p>
             </div>
           </div>
@@ -618,37 +594,5 @@ function BooleanField({
       />
       {label}
     </label>
-  )
-}
-
-function FormatButton({
-  active,
-  icon,
-  title,
-  text,
-  onClick,
-}: {
-  active: boolean
-  icon: React.ReactNode
-  title: string
-  text: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-[18px] border p-5 text-left transition ${
-        active
-          ? 'border-[#202124] bg-[#f7fbfd] shadow-sm'
-          : 'border-[#deddd7] bg-white hover:border-[#9bc9e4]'
-      }`}
-    >
-      <span className="flex items-center gap-2 font-semibold">
-        {icon}
-        {title}
-      </span>
-      <span className="mt-2 block text-sm leading-6 text-[#70777b]">{text}</span>
-    </button>
   )
 }

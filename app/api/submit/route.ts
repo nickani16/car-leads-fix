@@ -360,15 +360,10 @@ export async function POST(request: Request) {
           `Vehicle: ${make} ${lead.model} ${lead.variant || ''}`.trim(),
           `Registration number: ${lead.reg}`,
           '',
-          'Autorell will now review the vehicle details and images before publishing the listing. This normally takes around 1–2 hours.',
-          'Your first 24 hours of bidding are included at no cost and start only after approval.',
-          'Use your private link to follow the review status, selected package, vehicle views, bids and the highest bid.',
+          'Autorell will now assess the vehicle details, documents, images and European demand.',
+          'If the vehicle fits our current export demand, Autorell may return with a conditional purchase offer.',
+          'Use your private link to follow the assessment, buyer activity and any offer from Autorell.',
           sellerPortalUrl,
-          '',
-          'You can choose a longer package immediately. Paid time starts only after Autorell approves the vehicle:',
-          '5 days: SEK 100',
-          'Premium 15 days with priority placement: SEK 290',
-          `${sellerPortalUrl}#packages`,
           '',
           'This link is personal. Do not share it with anyone else.',
           '',
@@ -382,39 +377,17 @@ export async function POST(request: Request) {
                 <div style="background:#ffffff;border:1px solid #deddd7;border-radius:24px;padding:36px;">
                   <p style="margin:0 0 22px;font-size:24px;font-weight:700;letter-spacing:-.5px;">Autorell</p>
                   <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#52768a;">Your private seller link</p>
-                  <h1 style="margin:0;font-size:30px;line-height:1.15;">Follow your vehicle on the market.</h1>
+                  <h1 style="margin:0;font-size:30px;line-height:1.15;">Follow Autorell&apos;s vehicle assessment.</h1>
                   <p style="margin:18px 0 0;color:#66737a;line-height:1.7;">
-                    Your ${make} ${lead.model} has been registered. Autorell will review the details and images before publishing it. This normally takes around 1–2 hours. Your selected package starts only after approval.
+                    Your ${make} ${lead.model} has been registered. Autorell will assess the vehicle, current European demand and whether we can present a conditional purchase offer.
                   </p>
                   <div style="margin:26px 0;padding:18px;border-radius:16px;background:#eef6fa;">
                     <strong>${make} ${lead.model} ${lead.variant || ''}</strong><br />
                     <span style="color:#68777f;font-size:14px;">${lead.model_year} · ${lead.reg}</span>
                   </div>
                   <a href="${sellerPortalUrl}" style="display:inline-block;border-radius:999px;background:#202124;color:#ffffff;text-decoration:none;padding:15px 24px;font-weight:600;">
-                    Follow the review and choose a package
+                    Follow the assessment
                   </a>
-                  <div style="margin-top:30px;border-top:1px solid #e4e3de;padding-top:26px;">
-                    <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#52768a;">Need more time?</p>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="width:50%;padding-right:6px;vertical-align:top;">
-                          <div style="border:1px solid #deddd7;border-radius:16px;padding:18px;">
-                            <strong style="font-size:18px;">5 days</strong>
-                            <p style="margin:7px 0 14px;color:#66737a;font-size:13px;line-height:1.5;">Continue standard dealer exposure after the free period.</p>
-                            <strong>SEK 100</strong>
-                          </div>
-                        </td>
-                        <td style="width:50%;padding-left:6px;vertical-align:top;">
-                          <div style="border:1px solid #9bc9e4;border-radius:16px;background:#eef7fb;padding:18px;">
-                            <strong style="font-size:18px;">Premium 15 days</strong>
-                            <p style="margin:7px 0 14px;color:#526d7c;font-size:13px;line-height:1.5;">Longer exposure with priority placement.</p>
-                            <strong>SEK 290</strong>
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
-                    <a href="${sellerPortalUrl}#packages" style="display:inline-block;margin-top:18px;color:#202124;font-weight:600;">Choose a package now →</a>
-                  </div>
                   <p style="margin:24px 0 0;color:#8a9296;font-size:12px;line-height:1.6;">
                     This link is personal and provides access to information about your vehicle. Do not share it with anyone else.
                   </p>

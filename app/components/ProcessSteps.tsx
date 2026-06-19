@@ -55,10 +55,10 @@ const steps = [
     icon: Banknote,
     eyebrow: 'Ditt beslut',
     title: 'Acceptera eller avstå',
-    text: 'Efter budgivningen väljer du själv om det högsta budet är tillräckligt bra.',
+    text: 'Efter marknadsbedömningen väljer du själv om Autorells villkorade inköpserbjudande är tillräckligt bra.',
     details:
       'Du är aldrig skyldig att sälja. Om du accepterar skapas nästa del av affären med dokumentation, villkor och tydlig status för båda parter.',
-    highlights: ['Ingen skyldighet', 'Tydligt högsta bud'],
+    highlights: ['Ingen skyldighet', 'Tydligt nettopris'],
     accent: 'bg-[#efe6d6]',
     iconStyle: 'bg-[#eadcc2] text-[#574b38]',
   },

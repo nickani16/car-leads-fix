@@ -356,7 +356,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
       path: '/faq',
       title: 'FAQ for European automotive dealers | Autorell',
       description:
-        'Answers for dealers about Swedish vehicles, account approval, bidding, buyer fees, payment, collection, documents and export.',
+        'Answers for dealers about Swedish vehicles, account approval, bidding, Autorell pricing, payment, collection, documents and export.',
       eyebrow: 'Frequently asked questions',
       heading: 'Answers before you source your first vehicle.',
       intro:
@@ -365,7 +365,7 @@ const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
         { title: 'Where are the vehicles located?', text: 'At launch, listed vehicles are located in Sweden. Location and collection information are shown in the profile.' },
         { title: 'Who can bid?', text: 'Only approved professional buyers with an active Autorell dealer account can participate.' },
         { title: 'What vehicle information is provided?', text: 'Profiles include available technical data, images, declared condition, known faults and documentation.' },
-        { title: 'How are fees communicated?', text: 'Applicable buyer fees and rules are displayed in the dealer terms or before participation in a vehicle opportunity.' },
+        { title: 'How is pricing communicated?', text: 'The bid or displayed fixed price is the Autorell vehicle price. Estimated transport and export costs are shown separately before participation.' },
         { title: 'How do payment and transport work?', text: 'The buyer transfers the confirmed total to Autorell before collection. After cleared funds and a successful inspection, Autorell coordinates completion, export documents, collection and transport.' },
         { title: 'What happens if the vehicle differs from its declaration?', text: 'Autorell pauses the transaction. Buyer and seller may accept a documented price adjustment. For a material or unresolved discrepancy, Autorell may cancel and return buyer funds received.' },
       ],

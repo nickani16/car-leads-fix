@@ -49,7 +49,7 @@ export default async function DealerSalesPage({
   const { data: listings } = await admin
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,miles,status,sale_format,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,images,created_at'
+      'id,reg,make,model,model_year,miles,status,sale_format,seller_target_price,autorell_purchase_price,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,images,created_at'
     )
     .eq('seller_dealer_id', dealer.id)
     .order('created_at', { ascending: false })
@@ -116,8 +116,8 @@ export default async function DealerSalesPage({
             My sales
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#687177]">
-            Follow review, buyer activity, winning offers, payment and collection
-            in one place.
+            Follow Autorell&apos;s assessment, conditional purchase offer,
+            European demand and completed stock sales in one place.
           </p>
         </div>
         <Link
@@ -125,30 +125,30 @@ export default async function DealerSalesPage({
           className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-semibold text-white"
         >
           <Plus size={17} />
-          List vehicle
+          Offer stock
         </Link>
       </section>
 
       {params.submitted === '1' && (
         <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#b8dfc5] bg-[#eaf7ee] px-5 py-4 text-sm text-[#176b39]">
           <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
-          Vehicle submitted. Autorell will review it before publication.
+          Vehicle submitted. Autorell will assess export demand and may return
+          with a conditional purchase offer.
         </div>
       )}
 
       <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#c9dce5] bg-[#f1f7fa] px-5 py-4 text-sm text-[#526b78]">
         <Info size={18} className="mt-0.5 shrink-0 text-[#397b9f]" />
         <p>
-          Your approved vehicles remain visible here. They are intentionally
-          hidden from your buying marketplace so your company cannot bid on or
-          purchase its own listing.
+          Your company supplies the vehicle to Autorell. European buyers only
+          see Autorell&apos;s export offer and never your requested net price.
         </p>
       </div>
 
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric icon={<CarFront />} label="Active listings" value={activeCount} />
-        <Metric icon={<Clock3 />} label="Awaiting review" value={pendingCount} />
-        <Metric icon={<CheckCircle2 />} label="Accepted sales" value={soldCount} />
+        <Metric icon={<CarFront />} label="Active export offers" value={activeCount} />
+        <Metric icon={<Clock3 />} label="Awaiting assessment" value={pendingCount} />
+        <Metric icon={<CheckCircle2 />} label="Sales to Autorell" value={soldCount} />
         <Metric
           icon={<BadgeEuro />}
           label="Accepted seller value"
@@ -167,10 +167,6 @@ export default async function DealerSalesPage({
               ? Math.max(...listingBids)
               : null
             const deal = dealByLead.get(listing.id)
-            const reserve = Number(listing.reserve_price || 0)
-            const reserveMet =
-              listing.sale_format !== 'auction' ||
-              (highestBid !== null && highestBid >= reserve)
 
             return (
               <article
@@ -203,9 +199,7 @@ export default async function DealerSalesPage({
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.16em] text-[#7d8386]">
-                          {listing.sale_format === 'marketplace'
-                            ? 'Fixed price'
-                            : 'Auction'}
+                          Vehicle offered to Autorell
                         </p>
                         <h2 className="mt-2 text-xl font-semibold">
                           {listing.make || 'Vehicle'} {listing.model || ''}
@@ -232,32 +226,27 @@ export default async function DealerSalesPage({
 
                   <div className="border-t border-[#eceae5] p-6 lg:border-r lg:border-t-0">
                     <p className="text-[10px] uppercase tracking-[0.16em] text-[#7d8386]">
-                      Pricing
+                      Your supply value
                     </p>
                     <p className="mt-3 text-2xl font-semibold">
                       {money.format(
-                        listing.sale_format === 'marketplace'
-                          ? Number(listing.buy_now_price || 0)
-                          : Number(highestBid || 0)
+                        Number(
+                          listing.autorell_purchase_price ||
+                            listing.seller_target_price ||
+                            0
+                        )
                       )}
                     </p>
                     <p className="mt-1 text-xs text-[#70777b]">
-                      {listing.sale_format === 'marketplace'
-                        ? 'Fixed vehicle price'
-                        : highestBid
-                          ? 'Current highest bid'
-                          : 'No bids yet'}
+                      {listing.autorell_purchase_price
+                        ? 'Conditional Autorell purchase price'
+                        : 'Your requested net price'}
                     </p>
-                    {listing.sale_format === 'auction' && (
-                      <p
-                        className={`mt-4 text-xs font-semibold ${
-                          reserveMet ? 'text-emerald-700' : 'text-amber-700'
-                        }`}
-                      >
-                        Reserve {money.format(reserve)} ·{' '}
-                        {reserveMet ? 'met' : 'not met'}
+                    {highestBid ? (
+                      <p className="mt-4 text-xs font-semibold text-emerald-700">
+                        European demand confirmed
                       </p>
-                    )}
+                    ) : null}
                   </div>
 
                   <div className="border-t border-[#eceae5] bg-[#faf9f6] p-6 lg:border-t-0">
@@ -270,7 +259,8 @@ export default async function DealerSalesPage({
                           {dealStatusLabel(deal.status)}
                         </p>
                         <p className="mt-1 text-sm text-[#70777b]">
-                          Winning offer {money.format(Number(deal.winning_bid_amount))}
+                          Autorell purchase offer{' '}
+                          {money.format(Number(deal.seller_net_amount))}
                         </p>
                         {['provisional_winner', 'seller_review'].includes(
                           deal.status
@@ -287,14 +277,14 @@ export default async function DealerSalesPage({
                       <>
                         <p className="mt-3 text-sm font-medium">
                           {listing.status === 'Pending review'
-                            ? 'Waiting for Autorell review'
+                            ? 'Waiting for Autorell assessment'
                             : listing.auction_closed_at
                               ? 'Listing closed'
-                              : 'Waiting for buyer activity'}
+                              : 'Autorell is testing European demand'}
                         </p>
                         <p className="mt-2 text-xs leading-5 text-[#70777b]">
-                          Payment and collection status appears here after an
-                          offer is accepted.
+                          Purchase, payment and collection status appears here
+                          after your company accepts Autorell&apos;s offer.
                         </p>
                       </>
                     )}
@@ -308,14 +298,14 @@ export default async function DealerSalesPage({
             <CarFront size={28} className="mx-auto text-[#8aaec2]" />
             <h2 className="mt-4 text-lg font-semibold">No vehicles listed yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#70777b]">
-              Add your first vehicle and choose auction or fixed price. Autorell
-              reviews it before buyers see it.
+              Offer your first Swedish stock vehicle to Autorell for export
+              assessment.
             </p>
             <Link
               href="/dealer/sell"
               className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#242424] px-5 py-3 text-sm text-white"
             >
-              List first vehicle
+              Offer first vehicle
               <ArrowRight size={15} />
             </Link>
           </div>
