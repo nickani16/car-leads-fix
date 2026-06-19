@@ -30,6 +30,7 @@ const marketConfig = {
     host: 'https://www.autorell.se',
     paths: [
       '',
+      '/find-cars',
       '/salj-bil',
       '/trygg-affar',
       '/vanliga-fragor',
@@ -51,6 +52,7 @@ const marketConfig = {
     host: 'https://www.autorell.de',
     paths: [
       '',
+      '/find-cars',
       '/fahrzeuge',
       '/so-funktionierts',
       '/vorteile',
@@ -72,6 +74,7 @@ const marketConfig = {
     host: 'https://www.autorell.com',
     paths: [
       '',
+      '/find-cars',
       '/vehicles',
       '/how-it-works',
       '/dealer-benefits',

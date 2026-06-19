@@ -245,7 +245,7 @@ export default function PublicHeader({
           privateLabel: 'Europäischer Fahrzeughandel',
           dealerLabel: 'Über Autorell',
           links: [
-            ['/fahrzeuge', 'Fahrzeuge'],
+            ['/find-cars', 'Fahrzeuge finden'],
             ['/so-funktionierts', 'So funktioniert es'],
             ['/vorteile', 'Vorteile'],
             ['/ueber-autorell', 'Über Autorell'],
@@ -264,7 +264,7 @@ export default function PublicHeader({
             privateLabel: 'Swedish vehicles',
             dealerLabel: 'About Autorell',
             links: [
-              ['/vehicles', 'Vehicles'],
+              ['/find-cars', 'Find cars'],
               ['/how-it-works', 'How it works'],
               ['/dealer-benefits', 'Dealer benefits'],
               ['/about', 'About Autorell'],
@@ -282,7 +282,7 @@ export default function PublicHeader({
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',
             links: [
-              ['/salj-bil', 'Sälj din bil'],
+              ['/find-cars', 'Hitta bilar'],
               ['/#sa-fungerar-det', 'Hur det funkar'],
               ['/foretag', 'Företag'],
               ['/for-handlare', 'För bilhandlare'],
@@ -297,12 +297,18 @@ export default function PublicHeader({
   const sellerMenu =
     activeLocale === 'sv'
       ? {
-          eyebrow: 'För dig som säljer',
-          title: 'Från biluppgifter till professionella bud.',
-          text: 'Registrera bilen kostnadsfritt och se om den passar aktuell efterfrågan.',
-          cta: 'Börja sälja din bil',
-          ctaHref: '/salj-bil',
+          eyebrow: 'Autorell fordonsmarknad',
+          title: 'Se aktuella bilar innan du loggar in.',
+          text: 'Utforska publicerade fordon. Fullständiga uppgifter, priser och bud är låsta för verifierade handlare.',
+          cta: 'Hitta bilar',
+          ctaHref: '/find-cars',
           items: [
+            {
+              href: '/find-cars',
+              label: 'Hitta bilar',
+              text: 'Se aktuellt utbud från Sverige och våra europeiska marknader.',
+              icon: CarFront,
+            },
             {
               href: '/salj-bil',
               label: 'Sälj din bil',
@@ -310,16 +316,10 @@ export default function PublicHeader({
               icon: ScanSearch,
             },
             {
-              href: '/trygg-affar',
-              label: 'Trygg affär',
-              text: 'Så skyddas uppgifter, beslut och betalning.',
-              icon: ShieldCheck,
-            },
-            {
-              href: '/vanliga-fragor',
-              label: 'Vanliga frågor',
-              text: 'Kriterier, budgivning och trygghet.',
-              icon: CircleHelp,
+              href: '/dealer-apply',
+              label: 'Handlaråtkomst',
+              text: 'Ansök för att se fullständiga fordonsdata och lägga bud.',
+              icon: Store,
             },
           ],
         }
@@ -334,11 +334,11 @@ export default function PublicHeader({
               ? 'Professioneller B2B-Zugang zu wachsendem europäischem Angebot.'
               : 'Structured vehicle data and focused bidding windows.',
           cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
-          ctaHref: activeLocale === 'de' ? '/fahrzeuge' : '/vehicles',
+          ctaHref: '/find-cars',
           items: [
             {
-              href: activeLocale === 'de' ? '/fahrzeuge' : '/vehicles',
-              label: activeLocale === 'de' ? 'Fahrzeuge' : 'Vehicles',
+              href: '/find-cars',
+              label: activeLocale === 'de' ? 'Fahrzeuge finden' : 'Find cars',
               text:
                 activeLocale === 'de'
                   ? 'Aktueller Zugang zu qualifiziertem Fahrzeugangebot.'

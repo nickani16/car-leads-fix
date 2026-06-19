@@ -15,10 +15,10 @@ const footerCopy = {
     statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
     sellerTitle: 'Sälja bil',
     sellerLinks: [
+      ['Hitta bilar', '/find-cars'],
       ['Sälj din bil', '/salj-bil'],
       ['Hur det fungerar', '/#sa-fungerar-det'],
       ['Trygg affär', '/trygg-affar'],
-      ['Vanliga frågor', '/vanliga-fragor'],
     ] as [string, string][],
     businessTitle: 'Företag',
     businessLinks: [
@@ -49,7 +49,7 @@ const footerCopy = {
     statement: 'Fahrzeuge handeln. Europa verbinden.',
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge entdecken', '/fahrzeuge'],
+      ['Fahrzeuge finden', '/find-cars'],
       ['So funktioniert der Einkauf', '/so-funktionierts'],
       ['Vorteile für Händler', '/vorteile'],
       ['Häufige Fragen', '/faq'],
@@ -83,7 +83,7 @@ const footerCopy = {
     statement: 'Selected Swedish supply. Built for professional European dealers.',
     sellerTitle: 'Vehicles & buying',
     sellerLinks: [
-      ['Vehicles from Sweden', '/vehicles'],
+      ['Find cars', '/find-cars'],
       ['How buying works', '/how-it-works'],
       ['Dealer benefits', '/dealer-benefits'],
       ['Frequently asked questions', '/faq'],
