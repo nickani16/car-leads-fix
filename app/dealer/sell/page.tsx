@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import Image from 'next/image'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -11,12 +12,20 @@ import {
   LoaderCircle,
   ShoppingCart,
   ShieldCheck,
+  Star,
+  Trash2,
 } from 'lucide-react'
 
 const inputClass =
   'h-12 w-full rounded-[14px] border border-[#d8d7d1] bg-white px-4 text-sm outline-none transition focus:border-[#78b5d6] focus:ring-4 focus:ring-[#B4D9EF]/30'
 const areaClass =
   'min-h-28 w-full rounded-[14px] border border-[#d8d7d1] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#78b5d6] focus:ring-4 focus:ring-[#B4D9EF]/30'
+
+type SelectedImage = {
+  id: string
+  file: File
+  previewUrl: string
+}
 
 export default function DealerSellPage() {
   const router = useRouter()
@@ -25,7 +34,21 @@ export default function DealerSellPage() {
   )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [imageCount, setImageCount] = useState(0)
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([])
+  const selectedImagesRef = useRef<SelectedImage[]>([])
+
+  useEffect(() => {
+    selectedImagesRef.current = selectedImages
+  }, [selectedImages])
+
+  useEffect(
+    () => () => {
+      selectedImagesRef.current.forEach((image) =>
+        URL.revokeObjectURL(image.previewUrl)
+      )
+    },
+    []
+  )
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -34,6 +57,8 @@ export default function DealerSellPage() {
 
     const form = new FormData(event.currentTarget)
     form.set('saleFormat', saleFormat)
+    form.delete('images')
+    selectedImages.forEach((image) => form.append('images', image.file))
 
     const response = await fetch('/api/dealer/listings', {
       method: 'POST',
@@ -52,6 +77,50 @@ export default function DealerSellPage() {
 
     router.push('/dealer/sales?submitted=1')
     router.refresh()
+  }
+
+  function selectImages(files: FileList | null) {
+    if (!files?.length) return
+
+    const incomingFiles = Array.from(files)
+    const invalidFiles = incomingFiles.filter(
+      (file) =>
+        !file.type.startsWith('image/') || file.size > 12 * 1024 * 1024
+    )
+    const availableSlots = Math.max(0, 20 - selectedImages.length)
+    const nextFiles = incomingFiles
+      .filter(
+        (file) =>
+          file.type.startsWith('image/') && file.size <= 12 * 1024 * 1024
+      )
+      .slice(0, availableSlots)
+
+    if (invalidFiles.length) {
+      setError(
+        'Some files were skipped. Use JPG, PNG or WebP images up to 12 MB each.'
+      )
+    } else if (incomingFiles.length > availableSlots) {
+      setError('A vehicle listing can contain a maximum of 20 images.')
+    } else {
+      setError('')
+    }
+
+    setSelectedImages((current) => [
+      ...current,
+      ...nextFiles.map((file) => ({
+        id: crypto.randomUUID(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+      })),
+    ])
+  }
+
+  function removeImage(imageId: string) {
+    setSelectedImages((current) => {
+      const removed = current.find((image) => image.id === imageId)
+      if (removed) URL.revokeObjectURL(removed.previewUrl)
+      return current.filter((image) => image.id !== imageId)
+    })
   }
 
   return (
@@ -133,7 +202,7 @@ export default function DealerSellPage() {
             <Field label="VIN">
               <input name="vin" maxLength={17} className={inputClass} />
             </Field>
-            <Field label="Make" required>
+            <Field label="Brand" required>
               <input name="make" required className={inputClass} />
             </Field>
             <Field label="Model" required>
@@ -343,28 +412,83 @@ export default function DealerSellPage() {
               <input name="pickupPostalCode" required className={inputClass} />
             </Field>
           </div>
-          <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-[18px] border border-dashed border-[#9bc9e4] bg-[#f3f9fc] px-6 py-9 text-center">
+          <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-[18px] border border-dashed border-[#9bc9e4] bg-[#f3f9fc] px-6 py-9 text-center transition hover:border-[#397b9f] hover:bg-[#edf7fb]">
             <Camera size={26} className="text-[#397b9f]" />
             <span className="mt-3 text-sm font-semibold">
-              Select up to 20 vehicle images
+              Add vehicle images
             </span>
             <span className="mt-1 text-xs text-[#687177]">
               JPG, PNG or WebP · maximum 12 MB per image
             </span>
             <span className="mt-3 rounded-full bg-white px-4 py-2 text-xs">
-              {imageCount ? `${imageCount} images selected` : 'Choose images'}
+              {selectedImages.length
+                ? `${selectedImages.length} of 20 images selected`
+                : 'Choose images'}
             </span>
             <input
-              name="images"
               type="file"
               accept="image/*"
               multiple
               className="sr-only"
-              onChange={(event) =>
-                setImageCount(event.target.files?.length || 0)
-              }
+              onChange={(event) => {
+                selectImages(event.target.files)
+                event.target.value = ''
+              }}
             />
           </label>
+
+          {selectedImages.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold">Review your images</p>
+                  <p className="mt-1 text-xs text-[#687177]">
+                    The first image becomes the main listing image. Remove any
+                    incorrect photo before submitting.
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs font-semibold text-[#397b9f]">
+                  {selectedImages.length}/20
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {selectedImages.map((image, index) => (
+                  <div
+                    key={image.id}
+                    className="group relative aspect-[4/3] overflow-hidden rounded-[15px] border border-[#d8dfe2] bg-[#edf1f2]"
+                  >
+                    <Image
+                      src={image.previewUrl}
+                      alt={`Selected vehicle image ${index + 1}`}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent px-3 pb-3 pt-8">
+                      {index === 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#B4D9EF] px-2 py-1 text-[10px] font-semibold text-[#202124]">
+                          <Star size={11} />
+                          Main image
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium text-white/80">
+                          Image {index + 1}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image.id)}
+                        className="grid h-8 w-8 place-items-center rounded-full bg-white text-red-700 shadow transition hover:scale-105"
+                        aria-label={`Remove image ${index + 1}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </FormSection>
 
         {error && (

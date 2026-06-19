@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import {
   ArrowRight,
@@ -8,6 +9,7 @@ import {
   Clock3,
   Eye,
   Gavel,
+  Info,
   Plus,
   Truck,
 } from 'lucide-react'
@@ -47,7 +49,7 @@ export default async function DealerSalesPage({
   const { data: listings } = await admin
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,miles,status,sale_format,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,created_at'
+      'id,reg,make,model,model_year,miles,status,sale_format,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,images,created_at'
     )
     .eq('seller_dealer_id', dealer.id)
     .order('created_at', { ascending: false })
@@ -134,6 +136,15 @@ export default async function DealerSalesPage({
         </div>
       )}
 
+      <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#c9dce5] bg-[#f1f7fa] px-5 py-4 text-sm text-[#526b78]">
+        <Info size={18} className="mt-0.5 shrink-0 text-[#397b9f]" />
+        <p>
+          Your approved vehicles remain visible here. They are intentionally
+          hidden from your buying marketplace so your company cannot bid on or
+          purchase its own listing.
+        </p>
+      </div>
+
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric icon={<CarFront />} label="Active listings" value={activeCount} />
         <Metric icon={<Clock3 />} label="Awaiting review" value={pendingCount} />
@@ -148,6 +159,9 @@ export default async function DealerSalesPage({
       <section className="mt-7 space-y-4">
         {(listings || []).length ? (
           listings!.map((listing) => {
+            const images = Array.isArray(listing.images)
+              ? (listing.images as string[])
+              : []
             const listingBids = bidsByLead[listing.id] || []
             const highestBid = listingBids.length
               ? Math.max(...listingBids)
@@ -163,8 +177,29 @@ export default async function DealerSalesPage({
                 key={listing.id}
                 className="overflow-hidden rounded-[22px] border border-[#deddd7] bg-white shadow-[0_12px_36px_rgba(32,33,36,.05)]"
               >
-                <div className="grid lg:grid-cols-[1.2fr_.85fr_.9fr]">
-                  <div className="p-6 lg:border-r lg:border-[#eceae5]">
+                <div className="grid lg:grid-cols-[1.35fr_.8fr_.9fr]">
+                  <div className="grid sm:grid-cols-[150px_1fr] lg:border-r lg:border-[#eceae5]">
+                    <div className="relative min-h-36 overflow-hidden bg-[#e8edef] sm:min-h-full">
+                      {images[0] ? (
+                        <Image
+                          src={images[0]}
+                          alt={`${listing.make || 'Vehicle'} ${listing.model || ''}`}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="grid h-full min-h-36 place-items-center text-[#8aa0ab]">
+                          <CarFront size={30} />
+                        </div>
+                      )}
+                      {listing.status === 'Active' && !listing.auction_closed_at && (
+                        <span className="absolute left-3 top-3 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow">
+                          Live to buyers
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.16em] text-[#7d8386]">
@@ -191,6 +226,7 @@ export default async function DealerSalesPage({
                         <Gavel size={13} />
                         {listingBids.length} bids
                       </span>
+                    </div>
                     </div>
                   </div>
 

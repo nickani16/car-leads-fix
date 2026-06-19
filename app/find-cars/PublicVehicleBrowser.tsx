@@ -46,6 +46,7 @@ const copy = {
     fuel: 'Drivlina',
     origin: 'Ursprungsland',
     locked: 'Fullständig fordonsinformation är låst',
+    imageLocked: 'Fordonsbild skyddad',
     modalTitle: 'Vill du köpa det här fordonet?',
     modalText:
       'Ansök som bilhandlare för att se registrering, VIN, fullständig skickrapport, alla bilder, pris och budgivning.',
@@ -77,6 +78,7 @@ const copy = {
     fuel: 'Antrieb',
     origin: 'Herkunftsland',
     locked: 'Vollständige Fahrzeugdaten sind geschützt',
+    imageLocked: 'Fahrzeugbild geschützt',
     modalTitle: 'Möchten Sie dieses Fahrzeug kaufen?',
     modalText:
       'Registrieren Sie sich als Händler, um Kennzeichen, VIN, Zustandsbericht, alle Bilder, Preis und Gebote zu sehen.',
@@ -109,6 +111,7 @@ const copy = {
     fuel: 'Powertrain',
     origin: 'Origin',
     locked: 'Complete vehicle information is protected',
+    imageLocked: 'Vehicle image protected',
     modalTitle: 'Do you want to buy this vehicle?',
     modalText:
       'Apply as a dealer to see registration, VIN, the complete condition report, all images, price and bidding.',
@@ -243,42 +246,58 @@ export default function PublicVehicleBrowser({
           </div>
 
           {filteredVehicles.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
               {filteredVehicles.map((vehicle) => (
                 <article
                   key={vehicle.id}
-                  className="group overflow-hidden rounded-[22px] border border-[#dde4e6] bg-white shadow-[0_16px_48px_rgba(32,33,36,.055)] transition hover:-translate-y-1 hover:shadow-[0_24px_65px_rgba(42,68,80,.11)]"
+                  className="group min-w-0 overflow-hidden rounded-[16px] border border-[#dde4e6] bg-white shadow-[0_12px_34px_rgba(32,33,36,.055)] transition hover:-translate-y-1 hover:shadow-[0_24px_65px_rgba(42,68,80,.11)] sm:rounded-[22px]"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[#e8edef]">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#d9e1e4] sm:aspect-[16/10]">
                     {vehicle.image ? (
                       <Image
                         src={vehicle.image}
                         alt={`${vehicle.make || 'Vehicle'} ${vehicle.model || ''}`}
                         fill
                         unoptimized
-                        className="object-cover transition duration-500 group-hover:scale-[1.025]"
+                        className="scale-125 object-cover blur-[18px] saturate-50 transition duration-500 group-hover:scale-[1.3] sm:blur-[22px]"
                       />
                     ) : (
                       <div className="grid h-full place-items-center text-[#92a0a7]">
                         <CarFront className="h-12 w-12" />
                       </div>
                     )}
-                    <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#202124] shadow-sm backdrop-blur">
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.16),rgba(22,38,48,.18))]" />
+                    <div className="absolute inset-0 grid place-items-center">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/45 bg-[#202528]/72 px-2.5 py-1.5 text-[9px] font-semibold text-white shadow-lg backdrop-blur-md sm:gap-2 sm:px-3 sm:text-[11px]">
+                        <LockKeyhole className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        {t.imageLocked}
+                      </span>
+                    </div>
+                    <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-1 text-[9px] font-semibold text-[#202124] shadow-sm backdrop-blur sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[11px]">
                       {vehicle.saleFormat === 'marketplace'
                         ? t.marketplace
                         : t.auction}
                     </span>
-                    <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/65 to-transparent px-4 pb-4 pt-12 text-xs text-white">
-                      <Globe2 className="h-4 w-4" />
-                      {formatCountry(vehicle.originCountry, locale)}
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2.5 pt-10 text-[10px] text-white sm:px-4 sm:pb-4 sm:pt-12 sm:text-xs">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <Globe2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                        <span className="truncate">
+                          {formatCountry(vehicle.originCountry, locale)}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-semibold">
+                        {vehicle.mileageKm !== null
+                          ? `${Math.round(vehicle.mileageKm / 1000)}k km`
+                          : '—'}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <h2 className="text-xl font-semibold tracking-[-0.035em]">
+                  <div className="p-3 sm:p-5">
+                    <h2 className="truncate text-sm font-semibold tracking-[-0.025em] sm:text-xl sm:tracking-[-0.035em]">
                       {vehicle.make || 'Vehicle'} {vehicle.model || ''}
                     </h2>
-                    <div className="mt-5 grid grid-cols-2 gap-3">
+                    <div className="mt-3 grid gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-3">
                       <VehicleFact
                         icon={CalendarDays}
                         label={t.year}
@@ -288,32 +307,34 @@ export default function PublicVehicleBrowser({
                         icon={Gauge}
                         label={t.mileage}
                         value={
-                          vehicle.mileageKm
+                          vehicle.mileageKm !== null
                             ? `${vehicle.mileageKm.toLocaleString()} km`
                             : '—'
                         }
                       />
-                      <VehicleFact
-                        icon={Fuel}
-                        label={t.fuel}
-                        value={vehicle.fuelType || '—'}
-                      />
-                      <VehicleFact
-                        icon={Globe2}
-                        label={t.origin}
-                        value={formatCountry(vehicle.originCountry, locale)}
-                      />
+                      <div className="hidden sm:contents">
+                        <VehicleFact
+                          icon={Fuel}
+                          label={t.fuel}
+                          value={vehicle.fuelType || '—'}
+                        />
+                        <VehicleFact
+                          icon={Globe2}
+                          label={t.origin}
+                          value={formatCountry(vehicle.originCountry, locale)}
+                        />
+                      </div>
                     </div>
 
-                    <div className="mt-5 flex items-center justify-between border-t border-[#e7ebec] pt-4">
-                      <span className="inline-flex items-center gap-2 text-xs text-[#71818a]">
+                    <div className="mt-3 flex items-center justify-between border-t border-[#e7ebec] pt-3 sm:mt-5 sm:pt-4">
+                      <span className="hidden items-center gap-2 text-xs text-[#71818a] sm:inline-flex">
                         <LockKeyhole className="h-4 w-4" />
                         {t.locked}
                       </span>
                       <button
                         type="button"
                         onClick={() => setSelectedVehicle(vehicle)}
-                        className="inline-flex items-center gap-2 text-sm font-semibold"
+                        className="inline-flex w-full items-center justify-between gap-1 text-[11px] font-semibold sm:w-auto sm:gap-2 sm:text-sm"
                       >
                         {t.view}
                         <ArrowRight className="h-4 w-4" />
@@ -369,14 +390,20 @@ export default function PublicVehicleBrowser({
                     alt={`${selectedVehicle.make || 'Vehicle'} ${selectedVehicle.model || ''}`}
                     fill
                     unoptimized
-                    className="object-cover"
+                    className="scale-125 object-cover blur-[24px] saturate-50"
                   />
                 ) : (
                   <div className="grid h-full place-items-center text-[#92a0a7]">
                     <CarFront className="h-14 w-14" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/5" />
+                <div className="absolute inset-0 grid place-items-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-black/45 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md">
+                    <LockKeyhole className="h-4 w-4" />
+                    {t.imageLocked}
+                  </span>
+                </div>
                 <div className="absolute inset-x-0 bottom-0 p-6 text-white">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/65">
                     {selectedVehicle.saleFormat === 'marketplace'
@@ -455,12 +482,14 @@ function VehicleFact({
   value: string
 }) {
   return (
-    <div className="rounded-[13px] bg-[#f6f7f4] p-3">
-      <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#849098]">
-        <Icon className="h-3.5 w-3.5" />
+    <div className="min-w-0 rounded-[10px] bg-[#f6f7f4] p-2 sm:rounded-[13px] sm:p-3">
+      <span className="flex items-center gap-1 text-[8px] font-semibold uppercase tracking-[0.06em] text-[#849098] sm:gap-2 sm:text-[10px] sm:tracking-[0.1em]">
+        <Icon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
         {label}
       </span>
-      <strong className="mt-2 block truncate text-sm font-medium">{value}</strong>
+      <strong className="mt-1.5 block truncate text-[11px] font-medium sm:mt-2 sm:text-sm">
+        {value}
+      </strong>
     </div>
   )
 }
