@@ -28,10 +28,10 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 import {
-  AUTORELL_BUYER_FEE,
   AUTORELL_ESTIMATED_TRANSPORT_FEE,
   AUTORELL_EXPORT_DOCUMENT_FEE,
   AUTORELL_INSPECTION_FEE,
+  calculateBuyerFee,
   calculateEstimatedBuyerTotal,
 } from '@/lib/deal-pricing'
 
@@ -82,6 +82,7 @@ type Lead = {
   images?: string[]
   status?: string
   sale_format?: 'auction' | 'marketplace'
+  submission_type?: 'private_bid' | 'dealer_marketplace'
   buy_now_price?: number | string | null
 }
 
@@ -257,7 +258,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,auction_ends_at,listing_plan,listing_priority,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status,sale_format,buy_now_price'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,auction_ends_at,listing_plan,listing_priority,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status,sale_format,buy_now_price,submission_type'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -344,9 +345,9 @@ export default function DealerPage() {
       )
       const matchesView =
         auctionView === 'active'
-          ? lead.sale_format !== 'marketplace' && !closed
+          ? lead.submission_type !== 'dealer_marketplace' && !closed
           : auctionView === 'marketplace'
-            ? lead.sale_format === 'marketplace' && !closed
+            ? lead.submission_type === 'dealer_marketplace' && !closed
             : closed
       const matchesSearch =
         !query ||
@@ -460,12 +461,12 @@ export default function DealerPage() {
 
   const activeAuctionCount = leads.filter(
     (lead) =>
-      lead.sale_format !== 'marketplace' &&
+      lead.submission_type !== 'dealer_marketplace' &&
       !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const marketplaceCount = leads.filter(
     (lead) =>
-      lead.sale_format === 'marketplace' &&
+      lead.submission_type === 'dealer_marketplace' &&
       !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const myBids = allBids.filter((item) => item.dealer_id === currentUserId)
@@ -616,12 +617,13 @@ export default function DealerPage() {
     Number.isFinite(enteredBidAmount) && enteredBidAmount > 0
       ? enteredBidAmount
       : 0
-  const estimatedBuyerFee = validBidAmount ? AUTORELL_BUYER_FEE : 0
+  const estimatedBuyerFee = calculateBuyerFee(validBidAmount)
   const estimatedBuyerTotal = calculateEstimatedBuyerTotal(validBidAmount)
   const marketplaceVehiclePrice = Number(selectedLead?.buy_now_price || 0)
   const marketplaceBuyerTotal = calculateEstimatedBuyerTotal(
     marketplaceVehiclePrice
   )
+  const marketplaceBuyerFee = calculateBuyerFee(marketplaceVehiclePrice)
 
   return (
     <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
@@ -696,9 +698,9 @@ export default function DealerPage() {
             <div>
               <h2 className="text-lg font-bold">
                 {auctionView === 'active'
-                  ? 'Live auctions'
+                  ? 'Private seller bids'
                   : auctionView === 'marketplace'
-                    ? 'Fixed-price marketplace'
+                    ? 'Dealer marketplace'
                     : 'Autorell transaction archive'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -721,7 +723,7 @@ export default function DealerPage() {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Active ({activeAuctionCount})
+                  Private bids ({activeAuctionCount})
                 </button>
                 <button
                   type="button"
@@ -732,7 +734,7 @@ export default function DealerPage() {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  Marketplace ({marketplaceCount})
+                  Dealer marketplace ({marketplaceCount})
                 </button>
                 <button
                   type="button"
@@ -978,7 +980,7 @@ export default function DealerPage() {
               <div>
                 <CarFront size={34} className="mx-auto mb-3 text-slate-300" />
                 <h3 className="font-semibold text-slate-700">
-                  No active {auctionView === 'marketplace' ? 'marketplace vehicles' : 'auctions'}
+                  No active {auctionView === 'marketplace' ? 'dealer listings' : 'private seller bids'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
@@ -992,7 +994,7 @@ export default function DealerPage() {
               <div className="hidden grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr_auto] gap-5 border-b border-slate-100 bg-slate-50/70 px-7 py-3 text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 lg:grid">
                 <span>Vehicle</span>
                 <span>Location</span>
-                <span>{auctionView === 'marketplace' ? 'Vehicle price' : 'Highest bid'}</span>
+                <span>{auctionView === 'marketplace' ? 'Price / highest bid' : 'Highest bid'}</span>
                 <span>Submitted</span>
                 <span>{auctionView === 'marketplace' ? 'Listing' : 'Auction'}</span>
                 <span>Action</span>
@@ -1474,7 +1476,7 @@ export default function DealerPage() {
                         />
                         <BidCostRow
                           label="Autorell buyer fee"
-                          value={moneyFormatter.format(AUTORELL_BUYER_FEE)}
+                          value={moneyFormatter.format(marketplaceBuyerFee)}
                         />
                         <BidCostRow
                           label="Autorell Verified Inspection"
@@ -1596,7 +1598,7 @@ export default function DealerPage() {
                           value={moneyFormatter.format(validBidAmount)}
                         />
                         <BidCostRow
-                          label="Autorell buyer fee (fixed)"
+                          label="Autorell buyer fee (3%, minimum €750)"
                           value={moneyFormatter.format(estimatedBuyerFee)}
                         />
                         <div>

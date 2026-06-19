@@ -51,6 +51,7 @@ export default async function AdminLeadDetailPage({
         initialSaleFormat={lead.sale_format}
         initialBuyNowPrice={lead.buy_now_price}
         initialReservePrice={lead.reserve_price}
+        submissionType={lead.submission_type}
       />
 
       <LeadLocationForm
@@ -85,6 +86,14 @@ export default async function AdminLeadDetailPage({
 
       <div className="mb-7 flex flex-wrap gap-2">
         <Badge label={lead.status || 'New'} />
+        <Badge
+          label={
+            lead.submission_type === 'dealer_marketplace'
+              ? 'Dealer marketplace'
+              : 'Private seller bids'
+          }
+          tone={lead.submission_type === 'dealer_marketplace' ? 'blue' : 'amber'}
+        />
         <Badge
           label={`${lead.origin_country || lead.source || 'Unknown market'}`}
           tone="gray"

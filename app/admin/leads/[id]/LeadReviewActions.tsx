@@ -10,18 +10,23 @@ export default function LeadReviewActions({
   initialSaleFormat,
   initialBuyNowPrice,
   initialReservePrice,
+  submissionType,
 }: {
   leadId: string
   status: string | null
   initialSaleFormat?: 'auction' | 'marketplace' | null
   initialBuyNowPrice?: number | string | null
   initialReservePrice?: number | string | null
+  submissionType?: 'private_bid' | 'dealer_marketplace' | null
 }) {
   const router = useRouter()
+  const isPrivateBid = submissionType !== 'dealer_marketplace'
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
   const [error, setError] = useState('')
   const [saleFormat, setSaleFormat] = useState<'auction' | 'marketplace'>(
-    initialSaleFormat === 'marketplace' ? 'marketplace' : 'auction'
+    !isPrivateBid && initialSaleFormat === 'marketplace'
+      ? 'marketplace'
+      : 'auction'
   )
   const [buyNowPrice, setBuyNowPrice] = useState(
     initialBuyNowPrice ? String(initialBuyNowPrice) : ''
@@ -29,7 +34,6 @@ export default function LeadReviewActions({
   const [reservePrice, setReservePrice] = useState(
     initialReservePrice ? String(initialReservePrice) : ''
   )
-
   if (status !== 'Pending review') return null
 
   async function review(action: 'approve' | 'reject') {
@@ -78,10 +82,11 @@ export default function LeadReviewActions({
       </p>
       <h2 className="mt-3 text-2xl font-semibold">Approve before dealers see it</h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-[#617681]">
-        Check the vehicle details, condition and images. Then publish it as an
-        auction or at a fixed marketplace price.
+        {isPrivateBid
+          ? 'This vehicle came from a private seller request and is published only in the private bid channel.'
+          : 'This vehicle was submitted by an approved dealer. Keep the dealer’s selected auction or fixed-price format.'}
       </p>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className={`mt-5 grid gap-3 ${isPrivateBid ? '' : 'sm:grid-cols-2'}`}>
         <button
           type="button"
           onClick={() => setSaleFormat('auction')}
@@ -99,25 +104,27 @@ export default function LeadReviewActions({
             Dealers compete with binding bids during the listing period.
           </span>
         </button>
-        <button
-          type="button"
-          onClick={() => setSaleFormat('marketplace')}
-          className={`rounded-[16px] border p-4 text-left transition ${
-            saleFormat === 'marketplace'
-              ? 'border-[#202124] bg-white shadow-sm'
-              : 'border-[#c8dce7] bg-white/55'
-          }`}
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <ShoppingCart size={17} />
-            Marketplace
-          </span>
-          <span className="mt-2 block text-xs leading-5 text-[#617681]">
-            A dealer submits a binding purchase at the fixed vehicle price.
-          </span>
-        </button>
+        {!isPrivateBid && (
+          <button
+            type="button"
+            onClick={() => setSaleFormat('marketplace')}
+            className={`rounded-[16px] border p-4 text-left transition ${
+              saleFormat === 'marketplace'
+                ? 'border-[#202124] bg-white shadow-sm'
+                : 'border-[#c8dce7] bg-white/55'
+            }`}
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <ShoppingCart size={17} />
+              Fixed-price marketplace
+            </span>
+            <span className="mt-2 block text-xs leading-5 text-[#617681]">
+              A dealer submits a binding purchase at the fixed vehicle price.
+            </span>
+          </button>
+        )}
       </div>
-      {saleFormat === 'marketplace' && (
+      {!isPrivateBid && saleFormat === 'marketplace' && (
         <label className="mt-4 block max-w-sm">
           <span className="mb-2 block text-xs font-semibold text-[#617681]">
             Fixed vehicle price in EUR

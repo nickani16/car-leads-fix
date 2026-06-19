@@ -14,6 +14,7 @@ type SearchParams = Promise<{
   q?: string
   country?: string
   status?: string
+  type?: 'private_bid' | 'dealer_marketplace'
 }>
 
 export default async function AdminLeadsPage({
@@ -29,7 +30,7 @@ export default async function AdminLeadsPage({
   let filteredQuery = adminClient
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,miles,phone,email,status,source,origin_country,pickup_city,pickup_postal_code,created_at'
+      'id,reg,make,model,model_year,miles,phone,email,status,source,origin_country,pickup_city,pickup_postal_code,created_at,submission_type'
     )
     .order('created_at', { ascending: false, nullsFirst: false })
     .limit(1000)
@@ -61,6 +62,10 @@ export default async function AdminLeadsPage({
     filteredQuery = filteredQuery.eq('status', params.status)
   }
 
+  if (params.type) {
+    filteredQuery = filteredQuery.eq('submission_type', params.type)
+  }
+
   if (params.country) {
     filteredQuery = filteredQuery.or(
       `origin_country.eq.${params.country},source.eq.${params.country}`
@@ -71,7 +76,7 @@ export default async function AdminLeadsPage({
     filteredQuery,
     adminClient
       .from('leads')
-      .select('status,source,origin_country')
+      .select('status,source,origin_country,submission_type')
       .order('created_at', { ascending: false, nullsFirst: false })
       .limit(5000),
   ])
@@ -92,14 +97,47 @@ export default async function AdminLeadsPage({
   const pendingReviewCount = leads.filter(
     (lead) => lead.status === 'Pending review'
   ).length
+  const privateCount = leads.filter(
+    (lead) => lead.submission_type !== 'dealer_marketplace'
+  ).length
+  const dealerMarketplaceCount = leads.filter(
+    (lead) => lead.submission_type === 'dealer_marketplace'
+  ).length
 
   return (
     <main className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
       <AdminPageHeader
         eyebrow="Customer operations"
-        title="All leads"
-        description="Search every customer and vehicle across all Autorell markets. Contact details are restricted to authorised admins."
+        title={
+          params.type === 'private_bid'
+            ? 'Private seller bids'
+            : params.type === 'dealer_marketplace'
+              ? 'Dealer marketplace'
+              : 'All vehicle intake'
+        }
+        description="Private seller requests and dealer marketplace inventory are kept in separate operational channels."
       />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <ChannelLink
+          href="/admin/leads"
+          label="All intake"
+          value={leads.length}
+          active={!params.type}
+        />
+        <ChannelLink
+          href="/admin/leads?type=private_bid"
+          label="Private seller bids"
+          value={privateCount}
+          active={params.type === 'private_bid'}
+        />
+        <ChannelLink
+          href="/admin/leads?type=dealer_marketplace"
+          label="Dealer marketplace"
+          value={dealerMarketplaceCount}
+          active={params.type === 'dealer_marketplace'}
+        />
+      </div>
 
       <div className="mb-6 flex flex-col justify-between gap-4 rounded-[20px] border border-[#9bc9e4] bg-[#eef7fb] p-5 sm:flex-row sm:items-center">
         <div>
@@ -111,7 +149,9 @@ export default async function AdminLeadsPage({
           </p>
         </div>
         <Link
-          href="/admin/leads?status=Pending%20review"
+          href={`/admin/leads?status=Pending%20review${
+            params.type ? `&type=${params.type}` : ''
+          }`}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#202124] px-5 text-sm text-white"
         >
           Show review queue
@@ -123,6 +163,7 @@ export default async function AdminLeadsPage({
         search={params.q}
         searchPlaceholder="Search registration, make, model, email, phone, city or postal code"
       >
+        {params.type && <input type="hidden" name="type" value={params.type} />}
         <FilterSelect
           name="country"
           value={params.country}
@@ -157,6 +198,7 @@ export default async function AdminLeadsPage({
                   <th className="px-5 py-4 font-medium">Vehicle</th>
                   <th className="px-5 py-4 font-medium">Customer</th>
                   <th className="px-5 py-4 font-medium">Country</th>
+                  <th className="px-5 py-4 font-medium">Channel</th>
                   <th className="px-5 py-4 font-medium">Status</th>
                   <th className="px-5 py-4 font-medium">Submitted</th>
                   <th className="px-5 py-4" />
@@ -193,6 +235,20 @@ export default async function AdminLeadsPage({
                       {lead.origin_country || lead.source || 'Unknown'}
                     </td>
                     <td className="px-5 py-4">
+                      <Badge
+                        label={
+                          lead.submission_type === 'dealer_marketplace'
+                            ? 'Dealer marketplace'
+                            : 'Private bids'
+                        }
+                        tone={
+                          lead.submission_type === 'dealer_marketplace'
+                            ? 'blue'
+                            : 'amber'
+                        }
+                      />
+                    </td>
+                    <td className="px-5 py-4">
                       <Badge label={lead.status || 'New'} />
                     </td>
                     <td className="px-5 py-4 text-xs text-[#62686c]">
@@ -217,5 +273,31 @@ export default async function AdminLeadsPage({
         <AdminEmpty text="No leads match these filters." />
       )}
     </main>
+  )
+}
+
+function ChannelLink({
+  href,
+  label,
+  value,
+  active,
+}: {
+  href: string
+  label: string
+  value: number
+  active: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      className={`rounded-[18px] border p-5 transition ${
+        active
+          ? 'border-[#8dbdd8] bg-[#eaf5fa] shadow-sm'
+          : 'border-[#deddd7] bg-white hover:border-[#b9d5e4]'
+      }`}
+    >
+      <span className="text-sm font-semibold">{label}</span>
+      <strong className="mt-2 block text-2xl">{value}</strong>
+    </Link>
   )
 }

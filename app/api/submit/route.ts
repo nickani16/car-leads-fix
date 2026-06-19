@@ -249,6 +249,7 @@ export async function POST(request: Request) {
       origin_country: originCountry,
       images: imageUrls,
       status: 'Pending review',
+      submission_type: 'private_bid',
       seller_access_token_hash: sellerAccess.hash,
       auction_starts_at: null,
       auction_ends_at: null,

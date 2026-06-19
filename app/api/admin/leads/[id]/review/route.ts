@@ -21,20 +21,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid review action.' }, { status: 400 })
   }
 
-  const selectedSaleFormat =
+  let selectedSaleFormat =
     saleFormat === 'marketplace' ? 'marketplace' : 'auction'
   const selectedBuyNowPrice = Number(buyNowPrice)
   const selectedReservePrice = Number(reservePrice)
-  if (
-    action === 'approve' &&
-    selectedSaleFormat === 'marketplace' &&
-    (!Number.isFinite(selectedBuyNowPrice) || selectedBuyNowPrice <= 0)
-  ) {
-    return NextResponse.json(
-      { error: 'Enter a valid marketplace price.' },
-      { status: 400 }
-    )
-  }
 
   const supabase = await createClient()
   const {
@@ -59,12 +49,30 @@ export async function PATCH(
 
   const { data: lead, error: leadError } = await adminClient
     .from('leads')
-    .select('id,status,listing_plan')
+    .select('id,status,listing_plan,submission_type,seller_dealer_id')
     .eq('id', id)
     .single()
 
   if (leadError || !lead) {
     return NextResponse.json({ error: 'Lead not found.' }, { status: 404 })
+  }
+
+  if (
+    lead.submission_type === 'private_bid' ||
+    (!lead.submission_type && !lead.seller_dealer_id)
+  ) {
+    selectedSaleFormat = 'auction'
+  }
+
+  if (
+    action === 'approve' &&
+    selectedSaleFormat === 'marketplace' &&
+    (!Number.isFinite(selectedBuyNowPrice) || selectedBuyNowPrice <= 0)
+  ) {
+    return NextResponse.json(
+      { error: 'Enter a valid marketplace price.' },
+      { status: 400 }
+    )
   }
 
   if (action === 'reject') {

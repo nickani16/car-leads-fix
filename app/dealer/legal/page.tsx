@@ -17,10 +17,12 @@ import {
   DEALER_TERMS_VERSION,
 } from '@/lib/legal'
 import {
-  AUTORELL_BUYER_FEE,
+  AUTORELL_BUYER_FEE_PERCENT,
   AUTORELL_ESTIMATED_TRANSPORT_FEE,
   AUTORELL_EXPORT_DOCUMENT_FEE,
   AUTORELL_INSPECTION_FEE,
+  AUTORELL_MINIMUM_BUYER_FEE,
+  calculateBuyerFee,
 } from '@/lib/deal-pricing'
 
 const sections = [
@@ -167,7 +169,7 @@ export default function DealerLegalPage() {
               <PriceRow label="Winning bid" value="Example: €20,000" />
               <PriceRow
                 label="Autorell buyer fee"
-                value={`Fixed €${AUTORELL_BUYER_FEE}`}
+                value={`3% (minimum €${AUTORELL_MINIMUM_BUYER_FEE}); example €${calculateBuyerFee(20_000)}`}
               />
               <PriceRow
                 label="Autorell Verified Inspection"
@@ -184,7 +186,7 @@ export default function DealerLegalPage() {
             </div>
             <RuleList
               items={[
-                `The standard Autorell buyer fee is a fixed €${AUTORELL_BUYER_FEE} per completed transaction.`,
+                `The Autorell buyer fee is ${(AUTORELL_BUYER_FEE_PERCENT * 100).toFixed(0)}% of the vehicle price, with a minimum fee of €${AUTORELL_MINIMUM_BUYER_FEE} per completed transaction.`,
                 'The bidding interface displays an estimated buyer total before submission.',
                 'Transport is initially estimated from €850 and is confirmed according to the exact collection city, delivery city, vehicle dimensions, accessibility and carrier availability.',
                 'The €149 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',

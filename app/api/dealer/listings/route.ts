@@ -141,6 +141,7 @@ export async function POST(request: Request) {
       .insert({
         ...required,
         seller_dealer_id: dealer.id,
+        submission_type: 'dealer_marketplace',
         phone: dealer.phone,
         email: dealer.email,
         source: originCountry,
