@@ -134,7 +134,7 @@ function marketLocation(city?: string, countryCode?: string) {
     countryCode && countryCode.length === 2
       ? countryNames.of(countryCode.toUpperCase())
       : countryCode
-  return [city, country].filter(Boolean).join(', ') || 'Not specified'
+  return country || city || 'Location protected'
 }
 
 function getCreatedAtTime(createdAt: string | null) {
@@ -1228,6 +1228,12 @@ export default function DealerPage() {
                     <span className="text-xs text-slate-400">
                       {selectedLead.images?.length || 0} images
                     </span>
+                  </div>
+                  <div className="mb-4 flex items-start gap-2 rounded-[12px] bg-[#eef7fb] px-3.5 py-3 text-xs leading-5 text-[#526b78]">
+                    <ShieldCheck size={16} className="mt-0.5 shrink-0" />
+                    Seller identity, exact location, registration and original
+                    image files are protected until Autorell advances the
+                    transaction.
                   </div>
 
                   {selectedLead.images?.length ? (

@@ -23,6 +23,7 @@ const footerCopy = {
     businessTitle: 'Företag',
     businessLinks: [
       ['Företagslösningar', '/foretag'],
+      ['Skicka in företagsfordon', '/salj-lagerbil'],
       ['Varför välja Autorell', '/foretag#process'],
       ['Starta ett pilotflöde', '/foretag#foretagskontakt'],
       ['Om Autorell', '/om-oss'],
@@ -50,6 +51,7 @@ const footerCopy = {
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
       ['Fahrzeuge finden', '/find-cars'],
+      ['Fahrzeugbestand verkaufen', '/fahrzeugbestand-verkaufen'],
       ['So funktioniert der Einkauf', '/so-funktionierts'],
       ['Vorteile für Händler', '/vorteile'],
       ['Häufige Fragen', '/faq'],
@@ -84,6 +86,7 @@ const footerCopy = {
     sellerTitle: 'Vehicles & buying',
     sellerLinks: [
       ['Find cars', '/find-cars'],
+      ['Sell business vehicles', '/sell-stock'],
       ['How buying works', '/how-it-works'],
       ['Dealer benefits', '/dealer-benefits'],
       ['Frequently asked questions', '/faq'],

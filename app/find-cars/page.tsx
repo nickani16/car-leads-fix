@@ -110,7 +110,6 @@ export default async function FindCarsPage() {
       'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,images'
     )
     .eq('status', 'Active')
-    .not('autorell_purchase_price', 'is', null)
     .is('auction_closed_at', null)
     .gt('auction_ends_at', now)
     .order('listing_priority', { ascending: false })

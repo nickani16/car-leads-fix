@@ -6,6 +6,7 @@ import {
   BarChart3,
   Building2,
   CarFront,
+  ChevronDown,
   FileText,
   Gavel,
   HelpCircle,
@@ -34,6 +35,12 @@ const navigation = [
   { href: '/dealer/legal', label: 'Legal', icon: FileText },
 ]
 
+const navigationGroups = [
+  { label: 'Buy vehicles', items: [navigation[0], navigation[3]] },
+  { label: 'Supply vehicles', items: [navigation[1], navigation[2]] },
+  { label: 'Account', items: [navigation[5], navigation[4], navigation[6]] },
+]
+
 export default function DealerShell({
   dealer,
   children,
@@ -54,27 +61,51 @@ export default function DealerShell({
               <BrandLogo />
             </Link>
 
-            <nav className="hidden items-center gap-1.5 lg:flex">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                const active =
+            <nav className="hidden items-center gap-2 lg:flex">
+              {navigationGroups.map((group) => {
+                const groupActive = group.items.some((item) =>
                   item.href === '/dealer'
                     ? pathname === '/dealer'
                     : pathname.startsWith(item.href)
-
+                )
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-normal transition ${
-                      active
-                        ? 'bg-[#B4D9EF] text-[#242424]'
-                        : 'text-[#62686c] hover:bg-[#f3f2ee] hover:text-[#202124]'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {item.label}
-                  </Link>
+                  <details key={group.label} className="group relative">
+                    <summary
+                      className={`flex cursor-pointer list-none items-center gap-2 rounded-full px-4 py-2.5 text-sm transition [&::-webkit-details-marker]:hidden ${
+                        groupActive
+                          ? 'bg-[#B4D9EF] text-[#242424]'
+                          : 'text-[#62686c] hover:bg-[#f3f2ee] hover:text-[#202124]'
+                      }`}
+                    >
+                      {group.label}
+                      <ChevronDown size={15} className="transition group-open:rotate-180" />
+                    </summary>
+                    <div className="absolute left-0 top-full z-50 w-64 pt-3">
+                      <div className="rounded-[18px] border border-[#deddd7] bg-white p-2 shadow-[0_24px_65px_rgba(32,33,36,.16)]">
+                        {group.items.map((item) => {
+                          const Icon = item.icon
+                          const active =
+                            item.href === '/dealer'
+                              ? pathname === '/dealer'
+                              : pathname.startsWith(item.href)
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={`flex items-center gap-3 rounded-[12px] px-4 py-3 text-sm ${
+                                active
+                                  ? 'bg-[#eef7fb] text-[#202124]'
+                                  : 'text-[#62686c] hover:bg-[#f5f4f0]'
+                              }`}
+                            >
+                              <Icon size={17} />
+                              {item.label}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </details>
                 )
               })}
             </nav>

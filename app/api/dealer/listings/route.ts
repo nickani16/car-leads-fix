@@ -139,6 +139,7 @@ export async function POST(request: Request) {
         ...required,
         seller_dealer_id: dealer.id,
         submission_type: 'dealer_marketplace',
+        supplier_type: 'dealer_account',
         phone: dealer.phone,
         email: dealer.email,
         source: originCountry,

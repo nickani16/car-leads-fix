@@ -48,28 +48,17 @@ export default function LeadReviewActions({
     const sellerPurchasePrice = Number(purchasePrice)
     const marketplacePrice = Number(buyNowPrice)
     const auctionReserve = Number(reservePrice)
-    const minimumSalePrice = Math.max(
-      sellerPurchasePrice + 1500,
-      sellerPurchasePrice / 0.95
-    )
-
     if (
       action === 'approve' &&
-      (!Number.isFinite(sellerPurchasePrice) || sellerPurchasePrice <= 0)
-    ) {
-      setError('Enter the price Autorell will pay the seller.')
-      return
-    }
-
-    const selectedSalePrice =
-      saleFormat === 'marketplace' ? marketplacePrice : auctionReserve
-    if (
-      action === 'approve' &&
-      (!Number.isFinite(selectedSalePrice) ||
-        selectedSalePrice < minimumSalePrice)
+      saleFormat === 'marketplace' &&
+      (!Number.isFinite(sellerPurchasePrice) ||
+        sellerPurchasePrice <= 0 ||
+        !Number.isFinite(marketplacePrice) ||
+        marketplacePrice <
+          Math.max(sellerPurchasePrice + 1500, sellerPurchasePrice / 0.95))
     ) {
       setError(
-        `The buyer price must be at least €${Math.ceil(minimumSalePrice).toLocaleString()} to protect the margin floor.`
+        'A fixed-price sale requires an Autorell purchase price and at least EUR 1,500 or 5% gross margin.'
       )
       return
     }
@@ -86,7 +75,10 @@ export default function LeadReviewActions({
           buyNowPrice:
             saleFormat === 'marketplace' ? marketplacePrice : null,
           reservePrice: saleFormat === 'auction' ? auctionReserve : null,
-          autorellPurchasePrice: sellerPurchasePrice,
+          autorellPurchasePrice:
+            Number.isFinite(sellerPurchasePrice) && sellerPurchasePrice > 0
+              ? sellerPurchasePrice
+              : null,
         }),
       })
       const result = (await response.json()) as { error?: string }
@@ -111,14 +103,14 @@ export default function LeadReviewActions({
         Build the Autorell export offer
       </h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-[#617681]">
-        Set Autorell&apos;s conditional purchase price first. Then choose how
-        Autorell offers the vehicle to European buyers. The purchase price and
-        margin remain internal.
+        Start with an anonymous market test against approved European buyers.
+        After the bidding window, Autorell can calculate and send its own
+        conditional purchase offer. Internal prices stay hidden.
       </p>
 
       <label className="mt-5 block max-w-sm">
         <span className="mb-2 block text-xs font-semibold text-[#617681]">
-          Autorell purchase price to seller (EUR)
+          Autorell purchase price to supplier (EUR) · optional before market test
         </span>
         <input
           type="number"
@@ -218,7 +210,7 @@ export default function LeadReviewActions({
           ) : (
             <Check size={17} />
           )}
-          Approve Autorell offer
+          Start anonymous market test
         </button>
         <button
           type="button"

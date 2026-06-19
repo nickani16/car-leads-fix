@@ -240,7 +240,7 @@ export default function PublicHeader({
   const content =
     activeLocale === 'de'
       ? {
-          message: 'Digitaler B2B-Fahrzeugmarkt für professionelle Händler',
+          message: 'Schwedische Fahrzeuge. Europäische Nachfrage. Autorell als Handelspartner.',
           menuLabel: 'Navigation',
           privateLabel: 'Europäischer Fahrzeughandel',
           dealerLabel: 'Über Autorell',
@@ -259,7 +259,7 @@ export default function PublicHeader({
         }
       : activeLocale === 'en'
         ? {
-            message: 'Selected Swedish vehicles for professional European buyers',
+            message: 'Swedish vehicle supply. Buyer demand across Europe. Autorell as trading partner.',
             menuLabel: 'Navigation',
             privateLabel: 'Swedish vehicles',
             dealerLabel: 'About Autorell',
@@ -277,7 +277,7 @@ export default function PublicHeader({
             ctaHref: '/dealer-apply',
           }
         : {
-            message: 'Sälj din bil direkt till Autorell',
+            message: 'Autorell söker det starkaste priset i sitt europeiska köparnätverk',
             menuLabel: 'Meny',
             privateLabel: 'För dig som säljer bil',
             dealerLabel: 'För bilhandlare',
@@ -316,6 +316,12 @@ export default function PublicHeader({
               icon: ScanSearch,
             },
             {
+              href: '/salj-lagerbil',
+              label: 'Sälj företagsfordon',
+              text: 'Lagerbilar, leasingreturer, nya elbilar och fordonsflottor – inget konto krävs.',
+              icon: Building2,
+            },
+            {
               href: '/dealer-apply',
               label: 'Handlaråtkomst',
               text: 'Ansök för att se fullständiga fordonsdata och lägga bud.',
@@ -344,6 +350,21 @@ export default function PublicHeader({
                   ? 'Aktueller Zugang zu qualifiziertem Fahrzeugangebot.'
                   : 'Current access to selected Swedish supply.',
               icon: CarFront,
+            },
+            {
+              href:
+                activeLocale === 'de'
+                  ? '/fahrzeugbestand-verkaufen'
+                  : '/sell-stock',
+              label:
+                activeLocale === 'de'
+                  ? 'Fahrzeugbestand verkaufen'
+                  : 'Sell business vehicles',
+              text:
+                activeLocale === 'de'
+                  ? 'Bestand, Leasingrückläufer oder Flottenfahrzeuge ohne Konto einreichen.'
+                  : 'Submit stock, leasing returns or fleet vehicles without an account.',
+              icon: Building2,
             },
             {
               href: '/dealer-apply',
@@ -380,7 +401,7 @@ export default function PublicHeader({
             {
               href: '/om-oss',
               label: 'Varför Autorell?',
-              text: 'Idén bakom den europeiska marknadsplatsen.',
+              text: 'Idén bakom Autorells europeiska handelsmodell.',
               icon: FileCheck2,
             },
           ],
@@ -428,6 +449,12 @@ export default function PublicHeader({
           ctaHref: '/foretag',
           items: [
             {
+              href: '/salj-lagerbil',
+              label: 'Skicka in ett företagsfordon',
+              text: 'Starta utan konto med en lagerbil, leasingretur eller företagsbil.',
+              icon: CarFront,
+            },
+            {
               href: '/foretag',
               label: 'Varför företag väljer Autorell',
               text: 'Räckvidd, fordonsdata och ett samordnat flöde.',
@@ -460,6 +487,21 @@ export default function PublicHeader({
           cta: activeLocale === 'de' ? 'Vorteile entdecken' : 'Explore dealer benefits',
           ctaHref: activeLocale === 'de' ? '/vorteile' : '/dealer-benefits',
           items: [
+            {
+              href:
+                activeLocale === 'de'
+                  ? '/fahrzeugbestand-verkaufen'
+                  : '/sell-stock',
+              label:
+                activeLocale === 'de'
+                  ? 'Fahrzeuge verkaufen'
+                  : 'Sell vehicles to Autorell',
+              text:
+                activeLocale === 'de'
+                  ? 'Bestand oder Flottenfahrzeuge ohne Konto einreichen.'
+                  : 'Submit stock or fleet vehicles without an account.',
+              icon: CarFront,
+            },
             {
               href: activeLocale === 'de' ? '/vorteile' : '/dealer-benefits',
               label: activeLocale === 'de' ? 'Vorteile für Händler' : 'Dealer benefits',
@@ -817,6 +859,25 @@ export default function PublicHeader({
             >
               {content.cta}
               <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <Link
+              href={
+                activeLocale === 'de'
+                  ? '/fahrzeugbestand-verkaufen'
+                  : activeLocale === 'en'
+                    ? '/sell-stock'
+                    : '/salj-lagerbil'
+              }
+              onClick={() => setOpen(false)}
+              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#9fc7da] bg-white px-5 text-base font-medium text-[#242424]"
+            >
+              {activeLocale === 'de'
+                ? 'Fahrzeugbestand verkaufen'
+                : activeLocale === 'en'
+                  ? 'Sell business vehicles'
+                  : 'Sälj företagsfordon'}
+              <Building2 className="h-5 w-5 text-[#397b9f]" />
             </Link>
 
             <Link

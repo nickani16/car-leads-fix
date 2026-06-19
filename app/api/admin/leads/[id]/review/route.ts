@@ -65,16 +65,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Lead not found.' }, { status: 404 })
   }
 
-  if (
-    action === 'approve' &&
-    (!Number.isFinite(selectedPurchasePrice) || selectedPurchasePrice <= 0)
-  ) {
-    return NextResponse.json(
-      { error: 'Enter the price Autorell will pay the seller.' },
-      { status: 400 }
-    )
-  }
-
   const selectedSalePrice =
     selectedSaleFormat === 'marketplace'
       ? selectedBuyNowPrice
@@ -82,7 +72,10 @@ export async function PATCH(
   const requiredMargin = Math.max(1500, selectedSalePrice * 0.05)
   if (
     action === 'approve' &&
-    (!Number.isFinite(selectedSalePrice) ||
+    selectedSaleFormat === 'marketplace' &&
+    (!Number.isFinite(selectedPurchasePrice) ||
+      selectedPurchasePrice <= 0 ||
+      !Number.isFinite(selectedSalePrice) ||
       selectedSalePrice <= 0 ||
       selectedSalePrice - selectedPurchasePrice < requiredMargin)
   ) {
@@ -177,7 +170,10 @@ export async function PATCH(
     .from('leads')
     .update({
       status: 'Active',
-      autorell_purchase_price: selectedPurchasePrice,
+      autorell_purchase_price:
+        Number.isFinite(selectedPurchasePrice) && selectedPurchasePrice > 0
+          ? selectedPurchasePrice
+          : null,
       sale_format: selectedSaleFormat,
       buy_now_price:
         selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,
