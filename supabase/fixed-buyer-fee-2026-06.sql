@@ -1,10 +1,6 @@
--- Update standard Autorell buyer pricing.
--- Run in Supabase SQL Editor before relying on the new fee schedule in production.
+-- Lower the buyer fee without changing the existing managed auction workflow.
 
 begin;
-
-alter table public.deals
-  alter column export_document_fee set default 149;
 
 create or replace function public.apply_autorell_deal_pricing()
 returns trigger
@@ -45,7 +41,10 @@ begin
     'Autorell Verified Inspection'
   );
   new.export_document_fee := coalesce(new.export_document_fee, 149);
-  new.transport_fee := greatest(coalesce(new.transport_fee, 0), v_minimum_transport);
+  new.transport_fee := greatest(
+    coalesce(new.transport_fee, 0),
+    v_minimum_transport
+  );
   new.transport_supplier_cost := coalesce(
     new.transport_supplier_cost,
     v_estimated_supplier_cost
@@ -66,13 +65,18 @@ begin
 end;
 $$;
 
--- Refresh non-finalized deals so review screens and new contract drafts use the new standard.
 update public.deals d
 set
   commission_amount = 399,
   inspection_fee = coalesce(d.inspection_fee, 249),
-  export_document_fee = 149,
   transport_fee = greatest(coalesce(d.transport_fee, 0), 850),
+  export_document_fee = coalesce(d.export_document_fee, 149),
+  buyer_total_amount =
+    coalesce(d.winning_bid_amount, 0)
+    + 399
+    + coalesce(d.inspection_fee, 249)
+    + greatest(coalesce(d.transport_fee, 0), 850)
+    + coalesce(d.export_document_fee, 149),
   updated_at = now()
 where not exists (
   select 1
@@ -81,3 +85,15 @@ where not exists (
 );
 
 commit;
+
+select
+  id,
+  winning_bid_amount,
+  commission_amount,
+  inspection_fee,
+  transport_fee,
+  export_document_fee,
+  buyer_total_amount
+from public.deals
+order by created_at desc
+limit 20;

@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
+  ShoppingCart,
   SlidersHorizontal,
   TrendingUp,
   Users,
@@ -26,6 +27,13 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
+import {
+  AUTORELL_BUYER_FEE,
+  AUTORELL_ESTIMATED_TRANSPORT_FEE,
+  AUTORELL_EXPORT_DOCUMENT_FEE,
+  AUTORELL_INSPECTION_FEE,
+  calculateEstimatedBuyerTotal,
+} from '@/lib/deal-pricing'
 
 type Lead = {
   id: string
@@ -73,6 +81,8 @@ type Lead = {
   equipment_translation_pending?: boolean
   images?: string[]
   status?: string
+  sale_format?: 'auction' | 'marketplace'
+  buy_now_price?: number | string | null
 }
 
 type Dealer = {
@@ -105,12 +115,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   month: 'short',
   year: 'numeric',
 })
-
-const BUYER_FEE_PERCENT = 0.05
-const MINIMUM_BUYER_FEE = 950
-const VERIFIED_INSPECTION_FEE = 249
-const ESTIMATED_TRANSPORT_FEE = 850
-const EXPORT_DOCUMENT_FEE = 149
 
 const inspectionChecklist = [
   'Vehicle identity, VIN and registration details',
@@ -197,7 +201,9 @@ export default function DealerPage() {
   const [activeImage, setActiveImage] = useState<string | null>(null)
   const [bid, setBid] = useState('')
   const [search, setSearch] = useState('')
-  const [auctionView, setAuctionView] = useState<'active' | 'closed'>('active')
+  const [auctionView, setAuctionView] = useState<
+    'active' | 'marketplace' | 'closed'
+  >('active')
   const [countryFilter, setCountryFilter] = useState('')
   const [makeFilter, setMakeFilter] = useState('')
   const [fuelFilter, setFuelFilter] = useState('')
@@ -211,6 +217,7 @@ export default function DealerPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [submittingBid, setSubmittingBid] = useState(false)
+  const [buyingNow, setBuyingNow] = useState(false)
   const [bidTermsAccepted, setBidTermsAccepted] = useState(false)
   const [inspectionDetailsOpen, setInspectionDetailsOpen] = useState(false)
   const [portalError, setPortalError] = useState('')
@@ -250,7 +257,7 @@ export default function DealerPage() {
       supabase
         .from('dealer_leads')
         .select(
-          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,auction_ends_at,listing_plan,listing_priority,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status'
+          'id,reg,make,model,variant,model_year,first_registration,vin,body_type,fuel_type,drivetrain,power_hp,engine_size,color,miles,created_at,auction_ends_at,listing_plan,listing_priority,source,pickup_city,pickup_postal_code,sellTime,owners,service,damage,damage_description,damage_translation_pending,brakes,importCar,inspection_valid_until,keys_count,gearbox,tires,tireset,towbar,warnings,is_driveable,has_engine_transmission_issues,has_fluid_leaks,has_serious_collision_damage,equipment,equipment_translation_pending,images,status,sale_format,buy_now_price'
         )
         .order('created_at', { ascending: false }),
       supabase
@@ -335,7 +342,12 @@ export default function DealerPage() {
         now,
         lead.auction_ends_at
       )
-      const matchesView = auctionView === 'active' && !closed
+      const matchesView =
+        auctionView === 'active'
+          ? lead.sale_format !== 'marketplace' && !closed
+          : auctionView === 'marketplace'
+            ? lead.sale_format === 'marketplace' && !closed
+            : closed
       const matchesSearch =
         !query ||
         [
@@ -447,7 +459,14 @@ export default function DealerPage() {
   }
 
   const activeAuctionCount = leads.filter(
-    (lead) => !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
+    (lead) =>
+      lead.sale_format !== 'marketplace' &&
+      !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
+  ).length
+  const marketplaceCount = leads.filter(
+    (lead) =>
+      lead.sale_format === 'marketplace' &&
+      !isBiddingClosed(lead.created_at, now, lead.auction_ends_at)
   ).length
   const myBids = allBids.filter((item) => item.dealer_id === currentUserId)
   const myLeadIds = new Set(myBids.map((item) => item.lead_id))
@@ -558,21 +577,51 @@ export default function DealerPage() {
     setSubmittingBid(false)
   }
 
+  async function submitMarketplacePurchase() {
+    if (!selectedLead) return
+    if (!bidTermsAccepted) {
+      setBidError('Confirm the binding purchase terms before continuing.')
+      return
+    }
+
+    setBuyingNow(true)
+    setBidError('')
+
+    const response = await fetch('/api/marketplace/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leadId: selectedLead.id,
+        termsAccepted: bidTermsAccepted,
+      }),
+    })
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string
+    }
+
+    if (!response.ok) {
+      setBidError(result.error || 'The vehicle could not be purchased.')
+      setBuyingNow(false)
+      return
+    }
+
+    setSelectedLead(null)
+    setBidTermsAccepted(false)
+    setBuyingNow(false)
+    await fetchPortalData(true)
+  }
+
   const enteredBidAmount = Number(bid)
   const validBidAmount =
     Number.isFinite(enteredBidAmount) && enteredBidAmount > 0
       ? enteredBidAmount
       : 0
-  const estimatedBuyerFee = validBidAmount
-    ? Math.max(MINIMUM_BUYER_FEE, validBidAmount * BUYER_FEE_PERCENT)
-    : 0
-  const estimatedBuyerTotal = validBidAmount
-    ? validBidAmount +
-      estimatedBuyerFee +
-      VERIFIED_INSPECTION_FEE +
-      ESTIMATED_TRANSPORT_FEE +
-      EXPORT_DOCUMENT_FEE
-    : 0
+  const estimatedBuyerFee = validBidAmount ? AUTORELL_BUYER_FEE : 0
+  const estimatedBuyerTotal = calculateEstimatedBuyerTotal(validBidAmount)
+  const marketplaceVehiclePrice = Number(selectedLead?.buy_now_price || 0)
+  const marketplaceBuyerTotal = calculateEstimatedBuyerTotal(
+    marketplaceVehiclePrice
+  )
 
   return (
     <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
@@ -647,11 +696,13 @@ export default function DealerPage() {
             <div>
               <h2 className="text-lg font-bold">
                 {auctionView === 'active'
-                  ? 'Live marketplace'
-                  : 'Autorell transaction archive'}
+                  ? 'Live auctions'
+                  : auctionView === 'marketplace'
+                    ? 'Fixed-price marketplace'
+                    : 'Autorell transaction archive'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {auctionView === 'active'
+                {auctionView !== 'closed'
                   ? `${filteredLeads.length} vehicle${
                       filteredLeads.length === 1 ? '' : 's'
                     } shown`
@@ -674,6 +725,17 @@ export default function DealerPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setAuctionView('marketplace')}
+                  className={`flex-1 rounded-full px-4 py-2 text-sm font-normal transition sm:flex-none ${
+                    auctionView === 'marketplace'
+                      ? 'bg-[#B4D9EF] text-[#242424] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Marketplace ({marketplaceCount})
+                </button>
+                <button
+                  type="button"
                   onClick={() => setAuctionView('closed')}
                   className={`flex-1 rounded-full px-4 py-2 text-sm font-normal transition sm:flex-none ${
                     auctionView === 'closed'
@@ -685,7 +747,7 @@ export default function DealerPage() {
                 </button>
               </div>
 
-              {auctionView === 'active' && (
+              {auctionView !== 'closed' && (
               <label className="relative block w-full sm:w-80">
                 <Search
                   size={17}
@@ -700,7 +762,7 @@ export default function DealerPage() {
               </label>
               )}
 
-              {auctionView === 'active' && (
+              {auctionView !== 'closed' && (
               <button
                 type="button"
                 onClick={() => setFiltersOpen((open) => !open)}
@@ -722,7 +784,7 @@ export default function DealerPage() {
             </div>
           </div>
 
-          {auctionView === 'active' && filtersOpen && (
+          {auctionView !== 'closed' && filtersOpen && (
             <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-5 sm:px-7">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <FilterSelect
@@ -801,7 +863,7 @@ export default function DealerPage() {
             </div>
           )}
 
-          {auctionView === 'active' && (
+          {auctionView !== 'closed' && (
           <div className="flex gap-2 overflow-x-auto border-b border-slate-100 px-5 py-3 sm:px-7">
             <QuickFilter
               active={
@@ -916,7 +978,7 @@ export default function DealerPage() {
               <div>
                 <CarFront size={34} className="mx-auto mb-3 text-slate-300" />
                 <h3 className="font-semibold text-slate-700">
-                  No active auctions
+                  No active {auctionView === 'marketplace' ? 'marketplace vehicles' : 'auctions'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
@@ -930,9 +992,9 @@ export default function DealerPage() {
               <div className="hidden grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr_auto] gap-5 border-b border-slate-100 bg-slate-50/70 px-7 py-3 text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 lg:grid">
                 <span>Vehicle</span>
                 <span>Location</span>
-                <span>Highest bid</span>
+                <span>{auctionView === 'marketplace' ? 'Vehicle price' : 'Highest bid'}</span>
                 <span>Submitted</span>
-                <span>Auction</span>
+                <span>{auctionView === 'marketplace' ? 'Listing' : 'Auction'}</span>
                 <span>Action</span>
               </div>
 
@@ -997,13 +1059,23 @@ export default function DealerPage() {
 
                       <div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 lg:hidden">
-                          Highest bid
+                          {lead.sale_format === 'marketplace'
+                            ? 'Vehicle price'
+                            : 'Highest bid'}
                         </p>
                         <p className="mt-1 font-bold text-slate-900 lg:mt-0">
-                          {highestBid ? moneyFormatter.format(highestBid) : 'No bids'}
+                          {lead.sale_format === 'marketplace'
+                            ? moneyFormatter.format(Number(lead.buy_now_price || 0))
+                            : highestBid
+                              ? moneyFormatter.format(highestBid)
+                              : 'No bids'}
                         </p>
                         <p className="mt-1 text-xs text-slate-400">
-                          {leadBids.length} {leadBids.length === 1 ? 'bid' : 'bids'}
+                          {lead.sale_format === 'marketplace'
+                            ? 'Fixed price'
+                            : `${leadBids.length} ${
+                                leadBids.length === 1 ? 'bid' : 'bids'
+                              }`}
                         </p>
                       </div>
 
@@ -1050,7 +1122,11 @@ export default function DealerPage() {
                             : 'bg-[#B4D9EF] text-[#202124] ring-1 ring-[#92c4df] hover:bg-[#c9e6f6]'
                         }`}
                       >
-                        {closed ? 'View result' : 'Bid now'}
+                        {closed
+                          ? 'View result'
+                          : lead.sale_format === 'marketplace'
+                            ? 'Buy now'
+                            : 'Bid now'}
                         <ArrowRight size={15} />
                       </button>
                     </article>
@@ -1352,24 +1428,117 @@ export default function DealerPage() {
               <aside className="bg-[#f8fbfd] p-5 sm:p-7">
                 <div className="mb-6 rounded-[18px] border border-[#deddd7] bg-[#242424] p-5 text-white shadow-lg shadow-slate-900/10">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-                    Current highest bid
+                    {selectedLead.sale_format === 'marketplace'
+                      ? 'Fixed vehicle price'
+                      : 'Current highest bid'}
                   </p>
                   <p className="mt-2 text-3xl font-bold">
-                    {getHighestBid(selectedLead.id)
-                      ? moneyFormatter.format(getHighestBid(selectedLead.id)!)
-                      : 'No bids yet'}
+                    {selectedLead.sale_format === 'marketplace'
+                      ? moneyFormatter.format(marketplaceVehiclePrice)
+                      : getHighestBid(selectedLead.id)
+                        ? moneyFormatter.format(getHighestBid(selectedLead.id)!)
+                        : 'No bids yet'}
                   </p>
                   <p className="mt-2 text-xs text-slate-400">
-                    {selectedBids.length} competitive{' '}
-                    {selectedBids.length === 1 ? 'bid' : 'bids'}
+                    {selectedLead.sale_format === 'marketplace'
+                      ? 'Binding purchase, subject to the managed completion process'
+                      : `${selectedBids.length} competitive ${
+                          selectedBids.length === 1 ? 'bid' : 'bids'
+                        }`}
                   </p>
                 </div>
+
+                {selectedLead.sale_format === 'marketplace' &&
+                  !isBiddingClosed(
+                    selectedLead.created_at,
+                    now,
+                    selectedLead.auction_ends_at
+                  ) && (
+                    <div className="mb-7 rounded-[18px] border border-[#b8dced] bg-white p-4 shadow-[0_18px_45px_rgba(32,33,36,.09)] ring-4 ring-[#B4D9EF]/20 sm:p-5">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6f9fba]">
+                        Marketplace purchase
+                      </p>
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-[#202124]">
+                        Buy at the displayed price
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-500">
+                        Your purchase is binding. Autorell then coordinates
+                        seller confirmation, contracts, payment, inspection and
+                        delivery.
+                      </p>
+
+                      <dl className="mt-4 space-y-2 rounded-[14px] border border-[#d7e8f2] bg-[#f8fbfd] px-4 py-4 text-sm">
+                        <BidCostRow
+                          label="Vehicle price"
+                          value={moneyFormatter.format(marketplaceVehiclePrice)}
+                        />
+                        <BidCostRow
+                          label="Autorell buyer fee"
+                          value={moneyFormatter.format(AUTORELL_BUYER_FEE)}
+                        />
+                        <BidCostRow
+                          label="Autorell Verified Inspection"
+                          value={moneyFormatter.format(AUTORELL_INSPECTION_FEE)}
+                        />
+                        <BidCostRow
+                          label="Estimated transport"
+                          value={moneyFormatter.format(
+                            AUTORELL_ESTIMATED_TRANSPORT_FEE
+                          )}
+                        />
+                        <BidCostRow
+                          label="Export & documentation"
+                          value={moneyFormatter.format(
+                            AUTORELL_EXPORT_DOCUMENT_FEE
+                          )}
+                        />
+                        <div className="my-3 border-t border-[#d7e8f2]" />
+                        <BidCostRow
+                          label="Estimated total"
+                          value={moneyFormatter.format(marketplaceBuyerTotal)}
+                          total
+                        />
+                      </dl>
+
+                      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[10px] border border-[#deddd7] bg-white px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={bidTermsAccepted}
+                          onChange={(event) =>
+                            setBidTermsAccepted(event.target.checked)
+                          }
+                          className="mt-0.5 h-4 w-4 accent-[#242424]"
+                        />
+                        <span className="text-xs leading-5 text-[#52616b]">
+                          I accept the binding purchase, dealer terms and buyer
+                          fee policy.
+                        </span>
+                      </label>
+
+                      {bidError && (
+                        <p className="mt-3 rounded-[5px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                          {bidError}
+                        </p>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={submitMarketplacePurchase}
+                        disabled={buyingNow || !bidTermsAccepted}
+                        className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#242424] px-4 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(32,33,36,.24)] transition hover:-translate-y-0.5 hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <ShoppingCart size={17} />
+                        {buyingNow ? 'Securing vehicle...' : 'Buy vehicle now'}
+                      </button>
+                    </div>
+                  )}
 
                 {!isBiddingClosed(
                   selectedLead.created_at,
                   now,
                   selectedLead.auction_ends_at
-                ) && (
+                ) &&
+                  selectedLead.sale_format !== 'marketplace' && (
                   <div
                     id="dealer-bid-panel"
                     className="mb-7 rounded-[18px] border border-[#b8dced] bg-white p-4 shadow-[0_18px_45px_rgba(32,33,36,.09)] ring-4 ring-[#B4D9EF]/20 sm:p-5"
@@ -1427,7 +1596,7 @@ export default function DealerPage() {
                           value={moneyFormatter.format(validBidAmount)}
                         />
                         <BidCostRow
-                          label="Autorell buyer fee (5%, min. €950)"
+                          label="Autorell buyer fee (fixed)"
                           value={moneyFormatter.format(estimatedBuyerFee)}
                         />
                         <div>
@@ -1455,7 +1624,7 @@ export default function DealerPage() {
                               </button>
                             </dt>
                             <dd className="shrink-0 font-semibold text-[#242424]">
-                              {moneyFormatter.format(VERIFIED_INSPECTION_FEE)}
+                              {moneyFormatter.format(AUTORELL_INSPECTION_FEE)}
                             </dd>
                           </div>
                           {inspectionDetailsOpen && (
@@ -1485,12 +1654,14 @@ export default function DealerPage() {
                               : ''
                           }`}
                           value={moneyFormatter.format(
-                            ESTIMATED_TRANSPORT_FEE
+                            AUTORELL_ESTIMATED_TRANSPORT_FEE
                           )}
                         />
                         <BidCostRow
                           label="Export & documentation"
-                          value={moneyFormatter.format(EXPORT_DOCUMENT_FEE)}
+                          value={moneyFormatter.format(
+                            AUTORELL_EXPORT_DOCUMENT_FEE
+                          )}
                         />
                         <div className="my-3 border-t border-[#deddd7]" />
                         <BidCostRow
@@ -1561,7 +1732,7 @@ export default function DealerPage() {
                   </div>
                 )}
 
-                <section>
+                {selectedLead.sale_format !== 'marketplace' && <section>
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="font-bold">Bid history</h3>
                     <Users size={17} className="text-slate-400" />
@@ -1618,7 +1789,7 @@ export default function DealerPage() {
                       ))}
                     </div>
                   )}
-                </section>
+                </section>}
               </aside>
             </div>
           </div>

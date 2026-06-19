@@ -9,12 +9,28 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { action } = (await request.json()) as {
+  const { action, saleFormat, buyNowPrice } = (await request.json()) as {
     action?: 'approve' | 'reject'
+    saleFormat?: 'auction' | 'marketplace'
+    buyNowPrice?: number | null
   }
 
   if (action !== 'approve' && action !== 'reject') {
     return NextResponse.json({ error: 'Invalid review action.' }, { status: 400 })
+  }
+
+  const selectedSaleFormat =
+    saleFormat === 'marketplace' ? 'marketplace' : 'auction'
+  const selectedBuyNowPrice = Number(buyNowPrice)
+  if (
+    action === 'approve' &&
+    selectedSaleFormat === 'marketplace' &&
+    (!Number.isFinite(selectedBuyNowPrice) || selectedBuyNowPrice <= 0)
+  ) {
+    return NextResponse.json(
+      { error: 'Enter a valid marketplace price.' },
+      { status: 400 }
+    )
   }
 
   const supabase = await createClient()
@@ -130,6 +146,9 @@ export async function PATCH(
     .from('leads')
     .update({
       status: 'Active',
+      sale_format: selectedSaleFormat,
+      buy_now_price:
+        selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,
       auction_starts_at: startsAt.toISOString(),
       auction_ends_at: endsAt.toISOString(),
       auction_closed_at: null,

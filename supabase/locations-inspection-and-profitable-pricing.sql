@@ -56,10 +56,7 @@ begin
     nullif(trim(v_dealer.delivery_postal_code), '')
   );
 
-  new.commission_amount := greatest(
-    round(coalesce(new.winning_bid_amount, 0) * 0.03, 2),
-    750
-  );
+  new.commission_amount := 399;
   new.inspection_fee := coalesce(new.inspection_fee, 249);
   new.inspection_name := coalesce(
     nullif(trim(new.inspection_name), ''),

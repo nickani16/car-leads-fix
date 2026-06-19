@@ -16,6 +16,12 @@ import {
   DEALER_TERMS_EFFECTIVE_DATE,
   DEALER_TERMS_VERSION,
 } from '@/lib/legal'
+import {
+  AUTORELL_BUYER_FEE,
+  AUTORELL_ESTIMATED_TRANSPORT_FEE,
+  AUTORELL_EXPORT_DOCUMENT_FEE,
+  AUTORELL_INSPECTION_FEE,
+} from '@/lib/deal-pricing'
 
 const sections = [
   { href: '#dealer-terms', label: 'Dealer Terms' },
@@ -137,6 +143,7 @@ export default function DealerLegalPage() {
               items={[
                 'Bids cannot be edited, reduced or deleted after submission.',
                 'The highest valid bid at closing becomes the provisional winning bid. If equal bids exist, the earliest valid bid takes priority.',
+                'A Marketplace “Buy now” action is a binding purchase offer at the displayed fixed vehicle price. The vehicle is immediately removed from live availability while Autorell coordinates seller confirmation and completion.',
                 'The seller may accept or reject the provisional winning bid. No sale is completed merely because an auction closes.',
                 'The winning bid remains binding for 48 hours after auction closing unless a different period is shown before bidding.',
                 'After seller acceptance, the dealer must complete requested verification, sign the transaction documents and transfer the complete confirmed buyer total to Autorell within three business days of the payment instruction, unless the signed transaction documents state another deadline.',
@@ -158,14 +165,26 @@ export default function DealerLegalPage() {
             </p>
             <div className="my-6 overflow-hidden rounded-[16px] border border-[#d7e8f2]">
               <PriceRow label="Winning bid" value="Example: €20,000" />
-              <PriceRow label="Autorell buyer fee" value="5%, minimum €950" />
-              <PriceRow label="Autorell Verified Inspection" value="€249" />
-              <PriceRow label="Transport estimate" value="From €850" />
-              <PriceRow label="Export & documentation" value="€149" />
+              <PriceRow
+                label="Autorell buyer fee"
+                value={`Fixed €${AUTORELL_BUYER_FEE}`}
+              />
+              <PriceRow
+                label="Autorell Verified Inspection"
+                value={`€${AUTORELL_INSPECTION_FEE}`}
+              />
+              <PriceRow
+                label="Transport estimate"
+                value={`From €${AUTORELL_ESTIMATED_TRANSPORT_FEE}`}
+              />
+              <PriceRow
+                label="Export & documentation"
+                value={`€${AUTORELL_EXPORT_DOCUMENT_FEE}`}
+              />
             </div>
             <RuleList
               items={[
-                'The buyer fee is calculated as the greater of 5% of the winning bid or €950.',
+                `The standard Autorell buyer fee is a fixed €${AUTORELL_BUYER_FEE} per completed transaction.`,
                 'The bidding interface displays an estimated buyer total before submission.',
                 'Transport is initially estimated from €850 and is confirmed according to the exact collection city, delivery city, vehicle dimensions, accessibility and carrier availability.',
                 'The €149 documentation charge covers standard transaction and Swedish export administration. Government, customs, tax, registration or exceptional third-party charges may be additional.',

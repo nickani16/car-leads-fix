@@ -87,6 +87,14 @@ export default async function AdminLeadDetailPage({
           label={highestBid ? `Highest bid €${highestBid.toLocaleString()}` : 'No bids'}
           tone={highestBid ? 'green' : 'amber'}
         />
+        <Badge
+          label={
+            lead.sale_format === 'marketplace'
+              ? `Marketplace €${Number(lead.buy_now_price || 0).toLocaleString()}`
+              : 'Auction'
+          }
+          tone={lead.sale_format === 'marketplace' ? 'blue' : 'gray'}
+        />
         {deal && <Badge label={`Deal: ${deal.status}`} tone="blue" />}
       </div>
 
