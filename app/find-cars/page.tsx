@@ -131,7 +131,10 @@ export default async function FindCarsPage() {
       originCountry: normalizeCountry(lead.origin_country || lead.source),
       saleFormat:
         lead.sale_format === 'marketplace' ? 'marketplace' : 'auction',
-      image: typeof images[0] === 'string' ? images[0] : null,
+      image:
+        typeof images[0] === 'string'
+          ? `/api/public/vehicle-image/${lead.id}`
+          : null,
     }
   })
 

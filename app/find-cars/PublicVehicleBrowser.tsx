@@ -246,7 +246,7 @@ export default function PublicVehicleBrowser({
           </div>
 
           {filteredVehicles.length ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4 xl:gap-5">
               {filteredVehicles.map((vehicle) => (
                 <article
                   key={vehicle.id}
@@ -259,7 +259,7 @@ export default function PublicVehicleBrowser({
                         alt={`${vehicle.make || 'Vehicle'} ${vehicle.model || ''}`}
                         fill
                         unoptimized
-                        className="scale-125 object-cover blur-[18px] saturate-50 transition duration-500 group-hover:scale-[1.3] sm:blur-[22px]"
+                        className="scale-[1.04] object-cover transition duration-500 group-hover:scale-[1.08]"
                       />
                     ) : (
                       <div className="grid h-full place-items-center text-[#92a0a7]">
@@ -390,7 +390,7 @@ export default function PublicVehicleBrowser({
                     alt={`${selectedVehicle.make || 'Vehicle'} ${selectedVehicle.model || ''}`}
                     fill
                     unoptimized
-                    className="scale-125 object-cover blur-[24px] saturate-50"
+                    className="scale-[1.04] object-cover"
                   />
                 ) : (
                   <div className="grid h-full place-items-center text-[#92a0a7]">
