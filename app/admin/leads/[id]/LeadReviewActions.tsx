@@ -7,17 +7,28 @@ import { useRouter } from 'next/navigation'
 export default function LeadReviewActions({
   leadId,
   status,
+  initialSaleFormat,
+  initialBuyNowPrice,
+  initialReservePrice,
 }: {
   leadId: string
   status: string | null
+  initialSaleFormat?: 'auction' | 'marketplace' | null
+  initialBuyNowPrice?: number | string | null
+  initialReservePrice?: number | string | null
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
   const [error, setError] = useState('')
   const [saleFormat, setSaleFormat] = useState<'auction' | 'marketplace'>(
-    'auction'
+    initialSaleFormat === 'marketplace' ? 'marketplace' : 'auction'
   )
-  const [buyNowPrice, setBuyNowPrice] = useState('')
+  const [buyNowPrice, setBuyNowPrice] = useState(
+    initialBuyNowPrice ? String(initialBuyNowPrice) : ''
+  )
+  const [reservePrice, setReservePrice] = useState(
+    initialReservePrice ? String(initialReservePrice) : ''
+  )
 
   if (status !== 'Pending review') return null
 
@@ -43,6 +54,8 @@ export default function LeadReviewActions({
           saleFormat,
           buyNowPrice:
             saleFormat === 'marketplace' ? marketplacePrice : null,
+          reservePrice:
+            saleFormat === 'auction' ? Number(reservePrice) || null : null,
         }),
       })
       const result = (await response.json()) as { error?: string }
@@ -116,6 +129,22 @@ export default function LeadReviewActions({
             value={buyNowPrice}
             onChange={(event) => setBuyNowPrice(event.target.value)}
             placeholder="Example: 20000"
+            className="h-12 w-full rounded-[14px] border border-[#9bc9e4] bg-white px-4 text-sm outline-none focus:border-[#397b9f] focus:ring-4 focus:ring-[#B4D9EF]/35"
+          />
+        </label>
+      )}
+      {saleFormat === 'auction' && (
+        <label className="mt-4 block max-w-sm">
+          <span className="mb-2 block text-xs font-semibold text-[#617681]">
+            Seller reserve price in EUR
+          </span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            value={reservePrice}
+            onChange={(event) => setReservePrice(event.target.value)}
+            placeholder="Optional for private seller leads"
             className="h-12 w-full rounded-[14px] border border-[#9bc9e4] bg-white px-4 text-sm outline-none focus:border-[#397b9f] focus:ring-4 focus:ring-[#B4D9EF]/35"
           />
         </label>

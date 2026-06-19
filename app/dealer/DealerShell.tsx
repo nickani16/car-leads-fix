@@ -5,10 +5,12 @@ import { usePathname } from 'next/navigation'
 import {
   BarChart3,
   Building2,
+  CarFront,
   FileText,
   Gavel,
   HelpCircle,
   Menu,
+  PlusCircle,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -24,6 +26,8 @@ type DealerInfo = {
 
 const navigation = [
   { href: '/dealer', label: 'Marketplace', icon: Gavel },
+  { href: '/dealer/sell', label: 'Sell vehicle', icon: PlusCircle },
+  { href: '/dealer/sales', label: 'My sales', icon: CarFront },
   { href: '/dealer/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dealer/support', label: 'Support', icon: HelpCircle },
   { href: '/dealer/profile', label: 'Profile', icon: Building2 },

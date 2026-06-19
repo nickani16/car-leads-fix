@@ -9,10 +9,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { action, saleFormat, buyNowPrice } = (await request.json()) as {
+  const { action, saleFormat, buyNowPrice, reservePrice } =
+    (await request.json()) as {
     action?: 'approve' | 'reject'
     saleFormat?: 'auction' | 'marketplace'
     buyNowPrice?: number | null
+    reservePrice?: number | null
   }
 
   if (action !== 'approve' && action !== 'reject') {
@@ -22,6 +24,7 @@ export async function PATCH(
   const selectedSaleFormat =
     saleFormat === 'marketplace' ? 'marketplace' : 'auction'
   const selectedBuyNowPrice = Number(buyNowPrice)
+  const selectedReservePrice = Number(reservePrice)
   if (
     action === 'approve' &&
     selectedSaleFormat === 'marketplace' &&
@@ -149,6 +152,12 @@ export async function PATCH(
       sale_format: selectedSaleFormat,
       buy_now_price:
         selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,
+      reserve_price:
+        selectedSaleFormat === 'auction' &&
+        Number.isFinite(selectedReservePrice) &&
+        selectedReservePrice > 0
+          ? selectedReservePrice
+          : null,
       auction_starts_at: startsAt.toISOString(),
       auction_ends_at: endsAt.toISOString(),
       auction_closed_at: null,

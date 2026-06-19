@@ -45,7 +45,13 @@ export default async function AdminLeadDetailPage({
         backHref="/admin/leads"
       />
 
-      <LeadReviewActions leadId={lead.id} status={lead.status} />
+      <LeadReviewActions
+        leadId={lead.id}
+        status={lead.status}
+        initialSaleFormat={lead.sale_format}
+        initialBuyNowPrice={lead.buy_now_price}
+        initialReservePrice={lead.reserve_price}
+      />
 
       <LeadLocationForm
         leadId={lead.id}
@@ -106,6 +112,12 @@ export default async function AdminLeadDetailPage({
                 { label: 'Email', value: lead.email },
                 { label: 'Phone', value: lead.phone },
                 { label: 'Sell timing', value: lead.sellTime },
+                {
+                  label: 'Seller type',
+                  value: lead.seller_dealer_id
+                    ? 'Approved dealer'
+                    : 'Private seller',
+                },
                 {
                   label: 'Submitted',
                   value: formatStockholmTimestamp(lead.created_at),
