@@ -279,6 +279,59 @@ export default async function EuBuyerPage({ params }: RouteProps) {
             aria-label="Dealer navigation"
             className="flex items-center gap-2 sm:gap-4"
           >
+            <details className="group/markets relative">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-[#d4dddf] bg-white/82 px-3 text-sm font-medium text-[#40565f] [&::-webkit-details-marker]:hidden">
+                <span className="text-lg" aria-hidden="true">
+                  {market.flag}
+                </span>
+                <span className="hidden md:inline">{market.countryLocal}</span>
+                <Globe2 className="h-4 w-4 text-[#648391]" />
+              </summary>
+              <div className="absolute right-0 top-full z-40 w-[min(680px,calc(100vw-32px))] pt-3">
+                <div className="rounded-[20px] border border-[#d8e1e4] bg-white p-3 shadow-[0_28px_80px_rgba(32,39,43,.18)]">
+                  <p className="px-3 pb-3 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7b898f]">
+                    European dealer markets
+                  </p>
+                  <div className="grid max-h-[390px] gap-1 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+                    <a
+                      href="https://www.autorell.se/?market=sv"
+                      className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 hover:bg-[#f2f6f7]"
+                    >
+                      <span className="text-xl">🇸🇪</span>
+                      <span className="text-sm font-medium">Sverige</span>
+                    </a>
+                    <a
+                      href="https://www.autorell.de/?market=de"
+                      className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 hover:bg-[#f2f6f7]"
+                    >
+                      <span className="text-xl">🇩🇪</span>
+                      <span className="text-sm font-medium">Deutschland</span>
+                    </a>
+                    {euBuyerMarkets.map((item) => (
+                      <a
+                        key={item.code}
+                        href={`https://www.autorell.com/${item.code}?market=${item.code}`}
+                        className={`flex items-center gap-3 rounded-[12px] px-3 py-2.5 hover:bg-[#f2f6f7] ${
+                          item.code === market.code ? 'bg-[#edf6fa]' : ''
+                        }`}
+                      >
+                        <span className="text-xl" aria-hidden="true">
+                          {item.flag}
+                        </span>
+                        <span className="min-w-0">
+                          <strong className="block truncate text-sm font-medium">
+                            {item.countryLocal}
+                          </strong>
+                          <span className="block text-[10px] text-[#7a878d]">
+                            {item.country}
+                          </span>
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </details>
             <Link
               href="/dealer"
               className="hidden text-sm font-medium text-[#4f6168] transition hover:text-black sm:block"

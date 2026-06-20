@@ -127,16 +127,44 @@ function redirectToHost(
   return NextResponse.redirect(url, status)
 }
 
-function redirectToMarket(request: NextRequest, market: Market) {
+function isMarketSelection(value: string | null): value is string {
+  return Boolean(
+    value &&
+      (value === 'sv' ||
+        value === 'de' ||
+        value === 'en' ||
+        EU_BUYER_MARKET_CODES.has(value)),
+  )
+}
+
+function redirectToMarket(request: NextRequest, market: string) {
   const hostname = getHostname(request)
-  const targetHostname = MARKET_HOSTS[market]
+  const isEuropeanCountry = EU_BUYER_MARKET_CODES.has(market)
+  const targetHostname = isEuropeanCountry
+    ? MARKET_HOSTS.en
+    : MARKET_HOSTS[market as Market]
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
   url.hostname = targetHostname
   url.port = ''
+  url.pathname = isEuropeanCountry ? `/${market}` : '/'
 
   if (hostname !== targetHostname) {
+    url.searchParams.set('market', market)
     return NextResponse.redirect(url, 307)
+  }
+
+  if (request.nextUrl.pathname !== url.pathname) {
+    url.searchParams.delete('market')
+    const response = NextResponse.redirect(url, 307)
+    response.cookies.set('autorell-market', market, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+      sameSite: 'lax',
+      secure: true,
+    })
+    return response
   }
 
   url.searchParams.delete('market')
@@ -152,22 +180,20 @@ function redirectToMarket(request: NextRequest, market: Market) {
   return response
 }
 
-function getPreferredMarket(request: NextRequest): Market | null {
+function getPreferredMarket(request: NextRequest): string | null {
   const preferredMarket = request.cookies.get('autorell-market')?.value
 
-  return preferredMarket === 'sv' ||
-    preferredMarket === 'de' ||
-    preferredMarket === 'en'
-    ? preferredMarket
-    : null
+  return isMarketSelection(preferredMarket || null) ? preferredMarket! : null
 }
 
-function getCountryMarket(request: NextRequest): Market | null {
+function getCountryMarket(request: NextRequest): string | null {
   const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
 
   if (!country) return null
   if (country === 'SE') return 'sv'
   if (country === 'DE') return 'de'
+  const euMarket = country.toLowerCase()
+  if (EU_BUYER_MARKET_CODES.has(euMarket)) return euMarket
   return 'en'
 }
 
@@ -176,12 +202,7 @@ export function proxy(request: NextRequest) {
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
   const selectedMarket = request.nextUrl.searchParams.get('market')
 
-  if (
-    methodCanRedirect &&
-    (selectedMarket === 'sv' ||
-      selectedMarket === 'de' ||
-      selectedMarket === 'en')
-  ) {
+  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
     return redirectToMarket(request, selectedMarket)
   }
 
@@ -195,6 +216,28 @@ export function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   const currentMarket = MARKET_BY_HOST[hostname]
+  const preferredMarket = getPreferredMarket(request)
+  const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
+    request.headers.get('user-agent') || '',
+  )
+  const countryMarket = isSearchCrawler ? null : getCountryMarket(request)
+  const targetMarket = preferredMarket || countryMarket
+
+  if (
+    methodCanRedirect &&
+    targetMarket &&
+    EU_BUYER_MARKET_CODES.has(targetMarket) &&
+    (hostname !== MARKET_HOSTS.en ||
+      !pathname.startsWith(`/${targetMarket}`))
+  ) {
+    const url = request.nextUrl.clone()
+    url.protocol = 'https:'
+    url.hostname = MARKET_HOSTS.en
+    url.port = ''
+    url.pathname = `/${targetMarket}`
+    url.search = ''
+    return NextResponse.redirect(url, 307)
+  }
 
   if (methodCanRedirect && (currentMarket === 'sv' || currentMarket === 'de')) {
     const legacyTarget = LEGACY_CORE_ROUTES[currentMarket].get(pathname)
@@ -299,19 +342,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const preferredMarket = getPreferredMarket(request)
-  const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
-    request.headers.get('user-agent') || '',
-  )
-  const countryMarket = isSearchCrawler ? null : getCountryMarket(request)
-  const targetMarket = preferredMarket || countryMarket
-
   if (
     currentMarket &&
     targetMarket &&
+    (targetMarket === 'sv' ||
+      targetMarket === 'de' ||
+      targetMarket === 'en') &&
     targetMarket !== currentMarket
   ) {
-    return redirectToHost(request, MARKET_HOSTS[targetMarket], 307)
+    return redirectToHost(request, MARKET_HOSTS[targetMarket as Market], 307)
   }
 
   if (hostname === 'www.autorell.com') {

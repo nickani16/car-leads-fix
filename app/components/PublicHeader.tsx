@@ -28,6 +28,7 @@ import {
 } from 'react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
 type PublicHeaderProps = {
   transparentAtTop?: boolean
@@ -687,7 +688,11 @@ export default function PublicHeader({
                   <ChevronDown className="h-3.5 w-3.5 transition group-open/language:rotate-180" />
                 </summary>
 
-                <div className="absolute right-0 top-full z-20 w-[238px] pt-3">
+                <div
+                  className={`absolute right-0 top-full z-20 pt-3 ${
+                    activeLocale === 'en' ? 'w-[min(680px,calc(100vw-32px))]' : 'w-[238px]'
+                  }`}
+                >
                   <div className="overflow-hidden rounded-[18px] border border-[#d9e1e5] bg-white p-2 text-[#202124] shadow-[0_22px_60px_rgba(32,33,36,.18)]">
                     <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
                       {marketCopy.selector}
@@ -714,6 +719,35 @@ export default function PublicHeader({
                         </span>
                       </a>
                     ))}
+                    {activeLocale === 'en' && (
+                      <>
+                        <div className="mx-3 my-2 border-t border-[#e4e8e9]" />
+                        <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
+                          European dealer markets
+                        </p>
+                        <div className="grid max-h-[360px] gap-1 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+                          {euBuyerMarkets.map((market) => (
+                            <a
+                              key={market.code}
+                              href={`https://www.autorell.com/${market.code}?market=${market.code}`}
+                              className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 transition hover:bg-[#f2f6f7]"
+                            >
+                              <span className="text-xl" aria-hidden="true">
+                                {market.flag}
+                              </span>
+                              <span className="min-w-0">
+                                <strong className="block truncate text-sm font-medium">
+                                  {market.countryLocal}
+                                </strong>
+                                <span className="block text-[10px] text-[#7a878d]">
+                                  {market.country}
+                                </span>
+                              </span>
+                            </a>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </details>
@@ -928,6 +962,27 @@ export default function PublicHeader({
                   </a>
                 ))}
               </div>
+              {activeLocale === 'en' && (
+                <div className="mt-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
+                    European dealer markets
+                  </p>
+                  <div className="mt-3 grid max-h-[320px] grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
+                    {euBuyerMarkets.map((market) => (
+                      <a
+                        key={market.code}
+                        href={`https://www.autorell.com/${market.code}?market=${market.code}`}
+                        className="flex min-h-12 items-center gap-2 rounded-[12px] border border-[#dcdad3] bg-white px-3 text-sm text-[#4d5b61]"
+                      >
+                        <span className="text-lg" aria-hidden="true">
+                          {market.flag}
+                        </span>
+                        <span className="truncate">{market.countryLocal}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-5 flex items-center justify-between border-t border-[#dcdad3] pt-5">
                 <SocialIcons />

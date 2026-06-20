@@ -82,21 +82,21 @@ export default function BusinessDealerShowcase() {
           </span>
         </header>
 
-        <div className="relative min-h-[430px] overflow-hidden bg-[#edf1f2] p-3 sm:p-5">
+        <div className="relative overflow-hidden bg-[#edf1f2] p-3 sm:p-5">
           <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#b4d9ef]/55 blur-3xl" />
           <div className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-white blur-3xl" />
 
           <div
             key={active}
-            className="relative animate-[home-signal-card_.6s_ease-out_both]"
+            className="relative min-h-[360px] animate-[home-signal-card_.6s_ease-out_both] sm:min-h-[390px]"
           >
             {active === 0 ? <InventoryScene /> : null}
             {active === 1 ? <BiddingScene /> : null}
             {active === 2 ? <AnalyticsScene /> : null}
           </div>
 
-          <div className="absolute inset-x-3 bottom-3 rounded-[18px] border border-white/80 bg-white/90 p-4 shadow-[0_18px_50px_rgba(34,47,53,.14)] backdrop-blur-xl sm:inset-x-5 sm:bottom-5 sm:p-5">
-            <div className="flex items-end justify-between gap-5">
+          <div className="relative mt-3 rounded-[18px] border border-white/90 bg-white p-4 shadow-[0_18px_50px_rgba(34,47,53,.12)] sm:p-5">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div key={`copy-${active}`}>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#628092]">
                   0{active + 1} · {scenes[active].label}
@@ -108,7 +108,7 @@ export default function BusinessDealerShowcase() {
                   {scenes[active].description}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => move(-1)}
