@@ -10,6 +10,17 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 
+const buyCarLabels: Record<PublicLocale, string> = {
+  sv: 'Köp bil', de: 'Fahrzeuge kaufen', en: 'Buy cars',
+  fr: 'Acheter des véhicules', es: 'Comprar vehículos',
+  it: 'Acquista veicoli', pl: 'Kup pojazdy', nl: 'Voertuigen kopen',
+  pt: 'Comprar veículos', fi: 'Osta ajoneuvoja', da: 'Køb køretøjer',
+  cs: 'Koupit vozidla', ro: 'Cumpără vehicule', bg: 'Купи автомобили',
+  hr: 'Kupi vozila', el: 'Αγορά οχημάτων', hu: 'Járművásárlás',
+  sk: 'Kúpiť vozidlá', sl: 'Kupi vozila', et: 'Osta sõidukeid',
+  lv: 'Pirkt transportlīdzekļus', lt: 'Pirkti automobilius',
+}
+
 const footerCopy = {
   sv: {
     description: 'En enklare och tryggare väg mellan svenska bilägare och professionella köpare i Europa.',
@@ -18,7 +29,7 @@ const footerCopy = {
     statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
     sellerTitle: 'Sälja bil',
     sellerLinks: [
-      ['Hitta bilar', '/hitta-bilar'],
+      ['Köp bil', '/hitta-bilar'],
       ['Sälj din bil', '/salj-bil'],
       ['Hur det fungerar', '/#sa-fungerar-det'],
       ['Trygg affär', '/trygg-affar'],
@@ -53,7 +64,7 @@ const footerCopy = {
     statement: 'Fahrzeuge handeln. Europa verbinden.',
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge finden', '/fahrzeuge-finden'],
+      ['Fahrzeuge kaufen', '/fahrzeuge-finden'],
       ['Fahrzeugbestand verkaufen', '/fahrzeugbestand-verkaufen'],
       ['So funktioniert der Einkauf', '/so-funktionierts'],
       ['Vorteile für Händler', '/vorteile'],
@@ -88,7 +99,7 @@ const footerCopy = {
     statement: 'Selected Swedish supply. Built for professional European dealers.',
     sellerTitle: 'Vehicles & buying',
     sellerLinks: [
-      ['Find cars', '/find-cars'],
+      ['Buy cars', '/find-cars'],
       ['Sell business vehicles', '/sell-stock'],
       ['How buying works', '/how-it-works'],
       ['Dealer benefits', '/dealer-benefits'],
@@ -200,7 +211,11 @@ export default function PublicFooter({
           <FooterColumn
             title={t.sellerTitle}
             links={t.sellerLinks.map(([label, href]) => [
-              label,
+              href === '/find-cars' ||
+              href === '/hitta-bilar' ||
+              href === '/fahrzeuge-finden'
+                ? buyCarLabels[locale]
+                : label,
               localizePublicHref(locale, href),
             ])}
           />

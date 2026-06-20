@@ -18,6 +18,25 @@ body {
   font-weight: 400;
 }
 
+@keyframes header-word-enter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  18%, 82% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+.header-word-enter {
+  animation: header-word-enter 2.6s ease both;
+}
+
 h1,
 h2,
 h3,
@@ -110,6 +129,7 @@ label {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .header-word-enter,
   .testimonial-track {
     animation: none;
   }

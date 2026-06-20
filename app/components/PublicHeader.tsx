@@ -27,6 +27,9 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import BrandLogo from './BrandLogo'
+import CountryFlag from './CountryFlag'
+import RotatingHeaderMessage from './RotatingHeaderMessage'
+import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
@@ -43,6 +46,31 @@ type PublicHeaderProps = {
 }
 
 type MarketLocale = NonNullable<PublicHeaderProps['locale']>
+
+const buyCarLabels: Record<PublicLocale, string> = {
+  sv: 'Köp bil',
+  de: 'Fahrzeuge kaufen',
+  en: 'Buy cars',
+  fr: 'Acheter des véhicules',
+  es: 'Comprar vehículos',
+  it: 'Acquista veicoli',
+  pl: 'Kup pojazdy',
+  nl: 'Voertuigen kopen',
+  pt: 'Comprar veículos',
+  fi: 'Osta ajoneuvoja',
+  da: 'Køb køretøjer',
+  cs: 'Koupit vozidla',
+  ro: 'Cumpără vehicule',
+  bg: 'Купи автомобили',
+  hr: 'Kupi vozila',
+  el: 'Αγορά οχημάτων',
+  hu: 'Járművásárlás',
+  sk: 'Kúpiť vozidlá',
+  sl: 'Kupi vozila',
+  et: 'Osta sõidukeid',
+  lv: 'Pirkt transportlīdzekļus',
+  lt: 'Pirkti automobilius',
+}
 
 const markets: Array<{
   locale: MarketLocale
@@ -140,51 +168,11 @@ function MarketFlag({
   locale: MarketLocale
   className?: string
 }) {
-  if (locale === 'sv') {
-    return (
-      <span
-        className={`relative block overflow-hidden rounded-[3px] bg-[#1769aa] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
-        aria-hidden="true"
-      >
-        <span className="absolute inset-y-0 left-[31%] w-[13%] bg-[#f7cf32]" />
-        <span className="absolute inset-x-0 top-[42%] h-[17%] bg-[#f7cf32]" />
-      </span>
-    )
-  }
-
-  if (locale === 'de') {
-    return (
-      <span
-        className={`grid overflow-hidden rounded-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
-        aria-hidden="true"
-      >
-        <span className="bg-[#181818]" />
-        <span className="bg-[#d52b1e]" />
-        <span className="bg-[#f3c623]" />
-      </span>
-    )
-  }
-
   return (
-    <span
-      className={`relative block overflow-hidden rounded-[3px] bg-[#1747a6] shadow-[inset_0_0_0_1px_rgba(0,0,0,.08)] ${className}`}
-      aria-hidden="true"
-    >
-      {Array.from({ length: 8 }, (_, index) => {
-        const angle = (index / 8) * Math.PI * 2
-
-        return (
-          <span
-            key={index}
-            className="absolute h-[2px] w-[2px] rounded-full bg-[#ffd83d]"
-            style={{
-              left: `${50 + Math.cos(angle) * 26}%`,
-              top: `${50 + Math.sin(angle) * 29}%`,
-            }}
-          />
-        )
-      })}
-    </span>
+    <CountryFlag
+      code={locale === 'sv' ? 'se' : locale === 'en' ? 'eu' : locale}
+      className={className}
+    />
   )
 }
 
@@ -306,7 +294,7 @@ export default function PublicHeader({
           privateLabel: 'Europäischer Fahrzeughandel',
           dealerLabel: 'Über Autorell',
           links: [
-            [marketRoutes.vehicles, 'Fahrzeuge finden'],
+            [marketRoutes.vehicles, 'Fahrzeuge kaufen'],
             ['/so-funktionierts', 'So funktioniert es'],
             ['/vorteile', 'Vorteile'],
             ['/ueber-autorell', 'Über Autorell'],
@@ -325,7 +313,7 @@ export default function PublicHeader({
             privateLabel: 'Swedish vehicles',
             dealerLabel: 'About Autorell',
             links: [
-              [marketRoutes.vehicles, 'Find cars'],
+              [marketRoutes.vehicles, 'Buy cars'],
               ['/how-it-works', 'How it works'],
               ['/dealer-benefits', 'Dealer benefits'],
               ['/about', 'About Autorell'],
@@ -345,7 +333,7 @@ export default function PublicHeader({
             links: [
               ['/salj-bil', 'Sälj din bil'],
               ['/foretag', 'Företag'],
-              [marketRoutes.vehicles, 'Hitta bilar'],
+              [marketRoutes.vehicles, 'Köp bil'],
               ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakta oss'],
@@ -399,7 +387,7 @@ export default function PublicHeader({
           items: [
             {
               href: marketRoutes.vehicles,
-              label: activeLocale === 'de' ? 'Fahrzeuge finden' : 'Find cars',
+              label: activeLocale === 'de' ? 'Fahrzeuge kaufen' : 'Buy cars',
               text:
                 activeLocale === 'de'
                   ? 'Aktueller Zugang zu qualifiziertem Fahrzeugangebot.'
@@ -500,12 +488,12 @@ export default function PublicHeader({
           eyebrow: 'För verifierade köpare',
           title: 'Utvalda svenska bilar för professionella handlare.',
           text: 'Se publikt utbud eller ansök om åtkomst till fullständig data och budgivning.',
-          cta: 'Hitta bilar',
+          cta: 'Köp bil',
           ctaHref: marketRoutes.vehicles,
           items: [
             {
               href: marketRoutes.vehicles,
-              label: 'Hitta bilar',
+              label: 'Köp bil',
               text: 'Se aktuellt utbud från Autorell.',
               icon: CarFront,
             },
@@ -711,6 +699,33 @@ export default function PublicHeader({
     aboutMenu = localizeMenu(aboutMenu)
   }
 
+  const buyCarLabel = buyCarLabels[activeLocale]
+  content = {
+    ...content,
+    links: content.links.map(([href, label]) => [
+      href,
+      href === marketRoutes.vehicles ? buyCarLabel : label,
+    ]),
+  }
+  sellerMenu = {
+    ...sellerMenu,
+    items: sellerMenu.items.map((item) => ({
+      ...item,
+      label: item.href === marketRoutes.vehicles ? buyCarLabel : item.label,
+    })),
+  }
+  companyMenu = {
+    ...companyMenu,
+    cta:
+      companyMenu.ctaHref === marketRoutes.vehicles
+        ? buyCarLabel
+        : companyMenu.cta,
+    items: companyMenu.items.map((item) => ({
+      ...item,
+      label: item.href === marketRoutes.vehicles ? buyCarLabel : item.label,
+    })),
+  }
+
   function handleSectionLink(
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
@@ -740,7 +755,7 @@ export default function PublicHeader({
       >
         <div className="h-8 bg-[#B4D9EF] text-[#242424] md:h-9">
           <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-5 text-[10px] font-medium tracking-[0.02em] sm:px-8 md:text-xs lg:px-12 xl:px-16">
-            <span>{content.message}</span>
+            <RotatingHeaderMessage locale={activeLocale} />
             <div className="hidden items-center gap-6 md:flex">
               <Link
                 href={content.links[5][0]}
@@ -809,9 +824,10 @@ export default function PublicHeader({
                               href={`https://www.autorell.com/${market.code}?market=${market.code}`}
                               className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 transition hover:bg-[#f2f6f7]"
                             >
-                              <span className="text-xl" aria-hidden="true">
-                                {market.flag}
-                              </span>
+                              <CountryFlag
+                                code={market.code}
+                                className="h-[20px] w-[30px] shrink-0"
+                              />
                               <span className="min-w-0">
                                 <strong className="block truncate text-sm font-medium">
                                   {market.countryLocal}
@@ -896,7 +912,8 @@ export default function PublicHeader({
               </Link>
             </nav>
 
-            <div className="hidden items-center gap-2 min-[1120px]:flex">
+            <div className="relative hidden items-center gap-2 min-[1120px]:flex">
+              <SiteSearch locale={activeLocale} />
               <Link
                 href={content.ctaHref}
                 className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#242424] pl-4 pr-1.5 text-xs font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111] xl:min-h-12 xl:gap-3 xl:pl-5 xl:pr-2 xl:text-sm"
@@ -913,13 +930,12 @@ export default function PublicHeader({
               onClick={() => setOpen((value) => !value)}
               aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
               aria-expanded={open}
-              className={`flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition min-[1120px]:hidden ${
+              className={`grid h-11 w-11 place-items-center rounded-full border transition min-[1120px]:hidden ${
                 open
                   ? 'border-[#242424] bg-[#242424] text-white'
                   : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
               }`}
             >
-              <span>{content.menuLabel}</span>
               {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
@@ -933,10 +949,15 @@ export default function PublicHeader({
           }`}
         >
           <div className="mx-auto flex min-h-full max-w-2xl flex-col px-5 py-7 sm:px-8">
+            <SiteSearch
+              locale={activeLocale}
+              mobile
+              onNavigate={() => setOpen(false)}
+            />
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
               {content.privateLabel}
             </p>
-            <nav className="mt-3">
+            <nav className="mt-6">
               {content.links.slice(0, 5).map(([href, label], index) => (
                 <Link
                   key={href}
@@ -1051,9 +1072,10 @@ export default function PublicHeader({
                         href={`https://www.autorell.com/${market.code}?market=${market.code}`}
                         className="flex min-h-12 items-center gap-2 rounded-[12px] border border-[#dcdad3] bg-white px-3 text-sm text-[#4d5b61]"
                       >
-                        <span className="text-lg" aria-hidden="true">
-                          {market.flag}
-                        </span>
+                        <CountryFlag
+                          code={market.code}
+                          className="h-[18px] w-[27px] shrink-0"
+                        />
                         <span className="truncate">{market.countryLocal}</span>
                       </a>
                     ))}

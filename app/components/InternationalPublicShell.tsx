@@ -12,6 +12,8 @@ import {
   Route,
 } from 'lucide-react'
 import BrandLogo from './BrandLogo'
+import CountryFlag from './CountryFlag'
+import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
@@ -27,10 +29,38 @@ const primaryPages: InternationalPageKey[] = [
 
 const companyPages: InternationalPageKey[] = ['about', 'faq', 'contact']
 
+const vehiclePurchaseLabels: Record<string, string> = {
+  en: 'Buy cars',
+  de: 'Fahrzeuge kaufen',
+  pl: 'Kup pojazdy',
+  nl: 'Voertuigen kopen',
+  fr: 'Acheter des véhicules',
+  es: 'Comprar vehículos',
+  it: 'Acquista veicoli',
+  pt: 'Comprar veículos',
+  da: 'Køb køretøjer',
+  fi: 'Osta ajoneuvoja',
+  cs: 'Koupit vozidla',
+  sk: 'Kúpiť vozidlá',
+  hu: 'Járművásárlás',
+  ro: 'Cumpără vehicule',
+  bg: 'Купи автомобили',
+  el: 'Αγορά οχημάτων',
+  hr: 'Kupi vozila',
+  sl: 'Kupi vozila',
+  et: 'Osta sõidukeid',
+  lv: 'Pirkt transportlīdzekļus',
+  lt: 'Pirkti automobilius',
+}
+
 function pageLabel(
   page: InternationalPageKey,
   navigation: NonNullable<ReturnType<typeof getInternationalSite>>['navigation'],
+  language?: string,
 ) {
+  if (page === 'vehicles' && language) {
+    return vehiclePurchaseLabels[language] || navigation.vehicles
+  }
   const key = page === 'how-it-works'
     ? 'process'
     : page === 'dealer-benefits'
@@ -79,9 +109,12 @@ export function InternationalPublicHeader({
         </nav>
 
         <div className="flex min-w-0 shrink-0 items-center gap-2">
+          <div className="relative hidden lg:block">
+            <SiteSearch locale={market.language} marketCode={market.code} />
+          </div>
           <details className="group/market relative hidden sm:block">
             <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-[#d7deda] bg-white px-3 text-sm [&::-webkit-details-marker]:hidden">
-              <span className="text-lg" aria-hidden="true">{market.flag}</span>
+              <CountryFlag code={market.code} className="h-[18px] w-[27px]" />
               <span>{market.countryLocal}</span>
               <ChevronDown className="h-3.5 w-3.5 transition group-open/market:rotate-180" />
             </summary>
@@ -99,7 +132,10 @@ export function InternationalPublicHeader({
                         item.code === market.code ? 'bg-[#edf6fa]' : ''
                       }`}
                     >
-                      <span className="text-xl" aria-hidden="true">{item.flag}</span>
+                      <CountryFlag
+                        code={item.code}
+                        className="h-[20px] w-[30px] shrink-0"
+                      />
                       <span className="min-w-0">
                         <strong className="block truncate text-sm font-medium">
                           {item.countryLocal}
@@ -138,7 +174,8 @@ export function InternationalPublicHeader({
               <Menu className="h-5 w-5" />
             </summary>
             <div className="fixed inset-x-0 top-[88px] max-h-[calc(100dvh-88px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] p-5 shadow-[0_24px_60px_rgba(32,33,36,.14)]">
-              <div className="mb-5 grid gap-2">
+              <SiteSearch locale={market.language} marketCode={market.code} mobile />
+              <div className="mb-5 mt-5 grid gap-2">
                 <Link
                   href="/dealer-apply"
                   className="flex min-h-13 items-center justify-between rounded-[14px] bg-[#242424] px-5 text-sm font-medium text-white"
@@ -160,7 +197,7 @@ export function InternationalPublicHeader({
                   href={href(page)}
                   className="flex items-center justify-between border-b border-[#dcdad3] py-4 text-xl font-medium"
                 >
-                  {pageLabel(page, navigation)}
+                  {pageLabel(page, navigation, market.language)}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               ))}
@@ -171,7 +208,10 @@ export function InternationalPublicHeader({
                     href={`https://www.autorell.com/${item.code}?market=${item.code}`}
                     className="flex min-h-12 items-center gap-2 rounded-[12px] border border-[#dcdad3] bg-white px-3 text-sm"
                   >
-                    <span>{item.flag}</span>
+                    <CountryFlag
+                      code={item.code}
+                      className="h-[17px] w-[26px] shrink-0"
+                    />
                     <span className="truncate">{item.countryLocal}</span>
                   </a>
                 ))}
@@ -227,7 +267,7 @@ function ShellMenu({
                     <PageIcon className="h-4 w-4" />
                   </span>
                   <strong className="text-sm font-medium">
-                    {pageLabel(page, site.navigation)}
+                    {pageLabel(page, site.navigation, site.market.language)}
                   </strong>
                 </Link>
               )
@@ -273,8 +313,8 @@ export function InternationalPublicFooter({
           <p className="max-w-sm text-2xl leading-9 tracking-[-0.025em]">
             {copy.whyTitle}
           </p>
-          <FooterGroup title={navigation.platform} links={primaryPages.map((page) => [pageLabel(page, navigation), href(page)])} />
-          <FooterGroup title={navigation.company} links={companyPages.map((page) => [pageLabel(page, navigation), href(page)])} />
+          <FooterGroup title={navigation.platform} links={primaryPages.map((page) => [pageLabel(page, navigation, site.market.language), href(page)])} />
+          <FooterGroup title={navigation.company} links={companyPages.map((page) => [pageLabel(page, navigation, site.market.language), href(page)])} />
           <div>
             <h3 className="text-xs font-medium uppercase tracking-[0.18em] text-[#898a85]">
               {navigation.contact}
