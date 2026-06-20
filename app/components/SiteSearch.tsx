@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight, Search, Sparkles, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { PublicLocale } from '@/lib/public-i18n'
 
 type SearchResult = {
@@ -188,23 +189,21 @@ export default function SiteSearch({
         >
           <X className="h-[18px] w-[18px]" />
         </button>
-        <div className="fixed inset-x-0 bottom-0 top-[104px] z-[120] overflow-y-auto bg-[#182126]/20 backdrop-blur-[2px] md:top-[124px] min-[1120px]:hidden">
-          <div className="border-t border-[#d8e1e3] bg-[linear-gradient(145deg,#f8fbfb,#edf5f7)] px-5 py-5 shadow-[0_28px_70px_rgba(24,33,38,.22)] sm:px-8">
-            <div className="mx-auto max-w-2xl">
-              <div className="mb-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#658392]">
-                    Autorell
-                  </p>
-                  <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-[#202124]">
+        {createPortal(
+          <div className="fixed inset-x-0 bottom-0 top-[104px] z-[200] overflow-y-auto bg-[#182126]/25 backdrop-blur-[3px] md:top-[124px] min-[1120px]:hidden">
+            <div className="border-t border-[#d8e1e3] bg-[linear-gradient(145deg,#f8fbfb,#edf5f7)] px-5 py-5 shadow-[0_28px_70px_rgba(24,33,38,.22)] sm:px-8">
+              <div className="mx-auto max-w-2xl">
+                <div className="mb-4">
+                  <p className="text-lg font-semibold tracking-[-0.02em] text-[#202124]">
                     {text.title}
                   </p>
                 </div>
+                {panel}
               </div>
-              {panel}
             </div>
-          </div>
-        </div>
+          </div>,
+          document.body,
+        )}
       </>
     )
   }
@@ -214,10 +213,7 @@ export default function SiteSearch({
       <div className="w-[min(540px,calc(100vw-32px))] rounded-[24px] border border-[#d8e2e5] bg-[linear-gradient(145deg,#f9fbfb,#edf5f7)] p-4 shadow-[0_30px_85px_rgba(28,42,49,.2)]">
         <div className="mb-4 flex items-start justify-between gap-5 px-1">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#658392]">
-              Autorell search
-            </p>
-            <p className="mt-1 text-lg font-semibold tracking-[-0.025em] text-[#202124]">
+            <p className="text-lg font-semibold tracking-[-0.025em] text-[#202124]">
               {text.title}
             </p>
           </div>

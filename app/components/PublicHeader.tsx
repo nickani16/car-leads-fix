@@ -262,17 +262,6 @@ export default function PublicHeader({
   const localizedLanguage =
     localizedMarkets.find((market) => market.locale === activeLocale) ||
     localizedMarkets[0]
-  const mobileMarkets = [
-    localizedLanguage,
-    ...localizedMarkets.filter((market) =>
-      ['sv', 'de', 'en'].includes(market.locale),
-    ),
-  ]
-    .filter(
-      (market, index, items) =>
-        items.findIndex((item) => item.locale === market.locale) === index,
-    )
-    .slice(0, 4)
   const homeHref =
     activeLocale === 'de'
       ? 'https://www.autorell.de/'
@@ -926,6 +915,14 @@ export default function PublicHeader({
             <div className="relative hidden items-center gap-2 min-[1120px]:flex">
               <SiteSearch locale={activeLocale} />
               <Link
+                href="/login"
+                aria-label={content.login}
+                title={content.login}
+                className="grid h-11 w-11 place-items-center rounded-full border border-[#d9dfdf] bg-white/90 text-[#242424] transition hover:-translate-y-0.5 hover:border-[#adcddd] hover:bg-[#eef7fb]"
+              >
+                <LogIn className="h-[18px] w-[18px]" />
+              </Link>
+              <Link
                 href={content.ctaHref}
                 className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#242424] pl-4 pr-1.5 text-xs font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111] xl:min-h-12 xl:gap-3 xl:pl-5 xl:pr-2 xl:text-sm"
               >
@@ -938,6 +935,14 @@ export default function PublicHeader({
 
             <div className="flex items-center gap-2 min-[1120px]:hidden">
               <SiteSearch locale={activeLocale} headerMobile />
+              <Link
+                href="/login"
+                aria-label={content.login}
+                title={content.login}
+                className="grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-[#f8f7f3] text-[#242424] transition hover:border-[#adcddd] hover:bg-[#eef7fb]"
+              >
+                <LogIn className="h-[18px] w-[18px]" />
+              </Link>
               <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
@@ -963,11 +968,8 @@ export default function PublicHeader({
           }`}
         >
           <div className="mx-auto flex min-h-full max-w-2xl flex-col px-5 py-7 sm:px-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
-              {content.privateLabel}
-            </p>
-            <nav className="mt-6">
-              {content.links.slice(0, 5).map(([href, label], index) => (
+            <nav>
+              {content.links.slice(0, 5).map(([href, label]) => (
                 <Link
                   key={href}
                   href={href}
@@ -977,12 +979,7 @@ export default function PublicHeader({
                   }}
                   className="group flex items-center justify-between border-b border-[#dcdad3] py-4 text-[22px] font-medium tracking-[-0.025em] text-[#202124]"
                 >
-                  <span>
-                    <span className="mr-3 text-xs font-medium text-[#9a9d9d]">
-                      0{index + 1}
-                    </span>
-                    {label}
-                  </span>
+                  <span>{label}</span>
                   <ArrowRight className="h-5 w-5 text-[#71818b] transition group-hover:translate-x-1" />
                 </Link>
               ))}
@@ -1034,41 +1031,62 @@ export default function PublicHeader({
             </div>
 
             <div className="mt-auto border-t border-[#dcdad3] pt-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
-                {marketCopy.selector}
-              </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                {mobileMarkets.map((market) => (
-                  <a
-                    key={market.locale}
-                    href={market.href}
-                    className={`flex min-h-14 items-center gap-3 rounded-[12px] border px-3.5 text-sm transition ${
-                      market.locale === activeLocale
-                        ? 'border-[#8ebdd8] bg-[#eaf5fb] text-[#202124]'
-                        : 'border-[#dcdad3] bg-white text-[#62686c]'
-                    }`}
-                  >
-                    <MarketFlag
-                      locale={market.locale}
-                      className="h-[20px] w-[30px]"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <strong className="block font-medium leading-4">
-                        {market.label}
-                      </strong>
-                      <span className="mt-0.5 block text-[10px] text-[#7b878c]">
-                        {market.description}
-                      </span>
+              <details className="group/markets">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#8ebdd8] bg-[#eaf5fb] px-4 text-sm text-[#202124] [&::-webkit-details-marker]:hidden">
+                  <MarketFlag
+                    locale={localizedLanguage.locale}
+                    className="h-[20px] w-[30px]"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
+                      {marketCopy.selector}
                     </span>
-                    {market.locale === activeLocale && (
-                      <span
-                        className="h-2 w-2 rounded-full bg-[#5f9fbe]"
-                        aria-label={marketCopy.activeMarket}
+                    <strong className="mt-0.5 block font-medium">
+                      {localizedLanguage.label}
+                    </strong>
+                  </span>
+                  <ChevronDown className="h-4 w-4 transition group-open/markets:rotate-180" />
+                </summary>
+                <div className="mt-2 max-h-[310px] overflow-y-auto rounded-[14px] border border-[#dcdad3] bg-white p-2">
+                  {localizedMarkets.map((market) => (
+                    <a
+                      key={market.locale}
+                      href={market.href}
+                      className={`flex min-h-12 items-center gap-3 rounded-[11px] px-3 text-sm transition hover:bg-[#f1f6f7] ${
+                        market.locale === activeLocale ? 'bg-[#eef6fa]' : ''
+                      }`}
+                    >
+                      <MarketFlag
+                        locale={market.locale}
+                        className="h-[18px] w-[27px]"
                       />
-                    )}
-                  </a>
-                ))}
-              </div>
+                      <span className="min-w-0 flex-1 truncate">
+                        {market.label}
+                      </span>
+                    </a>
+                  ))}
+                  {activeLocale === 'en' && (
+                    <>
+                      <div className="mx-3 my-2 border-t border-[#e3e8e9]" />
+                      {euBuyerMarkets.map((market) => (
+                        <a
+                          key={market.code}
+                          href={`https://www.autorell.com/${market.code}?market=${market.code}`}
+                          className="flex min-h-12 items-center gap-3 rounded-[11px] px-3 text-sm transition hover:bg-[#f1f6f7]"
+                        >
+                          <CountryFlag
+                            code={market.code}
+                            className="h-[18px] w-[27px] shrink-0"
+                          />
+                          <span className="min-w-0 flex-1 truncate">
+                            {market.countryLocal}
+                          </span>
+                        </a>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </details>
 
               <div className="mt-5 flex items-center justify-between border-t border-[#dcdad3] pt-5">
                 <SocialIcons />

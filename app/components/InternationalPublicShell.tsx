@@ -79,16 +79,6 @@ export function InternationalPublicHeader({
   if (!site) return null
 
   const { market, copy, navigation, href } = site
-  const mobileMarkets = [
-    market,
-    ...euBuyerMarkets.filter((item) =>
-      ['pl', 'nl', 'fr'].includes(item.code),
-    ),
-  ].filter(
-    (item, index, items) =>
-      items.findIndex((candidate) => candidate.code === item.code) === index,
-  )
-
   return (
     <header className="relative z-50 w-full min-w-0 max-w-full overflow-x-clip border-b border-[#deddd8] bg-white/95 text-[#202124] backdrop-blur-xl">
       <div className="mx-auto flex min-h-[88px] w-full min-w-0 max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:min-h-[108px] lg:px-12 xl:px-16">
@@ -121,6 +111,14 @@ export function InternationalPublicHeader({
           <div className="relative hidden lg:block">
             <SiteSearch locale={market.language} marketCode={market.code} />
           </div>
+          <Link
+            href="/login"
+            aria-label={copy.login}
+            title={copy.login}
+            className="hidden h-11 w-11 place-items-center rounded-full border border-[#d7deda] bg-white text-[#242424] transition hover:border-[#adcddd] hover:bg-[#eef7fb] lg:grid"
+          >
+            <LogIn className="h-[18px] w-[18px]" />
+          </Link>
           <details className="group/market relative hidden sm:block">
             <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-[#d7deda] bg-white px-3 text-sm [&::-webkit-details-marker]:hidden">
               <CountryFlag code={market.code} className="h-[18px] w-[27px]" />
@@ -161,13 +159,6 @@ export function InternationalPublicHeader({
           </details>
 
           <Link
-            href="/login"
-            className="hidden min-h-11 items-center gap-2 rounded-full px-4 text-sm md:flex"
-          >
-            <LogIn className="h-4 w-4" />
-            {copy.login}
-          </Link>
-          <Link
             href="/dealer-apply"
             className="hidden min-h-11 items-center gap-2 rounded-full bg-[#242424] px-5 text-sm font-medium text-white sm:inline-flex"
           >
@@ -182,6 +173,14 @@ export function InternationalPublicHeader({
               headerMobile
             />
           </div>
+          <Link
+            href="/login"
+            aria-label={copy.login}
+            title={copy.login}
+            className="grid h-11 w-11 place-items-center rounded-full border border-[#d7deda] bg-white text-[#242424] lg:hidden"
+          >
+            <LogIn className="h-[18px] w-[18px]" />
+          </Link>
           <details className="group/mobile relative lg:hidden">
             <summary
               className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full border border-[#d7deda] [&::-webkit-details-marker]:hidden"
@@ -190,20 +189,13 @@ export function InternationalPublicHeader({
               <Menu className="h-5 w-5" />
             </summary>
             <div className="fixed inset-x-0 top-[88px] max-h-[calc(100dvh-88px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] p-5 shadow-[0_24px_60px_rgba(32,33,36,.14)]">
-              <div className="mb-5 grid gap-2">
+              <div className="mb-5">
                 <Link
                   href="/dealer-apply"
                   className="flex min-h-13 items-center justify-between rounded-[14px] bg-[#242424] px-5 text-sm font-medium text-white"
                 >
                   {copy.apply}
                   <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="flex min-h-13 items-center justify-between rounded-[14px] border border-[#dcdad3] bg-white px-5 text-sm font-medium"
-                >
-                  {copy.login}
-                  <LogIn className="h-4 w-4" />
                 </Link>
               </div>
               {[...primaryPages, ...companyPages].map((page) => (
@@ -216,21 +208,42 @@ export function InternationalPublicHeader({
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               ))}
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                {mobileMarkets.map((item) => (
-                  <a
-                    key={item.code}
-                    href={`https://www.autorell.com/${item.code}?market=${item.code}`}
-                    className="flex min-h-12 items-center gap-2 rounded-[12px] border border-[#dcdad3] bg-white px-3 text-sm"
-                  >
-                    <CountryFlag
-                      code={item.code}
-                      className="h-[17px] w-[26px] shrink-0"
-                    />
-                    <span className="truncate">{item.countryLocal}</span>
-                  </a>
-                ))}
-              </div>
+              <details className="group/markets mt-5">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#8ebdd8] bg-[#eaf5fb] px-4 text-sm [&::-webkit-details-marker]:hidden">
+                  <CountryFlag
+                    code={market.code}
+                    className="h-[20px] w-[30px] shrink-0"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
+                      {navigation.allMarkets}
+                    </span>
+                    <strong className="block truncate font-medium">
+                      {market.countryLocal}
+                    </strong>
+                  </span>
+                  <ChevronDown className="h-4 w-4 transition group-open/markets:rotate-180" />
+                </summary>
+                <div className="mt-2 max-h-[310px] overflow-y-auto rounded-[14px] border border-[#dcdad3] bg-white p-2">
+                  {euBuyerMarkets.map((item) => (
+                    <a
+                      key={item.code}
+                      href={`https://www.autorell.com/${item.code}?market=${item.code}`}
+                      className={`flex min-h-12 items-center gap-3 rounded-[11px] px-3 text-sm transition hover:bg-[#f1f6f7] ${
+                        item.code === market.code ? 'bg-[#eef6fa]' : ''
+                      }`}
+                    >
+                      <CountryFlag
+                        code={item.code}
+                        className="h-[18px] w-[27px] shrink-0"
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        {item.countryLocal}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </details>
             </div>
           </details>
         </div>

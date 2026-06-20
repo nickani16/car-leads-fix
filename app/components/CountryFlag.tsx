@@ -33,11 +33,22 @@ const flagBackgrounds: Record<string, string> = {
   sk: 'linear-gradient(#fff 0 33.33%,#0b4ea2 33.33% 66.66%,#ee1c25 66.66%)',
 }
 
+const flagCodeAliases: Record<string, string> = {
+  cs: 'cz',
+  da: 'dk',
+  el: 'gr',
+  en: 'eu',
+  et: 'ee',
+  sl: 'si',
+  sv: 'se',
+}
+
 export default function CountryFlag({
   code,
   className = '',
 }: CountryFlagProps) {
-  const normalized = code.toLowerCase()
+  const requestedCode = code.toLowerCase()
+  const normalized = flagCodeAliases[requestedCode] || requestedCode
 
   if (normalized === 'eu') {
     return (
