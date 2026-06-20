@@ -296,6 +296,7 @@ export function proxy(request: NextRequest) {
           'x-autorell-language',
           market?.language ?? 'en',
         )
+        requestHeaders.set('x-autorell-market', marketCode)
         const isMarketHub = segments.length === 1
         const isMarketCity =
           segments.length === 3 && segments[1] === 'dealers'

@@ -11,12 +11,13 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import BrandLogo from './BrandLogo'
+import { euBuyerMarkets, type EuBuyerLanguage } from '@/lib/eu-buyer-markets'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
 
 type ConsentChoice = 'necessary' | 'all'
-type CookieLocale = 'sv' | 'de' | 'en'
+type CookieLocale = 'sv' | EuBuyerLanguage
 
 const cookieCopy = {
   sv: {
@@ -76,9 +77,34 @@ const cookieCopy = {
     hide: 'Hide settings',
     customize: 'Customise',
   },
+  pl: {
+    eyebrow: 'Ustawienia plików cookie',
+    trustTitle: 'Prywatność od podstaw',
+    trustText: 'Bezpieczny dostęp. Jasne wybory. Bez marketingowych plików cookie.',
+    close: 'Zamknij ustawienia plików cookie',
+    title: 'Twoje ustawienia plików cookie',
+    text: 'Używamy niezbędnych plików cookie do zapewnienia bezpieczeństwa, logowania i działania witryny. Za Twoją zgodą anonimowo mierzymy, w jaki sposób witryna prowadzi do kontaktu i transakcji. Obecnie nie używamy marketingowych plików cookie.',
+    necessaryTitle: 'Niezbędne pliki cookie',
+    necessaryText: 'Wymagane do bezpieczeństwa, formularzy i logowania. Nie można ich wyłączyć.',
+    analyticsTitle: 'Analityczne pliki cookie',
+    analyticsText: 'Anonimowo mierzą zdarzenia, takie jak kliknięcia i rynki prowadzące do kontaktu.',
+    policyStart: 'Więcej informacji znajdziesz w naszej',
+    policy: 'polityce plików cookie',
+    policyEnd: 'W każdej chwili możesz zmienić wybór w stopce.',
+    accept: 'Zaakceptuj wszystkie',
+    necessary: 'Tylko niezbędne',
+    hide: 'Ukryj ustawienia',
+    customize: 'Dostosuj',
+  },
 } as const
 
 function getCookieLocale(): CookieLocale {
+  const marketCode = window.location.pathname.split('/').filter(Boolean)[0]
+  const market = euBuyerMarkets.find((item) => item.code === marketCode)
+  if (market && market.language in cookieCopy) {
+    return market.language as keyof typeof cookieCopy
+  }
+
   const hostname = window.location.hostname.toLowerCase()
   if (hostname.endsWith('autorell.de')) return 'de'
   if (hostname.endsWith('autorell.com')) return 'en'
@@ -108,8 +134,10 @@ function saveConsent(choice: ConsentChoice) {
 
 export default function CookieConsent({
   initialLocale = 'sv',
+  initialMarketCode,
 }: {
   initialLocale?: CookieLocale
+  initialMarketCode?: string
 }) {
   const [visible, setVisible] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -118,7 +146,11 @@ export default function CookieConsent({
     getCookieLocale,
     () => initialLocale,
   )
-  const t = cookieCopy[locale]
+  const t = cookieCopy[locale as keyof typeof cookieCopy] || cookieCopy.en
+  const marketCode = initialMarketCode || ''
+  const policyHref = euBuyerMarkets.some((market) => market.code === marketCode)
+    ? `/${marketCode}/cookies`
+    : '/cookies'
 
   useEffect(() => {
     const initialCheck = window.setTimeout(() => {
@@ -151,7 +183,7 @@ export default function CookieConsent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="mx-auto w-full max-w-[1120px] overflow-hidden rounded-[26px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(19,35,43,.25)] ring-1 ring-[#d8e3e8]"
+        className="mx-auto w-[calc(100vw-24px)] max-w-[1120px] overflow-hidden rounded-[26px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(19,35,43,.25)] ring-1 ring-[#d8e3e8]"
       >
         <div className="grid min-w-0 lg:grid-cols-[270px_1fr]">
           <div className="relative overflow-hidden bg-[#20272b] p-5 text-white sm:p-6 lg:p-7">
@@ -217,7 +249,7 @@ export default function CookieConsent({
               >
                 {t.title}
               </h2>
-              <p className="mt-3 text-sm leading-6 text-[#626d72]">
+              <p className="mt-3 break-words text-sm leading-6 text-[#626d72] [overflow-wrap:anywhere]">
                 {t.text}
               </p>
             </div>
@@ -238,7 +270,7 @@ export default function CookieConsent({
                 <p className="px-1 text-xs leading-5 text-[#748087]">
                   {t.policyStart}{' '}
                   <Link
-                    href="/cookies"
+                    href={policyHref}
                     className="font-semibold text-[#315f74] underline underline-offset-2"
                   >
                     {t.policy}

@@ -75,6 +75,7 @@ export default async function RootLayout({
     .split(':')[0]
     .toLowerCase()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const requestedMarket = requestHeaders.get('x-autorell-market') || undefined
   const marketLanguage = hostname.endsWith('autorell.de')
     ? 'de'
     : hostname.endsWith('autorell.com')
@@ -89,7 +90,14 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
-        <CookieConsent initialLocale={marketLanguage} />
+        <CookieConsent
+          initialLocale={
+            (requestedLanguage || marketLanguage) as Parameters<
+              typeof CookieConsent
+            >[0]['initialLocale']
+          }
+          initialMarketCode={requestedMarket}
+        />
       </body>
     </html>
   )

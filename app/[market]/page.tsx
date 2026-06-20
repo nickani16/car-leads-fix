@@ -1,8 +1,13 @@
 import type { Metadata } from 'next'
-import EuBuyerPage, {
-  generateMetadata as generateEuBuyerMetadata,
-} from '@/app/eu-buyer/[market]/[city]/page'
-import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import { notFound } from 'next/navigation'
+import InternationalMarketPage from '@/app/components/InternationalMarketPage'
+import {
+  euBuyerMarkets,
+  getEuBuyerCopy,
+  getEuBuyerHreflang,
+  getEuBuyerHubAlternates,
+  getEuBuyerMarket,
+} from '@/lib/eu-buyer-markets'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -17,15 +22,35 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: MarketPageProps): Promise<Metadata> {
-  const { market } = await params
-  return generateEuBuyerMetadata({
-    params: Promise.resolve({ market, city: 'index' }),
-  })
+  const { market: marketCode } = await params
+  const market = getEuBuyerMarket(marketCode)
+  if (!market) return {}
+
+  const copy = getEuBuyerCopy(market.language)
+  const title = market.homeTitle || copy.countryTitle(market.countryLocal)
+  const canonical = `https://www.autorell.com/${market.code}`
+
+  return {
+    title: { absolute: `${title} | Autorell` },
+    description: copy.intro,
+    alternates: {
+      canonical,
+      languages: getEuBuyerHubAlternates(),
+    },
+    openGraph: {
+      title,
+      description: copy.intro,
+      url: canonical,
+      siteName: 'Autorell',
+      locale: getEuBuyerHreflang(market).replace('-', '_'),
+      type: 'website',
+    },
+  }
 }
 
 export default async function MarketPage({ params }: MarketPageProps) {
   const { market } = await params
-  return EuBuyerPage({
-    params: Promise.resolve({ market, city: 'index' }),
-  })
+  if (!getEuBuyerMarket(market)) notFound()
+
+  return <InternationalMarketPage marketCode={market} />
 }
