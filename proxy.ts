@@ -1,6 +1,11 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import {
+  customerLocales,
+  isCustomerLocale,
+  type CustomerLocale,
+} from '@/lib/customer-i18n'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
@@ -28,6 +33,36 @@ const SEARCH_CRAWLER_PATTERN =
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
+const CUSTOMER_LOCALES = new Set<string>(customerLocales)
+const CUSTOMER_LOCALE_BY_COUNTRY: Record<string, CustomerLocale | 'sv' | 'de'> = {
+  SE: 'sv',
+  DE: 'de',
+  AT: 'de',
+  BE: 'nl',
+  BG: 'bg',
+  HR: 'hr',
+  CY: 'el',
+  CZ: 'cs',
+  DK: 'da',
+  EE: 'et',
+  FI: 'fi',
+  FR: 'fr',
+  GR: 'el',
+  HU: 'hu',
+  IE: 'en',
+  IT: 'it',
+  LV: 'lv',
+  LT: 'lt',
+  LU: 'fr',
+  MT: 'en',
+  NL: 'nl',
+  PL: 'pl',
+  PT: 'pt',
+  RO: 'ro',
+  SK: 'sk',
+  SI: 'sl',
+  ES: 'es',
+}
 const GERMAN_IMPORT_GUIDE_PATH = '/ratgeber/fahrzeugimport-aus-schweden'
 
 const LOCALIZED_CORE_ROUTES = {
@@ -137,6 +172,30 @@ function isMarketSelection(value: string | null): value is string {
   )
 }
 
+function setLanguageCookie(response: NextResponse, language: string) {
+  response.cookies.set('autorell-language', language, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+    sameSite: 'lax',
+    secure: true,
+  })
+  return response
+}
+
+function redirectToLanguage(request: NextRequest, language: string) {
+  if (language === 'sv') return redirectToHost(request, MARKET_HOSTS.sv, 307)
+  if (language === 'de') return redirectToHost(request, MARKET_HOSTS.de, 307)
+
+  const url = request.nextUrl.clone()
+  url.protocol = 'https:'
+  url.hostname = MARKET_HOSTS.en
+  url.port = ''
+  url.pathname = `/${isCustomerLocale(language) ? language : 'en'}`
+  url.searchParams.delete('language')
+  return setLanguageCookie(NextResponse.redirect(url, 307), language)
+}
+
 function redirectToMarket(request: NextRequest, market: string) {
   const hostname = getHostname(request)
   const isEuropeanCountry = EU_BUYER_MARKET_CODES.has(market)
@@ -181,6 +240,15 @@ function redirectToMarket(request: NextRequest, market: string) {
 }
 
 function getPreferredMarket(request: NextRequest): string | null {
+  const preferredLanguage = request.cookies.get('autorell-language')?.value
+  if (
+    preferredLanguage === 'sv' ||
+    preferredLanguage === 'de' ||
+    CUSTOMER_LOCALES.has(preferredLanguage || '')
+  ) {
+    return preferredLanguage!
+  }
+
   const preferredMarket = request.cookies.get('autorell-market')?.value
 
   return isMarketSelection(preferredMarket || null) ? preferredMarket! : null
@@ -190,17 +258,14 @@ function getCountryMarket(request: NextRequest): string | null {
   const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
 
   if (!country) return null
-  if (country === 'SE') return 'sv'
-  if (country === 'DE') return 'de'
-  const euMarket = country.toLowerCase()
-  if (EU_BUYER_MARKET_CODES.has(euMarket)) return euMarket
-  return 'en'
+  return CUSTOMER_LOCALE_BY_COUNTRY[country] || 'en'
 }
 
 export function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
   const selectedMarket = request.nextUrl.searchParams.get('market')
+  const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
 
   if (methodCanRedirect && (hostname === 'autorell.eu' || hostname === 'www.autorell.eu')) {
@@ -228,6 +293,16 @@ export function proxy(request: NextRequest) {
     return redirectToMarket(request, selectedMarket)
   }
 
+  if (
+    methodCanRedirect &&
+    selectedLanguage &&
+    (selectedLanguage === 'sv' ||
+      selectedLanguage === 'de' ||
+      CUSTOMER_LOCALES.has(selectedLanguage))
+  ) {
+    return redirectToLanguage(request, selectedLanguage)
+  }
+
   const currentMarket = MARKET_BY_HOST[hostname]
   const preferredMarket = getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
@@ -235,11 +310,45 @@ export function proxy(request: NextRequest) {
   )
   const countryMarket = isSearchCrawler ? null : getCountryMarket(request)
   const targetMarket = preferredMarket || countryMarket
+  const pathSegments = pathname.split('/').filter(Boolean)
+  const firstPathSegment = pathSegments[0]
+  const isCustomerLanguagePath =
+    pathSegments.length === 1 ||
+    (pathSegments.length === 2 &&
+      [
+        'sell-car',
+        'how-it-works',
+        'about',
+        'contact',
+        'faq',
+        'privacy',
+        'cookies',
+        'terms',
+        'gdpr',
+      ].includes(pathSegments[1]))
+  const pathLanguage =
+    hostname === MARKET_HOSTS.en &&
+    isCustomerLanguagePath &&
+    isCustomerLocale(firstPathSegment)
+      ? firstPathSegment
+      : null
+
+  if (pathLanguage) {
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-autorell-language', pathLanguage)
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+
+    if (!isSearchCrawler && preferredMarket !== pathLanguage) {
+      setLanguageCookie(response, pathLanguage)
+    }
+
+    return response
+  }
 
   if (
     methodCanRedirect &&
     targetMarket &&
-    EU_BUYER_MARKET_CODES.has(targetMarket) &&
+    CUSTOMER_LOCALES.has(targetMarket) &&
     (hostname !== MARKET_HOSTS.en ||
       !pathname.startsWith(`/${targetMarket}`))
   ) {
@@ -374,7 +483,11 @@ export function proxy(request: NextRequest) {
   }
 
   if (hostname === 'www.autorell.com') {
-    return NextResponse.rewrite(new URL('/eu', request.url))
+    const language =
+      targetMarket && CUSTOMER_LOCALES.has(targetMarket)
+        ? targetMarket
+        : 'en'
+    return redirectToLanguage(request, language)
   }
 
   if (hostname === 'www.autorell.de') {
