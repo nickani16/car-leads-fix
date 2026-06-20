@@ -96,13 +96,13 @@ export default function BusinessPage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
+                <Link
                   href="/salj-lagerbil"
                   className="group inline-flex min-h-14 items-center justify-between gap-4 rounded-[16px] bg-[#242424] pl-6 pr-3 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111] sm:justify-center sm:rounded-full sm:px-7"
                 >
                   Skicka in ett fordon
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                </a>
+                </Link>
                 <a
                   href="#process"
                   className="inline-flex min-h-14 items-center justify-center rounded-[16px] border border-[#bfcfd7] bg-white/75 px-7 text-sm font-medium shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur transition hover:bg-white sm:rounded-full"

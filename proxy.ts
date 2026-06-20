@@ -291,11 +291,17 @@ export function proxy(request: NextRequest) {
           segments[1] === 'guides' &&
           segments[2] === 'import-from-sweden'
 
-        if (isMarketHub || isMarketCity || isMarketGuide) {
+        if (isMarketHub) {
+          return NextResponse.next({
+            request: { headers: requestHeaders },
+          })
+        }
+
+        if (isMarketCity || isMarketGuide) {
           const localizedUrl = request.nextUrl.clone()
           localizedUrl.pathname = isMarketGuide
             ? `/eu-guide/${marketCode}/${segments[2]}`
-            : `/eu-buyer/${marketCode}/${isMarketHub ? 'index' : segments[2]}`
+            : `/eu-buyer/${marketCode}/${segments[2]}`
           return NextResponse.rewrite(localizedUrl, {
             request: { headers: requestHeaders },
           })
