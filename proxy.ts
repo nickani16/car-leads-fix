@@ -201,10 +201,7 @@ export function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
   const selectedMarket = request.nextUrl.searchParams.get('market')
-
-  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
-    return redirectToMarket(request, selectedMarket)
-  }
+  const pathname = request.nextUrl.pathname
 
   if (methodCanRedirect && (hostname === 'autorell.eu' || hostname === 'www.autorell.eu')) {
     return redirectToHost(request, 'www.autorell.com', 308)
@@ -214,7 +211,23 @@ export function proxy(request: NextRequest) {
     return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
-  const pathname = request.nextUrl.pathname
+  const isApplicationResource =
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/api/') ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    /\/[^/]+\.[^/]+$/.test(pathname)
+
+  if (isApplicationResource) {
+    return NextResponse.next()
+  }
+
+  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
+    return redirectToMarket(request, selectedMarket)
+  }
+
   const currentMarket = MARKET_BY_HOST[hostname]
   const preferredMarket = getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
