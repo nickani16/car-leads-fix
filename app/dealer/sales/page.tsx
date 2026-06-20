@@ -356,9 +356,38 @@ export default async function DealerSalesPage({
                           Purchase, payment and collection status appears here
                           after your company accepts Autorell&apos;s offer.
                         </p>
-                        {listingOrder && listingOrder.status !== 'paid' ? (
-                          <DealerListingCheckoutButton leadId={listing.id} />
-                        ) : null}
+                        {listingOrder?.status !== 'paid' ? (
+                          <div className="mt-5 rounded-[14px] border border-[#deddd7] bg-white p-4">
+                            <p className="text-xs font-semibold">
+                              Optional marketplace upgrades
+                            </p>
+                            <p className="mt-1 text-[11px] leading-5 text-[#70777b]">
+                              Your stock offer is free. Pay only if you want
+                              longer exposure, priority or a dedicated seller.
+                            </p>
+                            <div className="mt-3 grid gap-2">
+                              <DealerListingCheckoutButton
+                                leadId={listing.id}
+                                packageId="extended_7d"
+                                label="7 days · 100 SEK"
+                              />
+                              <DealerListingCheckoutButton
+                                leadId={listing.id}
+                                packageId="premium_30d"
+                                label="Premium 15 days · 290 SEK"
+                              />
+                              <DealerListingCheckoutButton
+                                leadId={listing.id}
+                                packageId="managed_sale"
+                                label="Managed Sale · 1,500 SEK"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="mt-4 text-xs font-semibold text-emerald-700">
+                            Marketplace upgrade paid
+                          </p>
+                        )}
                         {canEdit ? (
                           <Link
                             href={`/dealer/sales/${listing.id}/edit`}

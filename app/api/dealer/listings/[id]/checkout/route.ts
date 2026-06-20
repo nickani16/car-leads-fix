@@ -29,6 +29,15 @@ export async function POST(
     }
 
     const admin = createAdminClient()
+    const { packageId } = (await request.json().catch(() => ({}))) as {
+      packageId?: string
+    }
+    if (!isListingPackage(packageId)) {
+      return NextResponse.json(
+        { error: 'Choose a valid marketplace upgrade.' },
+        { status: 400 }
+      )
+    }
     const { data: dealer } = await admin
       .from('dealers')
       .select('id,email,status')
@@ -43,45 +52,46 @@ export async function POST(
 
     const { data: lead } = await admin
       .from('leads')
-      .select('id,seller_dealer_id,status,listing_plan')
+      .select('id,seller_dealer_id,status')
       .eq('id', id)
       .maybeSingle()
     if (
       !lead ||
-      lead.seller_dealer_id !== dealer.id ||
-      !isListingPackage(lead.listing_plan)
+      lead.seller_dealer_id !== dealer.id
     ) {
       return NextResponse.json({ error: 'Vehicle not found.' }, { status: 404 })
     }
 
-    const { data: order } = await admin
+    const { data: paidOrder } = await admin
       .from('seller_listing_orders')
-      .select('id,status,package')
+      .select('id')
       .eq('lead_id', id)
-      .order('created_at', { ascending: false })
+      .eq('status', 'paid')
       .limit(1)
       .maybeSingle()
 
-    if (!order || !isListingPackage(order.package)) {
+    if (paidOrder) {
       return NextResponse.json(
-        { error: 'No listing payment was found.' },
-        { status: 404 }
-      )
-    }
-    if (order.status === 'paid') {
-      return NextResponse.json(
-        { error: 'This listing is already paid.' },
-        { status: 409 }
-      )
-    }
-    if (!['pending', 'failed', 'expired'].includes(order.status)) {
-      return NextResponse.json(
-        { error: 'This payment can no longer be completed.' },
+        { error: 'A marketplace upgrade is already active for this vehicle.' },
         { status: 409 }
       )
     }
 
-    const selectedPackage = listingPackages[order.package]
+    const selectedPackage = listingPackages[packageId]
+    const { data: order, error: orderError } = await admin
+      .from('seller_listing_orders')
+      .insert({
+        lead_id: lead.id,
+        package: packageId,
+        amount_cents: selectedPackage.amountCents,
+      })
+      .select('id')
+      .single()
+
+    if (orderError || !order) {
+      throw orderError || new Error('Listing order could not be created')
+    }
+
     const origin = new URL(request.url).origin
     const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
@@ -103,7 +113,7 @@ export async function POST(
       metadata: {
         orderId: order.id,
         leadId: lead.id,
-        package: order.package,
+        package: packageId,
         dealerId: dealer.id,
       },
       success_url: `${origin}/dealer/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -114,7 +124,6 @@ export async function POST(
     await admin
       .from('seller_listing_orders')
       .update({
-        status: 'pending',
         stripe_checkout_session_id: session.id,
       })
       .eq('id', order.id)

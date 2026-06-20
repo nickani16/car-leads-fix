@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   LoaderCircle,
   ShieldCheck,
-  Sparkles,
   Star,
   Trash2,
 } from 'lucide-react'
@@ -63,17 +62,11 @@ export default function DealerSellPage() {
     const result = (await response.json().catch(() => ({}))) as {
       error?: string
       leadId?: string
-      checkoutUrl?: string
     }
 
     if (!response.ok || !result.leadId) {
       setError(result.error || 'The vehicle could not be submitted.')
       setSubmitting(false)
-      return
-    }
-
-    if (result.checkoutUrl) {
-      window.location.assign(result.checkoutUrl)
       return
     }
 
@@ -149,35 +142,6 @@ export default function DealerSellPage() {
       </section>
 
       <form onSubmit={submit} className="space-y-6">
-        <FormSection
-          icon={<Sparkles size={19} />}
-          title="Choose marketplace service"
-          description="Every dealer vehicle is reviewed by Autorell before publication. Paid time starts only after approval."
-        >
-          <div className="grid gap-4 lg:grid-cols-3">
-            <PackageOption
-              value="extended_7d"
-              title="7 days"
-              price="100 SEK"
-              description="Standard exposure to verified European dealers."
-            />
-            <PackageOption
-              value="premium_30d"
-              title="Premium 15 days"
-              price="290 SEK"
-              description="Higher placement in the marketplace and longer exposure."
-              highlighted
-            />
-            <PackageOption
-              value="managed_sale"
-              title="Managed Sale"
-              price="1,500 SEK"
-              description="A dedicated Autorell salesperson actively prioritizes the vehicle to our buyer network."
-              premium
-            />
-          </div>
-        </FormSection>
-
         <FormSection
           icon={<BadgeEuro size={19} />}
           title="Your expected net price"
@@ -515,10 +479,10 @@ export default function DealerSellPage() {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 text-[#B4D9EF]" size={20} />
             <div>
-              <p className="font-semibold">Continue to secure payment</p>
+              <p className="font-semibold">Submit free of charge</p>
               <p className="mt-1 text-sm text-white/60">
-                The vehicle is published only after payment and Autorell
-                approval. Rejected vehicles are refunded.
+                Offering stock to Autorell is always free. Optional paid
+                marketplace upgrades can be selected later from My sales.
               </p>
             </div>
           </div>
@@ -532,53 +496,11 @@ export default function DealerSellPage() {
             ) : (
               <ArrowRight size={17} />
             )}
-            {submitting ? 'Preparing payment...' : 'Continue to payment'}
+            {submitting ? 'Submitting...' : 'Submit vehicle free'}
           </button>
         </div>
       </form>
     </main>
-  )
-}
-
-function PackageOption({
-  value,
-  title,
-  price,
-  description,
-  highlighted = false,
-  premium = false,
-}: {
-  value: string
-  title: string
-  price: string
-  description: string
-  highlighted?: boolean
-  premium?: boolean
-}) {
-  return (
-    <label
-      className={`relative flex cursor-pointer flex-col rounded-[20px] border p-5 transition has-[:checked]:ring-2 has-[:checked]:ring-[#397b9f] ${
-        premium
-          ? 'border-[#d2b46c] bg-[#fff9e9]'
-          : highlighted
-            ? 'border-[#9bc9e4] bg-[#f1f8fc]'
-            : 'border-[#deddd7] bg-[#faf9f6]'
-      }`}
-    >
-      <input
-        type="radio"
-        name="packageId"
-        value={value}
-        required
-        defaultChecked={highlighted}
-        className="absolute right-5 top-5 h-4 w-4 accent-[#397b9f]"
-      />
-      <span className="pr-7 text-lg font-semibold">{title}</span>
-      <span className="mt-2 text-2xl font-semibold">{price}</span>
-      <span className="mt-4 text-sm leading-6 text-[#687177]">
-        {description}
-      </span>
-    </label>
   )
 }
 

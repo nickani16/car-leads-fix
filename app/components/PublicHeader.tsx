@@ -562,9 +562,6 @@ export default function PublicHeader({
                     locale={localizedLanguage.locale}
                     className="h-[14px] w-[21px]"
                   />
-                  <span className="font-semibold tracking-[0.01em]">
-                    {localizedLanguage.code}
-                  </span>
                   <span>{localizedLanguage.label}</span>
                   <ChevronDown className="h-3.5 w-3.5 transition group-open/language:rotate-180" />
                 </summary>
@@ -593,9 +590,6 @@ export default function PublicHeader({
                           <span className="block text-[11px] text-[#7a878d]">
                             {market.description}
                           </span>
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-[0.08em] text-[#70818a]">
-                          {market.code}
                         </span>
                       </a>
                     ))}
@@ -891,8 +885,8 @@ export default function PublicHeader({
                       <strong className="block font-medium leading-4">
                         {market.label}
                       </strong>
-                      <span className="mt-0.5 block text-[10px] uppercase tracking-[0.12em] text-[#7b878c]">
-                        {market.code}
+                      <span className="mt-0.5 block text-[10px] text-[#7b878c]">
+                        {market.description}
                       </span>
                     </span>
                     {market.locale === activeLocale && (
