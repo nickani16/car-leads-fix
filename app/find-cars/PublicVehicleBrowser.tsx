@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
@@ -8,12 +7,14 @@ import {
   CalendarDays,
   CarFront,
   Check,
+  ChevronDown,
   Fuel,
   Gauge,
   Globe2,
   LockKeyhole,
   Search,
   ShieldCheck,
+  SlidersHorizontal,
   X,
 } from 'lucide-react'
 
@@ -27,18 +28,38 @@ export type PublicVehicle = {
   bodyType: string | null
   originCountry: string
   saleFormat: 'auction' | 'marketplace'
-  image: string | null
+  priceBand: 'under-15' | '15-30' | '30-50' | '50-plus' | null
+  imageAvailable: boolean
 }
 
 type Locale = 'sv' | 'de' | 'en'
 
 const copy = {
   sv: {
+    filterEyebrow: 'Filtrera fordonsutbudet',
+    filterTitle: 'Hitta rätt bil snabbare.',
+    filterText:
+      'Kombinera märke, modell, drivlina, prisnivå, årsmodell och miltal. Fullständigt pris och fordonsdata visas efter godkänt handlarlogin.',
     search: 'Sök märke eller modell',
+    allMakes: 'Alla märken',
+    allModels: 'Alla modeller',
+    allFuel: 'Alla drivlinor',
+    allBodies: 'Alla karosser',
     allCountries: 'Alla länder',
-    allFormats: 'Alla format',
+    allFormats: 'Alla säljformat',
+    allPrices: 'Alla prisnivåer',
+    minYear: 'Från årsmodell',
+    maxMileage: 'Max miltal',
     auction: 'Auktion',
     marketplace: 'Fast pris',
+    under15: 'Under €15 000',
+    between15And30: '€15 000–30 000',
+    between30And50: '€30 000–50 000',
+    over50: 'Över €50 000',
+    electric: 'El',
+    hybrid: 'Hybrid',
+    diesel: 'Diesel',
+    petrol: 'Bensin',
     vehicles: 'fordon',
     view: 'Visa fordon',
     year: 'Modellår',
@@ -47,6 +68,7 @@ const copy = {
     origin: 'Ursprungsland',
     locked: 'Fullständig fordonsinformation är låst',
     imageLocked: 'Fordonsbild skyddad',
+    noPublicImage: 'Bilder visas endast för godkända handlare',
     modalTitle: 'Vill du köpa det här fordonet?',
     modalText:
       'Ansök som bilhandlare för att se registrering, VIN, fullständig skickrapport, alla bilder, pris och budgivning.',
@@ -55,10 +77,11 @@ const copy = {
     existing: 'Är du redan kund?',
     loginText: 'Logga in för att se hela fordonet och köpa eller lägga bud.',
     login: 'Logga in',
-    emptyTitle: 'Nya fordon publiceras snart',
-    emptyText:
-      'Svenska fordon som har godkänts för Autorells exporthandel visas här så snart de publiceras.',
-    reset: 'Rensa filter',
+    emptyTitle: 'Inga fordon matchar filtren',
+    emptyText: 'Prova att ta bort ett eller flera filter för att bredda sökningen.',
+    reset: 'Rensa alla filter',
+    activeFilters: 'Aktiva filter',
+    filters: 'Filter',
     accessItems: [
       'VIN och registreringsnummer',
       'Skickrapport och fullständigt bildgalleri',
@@ -66,11 +89,30 @@ const copy = {
     ],
   },
   de: {
+    filterEyebrow: 'Fahrzeugangebot filtern',
+    filterTitle: 'Schneller das passende Fahrzeug finden.',
+    filterText:
+      'Kombinieren Sie Marke, Modell, Antrieb, Preisstufe, Modelljahr und Kilometerstand. Vollständige Preise und Daten sind nach Händlerfreigabe sichtbar.',
     search: 'Marke oder Modell suchen',
+    allMakes: 'Alle Marken',
+    allModels: 'Alle Modelle',
+    allFuel: 'Alle Antriebe',
+    allBodies: 'Alle Karosserien',
     allCountries: 'Alle Länder',
-    allFormats: 'Alle Formate',
+    allFormats: 'Alle Verkaufsarten',
+    allPrices: 'Alle Preisstufen',
+    minYear: 'Ab Modelljahr',
+    maxMileage: 'Max. Kilometer',
     auction: 'Auktion',
     marketplace: 'Festpreis',
+    under15: 'Unter €15.000',
+    between15And30: '€15.000–30.000',
+    between30And50: '€30.000–50.000',
+    over50: 'Über €50.000',
+    electric: 'Elektro',
+    hybrid: 'Hybrid',
+    diesel: 'Diesel',
+    petrol: 'Benzin',
     vehicles: 'Fahrzeuge',
     view: 'Fahrzeug ansehen',
     year: 'Modelljahr',
@@ -79,6 +121,7 @@ const copy = {
     origin: 'Herkunftsland',
     locked: 'Vollständige Fahrzeugdaten sind geschützt',
     imageLocked: 'Fahrzeugbild geschützt',
+    noPublicImage: 'Bilder sind nur für freigegebene Händler sichtbar',
     modalTitle: 'Möchten Sie dieses Fahrzeug kaufen?',
     modalText:
       'Registrieren Sie sich als Händler, um Kennzeichen, VIN, Zustandsbericht, alle Bilder, Preis und Gebote zu sehen.',
@@ -88,10 +131,11 @@ const copy = {
     loginText:
       'Melden Sie sich an, um das vollständige Fahrzeug zu sehen und zu kaufen oder zu bieten.',
     login: 'Anmelden',
-    emptyTitle: 'Neue Fahrzeuge folgen in Kürze',
-    emptyText:
-      'Freigegebene Fahrzeuge aus Schweden und weiteren europäischen Märkten erscheinen hier nach Veröffentlichung.',
-    reset: 'Filter zurücksetzen',
+    emptyTitle: 'Keine Fahrzeuge entsprechen den Filtern',
+    emptyText: 'Entfernen Sie einen oder mehrere Filter, um die Suche zu erweitern.',
+    reset: 'Alle Filter löschen',
+    activeFilters: 'Aktive Filter',
+    filters: 'Filter',
     accessItems: [
       'VIN und Kennzeichen',
       'Zustandsbericht und vollständige Bilder',
@@ -99,11 +143,30 @@ const copy = {
     ],
   },
   en: {
+    filterEyebrow: 'Filter available vehicles',
+    filterTitle: 'Find the right vehicle faster.',
+    filterText:
+      'Combine make, model, powertrain, price band, model year and mileage. Complete pricing and vehicle data are available after dealer approval.',
     search: 'Search make or model',
+    allMakes: 'All makes',
+    allModels: 'All models',
+    allFuel: 'All powertrains',
+    allBodies: 'All body types',
     allCountries: 'All countries',
-    allFormats: 'All formats',
+    allFormats: 'All sale formats',
+    allPrices: 'All price bands',
+    minYear: 'Minimum model year',
+    maxMileage: 'Maximum mileage',
     auction: 'Auction',
     marketplace: 'Fixed price',
+    under15: 'Under €15,000',
+    between15And30: '€15,000–30,000',
+    between30And50: '€30,000–50,000',
+    over50: 'Over €50,000',
+    electric: 'Electric',
+    hybrid: 'Hybrid',
+    diesel: 'Diesel',
+    petrol: 'Petrol',
     vehicles: 'vehicles',
     view: 'View vehicle',
     year: 'Model year',
@@ -112,6 +175,7 @@ const copy = {
     origin: 'Origin',
     locked: 'Complete vehicle information is protected',
     imageLocked: 'Vehicle image protected',
+    noPublicImage: 'Images are available to approved dealers only',
     modalTitle: 'Do you want to buy this vehicle?',
     modalText:
       'Apply as a dealer to see registration, VIN, the complete condition report, all images, price and bidding.',
@@ -121,10 +185,11 @@ const copy = {
     loginText:
       'Log in to view the complete vehicle and buy or place a bid.',
     login: 'Log in',
-    emptyTitle: 'New vehicles are coming soon',
-    emptyText:
-      'Swedish vehicles approved for Autorell export trading will appear here when published.',
-    reset: 'Reset filters',
+    emptyTitle: 'No vehicles match your filters',
+    emptyText: 'Remove one or more filters to broaden the search.',
+    reset: 'Clear all filters',
+    activeFilters: 'Active filters',
+    filters: 'Filters',
     accessItems: [
       'VIN & registration',
       'Condition report & full gallery',
@@ -146,6 +211,15 @@ function formatCountry(countryCode: string, locale: Locale) {
   }
 }
 
+function normalizedFuel(value: string | null) {
+  const fuel = (value || '').toLowerCase()
+  if (fuel.includes('electric') || fuel.includes('elektr') || fuel === 'el') return 'electric'
+  if (fuel.includes('hybrid')) return 'hybrid'
+  if (fuel.includes('diesel')) return 'diesel'
+  if (fuel.includes('petrol') || fuel.includes('gasoline') || fuel.includes('bensin')) return 'petrol'
+  return fuel
+}
+
 export default function PublicVehicleBrowser({
   vehicles,
   locale,
@@ -155,86 +229,237 @@ export default function PublicVehicleBrowser({
 }) {
   const t = copy[locale]
   const [search, setSearch] = useState('')
+  const [make, setMake] = useState('')
+  const [model, setModel] = useState('')
+  const [fuel, setFuel] = useState('')
+  const [bodyType, setBodyType] = useState('')
   const [country, setCountry] = useState('')
   const [format, setFormat] = useState('')
-  const [selectedVehicle, setSelectedVehicle] =
-    useState<PublicVehicle | null>(null)
+  const [priceBand, setPriceBand] = useState('')
+  const [minYear, setMinYear] = useState('')
+  const [maxMileage, setMaxMileage] = useState('')
+  const [selectedVehicle, setSelectedVehicle] = useState<PublicVehicle | null>(null)
 
-  const countries = useMemo(
+  const makes = useMemo(
+    () => Array.from(new Set(vehicles.map((vehicle) => vehicle.make).filter(Boolean) as string[])).sort(),
+    [vehicles]
+  )
+  const models = useMemo(
     () =>
-      Array.from(new Set(vehicles.map((vehicle) => vehicle.originCountry))).sort(),
+      Array.from(
+        new Set(
+          vehicles
+            .filter((vehicle) => !make || vehicle.make === make)
+            .map((vehicle) => vehicle.model)
+            .filter(Boolean) as string[]
+        )
+      ).sort(),
+    [make, vehicles]
+  )
+  const bodyTypes = useMemo(
+    () => Array.from(new Set(vehicles.map((vehicle) => vehicle.bodyType).filter(Boolean) as string[])).sort(),
+    [vehicles]
+  )
+  const countries = useMemo(
+    () => Array.from(new Set(vehicles.map((vehicle) => vehicle.originCountry))).sort(),
     [vehicles]
   )
 
   const filteredVehicles = useMemo(() => {
     const query = search.trim().toLowerCase()
+    const yearFloor = Number(minYear)
+    const mileageCeiling = Number(maxMileage)
+
     return vehicles.filter((vehicle) => {
       const matchesSearch =
         !query ||
         [vehicle.make, vehicle.model, vehicle.fuelType, vehicle.bodyType].some(
           (value) => value?.toLowerCase().includes(query)
         )
+
       return (
         matchesSearch &&
+        (!make || vehicle.make === make) &&
+        (!model || vehicle.model === model) &&
+        (!fuel || normalizedFuel(vehicle.fuelType) === fuel) &&
+        (!bodyType || vehicle.bodyType === bodyType) &&
         (!country || vehicle.originCountry === country) &&
-        (!format || vehicle.saleFormat === format)
+        (!format || vehicle.saleFormat === format) &&
+        (!priceBand || vehicle.priceBand === priceBand) &&
+        (!yearFloor || Number(vehicle.modelYear) >= yearFloor) &&
+        (!mileageCeiling ||
+          (vehicle.mileageKm !== null && vehicle.mileageKm <= mileageCeiling))
       )
     })
-  }, [country, format, search, vehicles])
+  }, [
+    bodyType,
+    country,
+    format,
+    fuel,
+    make,
+    maxMileage,
+    minYear,
+    model,
+    priceBand,
+    search,
+    vehicles,
+  ])
+
+  const activeFilterCount = [
+    search,
+    make,
+    model,
+    fuel,
+    bodyType,
+    country,
+    format,
+    priceBand,
+    minYear,
+    maxMileage,
+  ].filter(Boolean).length
 
   function resetFilters() {
     setSearch('')
+    setMake('')
+    setModel('')
+    setFuel('')
+    setBodyType('')
     setCountry('')
     setFormat('')
+    setPriceBand('')
+    setMinYear('')
+    setMaxMileage('')
   }
 
   return (
     <>
-      <section className="border-y border-[#dfe5e7] bg-white">
-        <div className="mx-auto grid max-w-[1320px] gap-3 px-5 py-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_230px_230px_auto] lg:px-12">
-          <label className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#849098]" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder={t.search}
-              className="h-12 w-full rounded-full border border-[#d8dfe2] bg-[#f9faf8] pl-11 pr-4 text-sm outline-none transition focus:border-[#8dbdd8] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/30"
-            />
-          </label>
-          <select
-            value={country}
-            onChange={(event) => setCountry(event.target.value)}
-            className="h-12 rounded-full border border-[#d8dfe2] bg-[#f9faf8] px-4 text-sm outline-none focus:border-[#8dbdd8]"
-          >
-            <option value="">{t.allCountries}</option>
-            {countries.map((countryCode) => (
-              <option key={countryCode} value={countryCode}>
-                {formatCountry(countryCode, locale)}
-              </option>
-            ))}
-          </select>
-          <select
-            value={format}
-            onChange={(event) => setFormat(event.target.value)}
-            className="h-12 rounded-full border border-[#d8dfe2] bg-[#f9faf8] px-4 text-sm outline-none focus:border-[#8dbdd8]"
-          >
-            <option value="">{t.allFormats}</option>
-            <option value="auction">{t.auction}</option>
-            <option value="marketplace">{t.marketplace}</option>
-          </select>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="h-12 rounded-full border border-[#d8dfe2] px-5 text-sm transition hover:border-[#242424]"
-          >
-            {t.reset}
-          </button>
+      <section className="border-y border-[#dfe5e7] bg-[#eef5f7] py-8 sm:py-12">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
+          <div className="overflow-hidden rounded-[24px] border border-[#d5e1e5] bg-white shadow-[0_24px_70px_rgba(37,63,75,.1)] sm:rounded-[30px]">
+            <div className="grid gap-6 border-b border-[#dce7eb] bg-[linear-gradient(135deg,#f8fcfd_0%,#e8f4f8_100%)] p-6 text-[#202124] sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div>
+                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4f8298]">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {t.filterEyebrow}
+                </p>
+                <h2 className="mt-3 text-3xl tracking-[-0.045em] sm:text-4xl">
+                  {t.filterTitle}
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-[#60747e]">
+                  {t.filterText}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full border border-[#c8dce4] bg-white/75 px-4 py-2 text-xs text-[#60747e]">
+                  {activeFilterCount} {t.activeFilters.toLowerCase()}
+                </span>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="rounded-full bg-[#B4D9EF] px-4 py-2 text-xs font-semibold text-[#202124] shadow-sm transition hover:bg-white"
+                >
+                  {t.reset}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-7 lg:grid-cols-4">
+              <label className="relative sm:col-span-2">
+                <span className="mb-2 block text-xs font-semibold text-[#52616b]">
+                  {t.search}
+                </span>
+                <Search className="pointer-events-none absolute bottom-3.5 left-4 h-4 w-4 text-[#849098]" />
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t.search}
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] pl-11 pr-4 text-sm outline-none transition focus:border-[#8dbdd8] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/30"
+                />
+              </label>
+              <FilterSelect value={make} onChange={(value) => {
+                setMake(value)
+                setModel('')
+              }} label={t.allMakes} options={makes} />
+              <FilterSelect value={model} onChange={setModel} label={t.allModels} options={models} disabled={!models.length} />
+              <FilterSelect
+                value={fuel}
+                onChange={setFuel}
+                label={t.allFuel}
+                options={[
+                  ['electric', t.electric],
+                  ['hybrid', t.hybrid],
+                  ['diesel', t.diesel],
+                  ['petrol', t.petrol],
+                ]}
+              />
+              <FilterSelect value={bodyType} onChange={setBodyType} label={t.allBodies} options={bodyTypes} />
+              <FilterSelect
+                value={priceBand}
+                onChange={setPriceBand}
+                label={t.allPrices}
+                options={[
+                  ['under-15', t.under15],
+                  ['15-30', t.between15And30],
+                  ['30-50', t.between30And50],
+                  ['50-plus', t.over50],
+                ]}
+              />
+              <FilterSelect
+                value={format}
+                onChange={setFormat}
+                label={t.allFormats}
+                options={[
+                  ['auction', t.auction],
+                  ['marketplace', t.marketplace],
+                ]}
+              />
+              <FilterSelect
+                value={country}
+                onChange={setCountry}
+                label={t.allCountries}
+                options={countries.map(
+                  (code): [string, string] => [
+                    code,
+                    formatCountry(code, locale),
+                  ]
+                )}
+              />
+              <label>
+                <span className="mb-2 block text-xs font-semibold text-[#52616b]">
+                  {t.minYear}
+                </span>
+                <input
+                  type="number"
+                  min="1990"
+                  max="2035"
+                  value={minYear}
+                  onChange={(event) => setMinYear(event.target.value)}
+                  placeholder="2020"
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30"
+                />
+              </label>
+              <label>
+                <span className="mb-2 block text-xs font-semibold text-[#52616b]">
+                  {t.maxMileage}
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="5000"
+                  value={maxMileage}
+                  onChange={(event) => setMaxMileage(event.target.value)}
+                  placeholder="100000"
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30"
+                />
+              </label>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="bg-[#f7f5f0] py-12 sm:py-16">
         <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-[#67757c]">
               <strong className="text-[#202124]">{filteredVehicles.length}</strong>{' '}
               {t.vehicles}
@@ -246,41 +471,38 @@ export default function PublicVehicleBrowser({
           </div>
 
           {filteredVehicles.length ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4 xl:gap-5">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {filteredVehicles.map((vehicle) => (
                 <article
                   key={vehicle.id}
-                  className="group min-w-0 overflow-hidden rounded-[16px] border border-[#dde4e6] bg-white shadow-[0_12px_34px_rgba(32,33,36,.055)] transition hover:-translate-y-1 hover:shadow-[0_24px_65px_rgba(42,68,80,.11)] sm:rounded-[22px]"
+                  className="group min-w-0 overflow-hidden rounded-[22px] border border-[#dde4e6] bg-white shadow-[0_12px_34px_rgba(32,33,36,.055)] transition hover:-translate-y-1 hover:shadow-[0_24px_65px_rgba(42,68,80,.11)]"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#d9e1e4] sm:aspect-[16/10]">
-                    {vehicle.image ? (
-                      <Image
-                        src={vehicle.image}
-                        alt={`${vehicle.make || 'Vehicle'} ${vehicle.model || ''}`}
-                        fill
-                        unoptimized
-                        className="scale-[1.04] object-cover transition duration-500 group-hover:scale-[1.08]"
-                      />
-                    ) : (
-                      <div className="grid h-full place-items-center text-[#92a0a7]">
-                        <CarFront className="h-12 w-12" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.16),rgba(22,38,48,.18))]" />
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(145deg,#dce5e8_0%,#eef3f4_48%,#cbd7dc_100%)]">
+                    <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_25%_20%,white_0,transparent_34%),linear-gradient(120deg,transparent_30%,rgba(79,110,124,.14)_31%,transparent_62%)]" />
                     <div className="absolute inset-0 grid place-items-center">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/45 bg-[#202528]/72 px-2.5 py-1.5 text-[9px] font-semibold text-white shadow-lg backdrop-blur-md sm:gap-2 sm:px-3 sm:text-[11px]">
-                        <LockKeyhole className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                        {t.imageLocked}
-                      </span>
+                      <div className="flex flex-col items-center text-center text-[#62757f]">
+                        <span className="grid h-16 w-16 place-items-center rounded-full border border-white/80 bg-white/55 shadow-sm backdrop-blur">
+                          <CarFront className="h-8 w-8" />
+                        </span>
+                        <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#bfd4dd] bg-white/88 px-4 py-2 text-xs font-semibold text-[#3f6577] shadow-md backdrop-blur-md">
+                          <LockKeyhole className="h-4 w-4" />
+                          {t.imageLocked}
+                        </span>
+                        {vehicle.imageAvailable && (
+                          <span className="mt-2 text-[10px] font-medium text-[#62757f]">
+                            {t.noPublicImage}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-1 text-[9px] font-semibold text-[#202124] shadow-sm backdrop-blur sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[11px]">
+                    <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1.5 text-[11px] font-semibold text-[#202124] shadow-sm backdrop-blur">
                       {vehicle.saleFormat === 'marketplace'
                         ? t.marketplace
                         : t.auction}
                     </span>
-                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2.5 pt-10 text-[10px] text-white sm:px-4 sm:pb-4 sm:pt-12 sm:text-xs">
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <Globe2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[#456878]/68 to-transparent px-4 pb-4 pt-12 text-xs text-white">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <Globe2 className="h-4 w-4 shrink-0" />
                         <span className="truncate">
                           {formatCountry(vehicle.originCountry, locale)}
                         </span>
@@ -293,48 +515,30 @@ export default function PublicVehicleBrowser({
                     </div>
                   </div>
 
-                  <div className="p-3 sm:p-5">
-                    <h2 className="truncate text-sm font-semibold tracking-[-0.025em] sm:text-xl sm:tracking-[-0.035em]">
+                  <div className="p-5">
+                    <h2 className="truncate text-xl font-semibold tracking-[-0.035em]">
                       {vehicle.make || 'Vehicle'} {vehicle.model || ''}
                     </h2>
-                    <div className="mt-3 grid gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-3">
-                      <VehicleFact
-                        icon={CalendarDays}
-                        label={t.year}
-                        value={vehicle.modelYear || '—'}
-                      />
+                    <div className="mt-5 grid min-w-0 grid-cols-2 gap-3">
+                      <VehicleFact icon={CalendarDays} label={t.year} value={vehicle.modelYear || '—'} />
                       <VehicleFact
                         icon={Gauge}
                         label={t.mileage}
-                        value={
-                          vehicle.mileageKm !== null
-                            ? `${vehicle.mileageKm.toLocaleString()} km`
-                            : '—'
-                        }
+                        value={vehicle.mileageKm !== null ? `${vehicle.mileageKm.toLocaleString()} km` : '—'}
                       />
-                      <div className="hidden sm:contents">
-                        <VehicleFact
-                          icon={Fuel}
-                          label={t.fuel}
-                          value={vehicle.fuelType || '—'}
-                        />
-                        <VehicleFact
-                          icon={Globe2}
-                          label={t.origin}
-                          value={formatCountry(vehicle.originCountry, locale)}
-                        />
-                      </div>
+                      <VehicleFact icon={Fuel} label={t.fuel} value={vehicle.fuelType || '—'} />
+                      <VehicleFact icon={Globe2} label={t.origin} value={formatCountry(vehicle.originCountry, locale)} />
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between border-t border-[#e7ebec] pt-3 sm:mt-5 sm:pt-4">
-                      <span className="hidden items-center gap-2 text-xs text-[#71818a] sm:inline-flex">
-                        <LockKeyhole className="h-4 w-4" />
-                        {t.locked}
+                    <div className="mt-5 flex min-w-0 items-center justify-between gap-4 border-t border-[#e7ebec] pt-4">
+                      <span className="flex min-w-0 items-center gap-2 text-xs text-[#71818a]">
+                        <LockKeyhole className="h-4 w-4 shrink-0" />
+                        <span className="line-clamp-2">{t.locked}</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => setSelectedVehicle(vehicle)}
-                        className="inline-flex w-full items-center justify-between gap-1 text-[11px] font-semibold sm:w-auto sm:gap-2 sm:text-sm"
+                        className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold"
                       >
                         {t.view}
                         <ArrowRight className="h-4 w-4" />
@@ -347,19 +551,20 @@ export default function PublicVehicleBrowser({
           ) : (
             <div className="rounded-[24px] border border-[#dce4e7] bg-white px-6 py-16 text-center shadow-[0_18px_55px_rgba(32,33,36,.045)]">
               <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#e7f2f7] text-[#4f8298]">
-                <CarFront className="h-6 w-6" />
+                <Search className="h-6 w-6" />
               </span>
               <h2 className="mt-6 text-2xl font-semibold">{t.emptyTitle}</h2>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#68767c]">
                 {t.emptyText}
               </p>
-              <Link
-                href="/dealer-apply"
+              <button
+                type="button"
+                onClick={resetFilters}
                 className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white"
               >
-                {t.signup}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+                {t.reset}
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
         </div>
@@ -383,34 +588,18 @@ export default function PublicVehicleBrowser({
             </button>
 
             <div className="grid md:grid-cols-[.86fr_1.14fr]">
-              <div className="relative min-h-[260px] bg-[#e7edef] md:min-h-full">
-                {selectedVehicle.image ? (
-                  <Image
-                    src={selectedVehicle.image}
-                    alt={`${selectedVehicle.make || 'Vehicle'} ${selectedVehicle.model || ''}`}
-                    fill
-                    unoptimized
-                    className="scale-[1.04] object-cover"
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center text-[#92a0a7]">
-                    <CarFront className="h-14 w-14" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/5" />
-                <div className="absolute inset-0 grid place-items-center">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-black/45 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md">
+              <div className="relative grid min-h-[300px] place-items-center overflow-hidden bg-[linear-gradient(145deg,#dce5e8,#c8d5da)] p-8 text-center">
+                <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_25%_20%,white_0,transparent_34%)]" />
+                <div className="relative">
+                  <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-white/60 text-[#62757f] shadow">
+                    <CarFront className="h-10 w-10" />
+                  </span>
+                  <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#bfd4dd] bg-white/88 px-4 py-2 text-xs font-semibold text-[#3f6577] shadow-md backdrop-blur-md">
                     <LockKeyhole className="h-4 w-4" />
                     {t.imageLocked}
                   </span>
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/65">
-                    {selectedVehicle.saleFormat === 'marketplace'
-                      ? t.marketplace
-                      : t.auction}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold">
+                  <p className="mt-4 text-sm text-[#526873]">{t.noPublicImage}</p>
+                  <p className="mt-7 text-2xl font-semibold text-[#202124]">
                     {selectedVehicle.make} {selectedVehicle.model}
                   </p>
                 </div>
@@ -421,15 +610,10 @@ export default function PublicVehicleBrowser({
                   <LockKeyhole className="h-4 w-4" />
                   {t.signupEyebrow}
                 </span>
-                <h2
-                  id="vehicle-access-title"
-                  className="mt-5 text-3xl font-semibold tracking-[-0.045em]"
-                >
+                <h2 id="vehicle-access-title" className="mt-5 text-3xl font-semibold tracking-[-0.045em]">
                   {t.modalTitle}
                 </h2>
-                <p className="mt-4 text-sm leading-7 text-[#65747b]">
-                  {t.modalText}
-                </p>
+                <p className="mt-4 text-sm leading-7 text-[#65747b]">{t.modalText}</p>
 
                 <ul className="mt-6 grid gap-3 text-sm text-[#52616b]">
                   {t.accessItems.map((item) => (
@@ -442,23 +626,15 @@ export default function PublicVehicleBrowser({
                   ))}
                 </ul>
 
-                <Link
-                  href="/dealer-apply"
-                  className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white"
-                >
+                <Link href="/dealer-apply" className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white">
                   {t.signup}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
                 <div className="mt-7 border-t border-[#e2e7e9] pt-6">
                   <p className="font-semibold">{t.existing}</p>
-                  <p className="mt-2 text-sm leading-6 text-[#718087]">
-                    {t.loginText}
-                  </p>
-                  <Link
-                    href="/login"
-                    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold"
-                  >
+                  <p className="mt-2 text-sm leading-6 text-[#718087]">{t.loginText}</p>
+                  <Link href="/login" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
                     {t.login}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -472,6 +648,49 @@ export default function PublicVehicleBrowser({
   )
 }
 
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: {
+  label: string
+  value: string
+  options: string[] | Array<[string, string]>
+  onChange: (value: string) => void
+  disabled?: boolean
+}) {
+  return (
+    <label className="min-w-0">
+      <span className="mb-2 block truncate text-xs font-semibold text-[#52616b]">
+        {label}
+      </span>
+      <span className="relative block">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          className="h-12 w-full appearance-none rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 pr-10 text-sm outline-none transition focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30 disabled:opacity-50"
+        >
+          <option value="">{label}</option>
+          {options.map((option) => {
+            const [optionValue, optionLabel] = Array.isArray(option)
+              ? option
+              : [option, option]
+            return (
+              <option key={optionValue} value={optionValue}>
+                {optionLabel}
+              </option>
+            )
+          })}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#738087]" />
+      </span>
+    </label>
+  )
+}
+
 function VehicleFact({
   icon: Icon,
   label,
@@ -482,12 +701,12 @@ function VehicleFact({
   value: string
 }) {
   return (
-    <div className="min-w-0 rounded-[10px] bg-[#f6f7f4] p-2 sm:rounded-[13px] sm:p-3">
-      <span className="flex items-center gap-1 text-[8px] font-semibold uppercase tracking-[0.06em] text-[#849098] sm:gap-2 sm:text-[10px] sm:tracking-[0.1em]">
-        <Icon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
-        {label}
+    <div className="min-w-0 overflow-hidden rounded-[13px] bg-[#f6f7f4] p-3">
+      <span className="flex min-w-0 items-start gap-2 text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-[#849098]">
+        <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span className="min-w-0 break-words">{label}</span>
       </span>
-      <strong className="mt-1.5 block truncate text-[11px] font-medium sm:mt-2 sm:text-sm">
+      <strong className="mt-2 block min-w-0 truncate text-sm font-medium">
         {value}
       </strong>
     </div>

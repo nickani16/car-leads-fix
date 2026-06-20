@@ -82,75 +82,20 @@ export async function GET(
 
     const { default: sharp } = await import('sharp')
     const source = Buffer.from(await sourceResponse.arrayBuffer())
-    const base = sharp(source, {
+    const protectedImage = await sharp(source, {
       failOn: 'warning',
       limitInputPixels: 40_000_000,
     })
       .rotate()
-      .resize(1200, 800, { fit: 'cover' })
-
-    const width = 1200
-    const height = 800
-    const blurred = await base.clone().blur(18).toBuffer()
-    const edgeX = Math.round(width * 0.08)
-    const topHeight = Math.round(height * 0.16)
-    const bottomHeight = Math.round(height * 0.2)
-    const topStrip = await sharp(blurred)
-      .extract({ left: 0, top: 0, width, height: topHeight })
-      .toBuffer()
-    const bottomStrip = await sharp(blurred)
-      .extract({
-        left: 0,
-        top: height - bottomHeight,
-        width,
-        height: bottomHeight,
-      })
-      .toBuffer()
-    const leftStrip = await sharp(blurred)
-      .extract({ left: 0, top: 0, width: edgeX, height })
-      .toBuffer()
-    const rightStrip = await sharp(blurred)
-      .extract({ left: width - edgeX, top: 0, width: edgeX, height })
-      .toBuffer()
-    const plateWidth = Math.max(180, Math.round(width * 0.42))
-    const plateHeight = Math.max(70, Math.round(height * 0.16))
-    const plate = await sharp(blurred)
-      .extract({
-        left: Math.max(0, Math.round((width - plateWidth) / 2)),
-        top: Math.max(0, Math.min(height - plateHeight, Math.round(height * 0.62))),
-        width: Math.min(width, plateWidth),
-        height: Math.min(height, plateHeight),
-      })
-      .toBuffer()
-    const watermark = Buffer.from(
-      `<svg width="${width}" height="${height}">
-        <text x="50%" y="52%" text-anchor="middle" font-family="Arial, sans-serif"
-          font-size="${Math.max(30, Math.round(width * 0.045))}" font-weight="700"
-          fill="rgba(255,255,255,.46)">AUTORELL · PROTECTED VEHICLE</text>
-      </svg>`
-    )
-
-    const protectedImage = await base
-      .composite([
-        { input: topStrip, left: 0, top: 0 },
-        { input: bottomStrip, left: 0, top: height - bottomHeight },
-        { input: leftStrip, left: 0, top: 0 },
-        { input: rightStrip, left: width - edgeX, top: 0 },
-        {
-          input: plate,
-          left: Math.max(0, Math.round((width - plateWidth) / 2)),
-          top: Math.max(0, Math.min(height - plateHeight, Math.round(height * 0.62))),
-        },
-        { input: watermark, left: 0, top: 0 },
-      ])
-      .webp({ quality: 80, effort: 4 })
+      .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 86, effort: 4 })
       .toBuffer()
 
     return new Response(new Uint8Array(protectedImage), {
       headers: {
         'Content-Type': 'image/webp',
         'Cache-Control': 'private, no-store',
-        'Content-Disposition': 'inline; filename="autorell-protected-vehicle.webp"',
+        'Content-Disposition': 'inline; filename="autorell-vehicle.webp"',
         'X-Content-Type-Options': 'nosniff',
       },
     })

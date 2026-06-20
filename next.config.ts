@@ -3,12 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ['sharp'],
-  outputFileTracingIncludes: {
-    '/api/public/vehicle-image/*': [
-      './node_modules/@img/sharp-linux-x64/**/*',
-      './node_modules/@img/sharp-libvips-linux-x64/**/*',
-    ],
-  },
   async headers() {
     return [
       {

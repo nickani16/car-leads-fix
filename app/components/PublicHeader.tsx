@@ -631,7 +631,6 @@ export default function PublicHeader({
               }`}
             >
               <DesktopMenu
-                number="01"
                 label={content.links[0][1]}
                 href={content.links[0][0]}
                 menu={sellerMenu}
@@ -640,7 +639,6 @@ export default function PublicHeader({
                 icon={ScanSearch}
               />
               <DesktopMenu
-                number="02"
                 label={content.links[1][1]}
                 href={content.links[1][0]}
                 menu={processMenu}
@@ -649,7 +647,6 @@ export default function PublicHeader({
               />
 
               <DesktopMenu
-                number="03"
                 label={content.links[2][1]}
                 href={content.links[2][0]}
                 menu={companyMenu}
@@ -662,9 +659,6 @@ export default function PublicHeader({
                   href={activeLocale === 'sv' ? '/for-handlare' : content.links[3][0]}
                   className="flex min-h-10 shrink-0 appearance-none items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
                 >
-                  <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
-                    04
-                  </span>
                   {content.dealerLabel}
                   <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
                 </Link>
@@ -763,9 +757,6 @@ export default function PublicHeader({
                 href={content.links[4][0]}
                 className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
               >
-                <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d]">
-                  05
-                </span>
                 {content.links[4][1]}
               </Link>
             </nav>
@@ -839,25 +830,6 @@ export default function PublicHeader({
             >
               {content.cta}
               <ArrowRight className="h-5 w-5" />
-            </Link>
-
-            <Link
-              href={
-                activeLocale === 'de'
-                  ? '/fahrzeugbestand-verkaufen'
-                  : activeLocale === 'en'
-                    ? '/sell-stock'
-                    : '/salj-lagerbil'
-              }
-              onClick={() => setOpen(false)}
-              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] border border-[#9fc7da] bg-white px-5 text-base font-medium text-[#242424]"
-            >
-              {activeLocale === 'de'
-                ? 'Fahrzeugbestand verkaufen'
-                : activeLocale === 'en'
-                  ? 'Sell business vehicles'
-                  : 'Sälj företagsfordon'}
-              <Building2 className="h-5 w-5 text-[#397b9f]" />
             </Link>
 
             <Link
@@ -962,7 +934,6 @@ type DesktopMenuData = {
 }
 
 function DesktopMenu({
-  number,
   label,
   href,
   menu,
@@ -970,7 +941,6 @@ function DesktopMenu({
   align = 'center',
   icon: MenuIcon,
 }: {
-  number: string
   label: string
   href: string
   menu: DesktopMenuData
@@ -985,9 +955,6 @@ function DesktopMenu({
         onClick={(event) => onNavigate(event, href)}
         className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
       >
-        <span className="text-[9px] font-medium tracking-[0.12em] text-[#8d989d] transition group-hover:text-[#54788d]">
-          {number}
-        </span>
         {label}
         <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
       </a>

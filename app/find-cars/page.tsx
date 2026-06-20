@@ -80,6 +80,15 @@ function normalizeCountry(value: string | null) {
   return names[normalized] || normalized.slice(0, 2)
 }
 
+function getPriceBand(value: number | string | null) {
+  const price = Number(value)
+  if (!Number.isFinite(price) || price <= 0) return null
+  if (price < 15_000) return 'under-15' as const
+  if (price < 30_000) return '15-30' as const
+  if (price < 50_000) return '30-50' as const
+  return '50-plus' as const
+}
+
 export async function generateMetadata() {
   const headerStore = await headers()
   const locale = localeFromHost(headerStore.get('host') || '')
@@ -107,7 +116,7 @@ export default async function FindCarsPage() {
   const { data } = await createAdminClient()
     .from('leads')
     .select(
-      'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,images'
+      'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,buy_now_price,seller_target_price,images'
     )
     .eq('status', 'Active')
     .is('auction_closed_at', null)
@@ -131,10 +140,8 @@ export default async function FindCarsPage() {
       originCountry: normalizeCountry(lead.origin_country || lead.source),
       saleFormat:
         lead.sale_format === 'marketplace' ? 'marketplace' : 'auction',
-      image:
-        typeof images[0] === 'string'
-          ? `/api/public/vehicle-image/${lead.id}`
-          : null,
+      priceBand: getPriceBand(lead.buy_now_price || lead.seller_target_price),
+      imageAvailable: typeof images[0] === 'string',
     }
   })
 
@@ -176,10 +183,10 @@ export default async function FindCarsPage() {
           </div>
 
           <div className="relative min-w-0">
-            <div className="rounded-[28px] border border-white/90 bg-[#202124] p-6 text-white shadow-[0_34px_95px_rgba(42,65,76,.22)] sm:p-8">
-              <div className="flex items-center justify-between border-b border-white/10 pb-6">
+            <div className="rounded-[28px] border border-[#cfe0e7] bg-white/88 p-6 text-[#202124] shadow-[0_30px_80px_rgba(62,94,108,.14)] backdrop-blur-xl sm:p-8">
+              <div className="flex items-center justify-between border-b border-[#dce8ed] pb-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#B4D9EF]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4f8298]">
                     Autorell Dealer Network
                   </p>
                   <p className="mt-2 text-2xl tracking-[-0.04em]">
@@ -194,12 +201,12 @@ export default async function FindCarsPage() {
                 {t.signals.map((signal) => (
                   <div
                     key={signal}
-                    className="flex min-w-0 items-center gap-4 rounded-[15px] border border-white/10 bg-white/[.055] px-4 py-4"
+                    className="flex min-w-0 items-center gap-4 rounded-[15px] border border-[#d9e5ea] bg-[#f6fafb] px-4 py-4"
                   >
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
                       <BadgeCheck className="h-4 w-4" />
                     </span>
-                    <span className="min-w-0 text-sm text-white/78">{signal}</span>
+                    <span className="min-w-0 text-sm text-[#526b78]">{signal}</span>
                   </div>
                 ))}
               </div>

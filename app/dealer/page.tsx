@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
@@ -1014,10 +1015,13 @@ export default function DealerPage() {
                       <div className="flex min-w-0 items-center gap-4">
                         <div className="relative grid h-14 w-16 shrink-0 place-items-center overflow-hidden rounded-[7px] bg-slate-100 text-slate-400">
                           {lead.images?.[0] ? (
-                            <img
-                              src={lead.images[0]}
+                            <Image
+                              src={`/api/dealer/vehicle-image/${lead.id}?index=0`}
                               alt={lead.reg}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="64px"
+                              unoptimized
+                              className="object-cover"
                             />
                           ) : (
                             <CarFront size={23} />
@@ -1238,20 +1242,25 @@ export default function DealerPage() {
 
                   {selectedLead.images?.length ? (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {selectedLead.images.map((image, index) => (
+                      {selectedLead.images.map((_, index) => {
+                        const protectedImageUrl = `/api/dealer/vehicle-image/${selectedLead.id}?index=${index}`
+                        return (
                         <button
-                          key={image}
+                          key={`${selectedLead.id}-${index}`}
                           type="button"
-                          onClick={() => setActiveImage(image)}
+                          onClick={() => setActiveImage(protectedImageUrl)}
                           className={`group relative overflow-hidden rounded-[5px] bg-slate-100 ${
                             index === 0
                               ? 'col-span-2 row-span-2 sm:col-span-2'
                               : ''
                           }`}
                         >
-                          <img
-                            src={image}
+                          <Image
+                            src={protectedImageUrl}
                             alt={`Vehicle ${index + 1}`}
+                            width={900}
+                            height={675}
+                            unoptimized
                             className={`w-full object-cover transition duration-300 group-hover:scale-105 ${
                               index === 0 ? 'h-72' : 'h-32'
                             }`}
@@ -1263,7 +1272,8 @@ export default function DealerPage() {
                             />
                           </div>
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   ) : (
                     <div className="grid h-52 place-items-center rounded-[7px] bg-slate-50 text-center">
@@ -1805,9 +1815,12 @@ export default function DealerPage() {
           >
             <X size={24} />
           </button>
-          <img
+          <Image
             src={activeImage}
             alt="Vehicle large preview"
+            width={1600}
+            height={1200}
+            unoptimized
             className="max-h-[88vh] max-w-[95vw] rounded-[7px] object-contain shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           />
