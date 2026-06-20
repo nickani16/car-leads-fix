@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
-
-type FooterLocale = 'sv' | 'de' | 'en'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const footerCopy = {
   sv: {
@@ -118,30 +121,39 @@ const footerCopy = {
 export default function PublicFooter({
   locale = 'sv',
 }: {
-  locale?: FooterLocale
+  locale?: PublicLocale
 }) {
-  const t = footerCopy[locale]
+  const t =
+    locale === 'sv'
+      ? footerCopy.sv
+      : locale === 'de'
+        ? footerCopy.de
+        : translatePublicObject(locale, footerCopy.en)
   const homeHref =
     locale === 'de'
       ? 'https://www.autorell.de/'
-      : locale === 'en'
-        ? 'https://www.autorell.com/'
+      : locale !== 'sv'
+        ? `https://www.autorell.com/${locale}`
         : 'https://www.autorell.se/'
-  const contactHref =
-    locale === 'en' ? '/contact' : '/kontakt'
+  const contactHref = localizePublicHref(
+    locale,
+    locale === 'sv' || locale === 'de' ? '/kontakt' : '/contact',
+  )
   const homeLabel =
     locale === 'de'
       ? 'Autorell Startseite'
-      : locale === 'en'
+      : locale !== 'sv'
         ? 'Autorell home'
         : 'Autorell startsida'
-  const privacyHref =
-    locale === 'de' ? '/datenschutz' : locale === 'en' ? '/privacy' : '/integritet'
+  const privacyHref = localizePublicHref(
+    locale,
+    locale === 'de' ? '/datenschutz' : locale === 'sv' ? '/integritet' : '/privacy',
+  )
   const termsHref =
     locale === 'de'
       ? '/nutzungsbedingungen'
-      : locale === 'en'
-        ? '/terms'
+      : locale !== 'sv'
+        ? localizePublicHref(locale, '/terms')
         : '/villkor'
 
   return (
@@ -187,15 +199,24 @@ export default function PublicFooter({
 
           <FooterColumn
             title={t.sellerTitle}
-            links={t.sellerLinks}
+            links={t.sellerLinks.map(([label, href]) => [
+              label,
+              localizePublicHref(locale, href),
+            ])}
           />
           <FooterColumn
             title={t.businessTitle}
-            links={t.businessLinks}
+            links={t.businessLinks.map(([label, href]) => [
+              label,
+              localizePublicHref(locale, href),
+            ])}
           />
           <FooterColumn
             title={t.dealerTitle}
-            links={t.dealerLinks}
+            links={t.dealerLinks.map(([label, href]) => [
+              label,
+              localizePublicHref(locale, href),
+            ])}
           />
 
           <div>
@@ -223,7 +244,7 @@ export default function PublicFooter({
             <Link href={privacyHref} className="transition hover:text-[#242424]">
               {t.privacy}
             </Link>
-            <Link href="/cookies" className="transition hover:text-[#242424]">
+            <Link href={localizePublicHref(locale, '/cookies')} className="transition hover:text-[#242424]">
               {t.cookies}
             </Link>
             <Link href={termsHref} className="transition hover:text-[#242424]">

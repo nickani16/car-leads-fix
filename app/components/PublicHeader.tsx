@@ -29,10 +29,17 @@ import {
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import {
+  localizePublicHref,
+  publicLanguages,
+  translatePublic,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 type PublicHeaderProps = {
   transparentAtTop?: boolean
-  locale?: 'sv' | 'de' | 'en'
+  locale?: PublicLocale
 }
 
 type MarketLocale = NonNullable<PublicHeaderProps['locale']>
@@ -110,6 +117,9 @@ function getLocaleFromHostname(
   hostname: string,
   fallback: MarketLocale,
 ): MarketLocale {
+  if (fallback !== 'sv' && fallback !== 'de' && fallback !== 'en') {
+    return fallback
+  }
   const normalizedHostname = hostname.toLowerCase()
 
   if (normalizedHostname.endsWith('autorell.de')) return 'de'
@@ -223,19 +233,52 @@ export default function PublicHeader({
   }, [open])
 
   const transparent = transparentAtTop && atTop && !open
-  const marketCopy = marketNames[activeLocale]
-  const localizedMarkets = markets.map((market) => {
-    const [label, description] = marketCopy.options[market.locale]
-    return { ...market, label, description }
-  })
+  const marketCopy =
+    activeLocale === 'sv'
+      ? marketNames.sv
+      : activeLocale === 'de'
+        ? marketNames.de
+        : translatePublicObject(activeLocale, marketNames.en)
+  const languageNames: Record<string, string> = {
+    en: 'English',
+    fr: 'Français',
+    es: 'Español',
+    it: 'Italiano',
+    pl: 'Polski',
+    nl: 'Nederlands',
+    pt: 'Português',
+    fi: 'Suomi',
+    da: 'Dansk',
+    cs: 'Čeština',
+    ro: 'Română',
+    bg: 'Български',
+    hr: 'Hrvatski',
+    el: 'Ελληνικά',
+    hu: 'Magyar',
+    sk: 'Slovenčina',
+    sl: 'Slovenščina',
+    et: 'Eesti',
+    lv: 'Latviešu',
+    lt: 'Lietuvių',
+  }
+  const localizedMarkets = [
+    ...markets.slice(0, 2),
+    ...publicLanguages.map((language) => ({
+      locale: language,
+      code: language === 'en' ? 'EU' : language.toUpperCase(),
+      label: languageNames[language],
+      description: language === 'en' ? 'Europe' : languageNames[language],
+      href: `https://www.autorell.com/${language}?language=${language}`,
+    })),
+  ]
   const localizedLanguage =
     localizedMarkets.find((market) => market.locale === activeLocale) ||
     localizedMarkets[0]
   const homeHref =
     activeLocale === 'de'
       ? 'https://www.autorell.de/'
-      : activeLocale === 'en'
-        ? 'https://www.autorell.com/'
+      : activeLocale !== 'sv'
+        ? `https://www.autorell.com/${activeLocale}`
         : 'https://www.autorell.se/'
   const marketRoutes =
     activeLocale === 'de'
@@ -255,7 +298,7 @@ export default function PublicHeader({
             dealerAccess: '/dealer-apply',
             dealerTerms: '/dealer-terms',
           }
-  const content =
+  let content =
     activeLocale === 'de'
       ? {
           message: 'Schwedische Fahrzeuge. Europäische Nachfrage. Autorell als Handelspartner.',
@@ -275,7 +318,7 @@ export default function PublicHeader({
           cta: 'Händlerzugang',
           ctaHref: marketRoutes.dealerAccess,
         }
-      : activeLocale === 'en'
+      : activeLocale !== 'sv'
         ? {
             message: 'Swedish vehicle supply. Buyer demand across Europe. Autorell as trading partner.',
             menuLabel: 'Navigation',
@@ -312,7 +355,7 @@ export default function PublicHeader({
             cta: 'Sälj din bil',
             ctaHref: '/salj-bil',
           }
-  const sellerMenu =
+  let sellerMenu =
     activeLocale === 'sv'
       ? {
           eyebrow: 'För privatpersoner',
@@ -389,7 +432,7 @@ export default function PublicHeader({
             },
           ],
         }
-  const processMenu =
+  let processMenu =
     activeLocale === 'sv'
       ? {
           eyebrow: 'För företag',
@@ -451,7 +494,7 @@ export default function PublicHeader({
             },
           ],
         }
-  const companyMenu =
+  let companyMenu =
     activeLocale === 'sv'
       ? {
           eyebrow: 'För verifierade köpare',
@@ -531,7 +574,7 @@ export default function PublicHeader({
             },
           ],
         }
-  const aboutMenu =
+  let aboutMenu =
     activeLocale === 'de'
       ? {
           eyebrow: 'Über Autorell',
@@ -566,7 +609,7 @@ export default function PublicHeader({
             },
           ],
         }
-      : activeLocale === 'en'
+      : activeLocale !== 'sv'
         ? {
             eyebrow: 'About Autorell',
             title: 'A European vehicle market built on clearer data.',
@@ -633,6 +676,40 @@ export default function PublicHeader({
               },
             ],
           }
+
+  if (activeLocale !== 'sv' && activeLocale !== 'de') {
+    content = {
+      ...content,
+      message: translatePublic(activeLocale, content.message),
+      menuLabel: translatePublic(activeLocale, content.menuLabel),
+      privateLabel: translatePublic(activeLocale, content.privateLabel),
+      dealerLabel: translatePublic(activeLocale, content.dealerLabel),
+      links: content.links.map(([href, label]) => [
+        localizePublicHref(activeLocale, href),
+        translatePublic(activeLocale, label),
+      ]),
+      partner: translatePublic(activeLocale, content.partner),
+      login: translatePublic(activeLocale, content.login),
+      cta: translatePublic(activeLocale, content.cta),
+    }
+
+    const localizeMenu = <T extends typeof sellerMenu>(menu: T): T => {
+      const translated = translatePublicObject(activeLocale, menu)
+      return {
+        ...translated,
+        ctaHref: localizePublicHref(activeLocale, translated.ctaHref),
+        items: translated.items.map((item) => ({
+          ...item,
+          href: localizePublicHref(activeLocale, item.href),
+        })),
+      } as T
+    }
+
+    sellerMenu = localizeMenu(sellerMenu)
+    processMenu = localizeMenu(processMenu)
+    companyMenu = localizeMenu(companyMenu)
+    aboutMenu = localizeMenu(aboutMenu)
+  }
 
   function handleSectionLink(
     event: ReactMouseEvent<HTMLAnchorElement>,

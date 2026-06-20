@@ -24,8 +24,14 @@ import PublicContactPage from '@/app/components/PublicContactPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import DealerBenefitsPage from '@/app/components/DealerBenefitsPage'
+import {
+  getPublicAlternates,
+  isPublicLanguage,
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
-type Locale = 'de' | 'en'
 type PageKey =
   | 'vehicles'
   | 'process'
@@ -50,7 +56,7 @@ type MarketPage = {
   sections: Array<{ title: string; text: string }>
 }
 
-const marketPages: Record<Locale, Record<PageKey, MarketPage>> = {
+const marketPages: Record<'de' | 'en', Record<PageKey, MarketPage>> = {
   de: {
     vehicles: {
       path: '/fahrzeuge',
@@ -440,21 +446,36 @@ export async function generateMetadata({
   params,
 }: PageProps<'/dealer-market/[locale]/[page]'>): Promise<Metadata> {
   const { locale, page } = await params
-  if ((locale !== 'de' && locale !== 'en') || !(page in marketPages[locale])) {
+  if (
+    (locale !== 'de' && !isPublicLanguage(locale)) ||
+    !(page in marketPages[locale === 'de' ? 'de' : 'en'])
+  ) {
     return {}
   }
 
-  const content = marketPages[locale][page as PageKey]
+  const source = marketPages[locale === 'de' ? 'de' : 'en'][page as PageKey]
+  const content =
+    locale === 'de'
+      ? source
+      : translatePublicObject(locale as PublicLocale, source)
   const host = locale === 'de' ? 'https://www.autorell.de' : 'https://www.autorell.com'
+  const publicPath =
+    locale === 'de'
+      ? content.path
+      : localizePublicHref(locale as PublicLocale, content.path)
 
   return {
     title: { absolute: content.title },
     description: content.description,
-    alternates: { canonical: `${host}${content.path}` },
+    alternates: {
+      canonical: `${host}${publicPath}`,
+      languages:
+        locale === 'de' ? undefined : getPublicAlternates(content.path),
+    },
     openGraph: {
       title: content.title,
       description: content.description,
-      url: `${host}${content.path}`,
+      url: `${host}${publicPath}`,
       siteName: 'Autorell',
       locale: locale === 'de' ? 'de_DE' : 'en_GB',
       type: 'website',
@@ -466,32 +487,38 @@ export default async function DealerMarketPage({
   params,
 }: PageProps<'/dealer-market/[locale]/[page]'>) {
   const { locale, page } = await params
-  if ((locale !== 'de' && locale !== 'en') || !(page in marketPages[locale])) {
+  if (
+    (locale !== 'de' && !isPublicLanguage(locale)) ||
+    !(page in marketPages[locale === 'de' ? 'de' : 'en'])
+  ) {
     notFound()
   }
 
-  const content = marketPages[locale][page as PageKey]
+  const publicLocale = locale as PublicLocale
+  const source = marketPages[locale === 'de' ? 'de' : 'en'][page as PageKey]
+  const content =
+    locale === 'de' ? source : translatePublicObject(publicLocale, source)
   const isContact = page === 'contact'
   const isFaq = page === 'faq'
   const isLegal = page === 'privacy' || page === 'terms' || page === 'cookies'
 
   if (page === 'benefits') {
-    return <DealerBenefitsPage locale={locale} />
+    return <DealerBenefitsPage locale={publicLocale} />
   }
 
   if (isContact) {
     return (
       <main className="overflow-hidden bg-[#f5f3ee] text-[#202124]">
-        <PublicHeader locale={locale} />
-        <PublicContactPage locale={locale} />
-        <PublicFooter locale={locale} />
+        <PublicHeader locale={publicLocale} />
+        <PublicContactPage locale={publicLocale} />
+        <PublicFooter locale={publicLocale} />
       </main>
     )
   }
 
   return (
     <main className="overflow-hidden bg-[#f8f7f3] text-[#202124]">
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={publicLocale} />
 
       <section className="relative overflow-hidden border-b border-[#dce5e8] bg-[linear-gradient(145deg,#fbf8f1_0%,#eef6f8_52%,#dcecf3_100%)]">
         <div className="absolute -right-36 -top-52 h-[540px] w-[540px] rounded-full border-[70px] border-white/55" />
@@ -648,7 +675,7 @@ export default async function DealerMarketPage({
         </section>
       )}
 
-      <PublicFooter locale={locale} />
+      <PublicFooter locale={publicLocale} />
     </main>
   )
 }

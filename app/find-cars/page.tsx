@@ -14,10 +14,15 @@ import { createPublicMetadata } from '@/lib/public-seo'
 import PublicVehicleBrowser, {
   type PublicVehicle,
 } from './PublicVehicleBrowser'
+import {
+  getPublicAlternates,
+  isPublicLanguage,
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 export const dynamic = 'force-dynamic'
-
-type Locale = 'sv' | 'de' | 'en'
 
 const pageCopy = {
   sv: {
@@ -58,7 +63,8 @@ const pageCopy = {
   },
 } as const
 
-function localeFromHost(host: string): Locale {
+function localeFromRequest(host: string, requested: string | null): PublicLocale {
+  if (requested && isPublicLanguage(requested)) return requested
   if (host.includes('autorell.de')) return 'de'
   if (host.includes('autorell.com') || host.includes('autorell.eu')) return 'en'
   return 'sv'
@@ -91,10 +97,18 @@ function getPriceBand(value: number | string | null) {
 
 export async function generateMetadata() {
   const headerStore = await headers()
-  const locale = localeFromHost(headerStore.get('host') || '')
-  const t = pageCopy[locale]
+  const locale = localeFromRequest(
+    headerStore.get('host') || '',
+    headerStore.get('x-autorell-language'),
+  )
+  const t =
+    locale === 'sv'
+      ? pageCopy.sv
+      : locale === 'de'
+        ? pageCopy.de
+        : translatePublicObject(locale, pageCopy.en)
 
-  return createPublicMetadata({
+  const metadata = createPublicMetadata({
     title: t.title,
     description: t.description,
     path:
@@ -102,20 +116,45 @@ export async function generateMetadata() {
         ? '/hitta-bilar'
         : locale === 'de'
           ? '/fahrzeuge-finden'
-          : '/find-cars',
-    locale,
-    languagePaths: {
-      sv: '/hitta-bilar',
-      de: '/fahrzeuge-finden',
-      en: '/find-cars',
-    },
+          : localizePublicHref(locale, '/find-cars'),
+    locale: locale === 'sv' || locale === 'de' ? locale : 'en',
   })
+  const path =
+    locale === 'sv'
+      ? '/hitta-bilar'
+      : locale === 'de'
+        ? '/fahrzeuge-finden'
+        : localizePublicHref(locale, '/find-cars')
+
+  return {
+    ...metadata,
+    alternates: {
+      canonical:
+        locale === 'sv'
+          ? `https://www.autorell.se${path}`
+          : locale === 'de'
+            ? `https://www.autorell.de${path}`
+            : `https://www.autorell.com${path}`,
+      languages:
+        locale === 'sv' || locale === 'de'
+          ? metadata.alternates?.languages
+          : getPublicAlternates('/find-cars'),
+    },
+  }
 }
 
 export default async function FindCarsPage() {
   const headerStore = await headers()
-  const locale = localeFromHost(headerStore.get('host') || '')
-  const t = pageCopy[locale]
+  const locale = localeFromRequest(
+    headerStore.get('host') || '',
+    headerStore.get('x-autorell-language'),
+  )
+  const t =
+    locale === 'sv'
+      ? pageCopy.sv
+      : locale === 'de'
+        ? pageCopy.de
+        : translatePublicObject(locale, pageCopy.en)
   const dealerAccessHref =
     locale === 'sv'
       ? '/bli-bilhandlare'

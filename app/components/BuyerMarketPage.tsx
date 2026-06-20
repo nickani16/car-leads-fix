@@ -21,8 +21,11 @@ import BuyerHeroMarketPulse from './BuyerHeroMarketPulse'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import { getImportGuideForMarket } from '@/lib/import-guides'
-
-type BuyerLocale = 'de' | 'en'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const content = {
   de: {
@@ -250,10 +253,19 @@ const dealerExperienceContent = {
   },
 } as const
 
-export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
-  const t = content[locale]
-  const dealerExperience = dealerExperienceContent[locale]
-  const platformHref = locale === 'de' ? '/vorteile' : '/dealer-benefits'
+export default function BuyerMarketPage({ locale }: { locale: PublicLocale }) {
+  const t =
+    locale === 'de'
+      ? content.de
+      : translatePublicObject(locale, content.en)
+  const dealerExperience =
+    locale === 'de'
+      ? dealerExperienceContent.de
+      : translatePublicObject(locale, dealerExperienceContent.en)
+  const platformHref = localizePublicHref(
+    locale,
+    locale === 'de' ? '/vorteile' : '/dealer-benefits',
+  )
   const importGuide = locale === 'de' ? getImportGuideForMarket('de') : null
 
   return (
@@ -460,7 +472,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
             {dealerExperience.tiles.slice(1).map((tile) => (
               <Link
                 key={tile.title}
-                href={tile.href}
+                href={localizePublicHref(locale, tile.href)}
                 className="group relative isolate min-h-[330px] overflow-hidden bg-[#dbe9f1] text-[#202124] outline-none sm:min-h-[430px] lg:min-h-0"
               >
                 <Image
@@ -490,7 +502,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
           </div>
 
           <Link
-            href={dealerExperience.tiles[0].href}
+            href={localizePublicHref(locale, dealerExperience.tiles[0].href)}
             className="group relative isolate min-h-[520px] overflow-hidden bg-[#dcecf3] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
           >
             <Image
@@ -573,7 +585,7 @@ export default function BuyerMarketPage({ locale }: { locale: BuyerLocale }) {
                 {t.flowTitle}
               </h2>
             </div>
-            <Link href={locale === 'de' ? '/so-funktionierts' : '/how-it-works'} className="inline-flex items-center gap-2 text-sm font-medium">
+            <Link href={localizePublicHref(locale, locale === 'de' ? '/so-funktionierts' : '/how-it-works')} className="inline-flex items-center gap-2 text-sm font-medium">
               {locale === 'de' ? 'Gesamten Ablauf ansehen' : 'View the complete process'}
               <ArrowRight className="h-4 w-4" />
             </Link>

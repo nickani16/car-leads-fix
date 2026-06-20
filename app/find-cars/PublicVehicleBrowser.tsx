@@ -32,7 +32,10 @@ export type PublicVehicle = {
   imageAvailable: boolean
 }
 
-type Locale = 'sv' | 'de' | 'en'
+import {
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const copy = {
   sv: {
@@ -198,7 +201,7 @@ const copy = {
   },
 } as const
 
-function formatCountry(countryCode: string, locale: Locale) {
+function formatCountry(countryCode: string, locale: PublicLocale) {
   try {
     return (
       new Intl.DisplayNames(
@@ -225,9 +228,14 @@ export default function PublicVehicleBrowser({
   locale,
 }: {
   vehicles: PublicVehicle[]
-  locale: Locale
+  locale: PublicLocale
 }) {
-  const t = copy[locale]
+  const t =
+    locale === 'sv'
+      ? copy.sv
+      : locale === 'de'
+        ? copy.de
+        : translatePublicObject(locale, copy.en)
   const [search, setSearch] = useState('')
   const [make, setMake] = useState('')
   const [model, setModel] = useState('')

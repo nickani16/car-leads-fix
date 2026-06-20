@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { FormEvent, useState } from 'react'
-
-type ContactLocale = 'sv' | 'de' | 'en'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const contactCopy = {
   sv: {
@@ -81,11 +84,18 @@ const contactCopy = {
 export default function ContactForm({
   locale = 'sv',
 }: {
-  locale?: ContactLocale
+  locale?: PublicLocale
 }) {
-  const t = contactCopy[locale]
-  const privacyHref =
-    locale === 'de' ? '/datenschutz' : locale === 'en' ? '/privacy' : '/integritet'
+  const t =
+    locale === 'sv'
+      ? contactCopy.sv
+      : locale === 'de'
+        ? contactCopy.de
+        : translatePublicObject(locale, contactCopy.en)
+  const privacyHref = localizePublicHref(
+    locale,
+    locale === 'de' ? '/datenschutz' : locale === 'sv' ? '/integritet' : '/privacy',
+  )
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')

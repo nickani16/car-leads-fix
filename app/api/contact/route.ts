@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { trackConversion } from '@/lib/conversion-tracking'
+import {
+  isPublicLanguage,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
-type ContactLocale = 'sv' | 'de' | 'en'
+type ContactLocale = PublicLocale
 
 const marketDetails = {
   sv: {
@@ -67,13 +71,10 @@ function getHostname(request: Request) {
 
 function getLocale(request: Request, form: FormData): ContactLocale {
   const submittedLocale = value(form, 'locale')
-  if (
-    submittedLocale === 'sv' ||
-    submittedLocale === 'de' ||
-    submittedLocale === 'en'
-  ) {
+  if (submittedLocale === 'sv' || submittedLocale === 'de') {
     return submittedLocale
   }
+  if (isPublicLanguage(submittedLocale)) return submittedLocale
 
   const hostname = getHostname(request)
   if (hostname.endsWith('autorell.de')) return 'de'
@@ -133,7 +134,10 @@ export async function POST(request: Request) {
     }
 
     const locale = getLocale(request, form)
-    const market = marketDetails[locale]
+    const market =
+      locale === 'sv' || locale === 'de'
+        ? marketDetails[locale]
+        : marketDetails.en
     const reference = `AR-${Date.now().toString(36).toUpperCase()}`
     const receivedAt = new Intl.DateTimeFormat('sv-SE', {
       dateStyle: 'medium',

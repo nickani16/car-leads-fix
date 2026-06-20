@@ -7,6 +7,12 @@ import {
   getImportGuideAlternates,
   importGuides,
 } from '@/lib/import-guides'
+import {
+  getPublicAlternates,
+  isPublicLanguage,
+  publicLanguages,
+  publicPagePaths,
+} from '@/lib/public-i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +28,20 @@ function escapeXml(value: string) {
 export function GET(request: Request) {
   const market = getPublicMarket(request)
   const config = getPublicMarketConfig(market)
-  const urls = config.paths
+  const localizedPublicPaths =
+    market === 'en'
+      ? publicLanguages.flatMap((language) =>
+          publicPagePaths.map((path) => `/${language}${path}`),
+        )
+      : []
+  const sitemapPaths = [
+    ...localizedPublicPaths,
+    ...config.paths.filter((path) => {
+      const exactLanguage = path.match(/^\/([a-z]{2})$/)?.[1]
+      return !exactLanguage || !isPublicLanguage(exactLanguage)
+    }),
+  ]
+  const urls = sitemapPaths
     .map((path) => {
       const priority =
         path === ''
@@ -56,7 +75,10 @@ export function GET(request: Request) {
         (guide) => guide.publicPath === path,
       )
       const alternates: Record<string, string> | null =
-        isImportGuide
+        market === 'en' &&
+        /^\/[a-z]{2}(\/(find-cars|vehicles|how-it-works|dealer-benefits|about|faq|contact|privacy|cookies|terms))?$/.test(path)
+          ? getPublicAlternates(path.replace(/^\/[a-z]{2}/, '') || '/')
+          : isImportGuide
           ? getImportGuideAlternates()
           : market === 'en' && /^\/[a-z]{2}$/.test(path)
           ? getEuBuyerHubAlternates()

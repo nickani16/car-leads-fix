@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-type BuyerLocale = 'de' | 'en'
+import {
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const DURATION_MS = 4800
 
@@ -34,9 +36,12 @@ const pulseContent = {
 export default function BuyerHeroMarketPulse({
   locale,
 }: {
-  locale: BuyerLocale
+  locale: PublicLocale
 }) {
-  const content = pulseContent[locale]
+  const content =
+    locale === 'de'
+      ? pulseContent.de
+      : translatePublicObject(locale, pulseContent.en)
   const [values, setValues] = useState<number[]>(() =>
     content.rows.map(({ maximum }) => maximum)
   )

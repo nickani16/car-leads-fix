@@ -12,6 +12,11 @@ import {
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import BrandLogo from './BrandLogo'
 import { euBuyerMarkets, type EuBuyerLanguage } from '@/lib/eu-buyer-markets'
+import {
+  isPublicLanguage,
+  localizePublicHref,
+  translatePublicObject,
+} from '@/lib/public-i18n'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
@@ -100,6 +105,7 @@ const cookieCopy = {
 
 function getCookieLocale(): CookieLocale {
   const marketCode = window.location.pathname.split('/').filter(Boolean)[0]
+  if (isPublicLanguage(marketCode)) return marketCode
   const market = euBuyerMarkets.find((item) => item.code === marketCode)
   if (market && market.language in cookieCopy) {
     return market.language as keyof typeof cookieCopy
@@ -146,11 +152,14 @@ export default function CookieConsent({
     getCookieLocale,
     () => initialLocale,
   )
-  const t = cookieCopy[locale as keyof typeof cookieCopy] || cookieCopy.en
+  const t =
+    locale in cookieCopy
+      ? cookieCopy[locale as keyof typeof cookieCopy]
+      : translatePublicObject(locale, cookieCopy.en)
   const marketCode = initialMarketCode || ''
   const policyHref = euBuyerMarkets.some((market) => market.code === marketCode)
     ? `/${marketCode}/cookies`
-    : '/cookies'
+    : localizePublicHref(locale, '/cookies')
 
   useEffect(() => {
     const initialCheck = window.setTimeout(() => {

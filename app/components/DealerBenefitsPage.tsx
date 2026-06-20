@@ -15,8 +15,11 @@ import {
 } from 'lucide-react'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
-
-type Locale = 'de' | 'en'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const copy = {
   en: {
@@ -105,8 +108,9 @@ const copy = {
   },
 } as const
 
-export default function DealerBenefitsPage({ locale }: { locale: Locale }) {
-  const t = copy[locale]
+export default function DealerBenefitsPage({ locale }: { locale: PublicLocale }) {
+  const t =
+    locale === 'de' ? copy.de : translatePublicObject(locale, copy.en)
   const accessHref = locale === 'de' ? '/haendlerzugang' : '/dealer-apply'
 
   return (
@@ -137,7 +141,7 @@ export default function DealerBenefitsPage({ locale }: { locale: Locale }) {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href={t.browseHref}
+                href={localizePublicHref(locale, t.browseHref)}
                 className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-white/18 bg-white/[.06] px-7 text-sm font-semibold text-white"
               >
                 {t.browse}

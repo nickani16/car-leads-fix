@@ -14,8 +14,11 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import ContactForm from '@/app/components/ContactForm'
-
-type ContactLocale = 'sv' | 'de' | 'en'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const copy = {
   sv: {
@@ -140,9 +143,14 @@ const copy = {
 export default function PublicContactPage({
   locale = 'sv',
 }: {
-  locale?: ContactLocale
+  locale?: PublicLocale
 }) {
-  const t = copy[locale]
+  const t =
+    locale === 'sv'
+      ? copy.sv
+      : locale === 'de'
+        ? copy.de
+        : translatePublicObject(locale, copy.en)
   const dealerAccessHref =
     locale === 'sv'
       ? '/bli-bilhandlare'
@@ -285,7 +293,7 @@ export default function PublicContactPage({
               </div>
 
               <Link
-                href={t.faqHref}
+                href={localizePublicHref(locale, t.faqHref)}
                 className="group rounded-[28px] border border-[#d8dedf] bg-white p-7 transition hover:border-[#aacfe0] sm:p-9"
               >
                 <ShieldCheck className="h-6 w-6 text-[#3d738c]" />
