@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   CalendarDays,
@@ -318,6 +318,23 @@ export default function PublicVehicleBrowser({
     maxMileage,
   ].filter(Boolean).length
 
+  useEffect(() => {
+    if (!selectedVehicle) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setSelectedVehicle(null)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [selectedVehicle])
+
   function resetFilters() {
     setSearch('')
     setMake('')
@@ -572,72 +589,83 @@ export default function PublicVehicleBrowser({
 
       {selectedVehicle && (
         <div
-          className="fixed inset-0 z-[150] grid place-items-center overflow-y-auto bg-[#152028]/75 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[150] overflow-y-auto overscroll-contain bg-[#152028]/75 px-3 py-3 backdrop-blur-sm sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="vehicle-access-title"
+          onClick={() => setSelectedVehicle(null)}
         >
-          <div className="relative w-full max-w-[820px] overflow-hidden rounded-[26px] bg-white shadow-[0_35px_110px_rgba(0,0,0,.32)]">
-            <button
-              type="button"
-              onClick={() => setSelectedVehicle(null)}
-              className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow"
-              aria-label="Close"
+          <div className="flex min-h-full items-start justify-center py-[max(0.5rem,env(safe-area-inset-top))] sm:items-center">
+            <div
+              className="relative my-auto w-full max-w-[820px] overflow-hidden rounded-[22px] bg-white shadow-[0_35px_110px_rgba(0,0,0,.32)] sm:rounded-[26px]"
+              onClick={(event) => event.stopPropagation()}
             >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="grid md:grid-cols-[.86fr_1.14fr]">
-              <div className="relative grid min-h-[300px] place-items-center overflow-hidden bg-[linear-gradient(145deg,#dce5e8,#c8d5da)] p-8 text-center">
-                <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_25%_20%,white_0,transparent_34%)]" />
-                <div className="relative">
-                  <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-white/60 text-[#62757f] shadow">
-                    <CarFront className="h-10 w-10" />
-                  </span>
-                  <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#bfd4dd] bg-white/88 px-4 py-2 text-xs font-semibold text-[#3f6577] shadow-md backdrop-blur-md">
-                    <LockKeyhole className="h-4 w-4" />
-                    {t.imageLocked}
-                  </span>
-                  <p className="mt-4 text-sm text-[#526873]">{t.noPublicImage}</p>
-                  <p className="mt-7 text-2xl font-semibold text-[#202124]">
-                    {selectedVehicle.make} {selectedVehicle.model}
-                  </p>
-                </div>
+              <div className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[#e2e7e9] bg-white/95 px-4 backdrop-blur md:absolute md:inset-x-0 md:border-0 md:bg-transparent md:backdrop-blur-none">
+                <span className="text-xs font-semibold text-[#60747e] md:sr-only">
+                  {selectedVehicle.make} {selectedVehicle.model}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVehicle(null)}
+                  className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-[#d7e1e5] bg-white text-[#202124] shadow-sm transition active:scale-95"
+                  aria-label="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
-              <div className="p-6 sm:p-9">
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f3f8] px-3 py-1.5 text-xs font-semibold text-[#426d82]">
-                  <LockKeyhole className="h-4 w-4" />
-                  {t.signupEyebrow}
-                </span>
-                <h2 id="vehicle-access-title" className="mt-5 text-3xl font-semibold tracking-[-0.045em]">
-                  {t.modalTitle}
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-[#65747b]">{t.modalText}</p>
+              <div className="grid md:grid-cols-[.86fr_1.14fr]">
+                <div className="relative grid min-h-[250px] place-items-center overflow-hidden bg-[linear-gradient(145deg,#dce5e8,#c8d5da)] p-7 text-center sm:min-h-[300px] sm:p-8">
+                  <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_25%_20%,white_0,transparent_34%)]" />
+                  <div className="relative">
+                    <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/60 text-[#62757f] shadow sm:h-20 sm:w-20">
+                      <CarFront className="h-8 w-8 sm:h-10 sm:w-10" />
+                    </span>
+                    <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#bfd4dd] bg-white/88 px-4 py-2 text-xs font-semibold text-[#3f6577] shadow-md backdrop-blur-md sm:mt-5">
+                      <LockKeyhole className="h-4 w-4" />
+                      {t.imageLocked}
+                    </span>
+                    <p className="mt-3 text-sm text-[#526873] sm:mt-4">{t.noPublicImage}</p>
+                    <p className="mt-5 text-2xl font-semibold text-[#202124] sm:mt-7">
+                      {selectedVehicle.make} {selectedVehicle.model}
+                    </p>
+                  </div>
+                </div>
 
-                <ul className="mt-6 grid gap-3 text-sm text-[#52616b]">
-                  {t.accessItems.map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
-                        <Check className="h-3.5 w-3.5" />
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <div className="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-9">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f3f8] px-3 py-1.5 text-xs font-semibold text-[#426d82]">
+                    <LockKeyhole className="h-4 w-4" />
+                    {t.signupEyebrow}
+                  </span>
+                  <h2 id="vehicle-access-title" className="mt-5 text-3xl font-semibold tracking-[-0.045em]">
+                    {t.modalTitle}
+                  </h2>
+                  <p className="mt-4 text-sm leading-7 text-[#65747b]">{t.modalText}</p>
 
-                <Link href="/dealer-apply" className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white">
-                  {t.signup}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                  <ul className="mt-6 grid gap-3 text-sm text-[#52616b]">
+                    {t.accessItems.map((item) => (
+                      <li key={item} className="flex items-center gap-3">
+                        <span className="grid h-6 w-6 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
 
-                <div className="mt-7 border-t border-[#e2e7e9] pt-6">
-                  <p className="font-semibold">{t.existing}</p>
-                  <p className="mt-2 text-sm leading-6 text-[#718087]">{t.loginText}</p>
-                  <Link href="/login" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
-                    {t.login}
+                  <Link href="/dealer-apply" className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white">
+                    {t.signup}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+
+                  <div className="mt-7 border-t border-[#e2e7e9] pt-6">
+                    <p className="font-semibold">{t.existing}</p>
+                    <p className="mt-2 text-sm leading-6 text-[#718087]">{t.loginText}</p>
+                    <Link href="/login" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
+                      {t.login}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
