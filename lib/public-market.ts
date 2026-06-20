@@ -10,11 +10,6 @@ import {
 } from '@/lib/eu-buyer-markets'
 import { getImportGuidePaths } from '@/lib/import-guides'
 import { internationalPageKeys } from '@/lib/international-public-site'
-import {
-  customerLocales,
-  customerPageKeys,
-  isCustomerLocale,
-} from '@/lib/customer-i18n'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
@@ -31,15 +26,9 @@ const europeanDealerSeoPaths = europeanDealerCountries.map(
   ({ slug }) => `/dealers/${slug}`
 )
 const localizedEuBuyerPaths = getAllEuBuyerPaths()
-const localizedEuPublicSitePaths = euBuyerMarkets
-  .filter((market) => !isCustomerLocale(market.code))
-  .flatMap((market) =>
-    internationalPageKeys.map((page) => `/${market.code}/${page}`),
-  )
-const localizedCustomerPaths = customerLocales.flatMap((locale) => [
-  `/${locale}`,
-  ...customerPageKeys.map((page) => `/${locale}/${page}`),
-])
+const localizedEuPublicSitePaths = euBuyerMarkets.flatMap((market) =>
+  internationalPageKeys.map((page) => `/${market.code}/${page}`),
+)
 const germanImportGuidePaths = getImportGuidePaths('de')
 const europeanImportGuidePaths = getImportGuidePaths('en')
 
@@ -108,7 +97,6 @@ const marketConfig = {
       ...europeanDealerSeoPaths,
       ...localizedEuBuyerPaths,
       ...localizedEuPublicSitePaths,
-      ...localizedCustomerPaths,
       ...europeanImportGuidePaths,
     ],
     priorityPath: '/vehicles',

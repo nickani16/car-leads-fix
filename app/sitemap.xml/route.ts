@@ -7,12 +7,6 @@ import {
   getImportGuideAlternates,
   importGuides,
 } from '@/lib/import-guides'
-import {
-  getCustomerAlternates,
-  isCustomerLocale,
-  isCustomerPageKey,
-  type CustomerPageKey,
-} from '@/lib/customer-i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,23 +55,8 @@ export function GET(request: Request) {
       const isImportGuide = importGuides.some(
         (guide) => guide.publicPath === path,
       )
-      const customerSegments = path.split('/').filter(Boolean)
-      const customerLocale = customerSegments[0]
-      const customerPage = customerSegments[1]
-      const isCustomerPath =
-        market === 'en' &&
-        isCustomerLocale(customerLocale) &&
-        (customerSegments.length === 1 ||
-          (customerSegments.length === 2 &&
-            isCustomerPageKey(customerPage)))
       const alternates: Record<string, string> | null =
-        isCustomerPath
-          ? getCustomerAlternates(
-              customerSegments.length === 2
-                ? (customerPage as CustomerPageKey)
-                : '',
-            )
-          : isImportGuide
+        isImportGuide
           ? getImportGuideAlternates()
           : market === 'en' && /^\/[a-z]{2}$/.test(path)
           ? getEuBuyerHubAlternates()
