@@ -262,6 +262,17 @@ export default function PublicHeader({
   const localizedLanguage =
     localizedMarkets.find((market) => market.locale === activeLocale) ||
     localizedMarkets[0]
+  const mobileMarkets = [
+    localizedLanguage,
+    ...localizedMarkets.filter((market) =>
+      ['sv', 'de', 'en'].includes(market.locale),
+    ),
+  ]
+    .filter(
+      (market, index, items) =>
+        items.findIndex((item) => item.locale === market.locale) === index,
+    )
+    .slice(0, 4)
   const homeHref =
     activeLocale === 'de'
       ? 'https://www.autorell.de/'
@@ -925,19 +936,22 @@ export default function PublicHeader({
               </Link>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setOpen((value) => !value)}
-              aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
-              aria-expanded={open}
-              className={`grid h-11 w-11 place-items-center rounded-full border transition min-[1120px]:hidden ${
-                open
-                  ? 'border-[#242424] bg-[#242424] text-white'
-                  : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
-              }`}
-            >
-              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
+            <div className="flex items-center gap-2 min-[1120px]:hidden">
+              <SiteSearch locale={activeLocale} headerMobile />
+              <button
+                type="button"
+                onClick={() => setOpen((value) => !value)}
+                aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
+                aria-expanded={open}
+                className={`grid h-11 w-11 place-items-center rounded-full border transition ${
+                  open
+                    ? 'border-[#242424] bg-[#242424] text-white'
+                    : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
+                }`}
+              >
+                {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -949,11 +963,6 @@ export default function PublicHeader({
           }`}
         >
           <div className="mx-auto flex min-h-full max-w-2xl flex-col px-5 py-7 sm:px-8">
-            <SiteSearch
-              locale={activeLocale}
-              mobile
-              onNavigate={() => setOpen(false)}
-            />
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
               {content.privateLabel}
             </p>
@@ -1029,7 +1038,7 @@ export default function PublicHeader({
                 {marketCopy.selector}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                {localizedMarkets.map((market) => (
+                {mobileMarkets.map((market) => (
                   <a
                     key={market.locale}
                     href={market.href}
@@ -1060,28 +1069,6 @@ export default function PublicHeader({
                   </a>
                 ))}
               </div>
-              {activeLocale === 'en' && (
-                <div className="mt-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
-                    European dealer markets
-                  </p>
-                  <div className="mt-3 grid max-h-[320px] grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
-                    {euBuyerMarkets.map((market) => (
-                      <a
-                        key={market.code}
-                        href={`https://www.autorell.com/${market.code}?market=${market.code}`}
-                        className="flex min-h-12 items-center gap-2 rounded-[12px] border border-[#dcdad3] bg-white px-3 text-sm text-[#4d5b61]"
-                      >
-                        <CountryFlag
-                          code={market.code}
-                          className="h-[18px] w-[27px] shrink-0"
-                        />
-                        <span className="truncate">{market.countryLocal}</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <div className="mt-5 flex items-center justify-between border-t border-[#dcdad3] pt-5">
                 <SocialIcons />

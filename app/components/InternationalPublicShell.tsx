@@ -79,6 +79,15 @@ export function InternationalPublicHeader({
   if (!site) return null
 
   const { market, copy, navigation, href } = site
+  const mobileMarkets = [
+    market,
+    ...euBuyerMarkets.filter((item) =>
+      ['pl', 'nl', 'fr'].includes(item.code),
+    ),
+  ].filter(
+    (item, index, items) =>
+      items.findIndex((candidate) => candidate.code === item.code) === index,
+  )
 
   return (
     <header className="relative z-50 w-full min-w-0 max-w-full overflow-x-clip border-b border-[#deddd8] bg-white/95 text-[#202124] backdrop-blur-xl">
@@ -166,6 +175,13 @@ export function InternationalPublicHeader({
             <ArrowRight className="h-4 w-4" />
           </Link>
 
+          <div className="lg:hidden">
+            <SiteSearch
+              locale={market.language}
+              marketCode={market.code}
+              headerMobile
+            />
+          </div>
           <details className="group/mobile relative lg:hidden">
             <summary
               className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full border border-[#d7deda] [&::-webkit-details-marker]:hidden"
@@ -174,8 +190,7 @@ export function InternationalPublicHeader({
               <Menu className="h-5 w-5" />
             </summary>
             <div className="fixed inset-x-0 top-[88px] max-h-[calc(100dvh-88px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] p-5 shadow-[0_24px_60px_rgba(32,33,36,.14)]">
-              <SiteSearch locale={market.language} marketCode={market.code} mobile />
-              <div className="mb-5 mt-5 grid gap-2">
+              <div className="mb-5 grid gap-2">
                 <Link
                   href="/dealer-apply"
                   className="flex min-h-13 items-center justify-between rounded-[14px] bg-[#242424] px-5 text-sm font-medium text-white"
@@ -202,7 +217,7 @@ export function InternationalPublicHeader({
                 </Link>
               ))}
               <div className="mt-5 grid grid-cols-2 gap-2">
-                {euBuyerMarkets.map((item) => (
+                {mobileMarkets.map((item) => (
                   <a
                     key={item.code}
                     href={`https://www.autorell.com/${item.code}?market=${item.code}`}
