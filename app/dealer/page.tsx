@@ -52,7 +52,11 @@ type Lead = {
   miles: string
   created_at: string | null
   auction_ends_at?: string | null
-  listing_plan?: 'free_24h' | 'extended_7d' | 'premium_30d'
+  listing_plan?:
+    | 'free_24h'
+    | 'extended_7d'
+    | 'premium_30d'
+    | 'managed_sale'
   listing_priority?: number
   source?: string
   pickup_city?: string
@@ -202,8 +206,8 @@ export default function DealerPage() {
   const [bid, setBid] = useState('')
   const [search, setSearch] = useState('')
   const [auctionView, setAuctionView] = useState<
-    'active' | 'marketplace' | 'closed'
-  >('active')
+    'all' | 'active' | 'marketplace' | 'closed'
+  >('all')
   const [countryFilter, setCountryFilter] = useState('')
   const [makeFilter, setMakeFilter] = useState('')
   const [fuelFilter, setFuelFilter] = useState('')
@@ -343,7 +347,9 @@ export default function DealerPage() {
         lead.auction_ends_at
       )
       const matchesView =
-        auctionView === 'active'
+        auctionView === 'all'
+          ? !closed
+          : auctionView === 'active'
           ? lead.sale_format !== 'marketplace' && !closed
           : auctionView === 'marketplace'
             ? lead.sale_format === 'marketplace' && !closed
@@ -698,6 +704,8 @@ export default function DealerPage() {
                   ? 'Live export auctions'
                   : auctionView === 'marketplace'
                     ? 'Fixed-price export stock'
+                    : auctionView === 'all'
+                      ? 'All available vehicles'
                     : 'Autorell transaction archive'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -711,6 +719,17 @@ export default function DealerPage() {
 
             <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
               <div className="flex rounded-full border border-[#deddd7] bg-[#f3f2ee] p-1">
+                <button
+                  type="button"
+                  onClick={() => setAuctionView('all')}
+                  className={`flex-1 rounded-full px-4 py-2 text-sm font-normal transition sm:flex-none ${
+                    auctionView === 'all'
+                      ? 'bg-[#B4D9EF] text-[#242424] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  All ({activeAuctionCount + marketplaceCount})
+                </button>
                 <button
                   type="button"
                   onClick={() => setAuctionView('active')}
@@ -977,7 +996,7 @@ export default function DealerPage() {
               <div>
                 <CarFront size={34} className="mx-auto mb-3 text-slate-300" />
                 <h3 className="font-semibold text-slate-700">
-                  No active {auctionView === 'marketplace' ? 'fixed-price vehicles' : 'export auctions'}
+                  No active {auctionView === 'marketplace' ? 'fixed-price vehicles' : auctionView === 'all' ? 'vehicles' : 'export auctions'}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {search
@@ -991,9 +1010,9 @@ export default function DealerPage() {
               <div className="hidden grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr_auto] gap-5 border-b border-slate-100 bg-slate-50/70 px-7 py-3 text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 lg:grid">
                 <span>Vehicle</span>
                 <span>Location</span>
-                <span>{auctionView === 'marketplace' ? 'Price / highest bid' : 'Highest bid'}</span>
+                <span>{auctionView === 'marketplace' ? 'Price / highest bid' : auctionView === 'all' ? 'Price / highest bid' : 'Highest bid'}</span>
                 <span>Submitted</span>
-                <span>{auctionView === 'marketplace' ? 'Listing' : 'Auction'}</span>
+                <span>{auctionView === 'marketplace' ? 'Listing' : auctionView === 'all' ? 'Sale type' : 'Auction'}</span>
                 <span>Action</span>
               </div>
 

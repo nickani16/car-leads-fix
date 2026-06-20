@@ -57,7 +57,9 @@ export async function PATCH(
 
   const { data: lead, error: leadError } = await adminClient
     .from('leads')
-    .select('id,status,listing_plan,submission_type,seller_dealer_id')
+    .select(
+      'id,status,listing_plan,submission_type,seller_dealer_id,assigned_sales_user_id'
+    )
     .eq('id', id)
     .single()
 
@@ -151,8 +153,34 @@ export async function PATCH(
     return NextResponse.json({ success: true, status: 'Rejected' })
   }
 
+  if (lead.seller_dealer_id) {
+    const { data: paidOrder } = await adminClient
+      .from('seller_listing_orders')
+      .select('id')
+      .eq('lead_id', id)
+      .eq('status', 'paid')
+      .limit(1)
+      .maybeSingle()
+
+    if (!paidOrder) {
+      return NextResponse.json(
+        { error: 'Dealer marketplace payment is required before approval.' },
+        { status: 409 }
+      )
+    }
+  }
+
+  if (lead.listing_plan === 'managed_sale' && !lead.assigned_sales_user_id) {
+    return NextResponse.json(
+      { error: 'Assign a responsible salesperson before approval.' },
+      { status: 409 }
+    )
+  }
+
   const durationDays =
-    lead.listing_plan === 'extended_7d'
+    lead.listing_plan === 'managed_sale'
+      ? listingPackages.managed_sale.durationDays
+      : lead.listing_plan === 'extended_7d'
       ? listingPackages.extended_7d.durationDays
       : lead.listing_plan === 'premium_30d'
         ? listingPackages.premium_30d.durationDays

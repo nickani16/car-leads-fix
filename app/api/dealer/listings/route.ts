@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { canonicalVehicleValue } from '@/lib/vehicle-translation'
+import {
+  isListingPackage,
+  listingPackages,
+} from '@/lib/listing-packages'
+import { getStripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -70,6 +75,7 @@ export async function POST(request: Request) {
     }
 
     const form = await request.formData()
+    const packageId = text(form, 'packageId')
     const sellerTargetPrice = Number(text(form, 'sellerTargetPrice'))
     const modelYear = Number(text(form, 'modelYear'))
     const mileageKm = Number(text(form, 'mileageKm'))
@@ -92,13 +98,14 @@ export async function POST(request: Request) {
     }
 
     if (
+      !isListingPackage(packageId) ||
       Object.values(required).some((value) => !value) ||
       !Number.isInteger(modelYear) ||
-      modelYear < 1990 ||
+      modelYear < 2018 ||
       modelYear > new Date().getFullYear() + 1 ||
       !Number.isFinite(mileageKm) ||
       mileageKm < 0 ||
-      mileageKm > 2_000_000 ||
+      mileageKm > 10_000 ||
       !Number.isFinite(sellerTargetPrice) ||
       sellerTargetPrice <= 0 ||
       originCountry !== 'SE'
@@ -106,7 +113,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            'Complete the required information. Autorell currently purchases stock located in Sweden.',
+            'Choose a listing package and complete the required information. Vehicles must be located in Sweden, be model year 2018 or newer and have no more than 10,000 km.',
         },
         { status: 400 }
       )
@@ -191,7 +198,9 @@ export async function POST(request: Request) {
         auction_ends_at: null,
         auction_closed_at: null,
         auction_outcome: null,
-        listing_plan: 'free_24h',
+        listing_plan: packageId,
+        listing_priority: listingPackages[packageId].priority,
+        managed_sale_requested: packageId === 'managed_sale',
       })
       .select('id')
       .single()
@@ -203,6 +212,59 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    const selectedPackage = listingPackages[packageId]
+    const { data: order, error: orderError } = await admin
+      .from('seller_listing_orders')
+      .insert({
+        lead_id: inserted.id,
+        package: packageId,
+        amount_cents: selectedPackage.amountCents,
+      })
+      .select('id')
+      .single()
+
+    if (orderError || !order) {
+      console.error('Dealer listing order insert failed', orderError)
+      return NextResponse.json(
+        { error: 'The payment could not be prepared.' },
+        { status: 500 }
+      )
+    }
+
+    const origin = new URL(request.url).origin
+    const session = await getStripe().checkout.sessions.create({
+      mode: 'payment',
+      customer_email: dealer.email || undefined,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'sek',
+            unit_amount: selectedPackage.amountCents,
+            product_data: {
+              name: selectedPackage.name,
+              description: selectedPackage.description,
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        orderId: order.id,
+        leadId: inserted.id,
+        package: packageId,
+        dealerId: dealer.id,
+      },
+      success_url: `${origin}/dealer/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/dealer/sales?payment=cancelled`,
+      locale: 'en',
+    })
+
+    await admin
+      .from('seller_listing_orders')
+      .update({ stripe_checkout_session_id: session.id })
+      .eq('id', order.id)
 
     const { data: admins } = await admin
       .from('admin_users')
@@ -224,7 +286,11 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ success: true, leadId: inserted.id })
+    return NextResponse.json({
+      success: true,
+      leadId: inserted.id,
+      checkoutUrl: session.url,
+    })
   } catch (error) {
     console.error('Dealer listing route failed', error)
     return NextResponse.json(

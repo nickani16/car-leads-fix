@@ -10,6 +10,7 @@ import {
   Eye,
   Gavel,
   ShieldCheck,
+  Sparkles,
   Users,
 } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -191,10 +192,12 @@ export default async function SellerPortalPage({
                 Nuvarande paket
               </p>
               <p className="mt-3 text-xl font-medium">
-                {lead.listing_plan === 'premium_30d'
-                  ? 'Premium 15 dagar'
+                {lead.listing_plan === 'managed_sale'
+                  ? 'Autorell Managed Sale'
+                  : lead.listing_plan === 'premium_30d'
+                    ? 'Premium 15 dagar'
                   : lead.listing_plan === 'extended_7d'
-                    ? '5 dagars budgivning'
+                    ? '7 dagars exponering'
                     : 'Kostnadsfria 24 timmar'}
               </p>
               <div className="mt-7 border-t border-white/10 pt-5">
@@ -271,23 +274,43 @@ export default async function SellerPortalPage({
             </p>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
             <article className="rounded-[26px] border border-[#dcdad3] bg-white p-7 sm:p-8">
               <Clock3 size={23} className="text-[#4f8fb5]" />
               <p className="mt-7 text-sm font-medium text-[#687178]">
-                5 dagar
+                7 dagar
               </p>
               <div className="mt-2 flex items-end justify-between gap-4">
                 <h3 className="text-2xl font-semibold">Fortsatt budgivning</h3>
                 <p className="text-3xl font-semibold">100 kr</p>
               </div>
               <p className="mt-4 text-sm leading-6 text-[#697278]">
-                Bilen återöppnas för verifierade handlare i fem dagar. Alla
+                Bilen återöppnas för verifierade handlare i sju dagar. Alla
                 nya visningar och bud syns i den här vyn.
               </p>
               <CheckoutButton
                 token={token}
                 packageId="extended_7d"
+                disabled={!canUpgrade}
+              />
+            </article>
+            <article className="relative overflow-hidden rounded-[26px] border border-[#d2b46c] bg-[#fff9e9] p-7 sm:p-8">
+              <div className="absolute right-0 top-0 h-36 w-36 translate-x-10 -translate-y-10 rounded-full bg-[#f3d98f]" />
+              <Sparkles size={23} className="relative text-[#8b6815]" />
+              <p className="relative mt-7 text-sm font-medium text-[#806619]">
+                Managed Sale · 15 dagar
+              </p>
+              <div className="relative mt-2 flex items-end justify-between gap-4">
+                <h3 className="text-2xl font-semibold">Personlig försäljning</h3>
+                <p className="text-3xl font-semibold">1 500 kr</p>
+              </div>
+              <p className="relative mt-4 text-sm leading-6 text-[#735f31]">
+                En utsedd Autorell-säljare får uppdraget att prioritera bilen
+                aktivt mot vårt europeiska köparnätverk.
+              </p>
+              <CheckoutButton
+                token={token}
+                packageId="managed_sale"
                 disabled={!canUpgrade}
               />
             </article>
@@ -344,9 +367,11 @@ export default async function SellerPortalPage({
                 >
                   <div>
                     <p className="font-medium">
-                      {order.package === 'premium_30d'
-                        ? listingPackages.premium_30d.name
-                        : listingPackages.extended_7d.name}
+                      {order.package in listingPackages
+                        ? listingPackages[
+                            order.package as keyof typeof listingPackages
+                          ].name
+                        : order.package}
                     </p>
                     <p className="mt-1 text-sm text-[#788087]">
                       {formatDate(order.created_at)}

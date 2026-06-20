@@ -4,10 +4,10 @@ import { getStripe } from '@/lib/stripe'
 
 export const listingPackages = {
   extended_7d: {
-    name: '5 dagars budgivning',
-    description: 'Fortsatt synlighet för verifierade bilhandlare i 5 dagar.',
+    name: '7 dagars exponering',
+    description: 'Synlighet för verifierade bilhandlare i 7 dagar.',
     amountCents: 10000,
-    durationDays: 5,
+    durationDays: 7,
     priority: 0,
   },
   premium_30d: {
@@ -17,6 +17,14 @@ export const listingPackages = {
     amountCents: 29000,
     durationDays: 15,
     priority: 100,
+  },
+  managed_sale: {
+    name: 'Autorell Managed Sale',
+    description:
+      'En utsedd säljare prioriterar bilen aktivt mot Autorells europeiska köparnätverk.',
+    amountCents: 150000,
+    durationDays: 15,
+    priority: 1000,
   },
 } as const
 
@@ -120,6 +128,7 @@ export async function fulfillListingCheckout(
         : {}),
       listing_plan: packageId,
       listing_priority: listingPackage.priority,
+      managed_sale_requested: packageId === 'managed_sale',
       dealer_reach_snapshot: dealerReach || 0,
     })
     .eq('id', leadId)

@@ -13,6 +13,7 @@ import LeadFinanceReviewForm from './LeadFinanceReviewForm'
 import LeadReviewActions from './LeadReviewActions'
 import LeadTranslationForm from './LeadTranslationForm'
 import BidAdminControls from './BidAdminControls'
+import LeadSalesAssignmentForm from './LeadSalesAssignmentForm'
 
 export default async function AdminLeadDetailPage({
   params,
@@ -21,7 +22,12 @@ export default async function AdminLeadDetailPage({
 }) {
   const { id } = await params
   const { adminClient, adminUser } = await requireAdmin()
-  const [{ data: lead }, { data: bids }, { data: deal }] = await Promise.all([
+  const [
+    { data: lead },
+    { data: bids },
+    { data: deal },
+    { data: salesUsers },
+  ] = await Promise.all([
     adminClient.from('leads').select('*').eq('id', id).maybeSingle(),
     adminClient
       .from('bids')
@@ -29,6 +35,12 @@ export default async function AdminLeadDetailPage({
       .eq('lead_id', id)
       .order('amount', { ascending: false }),
     adminClient.from('deals').select('*').eq('lead_id', id).maybeSingle(),
+    adminClient
+      .from('staff_users')
+      .select('user_id,display_name')
+      .eq('role', 'sales')
+      .eq('is_active', true)
+      .order('display_name'),
   ])
 
   if (!lead) notFound()
@@ -55,6 +67,27 @@ export default async function AdminLeadDetailPage({
         initialAutorellPurchasePrice={lead.autorell_purchase_price}
         submissionType={lead.submission_type}
       />
+
+      {lead.listing_plan === 'managed_sale' &&
+        adminUser.role === 'super_admin' && (
+          <section className="mb-7 rounded-[20px] border border-[#d2b46c] bg-[#fff9e9] p-5 sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#806619]">
+              Managed Sale
+            </p>
+            <h2 className="mt-2 text-xl font-semibold">
+              Assign the responsible salesperson
+            </h2>
+            <p className="mb-5 mt-2 text-sm leading-6 text-[#735f31]">
+              This vehicle cannot be approved until an active salesperson is
+              assigned to prioritize it across the buyer network.
+            </p>
+            <LeadSalesAssignmentForm
+              leadId={lead.id}
+              salesUsers={salesUsers || []}
+              initialSalesUserId={lead.assigned_sales_user_id}
+            />
+          </section>
+        )}
 
       <LeadLocationForm
         leadId={lead.id}
@@ -96,6 +129,9 @@ export default async function AdminLeadDetailPage({
           }
           tone={lead.submission_type === 'dealer_marketplace' ? 'blue' : 'amber'}
         />
+        {lead.listing_plan === 'managed_sale' && (
+          <Badge label="Managed Sale · 1,500 SEK" tone="amber" />
+        )}
         <Badge
           label={`${lead.origin_country || lead.source || 'Unknown market'}`}
           tone="gray"

@@ -12,6 +12,7 @@ import {
   LockKeyhole,
   MapPin,
   ShieldCheck,
+  Sparkles,
   Upload,
   X,
 } from 'lucide-react'
@@ -960,7 +961,7 @@ export default function VehicleLeadForm({
                   väntar.
                 </p>
               </div>
-              <div className="mt-7 grid gap-4 lg:grid-cols-3">
+              <div className="mt-7 grid gap-4 lg:grid-cols-4">
                 <article className="rounded-[22px] border border-[#deddd7] bg-[#faf9f6] p-6">
                   <Clock3 size={21} className="text-[#4f8fb5]" />
                   <h3 className="mt-5 text-xl font-semibold">24 timmar</h3>
@@ -971,7 +972,7 @@ export default function VehicleLeadForm({
                 </article>
                 <article className="rounded-[22px] border border-[#c9dce7] bg-[#f4f9fc] p-6">
                   <Clock3 size={21} className="text-[#397fa8]" />
-                  <h3 className="mt-5 text-xl font-semibold">5 dagar</h3>
+                  <h3 className="mt-5 text-xl font-semibold">7 dagar</h3>
                   <p className="mt-2 text-sm leading-6 text-[#617681]">
                     Mer tid för fler handlare att bedöma och lägga bud.
                   </p>
@@ -979,7 +980,7 @@ export default function VehicleLeadForm({
                   <ListingPackageCheckoutButton
                     token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
                     packageId="extended_7d"
-                    label="Välj 5 dagar"
+                    label="Välj 7 dagar"
                   />
                 </article>
                 <article className="relative overflow-hidden rounded-[22px] border border-[#8fc4e2] bg-[#eaf5fb] p-6">
@@ -997,6 +998,27 @@ export default function VehicleLeadForm({
                       token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
                       packageId="premium_30d"
                       label="Välj Premium"
+                    />
+                  </div>
+                </article>
+                <article className="relative overflow-hidden rounded-[22px] border border-[#d2b46c] bg-[#fff9e9] p-6">
+                  <div className="absolute right-0 top-0 h-28 w-28 translate-x-8 -translate-y-8 rounded-full bg-[#f3d98f]" />
+                  <Sparkles size={21} className="relative text-[#8b6815]" />
+                  <h3 className="relative mt-5 text-xl font-semibold">
+                    Managed Sale
+                  </h3>
+                  <p className="relative mt-2 text-sm leading-6 text-[#735f31]">
+                    En utsedd säljare prioriterar aktivt bilen mot vårt
+                    europeiska köparnätverk.
+                  </p>
+                  <p className="relative mt-6 text-2xl font-semibold">
+                    1 500 kr
+                  </p>
+                  <div className="relative">
+                    <ListingPackageCheckoutButton
+                      token={sellerPortalUrl.split('/').filter(Boolean).at(-1) || ''}
+                      packageId="managed_sale"
+                      label="Välj Managed Sale"
                     />
                   </div>
                 </article>

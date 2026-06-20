@@ -10,12 +10,16 @@ import {
   Eye,
   Gavel,
   Info,
+  Pencil,
   Plus,
   Truck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fulfillListingCheckout } from '@/lib/listing-packages'
+import { getStripe } from '@/lib/stripe'
 import SellerDecisionButtons from './SellerDecisionButtons'
+import DealerListingCheckoutButton from './DealerListingCheckoutButton'
 
 const money = new Intl.NumberFormat('en-IE', {
   style: 'currency',
@@ -23,7 +27,12 @@ const money = new Intl.NumberFormat('en-IE', {
   maximumFractionDigits: 0,
 })
 
-type SearchParams = Promise<{ submitted?: string }>
+type SearchParams = Promise<{
+  submitted?: string
+  edited?: string
+  payment?: string
+  session_id?: string
+}>
 
 export default async function DealerSalesPage({
   searchParams,
@@ -46,16 +55,34 @@ export default async function DealerSalesPage({
 
   if (!dealer) redirect('/login?status=dealer-not-found')
 
+  if (params.payment === 'success' && params.session_id) {
+    try {
+      const session = await getStripe().checkout.sessions.retrieve(
+        params.session_id
+      )
+      if (session.metadata?.dealerId === dealer.id) {
+        await fulfillListingCheckout(session)
+      }
+    } catch (error) {
+      console.error('Dealer checkout confirmation failed', error)
+    }
+  }
+
   const { data: listings } = await admin
     .from('leads')
     .select(
-      'id,reg,make,model,model_year,miles,status,sale_format,seller_target_price,autorell_purchase_price,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,images,created_at'
+      'id,reg,make,model,model_year,miles,status,sale_format,seller_target_price,autorell_purchase_price,reserve_price,buy_now_price,auction_starts_at,auction_ends_at,auction_closed_at,auction_outcome,images,created_at,listing_plan'
     )
     .eq('seller_dealer_id', dealer.id)
     .order('created_at', { ascending: false })
 
   const leadIds = (listings || []).map((listing) => listing.id)
-  const [{ data: bids }, { data: deals }, { data: views }] = leadIds.length
+  const [
+    { data: bids },
+    { data: deals },
+    { data: views },
+    { data: orders },
+  ] = leadIds.length
     ? await Promise.all([
         admin
           .from('bids')
@@ -72,8 +99,13 @@ export default async function DealerSalesPage({
           .from('vehicle_listing_views')
           .select('lead_id')
           .in('lead_id', leadIds),
+        admin
+          .from('seller_listing_orders')
+          .select('lead_id,status,package')
+          .in('lead_id', leadIds)
+          .order('created_at', { ascending: false }),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }]
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }]
 
   const bidsByLead = (bids || []).reduce<Record<string, number[]>>(
     (grouped, bid) => {
@@ -84,6 +116,18 @@ export default async function DealerSalesPage({
     {}
   )
   const dealByLead = new Map((deals || []).map((deal) => [deal.lead_id, deal]))
+  const orderByLead = new Map<
+    string,
+    { status: string; package: string }
+  >()
+  for (const order of orders || []) {
+    if (!orderByLead.has(order.lead_id)) {
+      orderByLead.set(order.lead_id, {
+        status: order.status,
+        package: order.package,
+      })
+    }
+  }
   const viewsByLead = (views || []).reduce<Record<string, number>>(
     (grouped, view) => {
       grouped[view.lead_id] = (grouped[view.lead_id] || 0) + 1
@@ -136,6 +180,25 @@ export default async function DealerSalesPage({
           with a conditional purchase offer.
         </div>
       )}
+      {params.edited === '1' && (
+        <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#b8dfc5] bg-[#eaf7ee] px-5 py-4 text-sm text-[#176b39]">
+          <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
+          Changes saved. The vehicle is hidden from buyers and waiting for a
+          new Autorell review.
+        </div>
+      )}
+      {params.payment === 'success' && (
+        <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#b8dfc5] bg-[#eaf7ee] px-5 py-4 text-sm text-[#176b39]">
+          <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
+          Payment received. The vehicle is waiting for Autorell&apos;s review.
+        </div>
+      )}
+      {params.payment === 'cancelled' && (
+        <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#ead49b] bg-[#fff9e9] px-5 py-4 text-sm text-[#735f31]">
+          <Info size={19} className="mt-0.5 shrink-0" />
+          Payment was not completed. You can resume it from the vehicle below.
+        </div>
+      )}
 
       <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#c9dce5] bg-[#f1f7fa] px-5 py-4 text-sm text-[#526b78]">
         <Info size={18} className="mt-0.5 shrink-0 text-[#397b9f]" />
@@ -167,6 +230,13 @@ export default async function DealerSalesPage({
               ? Math.max(...listingBids)
               : null
             const deal = dealByLead.get(listing.id)
+            const listingOrder = orderByLead.get(listing.id)
+            const canEdit =
+              !deal &&
+              listingBids.length === 0 &&
+              ['Pending review', 'Active', 'Rejected'].includes(
+                listing.status || ''
+              )
 
             return (
               <article
@@ -286,6 +356,18 @@ export default async function DealerSalesPage({
                           Purchase, payment and collection status appears here
                           after your company accepts Autorell&apos;s offer.
                         </p>
+                        {listingOrder && listingOrder.status !== 'paid' ? (
+                          <DealerListingCheckoutButton leadId={listing.id} />
+                        ) : null}
+                        {canEdit ? (
+                          <Link
+                            href={`/dealer/sales/${listing.id}/edit`}
+                            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full border border-[#c7d8e0] bg-white px-4 text-xs font-semibold text-[#315f74] transition hover:border-[#7faec3]"
+                          >
+                            <Pencil size={14} />
+                            Edit vehicle
+                          </Link>
+                        ) : null}
                       </>
                     )}
                   </div>

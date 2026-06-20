@@ -80,22 +80,26 @@ export async function GET(
     })
     if (!sourceResponse.ok) return new Response(null, { status: 404 })
 
-    const { default: sharp } = await import('sharp')
-    const source = Buffer.from(await sourceResponse.arrayBuffer())
-    const protectedImage = await sharp(source, {
-      failOn: 'warning',
-      limitInputPixels: 40_000_000,
-    })
-      .rotate()
-      .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 86, effort: 4 })
-      .toBuffer()
+    const contentType =
+      sourceResponse.headers.get('content-type') || 'application/octet-stream'
+    if (!contentType.startsWith('image/')) {
+      return new Response(null, { status: 404 })
+    }
+    const source = new Uint8Array(await sourceResponse.arrayBuffer())
+    const extension =
+      contentType === 'image/png'
+        ? 'png'
+        : contentType === 'image/webp'
+          ? 'webp'
+          : contentType === 'image/gif'
+            ? 'gif'
+            : 'jpg'
 
-    return new Response(new Uint8Array(protectedImage), {
+    return new Response(source, {
       headers: {
-        'Content-Type': 'image/webp',
+        'Content-Type': contentType,
         'Cache-Control': 'private, no-store',
-        'Content-Disposition': 'inline; filename="autorell-vehicle.webp"',
+        'Content-Disposition': `inline; filename="autorell-vehicle.${extension}"`,
         'X-Content-Type-Options': 'nosniff',
       },
     })
