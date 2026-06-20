@@ -30,6 +30,32 @@ const EU_BUYER_MARKET_CODES = new Set(
 )
 const GERMAN_IMPORT_GUIDE_PATH = '/ratgeber/fahrzeugimport-aus-schweden'
 
+const LOCALIZED_CORE_ROUTES = {
+  sv: new Map([
+    ['/hitta-bilar', '/find-cars'],
+    ['/bli-bilhandlare', '/dealer-apply'],
+    ['/handlarvillkor', '/dealer-terms'],
+  ]),
+  de: new Map([
+    ['/fahrzeuge-finden', '/find-cars'],
+    ['/haendlerzugang', '/dealer-apply'],
+    ['/haendlerbedingungen', '/dealer-terms'],
+  ]),
+} as const
+
+const LEGACY_CORE_ROUTES = {
+  sv: new Map([
+    ['/find-cars', '/hitta-bilar'],
+    ['/dealer-apply', '/bli-bilhandlare'],
+    ['/dealer-terms', '/handlarvillkor'],
+  ]),
+  de: new Map([
+    ['/find-cars', '/fahrzeuge-finden'],
+    ['/dealer-apply', '/haendlerzugang'],
+    ['/dealer-terms', '/haendlerbedingungen'],
+  ]),
+} as const
+
 const DEALER_MARKET_ROUTES = {
   de: new Map([
     ['/fahrzeuge', 'vehicles'],
@@ -168,6 +194,23 @@ export function proxy(request: NextRequest) {
   }
 
   const pathname = request.nextUrl.pathname
+  const currentMarket = MARKET_BY_HOST[hostname]
+
+  if (methodCanRedirect && (currentMarket === 'sv' || currentMarket === 'de')) {
+    const legacyTarget = LEGACY_CORE_ROUTES[currentMarket].get(pathname)
+    if (legacyTarget) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = legacyTarget
+      return NextResponse.redirect(redirectUrl, 308)
+    }
+
+    const internalTarget = LOCALIZED_CORE_ROUTES[currentMarket].get(pathname)
+    if (internalTarget) {
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = internalTarget
+      return NextResponse.rewrite(localizedUrl)
+    }
+  }
 
   if (
     methodCanRedirect &&
@@ -256,7 +299,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const currentMarket = MARKET_BY_HOST[hostname]
   const preferredMarket = getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
     request.headers.get('user-agent') || '',

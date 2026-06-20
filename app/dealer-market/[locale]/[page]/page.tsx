@@ -23,6 +23,7 @@ import ContactForm from '@/app/components/ContactForm'
 import PublicContactPage from '@/app/components/PublicContactPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import DealerBenefitsPage from '@/app/components/DealerBenefitsPage'
 
 type Locale = 'de' | 'en'
 type PageKey =
@@ -473,6 +474,10 @@ export default async function DealerMarketPage({
   const isContact = page === 'contact'
   const isFaq = page === 'faq'
   const isLegal = page === 'privacy' || page === 'terms' || page === 'cookies'
+
+  if (page === 'benefits') {
+    return <DealerBenefitsPage locale={locale} />
+  }
 
   if (isContact) {
     return (

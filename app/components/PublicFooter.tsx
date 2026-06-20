@@ -15,7 +15,7 @@ const footerCopy = {
     statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
     sellerTitle: 'Sälja bil',
     sellerLinks: [
-      ['Hitta bilar', '/find-cars'],
+      ['Hitta bilar', '/hitta-bilar'],
       ['Sälj din bil', '/salj-bil'],
       ['Hur det fungerar', '/#sa-fungerar-det'],
       ['Trygg affär', '/trygg-affar'],
@@ -31,8 +31,8 @@ const footerCopy = {
     dealerTitle: 'Handlare',
     dealerLinks: [
       ['För bilhandlare', '/for-handlare'],
-      ['Ansök som handlare', '/dealer-apply'],
-      ['Handlarvillkor', '/dealer-terms'],
+      ['Ansök som handlare', '/bli-bilhandlare'],
+      ['Handlarvillkor', '/handlarvillkor'],
       ['Logga in', '/login'],
     ] as [string, string][],
     contact: 'Kontakt',
@@ -50,7 +50,7 @@ const footerCopy = {
     statement: 'Fahrzeuge handeln. Europa verbinden.',
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge finden', '/find-cars'],
+      ['Fahrzeuge finden', '/fahrzeuge-finden'],
       ['Fahrzeugbestand verkaufen', '/fahrzeugbestand-verkaufen'],
       ['So funktioniert der Einkauf', '/so-funktionierts'],
       ['Vorteile für Händler', '/vorteile'],
@@ -66,8 +66,8 @@ const footerCopy = {
     dealerTitle: 'Dealer Network',
     dealerLinks: [
       ['Händlerstandorte', '/haendler'],
-      ['Händler werden', '/dealer-apply'],
-      ['Händlerbedingungen', '/dealer-terms'],
+      ['Händler werden', '/haendlerzugang'],
+      ['Händlerbedingungen', '/haendlerbedingungen'],
       ['Händler-Login', '/login'],
     ] as [string, string][],
     contact: 'Kontakt',
@@ -165,7 +165,13 @@ export default function PublicFooter({
               {t.question}
             </p>
             <Link
-              href={locale === 'sv' ? '/salj-bil' : '/dealer-apply'}
+              href={
+                locale === 'sv'
+                  ? '/salj-bil'
+                  : locale === 'de'
+                    ? '/haendlerzugang'
+                    : '/dealer-apply'
+              }
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-normal text-white transition hover:bg-[#111111]"
             >
               {t.cta}

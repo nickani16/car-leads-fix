@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {
   ArrowRight,
+  BadgeCheck,
   Building2,
   CarFront,
   ChevronDown,
@@ -235,6 +236,24 @@ export default function PublicHeader({
       : activeLocale === 'en'
         ? 'https://www.autorell.com/'
         : 'https://www.autorell.se/'
+  const marketRoutes =
+    activeLocale === 'de'
+      ? {
+          vehicles: '/fahrzeuge-finden',
+          dealerAccess: '/haendlerzugang',
+          dealerTerms: '/haendlerbedingungen',
+        }
+      : activeLocale === 'sv'
+        ? {
+            vehicles: '/hitta-bilar',
+            dealerAccess: '/bli-bilhandlare',
+            dealerTerms: '/handlarvillkor',
+          }
+        : {
+            vehicles: '/find-cars',
+            dealerAccess: '/dealer-apply',
+            dealerTerms: '/dealer-terms',
+          }
   const content =
     activeLocale === 'de'
       ? {
@@ -243,7 +262,7 @@ export default function PublicHeader({
           privateLabel: 'Europäischer Fahrzeughandel',
           dealerLabel: 'Über Autorell',
           links: [
-            ['/find-cars', 'Fahrzeuge finden'],
+            [marketRoutes.vehicles, 'Fahrzeuge finden'],
             ['/so-funktionierts', 'So funktioniert es'],
             ['/vorteile', 'Vorteile'],
             ['/ueber-autorell', 'Über Autorell'],
@@ -253,7 +272,7 @@ export default function PublicHeader({
           partner: 'Händler werden',
           login: 'Händler-Login',
           cta: 'Händlerzugang',
-          ctaHref: '/dealer-apply',
+          ctaHref: marketRoutes.dealerAccess,
         }
       : activeLocale === 'en'
         ? {
@@ -262,7 +281,7 @@ export default function PublicHeader({
             privateLabel: 'Swedish vehicles',
             dealerLabel: 'About Autorell',
             links: [
-              ['/find-cars', 'Find cars'],
+              [marketRoutes.vehicles, 'Find cars'],
               ['/how-it-works', 'How it works'],
               ['/dealer-benefits', 'Dealer benefits'],
               ['/about', 'About Autorell'],
@@ -272,7 +291,7 @@ export default function PublicHeader({
             partner: 'Become a dealer',
             login: 'Dealer login',
             cta: 'Dealer access',
-            ctaHref: '/dealer-apply',
+            ctaHref: marketRoutes.dealerAccess,
           }
         : {
             message: 'Autorell söker det starkaste priset i sitt europeiska köparnätverk',
@@ -282,7 +301,7 @@ export default function PublicHeader({
             links: [
               ['/salj-bil', 'Sälj din bil'],
               ['/foretag', 'Företag'],
-              ['/find-cars', 'Hitta bilar'],
+              [marketRoutes.vehicles, 'Hitta bilar'],
               ['/for-handlare', 'För bilhandlare'],
               ['/vanliga-fragor', 'Vanliga frågor'],
               ['/kontakt', 'Kontakta oss'],
@@ -332,10 +351,10 @@ export default function PublicHeader({
               ? 'Professioneller B2B-Zugang zu wachsendem europäischem Angebot.'
               : 'Structured vehicle data and focused bidding windows.',
           cta: activeLocale === 'de' ? 'Fahrzeuge ansehen' : 'View vehicles',
-          ctaHref: '/find-cars',
+          ctaHref: marketRoutes.vehicles,
           items: [
             {
-              href: '/find-cars',
+              href: marketRoutes.vehicles,
               label: activeLocale === 'de' ? 'Fahrzeuge finden' : 'Find cars',
               text:
                 activeLocale === 'de'
@@ -359,7 +378,7 @@ export default function PublicHeader({
               icon: Building2,
             },
             {
-              href: '/dealer-apply',
+              href: marketRoutes.dealerAccess,
               label: activeLocale === 'de' ? 'Händlerzugang' : 'Dealer access',
               text:
                 activeLocale === 'de'
@@ -438,16 +457,16 @@ export default function PublicHeader({
           title: 'Utvalda svenska bilar för professionella handlare.',
           text: 'Se publikt utbud eller ansök om åtkomst till fullständig data och budgivning.',
           cta: 'Hitta bilar',
-          ctaHref: '/find-cars',
+          ctaHref: marketRoutes.vehicles,
           items: [
             {
-              href: '/find-cars',
+              href: marketRoutes.vehicles,
               label: 'Hitta bilar',
               text: 'Se aktuellt utbud från Autorell.',
               icon: CarFront,
             },
             {
-              href: '/dealer-apply',
+              href: marketRoutes.dealerAccess,
               label: 'Ansök som bilhandlare',
               text: 'Få fullständiga fordonsdata och möjlighet att lägga bud.',
               icon: Store,
@@ -492,7 +511,7 @@ export default function PublicHeader({
               icon: Building2,
             },
             {
-              href: '/dealer-apply',
+              href: marketRoutes.dealerAccess,
               label: activeLocale === 'de' ? 'Händlerzugang' : 'Dealer access',
               text:
                 activeLocale === 'de'
@@ -511,6 +530,108 @@ export default function PublicHeader({
             },
           ],
         }
+  const aboutMenu =
+    activeLocale === 'de'
+      ? {
+          eyebrow: 'Über Autorell',
+          title: 'Ein europäischer Fahrzeugmarkt mit klareren Daten.',
+          text: 'Erfahren Sie mehr über Autorell, unser Käufernetzwerk und den strukturierten grenzüberschreitenden Prozess.',
+          cta: 'Über Autorell',
+          ctaHref: '/ueber-autorell',
+          items: [
+            {
+              href: '/ueber-autorell',
+              label: 'Unternehmen und Plattform',
+              text: 'Unsere Rolle im europäischen Fahrzeughandel.',
+              icon: Building2,
+            },
+            {
+              href: '/vorteile',
+              label: 'Vorteile für Händler',
+              text: 'Ausgewählte Fahrzeuge, Daten und koordinierte Abwicklung.',
+              icon: BadgeCheck,
+            },
+            {
+              href: marketRoutes.dealerTerms,
+              label: 'Händlerbedingungen',
+              text: 'Gebote, Gebühren und Plattformregeln.',
+              icon: ShieldCheck,
+            },
+            {
+              href: '/kontakt',
+              label: 'Autorell kontaktieren',
+              text: 'Fragen zu Zugang, Fahrzeugen und Export.',
+              icon: Headphones,
+            },
+          ],
+        }
+      : activeLocale === 'en'
+        ? {
+            eyebrow: 'About Autorell',
+            title: 'A European vehicle market built on clearer data.',
+            text: 'Learn about Autorell, our professional buyer network and the connected cross-border transaction process.',
+            cta: 'About Autorell',
+            ctaHref: '/about',
+            items: [
+              {
+                href: '/about',
+                label: 'Company and platform',
+                text: 'Our role in professional European vehicle trade.',
+                icon: Building2,
+              },
+              {
+                href: '/dealer-benefits',
+                label: 'Dealer benefits',
+                text: 'Selected supply, structured data and coordinated delivery.',
+                icon: BadgeCheck,
+              },
+              {
+                href: marketRoutes.dealerTerms,
+                label: 'Dealer terms',
+                text: 'Bidding, fees and platform rules.',
+                icon: ShieldCheck,
+              },
+              {
+                href: '/contact',
+                label: 'Contact Autorell',
+                text: 'Questions about access, vehicles and export.',
+                icon: Headphones,
+              },
+            ],
+          }
+        : {
+            eyebrow: 'Om Autorell',
+            title: 'Ett tydligare sätt att föra samman bilar och professionella köpare.',
+            text: 'Läs om Autorell, tryggheten i processen och hur vi arbetar med det europeiska köparnätverket.',
+            cta: 'Om Autorell',
+            ctaHref: '/om-oss',
+            items: [
+              {
+                href: '/om-oss',
+                label: 'Om företaget',
+                text: 'Vår plattform och roll i fordonsaffären.',
+                icon: Building2,
+              },
+              {
+                href: '/trygg-affar',
+                label: 'En trygg affär',
+                text: 'Skyddade uppgifter, kontroll och tydliga steg.',
+                icon: ShieldCheck,
+              },
+              {
+                href: marketRoutes.dealerTerms,
+                label: 'Handlarvillkor',
+                text: 'Regler för professionella köpare.',
+                icon: BadgeCheck,
+              },
+              {
+                href: '/kontakt',
+                label: 'Kontakta Autorell',
+                text: 'Frågor om försäljning, köp eller företag.',
+                icon: Headphones,
+              },
+            ],
+          }
 
   function handleSectionLink(
     event: ReactMouseEvent<HTMLAnchorElement>,
@@ -550,7 +671,7 @@ export default function PublicHeader({
                 <Headphones className="h-3.5 w-3.5" />
                 {content.links[5][1]}
               </Link>
-              <Link href="/dealer-apply" className="hover:underline">
+              <Link href={marketRoutes.dealerAccess} className="hover:underline">
                 {content.partner}
               </Link>
               <Link href="/login" className="hover:underline">
@@ -648,104 +769,13 @@ export default function PublicHeader({
                 icon={activeLocale === 'sv' ? CarFront : Building2}
               />
 
-              <div className="group relative">
-                <Link
-                  href={activeLocale === 'sv' ? '/for-handlare' : content.links[3][0]}
-                  className="flex min-h-10 shrink-0 appearance-none items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
-                >
-                  {content.dealerLabel}
-                  <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
-                </Link>
-
-                <div className="pointer-events-none absolute left-1/2 top-full w-[760px] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[820px]">
-                  <div className="overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
-                    <div className="grid grid-cols-[1.12fr_.88fr]">
-                      <div className="min-w-0 bg-[#eef6fa] p-7 2xl:p-8">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424]">
-                          <Building2 className="h-5 w-5" />
-                        </div>
-                        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.18em] text-[#68808e]">
-                          Autorell Dealer Network
-                        </p>
-                        <h3 className="mt-2 max-w-[360px] whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em] text-[#202124] 2xl:text-[27px]">
-                          {activeLocale === 'de'
-                            ? 'Europäischer Handel. Klarere Entscheidungen.'
-                            : 'Swedish vehicles. Clearer decisions.'}
-                        </h3>
-                        <p className="mt-3 max-w-[390px] whitespace-normal text-sm leading-6 text-[#5c707b]">
-                          {activeLocale === 'de'
-                            ? 'Strukturierte Fahrzeugprofile und ein fokussierter Einkaufsprozess für professionelle Händler.'
-                            : 'Structured vehicle profiles and focused European bidding for professional buyers.'}
-                        </p>
-                        <Link
-                          href="/dealer-apply"
-                          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#202124]"
-                        >
-                          {content.partner}
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-
-                      <div className="min-w-0 p-5">
-                        <Link
-                          href="/login"
-                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
-                            <LogIn className="h-4.5 w-4.5" />
-                          </span>
-                          <span className="min-w-0">
-                            <strong className="block text-sm font-medium text-[#202124]">
-                              {content.login}
-                            </strong>
-                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              {activeLocale === 'de'
-                                ? 'Auktionen und Konto öffnen'
-                                : 'Access auctions and your account'}
-                            </span>
-                          </span>
-                        </Link>
-                        <Link
-                          href="/dealer-terms"
-                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
-                            <ShieldCheck className="h-4.5 w-4.5" />
-                          </span>
-                          <span className="min-w-0">
-                            <strong className="block text-sm font-medium text-[#202124]">
-                              {activeLocale === 'de' ? 'Händlerbedingungen' : 'Dealer terms'}
-                            </strong>
-                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              {activeLocale === 'de'
-                                ? 'Gebote, Gebühren und Plattformregeln'
-                                : 'Bidding, fees and platform rules'}
-                            </span>
-                          </span>
-                        </Link>
-                        <Link
-                          href={content.links[5][0]}
-                          className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
-                            <Headphones className="h-4.5 w-4.5" />
-                          </span>
-                          <span className="min-w-0">
-                            <strong className="block text-sm font-medium text-[#202124]">
-                              {activeLocale === 'de' ? 'Persönlicher Support' : 'Personal support'}
-                            </strong>
-                            <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">
-                              {activeLocale === 'de'
-                                ? 'Sprechen Sie mit dem Autorell-Team'
-                                : 'Speak with the Autorell team'}
-                            </span>
-                          </span>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DesktopMenu
+                label={content.dealerLabel}
+                href={activeLocale === 'sv' ? '/om-oss' : content.links[3][0]}
+                menu={aboutMenu}
+                onNavigate={handleSectionLink}
+                icon={Building2}
+              />
 
               <Link
                 href={content.links[4][0]}
@@ -844,7 +874,7 @@ export default function PublicHeader({
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Link
-                  href="/dealer-apply"
+                  href={marketRoutes.dealerAccess}
                   onClick={() => setOpen(false)}
                   className="flex min-h-12 items-center gap-3 rounded-[12px] border border-[#dcdad3] px-4 text-sm text-[#242424]"
                 >

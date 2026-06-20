@@ -97,11 +97,16 @@ export async function generateMetadata() {
   return createPublicMetadata({
     title: t.title,
     description: t.description,
-    path: '/find-cars',
+    path:
+      locale === 'sv'
+        ? '/hitta-bilar'
+        : locale === 'de'
+          ? '/fahrzeuge-finden'
+          : '/find-cars',
     locale,
     languagePaths: {
-      sv: '/find-cars',
-      de: '/find-cars',
+      sv: '/hitta-bilar',
+      de: '/fahrzeuge-finden',
       en: '/find-cars',
     },
   })
@@ -111,6 +116,12 @@ export default async function FindCarsPage() {
   const headerStore = await headers()
   const locale = localeFromHost(headerStore.get('host') || '')
   const t = pageCopy[locale]
+  const dealerAccessHref =
+    locale === 'sv'
+      ? '/bli-bilhandlare'
+      : locale === 'de'
+        ? '/haendlerzugang'
+        : '/dealer-apply'
   const now = new Date().toISOString()
 
   const { data } = await createAdminClient()
@@ -166,7 +177,7 @@ export default async function FindCarsPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/dealer-apply"
+                href={dealerAccessHref}
                 className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] px-7 text-sm font-medium text-white"
               >
                 {t.apply}

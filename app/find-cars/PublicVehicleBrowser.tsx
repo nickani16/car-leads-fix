@@ -653,7 +653,16 @@ export default function PublicVehicleBrowser({
                     ))}
                   </ul>
 
-                  <Link href="/dealer-apply" className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white">
+                  <Link
+                    href={
+                      locale === 'sv'
+                        ? '/bli-bilhandlare'
+                        : locale === 'de'
+                          ? '/haendlerzugang'
+                          : '/dealer-apply'
+                    }
+                    className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white"
+                  >
                     {t.signup}
                     <ArrowRight className="h-4 w-4" />
                   </Link>

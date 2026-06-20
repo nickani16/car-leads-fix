@@ -143,27 +143,33 @@ export default function PublicContactPage({
   locale?: ContactLocale
 }) {
   const t = copy[locale]
+  const dealerAccessHref =
+    locale === 'sv'
+      ? '/bli-bilhandlare'
+      : locale === 'de'
+        ? '/haendlerzugang'
+        : '/dealer-apply'
 
   return (
     <>
-      <section className="relative isolate overflow-hidden border-b border-white/10 bg-[#20272b] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(180,217,239,.2),transparent_30%),linear-gradient(115deg,rgba(255,255,255,.035),transparent_44%)]" />
-        <div className="absolute -right-40 -top-56 h-[600px] w-[600px] rounded-full border-[82px] border-white/[.045]" />
+      <section className="relative isolate overflow-hidden border-b border-[#dce5e8] bg-[linear-gradient(135deg,#fffdf8_0%,#f2f8fa_52%,#e1f0f6_100%)] text-[#202124]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(180,217,239,.38),transparent_30%)]" />
+        <div className="absolute -right-40 -top-56 h-[600px] w-[600px] rounded-full border-[82px] border-white/55" />
         <div className="relative mx-auto grid max-w-[1320px] gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.12fr_.88fr] lg:items-end lg:px-12 lg:py-32">
           <div>
-            <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#B4D9EF]">
-              <span className="h-px w-8 bg-[#B4D9EF]/70" />
+            <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#52768a]">
+              <span className="h-px w-8 bg-[#6f9bb0]" />
               {t.eyebrow}
             </p>
             <h1 className="mt-7 max-w-4xl text-[43px] leading-[.98] tracking-[-0.055em] sm:text-7xl sm:leading-[.96] lg:text-[84px]">
               {t.title}
             </h1>
-            <p className="mt-8 max-w-2xl text-[17px] leading-8 text-white/64 sm:text-xl sm:leading-9">
+            <p className="mt-8 max-w-2xl text-[17px] leading-8 text-[#5b707a] sm:text-xl sm:leading-9">
               {t.intro}
             </p>
             <a
               href="#contact-form"
-              className="mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#B4D9EF] px-7 text-sm font-semibold text-[#20272b] shadow-[0_18px_45px_rgba(0,0,0,.2)] transition hover:-translate-y-0.5 hover:bg-white"
+              className="mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#20272b] px-7 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(32,39,43,.16)] transition hover:-translate-y-0.5"
             >
               {locale === 'sv'
                 ? 'Skriv till oss'
@@ -174,23 +180,23 @@ export default function PublicContactPage({
             </a>
           </div>
 
-          <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[.065] p-7 backdrop-blur-sm sm:p-9">
-            <Headphones className="h-7 w-7 text-[#B4D9EF]" />
-            <p className="mt-10 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
+          <div className="relative overflow-hidden rounded-[30px] border border-white bg-white/78 p-7 shadow-[0_28px_80px_rgba(56,86,99,.11)] backdrop-blur-sm sm:p-9">
+            <Headphones className="h-7 w-7 text-[#397b9f]" />
+            <p className="mt-10 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#52768a]">
               {t.responseLabel}
             </p>
             <h2 className="mt-3 text-3xl leading-tight tracking-[-0.045em]">
               {t.responseTitle}
             </h2>
-            <p className="mt-4 text-sm leading-7 text-white/60">
+            <p className="mt-4 text-sm leading-7 text-[#65777f]">
               {t.responseText}
             </p>
-            <div className="mt-8 border-t border-white/10 pt-6">
+            <div className="mt-8 border-t border-[#dbe4e7] pt-6">
               <a
                 href="mailto:info@autorell.com"
                 className="inline-flex items-center gap-3 text-sm font-semibold"
               >
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-[#B4D9EF]">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e7f3f8] text-[#397b9f]">
                   <Mail className="h-4 w-4" />
                 </span>
                 info@autorell.com
@@ -262,17 +268,17 @@ export default function PublicContactPage({
                 </div>
               </div>
 
-              <div className="rounded-[28px] bg-[#20272b] p-7 text-white sm:p-9">
-                <Store className="h-6 w-6 text-[#B4D9EF]" />
+              <div className="rounded-[28px] border border-[#c9dfe8] bg-[#e8f5fa] p-7 sm:p-9">
+                <Store className="h-6 w-6 text-[#397b9f]" />
                 <h2 className="mt-8 text-2xl tracking-[-0.035em]">
                   {t.dealerTitle}
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-white/60">
+                <p className="mt-3 text-sm leading-7 text-[#5c737d]">
                   {t.dealerText}
                 </p>
                 <Link
-                  href="/dealer-apply"
-                  className="mt-7 inline-flex items-center gap-2 text-sm font-semibold"
+                  href={dealerAccessHref}
+                  className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#315f74]"
                 >
                   {t.dealerLink} <ArrowRight className="h-4 w-4" />
                 </Link>
