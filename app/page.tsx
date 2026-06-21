@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
 import BuyerMarketPage from './components/BuyerMarketPage'
+import BrandCornerMark from './components/BrandCornerMark'
 import FaqTestimonials from './components/FaqTestimonials'
 import HomeMarketPulse from './components/HomeMarketPulse'
 import ProcessSteps from './components/ProcessSteps'
@@ -143,7 +144,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(180,217,239,.28),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
         <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
-        <div className="business-orbit absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#b4d9ef]/28 sm:hidden" />
+        <BrandCornerMark className="-right-10 top-16 h-28 w-56 -rotate-6 text-[#b4d9ef]/38 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-20 xl:translate-y-16">
@@ -164,16 +165,16 @@ export default async function HomePage() {
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/salj-bil"
-                className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] pl-7 pr-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111]"
+                className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-[10px] bg-[#242424] pl-7 pr-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111]"
               >
                 Sälj din bil
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#b4d9ef] text-[#242424] transition group-hover:translate-x-0.5">
+                <span className="grid h-9 w-9 place-items-center rounded-[8px] bg-[#b4d9ef] text-[#242424] transition group-hover:translate-x-0.5">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
               <Link
                 href="/foretag"
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-[#c7c8c3] bg-white/70 px-7 text-sm font-medium backdrop-blur transition hover:bg-white"
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[10px] border border-[#c7c8c3] bg-white/70 px-7 text-sm font-medium backdrop-blur transition hover:bg-white"
               >
                 Sälj företagsfordon
                 <ChevronRight className="h-4 w-4" />
@@ -210,7 +211,7 @@ export default async function HomePage() {
         id="sa-fungerar-det"
         className="relative scroll-mt-[124px] overflow-hidden bg-[#eef5f7] py-16 sm:py-28"
       >
-        <div className="absolute -left-28 top-16 h-72 w-72 rounded-full border-[55px] border-white/45" />
+        <BrandCornerMark className="-left-16 top-16 h-36 w-72 rotate-[-8deg] text-white/45" />
         <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-[#dcecf3]/70 blur-3xl" />
 
         <div className="relative mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
@@ -253,7 +254,7 @@ export default async function HomePage() {
           <ProcessSteps />
 
           <div className="relative mt-10 overflow-hidden rounded-[20px] bg-[#242424] px-6 py-7 text-white shadow-[0_24px_65px_rgba(32,33,36,.16)] sm:px-9 sm:py-9">
-            <div className="business-orbit absolute -right-20 -top-28 h-64 w-64 rounded-full border-[42px] border-white/[.055]" />
+            <BrandCornerMark className="-right-12 -top-8 h-32 w-64 -rotate-6 text-white/[.055]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
@@ -294,7 +295,7 @@ export default async function HomePage() {
         className="relative overflow-hidden bg-[#f5f1e8] pb-16 pt-16 sm:pb-20 sm:pt-24"
       >
         <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
-        <div className="absolute -right-24 top-10 h-72 w-72 rounded-full border-[52px] border-white/45" />
+        <BrandCornerMark className="-right-14 top-12 h-36 w-72 rotate-[-7deg] text-white/45" />
 
         <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
           <div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-end lg:gap-20">
@@ -312,7 +313,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/salj-bil"
-                className="mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.14)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
+                className="mt-8 inline-flex min-h-13 items-center justify-center gap-2 rounded-[10px] bg-[#242424] px-6 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.14)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
                 Sälj din bil
                 <ArrowRight className="h-4 w-4" />
@@ -455,7 +456,7 @@ export default async function HomePage() {
 
               <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-y border-[#dfe6e5] bg-[#22272a] p-7 text-white lg:min-h-full lg:border-x lg:border-y-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(180,217,239,.18),transparent_47%)]" />
-                <div className="trust-ring absolute -right-20 -top-20 h-52 w-52 rounded-full border-[32px] border-[#b4d9ef]/10" />
+                <BrandCornerMark className="-right-10 -top-2 h-24 w-48 -rotate-6 text-[#b4d9ef]/10" />
                 <div className="relative w-full max-w-[245px]">
                   <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/10 bg-white/[.07] shadow-[0_20px_55px_rgba(0,0,0,.2)]">
                     <Handshake className="h-8 w-8 text-[#b4d9ef]" />
@@ -551,7 +552,7 @@ export default async function HomePage() {
                       {tile.title}
                     </h2>
                   </div>
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
                     <ArrowRight className="h-5 w-5" />
                   </span>
                 </div>
@@ -581,7 +582,7 @@ export default async function HomePage() {
                   {homeDealerExperienceTiles[0].title}
                 </h2>
               </div>
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[10px] border border-[#202124]/15 bg-white/35 shadow-[0_18px_45px_rgba(32,33,36,.18)] backdrop-blur transition group-hover:translate-x-1 group-hover:bg-white/70">
                 <ArrowRight className="h-5 w-5" />
               </span>
             </div>
@@ -596,7 +597,7 @@ export default async function HomePage() {
 
       <section className="bg-white px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
         <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#B4D9EF] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
-          <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[55px] border-white/25" />
+          <BrandCornerMark className="-right-14 -top-6 h-40 w-80 -rotate-6 text-white/25" />
           <div className="absolute -bottom-36 -left-20 h-72 w-72 rounded-full bg-white/20 blur-2xl" />
           <div className="relative flex flex-col items-center">
             <div className="flex flex-col items-center">
@@ -612,7 +613,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/salj-bil"
-              className="mt-8 inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:rounded-full sm:font-normal"
+              className="mt-8 inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-2 rounded-[10px] bg-[#242424] px-8 font-medium text-white shadow-[0_15px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111111] sm:w-auto sm:font-normal"
             >
               Sälj min bil
               <ArrowRight className="h-5 w-5" />
