@@ -183,7 +183,7 @@ export default function ProcessSteps() {
                   >
                     <span>{isOpen ? 'Visa mindre' : 'Läs mer om steget'}</span>
                     <span
-                      className={`grid h-9 w-9 place-items-center rounded-[10px] transition-all duration-300 ${
+                      className={`grid h-9 w-9 place-items-center rounded-full transition-all duration-300 ${
                         isOpen
                           ? 'rotate-45 bg-[#242424] text-white'
                           : 'bg-[#e8f3f8] text-[#315d70] group-hover:translate-x-0.5'

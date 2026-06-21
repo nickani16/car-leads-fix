@@ -156,7 +156,7 @@ export default function FaqTestimonials() {
                       </span>
                       <span className="flex-1">{item.question}</span>
                       <span
-                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] transition ${
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-full transition ${
                           isOpen
                             ? 'bg-[#242424] text-white'
                             : 'bg-[#edf2f2] text-[#58696f]'
@@ -189,7 +189,7 @@ export default function FaqTestimonials() {
           </div>
 
           <div className="relative flex min-h-[520px] flex-col justify-between overflow-hidden rounded-[24px] border border-[#cfe1e8] bg-[#dceef5] px-6 py-9 text-[#202124] shadow-[0_24px_75px_rgba(60,102,119,.1)] sm:rounded-[30px] sm:px-10 sm:py-12 lg:px-12">
-            <BrandCornerMark className="-right-16 -top-4 h-36 w-72 -rotate-6 text-white/35" />
+            <BrandCornerMark className="-right-20 -top-8 h-36 w-72 -rotate-[15deg] text-white/35" />
             <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-white/45 blur-2xl" />
             <div className="relative">
               <div className="flex items-center justify-between">
@@ -245,7 +245,7 @@ export default function FaqTestimonials() {
                     type="button"
                     onClick={() => showReview(activeReview - 1)}
                     aria-label="Föregående omdöme"
-                    className="grid h-11 w-11 place-items-center rounded-[10px] border border-[#9ebdca] bg-white/35 text-[#315f73] transition hover:bg-white"
+                    className="grid h-11 w-11 place-items-center rounded-full border border-[#9ebdca] bg-white/35 text-[#315f73] transition hover:bg-white"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -253,7 +253,7 @@ export default function FaqTestimonials() {
                     type="button"
                     onClick={() => showReview(activeReview + 1)}
                     aria-label="Nästa omdöme"
-                    className="grid h-11 w-11 place-items-center rounded-[10px] bg-[#242424] text-white transition hover:bg-[#111111]"
+                    className="grid h-11 w-11 place-items-center rounded-full bg-[#242424] text-white transition hover:bg-[#111111]"
                   >
                     <ArrowRight className="h-4 w-4" />
                   </button>
