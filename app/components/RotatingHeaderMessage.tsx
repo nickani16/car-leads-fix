@@ -61,10 +61,10 @@ export default function RotatingHeaderMessage({
 
   const prefix =
     locale === 'sv'
-      ? 'Vi hjälper er att'
+      ? 'Autorell hjälper er att:'
       : locale === 'de'
-        ? 'Wir helfen Ihnen zu'
-        : 'We help you'
+        ? 'Autorell hilft Ihnen beim:'
+        : 'Autorell helps you:'
 
   return (
     <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">

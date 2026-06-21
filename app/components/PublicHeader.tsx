@@ -722,6 +722,22 @@ export default function PublicHeader({
   }
 
   const buyCarLabel = buyCarLabels[activeLocale]
+  const desktopRegisterLabel =
+    activeLocale === 'sv'
+      ? 'Registrera dig'
+      : activeLocale === 'de'
+        ? 'Registrieren'
+        : activeLocale === 'en'
+          ? 'Register'
+          : translatePublic(activeLocale, 'Register')
+  const desktopLoginLabel =
+    activeLocale === 'sv'
+      ? 'Logga in'
+      : activeLocale === 'de'
+        ? 'Anmelden'
+        : activeLocale === 'en'
+          ? 'Log in'
+          : translatePublic(activeLocale, 'Log in')
   content = {
     ...content,
     links: content.links.map(([href, label]) => [
@@ -776,7 +792,7 @@ export default function PublicHeader({
         }`}
       >
         <div
-          className={`bg-[#B4D9EF] text-[#242424] transition-[height,opacity] duration-300 ease-out ${
+          className={`bg-[#6F8798] text-white transition-[height,opacity] duration-300 ease-out ${
             atTop
               ? 'h-8 overflow-visible opacity-100 md:h-9'
               : 'pointer-events-none h-0 overflow-hidden opacity-0'
@@ -908,7 +924,7 @@ export default function PublicHeader({
             </a>
 
             <nav
-              className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1 transition-[background-color,border-color,box-shadow,border-radius] duration-300 min-[1120px]:flex xl:p-1.5 ${
+              className={`absolute left-[44%] hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1 transition-[background-color,border-color,box-shadow,border-radius] duration-300 min-[1120px]:flex xl:p-1.5 ${
                 transparent
                   ? 'rounded-[22px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.58))] shadow-[0_18px_55px_rgba(32,33,36,.1),inset_0_1px_0_rgba(255,255,255,.92)] ring-1 ring-black/[.025] backdrop-blur-2xl backdrop-saturate-150'
                   : 'border border-transparent bg-transparent shadow-none'
@@ -956,16 +972,16 @@ export default function PublicHeader({
 
             <div className="relative hidden items-center gap-5 min-[1120px]:flex">
               <Link
-                href="/login"
+                href={marketRoutes.dealerAccess}
                 className="text-sm font-medium text-[#242424] transition hover:text-[#52768a]"
               >
-                {content.login}
+                {desktopRegisterLabel}
               </Link>
               <Link
-                href={content.ctaHref}
+                href="/login"
                 className="group inline-flex min-h-11 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-1.5 text-sm font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
-                {content.cta}
+                {desktopLoginLabel}
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
                   <ArrowRight className="h-4 w-4" />
                 </span>
