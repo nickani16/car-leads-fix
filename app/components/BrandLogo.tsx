@@ -12,7 +12,7 @@ export default function BrandLogo({
   return (
     <span
       className={`inline-flex items-center ${
-        compact ? 'gap-1.5' : 'gap-2 sm:gap-2.5'
+        compact ? 'gap-1' : 'gap-1.5 sm:gap-2'
       }`}
       aria-label="Autorell"
     >
