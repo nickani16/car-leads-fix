@@ -12,13 +12,15 @@ export default function BrandLogo({
   return (
     <span className="inline-flex items-center" aria-label="Autorell">
       <Image
-        src="/autorell-brand-logo.png"
+        src="/autorell-brand-logo-symbol.png"
         alt="Autorell"
-        width={1184}
-        height={211}
+        width={858}
+        height={147}
         priority
         className={`h-auto object-contain ${
-          compact ? 'w-[88px]' : 'w-[104px] sm:w-[116px]'
+          compact
+            ? 'w-[112px]'
+            : 'w-[148px] sm:w-[164px] lg:w-[176px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
     </span>
