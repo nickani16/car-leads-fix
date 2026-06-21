@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 import PublicHeader from './components/PublicHeader'
 import BuyerMarketPage from './components/BuyerMarketPage'
-import BrandCornerMark from './components/BrandCornerMark'
 import FaqTestimonials from './components/FaqTestimonials'
 import HomeMarketPulse from './components/HomeMarketPulse'
 import ProcessSteps from './components/ProcessSteps'
@@ -141,23 +140,23 @@ export default async function HomePage() {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.96)_0%,rgba(249,247,242,.9)_42%,rgba(249,247,242,.46)_69%,rgba(238,238,233,.12)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(180,217,239,.28),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
-        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(243,242,238,.48),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
+        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#e7e5df]/55 blur-3xl" />
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
-        <BrandCornerMark className="-right-12 top-14 h-28 w-56 -rotate-[16deg] text-[#b4d9ef]/38 sm:hidden" />
+        <div className="absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#dedcd6]/55 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-20 xl:translate-y-16">
-            <span className="block max-w-full text-[10px] font-semibold uppercase tracking-[0.18em] text-[#547382] sm:text-[11px] sm:tracking-[0.22em]">
+            <span className="block max-w-full text-[10px] font-semibold uppercase tracking-[0.18em] text-[#676a66] sm:text-[11px] sm:tracking-[0.22em]">
               Svenska fordon för professionella köpare i Europa
             </span>
             <h1 className="mt-8 text-[48px] leading-[.92] tracking-[-0.065em] sm:text-7xl lg:text-[82px] xl:text-[92px]">
               Sälj tryggt.
-              <span className="mt-1 block text-[#4f7181]">
+              <span className="mt-1 block text-[#555957]">
                 Nå köpare i hela Europa.
               </span>
             </h1>
-            <p className="mt-7 max-w-[670px] text-[17px] leading-8 text-[#536a75] sm:text-xl sm:leading-9">
+            <p className="mt-7 max-w-[670px] text-[17px] leading-8 text-[#5e625f] sm:text-xl sm:leading-9">
               Autorell testar efterfrågan hos verifierade EU-handlare, lämnar
               ett eget inköpserbjudande och sköter kontroll, betalning,
               hämtning och export.
@@ -209,21 +208,21 @@ export default async function HomePage() {
 
       <section
         id="sa-fungerar-det"
-        className="relative scroll-mt-[124px] overflow-hidden bg-[#eef5f7] py-16 sm:py-28"
+        className="relative scroll-mt-[124px] overflow-hidden bg-[#f5f5f5] py-16 sm:py-28"
       >
-        <BrandCornerMark className="-left-20 top-12 h-36 w-72 rotate-[14deg] text-white/45" />
-        <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-[#dcecf3]/70 blur-3xl" />
+        <div className="absolute -left-28 top-16 h-72 w-72 rounded-full border-[55px] border-white/70" />
+        <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-[#e8e7e2]/75 blur-3xl" />
 
         <div className="relative mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
             <div className="max-w-3xl">
-              <span className="inline-flex items-center rounded-full border border-[#c8dce5] bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#496878]">
+              <span className="inline-flex items-center rounded-full border border-[#d7d5cf] bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#626560]">
                 Från svensk bil till europeisk affär
               </span>
               <h2 className="mt-6 text-[38px] leading-[1.04] tracking-[-0.052em] text-[#202124] sm:text-5xl lg:text-[58px]">
                 Sex tydliga steg. Ett sammanhållet exportflöde.
               </h2>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-[#5b6e77] sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#62645f] sm:text-lg sm:leading-8">
                 Vi granskar bilen och testar efterfrågan hos verifierade
                 handlare i EU. När marknaden fungerar lämnar Autorell ett eget
                 erbjudande och sköter resten.
@@ -238,12 +237,12 @@ export default async function HomePage() {
               ].map(([value, label]) => (
                 <div
                   key={label}
-                  className="border-r border-[#dce5e8] px-3 py-5 text-center last:border-r-0 sm:px-5"
+                  className="border-r border-[#dedcd6] px-3 py-5 text-center last:border-r-0 sm:px-5"
                 >
                   <strong className="block text-xl tracking-[-0.035em] text-[#202124] sm:text-2xl">
                     {value}
                   </strong>
-                  <span className="mt-1 block text-[10px] leading-4 text-[#718087] sm:text-xs">
+                  <span className="mt-1 block text-[10px] leading-4 text-[#747670] sm:text-xs">
                     {label}
                   </span>
                 </div>
@@ -254,10 +253,10 @@ export default async function HomePage() {
           <ProcessSteps />
 
           <div className="relative mt-10 overflow-hidden rounded-[20px] bg-[#242424] px-6 py-7 text-white shadow-[0_24px_65px_rgba(32,33,36,.16)] sm:px-9 sm:py-9">
-            <BrandCornerMark className="-right-14 -top-10 h-32 w-64 -rotate-[15deg] text-white/[.055]" />
+            <div className="absolute -right-20 -top-28 h-64 w-64 rounded-full border-[42px] border-white/[.055]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#d7d8d4]">
                 Efter accepterat erbjudande
               </p>
               <p className="mt-2 text-2xl leading-tight tracking-[-0.035em] sm:text-3xl">
@@ -278,7 +277,7 @@ export default async function HomePage() {
                     key={number}
                     className="rounded-[14px] border border-white/10 bg-white/[.055] px-4 py-4 backdrop-blur-sm"
                   >
-                    <span className="text-[10px] text-[#b4d9ef]">{number}</span>
+                    <span className="text-[10px] text-[#d7d8d4]">{number}</span>
                     <strong className="mt-3 block text-sm font-medium text-white/88">
                       {label}
                     </strong>
@@ -294,8 +293,8 @@ export default async function HomePage() {
         id="varfor-autorell"
         className="relative overflow-hidden bg-[#f5f1e8] pb-16 pt-16 sm:pb-20 sm:pt-24"
       >
-        <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#b4d9ef]/30 blur-3xl" />
-        <BrandCornerMark className="-right-16 top-10 h-36 w-72 -rotate-[14deg] text-white/45" />
+        <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#e5e3dd]/65 blur-3xl" />
+        <div className="absolute -right-24 top-10 h-72 w-72 rounded-full border-[52px] border-white/55" />
 
         <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
           <div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-end lg:gap-20">
@@ -322,12 +321,12 @@ export default async function HomePage() {
 
             <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white/70 shadow-[0_30px_90px_rgba(32,33,36,.1)] backdrop-blur-sm sm:rounded-[30px]">
               <div className="relative overflow-hidden bg-[#23282b] px-5 py-7 text-white sm:px-8 sm:py-9">
-                <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#b4d9ef]/15 blur-2xl" />
+                <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/[.055] blur-2xl" />
                 <CarFront className="absolute -bottom-16 right-3 h-56 w-56 text-white/[.035] sm:right-12 sm:h-64 sm:w-64" />
 
                 <div className="relative flex items-start justify-between gap-5">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#d7d8d4]">
                       Aktuell köpbox
                     </p>
                     <h3 className="mt-2 text-2xl tracking-[-0.035em] sm:text-[32px]">
@@ -351,7 +350,7 @@ export default async function HomePage() {
                       key={label}
                       className="rounded-[15px] border border-white/10 bg-white/[.055] p-3.5 sm:min-h-[112px] sm:p-4"
                     >
-                      <Icon className="h-5 w-5 text-[#b4d9ef]" />
+                      <Icon className="h-5 w-5 text-[#d7d8d4]" />
                       <span className="mt-5 block text-sm leading-5 text-white/85">
                         {label}
                       </span>
@@ -399,7 +398,7 @@ export default async function HomePage() {
 
           <div className="mt-14 overflow-hidden rounded-[26px] border border-white/80 bg-white/70 shadow-[0_28px_85px_rgba(32,33,36,.08)] backdrop-blur-sm sm:mt-18 sm:rounded-[32px]">
             <div className="border-b border-[#dfe6e5] px-5 py-9 text-center sm:px-10 sm:py-12">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#d5e2e5] bg-[#f4fafc] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4f7484]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#dddcd6] bg-[#f5f5f5] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#626560]">
                 <Gavel className="h-3.5 w-3.5" />
                 Orderstyrd svensk exporthandel
               </span>
@@ -415,7 +414,7 @@ export default async function HomePage() {
 
             <div className="grid lg:grid-cols-[1fr_.72fr_1fr]">
               <div className="p-6 sm:p-9 lg:p-10">
-                <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#ddecf3] text-[#315f73]">
+                <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#ecebe6] text-[#414542]">
                   <UserRound className="h-5 w-5" />
                 </span>
                 <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#718086]">
@@ -455,14 +454,14 @@ export default async function HomePage() {
               </div>
 
               <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-y border-[#dfe6e5] bg-[#22272a] p-7 text-white lg:min-h-full lg:border-x lg:border-y-0">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(180,217,239,.18),transparent_47%)]" />
-                <BrandCornerMark className="-right-12 -top-4 h-24 w-48 -rotate-[16deg] text-[#b4d9ef]/10" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(169,200,177,.14),transparent_47%)]" />
+                <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full border-[32px] border-white/[.055]" />
                 <div className="relative w-full max-w-[245px]">
                   <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/10 bg-white/[.07] shadow-[0_20px_55px_rgba(0,0,0,.2)]">
-                    <Handshake className="h-8 w-8 text-[#b4d9ef]" />
+                    <Handshake className="h-8 w-8 text-[#d7d8d4]" />
                   </div>
                   <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[.06] p-5 text-center backdrop-blur-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b4d9ef]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#d7d8d4]">
                       Autorell matchning
                     </p>
                     <p className="mt-3 text-xl tracking-[-0.03em]">
@@ -474,7 +473,7 @@ export default async function HomePage() {
                         <span
                           key={height}
                           className={`w-4 rounded-t-sm ${
-                            index === 5 ? 'bg-[#b4d9ef]' : 'bg-white/18'
+                            index === 5 ? 'bg-[#a9c8b1]' : 'bg-white/18'
                           }`}
                           style={{ height }}
                         />
@@ -565,7 +564,7 @@ export default async function HomePage() {
 
           <Link
             href={homeDealerExperienceTiles[0].href}
-            className="group relative isolate min-h-[520px] overflow-hidden bg-[#dcecf3] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
+            className="group relative isolate min-h-[520px] overflow-hidden bg-[#f3f2ee] text-[#202124] outline-none sm:min-h-[640px] lg:min-h-[760px]"
           >
             <Image
               src={homeDealerExperienceTiles[0].src}
@@ -596,8 +595,8 @@ export default async function HomePage() {
       <FaqTestimonials />
 
       <section className="bg-white px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-        <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#B4D9EF] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
-          <BrandCornerMark className="-right-16 -top-10 h-40 w-80 -rotate-[15deg] text-white/25" />
+        <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#f3f2ee] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
+          <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[55px] border-white/65" />
           <div className="absolute -bottom-36 -left-20 h-72 w-72 rounded-full bg-white/20 blur-2xl" />
           <div className="relative flex flex-col items-center">
             <div className="flex flex-col items-center">
@@ -607,7 +606,7 @@ export default async function HomePage() {
               <h2 className="mt-4 max-w-3xl text-[34px] leading-[1.06] tracking-[-0.05em] text-[#202124] sm:text-5xl">
                 Se om din bil kan nå professionella köpare i Europa.
               </h2>
-              <p className="mt-4 max-w-xl leading-7 text-[#34526c]">
+              <p className="mt-4 max-w-xl leading-7 text-[#5e625f]">
                 Kostnadsfri registrering för utvalda svenska bilar.
               </p>
             </div>

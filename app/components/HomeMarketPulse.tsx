@@ -55,7 +55,7 @@ export default function HomeMarketPulse({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex min-w-[180px] items-center justify-between gap-4 sm:block">
             <div>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#6d716e]">
                 Autorell market pulse
               </p>
               <p className="mt-1 text-sm font-medium tracking-[-0.02em]">
@@ -75,14 +75,14 @@ export default function HomeMarketPulse({
                 style={{ animationDelay: `${index * 0.7}s` }}
               >
                 <div className="flex items-center justify-between gap-3 text-xs">
-                  <span className="truncate text-[#53666f]">{label}</span>
+                  <span className="truncate text-[#606560]">{label}</span>
                   <strong className="font-medium tabular-nums">
                     {values[index]}%
                   </strong>
                 </div>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#e8edef]">
                   <span
-                    className="home-demand-bar block h-full rounded-full bg-[#8ec5df]"
+                    className="home-demand-bar block h-full rounded-full bg-[#a9c8b1]"
                     style={{ width: `${maximum}%` }}
                   />
                 </div>
@@ -98,7 +98,7 @@ export default function HomeMarketPulse({
     <aside className="home-market-float relative z-10 w-full min-w-0 max-w-[390px] justify-self-center rounded-[26px] border border-white/70 bg-white/78 p-4 shadow-[0_28px_80px_rgba(23,31,35,.18)] backdrop-blur-xl sm:p-5 lg:justify-self-end">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#66808d]">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#6d716e]">
             Autorell market pulse
           </p>
           <p className="mt-1.5 text-lg font-medium leading-6 tracking-[-0.03em]">
@@ -119,14 +119,14 @@ export default function HomeMarketPulse({
             style={{ animationDelay: `${index * 0.7}s` }}
           >
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#53666f]">{label}</span>
+              <span className="text-[#606560]">{label}</span>
               <strong className="min-w-8 text-right font-medium tabular-nums text-[#202124]">
                 {values[index]}%
               </strong>
             </div>
             <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
               <span
-                className="home-demand-bar block h-full rounded-full bg-[#8ec5df]"
+                className="home-demand-bar block h-full rounded-full bg-[#a9c8b1]"
                 style={{ width: `${maximum}%` }}
               />
             </div>
@@ -134,7 +134,7 @@ export default function HomeMarketPulse({
         ))}
       </div>
 
-      <p className="mt-3.5 text-[9px] leading-4 text-[#7a878c] sm:text-[10px]">
+      <p className="mt-3.5 text-[9px] leading-4 text-[#7b7d78] sm:text-[10px]">
         Illustrativ marknadssignal för aktuella fordonskategorier.
       </p>
     </aside>
