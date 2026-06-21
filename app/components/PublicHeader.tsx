@@ -999,25 +999,25 @@ export default function PublicHeader({
                 href="/login"
                 aria-label={content.login}
                 title={content.login}
-                className="grid h-11 w-11 place-items-center text-[#242424] transition hover:opacity-60"
+                className="grid h-10 w-10 place-items-center text-[#242424] transition hover:opacity-60"
               >
-                <UserRound className="h-7 w-7" strokeWidth={1.8} />
+                <UserRound className="h-[23px] w-[23px]" strokeWidth={1.8} />
               </Link>
               <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
                 aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
                 aria-expanded={open}
-                className={`grid h-11 w-11 place-items-center transition ${
+                className={`grid h-10 w-10 place-items-center transition ${
                   open
                     ? 'text-[#242424]'
                     : 'text-[#242424]'
                 }`}
               >
                 {open ? (
-                  <X className="h-7 w-7" strokeWidth={1.8} />
+                  <X className="h-[23px] w-[23px]" strokeWidth={1.8} />
                 ) : (
-                  <Menu className="h-7 w-7" strokeWidth={1.8} />
+                  <Menu className="h-[24px] w-[24px]" strokeWidth={1.8} />
                 )}
               </button>
             </div>

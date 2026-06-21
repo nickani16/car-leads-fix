@@ -26,7 +26,7 @@ export default function BrandLogo({
         priority
         className={`h-auto object-contain ${
           iconOnly
-            ? 'w-[30px]'
+            ? 'w-[44px]'
             : compact
             ? 'w-[25px]'
             : 'w-[30px] sm:w-[33px] lg:w-[36px]'
