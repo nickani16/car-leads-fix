@@ -29,7 +29,6 @@ import {
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import RotatingHeaderMessage from './RotatingHeaderMessage'
-import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
@@ -181,9 +180,11 @@ export default function PublicHeader({
   locale = 'sv',
 }: PublicHeaderProps) {
   const [open, setOpen] = useState(false)
+  const [marketOpen, setMarketOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atTop, setAtTop] = useState(true)
   const lastScrollY = useRef(0)
+  const marketMenuRef = useRef<HTMLDivElement>(null)
   const activeLocale = useSyncExternalStore(
     subscribeToHostname,
     () => getLocaleFromHostname(window.location.hostname, locale),
@@ -201,6 +202,7 @@ export default function PublicHeader({
       } else if (difference > 7) {
         setVisible(false)
         setOpen(false)
+        setMarketOpen(false)
       } else if (difference < -4) {
         setVisible(true)
       }
@@ -219,6 +221,26 @@ export default function PublicHeader({
       document.body.style.overflow = ''
     }
   }, [open])
+
+  useEffect(() => {
+    if (!marketOpen) return
+
+    const closeMarketMenu = (event: PointerEvent) => {
+      if (!marketMenuRef.current?.contains(event.target as Node)) {
+        setMarketOpen(false)
+      }
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMarketOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeMarketMenu)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeMarketMenu)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [marketOpen])
 
   const transparent = transparentAtTop && atTop && !open
   const marketCopy =
@@ -773,25 +795,39 @@ export default function PublicHeader({
               <Link href={marketRoutes.dealerAccess} className="hover:underline">
                 {content.partner}
               </Link>
-              <Link href="/login" className="hover:underline">
-                {content.login}
-              </Link>
-              <details className="group/language relative">
-                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full px-2 py-1 transition hover:bg-white/35 [&::-webkit-details-marker]:hidden">
+              <div ref={marketMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setMarketOpen((current) => !current)}
+                  aria-expanded={marketOpen}
+                  aria-haspopup="menu"
+                  className="flex items-center gap-2 rounded-full px-2 py-1 transition hover:bg-white/35"
+                >
                   <MarketFlag
                     locale={localizedLanguage.locale}
                     className="h-[14px] w-[21px]"
                   />
                   <span>{localizedLanguage.label}</span>
-                  <ChevronDown className="h-3.5 w-3.5 transition group-open/language:rotate-180" />
-                </summary>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition ${
+                      marketOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
 
                 <div
-                  className={`absolute right-0 top-full z-20 pt-3 ${
+                  className={`absolute right-0 top-full z-20 pt-3 transition duration-150 ${
                     activeLocale === 'en' ? 'w-[min(680px,calc(100vw-32px))]' : 'w-[238px]'
+                  } ${
+                    marketOpen
+                      ? 'pointer-events-auto translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0'
                   }`}
                 >
-                  <div className="overflow-hidden rounded-[18px] border border-[#d9e1e5] bg-white p-2 text-[#202124] shadow-[0_22px_60px_rgba(32,33,36,.18)]">
+                  <div
+                    role="menu"
+                    className="max-h-[calc(100dvh-76px)] overflow-y-auto overscroll-contain rounded-[18px] border border-[#d9e1e5] bg-white p-2 text-[#202124] shadow-[0_22px_60px_rgba(32,33,36,.18)]"
+                  >
                     <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
                       {marketCopy.selector}
                     </p>
@@ -823,7 +859,7 @@ export default function PublicHeader({
                         <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
                           European dealer markets
                         </p>
-                        <div className="grid max-h-[360px] gap-1 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
                           {euBuyerMarkets.map((market) => (
                             <a
                               key={market.code}
@@ -849,7 +885,7 @@ export default function PublicHeader({
                     )}
                   </div>
                 </div>
-              </details>
+              </div>
             </div>
           </div>
         </div>
@@ -861,7 +897,7 @@ export default function PublicHeader({
               : 'border-b border-[#deddd8]/80 bg-white/95 shadow-[0_8px_30px_rgba(32,33,36,.06)] backdrop-blur-xl'
           }`}
         >
-          <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 md:h-[88px] lg:px-12 xl:px-16">
+          <div className="relative mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 md:h-[88px] lg:px-12 xl:px-16">
             <a
               href={homeHref}
               aria-label={marketCopy.home}
@@ -918,19 +954,16 @@ export default function PublicHeader({
               </Link>
             </nav>
 
-            <div className="relative hidden items-center gap-2 min-[1120px]:flex">
-              <SiteSearch locale={activeLocale} />
+            <div className="relative hidden items-center gap-5 min-[1120px]:flex">
               <Link
                 href="/login"
-                aria-label={content.login}
-                title={content.login}
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#d9dfdf] bg-white/90 text-[#242424] transition hover:-translate-y-0.5 hover:border-[#adcddd] hover:bg-[#eef7fb]"
+                className="text-sm font-medium text-[#242424] transition hover:text-[#52768a]"
               >
-                <LogIn className="h-[18px] w-[18px]" />
+                {content.login}
               </Link>
               <Link
                 href={content.ctaHref}
-                className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#242424] pl-4 pr-1.5 text-xs font-normal text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111] xl:min-h-12 xl:gap-3 xl:pl-5 xl:pr-2 xl:text-sm"
+                className="group inline-flex min-h-11 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-1.5 text-sm font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
                 {content.cta}
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
@@ -939,12 +972,7 @@ export default function PublicHeader({
               </Link>
             </div>
 
-            <div className="flex items-center gap-2 min-[1120px]:hidden">
-              <SiteSearch
-                locale={activeLocale}
-                headerMobile
-                atPageTop={atTop}
-              />
+            <div className="absolute right-5 flex items-center gap-2 sm:right-8 min-[1120px]:hidden">
               <Link
                 href="/login"
                 aria-label={content.login}
