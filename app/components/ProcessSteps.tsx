@@ -23,8 +23,8 @@ const steps = [
     details:
       'Den första kontrollen säkerställer att bilen finns i Sverige, är körbar och saknar allvarliga motor-, växellåds-, läckage- eller krockproblem.',
     highlights: ['Svenskt ursprung', 'Tydlig köpbox'],
-    accent: 'bg-[#e5e4df]',
-    iconStyle: 'bg-[#e9e8e3] text-[#292b2a]',
+    accent: 'bg-[#dceefa]',
+    iconStyle: 'bg-[#b4d9ef] text-[#20333e]',
   },
   {
     number: '02',
@@ -47,8 +47,8 @@ const steps = [
     details:
       'Bilen visas endast för verifierade professionella köpare. Buden baseras på fordonsprofilen och gäller under förutsättning att uppgifterna stämmer.',
     highlights: ['Verifierade handlare', 'Villkorade bud'],
-    accent: 'bg-[#dfe8e1]',
-    iconStyle: 'bg-[#d8e6dc] text-[#294033]',
+    accent: 'bg-[#dfe9e3]',
+    iconStyle: 'bg-[#d5e7dc] text-[#20372b]',
   },
   {
     number: '04',
@@ -71,8 +71,8 @@ const steps = [
     details:
       'Om bilen stämmer fortsätter affären enligt avtalet. Vid en väsentlig avvikelse kan affären pausas, justeras genom en ny överenskommelse eller avbrytas.',
     highlights: ['Villkorad kontroll', 'Dokumenterat underlag'],
-    accent: 'bg-[#e5e4df]',
-    iconStyle: 'bg-[#e9e8e3] text-[#292b2a]',
+    accent: 'bg-[#dceefa]',
+    iconStyle: 'bg-[#b4d9ef] text-[#20333e]',
   },
   {
     number: '06',
@@ -94,7 +94,7 @@ export default function ProcessSteps() {
   return (
     <div className="relative mt-12 sm:mt-16">
       <div
-        className="absolute left-[12%] right-[12%] top-[36px] hidden h-px bg-[#cfcdc7] lg:block"
+        className="absolute left-[12%] right-[12%] top-[36px] hidden h-px bg-[#bdcdd4] lg:block"
         aria-hidden="true"
       />
 
@@ -121,7 +121,7 @@ export default function ProcessSteps() {
                 key={number}
                 className={`group relative h-full overflow-hidden rounded-[22px] border bg-white transition-all duration-300 sm:rounded-[26px] ${
                   isOpen
-                    ? 'border-[#b9b7b0] shadow-[0_28px_80px_rgba(32,33,36,.13)]'
+                    ? 'border-[#9fc8dc] shadow-[0_28px_80px_rgba(32,33,36,.13)]'
                     : 'border-white/80 shadow-[0_18px_55px_rgba(32,33,36,.075)] hover:-translate-y-1.5 hover:shadow-[0_28px_70px_rgba(32,33,36,.11)]'
                 }`}
               >
@@ -130,7 +130,7 @@ export default function ProcessSteps() {
                 <div className="relative flex h-full flex-col p-6 sm:p-8 lg:min-h-[390px] lg:p-9">
                   <div className="flex items-center justify-between">
                     <span
-                      className={`relative z-10 grid h-[72px] w-[72px] place-items-center rounded-full border-[7px] border-[#f3f2ee] ${iconStyle}`}
+                      className={`relative z-10 grid h-[72px] w-[72px] place-items-center rounded-full border-[7px] border-[#eef5f7] ${iconStyle}`}
                     >
                       <Icon className="h-6 w-6" />
                     </span>
@@ -139,13 +139,13 @@ export default function ProcessSteps() {
                     </span>
                   </div>
 
-                  <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#747670]">
+                  <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#71828a]">
                     {eyebrow}
                   </p>
                   <h3 className="mt-3 text-[25px] leading-[1.12] tracking-[-0.035em] text-[#202124] sm:text-[28px]">
                     {title}
                   </h3>
-                  <p className="mt-4 min-h-[84px] text-[15px] leading-7 text-[#62645f]">
+                  <p className="mt-4 min-h-[84px] text-[15px] leading-7 text-[#5d6e76]">
                     {text}
                   </p>
 
@@ -155,7 +155,7 @@ export default function ProcessSteps() {
                         key={highlight}
                         className="inline-flex items-center gap-1.5 rounded-full border border-[#dce5e8] bg-[#f8faf9] px-3 py-1.5 text-[11px] font-medium text-[#51636b]"
                       >
-                        <Check className="h-3 w-3 text-[#6e8f77]" />
+                        <Check className="h-3 w-3 text-[#4d879f]" />
                         {highlight}
                       </span>
                     ))}
@@ -186,7 +186,7 @@ export default function ProcessSteps() {
                       className={`grid h-9 w-9 place-items-center rounded-full transition-all duration-300 ${
                         isOpen
                           ? 'rotate-45 bg-[#242424] text-white'
-                          : 'bg-[#ecebe6] text-[#343735] group-hover:translate-x-0.5'
+                          : 'bg-[#e8f3f8] text-[#315d70] group-hover:translate-x-0.5'
                       }`}
                     >
                       <Plus className="h-4 w-4" />

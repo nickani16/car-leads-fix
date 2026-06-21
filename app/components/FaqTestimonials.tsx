@@ -109,14 +109,14 @@ export default function FaqTestimonials() {
 
   return (
     <section className="relative overflow-hidden bg-[#f8faf9] pb-12 pt-16 sm:pb-16 sm:pt-20">
-      <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-[#e8e7e2]/80 blur-3xl" />
+      <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-[#dcecf3]/70 blur-3xl" />
       <div className="absolute -right-24 bottom-24 h-80 w-80 rounded-full bg-[#efe7d8]/65 blur-3xl" />
 
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="relative grid gap-4 lg:grid-cols-[1.08fr_.92fr] lg:gap-5">
           <div className="rounded-[24px] border border-[#e0e6e5] bg-white p-6 shadow-[0_24px_75px_rgba(32,33,36,.06)] sm:rounded-[30px] sm:p-10 lg:p-12">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-[#ecebe6] text-[#555954]">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e4f1f6] text-[#4a7c91]">
                 <ShieldCheck className="h-[18px] w-[18px]" />
               </span>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#65767d]">
@@ -140,7 +140,7 @@ export default function FaqTestimonials() {
                     key={item.question}
                     className={`overflow-hidden rounded-[15px] border transition-colors duration-300 ${
                       isOpen
-                        ? 'border-[#d3d1cb] bg-[#f5f5f5]'
+                        ? 'border-[#c4dce6] bg-[#f2f8fa]'
                         : 'border-[#e4e8e7] bg-white hover:border-[#ccdadd]'
                     }`}
                   >
@@ -176,7 +176,7 @@ export default function FaqTestimonials() {
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <p className="max-w-xl px-4 pb-5 pl-[52px] text-sm leading-7 text-[#62645f] sm:px-5 sm:pl-[61px]">
+                        <p className="max-w-xl px-4 pb-5 pl-[52px] text-sm leading-7 text-[#607178] sm:px-5 sm:pl-[61px]">
                           {item.answer}
                         </p>
                       </div>
@@ -187,15 +187,15 @@ export default function FaqTestimonials() {
             </div>
           </div>
 
-          <div className="relative flex min-h-[520px] flex-col justify-between overflow-hidden rounded-[24px] border border-[#dedcd6] bg-[#f3f2ee] px-6 py-9 text-[#202124] shadow-[0_24px_75px_rgba(32,33,36,.08)] sm:rounded-[30px] sm:px-10 sm:py-12 lg:px-12">
-            <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border-[55px] border-white/45" />
+          <div className="relative flex min-h-[520px] flex-col justify-between overflow-hidden rounded-[24px] border border-[#cfe1e8] bg-[#dceef5] px-6 py-9 text-[#202124] shadow-[0_24px_75px_rgba(60,102,119,.1)] sm:rounded-[30px] sm:px-10 sm:py-12 lg:px-12">
+            <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border-[55px] border-white/35" />
             <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-white/45 blur-2xl" />
             <div className="relative">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#666963]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#4e7484]">
                   Kundberättelser
                 </p>
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-white/55 text-[#505450]">
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-white/55 text-[#4f7f94]">
                   <Quote className="h-5 w-5" />
                 </span>
               </div>
@@ -224,18 +224,18 @@ export default function FaqTestimonials() {
                     aria-label={`Visa kundberättelse ${index + 1}`}
                     className={`h-1.5 rounded-full transition-all ${
                       activeReview === index
-                        ? 'w-8 bg-[#6e8f77]'
-                        : 'w-1.5 bg-[#8e938d]/45'
+                        ? 'w-8 bg-[#356b82]'
+                        : 'w-1.5 bg-[#7599a8]/45'
                     }`}
                   />
                 ))}
               </div>
-              <div className="flex items-end justify-between gap-6 border-t border-[#cfcdc7] pt-6">
+              <div className="flex items-end justify-between gap-6 border-t border-[#a9c9d5]/60 pt-6">
                 <div>
                   <p className="font-semibold text-[#26363d]">
                     {testimonials[activeReview].name}
                   </p>
-                  <p className="mt-1 text-sm text-[#62645f]">
+                  <p className="mt-1 text-sm text-[#5f7b87]">
                     {testimonials[activeReview].detail}
                   </p>
                 </div>
@@ -244,7 +244,7 @@ export default function FaqTestimonials() {
                     type="button"
                     onClick={() => showReview(activeReview - 1)}
                     aria-label="Föregående omdöme"
-                    className="grid h-11 w-11 place-items-center rounded-full border border-[#bbb9b2] bg-white/35 text-[#3f4340] transition hover:bg-white"
+                    className="grid h-11 w-11 place-items-center rounded-full border border-[#9ebdca] bg-white/35 text-[#315f73] transition hover:bg-white"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -263,7 +263,7 @@ export default function FaqTestimonials() {
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
               <div
                 key={activeReview}
-                className="h-full origin-left bg-[#6e8f77] motion-safe:animate-[review-progress_6.5s_linear]"
+                className="h-full origin-left bg-[#4d879f] motion-safe:animate-[review-progress_6.5s_linear]"
               />
             </div>
           </div>

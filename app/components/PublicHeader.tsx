@@ -793,7 +793,7 @@ export default function PublicHeader({
         }`}
       >
         <div
-          className={`border-b border-[#d6d4ce] bg-[#f3f2ee] text-[#242424] shadow-[0_4px_14px_rgba(32,33,36,.055)] transition-[height,opacity] duration-300 ease-out ${
+          className={`bg-[#B4D9EF] text-[#242424] transition-[height,opacity] duration-300 ease-out ${
             atTop
               ? 'h-8 overflow-visible opacity-100 md:h-9'
               : 'pointer-events-none h-0 overflow-hidden opacity-0'
@@ -979,7 +979,7 @@ export default function PublicHeader({
             <div className="relative hidden items-center gap-5 min-[1120px]:flex">
               <Link
                 href={marketRoutes.dealerAccess}
-                className="text-sm font-medium text-[#242424] transition hover:text-[#66635d]"
+                className="text-sm font-medium text-[#242424] transition hover:text-[#52768a]"
               >
                 {desktopRegisterLabel}
               </Link>
@@ -988,7 +988,7 @@ export default function PublicHeader({
                 className="group inline-flex min-h-11 items-center justify-center gap-3 rounded-full bg-[#242424] pl-5 pr-1.5 text-sm font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.18)] transition hover:-translate-y-0.5 hover:bg-[#111111]"
               >
                 {desktopLoginLabel}
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#242424] transition group-hover:translate-x-0.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -1052,7 +1052,7 @@ export default function PublicHeader({
             <Link
               href={content.ctaHref}
               onClick={() => setOpen(false)}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#e8e7e2] px-5 text-base font-medium text-[#242424]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#B4D9EF] px-5 text-base font-medium text-[#242424]"
             >
               {content.cta}
               <ArrowRight className="h-5 w-5" />
@@ -1096,7 +1096,7 @@ export default function PublicHeader({
 
             <div className="mt-auto border-t border-[#dcdad3] pt-6">
               <details className="group/markets">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#d2d0ca] bg-[#f3f2ee] px-4 text-sm text-[#202124] [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#8ebdd8] bg-[#eaf5fb] px-4 text-sm text-[#202124] [&::-webkit-details-marker]:hidden">
                   <MarketFlag
                     locale={localizedLanguage.locale}
                     className="h-[20px] w-[30px]"
@@ -1213,7 +1213,7 @@ function DesktopMenu({
       >
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
           <div className="min-w-0 bg-[#eef6fa] p-7">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#e8e7e2] text-[#242424]">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
               <MenuIcon className="h-5 w-5" />
             </span>
             <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
