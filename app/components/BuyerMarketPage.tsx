@@ -312,7 +312,7 @@ export default function BuyerMarketPage({ locale }: { locale: PublicLocale }) {
                 className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] pl-7 pr-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111]"
               >
                 {t.primary}
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#b4d9ef] text-[#242424] transition group-hover:translate-x-0.5">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-[#242424] transition group-hover:translate-x-0.5">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
