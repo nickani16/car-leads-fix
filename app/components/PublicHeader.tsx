@@ -194,7 +194,7 @@ export default function PublicHeader({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const difference = currentScrollY - lastScrollY.current
-      setAtTop(currentScrollY < 24)
+      setAtTop(currentScrollY < 8)
 
       if (currentScrollY < 80) {
         setVisible(true)
@@ -753,8 +753,14 @@ export default function PublicHeader({
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <div className="h-8 bg-[#B4D9EF] text-[#242424] md:h-9">
-          <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-5 text-[10px] font-medium tracking-[0.02em] sm:px-8 md:text-xs lg:px-12 xl:px-16">
+        <div
+          className={`overflow-hidden bg-[#B4D9EF] text-[#242424] transition-[height,opacity] duration-300 ease-out ${
+            atTop
+              ? 'h-8 opacity-100 md:h-9'
+              : 'pointer-events-none h-0 opacity-0'
+          }`}
+        >
+          <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between px-5 text-[10px] font-medium tracking-[0.02em] sm:px-8 md:h-9 md:text-xs lg:px-12 xl:px-16">
             <RotatingHeaderMessage locale={activeLocale} />
             <div className="hidden items-center gap-6 md:flex">
               <Link
@@ -934,7 +940,11 @@ export default function PublicHeader({
             </div>
 
             <div className="flex items-center gap-2 min-[1120px]:hidden">
-              <SiteSearch locale={activeLocale} headerMobile />
+              <SiteSearch
+                locale={activeLocale}
+                headerMobile
+                atPageTop={atTop}
+              />
               <Link
                 href="/login"
                 aria-label={content.login}

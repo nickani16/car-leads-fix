@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import type { PublicLocale } from '@/lib/public-i18n'
 
 const rotatingWords = {
-  sv: ['Värdera', 'Sälja', 'Exportera', 'Växa'],
-  de: ['Bewerten', 'Verkaufen', 'Exportieren', 'Handeln'],
-  en: ['Value', 'Sell', 'Export', 'Trade'],
+  sv: ['värdera', 'sälja', 'exportera', 'växa'],
+  de: ['bewerten', 'verkaufen', 'exportieren', 'handeln'],
+  en: ['value', 'sell', 'export', 'trade'],
 } as const
 
 const compactMessages: Partial<Record<PublicLocale, string>> = {
@@ -60,7 +60,11 @@ export default function RotatingHeaderMessage({
   }
 
   const prefix =
-    locale === 'sv' ? 'Autorell för' : locale === 'de' ? 'Autorell:' : 'Autorell:'
+    locale === 'sv'
+      ? 'Vi hjälper er att'
+      : locale === 'de'
+        ? 'Wir helfen Ihnen zu'
+        : 'We help you'
 
   return (
     <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">

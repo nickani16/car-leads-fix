@@ -42,12 +42,14 @@ export default function SiteSearch({
   marketCode,
   mobile = false,
   headerMobile = false,
+  atPageTop = true,
   onNavigate,
 }: {
   locale: PublicLocale
   marketCode?: string
   mobile?: boolean
   headerMobile?: boolean
+  atPageTop?: boolean
   onNavigate?: () => void
 }) {
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
@@ -190,7 +192,13 @@ export default function SiteSearch({
           <X className="h-[18px] w-[18px]" />
         </button>
         {createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-[104px] z-[200] overflow-y-auto bg-[#182126]/25 backdrop-blur-[3px] md:top-[124px] min-[1120px]:hidden">
+          <div
+            className={`fixed inset-x-0 bottom-0 z-[200] overflow-y-auto bg-[#182126]/25 backdrop-blur-[3px] min-[1120px]:hidden ${
+              atPageTop
+                ? 'top-[104px] md:top-[124px]'
+                : 'top-[72px] md:top-[88px]'
+            }`}
+          >
             <div className="border-t border-[#d8e1e3] bg-[linear-gradient(145deg,#f8fbfb,#edf5f7)] px-5 py-5 shadow-[0_28px_70px_rgba(24,33,38,.22)] sm:px-8">
               <div className="mx-auto max-w-2xl">
                 <div className="mb-4">
