@@ -19,13 +19,13 @@ export default function BrandLogo({
       <Image
         src="/autorell-brand-mark.png"
         alt=""
-        width={290}
-        height={145}
+        width={282}
+        height={212}
         priority
         className={`h-auto object-contain ${
           compact
-            ? 'w-[34px]'
-            : 'w-[40px] sm:w-[44px] lg:w-[48px]'
+            ? 'w-[30px]'
+            : 'w-[36px] sm:w-[40px] lg:w-[44px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
       <span
