@@ -16,6 +16,7 @@ import {
   ScanSearch,
   ShieldCheck,
   Store,
+  UserRound,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -792,7 +793,7 @@ export default function PublicHeader({
         }`}
       >
         <div
-          className={`bg-[#f3f2ee] text-[#242424] transition-[height,opacity] duration-300 ease-out ${
+          className={`border-b border-[#d6d4ce] bg-[#f3f2ee] text-[#242424] shadow-[0_4px_14px_rgba(32,33,36,.055)] transition-[height,opacity] duration-300 ease-out ${
             atTop
               ? 'h-8 overflow-visible opacity-100 md:h-9'
               : 'pointer-events-none h-0 overflow-hidden opacity-0'
@@ -920,7 +921,12 @@ export default function PublicHeader({
               className="inline-flex shrink-0 items-center"
               onClick={() => setOpen(false)}
             >
-              <BrandLogo />
+              <span className="min-[1120px]:hidden">
+                <BrandLogo iconOnly />
+              </span>
+              <span className="hidden min-[1120px]:inline-flex">
+                <BrandLogo />
+              </span>
             </a>
 
             <nav
@@ -993,22 +999,26 @@ export default function PublicHeader({
                 href="/login"
                 aria-label={content.login}
                 title={content.login}
-                className="grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-[#f8f7f3] text-[#242424] transition hover:border-[#adcddd] hover:bg-[#eef7fb]"
+                className="grid h-11 w-11 place-items-center text-[#242424] transition hover:opacity-60"
               >
-                <LogIn className="h-[18px] w-[18px]" />
+                <UserRound className="h-7 w-7" strokeWidth={1.8} />
               </Link>
               <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
                 aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
                 aria-expanded={open}
-                className={`grid h-11 w-11 place-items-center rounded-full border transition ${
+                className={`grid h-11 w-11 place-items-center transition ${
                   open
-                    ? 'border-[#242424] bg-[#242424] text-white'
-                    : 'border-[#deddd8] bg-[#f8f7f3] text-[#242424]'
+                    ? 'text-[#242424]'
+                    : 'text-[#242424]'
                 }`}
               >
-                {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                {open ? (
+                  <X className="h-7 w-7" strokeWidth={1.8} />
+                ) : (
+                  <Menu className="h-7 w-7" strokeWidth={1.8} />
+                )}
               </button>
             </div>
           </div>

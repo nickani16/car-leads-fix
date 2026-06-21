@@ -3,11 +3,13 @@ import Image from 'next/image'
 type BrandLogoProps = {
   inverted?: boolean
   compact?: boolean
+  iconOnly?: boolean
 }
 
 export default function BrandLogo({
   inverted = false,
   compact = false,
+  iconOnly = false,
 }: BrandLogoProps) {
   return (
     <span
@@ -23,21 +25,25 @@ export default function BrandLogo({
         height={212}
         priority
         className={`h-auto object-contain ${
-          compact
+          iconOnly
+            ? 'w-[30px]'
+            : compact
             ? 'w-[25px]'
             : 'w-[30px] sm:w-[33px] lg:w-[36px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
-      <span
-        aria-hidden="true"
-        className={`translate-y-[1px] leading-none tracking-[-0.045em] ${
-          compact
-            ? 'text-[19px] font-medium'
-            : 'text-[22px] font-medium sm:text-[24px] lg:text-[25px]'
-        } ${inverted ? 'text-white' : 'text-[#24272b]'}`}
-      >
-        Autorell
-      </span>
+      {!iconOnly && (
+        <span
+          aria-hidden="true"
+          className={`translate-y-[1px] leading-none tracking-[-0.045em] ${
+            compact
+              ? 'text-[19px] font-medium'
+              : 'text-[22px] font-medium sm:text-[24px] lg:text-[25px]'
+          } ${inverted ? 'text-white' : 'text-[#24272b]'}`}
+        >
+          Autorell
+        </span>
+      )}
     </span>
   )
 }

@@ -68,8 +68,9 @@ export default function RotatingHeaderMessage({
 
   return (
     <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-      <span className="shrink-0">{prefix}</span>
-      <span className="relative inline-grid min-w-[72px] overflow-hidden text-left font-semibold sm:min-w-[88px]">
+      <span className="shrink-0 sm:hidden">Autorell:</span>
+      <span className="hidden shrink-0 sm:inline">{prefix}</span>
+      <span className="relative inline-grid min-w-[58px] overflow-hidden text-left font-semibold sm:min-w-[88px]">
         <span key={`${locale}-${index}`} className="header-word-enter col-start-1 row-start-1">
           {words[index]}
         </span>
