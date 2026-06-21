@@ -11,8 +11,8 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   return (
     <span
-      className={`inline-flex items-center ${
-        compact ? 'gap-1' : 'gap-1.5 sm:gap-2'
+      className={`inline-flex items-end ${
+        compact ? 'gap-1.5' : 'gap-2 sm:gap-2.5'
       }`}
       aria-label="Autorell"
     >
@@ -24,13 +24,13 @@ export default function BrandLogo({
         priority
         className={`h-auto object-contain ${
           compact
-            ? 'w-[30px]'
-            : 'w-[36px] sm:w-[40px] lg:w-[44px]'
+            ? 'w-[25px]'
+            : 'w-[30px] sm:w-[33px] lg:w-[36px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
       <span
         aria-hidden="true"
-        className={`leading-none tracking-[-0.045em] ${
+        className={`translate-y-[1px] leading-none tracking-[-0.045em] ${
           compact
             ? 'text-[19px] font-medium'
             : 'text-[22px] font-medium sm:text-[24px] lg:text-[25px]'
