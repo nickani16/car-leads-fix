@@ -100,7 +100,7 @@ export function translatePublicObject<T>(
 }
 
 export function localizePublicHref(locale: PublicLocale, href: string) {
-  if (locale === 'sv' || locale === 'de') return href
+  if (locale === 'sv' || locale === 'de' || locale === 'en') return href
   if (/^(https?:|mailto:|tel:)/.test(href)) return href
 
   const [pathname, hash = ''] = href.split('#')
@@ -148,9 +148,11 @@ export function getPublicAlternates(pathname: string) {
   return Object.fromEntries([
     ...publicLanguages.map((locale) => [
       locale,
-      `https://www.autorell.com/${locale}${normalized}`,
+      locale === 'en'
+        ? `https://www.autorell.com${normalized || '/'}`
+        : `https://www.autorell.com/${locale}${normalized}`,
     ]),
     ...domainAlternates,
-    ['x-default', `https://www.autorell.com/en${normalized}`],
+    ['x-default', `https://www.autorell.com${normalized || '/'}`],
   ])
 }

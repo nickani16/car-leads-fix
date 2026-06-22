@@ -319,6 +319,16 @@ export function proxy(request: NextRequest) {
     return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
+  if (
+    methodCanRedirect &&
+    hostname === MARKET_HOSTS.en &&
+    (pathname === '/en' || pathname.startsWith('/en/'))
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname === '/en' ? '/' : pathname.slice(3)
+    return NextResponse.redirect(url, 308)
+  }
+
   const isApplicationResource =
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
@@ -343,7 +353,12 @@ export function proxy(request: NextRequest) {
     const trailingPath = isPublicLanguage(currentLanguage)
       ? currentSegments.slice(1).join('/')
       : ''
-    url.pathname = `/${language}${trailingPath ? `/${trailingPath}` : ''}`
+    url.pathname =
+      language === 'en'
+        ? trailingPath
+          ? `/${trailingPath}`
+          : '/'
+        : `/${language}${trailingPath ? `/${trailingPath}` : ''}`
     url.searchParams.delete('language')
     return withLanguageCookie(NextResponse.redirect(url, 307), language)
   }
@@ -394,18 +409,16 @@ export function proxy(request: NextRequest) {
     }
 
     if (methodCanRedirect && pathname === '/') {
-      if (targetMarket === 'sv') {
-        return redirectToHost(request, MARKET_HOSTS.sv, 307)
-      }
-      if (targetMarket === 'de') {
-        return redirectToHost(request, MARKET_HOSTS.de, 307)
-      }
-      const language = isPublicLanguage(targetMarket || '')
-        ? targetMarket!
-        : 'en'
-      const url = request.nextUrl.clone()
-      url.pathname = `/${language}`
-      return NextResponse.redirect(url, 307)
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-autorell-language', 'en')
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = '/eu'
+      return withLanguageCookie(
+        NextResponse.rewrite(localizedUrl, {
+          request: { headers: requestHeaders },
+        }),
+        'en',
+      )
     }
 
     if (
@@ -417,7 +430,8 @@ export function proxy(request: NextRequest) {
         ))
     ) {
       const url = request.nextUrl.clone()
-      url.pathname = `/${targetMarket}${pathname}`
+      url.pathname =
+        targetMarket === 'en' ? pathname : `/${targetMarket}${pathname}`
       return NextResponse.redirect(url, 307)
     }
   }

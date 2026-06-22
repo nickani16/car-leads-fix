@@ -12,6 +12,7 @@ import {
   Heart,
   LogIn,
   Menu,
+  MessageCircle,
   Search,
   ShieldAlert,
   ShieldCheck,
@@ -32,13 +33,13 @@ import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   marketplaceCategories,
   marketplaceLanguage,
 } from '@/lib/marketplace'
 import {
   localizePublicHref,
-  publicLanguages,
   translatePublic,
   translatePublicObject,
   type PublicLocale,
@@ -84,13 +85,14 @@ const copy = {
     privacy: 'Integritet',
     saved: 'Sparade',
     search: 'Sök',
+    messages: 'Meddelanden',
     menu: 'Meny',
     register: 'Registrera',
     signIn: 'Logga in',
     createAccount: 'Skapa konto',
     closeMenu: 'Stäng meny',
     openMenu: 'Öppna meny',
-    chooseLanguage: 'Välj språk',
+    chooseLanguage: 'Välj marknad',
     shopByCategory: 'Köp efter kategori',
     buyTitle: 'Hitta rätt fordon i hela Europa.',
     buyText: 'Sök bland annonser från privatpersoner och företag på en samlad europeisk marknadsplats.',
@@ -117,13 +119,14 @@ const copy = {
     privacy: 'Privacy',
     saved: 'Saved',
     search: 'Search',
+    messages: 'Messages',
     menu: 'Menu',
     register: 'Register',
     signIn: 'Log in',
     createAccount: 'Create account',
     closeMenu: 'Close menu',
     openMenu: 'Open menu',
-    chooseLanguage: 'Choose language',
+    chooseLanguage: 'Choose market',
     shopByCategory: 'Shop by category',
     buyTitle: 'Find the right vehicle across Europe.',
     buyText: 'Browse listings from private and business sellers in one European marketplace.',
@@ -150,13 +153,14 @@ const copy = {
     privacy: 'Datenschutz',
     saved: 'Gespeichert',
     search: 'Suche',
+    messages: 'Nachrichten',
     menu: 'Menü',
     register: 'Registrieren',
     signIn: 'Anmelden',
     createAccount: 'Konto erstellen',
     closeMenu: 'Menü schließen',
     openMenu: 'Menü öffnen',
-    chooseLanguage: 'Sprache wählen',
+    chooseLanguage: 'Markt wählen',
     shopByCategory: 'Nach Kategorie kaufen',
     buyTitle: 'Das passende Fahrzeug in Europa finden.',
     buyText: 'Anzeigen von privaten und gewerblichen Verkäufern auf einem europäischen Marktplatz durchsuchen.',
@@ -403,18 +407,32 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
   ]
 
-  const languageOptions = [
-    ['sv', 'SE', 'Svenska', 'https://www.autorell.se/'],
-    ['de', 'DE', 'Deutsch', 'https://www.autorell.de/'],
-    ...publicLanguages.map((code) =>
+  const languageOptions: Array<readonly [string, string, string, string]> = [
+    ['se', 'SE', 'Sverige', 'https://www.autorell.se/'] as const,
+    ['de', 'DE', 'Deutschland', 'https://www.autorell.de/'] as const,
+    ...euBuyerMarkets.map((market) =>
       [
-        code,
-        code === 'en' ? 'EU' : code.toUpperCase(),
-        new Intl.DisplayNames([code], { type: 'language' }).of(code) || code,
-        `https://www.autorell.com/${code === 'en' ? '' : code}`,
+        market.code,
+        market.code.toUpperCase(),
+        market.countryLocal,
+        `https://www.autorell.com/${market.code}`,
       ] as const,
     ),
-  ] as const
+  ].sort((left, right) => left[2].localeCompare(right[2], locale))
+  const pathMarketCode = pathname.split('/').filter(Boolean)[0]
+  const activeMarketCode =
+    locale === 'sv'
+      ? 'se'
+      : locale === 'de'
+        ? 'de'
+        : euBuyerMarkets.some((market) => market.code === pathMarketCode)
+          ? pathMarketCode
+          : locale === 'en'
+            ? 'eu'
+            : euBuyerMarkets.find((market) => market.language === locale)?.code || 'eu'
+  const activeMarket =
+    languageOptions.find(([code]) => code === activeMarketCode) ||
+    (['eu', 'EU', 'Europe', 'https://www.autorell.com/'] as const)
 
   const homeHref = localizePublicHref(locale, '/')
   function closeMobile() {
@@ -485,18 +503,16 @@ export default function PublicHeader({
                     className="flex h-full items-center gap-2 border-l border-r border-[#e6e7e9] px-4 text-[10px] font-medium hover:bg-white"
                   >
                     <CountryFlag
-                      code={locale === 'sv' ? 'se' : locale === 'en' ? 'eu' : locale}
+                      code={activeMarket[1].toLowerCase()}
                       className="h-[14px] w-[21px]"
                     />
-                    <span>
-                      {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) || locale}
-                    </span>
+                    <span>{activeMarket[2]}</span>
                     <ChevronDown className={`h-3 w-3 transition ${languageOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <LanguageMenu
                     open={languageOpen}
                     options={languageOptions}
-                    activeLocale={locale}
+                    activeLocale={activeMarketCode}
                     title={t.chooseLanguage}
                   />
                 </div>
@@ -584,6 +600,13 @@ export default function PublicHeader({
             </nav>
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
+              <Link
+                href="/inkorg"
+                className="flex min-w-[76px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+              >
+                <MessageCircle className="h-[19px] w-[19px]" strokeWidth={1.7} />
+                <span className="text-[10px] font-medium">{t.messages}</span>
+              </Link>
               <SiteSearch locale={locale} headerDesktop />
               <Link
                 href="/registrera"
@@ -720,13 +743,13 @@ export default function PublicHeader({
             <div className="mt-auto border-t border-[#dcdad3] pt-6">
               <details className="group/markets">
                 <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#8ebdd8] bg-[#eaf5fb] px-4 text-sm [&::-webkit-details-marker]:hidden">
-                  <CountryFlag code={locale === 'sv' ? 'se' : locale === 'en' ? 'eu' : locale} className="h-[20px] w-[30px]" />
+                  <CountryFlag code={activeMarket[1].toLowerCase()} className="h-[20px] w-[30px]" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
                       {t.chooseLanguage}
                     </span>
                     <strong className="mt-0.5 block font-medium">
-                      {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) || locale}
+                      {activeMarket[2]}
                     </strong>
                   </span>
                   <ChevronDown className="h-4 w-4 transition group-open/markets:rotate-180" />

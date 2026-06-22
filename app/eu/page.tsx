@@ -20,7 +20,10 @@ export async function generateMetadata() {
     locale,
     'Buy and sell cars, vans, motorcycles, leisure vehicles and machinery across Europe — for private sellers and businesses.',
   )
-  const canonical = `https://www.autorell.com/${locale}`
+  const canonical =
+    locale === 'en'
+      ? 'https://www.autorell.com/'
+      : `https://www.autorell.com/${locale}`
 
   return {
     title: { absolute: title },
