@@ -6,7 +6,7 @@ import { FormEvent, useMemo, useState } from 'react'
 import {
   Building2,
   CheckCircle2,
-  LockKeyhole,
+  MailCheck,
   MapPin,
   ShieldCheck,
   UserRound,
@@ -15,7 +15,13 @@ import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { getAccountCopy } from '@/lib/account-i18n'
 import type { PublicLocale } from '@/lib/public-i18n'
 
-export default function RegisterForm({ locale }: { locale: PublicLocale }) {
+export default function RegisterForm({
+  locale,
+  email,
+}: {
+  locale: PublicLocale
+  email: string
+}) {
   const copy = getAccountCopy(locale)
   const router = useRouter()
   const [accountType, setAccountType] = useState<'private' | 'business'>('private')
@@ -44,9 +50,7 @@ export default function RegisterForm({ locale }: { locale: PublicLocale }) {
         lastName: form.get('lastName'),
         birthDate: form.get('birthDate'),
         nationalId: form.get('nationalId'),
-        email: form.get('email'),
         phone: form.get('phone'),
-        password: form.get('password'),
         countryCode,
         addressLine1: form.get('addressLine1'),
         addressLine2: form.get('addressLine2'),
@@ -66,7 +70,8 @@ export default function RegisterForm({ locale }: { locale: PublicLocale }) {
       setLoading(false)
       return
     }
-    router.push('/login?status=account-created&next=/konto')
+    router.push('/konto')
+    router.refresh()
   }
 
   return (
@@ -149,8 +154,13 @@ export default function RegisterForm({ locale }: { locale: PublicLocale }) {
           <Field name="region" label="Region eller delstat" autoComplete="address-level1" />
         </FormSection>
 
-        <FormSection icon={LockKeyhole} title="Kontakt och inloggning">
-          <Field name="email" label={copy.email} type="email" autoComplete="email" required />
+        <FormSection icon={MailCheck} title="Kontakt">
+          <div className="rounded-[14px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 sm:col-span-2">
+            <span className="block text-xs font-bold uppercase tracking-[.14em] text-[#0866ff]">
+              Verifierad mejladress
+            </span>
+            <strong className="mt-1 block break-all text-sm">{email}</strong>
+          </div>
           <Field
             name="phone"
             label={copy.phone}
@@ -158,15 +168,6 @@ export default function RegisterForm({ locale }: { locale: PublicLocale }) {
             autoComplete="tel"
             placeholder="+46 70 123 45 67"
             helper="Ange internationellt format med landskod."
-            required
-          />
-          <Field
-            name="password"
-            label={copy.password}
-            type="password"
-            autoComplete="new-password"
-            minLength={10}
-            helper="Minst 10 tecken."
             required
           />
         </FormSection>

@@ -222,14 +222,14 @@ export default function MarketplaceCategoryBrowser({
             </div>
           </div>
 
-          <div className="mt-8 flex gap-2 overflow-x-auto pb-2">
+          <div className="mt-7 flex gap-2 overflow-x-auto pb-1">
             <button
               type="button"
               onClick={() => setActiveFilter('')}
-              className={`shrink-0 rounded-[15px] border px-5 py-3 text-sm font-semibold transition ${
+              className={`shrink-0 rounded-full border px-4 py-2.5 text-[13px] font-semibold transition ${
                 !activeFilter
                   ? 'border-[#0866ff] bg-[#0866ff] text-white'
-                  : 'border-[#b8c9ff] bg-white text-[#0866ff]'
+                  : 'border-[#d8dde6] bg-white text-[#344054] hover:border-[#98a2b3]'
               }`}
             >
               {copy.all}
@@ -239,10 +239,10 @@ export default function MarketplaceCategoryBrowser({
                 key={filter}
                 type="button"
                 onClick={() => selectFilter(filter)}
-                className={`shrink-0 rounded-[15px] border px-5 py-3 text-sm font-semibold transition ${
+                className={`shrink-0 rounded-full border px-4 py-2.5 text-[13px] font-semibold transition ${
                   activeFilter === filter
-                    ? 'border-[#0866ff] bg-[#eef4ff] text-[#0866ff]'
-                    : 'border-[#b8c9ff] bg-white text-[#0866ff]'
+                    ? 'border-[#0866ff] bg-[#eef4ff] text-[#075bd8]'
+                    : 'border-[#d8dde6] bg-white text-[#344054] hover:border-[#98a2b3]'
                 }`}
               >
                 {filter}
@@ -252,14 +252,14 @@ export default function MarketplaceCategoryBrowser({
 
           <div
             id="marketplace-search"
-            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-3 rounded-[20px] border border-[#dfe4ec] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.1)] sm:grid-cols-2 lg:grid-cols-4"
+            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-2.5 rounded-[20px] border border-[#dde2ea] bg-[#f8f9fb] p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4"
           >
             <label className="relative">
-              <MapPin className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
+              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
               <select
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                className="marketplace-search-control h-14 w-full min-w-0 appearance-none rounded-[13px] border border-[#e4e7ec] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:border-[#98a2b3]"
+                className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-9 text-[14px] font-medium text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               >
                 <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
@@ -268,16 +268,16 @@ export default function MarketplaceCategoryBrowser({
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
             <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} />
             <label className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#475467]" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={copy.keyword}
-                className="marketplace-search-control h-14 w-full min-w-0 rounded-[13px] border border-[#e4e7ec] bg-white pl-12 pr-4 text-base outline-none focus:border-[#98a2b3]"
+                className="marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               />
             </label>
             <label>
@@ -285,7 +285,7 @@ export default function MarketplaceCategoryBrowser({
                 value={modelQuery}
                 onChange={(event) => setModelQuery(event.target.value)}
                 placeholder={secondarySearchLabel(category.slug, locale)}
-                className="marketplace-search-control h-14 w-full min-w-0 rounded-[13px] border border-[#e4e7ec] bg-white px-4 text-base outline-none focus:border-[#98a2b3]"
+                className="marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               />
             </label>
             {filterProfile.basic.includes('fuel') ? (
@@ -305,7 +305,7 @@ export default function MarketplaceCategoryBrowser({
               type="button"
               onClick={() => setMoreFiltersOpen((current) => !current)}
               aria-expanded={moreFiltersOpen}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[13px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:bg-[#f7f7f5]"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[13px] font-semibold text-[#344054] transition hover:border-[#98a2b3] hover:bg-white"
             >
               <SlidersHorizontal className="h-4 w-4" />
               {moreFiltersOpen ? copy.fewerFilters : copy.moreFilters}
@@ -313,7 +313,7 @@ export default function MarketplaceCategoryBrowser({
             </button>
 
             {moreFiltersOpen ? (
-              <div className="grid gap-3 border-t border-[#e4e7ec] pt-4 sm:col-span-2 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-4">
+              <div className="grid gap-2.5 border-t border-[#dde2ea] pt-3 sm:col-span-2 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-4">
                 {filterProfile.advanced.includes('fuel') ? (
                   <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
                 ) : null}
@@ -333,7 +333,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
                       inputMode="numeric"
                       placeholder={copy.yearFrom}
-                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -344,7 +344,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
                       inputMode="numeric"
                       placeholder={copy.maxMileage}
-                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -355,7 +355,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setMaxHours(event.target.value.replace(/\D/g, '').slice(0, 7))}
                       inputMode="numeric"
                       placeholder={copy.maxHours}
-                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -365,7 +365,7 @@ export default function MarketplaceCategoryBrowser({
                       value={equipmentQuery}
                       onChange={(event) => setEquipmentQuery(event.target.value)}
                       placeholder={equipmentLabel(category.slug, locale)}
-                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -373,7 +373,7 @@ export default function MarketplaceCategoryBrowser({
             ) : null}
             <a
               href="#marketplace-results"
-              className="inline-flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-[13px] bg-[#202124] px-4 text-center text-sm font-bold text-white sm:col-span-2 lg:col-span-2"
+              className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-[12px] bg-[#202124] px-4 text-center text-[13px] font-bold text-white transition hover:bg-black sm:col-span-2 lg:col-span-2"
             >
               <Search className="h-5 w-5" />
               {copy.search} {localizedCategory.label.toLowerCase()}
@@ -517,7 +517,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-14 w-full appearance-none rounded-[13px] border border-[#e4e7ec] bg-white px-4 pr-10 text-sm font-semibold outline-none focus:border-[#98a2b3]"
+        className="h-12 w-full appearance-none rounded-[12px] border border-[#d8dde6] bg-white px-3.5 pr-9 text-[14px] font-medium text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
       >
         <option value="">{label}</option>
         {options.map((option) => (
@@ -526,7 +526,7 @@ function FilterSelect({
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
     </label>
   )
 }

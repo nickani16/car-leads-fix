@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { euCountryCodes } from '@/lib/eu-countries'
 
 const TERMS_VERSION = 'marketplace-terms-v1.1-2026-06-22'
@@ -75,11 +76,19 @@ async function validateVat(countryCode: string, vatNumber: string) {
 }
 
 export async function POST(request: Request) {
-  let createdUserId: string | null = null
   try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.email) {
+      return NextResponse.json(
+        { error: 'Logga in med e-postkoden innan du skapar profilen.' },
+        { status: 401 },
+      )
+    }
     const body = (await request.json()) as Record<string, unknown>
-    const email = clean(body.email).toLowerCase()
-    const password = String(body.password || '')
+    const email = user.email.toLowerCase()
     const firstName = clean(body.firstName)
     const lastName = clean(body.lastName)
     const displayName = `${firstName} ${lastName}`.trim()
@@ -100,7 +109,6 @@ export async function POST(request: Request) {
 
     if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      password.length < 10 ||
       firstName.length < 2 ||
       lastName.length < 2 ||
       !isAdult(birthDate) ||
@@ -143,20 +151,22 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
-    const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { display_name: displayName, account_type: accountType },
-    })
-
-    if (error || !data.user) {
+    const { data: existingProfile } = await admin
+      .from('marketplace_profiles')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (existingProfile) {
       return NextResponse.json(
-        { error: error?.message || 'Kontot kunde inte skapas.' },
+        { error: 'Det finns redan en profil för kontot.' },
         { status: 409 },
       )
     }
-    createdUserId = data.user.id
+
+    await admin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+      user_metadata: { display_name: displayName, account_type: accountType },
+    })
 
     const identityStatus = accountType === 'private' ? 'format_validated' : 'pending'
     const businessVerificationStatus =
@@ -167,7 +177,7 @@ export async function POST(request: Request) {
         : null
 
     const { error: profileError } = await admin.from('marketplace_profiles').insert({
-      user_id: data.user.id,
+      user_id: user.id,
       account_type: accountType,
       display_name: displayName,
       legal_name: displayName,
@@ -200,7 +210,7 @@ export async function POST(request: Request) {
     if (profileError) throw profileError
 
     await admin.from('marketplace_identity_checks').insert({
-      user_id: data.user.id,
+      user_id: user.id,
       check_type: accountType === 'private' ? 'private_id_format' : 'business_vat',
       country_code: countryCode,
       status:
@@ -218,9 +228,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Marketplace registration failed', error)
-    if (createdUserId) {
-      await createAdminClient().auth.admin.deleteUser(createdUserId)
-    }
     return NextResponse.json(
       { error: 'Kontot kunde inte skapas. Försök igen eller kontakta support.' },
       { status: 500 },

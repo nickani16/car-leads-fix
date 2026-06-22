@@ -13,6 +13,7 @@ const files = [
   'app/components/PublicContactPage.tsx',
   'app/components/ContactForm.tsx',
   'app/components/CookieConsent.tsx',
+  'app/components/EmailCodeAuth.tsx',
   'app/login/page.tsx',
 ]
 
@@ -144,6 +145,7 @@ function extractEnglishStrings() {
       file.endsWith('BusinessMarketplaceHome.tsx') ||
       file.endsWith('MarketplaceCategoryBrowser.tsx') ||
       file.endsWith('MarketplaceSearch.tsx') ||
+      file.endsWith('EmailCodeAuth.tsx') ||
       file.endsWith('PublicContactPage.tsx') ||
       file.endsWith('ContactForm.tsx') ||
       file.includes('dealer-market')
@@ -223,7 +225,8 @@ async function main() {
   for (const locale of localesToGenerate) {
     if (
       output[locale] &&
-      Object.keys(output[locale]).length === strings.length
+      Object.keys(output[locale]).length === strings.length &&
+      strings.every((value) => Object.hasOwn(output[locale], value))
     ) {
       console.log(`${locale}: already complete`)
       continue

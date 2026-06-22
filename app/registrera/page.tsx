@@ -1,11 +1,25 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import BrandLogo from '@/app/components/BrandLogo'
+import EmailCodeAuth from '@/app/components/EmailCodeAuth'
 import { getAccountCopy } from '@/lib/account-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
+import { createClient } from '@/lib/supabase/server'
 import RegisterForm from './RegisterForm'
 
 export default async function RegisterPage() {
   const locale = await getRequestLocale()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return <EmailCodeAuth locale={locale} mode="register" />
+  const { data: profile } = await supabase
+    .from('marketplace_profiles')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (profile) redirect('/konto')
   const copy = getAccountCopy(locale)
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f6f8fc] px-5 py-8 text-[#101828] sm:py-12">
@@ -32,7 +46,7 @@ export default async function RegisterPage() {
               ))}
             </div>
           </section>
-          <RegisterForm locale={locale} />
+          <RegisterForm locale={locale} email={user.email || ''} />
         </div>
       </div>
     </main>
