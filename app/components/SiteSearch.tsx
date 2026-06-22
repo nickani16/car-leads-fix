@@ -16,23 +16,23 @@ type SearchResult = {
 const copy = {
   sv: {
     label: 'Sök',
-    placeholder: 'Sök på Autorell',
+    placeholder: 'Sök annonser, fordon och sidor',
     empty: 'Inga relevanta sidor hittades.',
-    hint: 'Sök bland alla publika sidor',
+    hint: 'Sök bland annonser, fordon, kategorier och publika sidor',
     title: 'Vad letar du efter?',
   },
   de: {
     label: 'Suche',
     placeholder: 'Autorell durchsuchen',
     empty: 'Keine passenden Seiten gefunden.',
-    hint: 'Alle öffentlichen Seiten durchsuchen',
+    hint: 'Anzeigen, Fahrzeuge, Kategorien und Seiten durchsuchen',
     title: 'Wonach suchen Sie?',
   },
   en: {
     label: 'Search',
-    placeholder: 'Search Autorell',
+    placeholder: 'Search listings, vehicles and pages',
     empty: 'No relevant pages found.',
-    hint: 'Search all public pages',
+    hint: 'Search listings, vehicles, categories and public pages',
     title: 'What are you looking for?',
   },
 } as const
@@ -42,6 +42,7 @@ export default function SiteSearch({
   marketCode,
   mobile = false,
   headerMobile = false,
+  headerDesktop = false,
   atPageTop = true,
   onNavigate,
 }: {
@@ -49,6 +50,7 @@ export default function SiteSearch({
   marketCode?: string
   mobile?: boolean
   headerMobile?: boolean
+  headerDesktop?: boolean
   atPageTop?: boolean
   onNavigate?: () => void
 }) {
@@ -99,6 +101,20 @@ export default function SiteSearch({
   }, [mobile, open])
 
   if (!open && (!mobile || headerMobile)) {
+    if (headerDesktop) {
+      return (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={text.label}
+          className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+        >
+          <Search className="h-[19px] w-[19px]" strokeWidth={1.7} />
+          <span className="text-[10px] font-medium">{text.label}</span>
+        </button>
+      )
+    }
+
     return (
       <button
         type="button"
@@ -213,6 +229,52 @@ export default function SiteSearch({
           document.body,
         )}
       </>
+    )
+  }
+
+  if (headerDesktop) {
+    return (
+      <div className="relative flex h-full">
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            setQuery('')
+          }}
+          aria-label="Close search"
+          className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] bg-[#f7f8f8] px-2 text-[#0866ff]"
+        >
+          <X className="h-[19px] w-[19px]" strokeWidth={1.7} />
+          <span className="text-[10px] font-medium">{text.label}</span>
+        </button>
+        <div className="absolute right-0 top-full z-50 pt-2">
+          <div className="w-[min(560px,calc(100vw-32px))] rounded-[24px] border border-[#d8e2e5] bg-[linear-gradient(145deg,#f9fbfb,#edf5f7)] p-4 shadow-[0_30px_85px_rgba(28,42,49,.2)]">
+            <div className="mb-4 flex items-start justify-between gap-5 px-1">
+              <p className="text-lg font-semibold tracking-[-0.025em] text-[#202124]">
+                {text.title}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  setQuery('')
+                }}
+                aria-label="Close search"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d4dfe2] bg-white text-[#66767c]"
+              >
+                <X className="h-[17px] w-[17px]" />
+              </button>
+            </div>
+            {panel}
+            {query.trim().length < 2 && (
+              <p className="mt-3 flex items-center gap-2 px-1 text-[11px] text-[#718087]">
+                <Sparkles className="h-3.5 w-3.5 text-[#5b91aa]" />
+                {text.hint}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     )
   }
 

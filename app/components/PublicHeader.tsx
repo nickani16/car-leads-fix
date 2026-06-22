@@ -30,6 +30,7 @@ import {
 } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
+import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
 import {
   marketplaceCategories,
@@ -304,7 +305,14 @@ export default function PublicHeader({
     return {
       href: `/marketplace/${category.slug}`,
       label,
-      description: `${t.search} ${label.toLocaleLowerCase(locale)}`,
+      description:
+        locale === 'sv'
+          ? 'Se annonser från privatpersoner och företag i hela Europa.'
+          : locale === 'de'
+            ? 'Anzeigen von privaten und gewerblichen Verkäufern in ganz Europa.'
+            : locale === 'en'
+              ? 'Browse listings from private and business sellers across Europe.'
+              : translatePublic(locale, 'Vehicles from private and business sellers across Europe.'),
       icon: category.icon,
     }
   })
@@ -396,10 +404,6 @@ export default function PublicHeader({
   ] as const
 
   const homeHref = localizePublicHref(locale, '/')
-  const searchHref = marketplaceChannel
-    ? `/marketplace/${marketplaceChannel.slug}#marketplace-search`
-    : '/marketplace/cars#marketplace-search'
-
   function closeMobile() {
     setOpen(false)
   }
@@ -529,10 +533,14 @@ export default function PublicHeader({
                   <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
                   <span className="mt-0.5 text-[10px] leading-none">{t.saved}</span>
                 </Link>
-                <Link href={searchHref} onClick={closeMobile} className="flex w-11 shrink-0 flex-col items-center justify-center">
-                  <Search className="h-[21px] w-[21px]" strokeWidth={1.7} />
-                  <span className="mt-0.5 text-[10px] leading-none">{t.search}</span>
-                </Link>
+                <div className="flex w-11 shrink-0 items-center justify-center">
+                  <SiteSearch
+                    locale={locale}
+                    headerMobile
+                    atPageTop
+                    onNavigate={closeMobile}
+                  />
+                </div>
               </div>
             </div>
 
@@ -548,20 +556,14 @@ export default function PublicHeader({
                   href={menu.href}
                   menu={menu.data}
                   icon={menu.icon}
-                  align={index === 0 ? 'start' : 'center'}
+                  align={index < 2 ? 'start' : 'end'}
                   onNavigate={handleInternalNavigation}
                 />
               ))}
             </nav>
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
-              <Link
-                href={searchHref}
-                className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-              >
-                <Search className="h-[19px] w-[19px]" strokeWidth={1.7} />
-                <span className="text-[10px] font-medium">{t.search}</span>
-              </Link>
+              <SiteSearch locale={locale} headerDesktop />
               <Link
                 href="/registrera"
                 className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
@@ -781,7 +783,7 @@ function DesktopMenu({
   href: string
   menu: DesktopMenuData
   onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
-  align: 'start' | 'center'
+  align: 'start' | 'end'
   icon: LucideIcon
 }) {
   return (
@@ -797,7 +799,7 @@ function DesktopMenu({
       <div
         className={`pointer-events-none absolute top-full z-40 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
           menu.items.length > 5 ? 'w-[900px]' : 'w-[720px] 2xl:w-[780px]'
-        } ${align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2'}`}
+        } ${align === 'start' ? 'left-0' : 'right-0'}`}
       >
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
           <div className="min-w-0 bg-[#f3f7ff] p-7">
