@@ -45,9 +45,9 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return createPublicMetadata({
-    title: 'B2B marketplace för fordon och maskiner | Autorell',
+    title: 'Köp och sälj alla typer av fordon i Europa | Autorell',
     description:
-      'Autorell är en B2B marketplace där verifierade företag listar fordon, maskiner och mobilitetsprodukter för professionella köpare.',
+      'Sök, jämför, köp och sälj bilar, transportbilar, motorcyklar, fritidsfordon och maskiner på Autorells europeiska fordonsmarknad.',
     path: '/',
   })
 }

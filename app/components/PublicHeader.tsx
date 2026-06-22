@@ -951,9 +951,9 @@ export default function PublicHeader({
                 <Link
                   key={`${label}-${index}`}
                   href={href}
-                  className={`flex h-full shrink-0 items-center border-b-2 transition hover:border-[#B4D9EF] hover:text-[#111] ${
+                  className={`flex h-full shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
                     index === 0
-                      ? 'border-[#B4D9EF] font-semibold text-[#202124]'
+                      ? 'border-[#0866ff] font-semibold text-[#202124]'
                       : 'border-transparent'
                   }`}
                 >
@@ -1015,7 +1015,7 @@ export default function PublicHeader({
 
               <Link
                 href={content.links[4][0]}
-                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#B4D9EF] hover:text-[#111111] xl:px-3.5 xl:text-[13px] 2xl:px-4"
+                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111111] xl:px-3.5 xl:text-[13px] 2xl:px-4"
               >
                 {content.links[4][1]}
               </Link>
@@ -1095,7 +1095,7 @@ export default function PublicHeader({
               </div>
               <Link
                 href={marketRoutes.dealerAccess}
-                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-l border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#168dce]"
+                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-l border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <Store className="h-[19px] w-[19px]" strokeWidth={1.7} />
                 <span className="text-[10px] font-medium">
@@ -1104,7 +1104,7 @@ export default function PublicHeader({
               </Link>
               <Link
                 href="/login"
-                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-x border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#168dce]"
+                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-x border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
                 <span className="text-[10px] font-medium">
@@ -1171,7 +1171,7 @@ export default function PublicHeader({
             <Link
               href={content.ctaHref}
               onClick={() => setOpen(false)}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#B4D9EF] px-5 text-base font-medium text-[#242424]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#0866ff] px-5 text-base font-medium text-white"
             >
               {content.cta}
               <ArrowRight className="h-5 w-5" />
@@ -1319,7 +1319,7 @@ function DesktopMenu({
       <a
         href={href}
         onClick={(event) => onNavigate(event, href)}
-        className="flex h-[60px] shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#B4D9EF] hover:text-[#111111] group-focus-within:border-[#B4D9EF] xl:px-3.5 xl:text-[13px] 2xl:px-4"
+        className="flex h-[60px] shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111111] group-focus-within:border-[#0866ff] xl:px-3.5 xl:text-[13px] 2xl:px-4"
       >
         {label}
       </a>
@@ -1331,7 +1331,7 @@ function DesktopMenu({
       >
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
           <div className="min-w-0 bg-[#eef6fa] p-7">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#B4D9EF] text-[#242424]">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#0866ff] text-white">
               <MenuIcon className="h-5 w-5" />
             </span>
             <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">

@@ -169,7 +169,7 @@ export default function PublicFooter({
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
       <div
-        className="pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] rounded-full border-[24px] border-[#B4D9EF]/50 sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px] sm:border-[30px]"
+        className="pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] rounded-full border-[24px] border-[#0866ff]/25 sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px] sm:border-[30px]"
         aria-hidden="true"
       />
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
@@ -194,7 +194,7 @@ export default function PublicFooter({
                     ? '/haendlerzugang'
                     : '/dealer-apply'
               }
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-normal text-white transition hover:bg-[#111111]"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0057e6]"
             >
               {t.cta}
               <ArrowRight className="h-4 w-4" />

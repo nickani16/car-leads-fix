@@ -143,7 +143,12 @@ export async function generateMetadata() {
   }
 }
 
-export default async function FindCarsPage() {
+export default async function FindCarsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; country?: string }>
+}) {
+  const requestedFilters = await searchParams
   const headerStore = await headers()
   const locale = localeFromRequest(
     headerStore.get('host') || '',
@@ -201,7 +206,7 @@ export default async function FindCarsPage() {
 
       <section className="relative overflow-hidden border-b border-[#dfe6e8] bg-[linear-gradient(145deg,#fbf8f1_0%,#edf6f9_58%,#e3f0f5_100%)]">
         <div className="absolute -left-36 -top-44 h-[430px] w-[430px] rounded-full border-[62px] border-white/55" />
-        <div className="absolute -bottom-48 right-[-90px] h-[420px] w-[420px] rounded-full border-[58px] border-[#B4D9EF]/35" />
+        <div className="absolute -bottom-48 right-[-90px] h-[420px] w-[420px] rounded-full border-[58px] border-[#0866ff]/20" />
         <div className="relative mx-auto grid min-w-0 max-w-[1320px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pb-24 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-12 lg:pb-28 lg:pt-20">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#c6dbe4] bg-white/75 px-4 py-2 text-xs font-medium text-[#496878] shadow-sm backdrop-blur">
@@ -243,7 +248,7 @@ export default async function FindCarsPage() {
                     {vehicles.length} {t.live}
                   </p>
                 </div>
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#0866ff] text-white">
                   <Globe2 className="h-5 w-5" />
                 </span>
               </div>
@@ -253,7 +258,7 @@ export default async function FindCarsPage() {
                     key={signal}
                     className="flex min-w-0 items-center gap-4 rounded-[15px] border border-[#d9e5ea] bg-[#f6fafb] px-4 py-4"
                   >
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#0866ff] text-white">
                       <BadgeCheck className="h-4 w-4" />
                     </span>
                     <span className="min-w-0 text-sm text-[#526b78]">{signal}</span>
@@ -265,7 +270,12 @@ export default async function FindCarsPage() {
         </div>
       </section>
 
-      <PublicVehicleBrowser vehicles={vehicles} locale={locale} />
+      <PublicVehicleBrowser
+        vehicles={vehicles}
+        locale={locale}
+        initialSearch={requestedFilters.q || ''}
+        initialCountry={(requestedFilters.country || '').toUpperCase()}
+      />
       <PublicFooter locale={locale} />
     </main>
   )

@@ -226,9 +226,13 @@ function normalizedFuel(value: string | null) {
 export default function PublicVehicleBrowser({
   vehicles,
   locale,
+  initialSearch = '',
+  initialCountry = '',
 }: {
   vehicles: PublicVehicle[]
   locale: PublicLocale
+  initialSearch?: string
+  initialCountry?: string
 }) {
   const t =
     locale === 'sv'
@@ -236,12 +240,12 @@ export default function PublicVehicleBrowser({
       : locale === 'de'
         ? copy.de
         : translatePublicObject(locale, copy.en)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(initialSearch)
   const [make, setMake] = useState('')
   const [model, setModel] = useState('')
   const [fuel, setFuel] = useState('')
   const [bodyType, setBodyType] = useState('')
-  const [country, setCountry] = useState('')
+  const [country, setCountry] = useState(initialCountry)
   const [format, setFormat] = useState('')
   const [priceBand, setPriceBand] = useState('')
   const [minYear, setMinYear] = useState('')
@@ -381,7 +385,7 @@ export default function PublicVehicleBrowser({
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="rounded-full bg-[#B4D9EF] px-4 py-2 text-xs font-semibold text-[#202124] shadow-sm transition hover:bg-white"
+                  className="rounded-full bg-[#0866ff] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#0057e6]"
                 >
                   {t.reset}
                 </button>
@@ -398,7 +402,7 @@ export default function PublicVehicleBrowser({
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder={t.search}
-                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] pl-11 pr-4 text-sm outline-none transition focus:border-[#8dbdd8] focus:bg-white focus:ring-4 focus:ring-[#B4D9EF]/30"
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] pl-11 pr-4 text-sm outline-none transition focus:border-[#0866ff] focus:bg-white focus:ring-4 focus:ring-[#0866ff]/15"
                 />
               </label>
               <FilterSelect value={make} onChange={(value) => {
@@ -460,7 +464,7 @@ export default function PublicVehicleBrowser({
                   value={minYear}
                   onChange={(event) => setMinYear(event.target.value)}
                   placeholder="2020"
-                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30"
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/15"
                 />
               </label>
               <label>
@@ -474,7 +478,7 @@ export default function PublicVehicleBrowser({
                   value={maxMileage}
                   onChange={(event) => setMaxMileage(event.target.value)}
                   placeholder="100000"
-                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30"
+                  className="h-12 w-full rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 text-sm outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/15"
                 />
               </label>
             </div>
@@ -653,7 +657,7 @@ export default function PublicVehicleBrowser({
                   <ul className="mt-6 grid gap-3 text-sm text-[#52616b]">
                     {t.accessItems.map((item) => (
                       <li key={item} className="flex items-center gap-3">
-                        <span className="grid h-6 w-6 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
+                        <span className="grid h-6 w-6 place-items-center rounded-full bg-[#0866ff] text-white">
                           <Check className="h-3.5 w-3.5" />
                         </span>
                         {item}
@@ -716,7 +720,7 @@ function FilterSelect({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           disabled={disabled}
-          className="h-12 w-full appearance-none rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 pr-10 text-sm outline-none transition focus:border-[#8dbdd8] focus:ring-4 focus:ring-[#B4D9EF]/30 disabled:opacity-50"
+          className="h-12 w-full appearance-none rounded-[14px] border border-[#d8dfe2] bg-[#f8faf9] px-4 pr-10 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/15 disabled:opacity-50"
         >
           <option value="">{label}</option>
           {options.map((option) => {

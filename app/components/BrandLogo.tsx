@@ -14,17 +14,17 @@ export default function BrandLogo({
   return (
     <span className="inline-flex items-center" aria-label="Autorell">
       <Image
-        src="/autorell-wordmark-charcoal.png"
+        src="/autorell-wordmark-primary.png"
         alt=""
-        width={1642}
-        height={300}
-        priority
+        width={1848}
+        height={405}
+        preload
         className={`h-auto object-contain ${
           iconOnly
-            ? 'w-[98px]'
+            ? 'w-[108px]'
             : compact
-              ? 'w-[94px]'
-              : 'w-[116px] sm:w-[122px] lg:w-[124px]'
+              ? 'w-[104px]'
+              : 'w-[122px] sm:w-[132px] lg:w-[138px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
     </span>
