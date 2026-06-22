@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import MarketplaceCategoryBrowser, {
   type MarketplaceListing,
 } from '@/app/components/MarketplaceCategoryBrowser'
@@ -7,6 +8,14 @@ import PublicHeader from '@/app/components/PublicHeader'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const categories = {
+  cars: {
+    slug: 'cars',
+    label: 'Bilar',
+    singular: 'en bil',
+    description: 'Nya och begagnade bilar från privatpersoner och företag i hela Europa.',
+    filters: ['Nya', 'Begagnade', 'El', 'Hybrid', 'SUV', 'Pris', 'Miltal'],
+    matches: ['car', 'bil', 'sedan', 'suv', 'kombi', 'hatchback', 'coupe'],
+  },
   vans: {
     slug: 'vans',
     label: 'Transportbilar',
@@ -89,6 +98,17 @@ export default async function MarketplaceCategoryPage({
   const { category } = await params
   const config = categories[category as keyof typeof categories]
   if (!config) notFound()
+  const requestHeaders = await headers()
+  const hostname = (
+    requestHeaders.get('host') ||
+    requestHeaders.get('x-forwarded-host') ||
+    ''
+  ).toLowerCase()
+  const locale = hostname.includes('autorell.de')
+    ? 'de'
+    : hostname.includes('autorell.com')
+      ? 'en'
+      : 'sv'
 
   const now = new Date().toISOString()
   const { data } = await createAdminClient()
@@ -106,7 +126,7 @@ export default async function MarketplaceCategoryPage({
   const listings: MarketplaceListing[] = (data || [])
     .filter((lead) => {
       const haystack = `${lead.body_type || ''} ${lead.make || ''} ${lead.model || ''}`.toLowerCase()
-      return config.matches.some((match) => haystack.includes(match))
+      return category === 'cars' || config.matches.some((match) => haystack.includes(match))
     })
     .map((lead) => {
       const mileage = Number(lead.miles)
@@ -124,15 +144,16 @@ export default async function MarketplaceCategoryPage({
           Number.isFinite(price) && price > 0
             ? `Pris visas efter verifiering`
             : 'Kontakta säljaren',
+        priceValue: Number.isFinite(price) && price > 0 ? price : null,
         imageAvailable: typeof images[0] === 'string',
       }
     })
 
   return (
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader />
-      <MarketplaceCategoryBrowser category={config} listings={listings} />
-      <PublicFooter />
+      <PublicHeader locale={locale} />
+      <MarketplaceCategoryBrowser category={config} listings={listings} locale={locale} />
+      <PublicFooter locale={locale} />
     </main>
   )
 }

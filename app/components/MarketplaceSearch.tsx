@@ -2,10 +2,25 @@
 
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
-import { CarFront, ChevronDown, MapPin, Search } from 'lucide-react'
+import {
+  Bike,
+  BusFront,
+  CarFront,
+  ChevronDown,
+  Construction,
+  Leaf,
+  MapPin,
+  Search,
+  Tractor,
+  Truck,
+  Warehouse,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react'
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
 const categoryRoutes: Record<string, string> = {
-  cars: '/find-cars',
+  cars: '/marketplace/cars',
   vans: '/marketplace/vans',
   bikes: '/marketplace/bikes',
   motorhomes: '/marketplace/motorhomes',
@@ -17,17 +32,71 @@ const categoryRoutes: Record<string, string> = {
   'e-scooters': '/marketplace/e-scooters',
 }
 
+const categoryOptions: Array<{
+  value: string
+  sv: string
+  en: string
+  de: string
+  icon: LucideIcon
+}> = [
+  { value: 'cars', sv: 'Bilar', en: 'Cars', de: 'Autos', icon: CarFront },
+  { value: 'vans', sv: 'Transportbilar', en: 'Vans', de: 'Transporter', icon: BusFront },
+  { value: 'bikes', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder', icon: Bike },
+  { value: 'motorhomes', sv: 'Husbilar', en: 'Motorhomes', de: 'Wohnmobile', icon: BusFront },
+  { value: 'caravans', sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen', icon: Warehouse },
+  { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw', icon: Truck },
+  { value: 'farm', sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft', icon: Tractor },
+  { value: 'plant', sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen', icon: Construction },
+  { value: 'electric-bikes', sv: 'Elcyklar', en: 'Electric bikes', de: 'E-Bikes', icon: Leaf },
+  { value: 'e-scooters', sv: 'Elsparkcyklar', en: 'E-scooters', de: 'E-Scooter', icon: Zap },
+]
+
 const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo']
 
-export default function MarketplaceSearch() {
+export default function MarketplaceSearch({
+  locale = 'sv',
+}: {
+  locale?: 'sv' | 'en' | 'de'
+}) {
   const router = useRouter()
   const [category, setCategory] = useState('cars')
   const [query, setQuery] = useState('')
   const [country, setCountry] = useState('')
+  const selectedCategory =
+    categoryOptions.find((option) => option.value === category) ||
+    categoryOptions[0]
+  const countryLocale = locale === 'sv' ? 'sv' : locale === 'de' ? 'de' : 'en'
+  const copy =
+    locale === 'sv'
+      ? {
+          category: 'Kategori',
+          query: 'Vad letar du efter?',
+          queryPlaceholder: 'Märke eller modell',
+          place: 'Plats',
+          allEurope: 'Hela Europa',
+          search: 'Sök fordon',
+        }
+      : locale === 'de'
+        ? {
+            category: 'Kategorie',
+            query: 'Was suchen Sie?',
+            queryPlaceholder: 'Marke oder Modell',
+            place: 'Standort',
+            allEurope: 'Ganz Europa',
+            search: 'Fahrzeuge suchen',
+          }
+        : {
+            category: 'Category',
+            query: 'What are you looking for?',
+            queryPlaceholder: 'Make or model',
+            place: 'Location',
+            allEurope: 'All of Europe',
+            search: 'Search vehicles',
+          }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const route = categoryRoutes[category] || '/find-cars'
+    const route = categoryRoutes[category] || '/marketplace/cars'
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (country) params.set('country', country)
@@ -41,27 +110,22 @@ export default function MarketplaceSearch() {
       role="search"
     >
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[1.05fr_1.55fr_1fr_auto] sm:items-center">
-        <SearchField label="Kategori" icon={CarFront}>
+        <SearchField label={copy.category} icon={selectedCategory.icon}>
           <select value={category} onChange={(event) => setCategory(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
-            <option value="cars">Bilar</option>
-            <option value="vans">Transportbilar</option>
-            <option value="bikes">Motorcyklar</option>
-            <option value="motorhomes">Husbilar</option>
-            <option value="caravans">Husvagnar</option>
-            <option value="trucks">Lastbilar</option>
-            <option value="farm">Lantbruk</option>
-            <option value="plant">Entreprenad</option>
-            <option value="electric-bikes">Elcyklar</option>
-            <option value="e-scooters">Elsparkcyklar</option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option[locale]}
+              </option>
+            ))}
           </select>
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>
 
-        <SearchField label="Vad letar du efter?" icon={Search}>
+        <SearchField label={copy.query} icon={Search}>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Märke eller modell"
+            placeholder={copy.queryPlaceholder}
             list="marketplace-makes"
             className="marketplace-search-control h-7 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
           />
@@ -70,26 +134,36 @@ export default function MarketplaceSearch() {
           </datalist>
         </SearchField>
 
-        <SearchField label="Plats" icon={MapPin}>
+        <SearchField label={copy.place} icon={MapPin}>
           <select value={country} onChange={(event) => setCountry(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
-            <option value="">Hela EU</option>
-            <option value="SE">Sverige</option>
-            <option value="DE">Tyskland</option>
-            <option value="DK">Danmark</option>
-            <option value="FI">Finland</option>
-            <option value="NL">Nederländerna</option>
-            <option value="FR">Frankrike</option>
+            <option value="">{copy.allEurope}</option>
+            {['se', ...euBuyerMarkets.map((market) => market.code)]
+              .filter((code, index, values) => values.indexOf(code) === index)
+              .sort((a, b) => countryName(a, countryLocale).localeCompare(countryName(b, countryLocale), countryLocale))
+              .map((code) => (
+                <option key={code} value={code.toUpperCase()}>
+                  {countryName(code, countryLocale)}
+                </option>
+              ))}
           </select>
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>
 
-        <button type="submit" className="inline-flex min-h-14 w-full min-w-0 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.25)] transition hover:-translate-y-0.5 hover:bg-[#0057e6] sm:min-h-[62px] sm:w-auto sm:rounded-[20px]">
+        <button type="submit" className="inline-flex min-h-14 w-full min-w-0 items-center justify-center gap-2 rounded-[16px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.25)] transition hover:-translate-y-0.5 hover:bg-[#0057e6] sm:min-h-[62px] sm:w-auto">
           <Search className="h-5 w-5" />
-          Sök fordon
+          {copy.search}
         </button>
       </div>
     </form>
   )
+}
+
+function countryName(code: string, locale: string) {
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code.toUpperCase()) || code
+  } catch {
+    return code.toUpperCase()
+  }
 }
 
 function SearchField({

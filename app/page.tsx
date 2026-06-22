@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import BuyerMarketPage from './components/BuyerMarketPage'
 import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
 import { createPublicMetadata } from '@/lib/public-seo'
 
@@ -26,9 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'de') {
     return createPublicMetadata({
-      title: 'B2B Marktplatz für Fahrzeuge und Maschinen | Autorell',
+      title: 'Europas Marktplatz für Fahrzeuge | Autorell',
       description:
-        'Autorell entwickelt einen B2B-Marktplatz für gewerbliche Anbieter und professionelle Käufer in mehreren Fahrzeug- und Maschinenkategorien.',
+        'Fahrzeuge und Maschinen in ganz Europa kaufen und verkaufen — für Privatpersonen und Unternehmen.',
       path: '/',
       locale: 'de',
     })
@@ -36,9 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'en') {
     return createPublicMetadata({
-      title: 'B2B marketplace for vehicles and machinery | Autorell',
+      title: "Europe's marketplace for vehicles | Autorell",
       description:
-        'Autorell is a B2B marketplace where verified companies list vehicles, machinery and mobility products for professional buyers.',
+        'Buy and sell cars, vans, motorcycles, leisure vehicles and machinery across Europe — for private sellers and businesses.',
       path: '/',
       locale: 'en',
     })
@@ -55,7 +54,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const market = await getRootMarket()
 
-  if (market === 'de') return <BuyerMarketPage locale="de" />
-  if (market === 'en') return <BuyerMarketPage locale="en" />
-  return <BusinessMarketplaceHome />
+  return <BusinessMarketplaceHome locale={market} />
 }

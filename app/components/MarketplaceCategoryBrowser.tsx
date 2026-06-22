@@ -1,16 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import {
   ArrowRight,
   ChevronDown,
-  Globe2,
   Heart,
   ImageIcon,
   MapPin,
   Search,
-  SlidersHorizontal,
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
@@ -23,6 +22,7 @@ export type MarketplaceListing = {
   country: string
   saleFormat: 'auction' | 'marketplace'
   priceLabel: string
+  priceValue: number | null
   imageAvailable: boolean
 }
 
@@ -37,33 +37,78 @@ type CategoryConfig = {
 export default function MarketplaceCategoryBrowser({
   category,
   listings,
+  locale = 'sv',
 }: {
   category: CategoryConfig
   listings: MarketplaceListing[]
+  locale?: 'sv' | 'en' | 'de'
 }) {
-  const [query, setQuery] = useState('')
-  const [country, setCountry] = useState('')
+  const searchParams = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [country, setCountry] = useState((searchParams.get('country') || '').toUpperCase())
   const [activeFilter, setActiveFilter] = useState('')
+  const [sort, setSort] = useState('recommended')
+  const [savedSearchKey, setSavedSearchKey] = useState('')
+  const displayLocale = locale === 'sv' ? 'sv' : locale === 'de' ? 'de' : 'en'
+  const localizedCategory = localizeCategory(category, locale)
+  const copy = marketplaceCopy[locale]
 
   const countries = useMemo(
     () =>
       [...new Set(['SE', ...euBuyerMarkets.map((market) => market.code)])]
-        .sort((a, b) => countryName(a).localeCompare(countryName(b), 'sv')),
-    [],
+        .sort((a, b) => countryName(a, displayLocale).localeCompare(countryName(b, displayLocale), displayLocale)),
+    [displayLocale],
   )
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
-    return listings.filter((listing) => {
-      if (country && listing.country !== country) return false
-      if (
-        normalizedQuery &&
-        !listing.title.toLowerCase().includes(normalizedQuery)
-      ) {
-        return false
+    const filtered = listings.filter((listing) => {
+      if (country && listing.country.toUpperCase() !== country) return false
+      const searchable = `${listing.title} ${listing.fuelType || ''}`.toLowerCase()
+      if (normalizedQuery && !searchable.includes(normalizedQuery)) return false
+      if (!activeFilter) return true
+
+      const normalizedFilter = activeFilter.toLowerCase()
+      const currentYear = new Date().getFullYear()
+      if (['nya', 'new', 'neu'].includes(normalizedFilter)) {
+        return Number(listing.year) >= currentYear - 1
       }
-      return true
+      if (['begagnade', 'used', 'gebraucht'].includes(normalizedFilter)) {
+        return !listing.year || Number(listing.year) < currentYear - 1
+      }
+      if (['pris', 'price', 'preis', 'miltal', 'mileage', 'kilometer'].includes(normalizedFilter)) {
+        return true
+      }
+      return searchable.includes(normalizedFilter)
     })
-  }, [country, listings, query])
+
+    return [...filtered].sort((a, b) => {
+      if (sort === 'newest') return Number(b.year || 0) - Number(a.year || 0)
+      if (sort === 'mileage') return (a.mileageKm ?? Number.MAX_SAFE_INTEGER) - (b.mileageKm ?? Number.MAX_SAFE_INTEGER)
+      if (sort === 'price') return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
+      return a.title.localeCompare(b.title, displayLocale)
+    })
+  }, [activeFilter, country, displayLocale, listings, query, sort])
+
+  const currentSearchKey = `autorell-search-${category.slug}-${query}-${country}-${activeFilter}`
+  const saved = savedSearchKey === currentSearchKey
+
+  function toggleSavedSearch() {
+    if (saved) {
+      window.localStorage.removeItem(currentSearchKey)
+      setSavedSearchKey('')
+    } else {
+      window.localStorage.setItem(currentSearchKey, 'saved')
+      setSavedSearchKey(currentSearchKey)
+    }
+  }
+
+  function selectFilter(filter: string) {
+    const normalized = filter.toLowerCase()
+    const nextFilter = activeFilter === filter ? '' : filter
+    setActiveFilter(nextFilter)
+    if (['pris', 'price', 'preis'].includes(normalized)) setSort('price')
+    if (['miltal', 'mileage', 'kilometer'].includes(normalized)) setSort('mileage')
+  }
 
   return (
     <>
@@ -71,15 +116,11 @@ export default function MarketplaceCategoryBrowser({
         <div className="mx-auto max-w-[1380px] px-5 pb-9 pt-7 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-[#0866ff]">
-                <Globe2 className="h-4 w-4" />
-                Autorell Europe
-              </span>
-              <h1 className="mt-3 text-4xl tracking-[-0.05em] sm:text-5xl">
-                {category.label}
+              <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
+                {localizedCategory.label}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085] sm:text-base">
-                {category.description}
+                {localizedCategory.description}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -87,14 +128,14 @@ export default function MarketplaceCategoryBrowser({
                 href={`/salj-fordon?category=${category.slug}`}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]"
               >
-                Sälj {category.singular}
+                {copy.sell} {localizedCategory.singular}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/foretag"
                 className="inline-flex min-h-12 items-center justify-center rounded-[15px] border border-[#d0d5dd] bg-white px-6 text-sm font-bold"
               >
-                Sälj som företag
+                {copy.sellBusiness}
               </Link>
             </div>
           </div>
@@ -109,13 +150,13 @@ export default function MarketplaceCategoryBrowser({
                   : 'border-[#b8c9ff] bg-white text-[#0866ff]'
               }`}
             >
-              Alla
+              {copy.all}
             </button>
-            {category.filters.map((filter) => (
+            {localizedCategory.filters.map((filter) => (
               <button
                 key={filter}
                 type="button"
-                onClick={() => setActiveFilter(filter)}
+                onClick={() => selectFilter(filter)}
                 className={`shrink-0 rounded-[15px] border px-5 py-3 text-sm font-semibold transition ${
                   activeFilter === filter
                     ? 'border-[#0866ff] bg-[#eef4ff] text-[#0866ff]'
@@ -133,7 +174,7 @@ export default function MarketplaceCategoryBrowser({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Sök ${category.label.toLowerCase()}`}
+                placeholder={`${copy.search} ${localizedCategory.label.toLowerCase()}`}
                 className="marketplace-search-control h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-12 pr-4 text-sm outline-none focus:border-[#0866ff]"
               />
             </label>
@@ -144,22 +185,29 @@ export default function MarketplaceCategoryBrowser({
                 onChange={(event) => setCountry(event.target.value)}
                 className="marketplace-search-control h-12 w-full appearance-none rounded-[14px] border border-[#d7deed] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:border-[#0866ff]"
               >
-                <option value="">Hela Europa</option>
+                <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
                   <option key={code} value={code}>
-                    {countryName(code)}
+                    {countryName(code, displayLocale)}
                   </option>
                 ))}
               </select>
               <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
-            <button
-              type="button"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-[#b8c9ff] bg-white px-5 text-sm font-bold text-[#0866ff]"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filter och sortering
-            </button>
+            <label className="relative">
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value)}
+                className="marketplace-search-control h-12 w-full appearance-none rounded-[14px] border border-[#b8c9ff] bg-white px-5 pr-10 text-sm font-bold text-[#0866ff] outline-none"
+                aria-label={copy.sort}
+              >
+                <option value="recommended">{copy.recommended}</option>
+                <option value="newest">{copy.newest}</option>
+                <option value="mileage">{copy.mileage}</option>
+                <option value="price">{copy.lowestPrice}</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+            </label>
           </div>
         </div>
       </section>
@@ -169,11 +217,16 @@ export default function MarketplaceCategoryBrowser({
           <div className="mb-6 flex items-center justify-between gap-5">
             <p className="text-sm text-[#475467]">
               <strong className="text-[#101828]">{visibleListings.length}</strong>{' '}
-              annonser i {category.label.toLowerCase()}
+              {copy.listings} {localizedCategory.label.toLowerCase()}
             </p>
-            <button type="button" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
-              Spara sökning
-              <Heart className="h-5 w-5" />
+            <button
+              type="button"
+              onClick={toggleSavedSearch}
+              aria-pressed={saved}
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
+            >
+              {saved ? copy.saved : copy.saveSearch}
+              <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
             </button>
           </div>
 
@@ -199,7 +252,7 @@ export default function MarketplaceCategoryBrowser({
                       <Heart className="h-5 w-5" />
                     </button>
                     <span className="absolute bottom-4 left-4 rounded-[10px] bg-white/92 px-3 py-1.5 text-[11px] font-bold text-[#344054] shadow-sm">
-                      {listing.saleFormat === 'marketplace' ? 'Fast pris' : 'Auktion'}
+                      {listing.saleFormat === 'marketplace' ? copy.fixedPrice : copy.auction}
                     </span>
                   </div>
                   <div className="p-5">
@@ -212,12 +265,12 @@ export default function MarketplaceCategoryBrowser({
                     <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
                       <div>
                         <span className="block text-xs text-[#98a2b3]">
-                          {countryName(listing.country)}
+                          {countryName(listing.country, displayLocale)}
                         </span>
                         <strong className="mt-1 block">{listing.priceLabel}</strong>
                       </div>
                       <button type="button" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
-                        Visa annons
+                        {copy.viewListing}
                         <ArrowRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -233,21 +286,20 @@ export default function MarketplaceCategoryBrowser({
                   <Search className="h-6 w-6" />
                 </span>
                 <h2 className="mt-6 text-2xl tracking-[-0.035em]">
-                  Inga publicerade annonser matchar just nu.
+                  {copy.noResults}
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#667085]">
-                  Marknaden uppdateras löpande. Spara sökningen eller bli först
-                  med att publicera {category.singular} i den här kategorin.
+                  {copy.noResultsText} {localizedCategory.singular}.
                 </p>
                 <Link
                   href={`/salj-fordon?category=${category.slug}`}
                   className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white"
                 >
-                  Skapa annons
+                  {copy.createListing}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <p className="mt-4 text-xs text-[#98a2b3]">
-                  Annonser publiceras per objekt med valbart annonspaket.
+                  {copy.perListing}
                 </p>
               </div>
             </div>
@@ -258,10 +310,109 @@ export default function MarketplaceCategoryBrowser({
   )
 }
 
-function countryName(code: string) {
+function countryName(code: string, locale: string) {
   try {
-    return new Intl.DisplayNames(['sv'], { type: 'region' }).of(code) || code
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code.toUpperCase()) || code
   } catch {
     return code
+  }
+}
+
+const marketplaceCopy = {
+  sv: {
+    sell: 'Sälj',
+    all: 'Alla',
+    sellBusiness: 'Sälj som företag',
+    search: 'Sök',
+    allEurope: 'Hela Europa',
+    sort: 'Sortering',
+    recommended: 'Rekommenderat',
+    newest: 'Nyaste årsmodell',
+    mileage: 'Lägst miltal',
+    lowestPrice: 'Lägst pris',
+    listings: 'annonser i',
+    saveSearch: 'Spara sökning',
+    saved: 'Sökning sparad',
+    noResults: 'Inga publicerade annonser matchar just nu.',
+    noResultsText: 'Justera sökningen, välj ett annat land eller bli först med att publicera',
+    createListing: 'Skapa annons',
+    perListing: 'Annonser publiceras per objekt med valbart annonspaket.',
+    fixedPrice: 'Fast pris',
+    auction: 'Auktion',
+    viewListing: 'Visa annons',
+  },
+  en: {
+    sell: 'Sell',
+    all: 'All',
+    sellBusiness: 'Sell as a business',
+    search: 'Search',
+    allEurope: 'All of Europe',
+    sort: 'Sort',
+    recommended: 'Recommended',
+    newest: 'Newest model year',
+    mileage: 'Lowest mileage',
+    lowestPrice: 'Lowest price',
+    listings: 'listings in',
+    saveSearch: 'Save search',
+    saved: 'Search saved',
+    noResults: 'No published listings match right now.',
+    noResultsText: 'Adjust your search, choose another country or be the first to list',
+    createListing: 'Create listing',
+    perListing: 'Listings are published per vehicle with a selectable listing package.',
+    fixedPrice: 'Fixed price',
+    auction: 'Auction',
+    viewListing: 'View listing',
+  },
+  de: {
+    sell: 'Verkaufen:',
+    all: 'Alle',
+    sellBusiness: 'Als Unternehmen verkaufen',
+    search: 'Suchen',
+    allEurope: 'Ganz Europa',
+    sort: 'Sortierung',
+    recommended: 'Empfohlen',
+    newest: 'Neuestes Baujahr',
+    mileage: 'Niedrigster Kilometerstand',
+    lowestPrice: 'Niedrigster Preis',
+    listings: 'Anzeigen in',
+    saveSearch: 'Suche speichern',
+    saved: 'Suche gespeichert',
+    noResults: 'Derzeit passen keine veröffentlichten Anzeigen.',
+    noResultsText: 'Passen Sie die Suche an, wählen Sie ein anderes Land oder inserieren Sie zuerst',
+    createListing: 'Anzeige erstellen',
+    perListing: 'Anzeigen werden pro Fahrzeug mit einem wählbaren Anzeigenpaket veröffentlicht.',
+    fixedPrice: 'Festpreis',
+    auction: 'Auktion',
+    viewListing: 'Anzeige ansehen',
+  },
+} as const
+
+function localizeCategory(category: CategoryConfig, locale: 'sv' | 'en' | 'de') {
+  if (locale === 'sv') return category
+  const labels: Record<string, { en: [string, string]; de: [string, string] }> = {
+    cars: { en: ['Cars', 'a car'], de: ['Autos', 'ein Auto'] },
+    vans: { en: ['Vans', 'a van'], de: ['Transporter', 'einen Transporter'] },
+    bikes: { en: ['Motorcycles', 'a motorcycle'], de: ['Motorräder', 'ein Motorrad'] },
+    motorhomes: { en: ['Motorhomes', 'a motorhome'], de: ['Wohnmobile', 'ein Wohnmobil'] },
+    caravans: { en: ['Caravans', 'a caravan'], de: ['Wohnwagen', 'einen Wohnwagen'] },
+    trucks: { en: ['Trucks', 'a truck'], de: ['Lkw', 'einen Lkw'] },
+    farm: { en: ['Farm machinery', 'farm machinery'], de: ['Landmaschinen', 'eine Landmaschine'] },
+    plant: { en: ['Construction machinery', 'construction machinery'], de: ['Baumaschinen', 'eine Baumaschine'] },
+    'electric-bikes': { en: ['Electric bikes', 'an electric bike'], de: ['E-Bikes', 'ein E-Bike'] },
+    'e-scooters': { en: ['E-scooters', 'an e-scooter'], de: ['E-Scooter', 'einen E-Scooter'] },
+  }
+  const translated = labels[category.slug]?.[locale] || [category.label, category.singular]
+  return {
+    ...category,
+    label: translated[0],
+    singular: translated[1],
+    description:
+      locale === 'en'
+        ? `Browse ${translated[0].toLowerCase()} from private and business sellers across Europe.`
+        : `${translated[0]} von privaten und gewerblichen Verkäufern in ganz Europa.`,
+    filters:
+      locale === 'en'
+        ? ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage']
+        : ['Neu', 'Gebraucht', 'Elektro', 'Hybrid', 'Preis', 'Kilometer'],
   }
 }

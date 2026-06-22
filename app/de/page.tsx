@@ -1,28 +1,28 @@
-import BuyerMarketPage from '../components/BuyerMarketPage'
+import BusinessMarketplaceHome from '../components/BusinessMarketplaceHome'
 import { createPublicMetadata } from '@/lib/public-seo'
 
 export const metadata = createPublicMetadata({
-  title: 'B2B Fahrzeugmarkt für Autohändler | Autorell',
+  title: 'Europas Marktplatz für Fahrzeuge | Autorell',
   description:
-    'Moderne Fahrzeuge über digitale B2B-Auktionen einkaufen. Autorell koordiniert Prüfung, Zahlung, Dokumente, Abholung und europaweiten Export.',
+    'Fahrzeuge und Maschinen in ganz Europa kaufen und verkaufen — für Privatpersonen und Unternehmen.',
   path: '/',
   locale: 'de',
   keywords: [
-    'B2B Fahrzeugmarkt',
-    'Fahrzeugbörse für Händler',
-    'Autoauktion Händler',
-    'Fahrzeugeinkauf Europa',
-    'Gebrauchtwagen Großhandel',
-    'digitale Fahrzeugauktion',
-    'Autohändler Plattform',
-    'Fahrzeugimport Schweden',
-    'Gebrauchtwagen Import Händler',
-    'Fahrzeugprüfung vor Export',
-    'Elektroautos für Händler',
-    'junge Gebrauchtwagen B2B',
+    'Fahrzeugmarktplatz Europa',
+    'Autos kaufen Europa',
+    'Fahrzeuge verkaufen Europa',
+    'Marktplatz für Privatpersonen',
+    'Fahrzeugmarkt für Unternehmen',
+    'Transporter',
+    'Motorräder',
+    'Wohnmobile',
+    'Landmaschinen',
+    'Baumaschinen',
+    'E-Bikes',
+    'E-Scooter',
   ],
 })
 
 export default function GermanVehiclePage() {
-  return <BuyerMarketPage locale="de" />
+  return <BusinessMarketplaceHome locale="de" />
 }

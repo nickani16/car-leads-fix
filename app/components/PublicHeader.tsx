@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
   BadgeCheck,
@@ -178,6 +179,7 @@ function MarketFlag({
 export default function PublicHeader({
   locale = 'sv',
 }: PublicHeaderProps) {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -737,7 +739,7 @@ export default function PublicHeader({
   const vehicleCategories =
     activeLocale === 'sv'
       ? [
-          ['Bilar', marketRoutes.vehicles],
+          ['Bilar', '/marketplace/cars'],
           ['Transportbilar', '/marketplace/vans'],
           ['Motorcyklar', '/marketplace/bikes'],
           ['Husbilar', '/marketplace/motorhomes'],
@@ -748,18 +750,31 @@ export default function PublicHeader({
           ['Elcyklar', '/marketplace/electric-bikes'],
           ['Elsparkcyklar', '/marketplace/e-scooters'],
         ]
-      : [
-          ['Cars', marketRoutes.vehicles],
-          ['Vans', '/marketplace/vans'],
-          ['Bikes', '/marketplace/bikes'],
-          ['Motorhomes', '/marketplace/motorhomes'],
-          ['Caravans', '/marketplace/caravans'],
-          ['Trucks', '/marketplace/trucks'],
-          ['Farm', '/marketplace/farm'],
-          ['Plant', '/marketplace/plant'],
-          ['Electric bikes', '/marketplace/electric-bikes'],
-          ['E-scooters', '/marketplace/e-scooters'],
-        ]
+      : activeLocale === 'de'
+        ? [
+            ['Autos', '/marketplace/cars'],
+            ['Transporter', '/marketplace/vans'],
+            ['Motorräder', '/marketplace/bikes'],
+            ['Wohnmobile', '/marketplace/motorhomes'],
+            ['Wohnwagen', '/marketplace/caravans'],
+            ['Lkw', '/marketplace/trucks'],
+            ['Landwirtschaft', '/marketplace/farm'],
+            ['Baumaschinen', '/marketplace/plant'],
+            ['E-Bikes', '/marketplace/electric-bikes'],
+            ['E-Scooter', '/marketplace/e-scooters'],
+          ]
+        : [
+            ['Cars', '/marketplace/cars'],
+            ['Vans', '/marketplace/vans'],
+            ['Motorcycles', '/marketplace/bikes'],
+            ['Motorhomes', '/marketplace/motorhomes'],
+            ['Caravans', '/marketplace/caravans'],
+            ['Trucks', '/marketplace/trucks'],
+            ['Farm', '/marketplace/farm'],
+            ['Construction', '/marketplace/plant'],
+            ['Electric bikes', '/marketplace/electric-bikes'],
+            ['E-scooters', '/marketplace/e-scooters'],
+          ]
   content = {
     ...content,
     links: content.links.map(([href, label]) => [
@@ -794,7 +809,7 @@ export default function PublicHeader({
       cta: 'Ansök om företagskonto',
       ctaHref: marketRoutes.dealerAccess,
       links: [
-        ['/find-cars', 'Köp'],
+        ['/marketplace/cars', 'Köp'],
         ['/salj-fordon', 'Sälj fordon'],
         ['/dealer', 'Företagskonto'],
         ['/om-oss', 'Om Autorell'],
@@ -808,7 +823,7 @@ export default function PublicHeader({
       title: 'Utforska professionellt utbud.',
       text: 'Fordon och maskiner listade av verifierade företag.',
       cta: 'Se Cars',
-      ctaHref: '/find-cars',
+      ctaHref: '/marketplace/cars',
     }
     processMenu = {
       ...processMenu,
@@ -825,6 +840,23 @@ export default function PublicHeader({
       text: 'Ett professionellt arbetsflöde för listningar, köpare och försäljning.',
       cta: 'Logga in',
       ctaHref: '/login',
+    }
+  } else if (activeLocale === 'en' || activeLocale === 'de') {
+    const isGerman = activeLocale === 'de'
+    content = {
+      ...content,
+      dealerLabel: isGerman ? 'Über Autorell' : 'About Autorell',
+      partner: isGerman ? 'Als Unternehmen verkaufen' : 'Sell as a business',
+      cta: isGerman ? 'Unternehmenskonto' : 'Business account',
+      ctaHref: marketRoutes.dealerAccess,
+      links: [
+        ['/marketplace/cars', isGerman ? 'Kaufen' : 'Buy'],
+        ['/salj-fordon', isGerman ? 'Fahrzeug verkaufen' : 'Sell vehicle'],
+        ['/dealer', isGerman ? 'Unternehmenskonto' : 'Business account'],
+        [isGerman ? '/ueber-autorell' : '/about', isGerman ? 'Über Autorell' : 'About Autorell'],
+        ['/faq', isGerman ? 'Hilfe' : 'Help'],
+        [isGerman ? '/kontakt' : '/contact', isGerman ? 'Kontakt' : 'Contact'],
+      ],
     }
   }
 
@@ -960,19 +992,23 @@ export default function PublicHeader({
           <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
             <div className="mx-auto flex h-[30px] max-w-[1440px] items-center justify-between gap-5 px-10 xl:px-14">
               <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
-                {vehicleCategories.map(([label, href], index) => (
+                {vehicleCategories.map(([label, href], index) => {
+                  const isActive = pathname === href
+                  return (
                   <Link
                     key={`${label}-${index}`}
                     href={href}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
-                      index === 0
+                      isActive
                         ? 'border-[#0866ff] font-semibold text-[#202124]'
                         : 'border-transparent'
                     }`}
                   >
                     {label}
                   </Link>
-                ))}
+                  )
+                })}
               </nav>
               <div className="flex h-full shrink-0 items-center">
                 <Link

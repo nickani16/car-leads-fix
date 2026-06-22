@@ -29,7 +29,7 @@ const footerCopy = {
     statement: 'Fordon, köpare och säljare. Samlade över hela Europa.',
     sellerTitle: 'Marketplace',
     sellerLinks: [
-      ['Bilar', '/hitta-bilar'],
+      ['Bilar', '/marketplace/cars'],
       ['Transportbilar', '/marketplace/vans'],
       ['Motorcyklar', '/marketplace/bikes'],
       ['Lastbilar', '/marketplace/trucks'],
@@ -99,7 +99,7 @@ const footerCopy = {
     statement: 'Selected Swedish supply. Built for professional European dealers.',
     sellerTitle: 'Vehicles & buying',
     sellerLinks: [
-      ['Buy cars', '/find-cars'],
+      ['Buy cars', '/marketplace/cars'],
       ['Sell business vehicles', '/sell-stock'],
       ['How buying works', '/how-it-works'],
       ['Dealer benefits', '/dealer-benefits'],

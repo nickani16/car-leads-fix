@@ -1,4 +1,4 @@
-import BuyerMarketPage from '../components/BuyerMarketPage'
+import BusinessMarketplaceHome from '../components/BusinessMarketplaceHome'
 import { headers } from 'next/headers'
 import {
   getPublicAlternates,
@@ -14,11 +14,11 @@ export async function generateMetadata() {
 
   const title = `${translatePublic(
     locale,
-    'Swedish vehicle sourcing for European dealers',
+    "Europe's marketplace for vehicles",
   )} | Autorell`
   const description = translatePublic(
     locale,
-    'Autorell tests Swedish vehicles anonymously across its European buyer network, purchases selected vehicles itself and resells them to the confirmed professional buyer.',
+    'Buy and sell cars, vans, motorcycles, leisure vehicles and machinery across Europe — for private sellers and businesses.',
   )
   const canonical = `https://www.autorell.com/${locale}`
 
@@ -41,8 +41,5 @@ export async function generateMetadata() {
 }
 
 export default async function EuropeanVehiclePage() {
-  const headerStore = await headers()
-  const requested = headerStore.get('x-autorell-language') || 'en'
-  const locale: PublicLanguage = isPublicLanguage(requested) ? requested : 'en'
-  return <BuyerMarketPage locale={locale} />
+  return <BusinessMarketplaceHome locale="en" />
 }
