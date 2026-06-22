@@ -82,7 +82,7 @@ export default function HomeMarketPulse({
                 </div>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#e8edef]">
                   <span
-                    className="home-demand-bar block h-full rounded-full bg-[#42adeb]"
+                    className="home-demand-bar block h-full rounded-full bg-[#B4D9EF]"
                     style={{ width: `${maximum}%` }}
                   />
                 </div>
@@ -126,7 +126,7 @@ export default function HomeMarketPulse({
             </div>
             <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#e8edef]">
               <span
-                className="home-demand-bar block h-full rounded-full bg-[#42adeb]"
+                className="home-demand-bar block h-full rounded-full bg-[#B4D9EF]"
                 style={{ width: `${maximum}%` }}
               />
             </div>

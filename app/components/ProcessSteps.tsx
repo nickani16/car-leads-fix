@@ -24,7 +24,7 @@ const steps = [
       'Den första kontrollen säkerställer att bilen finns i Sverige, är körbar och saknar allvarliga motor-, växellåds-, läckage- eller krockproblem.',
     highlights: ['Svenskt ursprung', 'Tydlig köpbox'],
     accent: 'bg-[#dceefa]',
-    iconStyle: 'bg-[#42adeb] text-[#20333e]',
+    iconStyle: 'bg-[#B4D9EF] text-[#20333e]',
   },
   {
     number: '02',
@@ -72,7 +72,7 @@ const steps = [
       'Om bilen stämmer fortsätter affären enligt avtalet. Vid en väsentlig avvikelse kan affären pausas, justeras genom en ny överenskommelse eller avbrytas.',
     highlights: ['Villkorad kontroll', 'Dokumenterat underlag'],
     accent: 'bg-[#dceefa]',
-    iconStyle: 'bg-[#42adeb] text-[#20333e]',
+    iconStyle: 'bg-[#B4D9EF] text-[#20333e]',
   },
   {
     number: '06',

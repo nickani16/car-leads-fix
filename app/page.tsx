@@ -140,10 +140,10 @@ export default async function HomePage() {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(249,247,242,.96)_0%,rgba(249,247,242,.9)_42%,rgba(249,247,242,.46)_69%,rgba(238,238,233,.12)_100%)] sm:bg-[linear-gradient(90deg,#faf8f3_0%,rgba(250,248,243,.98)_34%,rgba(250,248,243,.8)_52%,rgba(250,248,243,.18)_78%,transparent_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(66,173,235,.24),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
-        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#42adeb]/24 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_58%,rgba(180,217,239,.28),transparent_36%),linear-gradient(0deg,rgba(31,36,39,.18)_0%,transparent_34%)] sm:bg-[linear-gradient(0deg,rgba(31,36,39,.12)_0%,transparent_42%)]" />
+        <div className="home-hero-orb absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#B4D9EF]/30 blur-3xl" />
         <div className="home-hero-orb absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-white/32 blur-3xl [animation-delay:2.2s]" />
-        <div className="absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#42adeb]/24 sm:hidden" />
+        <div className="absolute -right-32 top-2 h-64 w-64 rounded-full border-[38px] border-[#B4D9EF]/28 sm:hidden" />
 
         <div className="relative mx-auto grid min-h-[820px] w-full max-w-[1440px] items-start gap-9 px-5 pb-12 pt-14 sm:min-h-[780px] sm:px-8 sm:py-20 lg:min-h-[760px] lg:grid-cols-[1.1fr_.62fr] lg:items-center lg:gap-16 lg:px-12 lg:py-24 xl:px-16">
           <div className="relative z-10 min-w-0 max-w-[760px] lg:translate-y-20 xl:translate-y-16">
@@ -167,7 +167,7 @@ export default async function HomePage() {
                 className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] pl-7 pr-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111]"
               >
                 Sälj din bil
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#42adeb] text-[#242424] transition group-hover:translate-x-0.5">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#B4D9EF] text-[#242424] transition group-hover:translate-x-0.5">
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
@@ -256,7 +256,7 @@ export default async function HomePage() {
             <div className="absolute -right-20 -top-28 h-64 w-64 rounded-full border-[42px] border-white/[.055]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#42adeb]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
                 Efter accepterat erbjudande
               </p>
               <p className="mt-2 text-2xl leading-tight tracking-[-0.035em] sm:text-3xl">
@@ -277,7 +277,7 @@ export default async function HomePage() {
                     key={number}
                     className="rounded-[14px] border border-white/10 bg-white/[.055] px-4 py-4 backdrop-blur-sm"
                   >
-                    <span className="text-[10px] text-[#42adeb]">{number}</span>
+                    <span className="text-[10px] text-[#B4D9EF]">{number}</span>
                     <strong className="mt-3 block text-sm font-medium text-white/88">
                       {label}
                     </strong>
@@ -293,7 +293,7 @@ export default async function HomePage() {
         id="varfor-autorell"
         className="relative overflow-hidden bg-[#f5f1e8] pb-16 pt-16 sm:pb-20 sm:pt-24"
       >
-        <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#42adeb]/22 blur-3xl" />
+        <div className="absolute -left-32 top-1/3 h-80 w-80 rounded-full bg-[#B4D9EF]/30 blur-3xl" />
         <div className="absolute -right-24 top-10 h-72 w-72 rounded-full border-[52px] border-white/45" />
 
         <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
@@ -321,12 +321,12 @@ export default async function HomePage() {
 
             <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white/70 shadow-[0_30px_90px_rgba(32,33,36,.1)] backdrop-blur-sm sm:rounded-[30px]">
               <div className="relative overflow-hidden bg-[#23282b] px-5 py-7 text-white sm:px-8 sm:py-9">
-                <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#42adeb]/15 blur-2xl" />
+                <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#B4D9EF]/15 blur-2xl" />
                 <CarFront className="absolute -bottom-16 right-3 h-56 w-56 text-white/[.035] sm:right-12 sm:h-64 sm:w-64" />
 
                 <div className="relative flex items-start justify-between gap-5">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#42adeb]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
                       Aktuell köpbox
                     </p>
                     <h3 className="mt-2 text-2xl tracking-[-0.035em] sm:text-[32px]">
@@ -350,7 +350,7 @@ export default async function HomePage() {
                       key={label}
                       className="rounded-[15px] border border-white/10 bg-white/[.055] p-3.5 sm:min-h-[112px] sm:p-4"
                     >
-                      <Icon className="h-5 w-5 text-[#42adeb]" />
+                      <Icon className="h-5 w-5 text-[#B4D9EF]" />
                       <span className="mt-5 block text-sm leading-5 text-white/85">
                         {label}
                       </span>
@@ -454,14 +454,14 @@ export default async function HomePage() {
               </div>
 
               <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-y border-[#dfe6e5] bg-[#22272a] p-7 text-white lg:min-h-full lg:border-x lg:border-y-0">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(66,173,235,.18),transparent_47%)]" />
-                <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full border-[32px] border-[#42adeb]/10" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(180,217,239,.18),transparent_47%)]" />
+                <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full border-[32px] border-[#B4D9EF]/10" />
                 <div className="relative w-full max-w-[245px]">
                   <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/10 bg-white/[.07] shadow-[0_20px_55px_rgba(0,0,0,.2)]">
-                    <Handshake className="h-8 w-8 text-[#42adeb]" />
+                    <Handshake className="h-8 w-8 text-[#B4D9EF]" />
                   </div>
                   <div className="mt-7 rounded-[18px] border border-white/10 bg-white/[.06] p-5 text-center backdrop-blur-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#42adeb]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
                       Autorell matchning
                     </p>
                     <p className="mt-3 text-xl tracking-[-0.03em]">
@@ -473,7 +473,7 @@ export default async function HomePage() {
                         <span
                           key={height}
                           className={`w-4 rounded-t-sm ${
-                            index === 5 ? 'bg-[#42adeb]' : 'bg-white/18'
+                            index === 5 ? 'bg-[#B4D9EF]' : 'bg-white/18'
                           }`}
                           style={{ height }}
                         />
@@ -595,7 +595,7 @@ export default async function HomePage() {
       <FaqTestimonials />
 
       <section className="bg-white px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-        <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#42ADEB] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
+        <div className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[20px] bg-[#B4D9EF] px-6 py-12 text-center sm:rounded-[26px] sm:px-12 sm:py-16 lg:px-16">
           <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[55px] border-white/25" />
           <div className="absolute -bottom-36 -left-20 h-72 w-72 rounded-full bg-white/20 blur-2xl" />
           <div className="relative flex flex-col items-center">
