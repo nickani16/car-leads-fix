@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import MarketplaceCategoryBrowser, {
   type MarketplaceListing,
 } from '@/app/components/MarketplaceCategoryBrowser'
+import MarketplaceChannelNav from '@/app/components/MarketplaceChannelNav'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -134,6 +135,8 @@ export default async function MarketplaceCategoryPage({
       const images = Array.isArray(lead.images) ? lead.images : []
       return {
         id: lead.id,
+        make: lead.make || '',
+        model: lead.model || '',
         title: `${lead.make || config.label} ${lead.model || ''}`.trim(),
         year: lead.model_year,
         mileageKm: Number.isFinite(mileage) ? mileage * 10 : null,
@@ -146,6 +149,7 @@ export default async function MarketplaceCategoryPage({
             : 'Kontakta säljaren',
         priceValue: Number.isFinite(price) && price > 0 ? price : null,
         imageAvailable: typeof images[0] === 'string',
+        imageUrl: typeof images[0] === 'string' ? images[0] : null,
         sellerName: lead.seller_public_name || 'Autorell',
         sellerIsTrader: Boolean(lead.seller_is_trader),
         messagingEnabled: Boolean(lead.seller_user_id),
@@ -153,12 +157,40 @@ export default async function MarketplaceCategoryPage({
     })
 
   return (
-    <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader locale={locale} />
+    <main className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-[#f7f8fb] text-[#101828]">
+      <PublicHeader
+        locale={locale}
+        marketplaceChannel={{
+          slug: config.slug,
+          label: localizedChannelLabel(config.slug, config.label, locale),
+        }}
+      />
+      <MarketplaceChannelNav
+        slug={config.slug}
+        label={localizedChannelLabel(config.slug, config.label, locale)}
+        locale={locale}
+      />
       <MarketplaceCategoryBrowser category={config} listings={listings} locale={locale} />
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function localizedChannelLabel(slug: string, fallback: string, locale: 'sv' | 'en' | 'de') {
+  if (locale === 'sv') return fallback
+  const labels: Record<string, { en: string; de: string }> = {
+    cars: { en: 'Cars', de: 'Autos' },
+    vans: { en: 'Vans', de: 'Transporter' },
+    bikes: { en: 'Motorcycles', de: 'Motorräder' },
+    motorhomes: { en: 'Motorhomes', de: 'Wohnmobile' },
+    caravans: { en: 'Caravans', de: 'Wohnwagen' },
+    trucks: { en: 'Trucks', de: 'Lkw' },
+    farm: { en: 'Farm machinery', de: 'Landmaschinen' },
+    plant: { en: 'Construction machinery', de: 'Baumaschinen' },
+    'electric-bikes': { en: 'Electric bikes', de: 'E-Bikes' },
+    'e-scooters': { en: 'E-scooters', de: 'E-Scooter' },
+  }
+  return labels[slug]?.[locale] || fallback
 }
 
 function normalizeCountry(value: string | null) {

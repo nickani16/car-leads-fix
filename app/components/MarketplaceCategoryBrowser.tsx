@@ -13,9 +13,12 @@ import {
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import MessageSellerButton from './MessageSellerButton'
+import SavedListingButton from './SavedListingButton'
 
 export type MarketplaceListing = {
   id: string
+  make: string
+  model: string
   title: string
   year: string | null
   mileageKm: number | null
@@ -25,6 +28,7 @@ export type MarketplaceListing = {
   priceLabel: string
   priceValue: number | null
   imageAvailable: boolean
+  imageUrl: string | null
   sellerName: string
   sellerIsTrader: boolean
   messagingEnabled: boolean
@@ -49,8 +53,9 @@ export default function MarketplaceCategoryBrowser({
 }) {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [modelQuery, setModelQuery] = useState(searchParams.get('model') || '')
   const [country, setCountry] = useState((searchParams.get('country') || '').toUpperCase())
-  const [activeFilter, setActiveFilter] = useState('')
+  const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
   const [savedSearchKey, setSavedSearchKey] = useState('')
   const displayLocale = locale === 'sv' ? 'sv' : locale === 'de' ? 'de' : 'en'
@@ -65,10 +70,12 @@ export default function MarketplaceCategoryBrowser({
   )
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
+    const normalizedModel = modelQuery.trim().toLowerCase()
     const filtered = listings.filter((listing) => {
       if (country && listing.country.toUpperCase() !== country) return false
       const searchable = `${listing.title} ${listing.fuelType || ''}`.toLowerCase()
       if (normalizedQuery && !searchable.includes(normalizedQuery)) return false
+      if (normalizedModel && !listing.model.toLowerCase().includes(normalizedModel)) return false
       if (!activeFilter) return true
 
       const normalizedFilter = activeFilter.toLowerCase()
@@ -91,7 +98,7 @@ export default function MarketplaceCategoryBrowser({
       if (sort === 'price') return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
       return a.title.localeCompare(b.title, displayLocale)
     })
-  }, [activeFilter, country, displayLocale, listings, query, sort])
+  }, [activeFilter, country, displayLocale, listings, modelQuery, query, sort])
 
   const currentSearchKey = `autorell-search-${category.slug}-${query}-${country}-${activeFilter}`
   const saved = savedSearchKey === currentSearchKey
@@ -172,22 +179,16 @@ export default function MarketplaceCategoryBrowser({
             ))}
           </div>
 
-          <div className="mt-4 grid gap-3 rounded-[22px] border border-[#e4e7ec] bg-[#f8faff] p-3 md:grid-cols-[1fr_260px_auto]">
-            <label className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={`${copy.search} ${localizedCategory.label.toLowerCase()}`}
-                className="marketplace-search-control h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-12 pr-4 text-sm outline-none focus:border-[#0866ff]"
-              />
-            </label>
+          <div
+            id="marketplace-search"
+            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-0 overflow-hidden rounded-[20px] border border-[#dfe4ec] bg-white p-3 shadow-[0_18px_45px_rgba(16,24,40,.1)] md:grid-cols-[220px_1fr_1fr_auto]"
+          >
             <label className="relative">
               <MapPin className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
               <select
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                className="marketplace-search-control h-12 w-full appearance-none rounded-[14px] border border-[#d7deed] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:border-[#0866ff]"
+                className="marketplace-search-control h-14 w-full min-w-0 appearance-none border-b border-[#e4e7ec] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:bg-[#f8faff] md:border-b-0 md:border-r"
               >
                 <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
@@ -199,39 +200,65 @@ export default function MarketplaceCategoryBrowser({
               <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
             <label className="relative">
-              <select
-                value={sort}
-                onChange={(event) => setSort(event.target.value)}
-                className="marketplace-search-control h-12 w-full appearance-none rounded-[14px] border border-[#b8c9ff] bg-white px-5 pr-10 text-sm font-bold text-[#0866ff] outline-none"
-                aria-label={copy.sort}
-              >
-                <option value="recommended">{copy.recommended}</option>
-                <option value="newest">{copy.newest}</option>
-                <option value="mileage">{copy.mileage}</option>
-                <option value="price">{copy.lowestPrice}</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={copy.make}
+                className="marketplace-search-control h-14 w-full min-w-0 border-b border-[#e4e7ec] bg-white pl-12 pr-4 text-sm outline-none focus:bg-[#f8faff] md:border-b-0 md:border-r"
+              />
             </label>
+            <label>
+              <input
+                value={modelQuery}
+                onChange={(event) => setModelQuery(event.target.value)}
+                placeholder={secondarySearchLabel(category.slug, locale)}
+                className="marketplace-search-control h-14 w-full min-w-0 border-b border-[#e4e7ec] bg-white px-4 text-sm outline-none focus:bg-[#f8faff] md:border-b-0"
+              />
+            </label>
+            <a
+              href="#marketplace-results"
+              className="m-1 inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-4 text-center text-sm font-bold text-white"
+            >
+              <Search className="h-5 w-5" />
+              {copy.search} {localizedCategory.label.toLowerCase()}
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f7f8fb] py-10 sm:py-14">
+      <section id="marketplace-results" className="scroll-mt-24 bg-[#f7f8fb] py-10 sm:py-14">
         <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
           <div className="mb-6 flex items-center justify-between gap-5">
             <p className="text-sm text-[#475467]">
               <strong className="text-[#101828]">{visibleListings.length}</strong>{' '}
               {copy.listings} {localizedCategory.label.toLowerCase()}
             </p>
-            <button
-              type="button"
-              onClick={toggleSavedSearch}
-              aria-pressed={saved}
-              className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
-            >
-              {saved ? copy.saved : copy.saveSearch}
-              <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
-            </button>
+            <div className="flex items-center gap-4">
+              <label className="relative hidden sm:block">
+                <select
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value)}
+                  className="h-10 appearance-none rounded-[13px] border border-[#d0d5dd] bg-white pl-4 pr-9 text-xs font-semibold outline-none"
+                  aria-label={copy.sort}
+                >
+                  <option value="recommended">{copy.recommended}</option>
+                  <option value="newest">{copy.newest}</option>
+                  <option value="mileage">{copy.mileage}</option>
+                  <option value="price">{copy.lowestPrice}</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+              </label>
+              <button
+                type="button"
+                onClick={toggleSavedSearch}
+                aria-pressed={saved}
+                className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
+              >
+                {saved ? copy.saved : copy.saveSearch}
+                <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {visibleListings.length ? (
@@ -248,13 +275,9 @@ export default function MarketplaceCategoryBrowser({
                         <ImageIcon className="h-7 w-7" />
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      aria-label="Spara annons"
-                      className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-[14px] bg-white text-[#0866ff] shadow-md"
-                    >
-                      <Heart className="h-5 w-5" />
-                    </button>
+                    <div className="absolute right-4 top-4">
+                      <SavedListingButton listingId={listing.id} />
+                    </div>
                     <span className="absolute bottom-4 left-4 rounded-[10px] bg-white/92 px-3 py-1.5 text-[11px] font-bold text-[#344054] shadow-sm">
                       {listing.saleFormat === 'marketplace' ? copy.fixedPrice : copy.auction}
                     </span>
@@ -328,6 +351,7 @@ const marketplaceCopy = {
     all: 'Alla',
     sellBusiness: 'Sälj som företag',
     search: 'Sök',
+    make: 'Märke eller fritext',
     allEurope: 'Hela Europa',
     sort: 'Sortering',
     recommended: 'Rekommenderat',
@@ -352,6 +376,7 @@ const marketplaceCopy = {
     all: 'All',
     sellBusiness: 'Sell as a business',
     search: 'Search',
+    make: 'Make or keyword',
     allEurope: 'All of Europe',
     sort: 'Sort',
     recommended: 'Recommended',
@@ -376,6 +401,7 @@ const marketplaceCopy = {
     all: 'Alle',
     sellBusiness: 'Als Unternehmen verkaufen',
     search: 'Suchen',
+    make: 'Marke oder Suchbegriff',
     allEurope: 'Ganz Europa',
     sort: 'Sortierung',
     recommended: 'Empfohlen',
@@ -396,6 +422,24 @@ const marketplaceCopy = {
     businessSeller: 'Gewerblicher Verkäufer',
   },
 } as const
+
+function secondarySearchLabel(slug: string, locale: 'sv' | 'en' | 'de') {
+  if (['motorhomes', 'caravans'].includes(slug)) {
+    return locale === 'sv'
+      ? 'Modell eller sovplatser'
+      : locale === 'de'
+        ? 'Modell oder Schlafplätze'
+        : 'Model or berths'
+  }
+  if (slug === 'farm' || slug === 'plant') {
+    return locale === 'sv'
+      ? 'Modell eller maskintyp'
+      : locale === 'de'
+        ? 'Modell oder Maschinentyp'
+        : 'Model or machine type'
+  }
+  return 'Modell'
+}
 
 function localizeCategory(category: CategoryConfig, locale: 'sv' | 'en' | 'de') {
   if (locale === 'sv') return category

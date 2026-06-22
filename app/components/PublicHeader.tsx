@@ -11,10 +11,12 @@ import {
   CircleHelp,
   Handshake,
   Headphones,
+  Heart,
   LogIn,
   Menu,
   Route,
   ScanSearch,
+  Search,
   ShieldCheck,
   Store,
   UserRound,
@@ -43,6 +45,10 @@ import {
 type PublicHeaderProps = {
   transparentAtTop?: boolean
   locale?: PublicLocale
+  marketplaceChannel?: {
+    label: string
+    slug: string
+  }
 }
 
 type MarketLocale = NonNullable<PublicHeaderProps['locale']>
@@ -178,6 +184,7 @@ function MarketFlag({
 
 export default function PublicHeader({
   locale = 'sv',
+  marketplaceChannel,
 }: PublicHeaderProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
@@ -1119,18 +1126,78 @@ export default function PublicHeader({
           </div>
 
           <div className="relative mx-auto flex h-[64px] max-w-[1440px] items-center px-5 sm:px-8 min-[1120px]:h-[50px] lg:px-10 xl:px-14">
+            <div className="absolute inset-x-0 top-0 h-[64px] min-[1120px]:hidden">
+              <div className="absolute inset-y-0 left-2 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setOpen((value) => !value)}
+                  aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
+                  aria-expanded={open}
+                  className="flex w-11 shrink-0 flex-col items-center justify-center text-[#202124]"
+                >
+                  {open ? (
+                    <X className="h-[22px] w-[22px]" strokeWidth={1.8} />
+                  ) : (
+                    <Menu className="h-[23px] w-[23px]" strokeWidth={1.8} />
+                  )}
+                  <span className="mt-0.5 text-[10px] leading-none">
+                    {activeLocale === 'sv' ? 'Meny' : activeLocale === 'de' ? 'Menü' : 'Menu'}
+                  </span>
+                </button>
+                <Link
+                  href={`/salj-fordon${marketplaceChannel ? `?category=${marketplaceChannel.slug}` : ''}`}
+                  className="flex w-11 shrink-0 flex-col items-center justify-center text-[#202124]"
+                >
+                  <Store className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">
+                    {activeLocale === 'sv' ? 'Sälj' : activeLocale === 'de' ? 'Verkaufen' : 'Sell'}
+                  </span>
+                </Link>
+              </div>
+
+              <Link
+                href={homeHref}
+                aria-label={marketCopy.home}
+                className="absolute left-1/2 top-1/2 flex max-w-[120px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center overflow-hidden"
+                onClick={() => setOpen(false)}
+              >
+                <BrandLogo compact />
+                {marketplaceChannel ? (
+                  <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#344054]">
+                    {marketplaceChannel.label}
+                  </span>
+                ) : null}
+              </Link>
+
+              <div className="absolute inset-y-0 right-2 flex items-center">
+                <Link
+                  href="/sparade"
+                  className="flex w-11 shrink-0 flex-col items-center justify-center text-[#202124]"
+                >
+                  <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">
+                    {activeLocale === 'sv' ? 'Sparade' : activeLocale === 'de' ? 'Gespeichert' : 'Saved'}
+                  </span>
+                </Link>
+                <Link
+                  href={marketplaceChannel ? `/marketplace/${marketplaceChannel.slug}#marketplace-search` : '/marketplace/cars#marketplace-search'}
+                  className="flex w-11 shrink-0 flex-col items-center justify-center text-[#202124]"
+                >
+                  <Search className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">
+                    {activeLocale === 'sv' ? 'Sök' : activeLocale === 'de' ? 'Suche' : 'Search'}
+                  </span>
+                </Link>
+              </div>
+            </div>
+
             <a
               href={homeHref}
               aria-label={marketCopy.home}
-              className="inline-flex shrink-0 items-center"
+              className="hidden shrink-0 items-center min-[1120px]:inline-flex"
               onClick={() => setOpen(false)}
             >
-              <span className="min-[1120px]:hidden">
-                <BrandLogo iconOnly />
-              </span>
-              <span className="hidden min-[1120px]:inline-flex">
-                <BrandLogo />
-              </span>
+              <BrandLogo />
             </a>
 
             <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
@@ -1195,33 +1262,6 @@ export default function PublicHeader({
               </Link>
             </div>
 
-            <div className="absolute right-5 flex items-center gap-2 sm:right-8 min-[1120px]:hidden">
-              <Link
-                href="/login"
-                aria-label={content.login}
-                title={content.login}
-                className="grid h-10 w-10 place-items-center text-[#242424] transition hover:opacity-60"
-              >
-                <UserRound className="h-[23px] w-[23px]" strokeWidth={1.8} />
-              </Link>
-              <button
-                type="button"
-                onClick={() => setOpen((value) => !value)}
-                aria-label={open ? marketCopy.closeMenu : marketCopy.openMenu}
-                aria-expanded={open}
-                className={`grid h-10 w-10 place-items-center transition ${
-                  open
-                    ? 'text-[#242424]'
-                    : 'text-[#242424]'
-                }`}
-              >
-                {open ? (
-                  <X className="h-[23px] w-[23px]" strokeWidth={1.8} />
-                ) : (
-                  <Menu className="h-[24px] w-[24px]" strokeWidth={1.8} />
-                )}
-              </button>
-            </div>
           </div>
         </header>
 
