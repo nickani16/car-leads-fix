@@ -14,10 +14,10 @@ export default function BrandLogo({
   return (
     <span className="inline-flex items-center" aria-label="Autorell">
       <Image
-        src="/autorell-wordmark-blue.png"
+        src="/autorell-wordmark-navy.png"
         alt=""
-        width={960}
-        height={204}
+        width={1642}
+        height={300}
         priority
         className={`h-auto object-contain ${
           iconOnly
