@@ -47,6 +47,7 @@ const footerCopy = {
       ['Husvagnar', '/marketplace/caravans'],
       ['Lantbruk & entreprenad', '/marketplace/farm'],
       ['Elcyklar', '/marketplace/electric-bikes'],
+      ['Elsparkcyklar', '/marketplace/e-scooters'],
     ] as [string, string][],
     contact: 'Kontakt',
     support: 'Support för verifierade företag och professionella köpare.',
@@ -169,7 +170,7 @@ export default function PublicFooter({
   return (
     <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
       <div
-        className="pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] rounded-full border-[24px] border-[#0866ff]/25 sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px] sm:border-[30px]"
+        className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] bg-[#dce9ff] sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px]"
         aria-hidden="true"
       />
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">

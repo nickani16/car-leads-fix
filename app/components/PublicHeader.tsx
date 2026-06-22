@@ -746,6 +746,7 @@ export default function PublicHeader({
           ['Lantbruk', '/marketplace/farm'],
           ['Entreprenad', '/marketplace/plant'],
           ['Elcyklar', '/marketplace/electric-bikes'],
+          ['Elsparkcyklar', '/marketplace/e-scooters'],
         ]
       : [
           ['Cars', marketRoutes.vehicles],
@@ -757,6 +758,7 @@ export default function PublicHeader({
           ['Farm', '/marketplace/farm'],
           ['Plant', '/marketplace/plant'],
           ['Electric bikes', '/marketplace/electric-bikes'],
+          ['E-scooters', '/marketplace/e-scooters'],
         ]
   content = {
     ...content,
@@ -793,7 +795,7 @@ export default function PublicHeader({
       ctaHref: marketRoutes.dealerAccess,
       links: [
         ['/find-cars', 'Köp'],
-        ['/salj-bil', 'Sälj fordon'],
+        ['/salj-fordon', 'Sälj fordon'],
         ['/dealer', 'Företagskonto'],
         ['/om-oss', 'Om Autorell'],
         ['/vanliga-fragor', 'Hjälp'],
@@ -814,7 +816,7 @@ export default function PublicHeader({
       title: 'Sälj ett fordon till en större europeisk marknad.',
       text: 'Starta en enskild försäljning eller välj en företagslösning för lager och återkommande volymer.',
       cta: 'Börja sälja',
-      ctaHref: '/salj-bil',
+      ctaHref: '/salj-fordon',
     }
     companyMenu = {
       ...companyMenu,

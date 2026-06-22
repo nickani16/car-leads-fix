@@ -384,13 +384,6 @@ export function proxy(request: NextRequest) {
   }
 
   if (methodCanRedirect && (currentMarket === 'sv' || currentMarket === 'de')) {
-    if (currentMarket === 'sv' && pathname.startsWith('/salj-bil')) {
-      const businessUrl = request.nextUrl.clone()
-      businessUrl.pathname = '/bli-bilhandlare'
-      businessUrl.search = ''
-      return NextResponse.redirect(businessUrl, 308)
-    }
-
     const legacyTarget = LEGACY_CORE_ROUTES[currentMarket].get(pathname)
     if (legacyTarget) {
       const redirectUrl = request.nextUrl.clone()

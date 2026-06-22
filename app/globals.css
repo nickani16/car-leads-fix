@@ -360,6 +360,10 @@ input, textarea, select {
   box-shadow: none !important;
 }
 
+.market-blob {
+  border-radius: 38% 62% 54% 46% / 42% 35% 65% 58%;
+}
+
 /* Autofill fix */
 input:-webkit-autofill,
 textarea:-webkit-autofill,

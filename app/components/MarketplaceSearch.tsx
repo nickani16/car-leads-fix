@@ -14,6 +14,7 @@ const categoryRoutes: Record<string, string> = {
   farm: '/marketplace/farm',
   plant: '/marketplace/plant',
   'electric-bikes': '/marketplace/electric-bikes',
+  'e-scooters': '/marketplace/e-scooters',
 }
 
 const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo']
@@ -51,6 +52,7 @@ export default function MarketplaceSearch() {
             <option value="farm">Lantbruk</option>
             <option value="plant">Entreprenad</option>
             <option value="electric-bikes">Elcyklar</option>
+            <option value="e-scooters">Elsparkcyklar</option>
           </select>
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>

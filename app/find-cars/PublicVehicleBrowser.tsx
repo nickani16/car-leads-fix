@@ -589,7 +589,7 @@ export default function PublicVehicleBrowser({
               <button
                 type="button"
                 onClick={resetFilters}
-                className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#242424] px-6 text-sm font-medium text-white"
+                className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-semibold text-white"
               >
                 {t.reset}
                 <X className="h-4 w-4" />
@@ -673,7 +673,7 @@ export default function PublicVehicleBrowser({
                           ? '/haendlerzugang'
                           : '/dealer-apply'
                     }
-                    className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-[#242424] px-6 text-sm font-semibold text-white"
+                    className="mt-7 flex min-h-13 items-center justify-between rounded-[15px] bg-[#0866ff] px-6 text-sm font-semibold text-white"
                   >
                     {t.signup}
                     <ArrowRight className="h-4 w-4" />

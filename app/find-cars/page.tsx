@@ -205,8 +205,8 @@ export default async function FindCarsPage({
       <PublicHeader locale={locale} />
 
       <section className="relative overflow-hidden border-b border-[#dfe6e8] bg-[linear-gradient(145deg,#fbf8f1_0%,#edf6f9_58%,#e3f0f5_100%)]">
-        <div className="absolute -left-36 -top-44 h-[430px] w-[430px] rounded-full border-[62px] border-white/55" />
-        <div className="absolute -bottom-48 right-[-90px] h-[420px] w-[420px] rounded-full border-[58px] border-[#0866ff]/20" />
+        <div className="market-blob absolute -left-36 -top-44 h-[430px] w-[430px] bg-white/55" />
+        <div className="market-blob absolute -bottom-48 right-[-90px] h-[420px] w-[420px] bg-[#dce9ff]/65" />
         <div className="relative mx-auto grid min-w-0 max-w-[1320px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pb-24 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-12 lg:pb-28 lg:pt-20">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-[#c6dbe4] bg-white/75 px-4 py-2 text-xs font-medium text-[#496878] shadow-sm backdrop-blur">
@@ -222,7 +222,7 @@ export default async function FindCarsPage({
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={dealerAccessHref}
-                className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#242424] px-7 text-sm font-medium text-white"
+                className="inline-flex min-h-14 items-center justify-center gap-3 rounded-[16px] bg-[#0866ff] px-7 text-sm font-semibold text-white"
               >
                 {t.apply}
                 <ArrowRight className="h-4 w-4" />

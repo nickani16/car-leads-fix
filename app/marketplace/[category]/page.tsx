@@ -1,18 +1,84 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowRight, BadgeCheck, Store } from 'lucide-react'
+import MarketplaceCategoryBrowser, {
+  type MarketplaceListing,
+} from '@/app/components/MarketplaceCategoryBrowser'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const categories = {
-  vans: 'Vans',
-  bikes: 'Bikes',
-  motorhomes: 'Motorhomes',
-  caravans: 'Caravans',
-  trucks: 'Trucks',
-  farm: 'Farm',
-  plant: 'Plant',
-  'electric-bikes': 'Electric bikes',
+  vans: {
+    slug: 'vans',
+    label: 'Transportbilar',
+    singular: 'en transportbil',
+    description: 'Transportbilar och lätta nyttofordon från säljare i hela Europa.',
+    filters: ['Nya', 'Begagnade', 'Skåpbil', 'Pickup', 'El', 'Pris', 'Miltal'],
+    matches: ['van', 'skåpbil', 'transport'],
+  },
+  bikes: {
+    slug: 'bikes',
+    label: 'Motorcyklar',
+    singular: 'en motorcykel',
+    description: 'Motorcyklar för pendling, touring och fritid på en europeisk marknad.',
+    filters: ['Nya', 'Begagnade', 'Touring', 'Sport', 'Cruiser', 'Pris', 'Effekt'],
+    matches: ['motorcycle', 'motorcykel', 'bike'],
+  },
+  motorhomes: {
+    slug: 'motorhomes',
+    label: 'Husbilar',
+    singular: 'en husbil',
+    description: 'Husbilar från privatpersoner och företag i flera europeiska länder.',
+    filters: ['Nya', 'Begagnade', 'Helintegrerad', 'Halvintegrerad', 'Pris', 'Sovplatser'],
+    matches: ['motorhome', 'husbil'],
+  },
+  caravans: {
+    slug: 'caravans',
+    label: 'Husvagnar',
+    singular: 'en husvagn',
+    description: 'Jämför husvagnar, planlösningar och säljare över hela Europa.',
+    filters: ['Nya', 'Begagnade', 'Enkelaxel', 'Dubbelaxel', 'Pris', 'Sovplatser'],
+    matches: ['caravan', 'husvagn'],
+  },
+  trucks: {
+    slug: 'trucks',
+    label: 'Lastbilar',
+    singular: 'en lastbil',
+    description: 'Tunga fordon och transportlösningar för professionella köpare.',
+    filters: ['Dragbil', 'Distributionsbil', 'Tippbil', 'Kranbil', 'Pris', 'Euroklass'],
+    matches: ['truck', 'lastbil'],
+  },
+  farm: {
+    slug: 'farm',
+    label: 'Lantbruk',
+    singular: 'ett lantbruksfordon',
+    description: 'Traktorer och lantbruksmaskiner från europeiska säljare.',
+    filters: ['Traktorer', 'Skörd', 'Redskap', 'Nya', 'Begagnade', 'Pris', 'Drifttimmar'],
+    matches: ['tractor', 'traktor', 'farm'],
+  },
+  plant: {
+    slug: 'plant',
+    label: 'Entreprenad',
+    singular: 'en entreprenadmaskin',
+    description: 'Entreprenadmaskiner och utrustning för bygg, mark och anläggning.',
+    filters: ['Grävmaskin', 'Hjullastare', 'Dumper', 'Nya', 'Begagnade', 'Pris', 'Drifttimmar'],
+    matches: ['plant', 'excavator', 'construction', 'entreprenad'],
+  },
+  'electric-bikes': {
+    slug: 'electric-bikes',
+    label: 'Elcyklar',
+    singular: 'en elcykel',
+    description: 'Elcyklar för stad, pendling och fritid från hela Europa.',
+    filters: ['City', 'Lastcykel', 'Mountainbike', 'Nya', 'Begagnade', 'Pris', 'Räckvidd'],
+    matches: ['electric bike', 'elcykel', 'e-bike'],
+  },
+  'e-scooters': {
+    slug: 'e-scooters',
+    label: 'Elsparkcyklar',
+    singular: 'en elsparkcykel',
+    description: 'Elsparkcyklar och elektrisk mikromobilitet från europeiska säljare.',
+    filters: ['Pendling', 'Lång räckvidd', 'Hopfällbar', 'Nya', 'Begagnade', 'Pris'],
+    matches: ['scooter', 'elsparkcykel', 'e-scooter'],
+  },
 } as const
 
 export default async function MarketplaceCategoryPage({
@@ -21,60 +87,66 @@ export default async function MarketplaceCategoryPage({
   params: Promise<{ category: string }>
 }) {
   const { category } = await params
-  const label = categories[category as keyof typeof categories]
-  if (!label) notFound()
+  const config = categories[category as keyof typeof categories]
+  if (!config) notFound()
+
+  const now = new Date().toISOString()
+  const { data } = await createAdminClient()
+    .from('leads')
+    .select(
+      'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,buy_now_price,seller_target_price,images',
+    )
+    .eq('status', 'Active')
+    .is('auction_closed_at', null)
+    .gt('auction_ends_at', now)
+    .order('listing_priority', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(80)
+
+  const listings: MarketplaceListing[] = (data || [])
+    .filter((lead) => {
+      const haystack = `${lead.body_type || ''} ${lead.make || ''} ${lead.model || ''}`.toLowerCase()
+      return config.matches.some((match) => haystack.includes(match))
+    })
+    .map((lead) => {
+      const mileage = Number(lead.miles)
+      const price = Number(lead.buy_now_price || lead.seller_target_price)
+      const images = Array.isArray(lead.images) ? lead.images : []
+      return {
+        id: lead.id,
+        title: `${lead.make || config.label} ${lead.model || ''}`.trim(),
+        year: lead.model_year,
+        mileageKm: Number.isFinite(mileage) ? mileage * 10 : null,
+        fuelType: lead.fuel_type,
+        country: normalizeCountry(lead.origin_country || lead.source),
+        saleFormat: lead.sale_format === 'marketplace' ? 'marketplace' : 'auction',
+        priceLabel:
+          Number.isFinite(price) && price > 0
+            ? `Pris visas efter verifiering`
+            : 'Kontakta säljaren',
+        imageAvailable: typeof images[0] === 'string',
+      }
+    })
 
   return (
-    <main className="min-h-screen bg-[#f5f4f0] text-[#202124]">
+    <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
       <PublicHeader />
-      <section className="border-b border-[#deddd8] bg-white">
-        <div className="mx-auto max-w-[1200px] px-5 py-20 sm:px-8 sm:py-28">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#607985]">
-            Autorell marketplace
-          </p>
-          <h1 className="mt-5 text-5xl tracking-[-0.055em] sm:text-7xl">
-            {label}
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#617178]">
-            Den här professionella marknaden öppnas för utbud från verifierade
-            företag. Privatpersoner kan inte publicera annonser.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/dealer-apply"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#242424] px-7 text-sm font-semibold text-white"
-            >
-              Lista {label.toLowerCase()} som företag
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#bbbdb9] bg-white px-7 text-sm font-semibold"
-            >
-              Logga in
-            </Link>
-          </div>
-        </div>
-      </section>
-      <section className="mx-auto grid max-w-[1200px] gap-5 px-5 py-14 sm:px-8 md:grid-cols-2">
-        <article className="rounded-[24px] border border-[#d9d8d2] bg-white p-7">
-          <Store className="h-7 w-7 text-[#526b76]" />
-          <h2 className="mt-6 text-2xl font-semibold">Endast företagsutbud</h2>
-          <p className="mt-3 leading-7 text-[#68757a]">
-            Varje säljare ansöker med företagsuppgifter innan objekt kan
-            publiceras.
-          </p>
-        </article>
-        <article className="rounded-[24px] border border-[#d9d8d2] bg-white p-7">
-          <BadgeCheck className="h-7 w-7 text-[#526b76]" />
-          <h2 className="mt-6 text-2xl font-semibold">Professionellt underlag</h2>
-          <p className="mt-3 leading-7 text-[#68757a]">
-            Marknaden byggs för strukturerade annonser, tydliga motparter och
-            effektiva B2B-affärer.
-          </p>
-        </article>
-      </section>
+      <MarketplaceCategoryBrowser category={config} listings={listings} />
       <PublicFooter />
     </main>
   )
+}
+
+function normalizeCountry(value: string | null) {
+  const normalized = (value || 'SE').trim().toUpperCase()
+  const aliases: Record<string, string> = {
+    SWEDEN: 'SE',
+    SVERIGE: 'SE',
+    GERMANY: 'DE',
+    DEUTSCHLAND: 'DE',
+    DENMARK: 'DK',
+    DANMARK: 'DK',
+    FINLAND: 'FI',
+  }
+  return aliases[normalized] || normalized.slice(0, 2)
 }
