@@ -109,20 +109,20 @@ export async function POST(request: Request) {
       text: [
         'Reset your Autorell password',
         '',
-        'We received a request to reset the password for your dealer account.',
+        'We received a request to reset the password for your Autorell marketplace account.',
         `Open this secure link to choose a new password: ${recoveryLink}`,
         '',
         'The link is temporary and can only be used once.',
         'If you did not request this reset, you can ignore this email.',
         '',
-        'Autorell Dealer Network',
+        'Autorell marketplace',
       ].join('\n'),
       html: `
         <!doctype html>
         <html>
           <body style="margin:0;background:#f3f2ee;color:#202124;font-family:Arial,sans-serif;">
             <div style="display:none;max-height:0;overflow:hidden;">
-              Use this secure link to reset your Autorell dealer password.
+              Use this secure link to reset your Autorell account password.
             </div>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f2ee;padding:28px 12px;">
               <tr>
@@ -131,20 +131,20 @@ export async function POST(request: Request) {
                     <tr>
                       <td style="background:#202427;padding:30px 34px;color:#ffffff;">
                         <div style="font-size:30px;letter-spacing:-1px;">Autorell</div>
-                        <div style="margin-top:8px;color:#b4d9ef;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Dealer Network · Secure account recovery</div>
+                        <div style="margin-top:8px;color:#b4d9ef;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Marketplace · Secure account recovery</div>
                       </td>
                     </tr>
                     <tr>
                       <td style="padding:38px 34px;">
                         <div style="display:inline-block;border-radius:999px;background:#e4f3fa;color:#315f74;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Password reset</div>
                         <h1 style="margin:20px 0 0;font-size:32px;line-height:1.15;letter-spacing:-1px;">Choose a new password.</h1>
-                        <p style="margin:16px 0 0;color:#64747b;font-size:15px;line-height:1.75;">We received a request to reset the password for your Autorell dealer account. Use the secure button below to continue.</p>
+                        <p style="margin:16px 0 0;color:#64747b;font-size:15px;line-height:1.75;">We received a request to reset the password for your Autorell marketplace account. Use the secure button below to continue.</p>
                         <a href="${recoveryLink}" style="display:inline-block;margin-top:28px;border-radius:999px;background:#202427;color:#ffffff;text-decoration:none;padding:16px 25px;font-size:14px;font-weight:700;">Reset password</a>
                         <div style="margin-top:28px;border-left:4px solid #b4d9ef;background:#edf6fa;border-radius:0 14px 14px 0;padding:18px 20px;color:#536b76;font-size:13px;line-height:1.7;">
                           This link is temporary and can only be used once. If you did not request a password reset, no action is required.
                         </div>
                         <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e7e5df;color:#899196;font-size:11px;line-height:1.7;">
-                          Autorell AB · European dealer platform<br />
+                          Autorell AB · European vehicle marketplace<br />
                           Security messages are sent from noreply@autorell.com.
                         </div>
                       </td>

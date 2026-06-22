@@ -1,8 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type ConversionEventName =
-  | 'dealer_application_submitted'
-  | 'bid_submitted'
+  | 'account_created'
+  | 'listing_created'
+  | 'listing_contacted'
   | 'contact_submitted'
   | 'whatsapp_clicked'
 
@@ -10,9 +11,7 @@ type ConversionEvent = {
   eventName: ConversionEventName
   countryCode?: string | null
   userId?: string | null
-  dealerId?: string | null
-  leadId?: string | null
-  dealId?: string | null
+  listingId?: string | null
   value?: number | null
   currency?: string | null
   dedupeKey?: string | null
@@ -93,13 +92,13 @@ export async function trackConversion(
         campaign: clean(pageUrl?.searchParams.get('utm_campaign')),
         referrer: clean(referrerUrl?.toString(), 500),
         user_id: event.userId || null,
-        dealer_id: event.dealerId || null,
-        lead_id: event.leadId || null,
-        deal_id: event.dealId || null,
         value: event.value ?? null,
         currency: clean(event.currency, 3)?.toUpperCase() || null,
         dedupe_key: clean(event.dedupeKey, 240),
-        metadata: event.metadata || {},
+        metadata: {
+          ...(event.metadata || {}),
+          ...(event.listingId ? { listingId: event.listingId } : {}),
+        },
       })
 
     if (error && error.code !== '23505') {

@@ -77,7 +77,7 @@ export default function SavedListingsClient({
                   <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
                     <strong>{listing.priceLabel}</strong>
                     <MessageSellerButton
-                      leadId={listing.id}
+                      listingId={listing.id}
                       enabled={listing.messagingEnabled}
                     />
                   </div>

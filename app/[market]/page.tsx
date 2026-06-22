@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import InternationalMarketPage from '@/app/components/InternationalMarketPage'
+import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import {
   euBuyerMarkets,
-  getEuBuyerCopy,
   getEuBuyerHreflang,
   getEuBuyerHubAlternates,
   getEuBuyerMarket,
 } from '@/lib/eu-buyer-markets'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -25,21 +25,16 @@ export async function generateMetadata({
   const { market: marketCode } = await params
   const market = getEuBuyerMarket(marketCode)
   if (!market) return {}
-
-  const copy = getEuBuyerCopy(market.language)
-  const title = market.homeTitle || copy.countryTitle(market.countryLocal)
   const canonical = `https://www.autorell.com/${market.code}`
-
+  const title = `${market.countryLocal} vehicle marketplace | Autorell`
+  const description = `Find and list vehicles in ${market.countryLocal} and across the European Union.`
   return {
-    title: { absolute: `${title} | Autorell` },
-    description: copy.intro,
-    alternates: {
-      canonical,
-      languages: getEuBuyerHubAlternates(),
-    },
+    title: { absolute: title },
+    description,
+    alternates: { canonical, languages: getEuBuyerHubAlternates() },
     openGraph: {
       title,
-      description: copy.intro,
+      description,
       url: canonical,
       siteName: 'Autorell',
       locale: getEuBuyerHreflang(market).replace('-', '_'),
@@ -49,8 +44,8 @@ export async function generateMetadata({
 }
 
 export default async function MarketPage({ params }: MarketPageProps) {
-  const { market } = await params
-  if (!getEuBuyerMarket(market)) notFound()
-
-  return <InternationalMarketPage marketCode={market} />
+  const { market: marketCode } = await params
+  const market = getEuBuyerMarket(marketCode)
+  if (!market) notFound()
+  return <BusinessMarketplaceHome locale={market.language as PublicLocale} />
 }

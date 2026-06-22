@@ -50,10 +50,10 @@ export default function ForgotPasswordPage() {
             <BrandLogo />
           </Link>
           <div className={styles.badge}>Secure account recovery</div>
-          <h1 className={styles.heroTitle}>Recover your dealer access.</h1>
+          <h1 className={styles.heroTitle}>Recover your marketplace account.</h1>
           <p className={styles.heroText}>
             We will send a secure password reset link to the email address
-            registered with your approved dealer account.
+            registered with your Autorell account.
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
             </h2>
             <p className={styles.cardDescription}>
               {sent
-                ? 'If the address matches a dealer account, a reset link has been sent.'
+                ? 'If the address matches an Autorell account, a reset link has been sent.'
                 : 'Enter the email address you use to sign in.'}
             </p>
           </div>
@@ -80,13 +80,13 @@ export default function ForgotPasswordPage() {
                 </span>
               </div>
               <Link href="/login" className={styles.button}>
-                Return to Dealer Login
+                Return to sign in
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className={styles.form}>
               <label className={styles.label}>
-                Dealer email address
+                Account email address
                 <div className={styles.inputWrapper}>
                   <svg
                     className={styles.inputIcon}
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     autoComplete="email"
-                    placeholder="dealer@company.com"
+                    placeholder="name@company.com"
                     required
                     className={styles.input}
                   />
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
               <p className={styles.helperText}>
                 Forgot which email address was registered? Contact{' '}
                 <a
-                  href="mailto:info@autorell.com?subject=Dealer%20login%20email"
+                  href="mailto:info@autorell.com?subject=Marketplace%20account%20email"
                   className={styles.authLink}
                 >
                   Autorell Support
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
               </p>
               <p className={styles.helperText}>
                 <Link href="/login" className={styles.authLink}>
-                  Back to Dealer Login
+                  Back to sign in
                 </Link>
               </p>
             </form>

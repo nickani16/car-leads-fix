@@ -41,5 +41,8 @@ export async function generateMetadata() {
 }
 
 export default async function EuropeanVehiclePage() {
-  return <BusinessMarketplaceHome locale="en" />
+  const headerStore = await headers()
+  const requested = headerStore.get('x-autorell-language') || 'en'
+  const locale: PublicLanguage = isPublicLanguage(requested) ? requested : 'en'
+  return <BusinessMarketplaceHome locale={locale} />
 }

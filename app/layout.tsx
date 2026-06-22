@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: '%s | Autorell',
   },
   description:
-    'Autorell connects vehicle sellers with a verified European dealer network.',
+    'Autorell is a European marketplace where private sellers and businesses can list and find vehicles across the EU.',
   applicationName: 'Autorell',
   manifest: '/manifest.webmanifest',
   icons: {

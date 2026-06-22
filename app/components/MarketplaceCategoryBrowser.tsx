@@ -12,6 +12,10 @@ import {
   Search,
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import {
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 import MessageSellerButton from './MessageSellerButton'
 import SavedListingButton from './SavedListingButton'
 
@@ -24,7 +28,6 @@ export type MarketplaceListing = {
   mileageKm: number | null
   fuelType: string | null
   country: string
-  saleFormat: 'auction' | 'marketplace'
   priceLabel: string
   priceValue: number | null
   imageAvailable: boolean
@@ -49,7 +52,7 @@ export default function MarketplaceCategoryBrowser({
 }: {
   category: CategoryConfig
   listings: MarketplaceListing[]
-  locale?: 'sv' | 'en' | 'de'
+  locale?: PublicLocale
 }) {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
@@ -58,9 +61,12 @@ export default function MarketplaceCategoryBrowser({
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
   const [savedSearchKey, setSavedSearchKey] = useState('')
-  const displayLocale = locale === 'sv' ? 'sv' : locale === 'de' ? 'de' : 'en'
+  const displayLocale = locale
   const localizedCategory = localizeCategory(category, locale)
-  const copy = marketplaceCopy[locale]
+  const copy =
+    locale === 'sv' || locale === 'de' || locale === 'en'
+      ? marketplaceCopy[locale]
+      : translatePublicObject(locale, marketplaceCopy.en)
 
   const countries = useMemo(
     () =>
@@ -269,17 +275,26 @@ export default function MarketplaceCategoryBrowser({
                   className="group overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.06)] transition hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(16,24,40,.1)]"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]">
-                    <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />
-                    <div className="absolute inset-0 grid place-items-center text-[#0866ff]">
-                      <span className="grid h-16 w-16 place-items-center rounded-[20px] border border-white bg-white/75 shadow-sm backdrop-blur">
-                        <ImageIcon className="h-7 w-7" />
-                      </span>
-                    </div>
+                    {listing.imageUrl ? (
+                      // Supabase public URLs are user-generated and intentionally
+                      // rendered without Next image-domain coupling.
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                    ) : (
+                      <>
+                        <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />
+                        <div className="absolute inset-0 grid place-items-center text-[#0866ff]">
+                          <span className="grid h-16 w-16 place-items-center rounded-[20px] border border-white bg-white/75 shadow-sm backdrop-blur">
+                            <ImageIcon className="h-7 w-7" />
+                          </span>
+                        </div>
+                      </>
+                    )}
                     <div className="absolute right-4 top-4">
                       <SavedListingButton listingId={listing.id} />
                     </div>
                     <span className="absolute bottom-4 left-4 rounded-[10px] bg-white/92 px-3 py-1.5 text-[11px] font-bold text-[#344054] shadow-sm">
-                      {listing.saleFormat === 'marketplace' ? copy.fixedPrice : copy.auction}
+                      {copy.listing}
                     </span>
                   </div>
                   <div className="p-5">
@@ -299,7 +314,7 @@ export default function MarketplaceCategoryBrowser({
                         </span>
                         <strong className="mt-1 block">{listing.priceLabel}</strong>
                       </div>
-                      <MessageSellerButton leadId={listing.id} enabled={listing.messagingEnabled} />
+                      <MessageSellerButton listingId={listing.id} enabled={listing.messagingEnabled} />
                     </div>
                   </div>
                 </article>
@@ -366,7 +381,7 @@ const marketplaceCopy = {
     createListing: 'Skapa annons',
     perListing: 'Annonser publiceras per objekt med valbart annonspaket.',
     fixedPrice: 'Fast pris',
-    auction: 'Auktion',
+    listing: 'Annons',
     viewListing: 'Visa annons',
     privateSeller: 'Privat säljare',
     businessSeller: 'Företagssäljare',
@@ -391,7 +406,7 @@ const marketplaceCopy = {
     createListing: 'Create listing',
     perListing: 'Listings are published per vehicle with a selectable listing package.',
     fixedPrice: 'Fixed price',
-    auction: 'Auction',
+    listing: 'Listing',
     viewListing: 'View listing',
     privateSeller: 'Private seller',
     businessSeller: 'Business seller',
@@ -416,14 +431,14 @@ const marketplaceCopy = {
     createListing: 'Anzeige erstellen',
     perListing: 'Anzeigen werden pro Fahrzeug mit einem wählbaren Anzeigenpaket veröffentlicht.',
     fixedPrice: 'Festpreis',
-    auction: 'Auktion',
+    listing: 'Anzeige',
     viewListing: 'Anzeige ansehen',
     privateSeller: 'Privater Verkäufer',
     businessSeller: 'Gewerblicher Verkäufer',
   },
 } as const
 
-function secondarySearchLabel(slug: string, locale: 'sv' | 'en' | 'de') {
+function secondarySearchLabel(slug: string, locale: PublicLocale) {
   if (['motorhomes', 'caravans'].includes(slug)) {
     return locale === 'sv'
       ? 'Modell eller sovplatser'
@@ -431,7 +446,7 @@ function secondarySearchLabel(slug: string, locale: 'sv' | 'en' | 'de') {
         ? 'Modell oder Schlafplätze'
         : 'Model or berths'
   }
-  if (slug === 'farm' || slug === 'plant') {
+  if (slug === 'agriculture' || slug === 'construction') {
     return locale === 'sv'
       ? 'Modell eller maskintyp'
       : locale === 'de'
@@ -441,17 +456,18 @@ function secondarySearchLabel(slug: string, locale: 'sv' | 'en' | 'de') {
   return 'Modell'
 }
 
-function localizeCategory(category: CategoryConfig, locale: 'sv' | 'en' | 'de') {
+function localizeCategory(category: CategoryConfig, locale: PublicLocale) {
   if (locale === 'sv') return category
+  if (locale !== 'en' && locale !== 'de') return category
   const labels: Record<string, { en: [string, string]; de: [string, string] }> = {
     cars: { en: ['Cars', 'a car'], de: ['Autos', 'ein Auto'] },
     vans: { en: ['Vans', 'a van'], de: ['Transporter', 'einen Transporter'] },
-    bikes: { en: ['Motorcycles', 'a motorcycle'], de: ['Motorräder', 'ein Motorrad'] },
+    motorcycles: { en: ['Motorcycles', 'a motorcycle'], de: ['Motorräder', 'ein Motorrad'] },
     motorhomes: { en: ['Motorhomes', 'a motorhome'], de: ['Wohnmobile', 'ein Wohnmobil'] },
     caravans: { en: ['Caravans', 'a caravan'], de: ['Wohnwagen', 'einen Wohnwagen'] },
     trucks: { en: ['Trucks', 'a truck'], de: ['Lkw', 'einen Lkw'] },
-    farm: { en: ['Farm machinery', 'farm machinery'], de: ['Landmaschinen', 'eine Landmaschine'] },
-    plant: { en: ['Construction machinery', 'construction machinery'], de: ['Baumaschinen', 'eine Baumaschine'] },
+    agriculture: { en: ['Agricultural machinery', 'agricultural machinery'], de: ['Landmaschinen', 'eine Landmaschine'] },
+    construction: { en: ['Construction machinery', 'construction machinery'], de: ['Baumaschinen', 'eine Baumaschine'] },
     'electric-bikes': { en: ['Electric bikes', 'an electric bike'], de: ['E-Bikes', 'ein E-Bike'] },
     'e-scooters': { en: ['E-scooters', 'an e-scooter'], de: ['E-Scooter', 'einen E-Scooter'] },
   }

@@ -37,7 +37,7 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['find-cars', '/find-cars'],
   ['vehicles', '/dealer-market/__locale__/vehicles'],
   ['how-it-works', '/dealer-market/__locale__/process'],
-  ['dealer-benefits', '/dealer-market/__locale__/benefits'],
+  ['benefits', '/dealer-market/__locale__/benefits'],
   ['about', '/dealer-market/__locale__/about'],
   ['faq', '/dealer-market/__locale__/faq'],
   ['contact', '/dealer-market/__locale__/contact'],
@@ -90,6 +90,21 @@ const LOCALIZED_CORE_ROUTES = {
   ]),
 } as const
 
+const RETIRED_BUSINESS_MODEL_ROUTES = new Map([
+  ['/salj-bil', '/salj-fordon'],
+  ['/salj-lagerbil', '/salj-fordon'],
+  ['/sell-stock', '/salj-fordon'],
+  ['/fahrzeugbestand-verkaufen', '/salj-fordon'],
+  ['/for-handlare', '/foretag'],
+  ['/dealer-apply', '/registrera'],
+  ['/bli-bilhandlare', '/registrera'],
+  ['/haendlerzugang', '/registrera'],
+  ['/dealer-terms', '/villkor'],
+  ['/dealer-benefits', '/benefits'],
+  ['/handlarvillkor', '/villkor'],
+  ['/haendlerbedingungen', '/villkor'],
+])
+
 const LEGACY_CORE_ROUTES = {
   sv: new Map([
     ['/find-cars', '/hitta-bilar'],
@@ -118,7 +133,7 @@ const DEALER_MARKET_ROUTES = {
   en: new Map([
     ['/vehicles', 'vehicles'],
     ['/how-it-works', 'process'],
-    ['/dealer-benefits', 'benefits'],
+    ['/benefits', 'benefits'],
     ['/about', 'about'],
     ['/faq', 'faq'],
     ['/contact', 'contact'],
@@ -257,6 +272,44 @@ export function proxy(request: NextRequest) {
   const selectedMarket = request.nextUrl.searchParams.get('market')
   const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
+
+  if (methodCanRedirect) {
+    const retiredTarget = RETIRED_BUSINESS_MODEL_ROUTES.get(pathname)
+    if (retiredTarget) {
+      const url = request.nextUrl.clone()
+      url.pathname = retiredTarget
+      url.search = ''
+      return NextResponse.redirect(url, 308)
+    }
+    if (
+      pathname.startsWith('/dealer') ||
+      pathname.startsWith('/sales') ||
+      pathname.startsWith('/admin/leads') ||
+      pathname.startsWith('/admin/dealers') ||
+      pathname.startsWith('/admin/auctions') ||
+      pathname.startsWith('/admin/deals') ||
+      pathname.startsWith('/admin/contracts') ||
+      pathname.startsWith('/saljarportal/')
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = pathname.startsWith('/admin') ? '/admin' : '/konto'
+      url.search = ''
+      return NextResponse.redirect(url, 308)
+    }
+    if (
+      pathname === '/dealers' ||
+      pathname.startsWith('/dealers/') ||
+      pathname === '/haendler' ||
+      pathname.startsWith('/haendler/') ||
+      pathname.startsWith('/ratgeber/') ||
+      /^\/[a-z]{2}\/(dealers|guides)\//.test(pathname)
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/marketplace/cars'
+      url.search = ''
+      return NextResponse.redirect(url, 308)
+    }
+  }
 
   if (methodCanRedirect && (hostname === 'autorell.eu' || hostname === 'www.autorell.eu')) {
     return redirectToHost(request, 'www.autorell.com', 308)

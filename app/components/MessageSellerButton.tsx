@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 
-export default function MessageSellerButton({ leadId, enabled }: { leadId: string; enabled: boolean }) {
+export default function MessageSellerButton({ listingId, enabled }: { listingId: string; enabled: boolean }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   async function startConversation() {
@@ -12,7 +12,7 @@ export default function MessageSellerButton({ leadId, enabled }: { leadId: strin
     const response = await fetch('/api/account/conversations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId }),
+      body: JSON.stringify({ listingId }),
     })
     const result = (await response.json()) as { id?: string; error?: string }
     if (response.status === 401) {

@@ -9,7 +9,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/konto/meddelanden')
   const admin = createAdminClient()
-  const { data: conversations } = await admin.from('marketplace_conversations').select('id,lead_id,buyer_user_id,seller_user_id,last_message_at').or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`).order('last_message_at', { ascending: false })
+  const { data: conversations } = await admin.from('marketplace_conversations').select('id,listing_id,buyer_user_id,seller_user_id,last_message_at').not('listing_id', 'is', null).or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`).order('last_message_at', { ascending: false })
   const selectedId = (await searchParams).conversation || conversations?.[0]?.id
   const selected = conversations?.find((item) => item.id === selectedId)
   const { data: messages } = selected ? await admin.from('marketplace_messages').select('id,sender_user_id,body,created_at').eq('conversation_id', selected.id).order('created_at') : { data: [] }

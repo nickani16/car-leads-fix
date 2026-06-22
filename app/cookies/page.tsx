@@ -28,7 +28,7 @@ const sections = [
     id: 'nodvandiga',
     title: 'Nödvändiga kakor',
     items: [
-      'Autentiserings- och sessionskakor för Dealer Portal.',
+      'Autentiserings- och sessionskakor för Autorell-kontot.',
       'Säkerhetsfunktioner som krävs för att tjänsten ska fungera.',
       'Teknisk lagring som behövs för en uttryckligen begärd funktion.',
       'Nödvändiga kakor kräver normalt inte samtycke men ska beskrivas.',
@@ -46,7 +46,7 @@ const sections = [
     id: 'hantera',
     title: 'Hantera kakor',
     paragraphs: [
-      'Du kan radera eller blockera kakor i webbläsaren. Om nödvändiga autentiseringskakor blockeras kan Dealer Portal sluta fungera.',
+      'Du kan radera eller blockera kakor i webbläsaren. Om nödvändiga autentiseringskakor blockeras kan konto-, annons- och meddelandefunktioner sluta fungera.',
     ],
   },
   {

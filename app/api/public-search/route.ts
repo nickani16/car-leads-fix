@@ -1,173 +1,120 @@
 import { NextRequest } from 'next/server'
 import {
-  getPublicMarketConfig,
-  type PublicMarket,
-} from '@/lib/public-market'
+  marketplaceCategories,
+  marketplaceLanguage,
+  marketplacePublicSelect,
+} from '@/lib/marketplace'
 import {
   isPublicLanguage,
-  publicPagePaths,
-  translatePublic,
+  localizePublicHref,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
-import { importGuides } from '@/lib/import-guides'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const pageNames = {
-  sv: {
-    '': 'Startsida',
-    '/hitta-bilar': 'Köp bil',
-    '/salj-bil': 'Sälj din bil',
-    '/trygg-affar': 'En trygg affär',
-    '/vanliga-fragor': 'Vanliga frågor',
-    '/foretag': 'Företag',
-    '/for-handlare': 'För bilhandlare',
-    '/om-oss': 'Om Autorell',
-    '/kontakt': 'Kontakt',
-    '/bli-bilhandlare': 'Bli bilhandlare',
-    '/handlarvillkor': 'Handlarvillkor',
-    '/integritet': 'Integritet',
-    '/cookies': 'Cookies',
-    '/villkor': 'Villkor',
-  },
-  de: {
-    '': 'Startseite',
-    '/fahrzeuge-finden': 'Fahrzeuge kaufen',
-    '/fahrzeuge': 'Fahrzeugangebot',
-    '/so-funktionierts': 'So funktioniert es',
-    '/vorteile': 'Vorteile',
-    '/ueber-autorell': 'Über Autorell',
-    '/faq': 'FAQ',
-    '/kontakt': 'Kontakt',
-    '/haendlerzugang': 'Händlerzugang',
-    '/haendlerbedingungen': 'Händlerbedingungen',
-    '/datenschutz': 'Datenschutz',
-    '/cookies': 'Cookies',
-    '/nutzungsbedingungen': 'Nutzungsbedingungen',
-    '/haendler': 'Händlermärkte',
-  },
-  en: {
-    '': 'Home',
-    '/find-cars': 'Buy cars',
-    '/vehicles': 'Vehicles',
-    '/how-it-works': 'How it works',
-    '/dealer-benefits': 'Dealer benefits',
-    '/about': 'About Autorell',
-    '/faq': 'FAQ',
-    '/contact': 'Contact',
-    '/dealer-apply': 'Dealer access',
-    '/dealer-terms': 'Dealer terms',
-    '/privacy': 'Privacy',
-    '/cookies': 'Cookies',
-    '/terms': 'Terms',
-    '/dealers': 'European dealer markets',
-  },
+type SearchEntry = {
+  href: string
+  title: string
+  description: string
+  keywords: string
+  type: 'page' | 'category' | 'listing'
+}
+
+const pageEntries = {
+  sv: [
+    ['/', 'Startsida', 'Europas marknadsplats för fordon'],
+    ['/salj-fordon', 'Lägg upp annons', 'Sälj som privatperson eller företag'],
+    ['/foretag', 'För företag', 'Företagskonto, lager och marketplace-lösningar'],
+    ['/registrera', 'Skapa konto', 'Privatkonto eller företagskonto'],
+    ['/vanliga-fragor', 'Vanliga frågor', 'Hjälp om annonser, konton och säkerhet'],
+    ['/kontakt', 'Kontakt', 'Kontakta Autorell'],
+  ],
+  en: [
+    ['/', 'Home', "Europe's vehicle marketplace"],
+    ['/salj-fordon', 'Create listing', 'Sell as a private person or business'],
+    ['/foretag', 'For business', 'Business accounts, inventory and marketplace solutions'],
+    ['/registrera', 'Create account', 'Private or business account'],
+    ['/faq', 'FAQ', 'Help with listings, accounts and safety'],
+    ['/contact', 'Contact', 'Contact Autorell'],
+  ],
+  de: [
+    ['/', 'Startseite', 'Europas Marktplatz für Fahrzeuge'],
+    ['/salj-fordon', 'Anzeige erstellen', 'Privat oder gewerblich verkaufen'],
+    ['/foretag', 'Für Unternehmen', 'Unternehmenskonto, Bestand und Marktplatzlösungen'],
+    ['/registrera', 'Konto erstellen', 'Privat- oder Unternehmenskonto'],
+    ['/faq', 'FAQ', 'Hilfe zu Anzeigen, Konten und Sicherheit'],
+    ['/kontakt', 'Kontakt', 'Autorell kontaktieren'],
+  ],
 } as const
 
-function humanize(path: string) {
-  const value = path.split('/').filter(Boolean).at(-1) || 'Autorell'
-  return value
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-}
-
-function getMarket(request: NextRequest): PublicMarket {
-  const locale = request.nextUrl.searchParams.get('locale')
-  if (locale === 'sv' || locale === 'de') return locale
-  return 'en'
-}
-
-export function GET(request: NextRequest) {
-  const market = getMarket(request)
-  const requestedLocale = request.nextUrl.searchParams.get('locale') || market
+export async function GET(request: NextRequest) {
+  const requestedLocale = request.nextUrl.searchParams.get('locale') || 'en'
   const locale: PublicLocale =
     requestedLocale === 'sv' ||
     requestedLocale === 'de' ||
     isPublicLanguage(requestedLocale)
       ? requestedLocale
       : 'en'
-  const marketCode = request.nextUrl.searchParams.get('market')
-  const config = getPublicMarketConfig(market)
-  const selectedMarket = marketCode
-    ? euBuyerMarkets.find((item) => item.code === marketCode)
-    : null
-  const localizedPrefix = selectedMarket
-    ? `/${selectedMarket.code}`
-    : market === 'en' && locale !== 'en'
-      ? `/${locale}`
-      : ''
-  const sourcePaths = selectedMarket
-    ? [
-        '',
-        '/vehicles',
-        '/how-it-works',
-        '/dealer-benefits',
-        '/about',
-        '/faq',
-        '/contact',
-        '/privacy',
-        '/cookies',
-        '/terms',
-        ...selectedMarket.cities.map((city) => `/dealers/${city.slug}`),
-      ]
-    : market === 'en' && locale !== 'en'
-      ? [...publicPagePaths]
-      : [...config.paths]
+  const language = marketplaceLanguage(locale)
 
-  const entries = sourcePaths.map((path) => {
-    const baseTitle =
-      pageNames[market][path as keyof (typeof pageNames)[typeof market]] ||
-      humanize(path)
-    const title =
-      locale !== 'sv' && locale !== 'de'
-        ? translatePublic(locale, baseTitle)
-        : baseTitle
-    return {
-      href: `${localizedPrefix}${path || '/'}`.replace(/\/+/g, '/'),
+  const pages: SearchEntry[] = pageEntries[language].map(
+    ([href, title, description]) => ({
+      href: localizePublicHref(locale, href),
       title,
-      description:
-        path.includes('/salj-bil/')
-          ? market === 'sv'
-            ? `Sälj bil i ${humanize(path)}`
-            : title
-          : path.includes('/haendler/') || path.includes('/dealers/')
-            ? `${title} · Autorell`
-            : `${title} · Autorell`,
-      keywords: `${path} ${title} vehicle car bil auto dealer handlare händler sell buy köp kaufen export`,
-    }
-  })
-
-  if (selectedMarket) {
-      entries.unshift({
-        href: `/${selectedMarket.code}`,
-        title: selectedMarket.countryLocal,
-        description: selectedMarket.country,
-        keywords: `${selectedMarket.country} ${selectedMarket.countryLocal} ${selectedMarket.demand.join(' ')}`,
-      })
-  }
-
-  for (const guide of importGuides) {
-    if (
-      (market === 'de' && guide.host.endsWith('autorell.de')) ||
-      (market === 'en' && guide.host.endsWith('autorell.com'))
-    ) {
-      entries.push({
-        href: guide.publicPath,
-        title: guide.title,
-        description: guide.description,
-        keywords: `${guide.country} import export guide dealer vehicle`,
-      })
-    }
-  }
-
-  return Response.json(
-    entries.filter(
-      (entry, index, all) =>
-        all.findIndex((candidate) => candidate.href === entry.href) === index,
-    ),
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=300, s-maxage=3600',
-      },
-    },
+      description,
+      keywords: `${title} ${description} marketplace vehicle fordon fahrzeug account konto annons listing`,
+      type: 'page',
+    }),
   )
+
+  const categories: SearchEntry[] = marketplaceCategories.map((category) => ({
+    href: `/marketplace/${category.slug}`,
+    title: category.labels[language],
+    description:
+      language === 'sv'
+        ? 'Annonser i hela EU'
+        : language === 'de'
+          ? 'Anzeigen in der gesamten EU'
+          : 'Listings across the EU',
+    keywords: category.keywords.join(' '),
+    type: 'category',
+  }))
+
+  const { data } = await createAdminClient()
+    .from('marketplace_listings')
+    .select(marketplacePublicSelect)
+    .eq('status', 'published')
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .order('priority', { ascending: false })
+    .order('published_at', { ascending: false })
+    .limit(250)
+
+  const listings: SearchEntry[] = (data || []).map((listing) => ({
+    href: `/marketplace/${listing.category}?q=${encodeURIComponent(listing.title)}`,
+    title: listing.title,
+    description: `${listing.city}, ${listing.country_code} · ${listing.price} ${listing.currency}`,
+    keywords: [
+      listing.id,
+      listing.category,
+      listing.make,
+      listing.model,
+      listing.variant,
+      listing.body_type,
+      listing.fuel_type,
+      listing.model_year,
+      listing.mileage_km,
+      listing.city,
+      listing.country_code,
+      listing.price,
+      listing.currency,
+    ]
+      .filter(Boolean)
+      .join(' '),
+    type: 'listing',
+  }))
+
+  return Response.json([...listings, ...categories, ...pages], {
+    headers: {
+      'Cache-Control': 'public, max-age=60, s-maxage=300',
+    },
+  })
 }

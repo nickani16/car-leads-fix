@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { FileText, HelpCircle, MessageCircle, UserRound } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
 import InactivityLogout from '@/app/components/InactivityLogout'
-import LogoutButton from '@/app/dealer/LogoutButton'
+import AccountLogoutButton from './AccountLogoutButton'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountCopy } from '@/lib/account-i18n'
 import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
@@ -39,7 +39,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
               <Icon className="h-4 w-4" />{label}
             </Link>
           ))}
-          <div className="ml-auto"><LogoutButton /></div>
+          <div className="ml-auto"><AccountLogoutButton /></div>
         </nav>
       </header>
       {children}

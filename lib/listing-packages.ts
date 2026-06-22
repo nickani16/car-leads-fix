@@ -1,174 +1,72 @@
 import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getStripe } from '@/lib/stripe'
+import { listingPackageDetails } from '@/lib/marketplace-pricing'
 
-export const listingPackages = {
-  free_7d: {
-    name: 'Gratis 7 dagar',
-    description: 'Grundläggande publicering i 7 dagar.',
-    amountCents: 0,
-    durationDays: 7,
-    priority: 0,
-  },
-  standard_15d: {
-    name: '15 dagars exponering',
-    description: 'Utökad publicering i 15 dagar.',
-    amountCents: 0,
-    durationDays: 15,
-    priority: 40,
-  },
-  extended_7d: {
-    name: '7 dagars exponering',
-    description: 'Synlighet för verifierade bilhandlare i 7 dagar.',
-    amountCents: 10000,
-    durationDays: 7,
-    priority: 0,
-  },
-  premium_30d: {
-    name: 'Premium 30 dagar',
-    description:
-      'Prioriterad placering och utökad synlighet i 30 dagar.',
-    amountCents: 29000,
-    durationDays: 30,
-    priority: 100,
-  },
-  managed_sale: {
-    name: 'Autorell Managed Sale',
-    description:
-      'En utsedd säljare prioriterar bilen aktivt mot Autorells europeiska köparnätverk.',
-    amountCents: 150000,
-    durationDays: 15,
-    priority: 1000,
-  },
-} as const
-
+export const listingPackages = listingPackageDetails
 export type ListingPackage = keyof typeof listingPackages
 
 export function isListingPackage(value: unknown): value is ListingPackage {
   return typeof value === 'string' && value in listingPackages
 }
 
-export async function fulfillListingCheckout(
-  session: Stripe.Checkout.Session
-) {
+export async function fulfillListingCheckout(session: Stripe.Checkout.Session) {
   if (session.payment_status !== 'paid') return false
 
   const orderId = session.metadata?.orderId
-  const leadId = session.metadata?.leadId
+  const listingId = session.metadata?.listingId
   const packageId = session.metadata?.package
-
-  if (!orderId || !leadId || !isListingPackage(packageId)) {
-    throw new Error('Stripe session is missing listing metadata')
+  if (
+    !orderId ||
+    !listingId ||
+    !isListingPackage(packageId) ||
+    packageId === 'free_7d'
+  ) {
+    throw new Error('Stripe session is missing marketplace listing metadata')
   }
 
   const supabase = createAdminClient()
   const { data: order, error: orderError } = await supabase
-    .from('seller_listing_orders')
+    .from('marketplace_listing_orders')
     .select('id,status')
     .eq('id', orderId)
-    .eq('lead_id', leadId)
+    .eq('listing_id', listingId)
     .single()
-
   if (orderError || !order) {
-    throw new Error('Listing order was not found')
+    throw new Error('Marketplace listing order was not found')
   }
-
   if (order.status === 'paid' || order.status === 'refunded') return true
 
-  const listingPackage = listingPackages[packageId]
-  const { data: lead, error: leadReadError } = await supabase
-    .from('leads')
-    .select('status')
-    .eq('id', leadId)
-    .single()
-
-  if (leadReadError || !lead) {
-    throw new Error('Vehicle lead was not found')
-  }
-
-  if (lead.status === 'Rejected' || lead.status === 'Cancelled') {
-    const paymentIntent =
-      typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : session.payment_intent?.id || null
-
-    if (paymentIntent) {
-      await getStripe().refunds.create(
-        {
-          payment_intent: paymentIntent,
-          metadata: {
-            leadId,
-            reason: 'vehicle_not_approved',
-          },
-        },
-        { idempotencyKey: `rejected-listing-${session.id}` }
-      )
-    }
-
-    await supabase
-      .from('seller_listing_orders')
-      .update({
-        status: 'refunded',
-        stripe_checkout_session_id: session.id,
-        stripe_payment_intent_id: paymentIntent,
-        paid_at: new Date().toISOString(),
-      })
-      .eq('id', orderId)
-
-    return true
-  }
-
-  const shouldActivateNow = lead.status === 'Active'
-  const activatedAt = shouldActivateNow ? new Date() : null
-  const expiresAt = activatedAt
-    ? new Date(
-        activatedAt.getTime() +
-          listingPackage.durationDays * 24 * 60 * 60 * 1000
-      )
-    : null
-
-  const { count: dealerReach } = await supabase
-    .from('dealers')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'approved')
-
-  const { error: leadError } = await supabase
-    .from('leads')
-    .update({
-      ...(lead.status === 'Pending payment' ? { status: 'Pending review' } : {}),
-      auction_starts_at: activatedAt?.toISOString() || null,
-      auction_ends_at: expiresAt?.toISOString() || null,
-      ...(shouldActivateNow
-        ? { auction_closed_at: null, auction_outcome: null }
-        : {}),
-      listing_plan: packageId,
-      listing_priority: listingPackage.priority,
-      managed_sale_requested: packageId === 'managed_sale',
-      dealer_reach_snapshot: dealerReach || 0,
-    })
-    .eq('id', leadId)
-
-  if (leadError) throw leadError
-
+  const now = new Date()
+  const details = listingPackages[packageId]
+  const expiresAt = new Date(now.getTime() + details.durationDays * 86_400_000)
   const paymentIntent =
     typeof session.payment_intent === 'string'
       ? session.payment_intent
       : session.payment_intent?.id || null
 
-  const { error: orderUpdateError } = await supabase
-    .from('seller_listing_orders')
+  const { error: listingError } = await supabase
+    .from('marketplace_listings')
+    .update({
+      status: 'pending_review',
+      package_id: packageId,
+      priority: details.priority,
+      expires_at: expiresAt.toISOString(),
+    })
+    .eq('id', listingId)
+    .eq('status', 'pending_payment')
+  if (listingError) throw listingError
+
+  const { error: updateError } = await supabase
+    .from('marketplace_listing_orders')
     .update({
       status: 'paid',
       stripe_checkout_session_id: session.id,
       stripe_payment_intent_id: paymentIntent,
-      dealer_reach_snapshot: dealerReach || 0,
-      paid_at: new Date().toISOString(),
-      activated_at: activatedAt?.toISOString() || null,
-      expires_at: expiresAt?.toISOString() || null,
+      paid_at: now.toISOString(),
     })
     .eq('id', orderId)
     .eq('status', 'pending')
+  if (updateError) throw updateError
 
-  if (orderUpdateError) throw orderUpdateError
   return true
 }

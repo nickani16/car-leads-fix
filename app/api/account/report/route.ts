@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const admin = createAdminClient()
   const { error } = await admin.from('marketplace_reports').insert({
     reporter_user_id: user.id,
-    lead_id: body.leadId || null,
+    listing_id: body.listingId || null,
     conversation_id: body.conversationId || null,
     category,
     details,

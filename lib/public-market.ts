@@ -1,36 +1,14 @@
-import { swedishLocalSeoLocations } from '@/lib/swedish-local-seo'
-import { swedishCounties } from '@/lib/swedish-regions.generated'
+import { marketplaceCategories } from '@/lib/marketplace'
 import {
-  europeanDealerCountries,
-  germanDealerCities,
-} from '@/lib/international-dealer-seo'
-import {
-  euBuyerMarkets,
-  getAllEuBuyerPaths,
-} from '@/lib/eu-buyer-markets'
-import { getImportGuidePaths } from '@/lib/import-guides'
-import { internationalPageKeys } from '@/lib/international-public-site'
+  publicLanguages,
+  publicPagePaths,
+} from '@/lib/public-i18n'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
-const swedishLocalSeoPaths = swedishLocalSeoLocations.map(
-  ({ slug }) => `/salj-bil/${slug}`
+const categoryPaths = marketplaceCategories.map(
+  ({ slug }) => `/marketplace/${slug}`,
 )
-const swedishCountySeoPaths = swedishCounties.map(
-  ({ slug }) => `/salj-bil/lan/${slug}`
-)
-const germanDealerSeoPaths = germanDealerCities.map(
-  ({ slug }) => `/haendler/${slug}`
-)
-const europeanDealerSeoPaths = europeanDealerCountries.map(
-  ({ slug }) => `/dealers/${slug}`
-)
-const localizedEuBuyerPaths = getAllEuBuyerPaths()
-const localizedEuPublicSitePaths = euBuyerMarkets.flatMap((market) =>
-  internationalPageKeys.map((page) => `/${market.code}/${page}`),
-)
-const germanImportGuidePaths = getImportGuidePaths('de')
-const europeanImportGuidePaths = getImportGuidePaths('en')
 
 const marketConfig = {
   sv: {
@@ -38,68 +16,46 @@ const marketConfig = {
     paths: [
       '',
       '/hitta-bilar',
-      '/salj-bil',
+      '/salj-fordon',
+      '/foretag',
       '/trygg-affar',
       '/vanliga-fragor',
-      '/foretag',
-      '/for-handlare',
       '/om-oss',
       '/kontakt',
-      '/bli-bilhandlare',
-      '/handlarvillkor',
+      '/registrera',
+      '/login',
       '/integritet',
       '/cookies',
       '/villkor',
-      ...swedishCountySeoPaths,
-      ...swedishLocalSeoPaths,
+      ...categoryPaths,
     ],
-    priorityPath: '/salj-bil',
+    priorityPath: '/marketplace/cars',
   },
   de: {
     host: 'https://www.autorell.de',
     paths: [
       '',
       '/fahrzeuge-finden',
-      '/fahrzeuge',
-      '/so-funktionierts',
-      '/vorteile',
-      '/ueber-autorell',
+      '/registrera',
+      '/login',
       '/faq',
       '/kontakt',
-      '/haendlerzugang',
-      '/haendlerbedingungen',
       '/datenschutz',
       '/cookies',
       '/nutzungsbedingungen',
-      '/haendler',
-      ...germanDealerSeoPaths,
-      ...germanImportGuidePaths,
+      ...categoryPaths,
     ],
-    priorityPath: '/fahrzeuge',
+    priorityPath: '/marketplace/cars',
   },
   en: {
     host: 'https://www.autorell.com',
     paths: [
-      '',
-      '/find-cars',
-      '/vehicles',
-      '/how-it-works',
-      '/dealer-benefits',
-      '/about',
-      '/faq',
-      '/contact',
-      '/dealer-apply',
-      '/dealer-terms',
-      '/privacy',
-      '/cookies',
-      '/terms',
-      '/dealers',
-      ...europeanDealerSeoPaths,
-      ...localizedEuBuyerPaths,
-      ...localizedEuPublicSitePaths,
-      ...europeanImportGuidePaths,
+      ...publicLanguages.flatMap((locale) =>
+        publicPagePaths.map((path) => `/${locale}${path}`),
+      ),
+      ...categoryPaths,
     ],
-    priorityPath: '/vehicles',
+    priorityPath: '/marketplace/cars',
   },
 } as const
 

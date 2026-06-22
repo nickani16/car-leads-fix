@@ -13,7 +13,7 @@ const sections = [
     title: 'Plattformens roll',
     paragraphs: [
       'Autorell tillhandahåller en digital marknadsplats där privatpersoner och företag kan publicera fordonsannonser, söka, spara sökningar och kommunicera. På en vanlig marknadsplatsannons är Autorell inte automatiskt köpare, säljare, agent, garant eller part i avtalet mellan användarna.',
-      'Om Autorell i ett särskilt flöde köper, säljer, förmedlar, kontrollerar, transporterar eller tar betalt för ett fordon ska den rollen och de särskilda villkoren framgå tydligt innan användaren blir bunden.',
+      'Autorell köper inte in annonserade fordon, lämnar inte bud och agerar inte som återförsäljare eller exportör. Köpare och säljare ansvarar själva för kontroll, avtal, betalning, transport, registrering och ägarbyte.',
     ],
   },
   {

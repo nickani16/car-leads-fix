@@ -22,16 +22,21 @@ import {
 import MarketplaceSearch from './MarketplaceSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
+import {
+  translatePublic,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const categoryItems = [
   { labels: ['Bilar', 'Cars', 'Autos'], href: '/marketplace/cars', icon: CarFront },
   { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/marketplace/vans', icon: BusFront },
-  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/marketplace/bikes', icon: Bike },
+  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/marketplace/motorcycles', icon: Bike },
   { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/marketplace/motorhomes', icon: BusFront },
   { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/marketplace/caravans', icon: Warehouse },
   { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/marketplace/trucks', icon: Truck },
-  { labels: ['Lantbruk', 'Farm', 'Landwirtschaft'], href: '/marketplace/farm', icon: Tractor },
-  { labels: ['Entreprenad', 'Construction', 'Baumaschinen'], href: '/marketplace/plant', icon: Construction },
+  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/marketplace/agriculture', icon: Tractor },
+  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/marketplace/construction', icon: Construction },
   { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/marketplace/electric-bikes', icon: Leaf },
   { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/marketplace/e-scooters', icon: Leaf },
 ] as const
@@ -147,13 +152,23 @@ const homeCopy = {
 export default function BusinessMarketplaceHome({
   locale = 'sv',
 }: {
-  locale?: 'sv' | 'en' | 'de'
+  locale?: PublicLocale
 }) {
-  const t = homeCopy[locale]
-  const labelIndex = locale === 'sv' ? 0 : locale === 'en' ? 1 : 2
+  const t =
+    locale === 'sv'
+      ? homeCopy.sv
+      : locale === 'de'
+        ? homeCopy.de
+        : locale === 'en'
+          ? homeCopy.en
+          : translatePublicObject(locale, homeCopy.en)
+  const labelIndex = locale === 'sv' ? 0 : locale === 'de' ? 2 : 1
   const categories = categoryItems.map((item) => ({
     ...item,
-    label: item.labels[labelIndex],
+    label:
+      locale === 'sv' || locale === 'de' || locale === 'en'
+        ? item.labels[labelIndex]
+        : translatePublic(locale, item.labels[1]),
   }))
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f8fb] text-[#101828]">

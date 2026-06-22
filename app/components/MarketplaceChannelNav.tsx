@@ -7,7 +7,7 @@ const channelLinks: Record<string, Record<'sv' | 'en' | 'de', string[]>> = {
     en: ['Used cars', 'New cars', 'Sell your car', 'Car reviews', 'Electric cars'],
     de: ['Gebrauchtwagen', 'Neuwagen', 'Auto verkaufen', 'Autotests', 'Elektroautos'],
   },
-  bikes: {
+  motorcycles: {
     sv: ['Begagnade motorcyklar', 'Nya motorcyklar', 'Sälj motorcykel', 'MC-recensioner', 'Elektriska motorcyklar'],
     en: ['Used motorcycles', 'New motorcycles', 'Sell your bike', 'Bike reviews', 'Electric motorcycles'],
     de: ['Gebrauchte Motorräder', 'Neue Motorräder', 'Motorrad verkaufen', 'Tests', 'Elektromotorräder'],

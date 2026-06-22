@@ -18,16 +18,21 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import {
+  translatePublic,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const categoryRoutes: Record<string, string> = {
   cars: '/marketplace/cars',
   vans: '/marketplace/vans',
-  bikes: '/marketplace/bikes',
+  motorcycles: '/marketplace/motorcycles',
   motorhomes: '/marketplace/motorhomes',
   caravans: '/marketplace/caravans',
   trucks: '/marketplace/trucks',
-  farm: '/marketplace/farm',
-  plant: '/marketplace/plant',
+  agriculture: '/marketplace/agriculture',
+  construction: '/marketplace/construction',
   'electric-bikes': '/marketplace/electric-bikes',
   'e-scooters': '/marketplace/e-scooters',
 }
@@ -41,12 +46,12 @@ const categoryOptions: Array<{
 }> = [
   { value: 'cars', sv: 'Bilar', en: 'Cars', de: 'Autos', icon: CarFront },
   { value: 'vans', sv: 'Transportbilar', en: 'Vans', de: 'Transporter', icon: BusFront },
-  { value: 'bikes', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder', icon: Bike },
+  { value: 'motorcycles', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder', icon: Bike },
   { value: 'motorhomes', sv: 'Husbilar', en: 'Motorhomes', de: 'Wohnmobile', icon: BusFront },
   { value: 'caravans', sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen', icon: Warehouse },
   { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw', icon: Truck },
-  { value: 'farm', sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft', icon: Tractor },
-  { value: 'plant', sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen', icon: Construction },
+  { value: 'agriculture', sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen', icon: Tractor },
+  { value: 'construction', sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen', icon: Construction },
   { value: 'electric-bikes', sv: 'Elcyklar', en: 'Electric bikes', de: 'E-Bikes', icon: Leaf },
   { value: 'e-scooters', sv: 'Elsparkcyklar', en: 'E-scooters', de: 'E-Scooter', icon: Zap },
 ]
@@ -56,7 +61,7 @@ const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar',
 export default function MarketplaceSearch({
   locale = 'sv',
 }: {
-  locale?: 'sv' | 'en' | 'de'
+  locale?: PublicLocale
 }) {
   const router = useRouter()
   const [category, setCategory] = useState('cars')
@@ -65,7 +70,7 @@ export default function MarketplaceSearch({
   const selectedCategory =
     categoryOptions.find((option) => option.value === category) ||
     categoryOptions[0]
-  const countryLocale = locale === 'sv' ? 'sv' : locale === 'de' ? 'de' : 'en'
+  const countryLocale = locale
   const copy =
     locale === 'sv'
       ? {
@@ -85,7 +90,8 @@ export default function MarketplaceSearch({
             allEurope: 'Ganz Europa',
             search: 'Fahrzeuge suchen',
           }
-        : {
+        : locale === 'en'
+          ? {
             category: 'Category',
             query: 'What are you looking for?',
             queryPlaceholder: 'Make or model',
@@ -93,6 +99,14 @@ export default function MarketplaceSearch({
             allEurope: 'All of Europe',
             search: 'Search vehicles',
           }
+          : translatePublicObject(locale, {
+              category: 'Category',
+              query: 'What are you looking for?',
+              queryPlaceholder: 'Make or model',
+              place: 'Location',
+              allEurope: 'All of Europe',
+              search: 'Search vehicles',
+            })
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -114,7 +128,9 @@ export default function MarketplaceSearch({
           <select value={category} onChange={(event) => setCategory(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             {categoryOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {option[locale]}
+                {locale === 'sv' || locale === 'de' || locale === 'en'
+                  ? option[locale]
+                  : translatePublic(locale, option.en)}
               </option>
             ))}
           </select>

@@ -4,17 +4,16 @@ import ts from 'typescript'
 
 const root = process.cwd()
 const files = [
-  'app/components/BuyerMarketPage.tsx',
-  'app/components/BuyerHeroMarketPulse.tsx',
+  'app/components/BusinessMarketplaceHome.tsx',
+  'app/components/MarketplaceCategoryBrowser.tsx',
+  'app/components/MarketplaceSearch.tsx',
   'app/components/PublicHeader.tsx',
   'app/components/PublicFooter.tsx',
-  'app/components/DealerBenefitsPage.tsx',
   'app/dealer-market/[locale]/[page]/page.tsx',
-  'app/find-cars/page.tsx',
-  'app/find-cars/PublicVehicleBrowser.tsx',
   'app/components/PublicContactPage.tsx',
   'app/components/ContactForm.tsx',
   'app/components/CookieConsent.tsx',
+  'app/login/page.tsx',
 ]
 
 const locales = [
@@ -40,17 +39,18 @@ const locales = [
 ]
 
 const manualStrings = [
-  'View the complete process',
-  'Dealer login',
-  'Highest',
-  'Active',
-  'Ready to access selected Swedish vehicle supply?',
-  'Apply for dealer access',
-  'Vehicle',
-  'Close',
-  'Autorell Dealer Network',
-  'Public vehicle supply',
-  'Find cars for sale right now.',
+  'Buy',
+  'Sell',
+  'Business',
+  'Account',
+  'Saved',
+  'Search',
+  'Create account',
+  'Sign in',
+  'Create listing',
+  'Listing prices',
+  'Manage inventory',
+  'Explore the marketplace',
   'Contact',
   'Navigation',
   'Legal',
@@ -141,8 +141,9 @@ function extractEnglishStrings() {
 
     if (
       file.endsWith('PublicHeader.tsx') ||
-      file.endsWith('BuyerMarketPage.tsx') ||
-      file.endsWith('DealerBenefitsPage.tsx') ||
+      file.endsWith('BusinessMarketplaceHome.tsx') ||
+      file.endsWith('MarketplaceCategoryBrowser.tsx') ||
+      file.endsWith('MarketplaceSearch.tsx') ||
       file.endsWith('PublicContactPage.tsx') ||
       file.endsWith('ContactForm.tsx') ||
       file.includes('dealer-market')

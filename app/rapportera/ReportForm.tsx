@@ -18,7 +18,7 @@ export default function ReportForm() {
   }
   return <form onSubmit={submit} className="rounded-[22px] border bg-white p-6 shadow-sm sm:p-8">
     <label className="block"><span className="mb-2 block text-sm font-semibold">Vad gäller rapporten?</span><select name="category" className="h-12 w-full rounded-[14px] border bg-white px-4"><option value="suspected_fraud">Misstänkt bedrägeri</option><option value="payment_request">Betalning utanför Autorell</option><option value="misleading_listing">Vilseledande annons</option><option value="unsafe_product">Osäkert eller olagligt fordon</option><option value="harassment">Trakasserier i meddelanden</option><option value="identity_misuse">Identitetsmissbruk</option><option value="other">Annat</option></select></label>
-    <label className="mt-4 block"><span className="mb-2 block text-sm font-semibold">Annons-ID (valfritt)</span><input name="leadId" className="h-12 w-full rounded-[14px] border px-4" /></label>
+    <label className="mt-4 block"><span className="mb-2 block text-sm font-semibold">Annons-ID (valfritt)</span><input name="listingId" className="h-12 w-full rounded-[14px] border px-4" /></label>
     <div className="mt-4 grid gap-4 sm:grid-cols-2">
       <label className="block"><span className="mb-2 block text-sm font-semibold">Transaktions- eller betalningsreferens</span><input name="transactionReference" className="h-12 w-full rounded-[14px] border px-4" /></label>
       <label className="block"><span className="mb-2 block text-sm font-semibold">Motpartens namn</span><input name="counterpartyName" className="h-12 w-full rounded-[14px] border px-4" /></label>

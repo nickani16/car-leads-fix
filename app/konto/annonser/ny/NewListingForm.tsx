@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { marketplaceCategories, formatListingPrice } from '@/lib/marketplace-pricing'
+import { euCurrencies } from '@/lib/marketplace'
 
 export default function NewListingForm({ accountType, defaultCategory }: { accountType: 'private' | 'business'; defaultCategory: string }) {
   void accountType
@@ -13,10 +14,10 @@ export default function NewListingForm({ accountType, defaultCategory }: { accou
     event.preventDefault()
     setLoading(true); setError('')
     const response = await fetch('/api/account/listings', { method: 'POST', body: new FormData(event.currentTarget) })
-    const result = (await response.json()) as { error?: string; leadId?: string; requiresPayment?: boolean; packageId?: string }
-    if (!response.ok || !result.leadId) { setError(result.error || 'Kunde inte skapa annonsen.'); setLoading(false); return }
+    const result = (await response.json()) as { error?: string; listingId?: string; requiresPayment?: boolean; packageId?: string }
+    if (!response.ok || !result.listingId) { setError(result.error || 'Kunde inte skapa annonsen.'); setLoading(false); return }
     if (result.requiresPayment) {
-      const checkout = await fetch('/api/account/listing-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: result.leadId, packageId: result.packageId }) })
+      const checkout = await fetch('/api/account/listing-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listingId: result.listingId, packageId: result.packageId }) })
       const checkoutResult = (await checkout.json()) as { url?: string; error?: string }
       if (checkoutResult.url) { window.location.assign(checkoutResult.url); return }
       setError(checkoutResult.error || 'Betalningen kunde inte startas.'); setLoading(false); return
@@ -31,8 +32,10 @@ export default function NewListingForm({ accountType, defaultCategory }: { accou
     <Field name="variant" label="Variant" />
     <Field name="registration" label="Registreringsnummer / serienummer" />
     <Field name="modelYear" label="Årsmodell" type="number" />
-    <Field name="mileage" label="Kilometer eller drifttimmar" type="number" />
-    <Field name="price" label="Pris i SEK" type="number" min="1" required />
+    <Field name="mileage" label="Kilometer" type="number" min="0" />
+    <Field name="operatingHours" label="Drifttimmar" type="number" min="0" />
+    <Field name="price" label="Pris" type="number" min="1" required />
+    <Select name="currency" label="Valuta" defaultValue="EUR">{euCurrencies.map((currency) => <option key={currency} value={currency}>{currency}</option>)}</Select>
     <Field name="city" label="Ort" required />
     <Field name="postalCode" label="Postnummer" />
     <Field name="bodyType" label="Typ / kaross" />

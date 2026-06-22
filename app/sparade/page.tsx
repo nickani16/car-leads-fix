@@ -2,47 +2,38 @@ import SavedListingsClient from '@/app/components/SavedListingsClient'
 import type { MarketplaceListing } from '@/app/components/MarketplaceCategoryBrowser'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import {
+  formatMarketplacePrice,
+  marketplacePublicSelect,
+} from '@/lib/marketplace'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function SavedListingsPage() {
-  const now = new Date().toISOString()
   const { data } = await createAdminClient()
-    .from('leads')
-    .select(
-      'id,make,model,model_year,miles,fuel_type,origin_country,source,sale_format,buy_now_price,seller_target_price,images,seller_user_id,seller_public_name,seller_is_trader',
-    )
-    .eq('status', 'Active')
-    .is('auction_closed_at', null)
-    .gt('auction_ends_at', now)
-    .order('created_at', { ascending: false })
-    .limit(200)
+    .from('marketplace_listings')
+    .select(marketplacePublicSelect)
+    .eq('status', 'published')
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .order('published_at', { ascending: false })
+    .limit(250)
 
-  const listings: MarketplaceListing[] = (data || []).map((lead) => {
-    const mileage = Number(lead.miles)
-    const price = Number(lead.buy_now_price || lead.seller_target_price)
-    const images = Array.isArray(lead.images) ? lead.images : []
-    return {
-      id: lead.id,
-      make: lead.make || '',
-      model: lead.model || '',
-      title: `${lead.make || 'Fordon'} ${lead.model || ''}`.trim(),
-      year: lead.model_year,
-      mileageKm: Number.isFinite(mileage) ? mileage * 10 : null,
-      fuelType: lead.fuel_type,
-      country: normalizeCountry(lead.origin_country || lead.source),
-      saleFormat: lead.sale_format === 'marketplace' ? 'marketplace' : 'auction',
-      priceLabel:
-        Number.isFinite(price) && price > 0
-          ? 'Pris visas efter verifiering'
-          : 'Kontakta säljaren',
-      priceValue: Number.isFinite(price) && price > 0 ? price : null,
-      imageAvailable: typeof images[0] === 'string',
-      imageUrl: typeof images[0] === 'string' ? images[0] : null,
-      sellerName: lead.seller_public_name || 'Autorell',
-      sellerIsTrader: Boolean(lead.seller_is_trader),
-      messagingEnabled: Boolean(lead.seller_user_id),
-    }
-  })
+  const listings: MarketplaceListing[] = (data || []).map((listing) => ({
+    id: listing.id,
+    make: listing.make || '',
+    model: listing.model || '',
+    title: listing.title,
+    year: listing.model_year ? String(listing.model_year) : null,
+    mileageKm: listing.mileage_km,
+    fuelType: listing.fuel_type,
+    country: listing.country_code,
+    priceLabel: formatMarketplacePrice(Number(listing.price), listing.currency, 'sv'),
+    priceValue: Number(listing.price),
+    imageAvailable: Boolean(listing.images?.[0]),
+    imageUrl: listing.images?.[0] || null,
+    sellerName: listing.seller_name,
+    sellerIsTrader: listing.seller_type === 'business',
+    messagingEnabled: true,
+  }))
 
   return (
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
@@ -65,18 +56,4 @@ export default async function SavedListingsPage() {
       <PublicFooter />
     </main>
   )
-}
-
-function normalizeCountry(value: string | null) {
-  const normalized = (value || 'SE').trim().toUpperCase()
-  const aliases: Record<string, string> = {
-    SWEDEN: 'SE',
-    SVERIGE: 'SE',
-    GERMANY: 'DE',
-    DEUTSCHLAND: 'DE',
-    DENMARK: 'DK',
-    DANMARK: 'DK',
-    FINLAND: 'FI',
-  }
-  return aliases[normalized] || normalized.slice(0, 2)
 }

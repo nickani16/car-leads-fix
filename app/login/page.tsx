@@ -44,24 +44,12 @@ export default function LoginPage() {
         setRememberLogin(true)
       }
 
-      if (next === '/admin' || next === '/dealer' || next === '/sales' || next === '/konto') {
+      if (next === '/admin' || next?.startsWith('/konto')) {
         setRequestedPath(next)
       }
 
       if (status === 'account-created') {
         setStatusMessage('Your account is ready. Sign in to continue.')
-      }
-
-      if (status === 'pending') {
-        setStatusMessage(
-          'Your application is under review. Access will be available once your dealer account has been approved.'
-        )
-      }
-
-      if (status === 'dealer-not-found') {
-        setStatusMessage(
-          'No dealer profile was found for this account. Please contact Autorell support.'
-        )
       }
 
       if (status === 'password-updated') {
@@ -73,12 +61,6 @@ export default function LoginPage() {
       if (status === 'admin-required') {
         setStatusMessage(
           'This account does not have access to the Autorell Admin Portal.'
-        )
-      }
-
-      if (status === 'sales-required') {
-        setStatusMessage(
-          'This account does not have access to the Autorell Sales Portal.'
         )
       }
 
@@ -94,7 +76,7 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    const examples = ['dealer@company.com', 'or username']
+    const examples = ['name@company.com', 'private@example.eu']
     let exampleIndex = 0
     let characterIndex = 0
     let deleting = false
@@ -167,7 +149,7 @@ export default function LoginPage() {
         window.localStorage.removeItem(REMEMBERED_LOGIN_KEY)
       }
 
-      router.replace(result.destination || '/dealer')
+      router.replace(result.destination || '/konto')
       router.refresh()
     } catch {
       setErrorMessage(

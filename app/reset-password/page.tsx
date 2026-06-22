@@ -66,11 +66,11 @@ export default function ResetPasswordPage() {
           <Link href="/" className={styles.logo} aria-label="Autorell home">
             <BrandLogo />
           </Link>
-          <div className={styles.badge}>Secure dealer access</div>
+          <div className={styles.badge}>Secure marketplace access</div>
           <h1 className={styles.heroTitle}>Choose a new password.</h1>
           <p className={styles.heroText}>
-            Use a strong, unique password to protect your company account and
-            bidding activity.
+            Use a strong, unique password to protect your marketplace account,
+            listings and conversations.
           </p>
         </div>
 

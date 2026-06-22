@@ -3,13 +3,10 @@ import { headers } from 'next/headers'
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react'
 import BrandLogo from './components/BrandLogo'
 import {
-  notFoundCopy,
+  getNotFoundCopy,
   type NotFoundLanguage,
 } from '@/lib/not-found-copy'
-
-const supportedLanguages = new Set<NotFoundLanguage>(
-  Object.keys(notFoundCopy) as NotFoundLanguage[],
-)
+import { isPublicLanguage } from '@/lib/public-i18n'
 
 export default async function NotFound() {
   const requestHeaders = await headers()
@@ -30,11 +27,11 @@ export default async function NotFound() {
       : 'sv'
   const language =
     requestedLanguage &&
-    supportedLanguages.has(requestedLanguage as NotFoundLanguage)
+    isPublicLanguage(requestedLanguage)
       ? (requestedLanguage as NotFoundLanguage)
       : fallbackLanguage
-  const copy = notFoundCopy[language]
-  const actionHref = language === 'sv' ? '/salj-bil' : '/dealer-apply'
+  const copy = getNotFoundCopy(language)
+  const actionHref = '/marketplace/cars'
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f6f4ef] text-[#202124]">

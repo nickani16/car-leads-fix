@@ -6,9 +6,9 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
-  const next = requestUrl.searchParams.get('next') || '/dealer'
+  const next = requestUrl.searchParams.get('next') || '/konto'
   const safeNext =
-    next.startsWith('/') && !next.startsWith('//') ? next : '/dealer'
+    next.startsWith('/') && !next.startsWith('//') ? next : '/konto'
   const supabase = await createClient()
 
   if (tokenHash && type === 'recovery') {
