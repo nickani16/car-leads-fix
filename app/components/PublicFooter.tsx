@@ -23,16 +23,16 @@ const buyCarLabels: Record<PublicLocale, string> = {
 
 const footerCopy = {
   sv: {
-    description: 'En professionell B2B marketplace för fordon, maskiner och mobilitetsprodukter.',
-    question: 'Vill ert företag köpa eller lista professionella objekt?',
-    cta: 'Ansök om företagskonto',
-    statement: 'Företag listar. Professionella köpare handlar.',
+    description: 'Europas marknadsplats för fordon — skapad för privatpersoner och företag.',
+    question: 'Vill du köpa, sälja eller nå en större europeisk marknad?',
+    cta: 'Utforska marknaden',
+    statement: 'Fordon, köpare och säljare. Samlade över hela Europa.',
     sellerTitle: 'Marketplace',
     sellerLinks: [
-      ['Cars', '/hitta-bilar'],
-      ['Vans', '/marketplace/vans'],
-      ['Bikes', '/marketplace/bikes'],
-      ['Trucks', '/marketplace/trucks'],
+      ['Bilar', '/hitta-bilar'],
+      ['Transportbilar', '/marketplace/vans'],
+      ['Motorcyklar', '/marketplace/bikes'],
+      ['Lastbilar', '/marketplace/trucks'],
     ] as [string, string][],
     businessTitle: 'Företag',
     businessLinks: [
@@ -43,10 +43,10 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Fler kategorier',
     dealerLinks: [
-      ['Motorhomes', '/marketplace/motorhomes'],
-      ['Caravans', '/marketplace/caravans'],
-      ['Farm & Plant', '/marketplace/farm'],
-      ['Electric bikes', '/marketplace/electric-bikes'],
+      ['Husbilar', '/marketplace/motorhomes'],
+      ['Husvagnar', '/marketplace/caravans'],
+      ['Lantbruk & entreprenad', '/marketplace/farm'],
+      ['Elcyklar', '/marketplace/electric-bikes'],
     ] as [string, string][],
     contact: 'Kontakt',
     support: 'Support för verifierade företag och professionella köpare.',
@@ -189,7 +189,7 @@ export default function PublicFooter({
             <Link
               href={
                 locale === 'sv'
-                  ? '/bli-bilhandlare'
+                  ? '/hitta-bilar'
                   : locale === 'de'
                     ? '/haendlerzugang'
                     : '/dealer-apply'

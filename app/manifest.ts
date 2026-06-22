@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Autorell',
     short_name: 'Autorell',
     description:
-      'Autorell connects vehicle sellers with a verified European dealer network.',
+      'Europas marknadsplats för fordon, skapad för privatpersoner och företag.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

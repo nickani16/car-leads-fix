@@ -793,7 +793,7 @@ export default function PublicHeader({
       ctaHref: marketRoutes.dealerAccess,
       links: [
         ['/find-cars', 'Köp'],
-        ['/dealer-apply', 'Sälj som företag'],
+        ['/salj-bil', 'Sälj fordon'],
         ['/dealer', 'Företagskonto'],
         ['/om-oss', 'Om Autorell'],
         ['/vanliga-fragor', 'Hjälp'],
@@ -810,11 +810,11 @@ export default function PublicHeader({
     }
     processMenu = {
       ...processMenu,
-      eyebrow: 'Endast för företag',
-      title: 'Lista objekt som professionell säljare.',
-      text: 'Ansök om företagskonto för att publicera ert lager på Autorell.',
-      cta: 'Ansök om konto',
-      ctaHref: '/dealer-apply',
+      eyebrow: 'För privatpersoner och företag',
+      title: 'Sälj ett fordon till en större europeisk marknad.',
+      text: 'Starta en enskild försäljning eller välj en företagslösning för lager och återkommande volymer.',
+      cta: 'Börja sälja',
+      ctaHref: '/salj-bil',
     }
     companyMenu = {
       ...companyMenu,

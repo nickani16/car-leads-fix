@@ -45,9 +45,9 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return createPublicMetadata({
-    title: 'Köp och sälj alla typer av fordon i Europa | Autorell',
+    title: 'Europas marknadsplats för fordon | Autorell',
     description:
-      'Sök, jämför, köp och sälj bilar, transportbilar, motorcyklar, fritidsfordon och maskiner på Autorells europeiska fordonsmarknad.',
+      'Köp och sälj bilar, transportbilar, motorcyklar, fritidsfordon och maskiner över hela Europa — för privatpersoner och företag.',
     path: '/',
   })
 }
