@@ -107,7 +107,10 @@ export default async function MarketplaceCategoryPage({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader locale={locale} />
+      <PublicHeader
+        locale={locale}
+        marketplaceChannel={{ label, slug: category.slug }}
+      />
       <MarketplaceChannelNav slug={category.slug} label={label} locale={locale} />
       <MarketplaceCategoryBrowser
         category={{

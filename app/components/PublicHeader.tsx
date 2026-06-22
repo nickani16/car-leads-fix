@@ -328,6 +328,19 @@ export default function PublicHeader({
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? businessItems[language]
       : translatePublicObject(locale, businessItems.en)
+  const activeCategorySlug = pathname.startsWith('/marketplace/')
+    ? pathname.split('/')[2]
+    : null
+  const activeMarketplaceChannel =
+    marketplaceChannel ||
+    (activeCategorySlug
+      ? {
+          slug: activeCategorySlug,
+          label:
+            buyItems.find((item) => item.href === `/marketplace/${activeCategorySlug}`)
+              ?.label || '',
+        }
+      : null)
 
   const menus: Array<{
     label: string
@@ -505,7 +518,7 @@ export default function PublicHeader({
                   <span className="mt-0.5 text-[10px] leading-none">{t.menu}</span>
                 </button>
                 <Link
-                  href={`/salj-fordon${marketplaceChannel ? `?category=${marketplaceChannel.slug}` : ''}`}
+                  href={`/salj-fordon${activeMarketplaceChannel ? `?category=${activeMarketplaceChannel.slug}` : ''}`}
                   onClick={closeMobile}
                   className="flex w-11 shrink-0 flex-col items-center justify-center"
                 >
@@ -521,9 +534,9 @@ export default function PublicHeader({
                 onClick={closeMobile}
               >
                 <BrandLogo />
-                {marketplaceChannel ? (
+                {activeMarketplaceChannel?.label ? (
                   <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#344054]">
-                    {marketplaceChannel.label}
+                    {activeMarketplaceChannel.label}
                   </span>
                 ) : null}
               </Link>
@@ -537,15 +550,23 @@ export default function PublicHeader({
                   <SiteSearch
                     locale={locale}
                     headerMobile
-                    atPageTop
                     onNavigate={closeMobile}
                   />
                 </div>
               </div>
             </div>
 
-            <Link href={homeHref} aria-label="Autorell" className="hidden shrink-0 items-center min-[1120px]:inline-flex">
+            <Link
+              href={homeHref}
+              aria-label="Autorell"
+              className="hidden shrink-0 flex-col items-center justify-center min-[1120px]:inline-flex"
+            >
               <BrandLogo />
+              {activeMarketplaceChannel?.label ? (
+                <span className="mt-0.5 max-w-[120px] truncate text-[9px] font-semibold leading-none text-[#344054]">
+                  {activeMarketplaceChannel.label}
+                </span>
+              ) : null}
             </Link>
 
             <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">

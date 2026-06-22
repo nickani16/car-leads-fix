@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Search, Sparkles, X } from 'lucide-react'
+import { ArrowRight, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { PublicLocale } from '@/lib/public-i18n'
@@ -43,7 +43,6 @@ export default function SiteSearch({
   mobile = false,
   headerMobile = false,
   headerDesktop = false,
-  atPageTop = true,
   onNavigate,
 }: {
   locale: PublicLocale
@@ -51,7 +50,6 @@ export default function SiteSearch({
   mobile?: boolean
   headerMobile?: boolean
   headerDesktop?: boolean
-  atPageTop?: boolean
   onNavigate?: () => void
 }) {
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
@@ -97,8 +95,8 @@ export default function SiteSearch({
   }, [index, locale, query])
 
   useEffect(() => {
-    if (open && !mobile) inputRef.current?.focus()
-  }, [mobile, open])
+    if (open && !mobile && !headerMobile) inputRef.current?.focus()
+  }, [headerMobile, mobile, open])
 
   if (!open && (!mobile || headerMobile)) {
     if (headerDesktop) {
@@ -120,21 +118,24 @@ export default function SiteSearch({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={text.label}
-        className={`grid h-11 w-11 place-items-center rounded-full border text-[#242424] transition hover:-translate-y-0.5 hover:border-[#adcddd] hover:bg-[#eef7fb] ${
+        className={`text-[#202124] transition ${
           headerMobile
-            ? 'border-[#deddd8] bg-[#f8f7f3] min-[1120px]:hidden'
-            : 'border-[#d9dfdf] bg-white/90'
+            ? 'flex w-11 flex-col items-center justify-center min-[1120px]:hidden'
+            : 'grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-white'
         }`}
       >
-        <Search className="h-[18px] w-[18px]" />
+        <Search className={headerMobile ? 'h-[21px] w-[21px]' : 'h-[18px] w-[18px]'} strokeWidth={1.7} />
+        {headerMobile ? (
+          <span className="mt-0.5 text-[10px] leading-none">{text.label}</span>
+        ) : null}
       </button>
     )
   }
 
   const panel = (
     <div className={mobile || headerMobile ? 'relative w-full' : 'relative w-full'}>
-      <div className="flex h-14 items-center gap-3 rounded-[18px] border border-[#c9d7dc] bg-white px-4 shadow-[0_14px_38px_rgba(32,52,62,.1)] transition focus-within:border-[#78aec9] focus-within:ring-4 focus-within:ring-[#b4d9ef]/35">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#e8f4fa] text-[#315f75]">
+      <div className="flex h-14 items-center gap-3 rounded-[15px] border border-[#d7d9dc] bg-white px-4 shadow-[0_10px_30px_rgba(32,33,36,.08)] transition focus-within:border-[#8d9499] focus-within:ring-4 focus-within:ring-black/5">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-[#f2f3f4] text-[#3f4549]">
           <Search className="h-[17px] w-[17px]" />
         </span>
         <input
@@ -143,7 +144,7 @@ export default function SiteSearch({
           onChange={(event) => setQuery(event.target.value)}
           placeholder={text.placeholder}
           aria-label={text.placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[15px] text-[#202124] outline-none placeholder:text-[#8b989e]"
+          className="min-w-0 flex-1 bg-transparent text-base text-[#202124] outline-none placeholder:text-[#8b9195]"
         />
         {query && (
           <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
@@ -153,7 +154,7 @@ export default function SiteSearch({
       </div>
 
       {query.trim().length >= 2 && (
-        <div className={`${mobile || headerMobile ? 'mt-3' : 'absolute right-0 top-full z-50 mt-3'} w-full overflow-hidden rounded-[20px] border border-[#d8e2e5] bg-white p-2 shadow-[0_28px_75px_rgba(32,45,52,.18)]`}>
+        <div className={`${mobile || headerMobile ? 'mt-3' : 'absolute right-0 top-full z-50 mt-3'} w-full overflow-hidden rounded-[16px] border border-[#dedede] bg-white p-2 shadow-[0_24px_65px_rgba(32,33,36,.16)]`}>
           {results.length > 0 ? (
             results.map((result) => (
               <Link
@@ -164,9 +165,9 @@ export default function SiteSearch({
                   setQuery('')
                   onNavigate?.()
                 }}
-                className="group flex items-center gap-3 rounded-[15px] border border-transparent px-3 py-3 transition hover:border-[#dceaf0] hover:bg-[#eef7fb]"
+                className="group flex items-center gap-3 rounded-[12px] border border-transparent px-3 py-3 transition hover:border-[#e2e2e2] hover:bg-[#f5f5f3]"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f1f5f5] text-[#6a7e87] transition group-hover:bg-white group-hover:text-[#315f75]">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#f1f2f2] text-[#62686c] transition group-hover:bg-white group-hover:text-[#202124]">
                   <ArrowRight className="h-4 w-4 -rotate-45" />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -177,19 +178,13 @@ export default function SiteSearch({
                     {result.description}
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-[#7195a6] transition group-hover:translate-x-0.5" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-[#777d81] transition group-hover:translate-x-0.5" />
               </Link>
             ))
           ) : (
             <p className="px-4 py-5 text-sm text-[#718087]">{text.empty}</p>
           )}
         </div>
-      )}
-      {(mobile || headerMobile) && query.trim().length < 2 && (
-        <p className="mt-3 flex items-center gap-2 px-1 text-[11px] text-[#718087]">
-          <Sparkles className="h-3.5 w-3.5 text-[#5b91aa]" />
-          {text.hint}
-        </p>
       )}
     </div>
   )
@@ -203,19 +198,16 @@ export default function SiteSearch({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close search"
-          className="grid h-11 w-11 place-items-center rounded-full border border-[#242424] bg-[#242424] text-white min-[1120px]:hidden"
+          className="flex w-11 flex-col items-center justify-center text-[#202124] min-[1120px]:hidden"
         >
-          <X className="h-[18px] w-[18px]" />
+          <X className="h-[21px] w-[21px]" strokeWidth={1.7} />
+          <span className="mt-0.5 text-[10px] leading-none">{text.label}</span>
         </button>
         {createPortal(
           <div
-            className={`fixed inset-x-0 bottom-0 z-[200] overflow-y-auto bg-[#182126]/25 backdrop-blur-[3px] min-[1120px]:hidden ${
-              atPageTop
-                ? 'top-[104px] md:top-[124px]'
-                : 'top-[72px] md:top-[88px]'
-            }`}
+            className="fixed inset-x-0 bottom-0 top-[64px] z-[200] overflow-y-auto bg-black/20 backdrop-blur-[2px] min-[1120px]:hidden"
           >
-            <div className="border-t border-[#d8e1e3] bg-[linear-gradient(145deg,#f8fbfb,#edf5f7)] px-5 py-5 shadow-[0_28px_70px_rgba(24,33,38,.22)] sm:px-8">
+            <div className="border-t border-[#deddd8] bg-[#f7f7f5] px-5 py-5 shadow-[0_24px_60px_rgba(32,33,36,.16)] sm:px-8">
               <div className="mx-auto max-w-2xl">
                 <div className="mb-4">
                   <p className="text-lg font-semibold tracking-[-0.02em] text-[#202124]">
@@ -248,7 +240,7 @@ export default function SiteSearch({
           <span className="text-[10px] font-medium">{text.label}</span>
         </button>
         <div className="absolute right-0 top-full z-50 pt-2">
-          <div className="w-[min(560px,calc(100vw-32px))] rounded-[24px] border border-[#d8e2e5] bg-[linear-gradient(145deg,#f9fbfb,#edf5f7)] p-4 shadow-[0_30px_85px_rgba(28,42,49,.2)]">
+          <div className="w-[min(560px,calc(100vw-32px))] rounded-[18px] border border-[#dedede] bg-[#f7f7f5] p-4 shadow-[0_28px_75px_rgba(32,33,36,.18)]">
             <div className="mb-4 flex items-start justify-between gap-5 px-1">
               <p className="text-lg font-semibold tracking-[-0.025em] text-[#202124]">
                 {text.title}
@@ -266,12 +258,6 @@ export default function SiteSearch({
               </button>
             </div>
             {panel}
-            {query.trim().length < 2 && (
-              <p className="mt-3 flex items-center gap-2 px-1 text-[11px] text-[#718087]">
-                <Sparkles className="h-3.5 w-3.5 text-[#5b91aa]" />
-                {text.hint}
-              </p>
-            )}
           </div>
         </div>
       </div>
