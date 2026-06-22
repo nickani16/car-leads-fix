@@ -130,7 +130,7 @@ export default async function HomePage() {
     <main className="min-h-screen overflow-hidden bg-white text-[#202124]">
       <PublicHeader transparentAtTop />
 
-      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea] md:-mt-[124px] md:pt-[124px]">
+      <section className="relative isolate overflow-hidden border-b border-[#d9d8d2] bg-[#f4f1ea]">
         <Image
           src="/autorell-volvo-hero.jpg"
           alt="Modern elbil vid nordisk arkitektur"

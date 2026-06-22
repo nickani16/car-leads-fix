@@ -177,7 +177,6 @@ function MarketFlag({
 }
 
 export default function PublicHeader({
-  transparentAtTop = false,
   locale = 'sv',
 }: PublicHeaderProps) {
   const [open, setOpen] = useState(false)
@@ -243,7 +242,6 @@ export default function PublicHeader({
     }
   }, [marketOpen])
 
-  const transparent = transparentAtTop && atTop && !open
   const marketCopy =
     activeLocale === 'sv'
       ? marketNames.sv
@@ -781,12 +779,7 @@ export default function PublicHeader({
 
   return (
     <>
-      <div
-        className={`h-[104px] ${
-          transparentAtTop ? 'md:hidden' : 'md:h-[124px]'
-        }`}
-        aria-hidden="true"
-      />
+      <div className="h-[104px] md:h-[124px]" aria-hidden="true" />
       <div
         className={`fixed inset-x-0 top-0 z-[100] transition-transform duration-300 ease-out ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
@@ -907,13 +900,7 @@ export default function PublicHeader({
           </div>
         </div>
 
-        <header
-          className={`relative transition-[background-color,border-color,box-shadow] duration-300 ${
-            transparent
-              ? 'border-b border-[#deddd8]/80 bg-white shadow-[0_8px_30px_rgba(32,33,36,.06)] lg:border-transparent lg:bg-transparent lg:shadow-none'
-              : 'border-b border-[#deddd8]/80 bg-white/95 shadow-[0_8px_30px_rgba(32,33,36,.06)] backdrop-blur-xl'
-          }`}
-        >
+        <header className="relative border-b border-[#deddd8] bg-white shadow-[0_4px_18px_rgba(32,33,36,.045)]">
           <div className="relative mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 md:h-[88px] lg:px-12 xl:px-16">
             <a
               href={homeHref}
@@ -930,11 +917,7 @@ export default function PublicHeader({
             </a>
 
             <nav
-              className={`absolute left-1/2 hidden w-max -translate-x-1/2 items-center whitespace-nowrap p-1 transition-[background-color,border-color,box-shadow,border-radius] duration-300 min-[1120px]:flex xl:p-1.5 ${
-                transparent
-                  ? 'rounded-[22px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.58))] shadow-[0_18px_55px_rgba(32,33,36,.1),inset_0_1px_0_rgba(255,255,255,.92)] ring-1 ring-black/[.025] backdrop-blur-2xl backdrop-saturate-150'
-                  : 'border border-transparent bg-transparent shadow-none'
-              }`}
+              className="absolute left-1/2 hidden h-full w-max -translate-x-1/2 items-center whitespace-nowrap min-[1120px]:flex"
             >
               <DesktopMenu
                 label={content.links[0][1]}
@@ -970,7 +953,7 @@ export default function PublicHeader({
 
               <Link
                 href={content.links[4][0]}
-                className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] hover:text-[#111111] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
+                className="flex h-full shrink-0 items-center gap-1.5 border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-medium text-[#303030] transition hover:border-[#42adeb] hover:text-[#111111] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
               >
                 {content.links[4][1]}
               </Link>
@@ -1200,7 +1183,7 @@ function DesktopMenu({
       <a
         href={href}
         onClick={(event) => onNavigate(event, href)}
-        className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-normal text-[#303030] transition hover:bg-[#f1f5f6] group-focus-within:bg-[#f1f5f6] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
+        className="flex h-[88px] shrink-0 items-center gap-1.5 border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-medium text-[#303030] transition hover:border-[#42adeb] hover:text-[#111111] group-focus-within:border-[#42adeb] xl:gap-2 xl:px-4 xl:text-[13px] 2xl:px-5"
       >
         {label}
         <ChevronDown className="h-3.5 w-3.5 transition duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />

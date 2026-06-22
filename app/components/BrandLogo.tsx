@@ -21,10 +21,10 @@ export default function BrandLogo({
         priority
         className={`h-auto object-contain ${
           iconOnly
-            ? 'w-[92px]'
+            ? 'w-[98px]'
             : compact
-              ? 'w-[88px]'
-              : 'w-[108px] sm:w-[114px] lg:w-[120px]'
+              ? 'w-[94px]'
+              : 'w-[116px] sm:w-[122px] lg:w-[128px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
     </span>
