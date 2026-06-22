@@ -355,6 +355,11 @@ input, textarea, select {
   background-color: #ffffff !important;
 }
 
+.marketplace-search-control {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 /* Autofill fix */
 input:-webkit-autofill,
 textarea:-webkit-autofill,

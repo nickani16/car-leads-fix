@@ -41,7 +41,7 @@ export default function MarketplaceSearch() {
     >
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[1.05fr_1.55fr_1fr_auto] sm:items-center">
         <SearchField label="Kategori" icon={CarFront}>
-          <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
+          <select value={category} onChange={(event) => setCategory(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             <option value="cars">Bilar</option>
             <option value="vans">Transportbilar</option>
             <option value="bikes">Motorcyklar</option>
@@ -61,7 +61,7 @@ export default function MarketplaceSearch() {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Märke eller modell"
             list="marketplace-makes"
-            className="h-7 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+            className="marketplace-search-control h-7 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
           />
           <datalist id="marketplace-makes">
             {popularMakes.map((make) => <option key={make} value={make} />)}
@@ -69,7 +69,7 @@ export default function MarketplaceSearch() {
         </SearchField>
 
         <SearchField label="Plats" icon={MapPin}>
-          <select value={country} onChange={(event) => setCountry(event.target.value)} className="h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
+          <select value={country} onChange={(event) => setCountry(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             <option value="">Hela EU</option>
             <option value="SE">Sverige</option>
             <option value="DE">Tyskland</option>

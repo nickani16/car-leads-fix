@@ -1084,13 +1084,6 @@ export default function PublicHeader({
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
               <Link
                 href={marketRoutes.dealerAccess}
-                className="flex items-center border-l border-[#ececea] px-3 text-[10px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
-              >
-                <span className="hidden xl:inline">{content.partner}</span>
-                <Store className="h-[18px] w-[18px] xl:hidden" strokeWidth={1.7} />
-              </Link>
-              <Link
-                href={marketRoutes.dealerAccess}
                 className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <Store className="h-[19px] w-[19px]" strokeWidth={1.7} />
