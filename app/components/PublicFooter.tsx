@@ -143,7 +143,9 @@ export default function PublicFooter({
   const homeHref =
     locale === 'de'
       ? 'https://www.autorell.de/'
-      : locale !== 'sv'
+      : locale === 'en'
+        ? 'https://www.autorell.com/'
+        : locale !== 'sv'
         ? `https://www.autorell.com/${locale}`
         : 'https://www.autorell.se/'
   const contactHref = localizePublicHref(
