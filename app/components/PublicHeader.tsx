@@ -29,7 +29,6 @@ import {
 } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
-import RotatingHeaderMessage from './RotatingHeaderMessage'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
@@ -182,7 +181,6 @@ export default function PublicHeader({
   const [open, setOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [atTop, setAtTop] = useState(true)
   const lastScrollY = useRef(0)
   const marketMenuRef = useRef<HTMLDivElement>(null)
   const activeLocale = useSyncExternalStore(
@@ -195,7 +193,6 @@ export default function PublicHeader({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const difference = currentScrollY - lastScrollY.current
-      setAtTop(currentScrollY < 8)
 
       if (currentScrollY < 80) {
         setVisible(true)
@@ -737,39 +734,17 @@ export default function PublicHeader({
         : activeLocale === 'en'
           ? 'Log in'
           : translatePublic(activeLocale, 'Log in')
-  const vehicleCategories =
-    activeLocale === 'sv'
-      ? [
-          ['Personbilar', marketRoutes.vehicles],
-          ['El & hybrid', marketRoutes.vehicles],
-          ['SUV', marketRoutes.vehicles],
-          ['Premium', marketRoutes.vehicles],
-          ['Transportbilar', marketRoutes.vehicles],
-          ['Lagerbilar', '/salj-lagerbil'],
-          ['Leasingreturer', '/foretag'],
-          ['Företagsflottor', '/foretag'],
-        ]
-      : activeLocale === 'de'
-        ? [
-            ['Pkw', marketRoutes.vehicles],
-            ['Elektro & Hybrid', marketRoutes.vehicles],
-            ['SUV', marketRoutes.vehicles],
-            ['Premium', marketRoutes.vehicles],
-            ['Transporter', marketRoutes.vehicles],
-            ['Lagerfahrzeuge', '/fahrzeugbestand-verkaufen'],
-            ['Leasingrückläufer', '/fahrzeugbestand-verkaufen'],
-            ['Flotten', '/fahrzeugbestand-verkaufen'],
-          ]
-        : [
-            ['Cars', marketRoutes.vehicles],
-            ['Electric & hybrid', marketRoutes.vehicles],
-            ['SUV', marketRoutes.vehicles],
-            ['Premium', marketRoutes.vehicles],
-            ['Vans', marketRoutes.vehicles],
-            ['Stock vehicles', '/sell-stock'],
-            ['Lease returns', '/sell-stock'],
-            ['Fleets', '/sell-stock'],
-          ]
+  const vehicleCategories = [
+    ['Cars', marketRoutes.vehicles],
+    ['Vans', '/marketplace/vans'],
+    ['Bikes', '/marketplace/bikes'],
+    ['Motorhomes', '/marketplace/motorhomes'],
+    ['Caravans', '/marketplace/caravans'],
+    ['Trucks', '/marketplace/trucks'],
+    ['Farm', '/marketplace/farm'],
+    ['Plant', '/marketplace/plant'],
+    ['Electric bikes', '/marketplace/electric-bikes'],
+  ]
   content = {
     ...content,
     links: content.links.map(([href, label]) => [
@@ -796,6 +771,48 @@ export default function PublicHeader({
     })),
   }
 
+  if (activeLocale === 'sv') {
+    content = {
+      ...content,
+      dealerLabel: 'Om Autorell',
+      partner: 'Bli företagssäljare',
+      cta: 'Ansök om företagskonto',
+      ctaHref: marketRoutes.dealerAccess,
+      links: [
+        ['/find-cars', 'Köp'],
+        ['/dealer-apply', 'Sälj som företag'],
+        ['/dealer', 'Företagskonto'],
+        ['/om-oss', 'Om Autorell'],
+        ['/vanliga-fragor', 'Hjälp'],
+        ['/kontakt', 'Kontakta oss'],
+      ],
+    }
+    sellerMenu = {
+      ...sellerMenu,
+      eyebrow: 'Autorell marketplace',
+      title: 'Utforska professionellt utbud.',
+      text: 'Fordon och maskiner listade av verifierade företag.',
+      cta: 'Se Cars',
+      ctaHref: '/find-cars',
+    }
+    processMenu = {
+      ...processMenu,
+      eyebrow: 'Endast för företag',
+      title: 'Lista objekt som professionell säljare.',
+      text: 'Ansök om företagskonto för att publicera ert lager på Autorell.',
+      cta: 'Ansök om konto',
+      ctaHref: '/dealer-apply',
+    }
+    companyMenu = {
+      ...companyMenu,
+      eyebrow: 'Företagsplattform',
+      title: 'Hantera utbud och affärer.',
+      text: 'Ett professionellt arbetsflöde för listningar, köpare och försäljning.',
+      cta: 'Logga in',
+      ctaHref: '/login',
+    }
+  }
+
   function handleSectionLink(
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
@@ -812,21 +829,15 @@ export default function PublicHeader({
 
   return (
     <>
-      <div className="h-[104px] md:h-[124px]" aria-hidden="true" />
+      <div className="h-[72px] min-[1120px]:h-[88px]" aria-hidden="true" />
       <div
         className={`fixed inset-x-0 top-0 z-[100] transition-transform duration-300 ease-out ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <div
-          className={`bg-[#B4D9EF] text-[#202124] transition-[height,opacity] duration-300 ease-out ${
-            atTop
-              ? 'h-8 overflow-visible opacity-100 md:h-9'
-              : 'pointer-events-none h-0 overflow-hidden opacity-0'
-          }`}
-        >
+        <div className="hidden">
           <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between px-5 text-[10px] font-medium tracking-[0.02em] sm:px-8 md:h-9 md:text-xs lg:px-12 xl:px-16">
-            <RotatingHeaderMessage locale={activeLocale} />
+            <span />
             <div className="hidden items-center gap-6 md:flex">
               <Link
                 href={content.links[5][0]}
@@ -1012,6 +1023,77 @@ export default function PublicHeader({
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
               <Link
+                href={content.links[5][0]}
+                className="flex items-center gap-1.5 border-l border-[#ececea] px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
+              >
+                <Headphones className="h-4 w-4" />
+                <span className="hidden 2xl:inline">{content.links[5][1]}</span>
+              </Link>
+              <Link
+                href={marketRoutes.dealerAccess}
+                className="flex items-center px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
+              >
+                <span className="hidden xl:inline">{content.partner}</span>
+                <Store className="h-[18px] w-[18px] xl:hidden" strokeWidth={1.7} />
+              </Link>
+              <div ref={marketMenuRef} className="relative flex">
+                <button
+                  type="button"
+                  onClick={() => setMarketOpen((current) => !current)}
+                  aria-expanded={marketOpen}
+                  aria-haspopup="menu"
+                  className="flex items-center gap-2 px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
+                >
+                  <MarketFlag
+                    locale={localizedLanguage.locale}
+                    className="h-[16px] w-[24px]"
+                  />
+                  <span className="hidden 2xl:inline">
+                    {localizedLanguage.label}
+                  </span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition ${
+                      marketOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`absolute right-0 top-full z-30 w-[250px] pt-2 transition duration-150 ${
+                    marketOpen
+                      ? 'pointer-events-auto translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0'
+                  }`}
+                >
+                  <div
+                    role="menu"
+                    className="max-h-[calc(100dvh-100px)] overflow-y-auto rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]"
+                  >
+                    {localizedMarkets.map((market) => (
+                      <a
+                        key={market.locale}
+                        href={market.href}
+                        className={`flex items-center gap-3 rounded-[11px] px-3 py-2.5 text-sm transition hover:bg-[#f2f6f7] ${
+                          market.locale === activeLocale ? 'bg-[#eef6fa]' : ''
+                        }`}
+                      >
+                        <MarketFlag
+                          locale={market.locale}
+                          className="h-[20px] w-[30px] shrink-0"
+                        />
+                        <span>
+                          <strong className="block font-medium">
+                            {market.label}
+                          </strong>
+                          <span className="text-[10px] text-[#7a878d]">
+                            {market.description}
+                          </span>
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <Link
                 href={marketRoutes.dealerAccess}
                 className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-l border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#168dce]"
               >
@@ -1062,7 +1144,7 @@ export default function PublicHeader({
         </header>
 
         <div
-          className={`absolute inset-x-0 top-full h-[calc(100dvh-104px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 md:h-[calc(100dvh-124px)] min-[1120px]:hidden ${
+          className={`absolute inset-x-0 top-full h-[calc(100dvh-72px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 min-[1120px]:hidden ${
             open
               ? 'pointer-events-auto translate-y-0 opacity-100'
               : 'pointer-events-none -translate-y-3 opacity-0'

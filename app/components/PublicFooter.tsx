@@ -23,34 +23,33 @@ const buyCarLabels: Record<PublicLocale, string> = {
 
 const footerCopy = {
   sv: {
-    description: 'En enklare och tryggare väg mellan svenska bilägare och professionella köpare i Europa.',
-    question: 'Har du en bil som passar vårt exportnätverk?',
-    cta: 'Sälj din bil',
-    statement: 'Utvalda svenska bilar. Professionella köpare i Europa.',
-    sellerTitle: 'Sälja bil',
+    description: 'En professionell B2B marketplace för fordon, maskiner och mobilitetsprodukter.',
+    question: 'Vill ert företag köpa eller lista professionella objekt?',
+    cta: 'Ansök om företagskonto',
+    statement: 'Företag listar. Professionella köpare handlar.',
+    sellerTitle: 'Marketplace',
     sellerLinks: [
-      ['Köp bil', '/hitta-bilar'],
-      ['Sälj din bil', '/salj-bil'],
-      ['Hur det fungerar', '/#sa-fungerar-det'],
-      ['Trygg affär', '/trygg-affar'],
+      ['Cars', '/hitta-bilar'],
+      ['Vans', '/marketplace/vans'],
+      ['Bikes', '/marketplace/bikes'],
+      ['Trucks', '/marketplace/trucks'],
     ] as [string, string][],
     businessTitle: 'Företag',
     businessLinks: [
-      ['Företagslösningar', '/foretag'],
-      ['Skicka in företagsfordon', '/salj-lagerbil'],
-      ['Varför välja Autorell', '/foretag#process'],
-      ['Starta ett pilotflöde', '/foretag#foretagskontakt'],
+      ['Ansök om företagskonto', '/bli-bilhandlare'],
+      ['Logga in', '/login'],
+      ['Utforska marknaden', '/hitta-bilar'],
       ['Om Autorell', '/om-oss'],
     ] as [string, string][],
-    dealerTitle: 'Handlare',
+    dealerTitle: 'Fler kategorier',
     dealerLinks: [
-      ['För bilhandlare', '/for-handlare'],
-      ['Ansök som handlare', '/bli-bilhandlare'],
-      ['Handlarvillkor', '/handlarvillkor'],
-      ['Logga in', '/login'],
+      ['Motorhomes', '/marketplace/motorhomes'],
+      ['Caravans', '/marketplace/caravans'],
+      ['Farm & Plant', '/marketplace/farm'],
+      ['Electric bikes', '/marketplace/electric-bikes'],
     ] as [string, string][],
     contact: 'Kontakt',
-    support: 'Personlig support för svenska säljare och europeiska handlare.',
+    support: 'Support för verifierade företag och professionella köpare.',
     contactLink: 'Kontakta oss',
     privacy: 'Integritetspolicy',
     cookies: 'Cookies',
@@ -190,7 +189,7 @@ export default function PublicFooter({
             <Link
               href={
                 locale === 'sv'
-                  ? '/salj-bil'
+                  ? '/bli-bilhandlare'
                   : locale === 'de'
                     ? '/haendlerzugang'
                     : '/dealer-apply'
