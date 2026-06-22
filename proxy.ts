@@ -146,24 +146,11 @@ const DEALER_MARKET_ROUTES = {
 const LEGACY_DEALER_PATHS = {
   de: new Map([
     ['/salj-bil', '/fahrzeuge'],
-    ['/trygg-affar', '/vorteile'],
-    ['/vanliga-fragor', '/faq'],
-    ['/foretag', '/vorteile'],
     ['/for-handlare', '/vorteile'],
-    ['/om-oss', '/ueber-autorell'],
-    ['/integritet', '/datenschutz'],
-    ['/villkor', '/nutzungsbedingungen'],
   ]),
   en: new Map([
     ['/salj-bil', '/vehicles'],
-    ['/trygg-affar', '/dealer-benefits'],
-    ['/vanliga-fragor', '/faq'],
-    ['/foretag', '/dealer-benefits'],
     ['/for-handlare', '/dealer-benefits'],
-    ['/om-oss', '/about'],
-    ['/kontakt', '/contact'],
-    ['/integritet', '/privacy'],
-    ['/villkor', '/terms'],
   ]),
 } as const
 
@@ -257,6 +244,17 @@ function getCountryMarket(request: NextRequest): string | null {
 
 function withLanguageCookie(response: NextResponse, language: string) {
   response.cookies.set('autorell-language', language, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+    sameSite: 'lax',
+    secure: true,
+  })
+  return response
+}
+
+function withMarketCookie(response: NextResponse, market: string) {
+  response.cookies.set('autorell-market', market, {
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 365,
     path: '/',
@@ -369,14 +367,15 @@ export function proxy(request: NextRequest) {
 
   const currentMarket = MARKET_BY_HOST[hostname]
   const preferredLanguage = request.cookies.get('autorell-language')?.value
-  const preferredMarket = isPublicLanguage(preferredLanguage || '')
-    ? preferredLanguage!
-    : getPreferredMarket(request)
+  const preferredMarket = getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
     request.headers.get('user-agent') || '',
   )
   const countryMarket = isSearchCrawler ? null : getCountryMarket(request)
-  const targetMarket = preferredMarket || countryMarket
+  const targetMarket =
+    preferredMarket ||
+    (isPublicLanguage(preferredLanguage || '') ? preferredLanguage! : null) ||
+    countryMarket
 
   if (
     hostname === MARKET_HOSTS.en ||
@@ -506,9 +505,15 @@ export function proxy(request: NextRequest) {
           segments[2] === 'import-from-sweden'
 
         if (isMarketHub) {
-          return NextResponse.next({
-            request: { headers: requestHeaders },
-          })
+          return withMarketCookie(
+            withLanguageCookie(
+              NextResponse.next({
+                request: { headers: requestHeaders },
+              }),
+              market?.language ?? 'en',
+            ),
+            marketCode,
+          )
         }
 
         if (isMarketCity || isMarketGuide) {
@@ -521,9 +526,15 @@ export function proxy(request: NextRequest) {
           })
         }
 
-        return NextResponse.next({
-          request: { headers: requestHeaders },
-        })
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.next({
+              request: { headers: requestHeaders },
+            }),
+            market?.language ?? 'en',
+          ),
+          marketCode,
+        )
       }
     }
 
@@ -559,6 +570,17 @@ export function proxy(request: NextRequest) {
   }
 
   if (pathname !== '/') {
+    if (
+      hostname === MARKET_HOSTS.en &&
+      isPublicLanguage(preferredLanguage || '')
+    ) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-autorell-language', preferredLanguage!)
+      if (preferredMarket && EU_BUYER_MARKET_CODES.has(preferredMarket)) {
+        requestHeaders.set('x-autorell-market', preferredMarket)
+      }
+      return NextResponse.next({ request: { headers: requestHeaders } })
+    }
     return NextResponse.next()
   }
 

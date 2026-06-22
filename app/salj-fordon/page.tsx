@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import {
   ArrowRight,
   Bike,
@@ -15,6 +16,7 @@ import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { createPublicMetadata } from '@/lib/public-seo'
 import { formatListingPrice, marketplaceCategories } from '@/lib/marketplace-pricing'
+import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
 
 export const metadata = createPublicMetadata({
   title: 'Sälj fordon i Sverige och Europa | Autorell',
@@ -42,10 +44,19 @@ export default async function SellVehiclePage({
   searchParams: Promise<{ category?: string }>
 }) {
   const { category } = await searchParams
+  const headerStore = await headers()
+  const requestedLocale = headerStore.get('x-autorell-language') || 'sv'
+  const marketCode = headerStore.get('x-autorell-market') || undefined
+  const locale: PublicLocale =
+    requestedLocale === 'sv' ||
+    requestedLocale === 'de' ||
+    isPublicLanguage(requestedLocale)
+      ? requestedLocale
+      : 'sv'
 
   return (
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader />
+      <PublicHeader locale={locale} marketCode={marketCode} />
       <section className="border-b border-[#e4e7ec] bg-white">
         <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 sm:py-20">
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
@@ -153,7 +164,7 @@ export default async function SellVehiclePage({
           </div>
         </div>
       </section>
-      <PublicFooter />
+      <PublicFooter locale={locale} />
     </main>
   )
 }

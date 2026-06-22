@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import {
   ArrowRight,
   BarChart3,
@@ -10,6 +11,7 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { createPublicMetadata } from '@/lib/public-seo'
+import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
 
 export const metadata = createPublicMetadata({
   title: 'Fordonsmarknadsplats för företag | Autorell',
@@ -26,10 +28,19 @@ const features = [
   { icon: BarChart3, title: 'Marketplace-lösningar', text: 'Bygg räckvidd över flera EU-marknader med lokala språk, valutor och landfilter.' },
 ] as const
 
-export default function BusinessPage() {
+export default async function BusinessPage() {
+  const headerStore = await headers()
+  const requestedLocale = headerStore.get('x-autorell-language') || 'sv'
+  const marketCode = headerStore.get('x-autorell-market') || undefined
+  const locale: PublicLocale =
+    requestedLocale === 'sv' ||
+    requestedLocale === 'de' ||
+    isPublicLanguage(requestedLocale)
+      ? requestedLocale
+      : 'sv'
   return (
     <main className="bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader />
+      <PublicHeader locale={locale} marketCode={marketCode} />
       <section className="border-b border-[#dce3ef] bg-[linear-gradient(135deg,#f7faff,#e7f0ff)]">
         <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Autorell för företag</p>
@@ -59,7 +70,7 @@ export default function BusinessPage() {
           </article>
         ))}
       </section>
-      <PublicFooter />
+      <PublicFooter locale={locale} />
     </main>
   )
 }

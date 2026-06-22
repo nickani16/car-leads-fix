@@ -47,5 +47,10 @@ export default async function MarketPage({ params }: MarketPageProps) {
   const { market: marketCode } = await params
   const market = getEuBuyerMarket(marketCode)
   if (!market) notFound()
-  return <BusinessMarketplaceHome locale={market.language as PublicLocale} />
+  return (
+    <BusinessMarketplaceHome
+      locale={market.language as PublicLocale}
+      marketCode={market.code}
+    />
+  )
 }

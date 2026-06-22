@@ -151,8 +151,10 @@ const homeCopy = {
 
 export default function BusinessMarketplaceHome({
   locale = 'sv',
+  marketCode,
 }: {
   locale?: PublicLocale
+  marketCode?: string
 }) {
   const t =
     locale === 'sv'
@@ -172,7 +174,7 @@ export default function BusinessMarketplaceHome({
   }))
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="px-4 pb-20 pt-7 sm:px-7 sm:pb-24 sm:pt-9 lg:px-10">
         <div className="relative mx-auto max-w-[1340px]">

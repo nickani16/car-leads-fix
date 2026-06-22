@@ -100,5 +100,4 @@ export function formatMarketplacePrice(
 }
 
 export const marketplacePublicSelect =
-  'id,category,title,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,condition,country_code,city,price,currency,images,seller_name,seller_type,created_at,published_at'
-
+  'id,category,title,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,condition,equipment,country_code,city,price,currency,images,seller_name,seller_type,created_at,published_at'

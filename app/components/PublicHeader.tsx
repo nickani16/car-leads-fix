@@ -52,6 +52,7 @@ type PublicHeaderProps = {
     label: string
     slug: string
   }
+  marketCode?: string
 }
 
 type MenuItem = {
@@ -226,6 +227,7 @@ const businessItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
 export default function PublicHeader({
   locale = 'sv',
   marketplaceChannel,
+  marketCode,
 }: PublicHeaderProps) {
   const pathname = usePathname()
   const language = marketplaceLanguage(locale)
@@ -408,6 +410,8 @@ export default function PublicHeader({
   ]
 
   const languageOptions: Array<readonly [string, string, string, string]> = [
+    ['eu', 'EU', 'EU / English', 'https://www.autorell.com/'] as const,
+    ...([
     ['se', 'SE', 'Sverige', 'https://www.autorell.se/'] as const,
     ['de', 'DE', 'Deutschland', 'https://www.autorell.de/'] as const,
     ...euBuyerMarkets.map((market) =>
@@ -418,13 +422,18 @@ export default function PublicHeader({
         `https://www.autorell.com/${market.code}`,
       ] as const,
     ),
-  ].sort((left, right) => left[2].localeCompare(right[2], locale))
+    ] as Array<readonly [string, string, string, string]>).sort(
+      (left, right) => left[2].localeCompare(right[2], locale),
+    ),
+  ]
   const pathMarketCode = pathname.split('/').filter(Boolean)[0]
   const activeMarketCode =
     locale === 'sv'
       ? 'se'
       : locale === 'de'
         ? 'de'
+        : marketCode && euBuyerMarkets.some((market) => market.code === marketCode)
+          ? marketCode
         : euBuyerMarkets.some((market) => market.code === pathMarketCode)
           ? pathMarketCode
           : locale === 'en'
@@ -586,14 +595,13 @@ export default function PublicHeader({
             </Link>
 
             <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
-              {menus.map((menu, index) => (
+              {menus.map((menu) => (
                 <DesktopMenu
                   key={menu.href}
                   label={menu.label}
                   href={menu.href}
                   menu={menu.data}
                   icon={menu.icon}
-                  align={index < 2 ? 'start' : 'end'}
                   onNavigate={handleInternalNavigation}
                 />
               ))}
@@ -820,14 +828,12 @@ function DesktopMenu({
   href,
   menu,
   onNavigate,
-  align,
   icon: MenuIcon,
 }: {
   label: string
   href: string
   menu: DesktopMenuData
   onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
-  align: 'start' | 'end'
   icon: LucideIcon
 }) {
   return (
@@ -835,15 +841,15 @@ function DesktopMenu({
       <a
         href={href}
         onClick={(event) => onNavigate(event, href)}
-        className="flex h-[50px] shrink-0 items-center border-b-2 border-transparent px-2.5 text-[11px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] group-focus-within:border-[#0866ff] xl:px-3 xl:text-[12px]"
+        className="flex h-[50px] shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] group-focus-within:border-[#0866ff] xl:px-4"
       >
         {label}
       </a>
 
       <div
-        className={`pointer-events-none absolute top-full z-40 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
-          menu.items.length > 5 ? 'w-[900px]' : 'w-[720px] 2xl:w-[780px]'
-        } ${align === 'start' ? 'left-0' : 'right-0'}`}
+        className={`pointer-events-none fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+          menu.items.length > 5 ? 'max-w-[900px]' : 'max-w-[780px]'
+        }`}
       >
         <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
           <div className="min-w-0 bg-[#f3f7ff] p-7">

@@ -27,6 +27,10 @@ export type MarketplaceListing = {
   year: string | null
   mileageKm: number | null
   fuelType: string | null
+  gearbox: string | null
+  bodyType: string | null
+  condition: string | null
+  equipment: string | null
   country: string
   priceLabel: string
   priceValue: number | null
@@ -57,6 +61,14 @@ export default function MarketplaceCategoryBrowser({
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [modelQuery, setModelQuery] = useState(searchParams.get('model') || '')
+  const [make, setMake] = useState(searchParams.get('make') || '')
+  const [fuel, setFuel] = useState(searchParams.get('fuel') || '')
+  const [gearbox, setGearbox] = useState(searchParams.get('gearbox') || '')
+  const [bodyType, setBodyType] = useState(searchParams.get('body') || '')
+  const [condition, setCondition] = useState(searchParams.get('condition') || '')
+  const [equipmentQuery, setEquipmentQuery] = useState(searchParams.get('equipment') || '')
+  const [yearFrom, setYearFrom] = useState(searchParams.get('yearFrom') || '')
+  const [maxMileage, setMaxMileage] = useState(searchParams.get('maxMileage') || '')
   const [country, setCountry] = useState((searchParams.get('country') || '').toUpperCase())
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
@@ -74,12 +86,43 @@ export default function MarketplaceCategoryBrowser({
         .sort((a, b) => countryName(a, displayLocale).localeCompare(countryName(b, displayLocale), displayLocale)),
     [displayLocale],
   )
+  const makes = useMemo(
+    () => [...new Set(listings.map((listing) => listing.make).filter(Boolean))].sort((a, b) => a.localeCompare(b, displayLocale)),
+    [displayLocale, listings],
+  )
+  const fuels = useMemo(
+    () => [...new Set(listings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, displayLocale)),
+    [displayLocale, listings],
+  )
+  const gearboxes = useMemo(
+    () => [...new Set(listings.map((listing) => listing.gearbox).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, displayLocale)),
+    [displayLocale, listings],
+  )
+  const bodyTypes = useMemo(
+    () => [...new Set(listings.map((listing) => listing.bodyType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, displayLocale)),
+    [displayLocale, listings],
+  )
+  const conditions = useMemo(
+    () => [...new Set(listings.map((listing) => listing.condition).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, displayLocale)),
+    [displayLocale, listings],
+  )
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     const normalizedModel = modelQuery.trim().toLowerCase()
     const filtered = listings.filter((listing) => {
       if (country && listing.country.toUpperCase() !== country) return false
-      const searchable = `${listing.title} ${listing.fuelType || ''}`.toLowerCase()
+      if (make && listing.make !== make) return false
+      if (fuel && listing.fuelType !== fuel) return false
+      if (gearbox && listing.gearbox !== gearbox) return false
+      if (bodyType && listing.bodyType !== bodyType) return false
+      if (condition && listing.condition !== condition) return false
+      if (yearFrom && Number(listing.year || 0) < Number(yearFrom)) return false
+      if (maxMileage && (listing.mileageKm === null || listing.mileageKm > Number(maxMileage))) return false
+      if (
+        equipmentQuery.trim() &&
+        !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())
+      ) return false
+      const searchable = `${listing.title} ${listing.make} ${listing.model} ${listing.fuelType || ''} ${listing.gearbox || ''} ${listing.bodyType || ''} ${listing.equipment || ''}`.toLowerCase()
       if (normalizedQuery && !searchable.includes(normalizedQuery)) return false
       if (normalizedModel && !listing.model.toLowerCase().includes(normalizedModel)) return false
       if (!activeFilter) return true
@@ -104,7 +147,7 @@ export default function MarketplaceCategoryBrowser({
       if (sort === 'price') return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
       return a.title.localeCompare(b.title, displayLocale)
     })
-  }, [activeFilter, country, displayLocale, listings, modelQuery, query, sort])
+  }, [activeFilter, bodyType, condition, country, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxMileage, modelQuery, query, sort, yearFrom])
 
   const currentSearchKey = `autorell-search-${category.slug}-${query}-${country}-${activeFilter}`
   const saved = savedSearchKey === currentSearchKey
@@ -140,7 +183,7 @@ export default function MarketplaceCategoryBrowser({
                 {localizedCategory.description}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="hidden gap-3 sm:flex">
               <Link
                 href={`/salj-fordon?category=${category.slug}`}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]"
@@ -187,14 +230,14 @@ export default function MarketplaceCategoryBrowser({
 
           <div
             id="marketplace-search"
-            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-0 overflow-hidden rounded-[20px] border border-[#dfe4ec] bg-white p-3 shadow-[0_18px_45px_rgba(16,24,40,.1)] md:grid-cols-[220px_1fr_1fr_auto]"
+            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-3 rounded-[20px] border border-[#dfe4ec] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.1)] sm:grid-cols-2 lg:grid-cols-4"
           >
             <label className="relative">
               <MapPin className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
               <select
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                className="marketplace-search-control h-14 w-full min-w-0 appearance-none border-b border-[#e4e7ec] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:bg-[#f8faff] md:border-b-0 md:border-r"
+                className="marketplace-search-control h-14 w-full min-w-0 appearance-none rounded-[13px] border border-[#e4e7ec] bg-white pl-12 pr-10 text-sm font-semibold outline-none focus:border-[#98a2b3]"
               >
                 <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
@@ -205,13 +248,14 @@ export default function MarketplaceCategoryBrowser({
               </select>
               <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
+            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} />
             <label className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0866ff]" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#475467]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={copy.make}
-                className="marketplace-search-control h-14 w-full min-w-0 border-b border-[#e4e7ec] bg-white pl-12 pr-4 text-sm outline-none focus:bg-[#f8faff] md:border-b-0 md:border-r"
+                placeholder={copy.keyword}
+                className="marketplace-search-control h-14 w-full min-w-0 rounded-[13px] border border-[#e4e7ec] bg-white pl-12 pr-4 text-base outline-none focus:border-[#98a2b3]"
               />
             </label>
             <label>
@@ -219,12 +263,42 @@ export default function MarketplaceCategoryBrowser({
                 value={modelQuery}
                 onChange={(event) => setModelQuery(event.target.value)}
                 placeholder={secondarySearchLabel(category.slug, locale)}
-                className="marketplace-search-control h-14 w-full min-w-0 border-b border-[#e4e7ec] bg-white px-4 text-sm outline-none focus:bg-[#f8faff] md:border-b-0"
+                className="marketplace-search-control h-14 w-full min-w-0 rounded-[13px] border border-[#e4e7ec] bg-white px-4 text-base outline-none focus:border-[#98a2b3]"
+              />
+            </label>
+            <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
+            <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
+            <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
+            <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
+            <label>
+              <input
+                value={yearFrom}
+                onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                inputMode="numeric"
+                placeholder={copy.yearFrom}
+                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+              />
+            </label>
+            <label>
+              <input
+                value={maxMileage}
+                onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
+                inputMode="numeric"
+                placeholder={copy.maxMileage}
+                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+              />
+            </label>
+            <label className="sm:col-span-2">
+              <input
+                value={equipmentQuery}
+                onChange={(event) => setEquipmentQuery(event.target.value)}
+                placeholder={copy.equipment}
+                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
               />
             </label>
             <a
               href="#marketplace-results"
-              className="m-1 inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-4 text-center text-sm font-bold text-white"
+              className="inline-flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-[13px] bg-[#202124] px-4 text-center text-sm font-bold text-white sm:col-span-2 lg:col-span-2"
             >
               <Search className="h-5 w-5" />
               {copy.search} {localizedCategory.label.toLowerCase()}
@@ -352,6 +426,36 @@ export default function MarketplaceCategoryBrowser({
   )
 }
 
+function FilterSelect({
+  value,
+  onChange,
+  label,
+  options,
+}: {
+  value: string
+  onChange: (value: string) => void
+  label: string
+  options: string[]
+}) {
+  return (
+    <label className="relative">
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-14 w-full appearance-none rounded-[13px] border border-[#e4e7ec] bg-white px-4 pr-10 text-sm font-semibold outline-none focus:border-[#98a2b3]"
+      >
+        <option value="">{label}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+    </label>
+  )
+}
+
 function countryName(code: string, locale: string) {
   try {
     return new Intl.DisplayNames([locale], { type: 'region' }).of(code.toUpperCase()) || code
@@ -366,7 +470,14 @@ const marketplaceCopy = {
     all: 'Alla',
     sellBusiness: 'Sälj som företag',
     search: 'Sök',
-    make: 'Märke eller fritext',
+    makeLabel: 'Alla märken',
+    keyword: 'Fritext',
+    fuel: 'Alla bränslen',
+    gearbox: 'Alla växellådor',
+    condition: 'Alla skick',
+    yearFrom: 'Årsmodell från',
+    maxMileage: 'Max miltal (km)',
+    equipment: 'Utrustning, exempelvis dragkrok eller navigation',
     allEurope: 'Hela Europa',
     sort: 'Sortering',
     recommended: 'Rekommenderat',
@@ -391,7 +502,14 @@ const marketplaceCopy = {
     all: 'All',
     sellBusiness: 'Sell as a business',
     search: 'Search',
-    make: 'Make or keyword',
+    makeLabel: 'All makes',
+    keyword: 'Keyword',
+    fuel: 'All fuel types',
+    gearbox: 'All gearboxes',
+    condition: 'All conditions',
+    yearFrom: 'Model year from',
+    maxMileage: 'Maximum mileage (km)',
+    equipment: 'Equipment, for example towbar or navigation',
     allEurope: 'All of Europe',
     sort: 'Sort',
     recommended: 'Recommended',
@@ -416,7 +534,14 @@ const marketplaceCopy = {
     all: 'Alle',
     sellBusiness: 'Als Unternehmen verkaufen',
     search: 'Suchen',
-    make: 'Marke oder Suchbegriff',
+    makeLabel: 'Alle Marken',
+    keyword: 'Suchbegriff',
+    fuel: 'Alle Kraftstoffe',
+    gearbox: 'Alle Getriebe',
+    condition: 'Alle Zustände',
+    yearFrom: 'Baujahr ab',
+    maxMileage: 'Maximaler Kilometerstand',
+    equipment: 'Ausstattung, zum Beispiel Anhängerkupplung oder Navigation',
     allEurope: 'Ganz Europa',
     sort: 'Sortierung',
     recommended: 'Empfohlen',
@@ -454,6 +579,13 @@ function secondarySearchLabel(slug: string, locale: PublicLocale) {
         : 'Model or machine type'
   }
   return 'Modell'
+}
+
+function categoryTypeLabel(slug: string, locale: PublicLocale) {
+  const machine = slug === 'agriculture' || slug === 'construction'
+  if (locale === 'sv') return machine ? 'Alla maskintyper' : 'Alla karosstyper'
+  if (locale === 'de') return machine ? 'Alle Maschinentypen' : 'Alle Karosserieformen'
+  return machine ? 'All machine types' : 'All body types'
 }
 
 function localizeCategory(category: CategoryConfig, locale: PublicLocale) {

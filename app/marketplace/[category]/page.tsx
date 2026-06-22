@@ -48,6 +48,7 @@ export default async function MarketplaceCategoryPage({
     ''
   ).toLowerCase()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const locale: PublicLocale =
     requestedLanguage && isPublicLanguage(requestedLanguage)
       ? requestedLanguage
@@ -76,6 +77,10 @@ export default async function MarketplaceCategoryPage({
     year: listing.model_year ? String(listing.model_year) : null,
     mileageKm: listing.mileage_km,
     fuelType: listing.fuel_type,
+    gearbox: listing.gearbox,
+    bodyType: listing.body_type,
+    condition: listing.condition,
+    equipment: listing.equipment,
     country: listing.country_code,
     priceLabel: formatMarketplacePrice(
       Number(listing.price),
@@ -109,6 +114,7 @@ export default async function MarketplaceCategoryPage({
     <main className="min-h-screen overflow-x-hidden bg-[#f7f8fb] text-[#101828]">
       <PublicHeader
         locale={locale}
+        marketCode={marketCode}
         marketplaceChannel={{ label, slug: category.slug }}
       />
       <MarketplaceChannelNav slug={category.slug} label={label} locale={locale} />
