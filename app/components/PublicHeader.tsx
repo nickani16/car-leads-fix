@@ -859,9 +859,6 @@ export default function PublicHeader({
                 <Headphones className="h-3.5 w-3.5" />
                 {content.links[5][1]}
               </Link>
-              <Link href={marketRoutes.dealerAccess} className="hover:underline">
-                {content.partner}
-              </Link>
               <div ref={marketMenuRef} className="relative">
                 <button
                   type="button"
@@ -1183,14 +1180,6 @@ export default function PublicHeader({
                 {content.dealerLabel}
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Link
-                  href={marketRoutes.dealerAccess}
-                  onClick={() => setOpen(false)}
-                  className="flex min-h-12 items-center gap-3 rounded-[12px] border border-[#dcdad3] px-4 text-sm text-[#242424]"
-                >
-                  <Store size={17} />
-                  {content.partner}
-                </Link>
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
