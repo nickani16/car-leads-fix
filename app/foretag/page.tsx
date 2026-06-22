@@ -22,7 +22,7 @@ import PublicHeader from '../components/PublicHeader'
 export const metadata = createPublicMetadata({
   title: 'Sälj företagsbilar i hela Europa | Autorell',
   description:
-    'Autorell testar efterfrågan för företagsbilar hos verifierade köpare i hela EU och samordnar erbjudande, kontroll, betalning, hämtning och export.',
+    'Skapa företagskonto på Autorell, publicera fordonsannonser och nå privatpersoner och företag på marknader i hela EU.',
   path: '/foretag',
   keywords: [
     'sälja företagsbilar',
@@ -39,41 +39,41 @@ export const metadata = createPublicMetadata({
 })
 
 const portfolioTypes = [
-  ['Inbyten', 'Fordon utanför den egna lagerstrategin'],
-  ['Leasingreturer', 'Planerad och återkommande avyttring'],
-  ['Företagsflottor', 'Samlat flöde över flera orter'],
-  ['Utvalda objekt', 'Enstaka fordon med exportpotential'],
+  ['Företagsprofil', 'Logotyp, kontaktuppgifter och verifierad säljaridentitet'],
+  ['Lagerannonser', 'Publicera fordon och maskiner i alla kategorier'],
+  ['EU-räckvidd', 'Nå privatpersoner och företag på flera marknader'],
+  ['Meddelanden', 'Hantera intresse och köparkontakter från samma konto'],
 ]
 
 const process = [
   {
     icon: Database,
-    title: 'Dela fordonsunderlaget',
-    text: 'Skicka en lista eller beskriv volym, fordonstyper, placering och tidsplan.',
+    title: 'Skapa företagskonto',
+    text: 'Lägg in verifierbara företags-, adress- och kontaktuppgifter.',
   },
   {
     icon: ScanSearch,
-    title: 'Vi kvalificerar portföljen',
-    text: 'Vi identifierar vilka fordon som passar aktuell efterfrågan och vilket underlag som behövs.',
+    title: 'Bygg en tydlig annons',
+    text: 'Lägg till fordonsdata, skick, kända fel, pris, plats och bilder.',
   },
   {
     icon: Globe2,
-    title: 'Vi testar efterfrågan i EU',
-    text: 'Utvalda fordon presenteras anonymt för relevanta, verifierade bilhandlare på flera europeiska marknader.',
+    title: 'Välj annonspaket',
+    text: 'Starta gratis i sju dagar eller välj längre synlighet och Premium.',
   },
   {
     icon: Truck,
-    title: 'Vi genomför affären',
-    text: 'När marknaden fungerar lämnar Autorell ett eget erbjudande och samordnar kontroll, betalning, hämtning och export.',
+    title: 'Möt köpare i Europa',
+    text: 'Ta emot sparningar och meddelanden och hantera försäljningen från kontot.',
   },
 ]
 
 export default function BusinessPage() {
   return (
-    <main className="w-full overflow-x-hidden bg-[#f7f5f0] text-[#202124]">
+    <main className="w-full overflow-x-hidden bg-[#f7f8fb] text-[#101828]">
       <PublicHeader />
 
-      <section className="relative isolate overflow-hidden bg-[linear-gradient(145deg,#f8f4ec_0%,#edf5f8_58%,#e4f0f5_100%)]">
+      <section className="relative isolate overflow-hidden bg-white">
         <div className="business-orbit absolute -left-36 -top-40 h-[440px] w-[440px] rounded-full border-[64px] border-white/55" />
         <div className="business-orbit-reverse absolute -bottom-48 right-[-90px] h-[430px] w-[430px] rounded-full border-[58px] border-[#B4D9EF]/35" />
         <div className="absolute left-[44%] top-[12%] h-64 w-64 rounded-full bg-white/65 blur-3xl" />
@@ -81,34 +81,33 @@ export default function BusinessPage() {
         <div className="relative mx-auto max-w-[1440px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-[72px] lg:px-12 lg:pb-28 lg:pt-20 xl:px-16">
           <div className="grid min-w-0 gap-12 lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16">
             <div className="min-w-0">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#c9dce5] bg-white/75 px-4 py-2 text-xs font-medium text-[#496878] shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur">
+              <span className="inline-flex items-center gap-2 rounded-[13px] border border-[#c9d9ff] bg-[#edf3ff] px-4 py-2 text-xs font-bold text-[#0866ff]">
                 <Building2 className="h-4 w-4" />
-                Europeisk försäljning för företag
+                Fordonsmarknadsplats för företag
               </span>
               <h1 className="mt-6 max-w-[760px] text-[42px] leading-[.99] tracking-[-0.055em] sm:text-6xl lg:text-[72px]">
-                Sälj era fordon till professionella köpare i hela EU.
+                Sälj företagets fordon till köpare i hela Europa.
               </h1>
               <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#526b78] sm:text-xl">
-                Autorell öppnar ert lager, era leasingreturer och
-                företagsfordon mot verifierade europeiska köpare. Vi driver
-                stora och återkommande volymer från fordonsunderlag till
-                kontroll, betalning, hämtning och export.
+                Skapa en verifierad företagsprofil, publicera annonser i alla
+                fordonskategorier och hantera intresse från privatpersoner och
+                företag på flera europeiska marknader.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/salj-lagerbil"
-                  className="group inline-flex min-h-14 items-center justify-between gap-4 rounded-[16px] bg-[#242424] pl-6 pr-3 text-sm font-medium text-white shadow-[0_16px_35px_rgba(32,33,36,.2)] transition hover:-translate-y-0.5 hover:bg-[#111] sm:justify-center sm:rounded-full sm:px-7"
+                  href="/registrera?account=business"
+                  className="group inline-flex min-h-14 items-center justify-between gap-4 rounded-[15px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_16px_35px_rgba(8,102,255,.2)] transition hover:-translate-y-0.5 sm:justify-center"
                 >
-                  Skicka in ett fordon
+                  Skapa företagskonto
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </Link>
-                <a
-                  href="#process"
-                  className="inline-flex min-h-14 items-center justify-center rounded-[16px] border border-[#bfcfd7] bg-white/75 px-7 text-sm font-medium shadow-[0_10px_28px_rgba(60,84,96,.06)] backdrop-blur transition hover:bg-white sm:rounded-full"
+                <Link
+                  href="/salj-fordon#priser"
+                  className="inline-flex min-h-14 items-center justify-center rounded-[15px] border border-[#cbd5e1] bg-white px-7 text-sm font-bold transition hover:border-[#0866ff]"
                 >
-                  Se hur upplägget fungerar
-                </a>
+                  Se annonspriser
+                </Link>
               </div>
 
               <div className="mt-8 grid gap-3 border-t border-[#cad8df] pt-6 text-sm text-[#52646e] sm:grid-cols-3">
@@ -159,9 +158,9 @@ export default function BusinessPage() {
                 En komplett försäljningskanal för företagets fordon.
               </h2>
               <p className="mt-6 text-base leading-8 text-[#65737b] sm:text-lg">
-                Ni väljer vilka fordon som ska säljas. Autorell kvalificerar
-                underlaget, aktiverar relevanta köpare i EU och samordnar
-                genomförandet när vårt eget inköpserbjudande accepteras.
+                Ni väljer vilka fordon som ska säljas, skapar strukturerade
+                annonser och väljer annonspaket. Köpare kan spara objekten och
+                kontakta er direkt genom marknadsplatsen.
               </p>
               <a
                 href="#foretagskontakt"
@@ -177,7 +176,7 @@ export default function BusinessPage() {
                 {
                   icon: CarFront,
                   title: 'Fler köpare per fordon',
-                  text: 'Nå professionella bilhandlare utanför den lokala marknaden utan att bygga en egen europeisk försäljningsorganisation.',
+                  text: 'Nå privatpersoner och företag utanför den lokala marknaden med samma tydliga annons.',
                 },
                 {
                   icon: FileCheck2,
@@ -192,7 +191,7 @@ export default function BusinessPage() {
                 {
                   icon: Handshake,
                   title: 'Vi tar affären i mål',
-                  text: 'Autorell samordnar kontroll, betalning, hämtning, exportdokument och överlämning efter accepterat inköpserbjudande.',
+                  text: 'Hantera annonser, intresse och direkta meddelanden från ett gemensamt företagskonto.',
                 },
               ].map(({ icon: Icon, title, text }) => (
                 <article
@@ -226,9 +225,9 @@ export default function BusinessPage() {
               </h2>
             </div>
             <p className="max-w-md text-sm leading-7 text-[#65737b] sm:text-base">
-              Börja med en utvald grupp fordon eller ett återkommande flöde.
-              Ni väljer fordonen och beslutar om Autorells erbjudande. Vi
-              samordnar resten.
+              Börja med ett fordon eller publicera ett återkommande lager.
+              Varje objekt får rätt kategori, data, plats, bilder och vald
+              synlighetstid.
             </p>
           </div>
 
@@ -250,38 +249,37 @@ export default function BusinessPage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#202124] py-16 text-white sm:py-24">
+      <section className="relative overflow-hidden border-y border-[#dfe4ec] bg-[#edf3ff] py-16 text-[#101828] sm:py-24">
         <div className="trust-ring absolute -right-24 -top-28 h-80 w-80 rounded-full border-[52px] border-[#b4d9ef]/10" />
         <div className="business-orbit-reverse absolute -bottom-32 -left-24 h-72 w-72 rounded-full border-[46px] border-white/[.045]" />
         <div className="relative mx-auto grid max-w-[1320px] gap-10 px-5 sm:px-8 lg:grid-cols-[1fr_.9fr] lg:items-center lg:px-12">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#B4D9EF]">
-              Autorell driver genomförandet
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#0866ff]">
+              Byggt för professionell försäljning
             </p>
             <h2 className="mt-5 max-w-2xl text-[36px] leading-[1.06] tracking-[-0.05em] sm:text-5xl">
-              Ni säljer fordonen. Vi tar affären över gränsen.
+              Ett företagskonto för lager, annonser och köparkontakter.
             </h2>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-white/62 sm:text-lg">
-              Efter accepterat inköpserbjudande kontrollerar vi fordonet mot
-              underlaget och samordnar betalning, hämtning, dokumentation och
-              export till den europeiska köparen.
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[#667085] sm:text-lg">
+              Företag får en tydlig offentlig profil och kan publicera varje
+              objekt med rätt kategori, data, bilder och annonspaket.
             </p>
           </div>
           <div className="grid gap-3">
             {[
-              'Ni väljer fordon och beslutar om Autorells erbjudande',
-              'Autorell kontrollerar fordonet mot deklarationen',
-              'Vi samordnar betalning, avtal och dokument',
-              'Vi koordinerar hämtning och export till köparen',
+              'Privat- och företagsköpare möts på samma marknadsplats',
+              'Verifierbara säljar- och kontaktuppgifter',
+              'Fasta annonspaket per fordonskategori',
+              'Sparade annonser och direkta meddelanden',
             ].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-4 rounded-[16px] border border-white/10 bg-white/[0.045] px-5 py-4"
+                className="flex items-center gap-4 rounded-[16px] border border-[#d7e1f2] bg-white px-5 py-4"
               >
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#B4D9EF] text-[#202124]">
                   <Check className="h-4 w-4" />
                 </span>
-                <span className="text-sm text-white/80">{item}</span>
+                <span className="text-sm text-[#475467]">{item}</span>
               </div>
             ))}
           </div>
@@ -304,9 +302,8 @@ export default function BusinessPage() {
               Låt oss sälja er första fordonsportfölj i Europa.
             </h2>
             <p className="mt-6 text-base leading-8 text-[#65737b] sm:text-lg">
-              Beskriv volym, fordonstyper och tidsplan. Vi återkommer med ett
-              konkret upplägg för kvalificering, europeiskt marknadstest och
-              genomförande.
+              Beskriv volym, fordonstyper och behov. Vi hjälper er att välja
+              kontoupplägg, annonspaket och ett tydligt publiceringsflöde.
             </p>
             <div className="mt-9 rounded-[18px] border border-white/80 bg-white/55 p-5">
               <p className="text-sm font-medium">Föredrar ni e-post?</p>

@@ -16,45 +16,9 @@ const socialIcons = [
     href: 'https://www.linkedin.com/company/autorell',
     path: 'M5.3 7.6A2.3 2.3 0 1 0 5.3 3a2.3 2.3 0 0 0 0 4.6ZM3.4 9.3h3.8V21H3.4V9.3Zm6.1 0h3.6v1.6h.1c.5-1 1.8-2 3.6-2 3.9 0 4.6 2.5 4.6 5.9V21h-3.8v-5.5c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V21H9.5V9.3Z',
   },
-  {
-    label: 'WhatsApp',
-    href: 'https://wa.me/46760202671',
-    path: 'M20.5 3.5A11.8 11.8 0 0 0 1.9 17.7L.3 23.7l6.1-1.6A11.8 11.8 0 0 0 24 11.8c0-3.1-1.2-6-3.5-8.3Zm-8.3 18.2c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.6.9 1-3.5-.2-.4a9.6 9.6 0 1 1 8.2 4.6Zm5.3-7.2c-.3-.1-1.7-.8-2-1-.3-.1-.5-.1-.7.2l-.9 1.1c-.2.2-.4.2-.7.1-2-.8-3.4-2.4-4-3.5-.2-.3 0-.6.1-.7l.5-.6.3-.6c.1-.2 0-.5 0-.7l-.9-2c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9s1.2 3.3 1.4 3.6c.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.7-.7 1.9-1.3.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.4Z',
-  },
 ]
 
 export default function SocialIcons({ className = '' }: { className?: string }) {
-  function trackSocialClick(label: string) {
-    if (label !== 'WhatsApp') return
-
-    const consent = document.cookie
-      .split('; ')
-      .find((item) => item.startsWith('autorell_cookie_consent='))
-      ?.split('=')[1]
-
-    if (consent !== 'all') return
-
-    const payload = JSON.stringify({
-      eventName: 'whatsapp_clicked',
-      pageUrl: window.location.href,
-    })
-
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(
-        '/api/analytics/conversion',
-        new Blob([payload], { type: 'application/json' }),
-      )
-      return
-    }
-
-    void fetch('/api/analytics/conversion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload,
-      keepalive: true,
-    })
-  }
-
   return (
     <div
       className={`flex items-center gap-2 ${className}`}
@@ -67,8 +31,7 @@ export default function SocialIcons({ className = '' }: { className?: string }) 
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Besök Autorell på ${label}`}
-          title={label === 'WhatsApp' ? 'WhatsApp: +46 76-020 26 71' : label}
-          onClick={() => trackSocialClick(label)}
+          title={label}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d5d4ce] bg-white/70 text-[#626662] transition hover:-translate-y-0.5 hover:border-[#8dbdd8] hover:bg-white hover:text-[#31546a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#52768a]"
         >
           <svg

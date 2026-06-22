@@ -6,11 +6,9 @@ import {
   Cookie,
   LockKeyhole,
   Settings2,
-  ShieldCheck,
   X,
 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import BrandLogo from './BrandLogo'
 import { euBuyerMarkets, type EuBuyerLanguage } from '@/lib/eu-buyer-markets'
 import {
   isPublicLanguage,
@@ -35,7 +33,7 @@ const cookieCopy = {
     necessaryTitle: 'Nödvändiga cookies',
     necessaryText: 'Krävs för säkerhet, formulär och inloggning. Kan inte stängas av.',
     analyticsTitle: 'Analyscookies',
-    analyticsText: 'Mäter anonymt exempelvis WhatsApp-klick och vilka marknader som leder till kontakt.',
+    analyticsText: 'Mäter anonymt vilka sidor och marknader som leder till kontakt.',
     policyStart: 'Läs mer i vår',
     policy: 'cookiepolicy',
     policyEnd: 'Du kan ändra ditt val när som helst via footern.',
@@ -54,7 +52,7 @@ const cookieCopy = {
     necessaryTitle: 'Notwendige Cookies',
     necessaryText: 'Für Sicherheit, Formulare und Anmeldung erforderlich. Sie können nicht deaktiviert werden.',
     analyticsTitle: 'Analyse-Cookies',
-    analyticsText: 'Misst nach Zustimmung anonym zum Beispiel WhatsApp-Klicks und konvertierende Märkte.',
+    analyticsText: 'Misst anonym, welche Seiten und Märkte zu Kontakten führen.',
     policyStart: 'Mehr erfahren Sie in unserer',
     policy: 'Cookie-Richtlinie',
     policyEnd: 'Sie können Ihre Auswahl jederzeit im Footer ändern.',
@@ -73,7 +71,7 @@ const cookieCopy = {
     necessaryTitle: 'Essential cookies',
     necessaryText: 'Required for security, forms and sign-in. These cannot be disabled.',
     analyticsTitle: 'Analytics cookies',
-    analyticsText: 'Anonymously measures events such as WhatsApp clicks and the markets that convert.',
+    analyticsText: 'Anonymously measures which pages and markets lead to contact.',
     policyStart: 'Learn more in our',
     policy: 'cookie policy',
     policyEnd: 'You can change your choice at any time in the footer.',
@@ -187,47 +185,14 @@ export default function CookieConsent({
   if (!visible) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-5 lg:p-7">
+    <div className="fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-5">
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="mx-auto w-[calc(100vw-24px)] max-w-[1120px] overflow-hidden rounded-[26px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(19,35,43,.25)] ring-1 ring-[#d8e3e8]"
+        className="mx-auto w-[calc(100vw-24px)] max-w-[760px] overflow-hidden rounded-[20px] border border-[#dfe4ec] bg-white shadow-[0_22px_70px_rgba(16,24,40,.18)]"
       >
-        <div className="grid min-w-0 lg:grid-cols-[270px_1fr]">
-          <div className="relative overflow-hidden bg-[#20272b] p-5 text-white sm:p-6 lg:p-7">
-            <div className="absolute -right-14 -top-16 h-44 w-44 rounded-full border-[34px] border-[#B4D9EF]/15" />
-            <div className="relative flex items-start justify-between gap-4 lg:block">
-              <BrandLogo inverted />
-              {readConsent() && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVisible(false)
-                    setSettingsOpen(false)
-                  }}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white lg:hidden"
-                  aria-label={t.close}
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
-
-            <div className="relative mt-6 hidden lg:block">
-              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#B4D9EF] text-[#20272b] shadow-[0_12px_30px_rgba(0,0,0,.16)]">
-                <ShieldCheck size={20} />
-              </span>
-              <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B4D9EF]">
-                {t.trustTitle}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/65">
-                {t.trustText}
-              </p>
-            </div>
-          </div>
-
-          <div className="relative min-w-0 bg-[linear-gradient(145deg,#ffffff_20%,#f1f8fb_100%)] p-5 sm:p-7 lg:p-8">
+        <div className="relative min-w-0 p-5 sm:p-7">
             {readConsent() && (
               <button
                 type="button"
@@ -235,7 +200,7 @@ export default function CookieConsent({
                   setVisible(false)
                   setSettingsOpen(false)
                 }}
-                className="absolute right-5 top-5 hidden h-10 w-10 place-items-center rounded-full border border-[#d9e0e3] bg-white/80 text-[#69757a] transition hover:border-[#9fbfce] hover:text-[#20272b] lg:grid"
+                className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-[11px] border border-[#d9e0e3] bg-white text-[#69757a]"
                 aria-label={t.close}
               >
                 <X size={17} />
@@ -243,8 +208,8 @@ export default function CookieConsent({
             )}
 
             <div className="max-w-3xl pr-0 lg:pr-10">
-              <div className="flex items-center gap-3 text-[#315f74]">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white shadow-[0_8px_24px_rgba(49,95,116,.1)] ring-1 ring-[#d7e6ed]">
+              <div className="flex items-center gap-3 text-[#0866ff]">
+                <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[#edf3ff]">
                   <Cookie size={17} />
                 </span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.18em]">
@@ -293,7 +258,7 @@ export default function CookieConsent({
               <button
                 type="button"
                 onClick={() => choose('all')}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#20272b] px-6 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(32,39,43,.18)] transition hover:-translate-y-0.5 hover:bg-[#111719]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-semibold text-white"
               >
                 <Check size={16} />
                 {t.accept}
@@ -301,7 +266,7 @@ export default function CookieConsent({
               <button
                 type="button"
                 onClick={() => choose('necessary')}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbd9df] bg-white px-6 text-sm font-semibold text-[#20272b] transition hover:border-[#88afc1] hover:bg-[#f8fcfd]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] border border-[#cbd9df] bg-white px-6 text-sm font-semibold text-[#20272b]"
               >
                 <LockKeyhole size={15} />
                 {t.necessary}
@@ -310,13 +275,12 @@ export default function CookieConsent({
                 type="button"
                 onClick={() => setSettingsOpen((open) => !open)}
                 aria-expanded={settingsOpen}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[#315f74] transition hover:bg-white/70"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] px-5 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f4f7fb]"
               >
                 <Settings2 size={16} />
                 {settingsOpen ? t.hide : t.customize}
               </button>
             </div>
-          </div>
         </div>
       </section>
     </div>

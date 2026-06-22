@@ -925,6 +925,45 @@ export default function PublicHeader({
     }
   }
 
+  sellerMenu = {
+    eyebrow:
+      activeLocale === 'sv'
+        ? 'Hela marknadsplatsen'
+        : activeLocale === 'de'
+          ? 'Gesamter Marktplatz'
+          : 'Full marketplace',
+    title:
+      activeLocale === 'sv'
+        ? 'Hitta rätt fordon i hela Europa.'
+        : activeLocale === 'de'
+          ? 'Das richtige Fahrzeug in ganz Europa finden.'
+          : 'Find the right vehicle across Europe.',
+    text:
+      activeLocale === 'sv'
+        ? 'Välj kategori och sök bland annonser från privatpersoner och företag.'
+        : activeLocale === 'de'
+          ? 'Kategorie wählen und Angebote von Privatpersonen und Unternehmen durchsuchen.'
+          : 'Choose a category and browse listings from private and business sellers.',
+    cta:
+      activeLocale === 'sv'
+        ? 'Visa alla fordon'
+        : activeLocale === 'de'
+          ? 'Alle Fahrzeuge'
+          : 'View all vehicles',
+    ctaHref: '/marketplace/cars',
+    items: vehicleCategories.map(([label, href]) => ({
+      href,
+      label,
+      text:
+        activeLocale === 'sv'
+          ? 'Sök, jämför och spara annonser.'
+          : activeLocale === 'de'
+            ? 'Suchen, vergleichen und Anzeigen speichern.'
+            : 'Search, compare and save listings.',
+      icon: CarFront,
+    })),
+  }
+
   function handleSectionLink(
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
@@ -980,7 +1019,7 @@ export default function PublicHeader({
 
                 <div
                   className={`absolute right-0 top-full z-20 pt-3 transition duration-150 ${
-                    activeLocale === 'en' ? 'w-[min(680px,calc(100vw-32px))]' : 'w-[238px]'
+                    'w-[min(680px,calc(100vw-32px))]'
                   } ${
                     marketOpen
                       ? 'pointer-events-auto translate-y-0 opacity-100'
@@ -1016,8 +1055,7 @@ export default function PublicHeader({
                         </span>
                       </a>
                     ))}
-                    {activeLocale === 'en' && (
-                      <>
+                    <>
                         <div className="mx-3 my-2 border-t border-[#e4e8e9]" />
                         <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
                           European dealer markets
@@ -1044,8 +1082,7 @@ export default function PublicHeader({
                             </a>
                           ))}
                         </div>
-                      </>
-                    )}
+                    </>
                   </div>
                 </div>
               </div>
@@ -1096,7 +1133,7 @@ export default function PublicHeader({
                     <ChevronDown className={`h-3 w-3 transition ${marketOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <div
-                    className={`absolute right-0 top-full z-30 w-[250px] pt-2 transition duration-150 ${
+                    className={`absolute right-0 top-full z-30 w-[min(680px,calc(100vw-32px))] pt-2 transition duration-150 ${
                       marketOpen
                         ? 'pointer-events-auto translate-y-0 opacity-100'
                         : 'pointer-events-none -translate-y-1 opacity-0'
@@ -1118,6 +1155,29 @@ export default function PublicHeader({
                           </span>
                         </a>
                       ))}
+                      <div className="mx-3 my-2 border-t border-[#e4e8e9]" />
+                      <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
+                        {activeLocale === 'sv'
+                          ? 'Alla EU-marknader'
+                          : activeLocale === 'de'
+                            ? 'Alle EU-Märkte'
+                            : 'All EU markets'}
+                      </p>
+                      <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {euBuyerMarkets.map((market) => (
+                          <a
+                            key={market.code}
+                            href={`https://www.autorell.com/${market.code}?market=${market.code}`}
+                            className="flex items-center gap-3 rounded-[11px] px-3 py-2.5 text-sm transition hover:bg-[#f2f6f7]"
+                          >
+                            <CountryFlag code={market.code} className="h-[20px] w-[30px] shrink-0" />
+                            <span className="min-w-0">
+                              <strong className="block truncate font-medium">{market.countryLocal}</strong>
+                              <span className="block text-[10px] text-[#7a878d]">{market.country}</span>
+                            </span>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1161,7 +1221,7 @@ export default function PublicHeader({
                 className="absolute left-1/2 top-1/2 flex max-w-[120px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center overflow-hidden"
                 onClick={() => setOpen(false)}
               >
-                <BrandLogo compact />
+                <BrandLogo />
                 {marketplaceChannel ? (
                   <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#344054]">
                     {marketplaceChannel.label}
@@ -1243,6 +1303,15 @@ export default function PublicHeader({
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
               <Link
+                href="/marketplace/cars#marketplace-search"
+                className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+              >
+                <Search className="h-[19px] w-[19px]" strokeWidth={1.7} />
+                <span className="text-[10px] font-medium">
+                  {activeLocale === 'sv' ? 'Sök' : activeLocale === 'de' ? 'Suche' : 'Search'}
+                </span>
+              </Link>
+              <Link
                 href="/registrera"
                 className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
@@ -1289,6 +1358,29 @@ export default function PublicHeader({
                 </Link>
               ))}
             </nav>
+
+            <div className="mt-7">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8082]">
+                {activeLocale === 'sv'
+                  ? 'Köp efter kategori'
+                  : activeLocale === 'de'
+                    ? 'Nach Kategorie kaufen'
+                    : 'Shop by category'}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {vehicleCategories.map(([label, href]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className="flex min-h-11 items-center gap-2 rounded-[13px] border border-[#dfe4ec] bg-white px-3 text-sm font-semibold text-[#344054]"
+                  >
+                    <CarFront className="h-4 w-4 text-[#0866ff]" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             <Link
               href={content.ctaHref}
@@ -1362,8 +1454,7 @@ export default function PublicHeader({
                       </span>
                     </a>
                   ))}
-                  {activeLocale === 'en' && (
-                    <>
+                  <>
                       <div className="mx-3 my-2 border-t border-[#e3e8e9]" />
                       {euBuyerMarkets.map((market) => (
                         <a
@@ -1380,8 +1471,7 @@ export default function PublicHeader({
                           </span>
                         </a>
                       ))}
-                    </>
-                  )}
+                  </>
                 </div>
               </details>
 
@@ -1439,7 +1529,9 @@ function DesktopMenu({
       </a>
 
       <div
-        className={`pointer-events-none absolute top-full w-[720px] translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 2xl:w-[780px] ${
+        className={`pointer-events-none absolute top-full translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+          menu.items.length > 4 ? 'w-[900px]' : 'w-[720px] 2xl:w-[780px]'
+        } ${
           align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2'
         }`}
       >
@@ -1467,7 +1559,7 @@ function DesktopMenu({
             </a>
           </div>
 
-          <div className="min-w-0 p-4">
+          <div className={`min-w-0 p-4 ${menu.items.length > 4 ? 'grid max-h-[460px] grid-cols-2 content-start overflow-y-auto' : ''}`}>
             {menu.items.map(({ href: itemHref, label: itemLabel, text, icon: Icon }) => (
               <a
                 key={`${itemHref}-${itemLabel}`}
