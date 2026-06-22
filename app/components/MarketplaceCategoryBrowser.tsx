@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import {
   ArrowRight,
   ChevronDown,
+  SlidersHorizontal,
   Heart,
   ImageIcon,
   MapPin,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
+  translatePublic,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
@@ -26,6 +28,7 @@ export type MarketplaceListing = {
   title: string
   year: string | null
   mileageKm: number | null
+  operatingHours: number | null
   fuelType: string | null
   gearbox: string | null
   bodyType: string | null
@@ -69,12 +72,18 @@ export default function MarketplaceCategoryBrowser({
   const [equipmentQuery, setEquipmentQuery] = useState(searchParams.get('equipment') || '')
   const [yearFrom, setYearFrom] = useState(searchParams.get('yearFrom') || '')
   const [maxMileage, setMaxMileage] = useState(searchParams.get('maxMileage') || '')
+  const [maxHours, setMaxHours] = useState(searchParams.get('maxHours') || '')
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [country, setCountry] = useState((searchParams.get('country') || '').toUpperCase())
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
   const [savedSearchKey, setSavedSearchKey] = useState('')
   const displayLocale = locale
-  const localizedCategory = localizeCategory(category, locale)
+  const localizedCategory = {
+    ...localizeCategory(category, locale),
+    filters: categoryQuickFilters(category.slug, locale),
+  }
+  const filterProfile = categoryFilterProfile(category.slug)
   const copy =
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? marketplaceCopy[locale]
@@ -118,6 +127,7 @@ export default function MarketplaceCategoryBrowser({
       if (condition && listing.condition !== condition) return false
       if (yearFrom && Number(listing.year || 0) < Number(yearFrom)) return false
       if (maxMileage && (listing.mileageKm === null || listing.mileageKm > Number(maxMileage))) return false
+      if (maxHours && (listing.operatingHours === null || listing.operatingHours > Number(maxHours))) return false
       if (
         equipmentQuery.trim() &&
         !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())
@@ -135,7 +145,19 @@ export default function MarketplaceCategoryBrowser({
       if (['begagnade', 'used', 'gebraucht'].includes(normalizedFilter)) {
         return !listing.year || Number(listing.year) < currentYear - 1
       }
-      if (['pris', 'price', 'preis', 'miltal', 'mileage', 'kilometer'].includes(normalizedFilter)) {
+      if (
+        [
+          'pris',
+          'price',
+          'preis',
+          'miltal',
+          'mileage',
+          'kilometer',
+          'drifttimmar',
+          'operating hours',
+          'betriebsstunden',
+        ].includes(normalizedFilter)
+      ) {
         return true
       }
       return searchable.includes(normalizedFilter)
@@ -147,7 +169,7 @@ export default function MarketplaceCategoryBrowser({
       if (sort === 'price') return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
       return a.title.localeCompare(b.title, displayLocale)
     })
-  }, [activeFilter, bodyType, condition, country, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxMileage, modelQuery, query, sort, yearFrom])
+  }, [activeFilter, bodyType, condition, country, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxHours, maxMileage, modelQuery, query, sort, yearFrom])
 
   const currentSearchKey = `autorell-search-${category.slug}-${query}-${country}-${activeFilter}`
   const saved = savedSearchKey === currentSearchKey
@@ -266,36 +288,89 @@ export default function MarketplaceCategoryBrowser({
                 className="marketplace-search-control h-14 w-full min-w-0 rounded-[13px] border border-[#e4e7ec] bg-white px-4 text-base outline-none focus:border-[#98a2b3]"
               />
             </label>
-            <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
-            <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
-            <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
-            <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
-            <label>
-              <input
-                value={yearFrom}
-                onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
-                inputMode="numeric"
-                placeholder={copy.yearFrom}
-                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
-              />
-            </label>
-            <label>
-              <input
-                value={maxMileage}
-                onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
-                inputMode="numeric"
-                placeholder={copy.maxMileage}
-                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
-              />
-            </label>
-            <label className="sm:col-span-2">
-              <input
-                value={equipmentQuery}
-                onChange={(event) => setEquipmentQuery(event.target.value)}
-                placeholder={copy.equipment}
-                className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
-              />
-            </label>
+            {filterProfile.basic.includes('fuel') ? (
+              <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
+            ) : null}
+            {filterProfile.basic.includes('gearbox') ? (
+              <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
+            ) : null}
+            {filterProfile.basic.includes('bodyType') ? (
+              <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
+            ) : null}
+            {filterProfile.basic.includes('condition') ? (
+              <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setMoreFiltersOpen((current) => !current)}
+              aria-expanded={moreFiltersOpen}
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[13px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:bg-[#f7f7f5]"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              {moreFiltersOpen ? copy.fewerFilters : copy.moreFilters}
+              <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {moreFiltersOpen ? (
+              <div className="grid gap-3 border-t border-[#e4e7ec] pt-4 sm:col-span-2 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-4">
+                {filterProfile.advanced.includes('fuel') ? (
+                  <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
+                ) : null}
+                {filterProfile.advanced.includes('gearbox') ? (
+                  <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
+                ) : null}
+                {filterProfile.advanced.includes('bodyType') ? (
+                  <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
+                ) : null}
+                {filterProfile.advanced.includes('condition') ? (
+                  <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
+                ) : null}
+                {filterProfile.advanced.includes('year') ? (
+                  <label>
+                    <input
+                      value={yearFrom}
+                      onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                      inputMode="numeric"
+                      placeholder={copy.yearFrom}
+                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                    />
+                  </label>
+                ) : null}
+                {filterProfile.advanced.includes('mileage') ? (
+                  <label>
+                    <input
+                      value={maxMileage}
+                      onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
+                      inputMode="numeric"
+                      placeholder={copy.maxMileage}
+                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                    />
+                  </label>
+                ) : null}
+                {filterProfile.advanced.includes('hours') ? (
+                  <label>
+                    <input
+                      value={maxHours}
+                      onChange={(event) => setMaxHours(event.target.value.replace(/\D/g, '').slice(0, 7))}
+                      inputMode="numeric"
+                      placeholder={copy.maxHours}
+                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                    />
+                  </label>
+                ) : null}
+                {filterProfile.advanced.includes('equipment') ? (
+                  <label className="sm:col-span-2">
+                    <input
+                      value={equipmentQuery}
+                      onChange={(event) => setEquipmentQuery(event.target.value)}
+                      placeholder={equipmentLabel(category.slug, locale)}
+                      className="h-14 w-full rounded-[13px] border border-[#e4e7ec] px-4 text-base outline-none focus:border-[#98a2b3]"
+                    />
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
             <a
               href="#marketplace-results"
               className="inline-flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-[13px] bg-[#202124] px-4 text-center text-sm font-bold text-white sm:col-span-2 lg:col-span-2"
@@ -478,6 +553,9 @@ const marketplaceCopy = {
     yearFrom: 'Årsmodell från',
     maxMileage: 'Max miltal (km)',
     equipment: 'Utrustning, exempelvis dragkrok eller navigation',
+    maxHours: 'Max drifttimmar',
+    moreFilters: 'Fler filter',
+    fewerFilters: 'Färre filter',
     allEurope: 'Hela Europa',
     sort: 'Sortering',
     recommended: 'Rekommenderat',
@@ -510,6 +588,9 @@ const marketplaceCopy = {
     yearFrom: 'Model year from',
     maxMileage: 'Maximum mileage (km)',
     equipment: 'Equipment, for example towbar or navigation',
+    maxHours: 'Maximum operating hours',
+    moreFilters: 'More filters',
+    fewerFilters: 'Fewer filters',
     allEurope: 'All of Europe',
     sort: 'Sort',
     recommended: 'Recommended',
@@ -542,6 +623,9 @@ const marketplaceCopy = {
     yearFrom: 'Baujahr ab',
     maxMileage: 'Maximaler Kilometerstand',
     equipment: 'Ausstattung, zum Beispiel Anhängerkupplung oder Navigation',
+    maxHours: 'Maximale Betriebsstunden',
+    moreFilters: 'Mehr Filter',
+    fewerFilters: 'Weniger Filter',
     allEurope: 'Ganz Europa',
     sort: 'Sortierung',
     recommended: 'Empfohlen',
@@ -586,6 +670,131 @@ function categoryTypeLabel(slug: string, locale: PublicLocale) {
   if (locale === 'sv') return machine ? 'Alla maskintyper' : 'Alla karosstyper'
   if (locale === 'de') return machine ? 'Alle Maschinentypen' : 'Alle Karosserieformen'
   return machine ? 'All machine types' : 'All body types'
+}
+
+type FilterKey =
+  | 'fuel'
+  | 'gearbox'
+  | 'bodyType'
+  | 'condition'
+  | 'year'
+  | 'mileage'
+  | 'hours'
+  | 'equipment'
+
+function categoryFilterProfile(slug: string): {
+  basic: FilterKey[]
+  advanced: FilterKey[]
+} {
+  if (slug === 'caravans') {
+    return {
+      basic: ['condition'],
+      advanced: ['bodyType', 'year', 'equipment'],
+    }
+  }
+  if (slug === 'agriculture' || slug === 'construction') {
+    return {
+      basic: ['bodyType'],
+      advanced: ['condition', 'fuel', 'gearbox', 'year', 'hours', 'equipment'],
+    }
+  }
+  if (slug === 'electric-bikes' || slug === 'e-scooters') {
+    return {
+      basic: ['condition'],
+      advanced: ['bodyType', 'year', 'mileage', 'equipment'],
+    }
+  }
+  if (slug === 'motorcycles') {
+    return {
+      basic: ['condition'],
+      advanced: ['fuel', 'gearbox', 'bodyType', 'year', 'mileage', 'equipment'],
+    }
+  }
+  return {
+    basic: ['fuel'],
+    advanced: ['gearbox', 'bodyType', 'condition', 'year', 'mileage', 'equipment'],
+  }
+}
+
+function categoryQuickFilters(slug: string, locale: PublicLocale) {
+  const values: Record<string, Record<'sv' | 'en' | 'de', string[]>> = {
+    cars: {
+      sv: ['Nya', 'Begagnade', 'El', 'Hybrid', 'Pris', 'Miltal'],
+      en: ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage'],
+      de: ['Neu', 'Gebraucht', 'Elektro', 'Hybrid', 'Preis', 'Kilometer'],
+    },
+    vans: {
+      sv: ['Nya', 'Begagnade', 'El', 'Automat', 'Pris', 'Miltal'],
+      en: ['New', 'Used', 'Electric', 'Automatic', 'Price', 'Mileage'],
+      de: ['Neu', 'Gebraucht', 'Elektro', 'Automatik', 'Preis', 'Kilometer'],
+    },
+    motorcycles: {
+      sv: ['Nya', 'Begagnade', 'El', 'Touring', 'Pris', 'Miltal'],
+      en: ['New', 'Used', 'Electric', 'Touring', 'Price', 'Mileage'],
+      de: ['Neu', 'Gebraucht', 'Elektro', 'Touring', 'Preis', 'Kilometer'],
+    },
+    motorhomes: {
+      sv: ['Nya', 'Begagnade', 'Automat', 'Helintegrerad', 'Pris', 'Miltal'],
+      en: ['New', 'Used', 'Automatic', 'A-class', 'Price', 'Mileage'],
+      de: ['Neu', 'Gebraucht', 'Automatik', 'Vollintegriert', 'Preis', 'Kilometer'],
+    },
+    caravans: {
+      sv: ['Nya', 'Begagnade', 'Enkelaxel', 'Dubbelaxel', 'Pris'],
+      en: ['New', 'Used', 'Single axle', 'Twin axle', 'Price'],
+      de: ['Neu', 'Gebraucht', 'Einachser', 'Tandemachser', 'Preis'],
+    },
+    trucks: {
+      sv: ['Nya', 'Begagnade', 'Dragbil', 'Lastväxlare', 'Pris', 'Miltal'],
+      en: ['New', 'Used', 'Tractor unit', 'Hook lift', 'Price', 'Mileage'],
+      de: ['Neu', 'Gebraucht', 'Sattelzugmaschine', 'Abrollkipper', 'Preis', 'Kilometer'],
+    },
+    agriculture: {
+      sv: ['Traktorer', 'Skörd', 'Redskap', 'Pris', 'Drifttimmar'],
+      en: ['Tractors', 'Harvesting', 'Implements', 'Price', 'Operating hours'],
+      de: ['Traktoren', 'Erntetechnik', 'Anbaugeräte', 'Preis', 'Betriebsstunden'],
+    },
+    construction: {
+      sv: ['Grävmaskiner', 'Lastare', 'Dumprar', 'Pris', 'Drifttimmar'],
+      en: ['Excavators', 'Loaders', 'Dumpers', 'Price', 'Operating hours'],
+      de: ['Bagger', 'Lader', 'Dumper', 'Preis', 'Betriebsstunden'],
+    },
+    'electric-bikes': {
+      sv: ['Nya', 'Begagnade', 'City', 'Lastcykel', 'Pris'],
+      en: ['New', 'Used', 'City', 'Cargo bike', 'Price'],
+      de: ['Neu', 'Gebraucht', 'City', 'Lastenrad', 'Preis'],
+    },
+    'e-scooters': {
+      sv: ['Nya', 'Begagnade', 'Pendling', 'Pris'],
+      en: ['New', 'Used', 'Commuting', 'Price'],
+      de: ['Neu', 'Gebraucht', 'Pendeln', 'Preis'],
+    },
+  }
+  const language = locale === 'sv' || locale === 'de' ? locale : 'en'
+  const filters = values[slug]?.[language] || values.cars[language]
+  return language === 'en' && locale !== 'en'
+    ? filters.map((filter) => translatePublic(locale, filter))
+    : filters
+}
+
+function equipmentLabel(slug: string, locale: PublicLocale) {
+  const machine = slug === 'agriculture' || slug === 'construction'
+  const leisure = slug === 'motorhomes' || slug === 'caravans'
+  if (locale === 'sv') {
+    if (machine) return 'Utrustning, redskap eller tillbehör'
+    if (leisure) return 'Utrustning, exempelvis solpanel, markis eller värme'
+    return 'Utrustning, exempelvis dragkrok eller navigation'
+  }
+  if (locale === 'de') {
+    if (machine) return 'Ausstattung, Anbaugeräte oder Zubehör'
+    if (leisure) return 'Ausstattung, z. B. Solaranlage, Markise oder Heizung'
+    return 'Ausstattung, z. B. Anhängerkupplung oder Navigation'
+  }
+  const label = machine
+    ? 'Equipment, implements or attachments'
+    : leisure
+      ? 'Equipment, for example solar panels, awning or heating'
+      : 'Equipment, for example towbar or navigation'
+  return locale === 'en' ? label : translatePublic(locale, label)
 }
 
 function localizeCategory(category: CategoryConfig, locale: PublicLocale) {

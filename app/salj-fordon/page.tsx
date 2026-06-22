@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import {
   ArrowRight,
   Bike,
@@ -14,16 +15,39 @@ import {
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
-import { createPublicMetadata } from '@/lib/public-seo'
 import { formatListingPrice, marketplaceCategories } from '@/lib/marketplace-pricing'
-import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
+import { isPublicLanguage, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
-export const metadata = createPublicMetadata({
-  title: 'Sälj fordon i Sverige och Europa | Autorell',
-  description:
-    'Välj fordonskategori, skapa en annons och nå köpare i Sverige och resten av Europa. Annonspaket köps per publicerat objekt.',
-  path: '/salj-fordon',
-})
+export async function generateMetadata(): Promise<Metadata> {
+  const headerStore = await headers()
+  const locale = getRequestedLocale(headerStore)
+  const hostname = headerStore.get('host') || ''
+  const host = hostname.includes('autorell.de')
+    ? 'https://www.autorell.de'
+    : hostname.includes('autorell.com')
+      ? 'https://www.autorell.com'
+      : 'https://www.autorell.se'
+  const title =
+    locale === 'sv'
+      ? 'Sälj fordon i Sverige och Europa | Autorell'
+      : locale === 'de'
+        ? 'Fahrzeug in Deutschland und Europa verkaufen | Autorell'
+        : translatePublic(locale, 'Sell a vehicle across Europe | Autorell')
+  const description =
+    locale === 'sv'
+      ? 'Välj fordonskategori, skapa en annons och nå köpare i Sverige och resten av Europa.'
+      : locale === 'de'
+        ? 'Fahrzeugkategorie wählen, Anzeige erstellen und Käufer in Deutschland und ganz Europa erreichen.'
+        : translatePublic(
+            locale,
+            'Choose a vehicle category, create a listing and reach buyers across Europe.',
+          )
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: `${host}/salj-fordon` },
+  }
+}
 
 const categories = [
   { slug: 'cars', label: 'Bilar', icon: CarFront },
@@ -167,4 +191,11 @@ export default async function SellVehiclePage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): PublicLocale {
+  const requested = headerStore.get('x-autorell-language') || 'sv'
+  return requested === 'sv' || requested === 'de' || isPublicLanguage(requested)
+    ? requested
+    : 'sv'
 }

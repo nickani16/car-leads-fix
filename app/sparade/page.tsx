@@ -24,6 +24,7 @@ export default async function SavedListingsPage() {
     title: listing.title,
     year: listing.model_year ? String(listing.model_year) : null,
     mileageKm: listing.mileage_km,
+    operatingHours: listing.operating_hours,
     fuelType: listing.fuel_type,
     gearbox: listing.gearbox,
     bodyType: listing.body_type,

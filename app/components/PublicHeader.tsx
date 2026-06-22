@@ -410,7 +410,7 @@ export default function PublicHeader({
   ]
 
   const languageOptions: Array<readonly [string, string, string, string]> = [
-    ['eu', 'EU', 'EU / English', 'https://www.autorell.com/'] as const,
+    ['eu', 'EU', 'EU / English', 'https://www.autorell.com/?market=en'] as const,
     ...([
     ['se', 'SE', 'Sverige', 'https://www.autorell.se/'] as const,
     ['de', 'DE', 'Deutschland', 'https://www.autorell.de/'] as const,
@@ -847,7 +847,7 @@ function DesktopMenu({
       </a>
 
       <div
-        className={`pointer-events-none fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+        className={`pointer-events-none fixed left-1/2 top-[68px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 translate-y-2 pt-[12px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
           menu.items.length > 5 ? 'max-w-[900px]' : 'max-w-[780px]'
         }`}
       >
@@ -871,7 +871,7 @@ function DesktopMenu({
             </a>
           </div>
 
-          <div className={`min-w-0 p-4 ${menu.items.length > 5 ? 'grid max-h-[460px] grid-cols-2 content-start overflow-y-auto' : ''}`}>
+          <div className={`min-w-0 p-4 ${menu.items.length > 5 ? 'grid max-h-[460px] grid-cols-2 content-start overflow-x-hidden overflow-y-auto' : ''}`}>
             {menu.items.map(({ href: itemHref, label: itemLabel, description, icon: Icon }) => (
               <a
                 key={`${itemHref}-${itemLabel}`}

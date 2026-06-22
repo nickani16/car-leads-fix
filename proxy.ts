@@ -388,6 +388,7 @@ export function proxy(request: NextRequest) {
 
     if (
       isPublicLanguage(language) &&
+      !EU_BUYER_MARKET_CODES.has(language) &&
       (segments.length === 1 ||
         (segments.length === 2 && PUBLIC_LANGUAGE_PAGES.has(page)))
     ) {
@@ -408,6 +409,17 @@ export function proxy(request: NextRequest) {
     }
 
     if (methodCanRedirect && pathname === '/') {
+      if (targetMarket === 'sv') {
+        return redirectToHost(request, MARKET_HOSTS.sv, 307)
+      }
+      if (targetMarket === 'de') {
+        return redirectToHost(request, MARKET_HOSTS.de, 307)
+      }
+      if (targetMarket && EU_BUYER_MARKET_CODES.has(targetMarket)) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${targetMarket}`
+        return NextResponse.redirect(url, 307)
+      }
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-autorell-language', 'en')
       const localizedUrl = request.nextUrl.clone()
@@ -505,12 +517,26 @@ export function proxy(request: NextRequest) {
           segments[2] === 'import-from-sweden'
 
         if (isMarketHub) {
+          const marketLanguage = market?.language ?? 'en'
+          if (
+            request.cookies.get('autorell-market')?.value !== marketCode ||
+            request.cookies.get('autorell-language')?.value !== marketLanguage
+          ) {
+            return withMarketCookie(
+              withLanguageCookie(
+                NextResponse.redirect(request.nextUrl, 307),
+                marketLanguage,
+              ),
+              marketCode,
+            )
+          }
+          const localizedUrl = request.nextUrl.clone()
           return withMarketCookie(
             withLanguageCookie(
-              NextResponse.next({
+              NextResponse.rewrite(localizedUrl, {
                 request: { headers: requestHeaders },
               }),
-              market?.language ?? 'en',
+              marketLanguage,
             ),
             marketCode,
           )
@@ -526,9 +552,10 @@ export function proxy(request: NextRequest) {
           })
         }
 
+        const localizedUrl = request.nextUrl.clone()
         return withMarketCookie(
           withLanguageCookie(
-            NextResponse.next({
+            NextResponse.rewrite(localizedUrl, {
               request: { headers: requestHeaders },
             }),
             market?.language ?? 'en',

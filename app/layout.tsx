@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
@@ -58,6 +58,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const requestHeaders = await headers()
+  const cookieStore = await cookies()
   const hostname = (
     requestHeaders.get('host') ||
     requestHeaders.get('x-forwarded-host') ||
@@ -67,8 +68,13 @@ export default async function RootLayout({
     .trim()
     .split(':')[0]
     .toLowerCase()
-  const requestedLanguage = requestHeaders.get('x-autorell-language')
-  const requestedMarket = requestHeaders.get('x-autorell-market') || undefined
+  const requestedLanguage =
+    requestHeaders.get('x-autorell-language') ||
+    cookieStore.get('autorell-language')?.value
+  const requestedMarket =
+    requestHeaders.get('x-autorell-market') ||
+    cookieStore.get('autorell-market')?.value ||
+    undefined
   const marketLanguage = hostname.endsWith('autorell.de')
     ? 'de'
     : hostname.endsWith('autorell.com')

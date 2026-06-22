@@ -7,7 +7,7 @@ import {
   getEuBuyerHubAlternates,
   getEuBuyerMarket,
 } from '@/lib/eu-buyer-markets'
-import type { PublicLocale } from '@/lib/public-i18n'
+import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -26,8 +26,14 @@ export async function generateMetadata({
   const market = getEuBuyerMarket(marketCode)
   if (!market) return {}
   const canonical = `https://www.autorell.com/${market.code}`
-  const title = `${market.countryLocal} vehicle marketplace | Autorell`
-  const description = `Find and list vehicles in ${market.countryLocal} and across the European Union.`
+  const title = `${market.countryLocal} · ${translatePublic(
+    market.language,
+    "Europe's vehicle marketplace",
+  )} | Autorell`
+  const description = translatePublic(
+    market.language,
+    'One connected marketplace for private sellers and businesses. Find the right vehicle, reach more buyers and trade with greater confidence across borders.',
+  )
   return {
     title: { absolute: title },
     description,

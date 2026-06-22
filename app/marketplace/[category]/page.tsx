@@ -1,4 +1,5 @@
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import MarketplaceCategoryBrowser, {
   type MarketplaceListing,
@@ -25,6 +26,69 @@ import {
 
 export function generateStaticParams() {
   return marketplaceCategories.map(({ slug }) => ({ category: slug }))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>
+}): Promise<Metadata> {
+  const { category: requestedCategory } = await params
+  const category = getMarketplaceCategory(requestedCategory)
+  const requestHeaders = await headers()
+  const hostname = (
+    requestHeaders.get('host') ||
+    requestHeaders.get('x-forwarded-host') ||
+    ''
+  ).toLowerCase()
+  const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const locale: PublicLocale =
+    requestedLanguage && isPublicLanguage(requestedLanguage)
+      ? requestedLanguage
+      : hostname.includes('autorell.de')
+        ? 'de'
+        : hostname.includes('autorell.com')
+          ? 'en'
+          : 'sv'
+  const language = marketplaceLanguage(locale)
+  const label =
+    locale === 'sv' || locale === 'de' || locale === 'en'
+      ? category.labels[language]
+      : translatePublic(locale, category.labels.en)
+  const host = hostname.includes('autorell.de')
+    ? 'https://www.autorell.de'
+    : hostname.includes('autorell.com')
+      ? 'https://www.autorell.com'
+      : 'https://www.autorell.se'
+  const canonical = `${host}/marketplace/${category.slug}`
+  const title =
+    locale === 'sv'
+      ? `${label} till salu i Europa | Autorell`
+      : locale === 'de'
+        ? `${label} in Europa kaufen | Autorell`
+        : `${label} · ${translatePublic(locale, "Europe's vehicle marketplace")} | Autorell`
+  const description =
+    locale === 'sv'
+      ? `Sök och jämför ${label.toLowerCase()} från privatpersoner och företag i hela EU. Filtrera på plats, märke, modell, skick och relevanta fordonsdata.`
+      : locale === 'de'
+        ? `${label} von privaten und gewerblichen Verkäufern in der EU suchen und vergleichen. Nach Standort, Marke, Modell, Zustand und relevanten Fahrzeugdaten filtern.`
+        : translatePublic(
+            locale,
+            'One connected marketplace for private sellers and businesses. Find the right vehicle, reach more buyers and trade with greater confidence across borders.',
+          )
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'Autorell',
+      type: 'website',
+    },
+  }
 }
 
 export default async function MarketplaceCategoryPage({
@@ -76,6 +140,7 @@ export default async function MarketplaceCategoryPage({
     title: listing.title,
     year: listing.model_year ? String(listing.model_year) : null,
     mileageKm: listing.mileage_km,
+    operatingHours: listing.operating_hours,
     fuelType: listing.fuel_type,
     gearbox: listing.gearbox,
     bodyType: listing.body_type,
