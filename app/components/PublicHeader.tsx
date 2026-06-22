@@ -804,17 +804,17 @@ export default function PublicHeader({
   if (activeLocale === 'sv') {
     content = {
       ...content,
-      dealerLabel: 'Om Autorell',
+      dealerLabel: 'Företag',
       partner: 'Bli företagssäljare',
-      cta: 'Ansök om företagskonto',
-      ctaHref: marketRoutes.dealerAccess,
+      cta: 'Skapa konto',
+      ctaHref: '/registrera',
       links: [
         ['/marketplace/cars', 'Köp'],
         ['/salj-fordon', 'Sälj fordon'],
-        ['/dealer', 'Företagskonto'],
-        ['/om-oss', 'Om Autorell'],
-        ['/vanliga-fragor', 'Hjälp'],
-        ['/kontakt', 'Kontakta oss'],
+        ['/salj-fordon#priser', 'Priser'],
+        ['/foretag', 'Företag'],
+        ['/hjalpcenter', 'Hjälpcenter'],
+        ['/rapportera', 'Rapportera problem'],
       ],
     }
     sellerMenu = {
@@ -835,28 +835,52 @@ export default function PublicHeader({
     }
     companyMenu = {
       ...companyMenu,
-      eyebrow: 'Företagsplattform',
-      title: 'Hantera utbud och affärer.',
-      text: 'Ett professionellt arbetsflöde för listningar, köpare och försäljning.',
-      cta: 'Logga in',
-      ctaHref: '/login',
+      eyebrow: 'Tydlig prissättning',
+      title: 'Gratis 7 dagar eller mer synlighet.',
+      text: 'Pris för 15 dagar och Premium anpassas efter fordonskategori och om säljaren är privatperson eller företag.',
+      cta: 'Se alla priser',
+      ctaHref: '/salj-fordon#priser',
+    }
+    aboutMenu = {
+      ...aboutMenu,
+      eyebrow: 'För företag',
+      title: 'Publicera lager och hantera fler fordon.',
+      text: 'Företagsprofil, organisationsuppgifter, annonser, meddelanden och separata paket per objekt.',
+      cta: 'Se företagslösningen',
+      ctaHref: '/foretag',
     }
   } else if (activeLocale === 'en' || activeLocale === 'de') {
     const isGerman = activeLocale === 'de'
     content = {
       ...content,
-      dealerLabel: isGerman ? 'Über Autorell' : 'About Autorell',
+      dealerLabel: isGerman ? 'Unternehmen' : 'Business',
       partner: isGerman ? 'Als Unternehmen verkaufen' : 'Sell as a business',
-      cta: isGerman ? 'Unternehmenskonto' : 'Business account',
-      ctaHref: marketRoutes.dealerAccess,
+      cta: isGerman ? 'Konto erstellen' : 'Create account',
+      ctaHref: '/registrera',
       links: [
         ['/marketplace/cars', isGerman ? 'Kaufen' : 'Buy'],
         ['/salj-fordon', isGerman ? 'Fahrzeug verkaufen' : 'Sell vehicle'],
-        ['/dealer', isGerman ? 'Unternehmenskonto' : 'Business account'],
-        [isGerman ? '/ueber-autorell' : '/about', isGerman ? 'Über Autorell' : 'About Autorell'],
-        ['/faq', isGerman ? 'Hilfe' : 'Help'],
-        [isGerman ? '/kontakt' : '/contact', isGerman ? 'Kontakt' : 'Contact'],
+        ['/salj-fordon#priser', isGerman ? 'Preise' : 'Pricing'],
+        ['/foretag', isGerman ? 'Unternehmen' : 'Business'],
+        ['/hjalpcenter', isGerman ? 'Hilfe' : 'Help centre'],
+        ['/rapportera', isGerman ? 'Problem melden' : 'Report a problem'],
       ],
+    }
+    companyMenu = {
+      ...companyMenu,
+      eyebrow: isGerman ? 'Transparente Preise' : 'Transparent pricing',
+      title: isGerman ? 'Kostenlos starten oder mehr Sichtbarkeit wählen.' : 'Start free or choose more visibility.',
+      text: isGerman ? 'Der Preis richtet sich nach Kategorie und Kontotyp.' : 'Pricing is based on vehicle category and account type.',
+      cta: isGerman ? 'Preise ansehen' : 'View pricing',
+      ctaHref: '/salj-fordon#priser',
+    }
+    aboutMenu = {
+      ...aboutMenu,
+      eyebrow: isGerman ? 'Für Unternehmen' : 'For businesses',
+      title: isGerman ? 'Bestand und mehrere Fahrzeuge verwalten.' : 'Manage inventory and multiple vehicles.',
+      text: isGerman ? 'Unternehmensprofil, Anzeigen, Nachrichten und Pakete pro Objekt.' : 'Business profile, listings, messages and packages per vehicle.',
+      cta: isGerman ? 'Unternehmenslösung' : 'Business solution',
+      ctaHref: '/foretag',
     }
   }
 
@@ -1102,7 +1126,7 @@ export default function PublicHeader({
 
               <DesktopMenu
                 label={content.dealerLabel}
-                href={activeLocale === 'sv' ? '/om-oss' : content.links[3][0]}
+                href={content.links[3][0]}
                 menu={aboutMenu}
                 onNavigate={handleSectionLink}
                 icon={Building2}
@@ -1118,7 +1142,7 @@ export default function PublicHeader({
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
               <Link
-                href={marketRoutes.dealerAccess}
+                href="/registrera"
                 className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <Store className="h-[19px] w-[19px]" strokeWidth={1.7} />

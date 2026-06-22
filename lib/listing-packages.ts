@@ -3,6 +3,20 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 
 export const listingPackages = {
+  free_7d: {
+    name: 'Gratis 7 dagar',
+    description: 'Grundläggande publicering i 7 dagar.',
+    amountCents: 0,
+    durationDays: 7,
+    priority: 0,
+  },
+  standard_15d: {
+    name: '15 dagars exponering',
+    description: 'Utökad publicering i 15 dagar.',
+    amountCents: 0,
+    durationDays: 15,
+    priority: 40,
+  },
   extended_7d: {
     name: '7 dagars exponering',
     description: 'Synlighet för verifierade bilhandlare i 7 dagar.',
@@ -11,11 +25,11 @@ export const listingPackages = {
     priority: 0,
   },
   premium_30d: {
-    name: 'Premium 15 dagar',
+    name: 'Premium 30 dagar',
     description:
-      'Prioriterad placering och utökad synlighet för verifierade bilhandlare i 15 dagar.',
+      'Prioriterad placering och utökad synlighet i 30 dagar.',
     amountCents: 29000,
-    durationDays: 15,
+    durationDays: 30,
     priority: 100,
   },
   managed_sale: {
@@ -121,6 +135,7 @@ export async function fulfillListingCheckout(
   const { error: leadError } = await supabase
     .from('leads')
     .update({
+      ...(lead.status === 'Pending payment' ? { status: 'Pending review' } : {}),
       auction_starts_at: activatedAt?.toISOString() || null,
       auction_ends_at: expiresAt?.toISOString() || null,
       ...(shouldActivateNow

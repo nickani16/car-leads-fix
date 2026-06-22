@@ -38,6 +38,8 @@ const localizedPublicPaths = new Set([
   '/privacy',
   '/cookies',
   '/terms',
+  '/login',
+  '/register',
 ])
 
 const structuralKeys = new Set([
@@ -124,6 +126,8 @@ export const publicPagePaths = [
   '/privacy',
   '/cookies',
   '/terms',
+  '/login',
+  '/register',
 ] as const
 
 export function getPublicAlternates(pathname: string) {

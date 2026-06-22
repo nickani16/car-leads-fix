@@ -36,10 +36,10 @@ const footerCopy = {
     ] as [string, string][],
     businessTitle: 'Företag',
     businessLinks: [
-      ['Ansök om företagskonto', '/bli-bilhandlare'],
+      ['Skapa privat- eller företagskonto', '/registrera'],
       ['Logga in', '/login'],
-      ['Utforska marknaden', '/hitta-bilar'],
-      ['Om Autorell', '/om-oss'],
+      ['Priser', '/salj-fordon#priser'],
+      ['Hjälpcenter', '/hjalpcenter'],
     ] as [string, string][],
     dealerTitle: 'Fler kategorier',
     dealerLinks: [
@@ -58,17 +58,17 @@ const footerCopy = {
     cookieSettings: 'Cookieinställningar',
   },
   de: {
-    description: 'Der digitale B2B-Fahrzeugmarkt für verifizierte Autohändler in Deutschland und Europa.',
+    description: 'Europas Fahrzeugmarktplatz für Privatpersonen und Unternehmen.',
     question: 'Möchten Sie neue europäische Beschaffungsmärkte erschließen?',
-    cta: 'Händlerzugang beantragen',
+    cta: 'Konto erstellen',
     statement: 'Fahrzeuge handeln. Europa verbinden.',
     sellerTitle: 'Fahrzeuge & Einkauf',
     sellerLinks: [
-      ['Fahrzeuge kaufen', '/fahrzeuge-finden'],
-      ['Fahrzeugbestand verkaufen', '/fahrzeugbestand-verkaufen'],
-      ['So funktioniert der Einkauf', '/so-funktionierts'],
-      ['Vorteile für Händler', '/vorteile'],
-      ['Häufige Fragen', '/faq'],
+      ['Fahrzeuge kaufen', '/marketplace/cars'],
+      ['Fahrzeug verkaufen', '/salj-fordon'],
+      ['Preise', '/salj-fordon#priser'],
+      ['Hilfe', '/hjalpcenter'],
+      ['Problem melden', '/rapportera'],
     ] as [string, string][],
     businessTitle: 'Autorell',
     businessLinks: [
@@ -79,10 +79,10 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Dealer Network',
     dealerLinks: [
-      ['Händlerstandorte', '/haendler'],
-      ['Händler werden', '/haendlerzugang'],
-      ['Händlerbedingungen', '/haendlerbedingungen'],
-      ['Händler-Login', '/login'],
+      ['Konto erstellen', '/registrera'],
+      ['Unternehmenslösungen', '/foretag'],
+      ['Nachrichten', '/konto/meddelanden'],
+      ['Anmelden', '/login'],
     ] as [string, string][],
     contact: 'Kontakt',
     support: 'Persönlicher Support für professionelle europäische Käufer.',
@@ -93,17 +93,17 @@ const footerCopy = {
     cookieSettings: 'Cookie-Einstellungen',
   },
   en: {
-    description: 'Focused access to selected Swedish vehicles for professional European buyers.',
+    description: "Europe's vehicle marketplace for private sellers and businesses.",
     question: 'Looking to source Swedish vehicles for your inventory?',
-    cta: 'Apply for dealer access',
-    statement: 'Selected Swedish supply. Built for professional European dealers.',
+    cta: 'Create account',
+    statement: 'Vehicles, buyers and sellers connected across Europe.',
     sellerTitle: 'Vehicles & buying',
     sellerLinks: [
       ['Buy cars', '/marketplace/cars'],
-      ['Sell business vehicles', '/sell-stock'],
-      ['How buying works', '/how-it-works'],
-      ['Dealer benefits', '/dealer-benefits'],
-      ['Frequently asked questions', '/faq'],
+      ['Sell a vehicle', '/salj-fordon'],
+      ['Pricing', '/salj-fordon#priser'],
+      ['Help centre', '/hjalpcenter'],
+      ['Report a problem', '/rapportera'],
     ] as [string, string][],
     businessTitle: 'Autorell',
     businessLinks: [
@@ -114,10 +114,10 @@ const footerCopy = {
     ] as [string, string][],
     dealerTitle: 'Dealer Network',
     dealerLinks: [
-      ['Dealer markets', '/dealers'],
-      ['Become a partner', '/dealer-apply'],
-      ['Dealer terms', '/dealer-terms'],
-      ['Dealer login', '/login'],
+      ['Create account', '/registrera'],
+      ['Business solutions', '/foretag'],
+      ['Messages', '/konto/meddelanden'],
+      ['Log in', '/login'],
     ] as [string, string][],
     contact: 'Contact',
     support: 'Personal support for professional European buyers.',
@@ -190,10 +190,10 @@ export default function PublicFooter({
             <Link
               href={
                 locale === 'sv'
-                  ? '/hitta-bilar'
+                  ? '/registrera'
                   : locale === 'de'
-                    ? '/haendlerzugang'
-                    : '/dealer-apply'
+                    ? '/registrera'
+                    : '/registrera'
               }
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0057e6]"
             >

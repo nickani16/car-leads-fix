@@ -114,7 +114,7 @@ export default async function MarketplaceCategoryPage({
   const { data } = await createAdminClient()
     .from('leads')
     .select(
-      'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,buy_now_price,seller_target_price,images',
+      'id,make,model,model_year,miles,fuel_type,body_type,origin_country,source,sale_format,buy_now_price,seller_target_price,images,seller_user_id,seller_public_name,seller_is_trader,vehicle_category',
     )
     .eq('status', 'Active')
     .is('auction_closed_at', null)
@@ -126,7 +126,7 @@ export default async function MarketplaceCategoryPage({
   const listings: MarketplaceListing[] = (data || [])
     .filter((lead) => {
       const haystack = `${lead.body_type || ''} ${lead.make || ''} ${lead.model || ''}`.toLowerCase()
-      return category === 'cars' || config.matches.some((match) => haystack.includes(match))
+      return lead.vehicle_category === category || (category === 'cars' && !lead.vehicle_category) || config.matches.some((match) => haystack.includes(match))
     })
     .map((lead) => {
       const mileage = Number(lead.miles)
@@ -146,6 +146,9 @@ export default async function MarketplaceCategoryPage({
             : 'Kontakta säljaren',
         priceValue: Number.isFinite(price) && price > 0 ? price : null,
         imageAvailable: typeof images[0] === 'string',
+        sellerName: lead.seller_public_name || 'Autorell',
+        sellerIsTrader: Boolean(lead.seller_is_trader),
+        messagingEnabled: Boolean(lead.seller_user_id),
       }
     })
 

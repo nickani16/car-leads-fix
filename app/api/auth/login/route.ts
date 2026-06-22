@@ -52,9 +52,24 @@ export async function POST(request: Request) {
       )
     }
 
-    const requestedPath = ['/admin', '/dealer', '/sales'].includes(body.next || '')
+    const requestedPath = ['/admin', '/dealer', '/sales', '/konto'].includes(body.next || '')
       ? body.next || ''
       : ''
+    if (requestedPath === '/konto') {
+      const { data: marketplaceProfile } = await adminClient
+        .from('marketplace_profiles')
+        .select('user_id')
+        .eq('user_id', data.user.id)
+        .maybeSingle()
+      if (!marketplaceProfile) {
+        await supabase.auth.signOut()
+        return NextResponse.json(
+          { error: 'No marketplace profile was found for this account.' },
+          { status: 403 },
+        )
+      }
+      return NextResponse.json({ success: true, destination: '/konto' })
+    }
     if (requestedPath === '/admin') {
       const { data: adminAccount } = await supabase
         .from('admin_users')
@@ -151,6 +166,16 @@ export async function POST(request: Request) {
           ? '/reset-password?required=1'
           : '/sales',
       })
+    }
+
+    const { data: marketplaceProfile } = await adminClient
+      .from('marketplace_profiles')
+      .select('user_id')
+      .eq('user_id', data.user.id)
+      .maybeSingle()
+
+    if (marketplaceProfile) {
+      return NextResponse.json({ success: true, destination: '/konto' })
     }
 
     const { data: dealerAccount } = await adminClient

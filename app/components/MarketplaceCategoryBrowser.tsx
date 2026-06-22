@@ -12,6 +12,7 @@ import {
   Search,
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import MessageSellerButton from './MessageSellerButton'
 
 export type MarketplaceListing = {
   id: string
@@ -24,6 +25,9 @@ export type MarketplaceListing = {
   priceLabel: string
   priceValue: number | null
   imageAvailable: boolean
+  sellerName: string
+  sellerIsTrader: boolean
+  messagingEnabled: boolean
 }
 
 type CategoryConfig = {
@@ -262,6 +266,9 @@ export default function MarketplaceCategoryBrowser({
                         .filter(Boolean)
                         .join(' · ')}
                     </p>
+                    <p className="mt-3 text-xs font-semibold text-[#475467]">
+                      {listing.sellerIsTrader ? copy.businessSeller : copy.privateSeller} · {listing.sellerName}
+                    </p>
                     <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
                       <div>
                         <span className="block text-xs text-[#98a2b3]">
@@ -269,10 +276,7 @@ export default function MarketplaceCategoryBrowser({
                         </span>
                         <strong className="mt-1 block">{listing.priceLabel}</strong>
                       </div>
-                      <button type="button" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
-                        {copy.viewListing}
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                      <MessageSellerButton leadId={listing.id} enabled={listing.messagingEnabled} />
                     </div>
                   </div>
                 </article>
@@ -340,6 +344,8 @@ const marketplaceCopy = {
     fixedPrice: 'Fast pris',
     auction: 'Auktion',
     viewListing: 'Visa annons',
+    privateSeller: 'Privat säljare',
+    businessSeller: 'Företagssäljare',
   },
   en: {
     sell: 'Sell',
@@ -362,6 +368,8 @@ const marketplaceCopy = {
     fixedPrice: 'Fixed price',
     auction: 'Auction',
     viewListing: 'View listing',
+    privateSeller: 'Private seller',
+    businessSeller: 'Business seller',
   },
   de: {
     sell: 'Verkaufen:',
@@ -384,6 +392,8 @@ const marketplaceCopy = {
     fixedPrice: 'Festpreis',
     auction: 'Auktion',
     viewListing: 'Anzeige ansehen',
+    privateSeller: 'Privater Verkäufer',
+    businessSeller: 'Gewerblicher Verkäufer',
   },
 } as const
 

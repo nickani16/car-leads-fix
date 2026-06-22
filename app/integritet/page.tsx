@@ -2,9 +2,8 @@ import { createPublicMetadata } from '@/lib/public-seo'
 import PublicLegalPage from '../components/PublicLegalPage'
 
 export const metadata = createPublicMetadata({
-  title: 'Integritetspolicy och personuppgifter | Autorell',
-  description:
-    'Läs hur Autorell behandlar personuppgifter, vilka uppgifter som delas, rättsliga grunder, lagring och dina rättigheter enligt GDPR.',
+  title: 'Integritetspolicy för Autorell marketplace',
+  description: 'Hur Autorell behandlar konto-, kontakt-, annons-, meddelande-, betalnings- och säkerhetsuppgifter enligt GDPR.',
   path: '/integritet',
 })
 
@@ -13,97 +12,84 @@ const sections = [
     id: 'ansvarig',
     title: 'Personuppgiftsansvarig',
     paragraphs: [
-      'Autorell AB i Sverige är personuppgiftsansvarig. Frågor och begäranden skickas till info@autorell.com.',
-      'Organisationsnummer och fullständig registrerad adress ska publiceras här innan kommersiell lansering.',
+      'Autorell AB i Sverige är personuppgiftsansvarig för marknadsplatsen. Frågor, invändningar och rättighetsbegäranden skickas till info@autorell.com.',
     ],
   },
   {
     id: 'uppgifter',
     title: 'Uppgifter vi behandlar',
     items: [
-      'Namn, telefonnummer, e-postadress och annan kontaktinformation.',
-      'Registreringsnummer, VIN, märke, modell, körsträcka, skick, utrustning och fotografier.',
-      'Information om ägande, service, skador, finansiering och önskad försäljningstid.',
-      'Kommunikation, erbjudanden, avtal, betalnings- och logistikreferenser.',
-      'IP-adress, webbläsare och säkerhetsloggar när det krävs för drift, bevisning eller bedrägeriskydd.',
+      'Kontotyp, namn, e-post, telefon, land, adress och inloggnings- och säkerhetsinformation.',
+      'För företag: företagsnamn, registreringsnummer, VAT-nummer, företrädare och verifieringsuppgifter.',
+      'Annonsdata, bilder, fordonsidentitet, pris, plats, skick, historik, kända fel och publiceringspaket.',
+      'Meddelanden, rapporter, supportärenden, modereringsbeslut och bevisning om misstänkt missbruk.',
+      'Betalningsreferenser, paket, belopp, kvitto- och återbetalningsstatus. Fullständiga kortuppgifter lagras inte av Autorell.',
+      'IP-adress, enhets-, webbläsar-, sessions- och händelseloggar när det behövs för drift och säkerhet.',
     ],
   },
   {
     id: 'andamal',
-    title: 'Varför uppgifterna används',
+    title: 'Ändamål och rättslig grund',
     items: [
-      'Skapa och bedöma fordonsprofilen.',
-      'Presentera relevant fordonsinformation för godkända professionella köpare.',
-      'Administrera bud, kontakta dig om resultat och hantera en möjlig försäljning.',
-      'Genomföra identitets-, ägar-, säkerhets- och bedrägerikontroller.',
-      'Hantera avtal, betalning, transport, export, bokföring och rättsliga krav.',
+      'Avtal och åtgärder på din begäran: skapa konto, publicera annons, leverera annonspaket, möjliggöra meddelanden och support.',
+      'Rättslig skyldighet: bokföring, skatt, myndighetsförfrågningar och skyldigheter för digitala plattformar och näringsidkare.',
+      'Berättigat intresse: säker drift, bedrägeribekämpning, moderering, tvistbevisning, tjänsteutveckling och skydd av användare.',
+      'Samtycke används där lagen kräver det, exempelvis för icke nödvändiga cookies eller separat marknadsföring.',
     ],
   },
   {
-    id: 'dealers',
-    title: 'Vad dealers får se',
+    id: 'synlighet',
+    title: 'Vad andra användare ser',
     paragraphs: [
-      'Autorell säljer inte och hyr inte ut ditt telefonnummer, din e-postadress eller andra kontaktuppgifter som marknadsföringsdata.',
-      'Under budgivningen ser godkända dealers fordonsprofilen men inte säljarens telefonnummer eller e-postadress. Dealers visas anonymt för varandra.',
-      'Registreringsnummer, VIN, bilder och andra relevanta fordonsuppgifter kan visas när de behövs för professionell värdering.',
-      'Efter att du accepterat ett erbjudande kan nödvändiga partsuppgifter delas med vinnande köpare och leverantörer för avtal, betalning, hämtning och ägarövergång.',
+      'Annonsen visar relevanta fordonsuppgifter, säljarens visningsnamn eller företagsnamn, land och om säljaren är privatperson eller näringsidkare.',
+      'E-post, telefon, full adress, identitetsuppgifter och betalningsinformation visas inte öppet. Nödvändiga uppgifter kan delas mellan parter när ett avtal, leverans, kontroll eller rättslig skyldighet kräver det.',
     ],
   },
   {
     id: 'mottagare',
     title: 'Mottagare och leverantörer',
     items: [
-      'Godkända bilhandlare och den vinnande köparen när affären kräver det.',
-      'Leverantörer av hosting, databas, e-post, signering, identitetskontroll, betalning och säkerhet.',
-      'Transportörer, dokumentleverantörer, rådgivare och myndigheter.',
-      'Leverantörer får bara behandla uppgifter för avtalade ändamål och med lämpligt skydd.',
-    ],
-  },
-  {
-    id: 'grund',
-    title: 'Rättslig grund',
-    items: [
-      'Avtal och åtgärder på din begäran för värdering, förmedling och försäljning.',
-      'Rättsliga skyldigheter för bokföring, skatt och myndighetskrav.',
-      'Berättigat intresse för säker drift, bedrägeriskydd och dokumentation.',
-      'Samtycke där lagen kräver det, exempelvis framtida icke-nödvändiga cookies eller separat marknadsföring.',
+      'Motparten i en affär när det är nödvändigt och tydligt för användaren.',
+      'Leverantörer av hosting, databas, autentisering, lagring, e-post, betalning, analys, säkerhet och kundsupport.',
+      'Rådgivare, transportörer, försäkrings- och identitetsleverantörer när användaren väljer ett flöde som kräver dem.',
+      'Myndigheter och brottsbekämpande organ när lag, rättsligt krav eller skydd av personer och egendom kräver det.',
     ],
   },
   {
     id: 'lagring',
     title: 'Lagring och gallring',
     paragraphs: [
-      'Uppgifter sparas bara så länge de behövs för ärendet, dokumentation och rättsliga anspråk. Genomförda affärer sparas längre när bokförings-, skatte- eller avtalsregler kräver det.',
-      'Exakta gallringsperioder per uppgiftskategori ska fastställas före kommersiell lansering.',
+      'Kontodata sparas medan kontot är aktivt och därefter under den tid som behövs för rättsliga anspråk, säkerhet och skyldigheter. Annons- och meddelandedata kan sparas efter borttagning när det behövs för moderering, bedrägeribekämpning eller tvist.',
+      'Betalnings- och bokföringsunderlag sparas enligt tillämpliga bokförings- och skatteregler. Uppgifter som inte längre behövs raderas eller anonymiseras.',
     ],
   },
   {
     id: 'overforing',
     title: 'Överföring utanför EU/EES',
     paragraphs: [
-      'Om en leverantör behandlar uppgifter utanför EU/EES används en laglig överföringsmekanism och nödvändiga skyddsåtgärder.',
+      'Om en leverantör behandlar uppgifter utanför EU/EES används ett giltigt överföringsstöd, exempelvis adekvansbeslut eller standardavtalsklausuler, samt kompletterande skydd när det behövs.',
     ],
   },
   {
     id: 'rattigheter',
     title: 'Dina rättigheter',
     items: [
-      'Begära tillgång till och rättelse av dina personuppgifter.',
-      'Begära radering eller begränsning när GDPR:s villkor är uppfyllda.',
-      'Invända mot behandling som grundas på berättigat intresse.',
-      'Begära dataportabilitet för tillämplig behandling.',
-      'Återkalla samtycke och lämna klagomål till Integritetsskyddsmyndigheten (IMY).',
+      'Begära tillgång, rättelse, radering eller begränsning när GDPR:s villkor är uppfyllda.',
+      'Invända mot behandling som grundas på berättigat intresse och begära dataportabilitet för tillämplig behandling.',
+      'Återkalla samtycke utan att tidigare laglig behandling påverkas.',
+      'Lämna klagomål till Integritetsskyddsmyndigheten (IMY) eller behörig dataskyddsmyndighet i ditt EU/EES-land.',
+    ],
+  },
+  {
+    id: 'sakerhet',
+    title: 'Säkerhet och rapportering',
+    paragraphs: [
+      'Autorell använder behörighetskontroller, loggning, separerade roller och andra tekniska och organisatoriska åtgärder. Ingen internetbaserad tjänst kan dock garanteras helt fri från risk.',
+      'Misstänkt kontointrång, identitetsmissbruk eller bedrägeri rapporteras omedelbart via hjälpcentret och till info@autorell.com.',
     ],
   },
 ]
 
 export default function PrivacyPage() {
-  return (
-    <PublicLegalPage
-      eyebrow="Juridisk information"
-      title="Integritetspolicy"
-      intro="Vilka uppgifter vi använder, varför de behövs och vad som delas med bilhandlare."
-      sections={sections}
-    />
-  )
+  return <PublicLegalPage eyebrow="Juridisk information" title="Integritetspolicy" intro="Hur personuppgifter används för konton, annonser, meddelanden, betalning och trygghet." sections={sections} />
 }

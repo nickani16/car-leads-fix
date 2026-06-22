@@ -6,7 +6,7 @@ import {
   CarFront,
   Check,
   Construction,
-  Leaf,
+  Zap,
   Tractor,
   Truck,
   Warehouse,
@@ -14,6 +14,7 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { createPublicMetadata } from '@/lib/public-seo'
+import { formatPriceRange, marketplaceCategories } from '@/lib/marketplace-pricing'
 
 export const metadata = createPublicMetadata({
   title: 'Sälj fordon i Sverige och Europa | Autorell',
@@ -23,16 +24,16 @@ export const metadata = createPublicMetadata({
 })
 
 const categories = [
-  { slug: 'cars', label: 'Bilar', icon: CarFront, ready: true },
-  { slug: 'vans', label: 'Transportbilar', icon: BusFront, ready: false },
-  { slug: 'bikes', label: 'Motorcyklar', icon: Bike, ready: false },
-  { slug: 'motorhomes', label: 'Husbilar', icon: BusFront, ready: false },
-  { slug: 'caravans', label: 'Husvagnar', icon: Warehouse, ready: false },
-  { slug: 'trucks', label: 'Lastbilar', icon: Truck, ready: false },
-  { slug: 'farm', label: 'Lantbruk', icon: Tractor, ready: false },
-  { slug: 'plant', label: 'Entreprenad', icon: Construction, ready: false },
-  { slug: 'electric-bikes', label: 'Elcyklar', icon: Leaf, ready: false },
-  { slug: 'e-scooters', label: 'Elsparkcyklar', icon: Leaf, ready: false },
+  { slug: 'cars', label: 'Bilar', icon: CarFront },
+  { slug: 'vans', label: 'Transportbilar', icon: BusFront },
+  { slug: 'bikes', label: 'Motorcyklar', icon: Bike },
+  { slug: 'motorhomes', label: 'Husbilar', icon: BusFront },
+  { slug: 'caravans', label: 'Husvagnar', icon: Warehouse },
+  { slug: 'trucks', label: 'Lastbilar', icon: Truck },
+  { slug: 'farm', label: 'Lantbruk', icon: Tractor },
+  { slug: 'plant', label: 'Entreprenad', icon: Construction },
+  { slug: 'electric-bikes', label: 'Elcyklar', icon: Bike },
+  { slug: 'e-scooters', label: 'Elsparkcyklar', icon: Zap },
 ] as const
 
 export default async function SellVehiclePage({
@@ -71,11 +72,9 @@ export default async function SellVehiclePage({
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {categories.map(({ slug, label, icon: Icon, ready }) => {
+            {categories.map(({ slug, label, icon: Icon }) => {
               const isSelected = category === slug
-              const href = ready
-                ? `/salj-bil?category=${slug}`
-                : `/kontakt?subject=${encodeURIComponent(`Publicera ${label}`)}`
+              const href = `/konto/annonser/ny?category=${slug}`
               return (
                 <Link
                   key={slug}
@@ -89,7 +88,7 @@ export default async function SellVehiclePage({
                   </span>
                   <strong className="mt-6 block">{label}</strong>
                   <span className="mt-2 block text-xs leading-5 text-[#667085]">
-                    {ready ? 'Skapa annons direkt' : 'Registrera för publicering'}
+                    Skapa annons direkt
                   </span>
                   <ArrowRight className="mt-5 h-4 w-4 text-[#0866ff] transition group-hover:translate-x-1" />
                 </Link>
@@ -137,6 +136,20 @@ export default async function SellVehiclePage({
                 </Link>
               </div>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="priser" className="scroll-mt-28 border-y border-[#e4e7ec] bg-white py-14 sm:py-20">
+        <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Prissättning per annons</p>
+          <h2 className="mt-4 text-4xl tracking-[-.045em]">Tydligt pris för varje kategori.</h2>
+          <p className="mt-3 max-w-2xl text-[#667085]">Privatkonton betalar den lägre nivån i intervallet. Företagskonton betalar den högre nivån. Alla priser visas inklusive tillämplig moms före betalning.</p>
+          <div className="mt-8 overflow-x-auto rounded-[22px] border border-[#e1e5ec]">
+            <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+              <thead className="bg-[#f4f7ff]"><tr><th className="p-4">Kategori</th><th className="p-4">7 dagar</th><th className="p-4">15 dagar</th><th className="p-4">Premium 30 dagar</th></tr></thead>
+              <tbody>{marketplaceCategories.map((item) => <tr key={item.slug} className="border-t border-[#e7eaf0]"><th className="p-4">{item.label}</th><td className="p-4 font-bold text-emerald-700">Gratis</td><td className="p-4">{formatPriceRange(item.standard)}</td><td className="p-4">{formatPriceRange(item.premium)}</td></tr>)}</tbody>
+            </table>
           </div>
         </div>
       </section>

@@ -44,6 +44,8 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['privacy', '/dealer-market/__locale__/privacy'],
   ['cookies', '/dealer-market/__locale__/cookies'],
   ['terms', '/dealer-market/__locale__/terms'],
+  ['login', '/login'],
+  ['register', '/registrera'],
 ])
 const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
   SE: 'sv',

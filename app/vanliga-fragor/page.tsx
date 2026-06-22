@@ -4,9 +4,9 @@ import PublicHeader from '../components/PublicHeader'
 import FaqPageClient from './FaqPageClient'
 
 export const metadata = createPublicMetadata({
-  title: 'Vanliga frågor om att sälja bil | Autorell',
+  title: 'Hjälpcenter för Autorell marketplace',
   description:
-    'Svar om fordonskriterier, 24 timmars budgivning, kontroll, betalning, hämtning och export från Sverige.',
+    'Svar om konton, annonser, priser, meddelanden, trygghet, företag och rapportering på Autorell.',
   path: '/vanliga-fragor',
 })
 
@@ -22,8 +22,8 @@ export default function FaqPage() {
             Vad undrar du över?
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#626e78]">
-            Här hittar du svar om fordonskriterier, 24 timmars budgivning,
-            kontroll, betalning, hämtning och export från Sverige.
+            Här hittar du svar om konton, annonser, priser, meddelanden,
+            trygghet, företag och hur problem rapporteras.
           </p>
           <FaqPageClient />
         </div>

@@ -37,7 +37,7 @@ export default function PublicLegalPage({
             {intro}
           </p>
           <p className="mt-6 text-sm text-[#858a8c]">
-            Senast uppdaterad: 8 juni 2026
+            Senast uppdaterad: 22 juni 2026
           </p>
         </div>
       </section>
@@ -117,4 +117,3 @@ export default function PublicLegalPage({
     </main>
   )
 }
-

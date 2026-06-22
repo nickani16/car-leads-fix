@@ -2,99 +2,95 @@ import { createPublicMetadata } from '@/lib/public-seo'
 import PublicLegalPage from '../components/PublicLegalPage'
 
 export const metadata = createPublicMetadata({
-  title: 'Användarvillkor för Autorell',
-  description:
-    'Villkor för fordonsprofil, budgivning, säljarens beslut, kontroll, avtal, betalning, hämtning och förmedling genom Autorell.',
+  title: 'Användar- och marknadsplatsvillkor | Autorell',
+  description: 'Villkor för konton, annonser, meddelanden, betalning, företagsförsäljning, rapportering och ansvar på Autorell.',
   path: '/villkor',
 })
 
 const sections = [
   {
-    id: 'tjansten',
-    title: 'Om tjänsten',
+    id: 'plattformens-roll',
+    title: 'Plattformens roll',
     paragraphs: [
-      'Autorell låter fordonsägare lämna information om ett fordon och ta emot erbjudanden från godkända professionella köpare.',
-      'Att skapa en fordonsprofil är kostnadsfritt för säljaren och innebär inte att bilen är såld eller att säljaren måste acceptera ett erbjudande.',
+      'Autorell tillhandahåller en digital marknadsplats där privatpersoner och företag kan publicera fordonsannonser, söka, spara sökningar och kommunicera. På en vanlig marknadsplatsannons är Autorell inte automatiskt köpare, säljare, agent, garant eller part i avtalet mellan användarna.',
+      'Om Autorell i ett särskilt flöde köper, säljer, förmedlar, kontrollerar, transporterar eller tar betalt för ett fordon ska den rollen och de särskilda villkoren framgå tydligt innan användaren blir bunden.',
+    ],
+  },
+  {
+    id: 'konton',
+    title: 'Privat- och företagskonton',
+    items: [
+      'Kontoinnehavaren ska vara minst 18 år och lämna korrekta, aktuella kontakt- och identitetsuppgifter.',
+      'Privatkonto används för egen, icke-yrkesmässig handel. Den som säljer som ett led i näringsverksamhet ska använda företagskonto.',
+      'Företagskonton ska ange företagsnamn, registreringsnummer och andra uppgifter som behövs för att identifiera näringsidkaren.',
+      'Kontot är personligt. Lösenord och åtkomst får inte delas eller användas för att kringgå avstängning eller kontroll.',
+    ],
+  },
+  {
+    id: 'annonser',
+    title: 'Annonser och säljarens ansvar',
+    items: [
+      'Säljaren måste ha rätt att annonsera och sälja fordonet.',
+      'Kategori, identitet, ägande, pris, plats, skick, körsträcka eller drifttimmar, kända fel, skador, finansiering, utrustning och bilder ska vara korrekta och inte vilseledande.',
+      'Det är förbjudet att annonsera stulna, osäkra, olagliga, återkallade eller felaktigt identifierade objekt eller använda material som gör intrång i annans rätt.',
+      'Autorell får automatiskt eller manuellt granska, begränsa, begära komplettering, dölja eller ta bort innehåll och bevara nödvändig bevisning.',
+    ],
+  },
+  {
+    id: 'naringidkare',
+    title: 'När säljaren är ett företag',
+    paragraphs: [
+      'Företagsannonser markeras som publicerade av en näringsidkare. Företaget ansvarar för obligatorisk information om identitet, totalpris, skatter, avgifter, leverans, garantier, reklamation, ångerrätt när sådan gäller och övriga tvingande konsumentregler.',
+      'En privat säljare omfattas normalt inte av samma konsumenträttsliga skyldigheter som en näringsidkare. Plattformen visar därför kontotypen så att köparen kan förstå vem motparten är.',
+    ],
+  },
+  {
+    id: 'priser',
+    title: 'Annonspaket och betalning',
+    items: [
+      'Sju dagars grundpublicering är gratis. Pris för 15 dagar och Premium beror på fordonskategori och kontotyp och visas innan betalning.',
+      'Privatkonton debiteras den lägre och företagskonton den högre nivån i publicerat intervall, om inget separat skriftligt företagsavtal gäller.',
+      'Betalning hanteras av extern betalningsleverantör. Betalningsuppgifter ska aldrig skickas i meddelanden.',
+      'Köpta digitala annonstjänster börjar enligt det valda paketet. Information om eventuell lagstadgad ångerrätt och samtycke till omedelbar leverans ska visas i checkout när det krävs.',
+    ],
+  },
+  {
+    id: 'meddelanden',
+    title: 'Meddelanden och förbjudet beteende',
+    items: [
+      'Inloggning krävs för att kontakta en säljare. Meddelanden får endast användas för legitim kommunikation om annonsen.',
+      'Bedrägeri, trakasserier, spam, diskriminering, skadliga länkar, identitetsmissbruk och försök att få lösenord, kortuppgifter eller otillbörliga betalningar är förbjudna.',
+      'Autorell kan behandla och granska rapporterad kommunikation för säkerhet, support, tvist, bevisning och missbruksbekämpning.',
+    ],
+  },
+  {
+    id: 'rapportering',
+    title: 'Rapportering och åtgärder',
+    paragraphs: [
+      'Användare kan rapportera misstänkt olagligt eller vilseledande innehåll, bedrägeri och missbruk via rapporteringsfunktionen. Rapporten bör identifiera annonsen eller konversationen och förklara problemet tillräckligt tydligt.',
+      'Autorell bedömer rapporter och kan ta bort innehåll, begränsa funktioner, stänga av konton, säkra loggar och kontakta berörda användare eller myndigheter. Beslut fattas utifrån tillgängliga uppgifter och kan omprövas efter komplettering.',
     ],
   },
   {
     id: 'ansvar',
-    title: 'Säljarens ansvar',
-    items: [
-      'Du måste ha rätt att lämna fordonsuppgifterna och förfoga över fordonet.',
-      'Körsträcka, ägare, skador, service, finansiering, utrustning och skick ska beskrivas korrekt.',
-      'Kända fel, skulder, äganderättsförbehåll och andra försäljningshinder ska uppges.',
-      'Bilder och material får inte göra intrång i någon annans rättigheter.',
-    ],
-  },
-  {
-    id: 'presentation',
-    title: 'Presentation för köpare',
-    paragraphs: [
-      'Relevant fordonsinformation kan visas för Autorells godkända handlarnätverk i Sverige och Europa, inklusive registreringsnummer, VIN, bilder, tekniska data, körsträcka och skick när det behövs för värdering.',
-      'Telefonnummer och e-postadress säljs inte och visas inte för dealers under budgivningen.',
-    ],
-  },
-  {
-    id: 'bud',
-    title: 'Marknadsbedömning och Autorells erbjudande',
-    items: [
-      'Dealerbud används av Autorell som marknadsunderlag och visas inte som direkta erbjudanden från handlaren till privatpersonen.',
-      'Autorell kan lämna ett separat villkorat inköpserbjudande till säljaren.',
-      'Säljaren bestämmer själv om Autorells inköpserbjudande ska accepteras.',
-      'Efter accept kan identitets-, ägar-, fordons- och dokumentkontroller krävas.',
-      'Säljarens avtal med Autorell och Autorells vidareförsäljning till EU-handlaren är separata transaktioner.',
-    ],
-  },
-  {
-    id: 'kontroll',
-    title: 'Kontroll och avvikelser',
-    paragraphs: [
-      'Erbjudandet kan behöva bekräftas efter kontroll av identitet, ägande, finansiering, dokument, körsträcka och skick. Väsentliga avvikelser kan påverka eller ogiltigförklara erbjudandet.',
-    ],
-  },
-  {
-    id: 'affar',
-    title: 'Avtal, betalning och hämtning',
-    paragraphs: [
-      'Belopp, parter, fordon, skick, riskövergång, betalning, hämtning, export och eventuella avgifter ska framgå av de slutliga transaktionsdokumenten.',
-      'Betalning ska genomföras genom bank eller licensierad betalningsleverantör enligt det aktuella avtalet.',
-    ],
-  },
-  {
-    id: 'begransning',
     title: 'Ansvar och tillgänglighet',
     items: [
-      'Autorell garanterar inte att ett fordon får bud eller att ett visst pris uppnås.',
-      'Tjänsten kan påverkas av underhåll, tekniska fel eller händelser utanför rimlig kontroll.',
-      'Inget begränsar tvingande konsumenträttigheter.',
-      'Oskäliga villkor eller villkor som strider mot tvingande lag ska inte tillämpas.',
+      'Autorell garanterar inte att en annons leder till kontakt, försäljning, visst pris eller att en användares uppgifter är fullständiga.',
+      'Användarna ansvarar för egen kontroll av motpart, ägande, identitet, skick, dokument, skatt, registrering, transport, försäkring och tillämpliga regler innan avtal eller betalning.',
+      'Ingenting i villkoren begränsar ansvar eller rättigheter som inte lagligen kan begränsas, inklusive tvingande konsument- och dataskyddsrätt.',
     ],
   },
   {
-    id: 'klagomal',
-    title: 'Klagomål och tvist',
+    id: 'tvist',
+    title: 'Klagomål, lag och kontakt',
     paragraphs: [
-      'Frågor och klagomål skickas till info@autorell.com.',
-      'Tillämplig lag, behörig domstol och eventuell alternativ tvistlösning ska fastställas efter juridisk granskning före kommersiell lansering.',
-    ],
-  },
-  {
-    id: 'foretag',
-    title: 'Företagsuppgifter',
-    paragraphs: [
-      'Tjänsten tillhandahålls av Autorell AB i Sverige. Organisationsnummer och fullständig registrerad adress ska publiceras före kommersiell lansering. Kontakt: info@autorell.com.',
+      'Klagomål skickas till info@autorell.com eller via hjälpcentret. Ange konto, annons eller konversation och önskad lösning.',
+      'Svensk lag tillämpas i den utsträckning den inte undanträngs av tvingande regler i användarens land. Konsumenter behåller rätten att använda behörig domstol och tvistlösning enligt tvingande lag.',
+      'Tjänsten tillhandahålls av Autorell AB i Sverige. Fullständiga bolags- och adressuppgifter ska alltid framgå av avtal, betalningsunderlag och obligatorisk företagsinformation innan kommersiell transaktion slutförs.',
     ],
   },
 ]
 
 export default function TermsPage() {
-  return (
-    <PublicLegalPage
-      eyebrow="Juridisk information"
-      title="Användarvillkor"
-      intro="Villkoren för att skapa en fordonsprofil, ta emot erbjudanden och gå vidare med en försäljning."
-      sections={sections}
-    />
-  )
+  return <PublicLegalPage eyebrow="Juridisk information" title="Användar- och marknadsplatsvillkor" intro="Reglerna för konton, annonser, kontakt mellan användare, betalning och trygghet på Autorell." sections={sections} />
 }

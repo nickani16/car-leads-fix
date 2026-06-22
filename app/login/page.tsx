@@ -1,16 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Home, Menu } from 'lucide-react'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from './login.module.css'
+import { getAccountCopy } from '@/lib/account-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 export default function LoginPage() {
   const router = useRouter()
+  const locale = useSyncExternalStore(
+    () => () => {},
+    () => (document.documentElement.lang || 'en') as PublicLocale,
+    () => 'en' as PublicLocale,
+  )
+  const copy = getAccountCopy(locale)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,8 +43,12 @@ export default function LoginPage() {
         setRememberLogin(true)
       }
 
-      if (next === '/admin' || next === '/dealer' || next === '/sales') {
+      if (next === '/admin' || next === '/dealer' || next === '/sales' || next === '/konto') {
         setRequestedPath(next)
+      }
+
+      if (status === 'account-created') {
+        setStatusMessage('Your account is ready. Sign in to continue.')
       }
 
       if (status === 'pending') {
@@ -192,31 +204,31 @@ export default function LoginPage() {
             <BrandLogo />
           </Link>
 
-          <div className={styles.badge}>European dealer network</div>
+          <div className={styles.badge}>European vehicle marketplace</div>
 
           <h1 className={styles.heroTitle}>
-            The smarter way to source quality vehicles.
+            Buy, sell and manage vehicles across Europe.
           </h1>
 
           <p className={styles.heroText}>
-            Access verified vehicle opportunities, place competitive bids and
-            manage your purchases from one secure platform.
+            One secure account for private sellers, companies, listings,
+            saved searches and direct seller messages.
           </p>
 
           <div className={styles.features}>
             <div className={styles.feature}>
               <span className={styles.check}>&#10003;</span>
-              Verified vehicle opportunities
+              Private and business accounts
             </div>
 
             <div className={styles.feature}>
               <span className={styles.check}>&#10003;</span>
-              Transparent 24-hour bidding
+              Secure direct messages
             </div>
 
             <div className={styles.feature}>
               <span className={styles.check}>&#10003;</span>
-              Built for professional European dealers
+              Listings across all vehicle categories
             </div>
           </div>
         </div>
@@ -224,7 +236,7 @@ export default function LoginPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <p className={styles.eyebrow}>AUTORELL PORTAL</p>
-            <h2 className={styles.cardTitle}>Welcome back</h2>
+            <h2 className={styles.cardTitle}>{copy.signIn}</h2>
 
             <p className={styles.cardDescription}>
               Sign in to access your authorised Autorell workspace.
@@ -233,7 +245,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <label className={styles.label}>
-              Email address or username
+              {copy.email}
 
               <div className={styles.inputWrapper}>
                 <svg
@@ -257,7 +269,7 @@ export default function LoginPage() {
             </label>
 
             <div className={styles.passwordHeader}>
-              <span>Password</span>
+              <span>{copy.password}</span>
               <Link href="/forgot-password" className={styles.forgotLink}>
                 Forgot password?
               </Link>
@@ -329,15 +341,15 @@ export default function LoginPage() {
                 </>
               ) : (
                 <>
-                  Sign in securely
+                  {copy.signIn}
                   <span aria-hidden="true">&rarr;</span>
                 </>
               )}
             </button>
 
             <div className={styles.applySection}>
-              <span>Not a member of the Autorell dealer network?</span>
-              <Link href="/dealer-apply">Apply for dealer access</Link>
+              <span>{copy.noAccount}</span>
+              <Link href="/registrera">{copy.createAccount}</Link>
             </div>
           </form>
 
@@ -346,7 +358,7 @@ export default function LoginPage() {
               <path d="M12 3 5 6v5c0 4.8 2.9 8.2 7 10 4.1-1.8 7-5.2 7-10V6l-7-3Z" />
             </svg>
 
-            Secure access for authorised Autorell users only
+            Secure access for Autorell marketplace users
           </div>
         </div>
       </section>

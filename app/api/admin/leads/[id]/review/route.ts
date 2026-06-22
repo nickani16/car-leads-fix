@@ -58,7 +58,7 @@ export async function PATCH(
   const { data: lead, error: leadError } = await adminClient
     .from('leads')
     .select(
-      'id,status,listing_plan,submission_type,seller_dealer_id,assigned_sales_user_id'
+      'id,status,listing_plan,submission_type,seller_dealer_id,seller_user_id,assigned_sales_user_id,buy_now_price'
     )
     .eq('id', id)
     .single()
@@ -74,6 +74,7 @@ export async function PATCH(
   const requiredMargin = Math.max(1500, selectedSalePrice * 0.05)
   if (
     action === 'approve' &&
+    !lead.seller_user_id &&
     selectedSaleFormat === 'marketplace' &&
     (!Number.isFinite(selectedPurchasePrice) ||
       selectedPurchasePrice <= 0 ||
@@ -142,7 +143,7 @@ export async function PATCH(
         auction_starts_at: null,
         auction_ends_at: null,
         auction_closed_at: new Date().toISOString(),
-        auction_outcome: 'rejected',
+        auction_outcome: 'cancelled',
       })
       .eq('id', id)
 
@@ -165,6 +166,10 @@ export async function PATCH(
       ? listingPackages.managed_sale.durationDays
       : lead.listing_plan === 'extended_7d'
       ? listingPackages.extended_7d.durationDays
+      : lead.listing_plan === 'free_7d'
+        ? listingPackages.free_7d.durationDays
+        : lead.listing_plan === 'standard_15d'
+          ? listingPackages.standard_15d.durationDays
       : lead.listing_plan === 'premium_30d'
         ? listingPackages.premium_30d.durationDays
         : 1
@@ -181,13 +186,17 @@ export async function PATCH(
     .from('leads')
     .update({
       status: 'Active',
-      autorell_purchase_price:
+      autorell_purchase_price: lead.seller_user_id
+        ? null
+        :
         Number.isFinite(selectedPurchasePrice) && selectedPurchasePrice > 0
           ? selectedPurchasePrice
           : null,
-      sale_format: selectedSaleFormat,
+      sale_format: lead.seller_user_id ? 'marketplace' : selectedSaleFormat,
       buy_now_price:
-        selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,
+        lead.seller_user_id
+          ? lead.buy_now_price
+          : selectedSaleFormat === 'marketplace' ? selectedBuyNowPrice : null,
       reserve_price:
         selectedSaleFormat === 'auction' &&
         Number.isFinite(selectedReservePrice) &&

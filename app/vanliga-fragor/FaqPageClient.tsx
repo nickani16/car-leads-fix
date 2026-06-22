@@ -4,26 +4,21 @@ import Link from 'next/link'
 import { ArrowRight, ChevronDown, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-const categories = ['Alla', 'Kriterier', 'Budgivning', 'Export', 'Trygghet', 'Bilhandlare']
+const categories = ['Alla', 'Konton', 'Annonser', 'Priser', 'Meddelanden', 'Trygghet', 'Företag']
 
 const questions = [
-  ['Kriterier', 'Vilka bilar tar Autorell emot?', 'Vi tar initialt emot bilar som finns i Sverige, är från årsmodell 2018 eller nyare, har gått högst 10 000 mil och är körbara utan allvarliga motor-, växellåds-, läckage- eller krockproblem.'],
-  ['Kriterier', 'Varför tar ni inte emot alla bilar?', 'Autorell bygger först ett fokuserat exportflöde för bilar som har tydlig efterfrågan hos professionella europeiska köpare. Kriterierna kan utvecklas när nätverket växer.'],
-  ['Kriterier', 'Vilka uppgifter behöver jag lämna?', 'Du behöver bland annat registreringsnummer, miltal, servicehistorik, tekniskt skick, kända fel, utrustning och tydliga bilder av bilen.'],
-  ['Kriterier', 'Kan jag sälja en bil med motorfel eller aktiva varningslampor?', 'Inte i den första versionen. Bilar med allvarliga motor- eller växellådsproblem, betydande läckage, större krockskador eller allvarliga varningslampor går inte vidare till budgivning.'],
-  ['Budgivning', 'Kostar det något att registrera bilen?', 'Nej. Det är kostnadsfritt att registrera bilen, se kriterierna och ta emot dealerbud.'],
-  ['Erbjudandet', 'Måste jag acceptera Autorells erbjudande?', 'Nej. Du bestämmer alltid själv om du vill sälja bilen till Autorell och gå vidare med affären.'],
-  ['Budgivning', 'Hur länge pågår budgivningen?', 'Budgivningen är normalt öppen i upp till 24 timmar från att den granskade fordonsprofilen publiceras.'],
-  ['Budgivning', 'Vilka kan lägga bud?', 'Endast verifierade professionella bilhandlare som har godkänts för Autorell Dealer Network. Sverige är säljarlandet vid lansering, medan köparna kan finnas i Sverige och övriga Europa.'],
-  ['Export', 'Vad händer när jag accepterar ett erbjudande?', 'Ett villkorat affärsflöde startar med avtal, kontroll av bilen mot fordonsdeklarationen, betalningsstatus, hämtning och exportdokumentation.'],
-  ['Export', 'Vad händer om bilen inte stämmer med deklarationen?', 'Affären kan pausas. Mindre avvikelser kräver en ny frivillig överenskommelse. Vid en väsentlig avvikelse kan köparen ha rätt att avstå enligt avtalet.'],
-  ['Export', 'Hämtar Autorell bilen i Tyskland?', 'Nej. I den första lanseringen tar vi endast emot säljarbilar som finns i Sverige. Den tyska och engelska marknaden riktar sig initialt till professionella köpare av svenska fordon.'],
-  ['Export', 'Kan jag sälja en bil med finansiering?', 'Det kan vara möjligt, men kvarvarande finansiering behöver deklareras och hanteras innan ägarbyte och export kan slutföras.'],
-  ['Trygghet', 'Kan handlarna se mina kontaktuppgifter?', 'Nej. Din telefon och e-post visas inte öppet för handlarna i dealer-portalen.'],
-  ['Trygghet', 'Hur kontrolleras bilhandlarna?', 'Handlare ansöker om tillgång och deras företagsuppgifter granskas innan de får använda nätverket.'],
-  ['Trygghet', 'Är ett dealerbud villkorat?', 'Ja. Budet baseras på fordonsdeklarationen och förutsätter att bilens identitet och skick motsvarar uppgifterna som lämnats.'],
-  ['Bilhandlare', 'Hur ansöker mitt företag om tillgång?', 'Använd dealer-ansökan och fyll i företagets kontakt- och registreringsuppgifter. Vi återkommer efter granskning.'],
-  ['Bilhandlare', 'Vilka fordon visas i portalen?', 'Portalen visar kvalificerade svenska fordonsprofiler med strukturerad information om identitet, historik, skick, kända fel, bilder och upphämtningsplats.'],
+  ['Konton', 'Vad är skillnaden mellan privatkonto och företagskonto?', 'Privatkontot är för personer som säljer eller köper för egen räkning. Företagskontot kräver företagsnamn och registreringsnummer och markerar annonser som publicerade av en näringsidkare.'],
+  ['Konton', 'Vilka kontaktuppgifter krävs?', 'Namn, fungerande e-postadress, telefonnummer och land krävs. Företag anger även företagsnamn och registreringsnummer. Uppgifterna används för säkerhet, meddelanden, avtal och support.'],
+  ['Annonser', 'Vilka typer av fordon kan jag annonsera?', 'Bilar, transportbilar, motorcyklar, husbilar, husvagnar, lastbilar, lantbruk, entreprenad, elcyklar och elsparkcyklar.'],
+  ['Annonser', 'Vilka uppgifter måste finnas i annonsen?', 'Kategori, märke eller tillverkare, modell, pris, plats, beskrivning, skick, kända fel och tydliga bilder. Årsmodell, körsträcka eller drifttimmar, service och utrustning ska anges när de är relevanta.'],
+  ['Annonser', 'Publiceras annonsen direkt?', 'Annonsen går igenom automatiska och vid behov manuella kontroller. Autorell kan stoppa, begära komplettering eller ta bort annonser som bryter mot regler eller verkar vilseledande.'],
+  ['Priser', 'Vad kostar en annons?', 'Sju dagar är gratis. Priset för 15 dagar och Premium varierar per kategori. Privatkonton betalar den lägre nivån i det visade intervallet och företagskonton den högre nivån. Slutpriset visas före betalning.'],
+  ['Priser', 'Har Autorell abonnemang?', 'Nej. Annonspaket köps per objekt. Större företagsvolymer kan få en separat offert.'],
+  ['Meddelanden', 'Hur kontaktar jag säljaren?', 'Tryck på Skriv till säljaren i annonsen. Du måste vara inloggad. Konversationen sparas i ditt konto så att missbruk kan utredas och parterna kan följa kommunikationen.'],
+  ['Meddelanden', 'Ska jag betala via ett meddelande?', 'Nej. Skicka aldrig kortuppgifter, lösenord eller pengar på uppmaning i ett meddelande. Använd endast betalningsflöden som tydligt visas i ditt Autorell-konto.'],
+  ['Trygghet', 'Hur rapporterar jag bedrägeri?', 'Öppna Rapportera problem och välj kategori. Bifoga annons-ID och beskriv händelsen. Vid akut risk eller pågående brott kontaktar du lokal polis eller 112.'],
+  ['Trygghet', 'Är Autorell part i affären?', 'Det beror på det uttryckliga flödet. På vanliga marknadsplatsannonser förmedlar Autorell kontakt och är inte automatiskt köpare, säljare eller garant. Om Autorell är avtalspart framgår det tydligt i det separata avtalet.'],
+  ['Företag', 'Vilken information visas om ett företag?', 'Annonsen markeras som företagsannons. Företagsnamn och nödvändig näringsidkarinformation visas så att köparen förstår vem som säljer och vilka konsumentregler som kan vara tillämpliga.'],
 ] as const
 
 export default function FaqPageClient() {
@@ -114,8 +109,8 @@ export default function FaqPageClient() {
           <h2 className="text-2xl tracking-[-0.03em]">Hittade du inte svaret?</h2>
           <p className="mt-2 text-sm text-[#56636c]">Skicka din fråga så hjälper vi dig vidare.</p>
         </div>
-        <Link href="/kontakt" className="relative z-10 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#242424] px-6 text-sm text-white">
-          Kontakta oss <ArrowRight className="h-4 w-4" />
+        <Link href="/rapportera" className="relative z-10 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white">
+          Rapportera problem <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </>
