@@ -1,15 +1,18 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
   Building2,
   ChevronDown,
   CircleHelp,
   FilePlus2,
+  Headphones,
   Heart,
   LogIn,
   Menu,
+  Search,
   Store,
   UserPlus,
   UserRound,
@@ -17,10 +20,15 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
-import SiteSearch from './SiteSearch'
+import SocialIcons from './SocialIcons'
 import {
   marketplaceCategories,
   marketplaceLanguage,
@@ -33,6 +41,15 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 
+type PublicHeaderProps = {
+  transparentAtTop?: boolean
+  locale?: PublicLocale
+  marketplaceChannel?: {
+    label: string
+    slug: string
+  }
+}
+
 type MenuItem = {
   href: string
   label: string
@@ -40,54 +57,99 @@ type MenuItem = {
   icon: LucideIcon
 }
 
+type DesktopMenuData = {
+  eyebrow: string
+  title: string
+  text: string
+  cta: string
+  ctaHref: string
+  items: MenuItem[]
+}
+
 const copy = {
   sv: {
     buy: 'Köp',
     sell: 'Sälj',
     business: 'Företag',
-    account: 'Konto',
+    about: 'Om Autorell',
+    help: 'Hjälp',
+    contact: 'Kontakt',
     saved: 'Sparade',
     search: 'Sök',
-    buyTitle: 'Hitta rätt fordon i hela Europa',
-    buyText: 'Sök bland annonser från privatpersoner och företag.',
-    sellTitle: 'Publicera på Europas fordonsmarknad',
-    sellText: 'Skapa en tydlig annons och nå köpare i flera länder.',
-    businessTitle: 'Verktyg för professionella säljare',
-    businessText: 'Publicera lager, hantera annonser och samla förfrågningar.',
+    menu: 'Meny',
+    register: 'Registrera',
     signIn: 'Logga in',
     createAccount: 'Skapa konto',
+    closeMenu: 'Stäng meny',
+    openMenu: 'Öppna meny',
+    chooseLanguage: 'Välj språk',
+    shopByCategory: 'Köp efter kategori',
+    buyTitle: 'Hitta rätt fordon i hela Europa.',
+    buyText: 'Sök bland annonser från privatpersoner och företag på en samlad europeisk marknadsplats.',
+    sellTitle: 'Publicera på Europas fordonsmarknad.',
+    sellText: 'Skapa en tydlig annons och nå köpare i flera europeiska länder.',
+    businessTitle: 'Verktyg för professionella säljare.',
+    businessText: 'Publicera lager, hantera annonser och samla förfrågningar på ett ställe.',
+    buyCta: 'Utforska alla fordon',
+    sellCta: 'Lägg upp annons',
+    businessCta: 'Se företagslösningar',
+    mobileCta: 'Lägg upp ett fordon',
   },
   en: {
     buy: 'Buy',
-    sell: 'Sell',
-    business: 'Business',
-    account: 'Account',
+    sell: 'Sell vehicle',
+    business: 'Business account',
+    about: 'About Autorell',
+    help: 'Help',
+    contact: 'Contact',
     saved: 'Saved',
     search: 'Search',
-    buyTitle: 'Find the right vehicle across Europe',
-    buyText: 'Browse listings from private and business sellers.',
-    sellTitle: "List on Europe's vehicle marketplace",
-    sellText: 'Create a clear listing and reach buyers in multiple countries.',
-    businessTitle: 'Tools for professional sellers',
-    businessText: 'Publish inventory, manage listings and collect enquiries.',
-    signIn: 'Sign in',
+    menu: 'Menu',
+    register: 'Register',
+    signIn: 'Log in',
     createAccount: 'Create account',
+    closeMenu: 'Close menu',
+    openMenu: 'Open menu',
+    chooseLanguage: 'Choose language',
+    shopByCategory: 'Shop by category',
+    buyTitle: 'Find the right vehicle across Europe.',
+    buyText: 'Browse listings from private and business sellers in one European marketplace.',
+    sellTitle: "List on Europe's vehicle marketplace.",
+    sellText: 'Create a clear listing and reach buyers across multiple European countries.',
+    businessTitle: 'Tools for professional sellers.',
+    businessText: 'Publish inventory, manage listings and collect enquiries in one place.',
+    buyCta: 'Explore all vehicles',
+    sellCta: 'Create a listing',
+    businessCta: 'Explore business solutions',
+    mobileCta: 'List a vehicle',
   },
   de: {
     buy: 'Kaufen',
-    sell: 'Verkaufen',
-    business: 'Unternehmen',
-    account: 'Konto',
+    sell: 'Fahrzeug verkaufen',
+    business: 'Unternehmenskonto',
+    about: 'Über Autorell',
+    help: 'Hilfe',
+    contact: 'Kontakt',
     saved: 'Gespeichert',
     search: 'Suche',
-    buyTitle: 'Das passende Fahrzeug in Europa finden',
-    buyText: 'Anzeigen von privaten und gewerblichen Verkäufern durchsuchen.',
-    sellTitle: 'Auf Europas Fahrzeugmarktplatz inserieren',
-    sellText: 'Eine klare Anzeige erstellen und Käufer in mehreren Ländern erreichen.',
-    businessTitle: 'Werkzeuge für professionelle Verkäufer',
-    businessText: 'Bestand veröffentlichen, Anzeigen verwalten und Anfragen bündeln.',
+    menu: 'Menü',
+    register: 'Registrieren',
     signIn: 'Anmelden',
     createAccount: 'Konto erstellen',
+    closeMenu: 'Menü schließen',
+    openMenu: 'Menü öffnen',
+    chooseLanguage: 'Sprache wählen',
+    shopByCategory: 'Nach Kategorie kaufen',
+    buyTitle: 'Das passende Fahrzeug in Europa finden.',
+    buyText: 'Anzeigen von privaten und gewerblichen Verkäufern auf einem europäischen Marktplatz durchsuchen.',
+    sellTitle: 'Auf Europas Fahrzeugmarktplatz inserieren.',
+    sellText: 'Eine klare Anzeige erstellen und Käufer in mehreren europäischen Ländern erreichen.',
+    businessTitle: 'Werkzeuge für professionelle Verkäufer.',
+    businessText: 'Bestand veröffentlichen, Anzeigen verwalten und Anfragen an einem Ort bündeln.',
+    buyCta: 'Alle Fahrzeuge entdecken',
+    sellCta: 'Anzeige erstellen',
+    businessCta: 'Unternehmenslösungen ansehen',
+    mobileCta: 'Fahrzeug inserieren',
   },
 } as const
 
@@ -141,174 +203,567 @@ const businessItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
 
 export default function PublicHeader({
   locale = 'sv',
-}: {
-  transparentAtTop?: boolean
-  locale?: PublicLocale
-  marketplaceChannel?: { label: string; slug: string }
-}) {
+  marketplaceChannel,
+}: PublicHeaderProps) {
+  const pathname = usePathname()
   const language = marketplaceLanguage(locale)
   const t =
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? copy[language]
       : translatePublicObject(locale, copy.en)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [openMenu, setOpenMenu] = useState<'buy' | 'sell' | 'business' | null>(null)
+  const [open, setOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
+  const [visible, setVisible] = useState(true)
+  const lastScrollY = useRef(0)
   const languageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const difference = currentScrollY - lastScrollY.current
+
+      if (currentScrollY < 80) setVisible(true)
+      else if (difference > 7) {
+        setVisible(false)
+        setOpen(false)
+        setLanguageOpen(false)
+      } else if (difference < -4) setVisible(true)
+
+      lastScrollY.current = currentScrollY
+    }
+
+    lastScrollY.current = window.scrollY
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
   useEffect(() => {
     if (!languageOpen) return
     const close = (event: PointerEvent) => {
       if (!languageRef.current?.contains(event.target as Node)) setLanguageOpen(false)
     }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLanguageOpen(false)
+    }
     document.addEventListener('pointerdown', close)
-    return () => document.removeEventListener('pointerdown', close)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
   }, [languageOpen])
+
+  const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
+    const label =
+      locale === 'sv' || locale === 'de' || locale === 'en'
+        ? category.labels[language]
+        : translatePublic(locale, category.labels.en)
+    return {
+      href: `/marketplace/${category.slug}`,
+      label,
+      description: `${t.search} ${label.toLocaleLowerCase(locale)}`,
+      icon: category.icon,
+    }
+  })
+  const topCategoryLabels: Partial<Record<(typeof marketplaceCategories)[number]['slug'], Record<'sv' | 'en' | 'de', string>>> = {
+    agriculture: { sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft' },
+    construction: { sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
+  }
+  const localizedSellerItems =
+    locale === 'sv' || locale === 'de' || locale === 'en'
+      ? sellerItems[language]
+      : translatePublicObject(locale, sellerItems.en)
+  const localizedBusinessItems =
+    locale === 'sv' || locale === 'de' || locale === 'en'
+      ? businessItems[language]
+      : translatePublicObject(locale, businessItems.en)
+
+  const menus: Array<{
+    label: string
+    href: string
+    icon: LucideIcon
+    data: DesktopMenuData
+  }> = [
+    {
+      label: t.buy,
+      href: '/marketplace/cars',
+      icon: Search,
+      data: {
+        eyebrow: t.buy,
+        title: t.buyTitle,
+        text: t.buyText,
+        cta: t.buyCta,
+        ctaHref: '/marketplace/cars',
+        items: buyItems,
+      },
+    },
+    {
+      label: t.sell,
+      href: '/salj-fordon',
+      icon: FilePlus2,
+      data: {
+        eyebrow: t.sell,
+        title: t.sellTitle,
+        text: t.sellText,
+        cta: t.sellCta,
+        ctaHref: '/salj-fordon',
+        items: localizedSellerItems,
+      },
+    },
+    {
+      label: t.business,
+      href: '/foretag',
+      icon: Building2,
+      data: {
+        eyebrow: t.business,
+        title: t.businessTitle,
+        text: t.businessText,
+        cta: t.businessCta,
+        ctaHref: '/foretag',
+        items: localizedBusinessItems,
+      },
+    },
+  ]
+
+  const navLinks = [
+    ...menus.map(({ href, label }) => [href, label] as const),
+    [localizePublicHref(locale, '/om-oss'), t.about] as const,
+    [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
+  ]
 
   const languageOptions = [
     ['sv', 'SE', 'Svenska', 'https://www.autorell.se/'],
     ['de', 'DE', 'Deutsch', 'https://www.autorell.de/'],
-    ...publicLanguages.map((languageCode) => [
-      languageCode,
-      languageCode === 'en' ? 'EU' : languageCode.toUpperCase(),
-      new Intl.DisplayNames([languageCode], { type: 'language' }).of(languageCode) || languageCode,
-      `https://www.autorell.com/${languageCode}`,
-    ]),
+    ...publicLanguages.map((code) =>
+      [
+        code,
+        code === 'en' ? 'EU' : code.toUpperCase(),
+        new Intl.DisplayNames([code], { type: 'language' }).of(code) || code,
+        `https://www.autorell.com/${code === 'en' ? '' : code}`,
+      ] as const,
+    ),
   ] as const
 
+  const homeHref = localizePublicHref(locale, '/')
+  const searchHref = marketplaceChannel
+    ? `/marketplace/${marketplaceChannel.slug}#marketplace-search`
+    : '/marketplace/cars#marketplace-search'
+
+  function closeMobile() {
+    setOpen(false)
+  }
+
+  function handleInternalNavigation(
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) {
+    if (href.includes('#') && pathname === href.split('#')[0]) {
+      event.preventDefault()
+      document.getElementById(href.split('#')[1])?.scrollIntoView({ behavior: 'smooth' })
+    }
+    closeMobile()
+  }
+
   return (
-    <header className="sticky top-0 z-[100] border-b border-[#e4e7ec] bg-white/95 text-[#101828] shadow-sm backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center gap-4 px-5 sm:px-8 lg:px-12">
-        <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
-          <BrandLogo />
-        </Link>
+    <>
+      <div className="h-[64px] min-[1120px]:h-[80px]" aria-hidden="true" />
+      <div
+        className={`fixed inset-x-0 top-0 z-[100] transform-gpu transition-transform duration-300 ${
+          visible || open ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
+          <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
+            <div className="mx-auto flex h-[30px] max-w-[1700px] items-center justify-between gap-5 px-5">
+              <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
+                {buyItems.map(({ href, label }, index) => {
+                  const isActive = pathname === href
+                  const category = marketplaceCategories[index]
+                  const topLabel =
+                    category && topCategoryLabels[category.slug]
+                      ? topCategoryLabels[category.slug]![language]
+                      : label
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
+                        isActive
+                          ? 'border-[#0866ff] font-semibold text-[#202124]'
+                          : 'border-transparent'
+                      }`}
+                    >
+                      {topLabel}
+                    </Link>
+                  )
+                })}
+              </nav>
 
-        <nav className="ml-6 hidden h-full items-center gap-1 min-[1100px]:flex">
-          <DesktopMenuButton label={t.buy} active={openMenu === 'buy'} onClick={() => setOpenMenu(openMenu === 'buy' ? null : 'buy')} />
-          <DesktopMenuButton label={t.sell} active={openMenu === 'sell'} onClick={() => setOpenMenu(openMenu === 'sell' ? null : 'sell')} />
-          <DesktopMenuButton label={t.business} active={openMenu === 'business'} onClick={() => setOpenMenu(openMenu === 'business' ? null : 'business')} />
-        </nav>
+              <div className="flex h-full shrink-0 items-center">
+                <Link
+                  href={localizePublicHref(locale, '/kontakt')}
+                  className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
+                >
+                  <Headphones className="h-3.5 w-3.5" />
+                  {t.contact}
+                </Link>
+                <div ref={languageRef} className="relative flex h-full">
+                  <button
+                    type="button"
+                    onClick={() => setLanguageOpen((current) => !current)}
+                    aria-expanded={languageOpen}
+                    aria-haspopup="menu"
+                    className="flex h-full items-center gap-2 border-l border-r border-[#e6e7e9] px-4 text-[10px] font-medium hover:bg-white"
+                  >
+                    <CountryFlag
+                      code={locale === 'sv' ? 'se' : locale === 'en' ? 'eu' : locale}
+                      className="h-[14px] w-[21px]"
+                    />
+                    <span>
+                      {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) || locale}
+                    </span>
+                    <ChevronDown className={`h-3 w-3 transition ${languageOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <LanguageMenu
+                    open={languageOpen}
+                    options={languageOptions}
+                    activeLocale={locale}
+                    title={t.chooseLanguage}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div className="ml-auto hidden items-center gap-2 min-[1100px]:flex">
-          <SiteSearch locale={locale} />
-          <Link href="/sparade" className="grid h-11 w-11 place-items-center rounded-full border border-[#d0d5dd]" aria-label={t.saved}>
-            <Heart className="h-[18px] w-[18px]" />
-          </Link>
-          <Link href="/login" className="inline-flex h-11 items-center gap-2 rounded-[13px] border border-[#d0d5dd] px-4 text-sm font-semibold">
-            <LogIn className="h-4 w-4" /> {t.signIn}
-          </Link>
-          <Link href="/registrera" className="inline-flex h-11 items-center gap-2 rounded-[13px] bg-[#0866ff] px-5 text-sm font-bold text-white">
-            {t.createAccount} <ArrowRight className="h-4 w-4" />
-          </Link>
-          <div ref={languageRef} className="relative">
-            <button type="button" onClick={() => setLanguageOpen(!languageOpen)} className="inline-flex h-11 items-center gap-2 rounded-[13px] px-3 text-sm font-semibold">
-              <CountryFlag code={locale === 'en' ? 'eu' : locale} className="h-4 w-6" />
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            {languageOpen && (
-              <div className="absolute right-0 top-full mt-2 max-h-[70vh] w-64 overflow-y-auto rounded-[18px] border border-[#e4e7ec] bg-white p-2 shadow-2xl">
-                {languageOptions.map(([code, flag, label, href]) => (
-                  <a key={code} href={href} className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm hover:bg-[#f2f6ff]">
-                    <CountryFlag code={flag.toLowerCase()} className="h-4 w-6" />
-                    {label}
-                  </a>
+          <div className="relative mx-auto flex h-[64px] max-w-[1700px] items-center px-5 min-[1120px]:h-[50px]">
+            <div className="absolute inset-x-0 top-0 h-[64px] min-[1120px]:hidden">
+              <div className="absolute inset-y-0 left-2 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setOpen((current) => !current)}
+                  aria-label={open ? t.closeMenu : t.openMenu}
+                  aria-expanded={open}
+                  className="flex w-11 shrink-0 flex-col items-center justify-center"
+                >
+                  {open ? <X className="h-[22px] w-[22px]" strokeWidth={1.8} /> : <Menu className="h-[23px] w-[23px]" strokeWidth={1.8} />}
+                  <span className="mt-0.5 text-[10px] leading-none">{t.menu}</span>
+                </button>
+                <Link
+                  href={`/salj-fordon${marketplaceChannel ? `?category=${marketplaceChannel.slug}` : ''}`}
+                  onClick={closeMobile}
+                  className="flex w-11 shrink-0 flex-col items-center justify-center"
+                >
+                  <Store className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">{t.sell}</span>
+                </Link>
+              </div>
+
+              <Link
+                href={homeHref}
+                aria-label="Autorell"
+                className="absolute left-1/2 top-1/2 flex max-w-[120px] -translate-x-1/2 -translate-y-1/2 flex-col items-center overflow-hidden"
+                onClick={closeMobile}
+              >
+                <BrandLogo />
+                {marketplaceChannel ? (
+                  <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#344054]">
+                    {marketplaceChannel.label}
+                  </span>
+                ) : null}
+              </Link>
+
+              <div className="absolute inset-y-0 right-2 flex items-center">
+                <Link href="/sparade" onClick={closeMobile} className="flex w-11 shrink-0 flex-col items-center justify-center">
+                  <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">{t.saved}</span>
+                </Link>
+                <Link href={searchHref} onClick={closeMobile} className="flex w-11 shrink-0 flex-col items-center justify-center">
+                  <Search className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                  <span className="mt-0.5 text-[10px] leading-none">{t.search}</span>
+                </Link>
+              </div>
+            </div>
+
+            <Link href={homeHref} aria-label="Autorell" className="hidden shrink-0 items-center min-[1120px]:inline-flex">
+              <BrandLogo />
+            </Link>
+
+            <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
+              {menus.map((menu, index) => (
+                <DesktopMenu
+                  key={menu.href}
+                  label={menu.label}
+                  href={menu.href}
+                  menu={menu.data}
+                  icon={menu.icon}
+                  align={index === 0 ? 'start' : 'center'}
+                  onNavigate={handleInternalNavigation}
+                />
+              ))}
+              <Link
+                href={localizePublicHref(locale, '/om-oss')}
+                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] xl:px-3.5 xl:text-[13px]"
+              >
+                {t.about}
+              </Link>
+              <Link
+                href={localizePublicHref(locale, '/hjalpcenter')}
+                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] xl:px-3.5 xl:text-[13px]"
+              >
+                {t.help}
+              </Link>
+            </nav>
+
+            <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
+              <Link
+                href="/registrera"
+                className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+              >
+                <Store className="h-[19px] w-[19px]" strokeWidth={1.7} />
+                <span className="text-[10px] font-medium">{t.register}</span>
+              </Link>
+              <Link
+                href="/login"
+                className="flex min-w-[66px] flex-col items-center justify-center border-x border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+              >
+                <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
+                <span className="text-[10px] font-medium">{t.signIn}</span>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <div
+          className={`absolute inset-x-0 top-full h-[calc(100dvh-64px)] overflow-y-auto border-t border-[#deddd8] bg-[#f6f4ef] shadow-[0_24px_60px_rgba(32,33,36,.14)] transition duration-300 min-[1120px]:hidden ${
+            open
+              ? 'pointer-events-auto translate-y-0 opacity-100'
+              : 'pointer-events-none -translate-y-3 opacity-0'
+          }`}
+        >
+          <div className="mx-auto flex min-h-full max-w-2xl flex-col px-5 py-7 sm:px-8">
+            <nav>
+              {navLinks.map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={(event) => handleInternalNavigation(event, href)}
+                  className="group flex items-center justify-between border-b border-[#dcdad3] py-4 text-[22px] font-medium tracking-[-0.025em]"
+                >
+                  <span>{label}</span>
+                  <ArrowRight className="h-5 w-5 text-[#71818b] transition group-hover:translate-x-1" />
+                </Link>
+              ))}
+            </nav>
+
+            <div className="mt-7">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8082]">
+                {t.shopByCategory}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {buyItems.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={closeMobile}
+                    className="flex min-h-11 items-center gap-2 rounded-[13px] border border-[#dfe4ec] bg-white px-3 text-sm font-semibold text-[#344054]"
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-[#0866ff]" />
+                    <span className="min-w-0 truncate">{label}</span>
+                  </Link>
                 ))}
               </div>
-            )}
+            </div>
+
+            <Link
+              href="/salj-fordon"
+              onClick={closeMobile}
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[14px] bg-[#0866ff] px-5 text-base font-medium text-white"
+            >
+              {t.mobileCta}
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <Link
+              href={localizePublicHref(locale, '/kontakt')}
+              onClick={closeMobile}
+              className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] bg-[#242424] px-5 text-base font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.16)]"
+            >
+              <span className="flex items-center gap-3">
+                <Headphones className="h-5 w-5" />
+                {t.contact}
+              </span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <div className="mt-9 rounded-[18px] border border-[#dddcd6] bg-white p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7a8082]">
+                {t.createAccount}
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <Link href="/registrera" onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
+                  <UserPlus size={17} />
+                  {t.register}
+                </Link>
+                <Link href="/login" onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-sm text-white">
+                  <LogIn size={17} />
+                  {t.signIn}
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-auto border-t border-[#dcdad3] pt-6">
+              <details className="group/markets">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[14px] border border-[#8ebdd8] bg-[#eaf5fb] px-4 text-sm [&::-webkit-details-marker]:hidden">
+                  <CountryFlag code={locale === 'sv' ? 'se' : locale === 'en' ? 'eu' : locale} className="h-[20px] w-[30px]" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
+                      {t.chooseLanguage}
+                    </span>
+                    <strong className="mt-0.5 block font-medium">
+                      {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) || locale}
+                    </strong>
+                  </span>
+                  <ChevronDown className="h-4 w-4 transition group-open/markets:rotate-180" />
+                </summary>
+                <div className="mt-2 max-h-[310px] overflow-y-auto rounded-[14px] border border-[#dcdad3] bg-white p-2">
+                  {languageOptions.map(([code, flag, label, href]) => (
+                    <a key={code} href={href} className="flex min-h-12 items-center gap-3 rounded-[11px] px-3 text-sm transition hover:bg-[#f1f6f7]">
+                      <CountryFlag code={flag.toLowerCase()} className="h-[18px] w-[27px]" />
+                      <span className="min-w-0 flex-1 truncate">{label}</span>
+                    </a>
+                  ))}
+                </div>
+              </details>
+              <div className="mt-5 flex items-center justify-between border-t border-[#dcdad3] pt-5">
+                <SocialIcons />
+                <span className="text-sm font-medium text-[#62686c]">Autorell AB</span>
+              </div>
+            </div>
           </div>
         </div>
-
-        <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="ml-auto grid h-11 w-11 place-items-center rounded-full border border-[#d0d5dd] min-[1100px]:hidden" aria-label="Menu">
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
-
-      {openMenu && (
-        <div className="hidden border-t border-[#e4e7ec] bg-white min-[1100px]:block">
-          <MegaMenu
-            title={openMenu === 'buy' ? t.buyTitle : openMenu === 'sell' ? t.sellTitle : t.businessTitle}
-            text={openMenu === 'buy' ? t.buyText : openMenu === 'sell' ? t.sellText : t.businessText}
-            items={
-              openMenu === 'buy'
-                ? marketplaceCategories.map((category) => ({
-                    href: `/marketplace/${category.slug}`,
-                    label:
-                      locale === 'sv' || locale === 'de' || locale === 'en'
-                        ? category.labels[language]
-                        : translatePublic(locale, category.labels.en),
-                    description: `${t.search} ${
-                      locale === 'sv' || locale === 'de' || locale === 'en'
-                        ? category.labels[language].toLowerCase()
-                        : translatePublic(locale, category.labels.en).toLowerCase()
-                    }`,
-                    icon: category.icon,
-                  }))
-                : openMenu === 'sell'
-                  ? locale === 'sv' || locale === 'de' || locale === 'en'
-                    ? sellerItems[language]
-                    : translatePublicObject(locale, sellerItems.en)
-                  : locale === 'sv' || locale === 'de' || locale === 'en'
-                    ? businessItems[language]
-                    : translatePublicObject(locale, businessItems.en)
-            }
-          />
-        </div>
-      )}
-
-      {mobileOpen && (
-        <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-[#e4e7ec] bg-white p-5 min-[1100px]:hidden">
-          <SiteSearch locale={locale} mobile />
-          <MobileSection title={t.buy} items={marketplaceCategories.map((category) => ({ href: `/marketplace/${category.slug}`, label: locale === 'sv' || locale === 'de' || locale === 'en' ? category.labels[language] : translatePublic(locale, category.labels.en), icon: category.icon }))} />
-          <MobileSection title={t.sell} items={locale === 'sv' || locale === 'de' || locale === 'en' ? sellerItems[language] : translatePublicObject(locale, sellerItems.en)} />
-          <MobileSection title={t.business} items={locale === 'sv' || locale === 'de' || locale === 'en' ? businessItems[language] : translatePublicObject(locale, businessItems.en)} />
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link href="/login" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d0d5dd] font-semibold"><LogIn className="h-4 w-4" />{t.signIn}</Link>
-            <Link href="/registrera" className="inline-flex min-h-12 items-center justify-center rounded-[14px] bg-[#0866ff] font-bold text-white">{t.createAccount}</Link>
-          </div>
-        </div>
-      )}
-    </header>
+    </>
   )
 }
 
-function DesktopMenuButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function LanguageMenu({
+  open,
+  options,
+  activeLocale,
+  title,
+}: {
+  open: boolean
+  options: ReadonlyArray<readonly [string, string, string, string]>
+  activeLocale: string
+  title: string
+}) {
   return (
-    <button type="button" onClick={onClick} className={`inline-flex h-full items-center gap-1.5 border-b-2 px-4 text-sm font-semibold ${active ? 'border-[#0866ff] text-[#0866ff]' : 'border-transparent'}`}>
-      {label}<ChevronDown className={`h-4 w-4 transition ${active ? 'rotate-180' : ''}`} />
-    </button>
-  )
-}
-
-function MegaMenu({ title, text, items }: { title: string; text: string; items: MenuItem[] }) {
-  return (
-    <div className="mx-auto grid max-w-[1440px] grid-cols-[280px_1fr] gap-10 px-12 py-8">
-      <div>
-        <h2 className="text-2xl tracking-[-.035em]">{title}</h2>
-        <p className="mt-3 text-sm leading-6 text-[#667085]">{text}</p>
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        {items.map(({ href, label, description, icon: Icon }) => (
-          <Link key={href + label} href={href} className="group flex gap-3 rounded-[16px] p-3 transition hover:bg-[#f2f6ff]">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#eaf1ff] text-[#0866ff]"><Icon className="h-5 w-5" /></span>
-            <span><strong className="block text-sm">{label}</strong><span className="mt-1 block text-xs leading-5 text-[#667085]">{description}</span></span>
-          </Link>
+    <div
+      className={`absolute right-0 top-full z-30 w-[300px] pt-2 transition duration-150 ${
+        open
+          ? 'pointer-events-auto translate-y-0 opacity-100'
+          : 'pointer-events-none -translate-y-1 opacity-0'
+      }`}
+    >
+      <div role="menu" className="max-h-[calc(100dvh-90px)] overflow-y-auto rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]">
+        <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7c898f]">
+          {title}
+        </p>
+        {options.map(([code, flag, label, href]) => (
+          <a
+            key={code}
+            href={href}
+            className={`flex items-center gap-3 rounded-[11px] px-3 py-2.5 text-sm transition hover:bg-[#f2f6f7] ${
+              code === activeLocale ? 'bg-[#eef6fa]' : ''
+            }`}
+          >
+            <CountryFlag code={flag.toLowerCase()} className="h-[20px] w-[30px] shrink-0" />
+            <span className="font-medium">{label}</span>
+          </a>
         ))}
       </div>
     </div>
   )
 }
 
-function MobileSection({ title, items }: { title: string; items: Array<{ href: string; label: string; icon: LucideIcon }> }) {
+function DesktopMenu({
+  label,
+  href,
+  menu,
+  onNavigate,
+  align,
+  icon: MenuIcon,
+}: {
+  label: string
+  href: string
+  menu: DesktopMenuData
+  onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
+  align: 'start' | 'center'
+  icon: LucideIcon
+}) {
   return (
-    <section className="mt-6 border-t border-[#eaecf0] pt-5">
-      <h2 className="text-xs font-bold uppercase tracking-[.16em] text-[#667085]">{title}</h2>
-      <div className="mt-3 grid gap-1 sm:grid-cols-2">
-        {items.map(({ href, label, icon: Icon }) => (
-          <Link key={href + label} href={href} className="flex items-center gap-3 rounded-[13px] px-3 py-3 hover:bg-[#f2f6ff]">
-            <Icon className="h-5 w-5 text-[#0866ff]" /><span className="font-semibold">{label}</span>
-          </Link>
-        ))}
+    <div className="group relative">
+      <a
+        href={href}
+        onClick={(event) => onNavigate(event, href)}
+        className="flex h-[50px] shrink-0 items-center border-b-2 border-transparent px-2.5 text-[11px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] group-focus-within:border-[#0866ff] xl:px-3 xl:text-[12px]"
+      >
+        {label}
+      </a>
+
+      <div
+        className={`pointer-events-none absolute top-full z-40 translate-y-2 pt-[18px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+          menu.items.length > 5 ? 'w-[900px]' : 'w-[720px] 2xl:w-[780px]'
+        } ${align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2'}`}
+      >
+        <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
+          <div className="min-w-0 bg-[#f3f7ff] p-7">
+            <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#0866ff] text-white">
+              <MenuIcon className="h-5 w-5" />
+            </span>
+            <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
+              {menu.eyebrow}
+            </p>
+            <h3 className="mt-2 whitespace-normal text-[25px] leading-[1.08] tracking-[-0.035em]">
+              {menu.title}
+            </h3>
+            <p className="mt-3 whitespace-normal text-sm leading-6 text-[#5c707b]">
+              {menu.text}
+            </p>
+            <a href={menu.ctaHref} onClick={(event) => onNavigate(event, menu.ctaHref)} className="mt-6 inline-flex items-center gap-2 text-sm font-medium">
+              {menu.cta}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className={`min-w-0 p-4 ${menu.items.length > 5 ? 'grid max-h-[460px] grid-cols-2 content-start overflow-y-auto' : ''}`}>
+            {menu.items.map(({ href: itemHref, label: itemLabel, description, icon: Icon }) => (
+              <a
+                key={`${itemHref}-${itemLabel}`}
+                href={itemHref}
+                onClick={(event) => onNavigate(event, itemHref)}
+                className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#dce1e3] text-[#4e626c]">
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="min-w-0">
+                  <strong className="block whitespace-normal text-sm font-medium">{itemLabel}</strong>
+                  <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">{description}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   )
 }
