@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Sign in to submit a report.' }, { status: 401 })
   const body = (await request.json()) as Record<string, unknown>
   const details = String(body.details || '').trim()
+  const amount = Number(body.amount || 0)
   const allowed = ['suspected_fraud','misleading_listing','unsafe_product','harassment','identity_misuse','payment_request','other']
   const category = String(body.category || 'other')
   if (!allowed.includes(category) || details.length < 10) {
@@ -21,6 +22,12 @@ export async function POST(request: Request) {
     category,
     details,
     contact_email: user.email,
+    contact_phone: String(body.contactPhone || '').trim() || null,
+    transaction_reference: String(body.transactionReference || '').trim() || null,
+    counterparty_name: String(body.counterpartyName || '').trim() || null,
+    occurred_at: String(body.occurredAt || '').trim() || null,
+    amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+    currency: String(body.currency || '').trim().toUpperCase() || null,
   })
   return error
     ? NextResponse.json({ error: error.message }, { status: 400 })

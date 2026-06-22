@@ -14,7 +14,7 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { createPublicMetadata } from '@/lib/public-seo'
-import { formatPriceRange, marketplaceCategories } from '@/lib/marketplace-pricing'
+import { formatListingPrice, marketplaceCategories } from '@/lib/marketplace-pricing'
 
 export const metadata = createPublicMetadata({
   title: 'Sälj fordon i Sverige och Europa | Autorell',
@@ -144,11 +144,11 @@ export default async function SellVehiclePage({
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Prissättning per annons</p>
           <h2 className="mt-4 text-4xl tracking-[-.045em]">Tydligt pris för varje kategori.</h2>
-          <p className="mt-3 max-w-2xl text-[#667085]">Privatkonton betalar den lägre nivån i intervallet. Företagskonton betalar den högre nivån. Alla priser visas inklusive tillämplig moms före betalning.</p>
+          <p className="mt-3 max-w-2xl text-[#667085]">Samma tydliga kategoripris gäller för privatpersoner och företag. Alla priser visas inklusive tillämplig moms före betalning.</p>
           <div className="mt-8 overflow-x-auto rounded-[22px] border border-[#e1e5ec]">
             <table className="w-full min-w-[720px] border-collapse text-left text-sm">
               <thead className="bg-[#f4f7ff]"><tr><th className="p-4">Kategori</th><th className="p-4">7 dagar</th><th className="p-4">15 dagar</th><th className="p-4">Premium 30 dagar</th></tr></thead>
-              <tbody>{marketplaceCategories.map((item) => <tr key={item.slug} className="border-t border-[#e7eaf0]"><th className="p-4">{item.label}</th><td className="p-4 font-bold text-emerald-700">Gratis</td><td className="p-4">{formatPriceRange(item.standard)}</td><td className="p-4">{formatPriceRange(item.premium)}</td></tr>)}</tbody>
+              <tbody>{marketplaceCategories.map((item) => <tr key={item.slug} className="border-t border-[#e7eaf0]"><th className="p-4">{item.label}</th><td className="p-4 font-bold text-emerald-700">Gratis</td><td className="p-4 font-semibold">{formatListingPrice(item.standard)}</td><td className="p-4 font-semibold">{formatListingPrice(item.premium)}</td></tr>)}</tbody>
             </table>
           </div>
         </div>

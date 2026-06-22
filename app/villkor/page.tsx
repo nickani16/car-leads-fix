@@ -23,6 +23,7 @@ const sections = [
       'Kontoinnehavaren ska vara minst 18 år och lämna korrekta, aktuella kontakt- och identitetsuppgifter.',
       'Privatkonto används för egen, icke-yrkesmässig handel. Den som säljer som ett led i näringsverksamhet ska använda företagskonto.',
       'Företagskonton ska ange företagsnamn, registreringsnummer och andra uppgifter som behövs för att identifiera näringsidkaren.',
+      'Autorell kan genomföra format-, dubblett-, VAT-, dokument- och riskkontroller samt begära e-legitimation eller ytterligare underlag. En kontrollmarkering är inte en garanti för framtida beteende, betalningsförmåga eller fordonet.',
       'Kontot är personligt. Lösenord och åtkomst får inte delas eller användas för att kringgå avstängning eller kontroll.',
     ],
   },
@@ -48,8 +49,8 @@ const sections = [
     id: 'priser',
     title: 'Annonspaket och betalning',
     items: [
-      'Sju dagars grundpublicering är gratis. Pris för 15 dagar och Premium beror på fordonskategori och kontotyp och visas innan betalning.',
-      'Privatkonton debiteras den lägre och företagskonton den högre nivån i publicerat intervall, om inget separat skriftligt företagsavtal gäller.',
+      'Sju dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
+      'Samma publicerade kategoripris gäller för privatkonton och företagskonton, om inget separat skriftligt volymavtal gäller.',
       'Betalning hanteras av extern betalningsleverantör. Betalningsuppgifter ska aldrig skickas i meddelanden.',
       'Köpta digitala annonstjänster börjar enligt det valda paketet. Information om eventuell lagstadgad ångerrätt och samtycke till omedelbar leverans ska visas i checkout när det krävs.',
     ],
@@ -69,6 +70,7 @@ const sections = [
     paragraphs: [
       'Användare kan rapportera misstänkt olagligt eller vilseledande innehåll, bedrägeri och missbruk via rapporteringsfunktionen. Rapporten bör identifiera annonsen eller konversationen och förklara problemet tillräckligt tydligt.',
       'Autorell bedömer rapporter och kan ta bort innehåll, begränsa funktioner, stänga av konton, säkra loggar och kontakta berörda användare eller myndigheter. Beslut fattas utifrån tillgängliga uppgifter och kan omprövas efter komplettering.',
+      'Autorell kan hjälpa en drabbad användare att identifiera relevant konto-, annons-, betalnings- och meddelandedata och bevara uppgifter för en utredning. Användaren ansvarar fortfarande för att göra polisanmälan, kontakta bank eller betalningsleverantör och begränsa fortsatt skada.',
     ],
   },
   {

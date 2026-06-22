@@ -2,9 +2,10 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { marketplaceCategories, formatPriceRange } from '@/lib/marketplace-pricing'
+import { marketplaceCategories, formatListingPrice } from '@/lib/marketplace-pricing'
 
 export default function NewListingForm({ accountType, defaultCategory }: { accountType: 'private' | 'business'; defaultCategory: string }) {
+  void accountType
   const router = useRouter()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,7 +25,7 @@ export default function NewListingForm({ accountType, defaultCategory }: { accou
   }
   return <form onSubmit={submit} className="grid gap-5 rounded-[26px] border bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-9">
     <Select name="category" label="Kategori" defaultValue={defaultCategory}>{marketplaceCategories.map((item) => <option key={item.slug} value={item.slug}>{item.label}</option>)}</Select>
-    <Select name="packageId" label="Annonspaket"><option value="free_7d">7 dagar – Gratis</option><option value="standard_15d">15 dagar – privat lägre pris / företag högre pris</option><option value="premium_30d">Premium 30 dagar – prioriterad</option></Select>
+    <Select name="packageId" label="Annonspaket"><option value="free_7d">7 dagar – Gratis</option><option value="standard_15d">15 dagar – fast kategoripris</option><option value="premium_30d">Premium 30 dagar – prioriterad</option></Select>
     <Field name="make" label="Märke eller tillverkare" required />
     <Field name="model" label="Modell" required />
     <Field name="variant" label="Variant" />
@@ -46,8 +47,8 @@ export default function NewListingForm({ accountType, defaultCategory }: { accou
     <label className="sm:col-span-2"><span className="mb-2 block text-sm font-semibold">Bilder (1–20)</span><input name="images" type="file" accept="image/*" multiple required className="block w-full rounded-[14px] border p-4" /></label>
     <label className="sm:col-span-2 flex gap-3 rounded-[16px] border border-[#d7deed] p-4 text-sm leading-6 text-[#475467]"><input name="listingTerms" type="checkbox" required className="mt-1 h-4 w-4" /><span>Jag godkänner annonsvillkoren och begär att det valda annonspaketet börjar levereras när annonsen har godkänts. Slutpris visas innan Stripe-betalningen genomförs.</span></label>
     <div className="sm:col-span-2 rounded-[18px] bg-[#f3f6ff] p-5 text-sm leading-6 text-[#475467]">
-      <strong>Prisregel:</strong> {accountType === 'business' ? 'Företagskonton betalar den högre nivån i intervallet.' : 'Privatkonton betalar den lägre nivån i intervallet.'}
-      <div className="mt-3 grid gap-1 sm:grid-cols-2">{marketplaceCategories.map((item) => <span key={item.slug}>{item.label}: {formatPriceRange(item.standard)} / Premium {formatPriceRange(item.premium)}</span>)}</div>
+      <strong>Fasta priser:</strong> samma pris gäller för privatpersoner och företag.
+      <div className="mt-3 grid gap-1 sm:grid-cols-2">{marketplaceCategories.map((item) => <span key={item.slug}>{item.label}: {formatListingPrice(item.standard)} / Premium {formatListingPrice(item.premium)}</span>)}</div>
     </div>
     {error && <p className="sm:col-span-2 text-sm text-red-700">{error}</p>}
     <button disabled={loading} className="min-h-13 rounded-[15px] bg-[#0866ff] px-6 font-bold text-white sm:col-span-2">{loading ? 'Arbetar…' : 'Fortsätt och publicera'}</button>

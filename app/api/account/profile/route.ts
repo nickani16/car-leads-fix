@@ -1,28 +1,60 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { euCountryCodes } from '@/lib/eu-countries'
+
+function clean(value: unknown) {
+  return String(value || '').trim()
+}
 
 export async function PATCH(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 })
 
   const body = (await request.json()) as Record<string, unknown>
+  const firstName = clean(body.firstName)
+  const lastName = clean(body.lastName)
+  const countryCode = clean(body.countryCode).toUpperCase()
+  const phone = clean(body.phone).replace(/[\s()-]/g, '')
+  const addressLine1 = clean(body.addressLine1)
+  const addressLine2 = clean(body.addressLine2)
+  const postalCode = clean(body.postalCode)
+  const city = clean(body.city)
+  const birthDate = clean(body.birthDate)
   const profile = {
-    display_name: String(body.displayName || '').trim(),
-    legal_name: String(body.legalName || '').trim() || null,
-    phone: String(body.phone || '').trim(),
-    country_code: String(body.countryCode || '').trim().toUpperCase(),
-    company_name: String(body.companyName || '').trim() || null,
-    registration_number: String(body.registrationNumber || '').trim() || null,
-    vat_number: String(body.vatNumber || '').trim() || null,
-    registered_address: String(body.address || '').trim() || null,
-    city: String(body.city || '').trim() || null,
-    postal_code: String(body.postalCode || '').trim() || null,
+    display_name: `${firstName} ${lastName}`.trim(),
+    legal_name: `${firstName} ${lastName}`.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    birth_date: birthDate,
+    phone,
+    country_code: countryCode,
+    company_name: clean(body.companyName) || null,
+    registration_number: clean(body.registrationNumber) || null,
+    vat_number: clean(body.vatNumber) || null,
+    address_line_1: addressLine1,
+    address_line_2: addressLine2 || null,
+    registered_address: [addressLine1, addressLine2].filter(Boolean).join(', '),
+    city,
+    region: clean(body.region) || null,
+    postal_code: postalCode,
     updated_at: new Date().toISOString(),
   }
 
-  if (!profile.display_name || !profile.phone || !/^[A-Z]{2}$/.test(profile.country_code)) {
-    return NextResponse.json({ error: 'Complete name, phone and country.' }, { status: 400 })
+  if (
+    firstName.length < 2 ||
+    lastName.length < 2 ||
+    !/^\+[1-9]\d{7,14}$/.test(phone) ||
+    !euCountryCodes.has(countryCode) ||
+    !addressLine1 ||
+    !postalCode ||
+    !city ||
+    !birthDate
+  ) {
+    return NextResponse.json(
+      { error: 'Fyll i namn, telefon, födelsedatum och fullständig adress.' },
+      { status: 400 },
+    )
   }
 
   const { error } = await supabase

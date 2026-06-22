@@ -19,7 +19,8 @@ const sections = [
     id: 'uppgifter',
     title: 'Uppgifter vi behandlar',
     items: [
-      'Kontotyp, namn, e-post, telefon, land, adress och inloggnings- och säkerhetsinformation.',
+      'Kontotyp, för- och efternamn, födelsedatum, e-post, telefon, land, adress och inloggnings- och säkerhetsinformation.',
+      'För privatkonton behandlas nationellt identitetsnummer för format-, dubblett- och riskkontroll. Råvärdet sparas inte i marknadsplatsprofilen; en skyddad kontrollreferens och de sista fyra tecknen kan sparas.',
       'För företag: företagsnamn, registreringsnummer, VAT-nummer, företrädare och verifieringsuppgifter.',
       'Annonsdata, bilder, fordonsidentitet, pris, plats, skick, historik, kända fel och publiceringspaket.',
       'Meddelanden, rapporter, supportärenden, modereringsbeslut och bevisning om misstänkt missbruk.',
@@ -34,6 +35,7 @@ const sections = [
       'Avtal och åtgärder på din begäran: skapa konto, publicera annons, leverera annonspaket, möjliggöra meddelanden och support.',
       'Rättslig skyldighet: bokföring, skatt, myndighetsförfrågningar och skyldigheter för digitala plattformar och näringsidkare.',
       'Berättigat intresse: säker drift, bedrägeribekämpning, moderering, tvistbevisning, tjänsteutveckling och skydd av användare.',
+      'Nationella identitetsnummer behandlas endast när det är tillåtet enligt tillämplig nationell rätt och med särskilda skyddsåtgärder. Ytterligare identitetskontroll kan utföras av en separat verifieringsleverantör.',
       'Samtycke används där lagen kräver det, exempelvis för icke nödvändiga cookies eller separat marknadsföring.',
     ],
   },
@@ -60,6 +62,7 @@ const sections = [
     title: 'Lagring och gallring',
     paragraphs: [
       'Kontodata sparas medan kontot är aktivt och därefter under den tid som behövs för rättsliga anspråk, säkerhet och skyldigheter. Annons- och meddelandedata kan sparas efter borttagning när det behövs för moderering, bedrägeribekämpning eller tvist.',
+      'Skyddade identitetsreferenser och kontrollhistorik gallras när de inte längre behövs för kontosäkerhet, rättsliga krav eller bedrägeribekämpning.',
       'Betalnings- och bokföringsunderlag sparas enligt tillämpliga bokförings- och skatteregler. Uppgifter som inte längre behövs raderas eller anonymiseras.',
     ],
   },
@@ -86,6 +89,7 @@ const sections = [
     paragraphs: [
       'Autorell använder behörighetskontroller, loggning, separerade roller och andra tekniska och organisatoriska åtgärder. Ingen internetbaserad tjänst kan dock garanteras helt fri från risk.',
       'Misstänkt kontointrång, identitetsmissbruk eller bedrägeri rapporteras omedelbart via hjälpcentret och till info@autorell.com.',
+      'Automatiska kontroller kan flagga dubbletter, ogiltiga format eller riskmönster. En flagga leder inte ensam till ett slutligt rättsligt beslut; användaren kan begära manuell granskning.',
     ],
   },
 ]

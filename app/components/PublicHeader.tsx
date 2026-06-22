@@ -827,19 +827,53 @@ export default function PublicHeader({
     }
     processMenu = {
       ...processMenu,
-      eyebrow: 'För privatpersoner och företag',
-      title: 'Sälj ett fordon till en större europeisk marknad.',
-      text: 'Starta en enskild försäljning eller välj en företagslösning för lager och återkommande volymer.',
-      cta: 'Börja sälja',
-      ctaHref: '/salj-fordon',
+      eyebrow: 'Publicera på Autorell',
+      title: 'Skapa en annons som når köpare i hela EU.',
+      text: 'Privatpersoner och företag använder samma tydliga annonsflöde med konto, verifierbara säljaruppgifter och fasta kategoripriser.',
+      cta: 'Skapa annons',
+      ctaHref: '/konto/annonser/ny',
+      items: [
+        {
+          href: '/registrera',
+          label: 'Skapa säljkonto',
+          text: 'Välj privatkonto eller företagskonto och verifiera kontaktuppgifter.',
+          icon: UserRound,
+        },
+        {
+          href: '/salj-fordon#priser',
+          label: 'Fasta annonspriser',
+          text: 'Se exakt pris för 7 dagar, 15 dagar och Premium i varje kategori.',
+          icon: BadgeCheck,
+        },
+        {
+          href: '/konto/annonser/ny',
+          label: 'Lägg upp ett fordon',
+          text: 'Fyll i fordonsdata, skick, kända fel, plats och bilder.',
+          icon: CarFront,
+        },
+      ],
     }
     companyMenu = {
       ...companyMenu,
       eyebrow: 'Tydlig prissättning',
       title: 'Gratis 7 dagar eller mer synlighet.',
-      text: 'Pris för 15 dagar och Premium anpassas efter fordonskategori och om säljaren är privatperson eller företag.',
+      text: 'Varje kategori har ett fast pris. Samma pris gäller för privatpersoner och företag.',
       cta: 'Se alla priser',
       ctaHref: '/salj-fordon#priser',
+      items: [
+        {
+          href: '/salj-fordon#priser',
+          label: 'Jämför annonspaket',
+          text: 'Fasta priser utan intervall eller överraskningar i kassan.',
+          icon: BadgeCheck,
+        },
+        {
+          href: '/hjalpcenter',
+          label: 'Så fungerar publicering',
+          text: 'Svar om granskning, betalning, synlighet och förlängning.',
+          icon: CircleHelp,
+        },
+      ],
     }
     aboutMenu = {
       ...aboutMenu,
@@ -1369,9 +1403,9 @@ function DesktopMenu({
           align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2'
         }`}
       >
-        <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[22px] border border-[#dfe5e8] bg-white shadow-[0_30px_80px_rgba(32,33,36,.16)]">
-          <div className="min-w-0 bg-[#eef6fa] p-7">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#0866ff] text-white">
+        <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
+          <div className="min-w-0 bg-[#f3f7ff] p-7">
+            <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#0866ff] text-white">
               <MenuIcon className="h-5 w-5" />
             </span>
             <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
@@ -1401,7 +1435,7 @@ function DesktopMenu({
                 onClick={(event) => onNavigate(event, itemHref)}
                 className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#dce1e3] text-[#4e626c]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#dce1e3] text-[#4e626c]">
                   <Icon className="h-4.5 w-4.5" />
                 </span>
                 <span className="min-w-0">

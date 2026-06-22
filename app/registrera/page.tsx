@@ -8,14 +8,29 @@ export default async function RegisterPage() {
   const locale = await getRequestLocale()
   const copy = getAccountCopy(locale)
   return (
-    <main className="min-h-screen bg-[#f5f8ff] px-5 py-10 text-[#101828]">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen overflow-x-hidden bg-[#f6f8fc] px-5 py-8 text-[#101828] sm:py-12">
+      <div className="mx-auto min-w-0 max-w-[1180px]">
         <Link href="/" aria-label="Autorell"><BrandLogo /></Link>
-        <div className="mt-10 grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
-          <section className="pt-5">
+        <div className="mt-10 grid min-w-0 gap-10 lg:grid-cols-[.78fr_1.22fr] lg:items-start lg:gap-16">
+          <section className="min-w-0 lg:sticky lg:top-10 lg:pt-8">
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">{copy.account}</p>
-            <h1 className="mt-4 text-5xl leading-[1] tracking-[-.05em]">{copy.register}</h1>
-            <p className="mt-5 leading-7 text-[#667085]">{copy.registerDescription}</p>
+            <h1 className="mt-4 max-w-md break-words text-[42px] leading-[.98] tracking-[-.055em] sm:text-6xl">
+              Ett konto för tryggare fordonsaffärer i Europa.
+            </h1>
+            <p className="mt-6 max-w-md text-lg leading-8 text-[#667085]">{copy.registerDescription}</p>
+            <div className="mt-8 grid gap-3 text-sm text-[#475467]">
+              {[
+                'Privatperson eller verifierbart företag',
+                'Kontaktuppgifter och adress kopplas till kontot',
+                'Skriv till säljare och samla ärenden på ett ställe',
+                'Kontroller som minskar falska och dubbla konton',
+              ].map((item) => (
+                <p key={item} className="flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-[3px] bg-[#0866ff]" />
+                  {item}
+                </p>
+              ))}
+            </div>
           </section>
           <RegisterForm locale={locale} />
         </div>

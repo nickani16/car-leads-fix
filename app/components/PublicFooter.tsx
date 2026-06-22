@@ -195,7 +195,7 @@ export default function PublicFooter({
                     ? '/registrera'
                     : '/registrera'
               }
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0057e6]"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0057e6]"
             >
               {t.cta}
               <ArrowRight className="h-4 w-4" />

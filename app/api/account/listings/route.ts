@@ -33,6 +33,29 @@ export async function POST(request: Request) {
     const admin = createAdminClient()
     const { data: profile } = await admin.from('marketplace_profiles').select('*').eq('user_id', user.id).maybeSingle()
     if (!profile) return NextResponse.json({ error: 'Complete your account profile first.' }, { status: 403 })
+    if (
+      profile.risk_status === 'blocked' ||
+      profile.risk_status === 'restricted'
+    ) {
+      return NextResponse.json(
+        { error: 'Kontot är begränsat. Kontakta support innan du publicerar.' },
+        { status: 403 },
+      )
+    }
+    if (
+      !profile.first_name ||
+      !profile.last_name ||
+      !profile.birth_date ||
+      !profile.address_line_1 ||
+      !profile.postal_code ||
+      !profile.city ||
+      (profile.account_type === 'private' && profile.identity_status === 'pending')
+    ) {
+      return NextResponse.json(
+        { error: 'Komplettera och kontrollera din konto- och adressprofil först.' },
+        { status: 403 },
+      )
+    }
 
     const form = await request.formData()
     const category = getCategoryPricing(text(form, 'category')).slug

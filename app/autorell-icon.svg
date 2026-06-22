@@ -1,5 +1,13 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="112" fill="white"/>
-  <rect x="151" y="76" width="94" height="275" rx="47" transform="rotate(17 151 76)" fill="#B4D9EF"/>
-  <rect x="275" y="161" width="94" height="275" rx="47" transform="rotate(17 275 161)" fill="#B4D9EF"/>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="76" fill="#0866ff"/>
+  <text
+    x="256"
+    y="193"
+    fill="#ffffff"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="470"
+    font-weight="900"
+    text-anchor="middle"
+    dominant-baseline="central"
+  >a</text>
 </svg>
