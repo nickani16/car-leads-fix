@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
-import { ChevronDown, MapPin, Search } from 'lucide-react'
+import { CarFront, ChevronDown, MapPin, Search } from 'lucide-react'
 
 const categoryRoutes: Record<string, string> = {
   cars: '/find-cars',
@@ -36,11 +36,11 @@ export default function MarketplaceSearch() {
   return (
     <form
       onSubmit={submit}
-      className="w-full min-w-0 max-w-full overflow-hidden rounded-[22px] border border-[#dce1e7] bg-white p-3 shadow-[0_22px_55px_rgba(15,23,42,.16)] sm:rounded-full"
+      className="w-full min-w-0 max-w-full overflow-hidden rounded-[24px] border border-white/80 bg-white/96 p-2.5 shadow-[0_24px_65px_rgba(15,23,42,.18)] backdrop-blur-xl sm:rounded-[26px]"
       role="search"
     >
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[1.05fr_1.45fr_1fr_auto] sm:items-center">
-        <SearchField label="Kategori">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[1.05fr_1.55fr_1fr_auto] sm:items-center">
+        <SearchField label="Kategori" icon={CarFront}>
           <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             <option value="cars">Bilar</option>
             <option value="vans">Transportbilar</option>
@@ -55,7 +55,7 @@ export default function MarketplaceSearch() {
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>
 
-        <SearchField label="Vad letar du efter?">
+        <SearchField label="Vad letar du efter?" icon={Search}>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -68,9 +68,8 @@ export default function MarketplaceSearch() {
           </datalist>
         </SearchField>
 
-        <SearchField label="Plats">
-          <MapPin className="absolute bottom-2 left-4 h-4 w-4 text-[#0866ff]" />
-          <select value={country} onChange={(event) => setCountry(event.target.value)} className="h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pl-6 pr-7 text-sm font-semibold outline-none">
+        <SearchField label="Plats" icon={MapPin}>
+          <select value={country} onChange={(event) => setCountry(event.target.value)} className="h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             <option value="">Hela EU</option>
             <option value="SE">Sverige</option>
             <option value="DE">Tyskland</option>
@@ -82,7 +81,7 @@ export default function MarketplaceSearch() {
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>
 
-        <button type="submit" className="inline-flex min-h-14 w-full min-w-0 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-7 text-sm font-bold text-white transition hover:bg-[#0057e6] sm:min-h-[58px] sm:w-auto">
+        <button type="submit" className="inline-flex min-h-14 w-full min-w-0 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.25)] transition hover:-translate-y-0.5 hover:bg-[#0057e6] sm:min-h-[62px] sm:w-auto sm:rounded-[20px]">
           <Search className="h-5 w-5" />
           Sök fordon
         </button>
@@ -91,11 +90,24 @@ export default function MarketplaceSearch() {
   )
 }
 
-function SearchField({ label, children }: { label: string; children: React.ReactNode }) {
+function SearchField({
+  label,
+  icon: Icon,
+  children,
+}: {
+  label: string
+  icon: typeof Search
+  children: React.ReactNode
+}) {
   return (
-    <label className="relative block min-w-0 overflow-hidden rounded-[15px] border border-[#e5e7eb] px-4 py-2 sm:rounded-none sm:border-y-0 sm:border-l-0 sm:border-r">
-      <span className="block text-[11px] font-bold text-[#344054]">{label}</span>
-      {children}
+    <label className="relative flex min-w-0 items-center gap-3 overflow-hidden rounded-[17px] border border-[#e6e9ee] bg-[#f8fafc] px-4 py-2.5 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:bg-transparent sm:focus-within:ring-0">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#eaf1ff] text-[#0866ff]">
+        <Icon className="h-[18px] w-[18px]" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#667085]">{label}</span>
+        {children}
+      </span>
     </label>
   )
 }

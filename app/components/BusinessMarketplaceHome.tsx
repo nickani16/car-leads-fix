@@ -36,8 +36,8 @@ export default function BusinessMarketplaceHome() {
     <main className="min-h-screen overflow-hidden bg-white text-[#111827]">
       <PublicHeader />
 
-      <section className="bg-white px-4 pb-16 pt-5 sm:px-7 sm:pb-20 sm:pt-7 lg:px-10">
-        <div className="relative mx-auto max-w-[1220px]">
+      <section className="bg-white px-4 pb-16 pt-8 sm:px-7 sm:pb-20 sm:pt-9 lg:px-10">
+        <div className="relative mx-auto max-w-[1340px]">
           <div className="relative min-h-[420px] overflow-hidden rounded-[24px] bg-[#e9edf0] sm:min-h-[510px] lg:min-h-[560px]">
             <Image
               src="/autorell-volvo-hero.jpg"

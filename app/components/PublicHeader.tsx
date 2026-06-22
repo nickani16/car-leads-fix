@@ -734,17 +734,30 @@ export default function PublicHeader({
         : activeLocale === 'en'
           ? 'Log in'
           : translatePublic(activeLocale, 'Log in')
-  const vehicleCategories = [
-    ['Cars', marketRoutes.vehicles],
-    ['Vans', '/marketplace/vans'],
-    ['Bikes', '/marketplace/bikes'],
-    ['Motorhomes', '/marketplace/motorhomes'],
-    ['Caravans', '/marketplace/caravans'],
-    ['Trucks', '/marketplace/trucks'],
-    ['Farm', '/marketplace/farm'],
-    ['Plant', '/marketplace/plant'],
-    ['Electric bikes', '/marketplace/electric-bikes'],
-  ]
+  const vehicleCategories =
+    activeLocale === 'sv'
+      ? [
+          ['Bilar', marketRoutes.vehicles],
+          ['Transportbilar', '/marketplace/vans'],
+          ['Motorcyklar', '/marketplace/bikes'],
+          ['Husbilar', '/marketplace/motorhomes'],
+          ['Husvagnar', '/marketplace/caravans'],
+          ['Lastbilar', '/marketplace/trucks'],
+          ['Lantbruk', '/marketplace/farm'],
+          ['Entreprenad', '/marketplace/plant'],
+          ['Elcyklar', '/marketplace/electric-bikes'],
+        ]
+      : [
+          ['Cars', marketRoutes.vehicles],
+          ['Vans', '/marketplace/vans'],
+          ['Bikes', '/marketplace/bikes'],
+          ['Motorhomes', '/marketplace/motorhomes'],
+          ['Caravans', '/marketplace/caravans'],
+          ['Trucks', '/marketplace/trucks'],
+          ['Farm', '/marketplace/farm'],
+          ['Plant', '/marketplace/plant'],
+          ['Electric bikes', '/marketplace/electric-bikes'],
+        ]
   content = {
     ...content,
     links: content.links.map(([href, label]) => [
@@ -829,7 +842,7 @@ export default function PublicHeader({
 
   return (
     <>
-      <div className="h-[72px] min-[1120px]:h-[88px]" aria-hidden="true" />
+      <div className="h-[64px] min-[1120px]:h-[80px]" aria-hidden="true" />
       <div
         className={`fixed inset-x-0 top-0 z-[100] transition-transform duration-300 ease-out ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
@@ -945,25 +958,74 @@ export default function PublicHeader({
         </div>
 
         <header className="relative border-b border-[#deddd8] bg-white">
-          <div className="hidden border-b border-[#e5e5e2] bg-[#fbfbfa] min-[1120px]:block">
-            <nav className="mx-auto flex h-7 max-w-[1440px] items-center gap-4 overflow-hidden px-12 text-[11px] text-[#41474b] xl:px-16">
-              {vehicleCategories.map(([label, href], index) => (
+          <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
+            <div className="mx-auto flex h-[30px] max-w-[1440px] items-center justify-between gap-5 px-10 xl:px-14">
+              <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
+                {vehicleCategories.map(([label, href], index) => (
+                  <Link
+                    key={`${label}-${index}`}
+                    href={href}
+                    className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
+                      index === 0
+                        ? 'border-[#0866ff] font-semibold text-[#202124]'
+                        : 'border-transparent'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex h-full shrink-0 items-center">
                 <Link
-                  key={`${label}-${index}`}
-                  href={href}
-                  className={`flex h-full shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
-                    index === 0
-                      ? 'border-[#0866ff] font-semibold text-[#202124]'
-                      : 'border-transparent'
-                  }`}
+                  href={content.links[5][0]}
+                  className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
                 >
-                  {label}
+                  <Headphones className="h-3.5 w-3.5" />
+                  {content.links[5][1]}
                 </Link>
-              ))}
-            </nav>
+                <div ref={marketMenuRef} className="relative flex h-full">
+                  <button
+                    type="button"
+                    onClick={() => setMarketOpen((current) => !current)}
+                    aria-expanded={marketOpen}
+                    aria-haspopup="menu"
+                    className="flex h-full items-center gap-2 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
+                  >
+                    <MarketFlag locale={localizedLanguage.locale} className="h-[14px] w-[21px]" />
+                    <span>{localizedLanguage.label}</span>
+                    <ChevronDown className={`h-3 w-3 transition ${marketOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div
+                    className={`absolute right-0 top-full z-30 w-[250px] pt-2 transition duration-150 ${
+                      marketOpen
+                        ? 'pointer-events-auto translate-y-0 opacity-100'
+                        : 'pointer-events-none -translate-y-1 opacity-0'
+                    }`}
+                  >
+                    <div role="menu" className="max-h-[calc(100dvh-90px)] overflow-y-auto rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]">
+                      {localizedMarkets.map((market) => (
+                        <a
+                          key={market.locale}
+                          href={market.href}
+                          className={`flex items-center gap-3 rounded-[11px] px-3 py-2.5 text-sm transition hover:bg-[#f2f6f7] ${
+                            market.locale === activeLocale ? 'bg-[#eef6fa]' : ''
+                          }`}
+                        >
+                          <MarketFlag locale={market.locale} className="h-[20px] w-[30px] shrink-0" />
+                          <span>
+                            <strong className="block font-medium">{market.label}</strong>
+                            <span className="text-[10px] text-[#7a878d]">{market.description}</span>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="relative mx-auto flex h-[72px] max-w-[1440px] items-center px-5 sm:px-8 md:h-[88px] min-[1120px]:h-[60px] lg:px-12 xl:px-16">
+          <div className="relative mx-auto flex h-[64px] max-w-[1440px] items-center px-5 sm:px-8 min-[1120px]:h-[50px] lg:px-10 xl:px-14">
             <a
               href={homeHref}
               aria-label={marketCopy.home}
@@ -978,9 +1040,7 @@ export default function PublicHeader({
               </span>
             </a>
 
-            <nav
-              className="ml-8 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-10"
-            >
+            <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
               <DesktopMenu
                 label={content.links[0][1]}
                 href={content.links[0][0]}
@@ -1023,79 +1083,15 @@ export default function PublicHeader({
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
               <Link
-                href={content.links[5][0]}
-                className="flex items-center gap-1.5 border-l border-[#ececea] px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
-              >
-                <Headphones className="h-4 w-4" />
-                <span className="hidden 2xl:inline">{content.links[5][1]}</span>
-              </Link>
-              <Link
                 href={marketRoutes.dealerAccess}
-                className="flex items-center px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
+                className="flex items-center border-l border-[#ececea] px-3 text-[10px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
               >
                 <span className="hidden xl:inline">{content.partner}</span>
                 <Store className="h-[18px] w-[18px] xl:hidden" strokeWidth={1.7} />
               </Link>
-              <div ref={marketMenuRef} className="relative flex">
-                <button
-                  type="button"
-                  onClick={() => setMarketOpen((current) => !current)}
-                  aria-expanded={marketOpen}
-                  aria-haspopup="menu"
-                  className="flex items-center gap-2 px-3 text-[11px] font-medium text-[#202124] transition hover:bg-[#f7f8f8]"
-                >
-                  <MarketFlag
-                    locale={localizedLanguage.locale}
-                    className="h-[16px] w-[24px]"
-                  />
-                  <span className="hidden 2xl:inline">
-                    {localizedLanguage.label}
-                  </span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition ${
-                      marketOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`absolute right-0 top-full z-30 w-[250px] pt-2 transition duration-150 ${
-                    marketOpen
-                      ? 'pointer-events-auto translate-y-0 opacity-100'
-                      : 'pointer-events-none -translate-y-1 opacity-0'
-                  }`}
-                >
-                  <div
-                    role="menu"
-                    className="max-h-[calc(100dvh-100px)] overflow-y-auto rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]"
-                  >
-                    {localizedMarkets.map((market) => (
-                      <a
-                        key={market.locale}
-                        href={market.href}
-                        className={`flex items-center gap-3 rounded-[11px] px-3 py-2.5 text-sm transition hover:bg-[#f2f6f7] ${
-                          market.locale === activeLocale ? 'bg-[#eef6fa]' : ''
-                        }`}
-                      >
-                        <MarketFlag
-                          locale={market.locale}
-                          className="h-[20px] w-[30px] shrink-0"
-                        />
-                        <span>
-                          <strong className="block font-medium">
-                            {market.label}
-                          </strong>
-                          <span className="text-[10px] text-[#7a878d]">
-                            {market.description}
-                          </span>
-                        </span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
               <Link
                 href={marketRoutes.dealerAccess}
-                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-l border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <Store className="h-[19px] w-[19px]" strokeWidth={1.7} />
                 <span className="text-[10px] font-medium">
@@ -1104,7 +1100,7 @@ export default function PublicHeader({
               </Link>
               <Link
                 href="/login"
-                className="flex min-w-[70px] flex-col items-center justify-center gap-0.5 border-x border-[#ececea] px-3 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                className="flex min-w-[66px] flex-col items-center justify-center border-x border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
               >
                 <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
                 <span className="text-[10px] font-medium">
@@ -1319,7 +1315,7 @@ function DesktopMenu({
       <a
         href={href}
         onClick={(event) => onNavigate(event, href)}
-        className="flex h-[60px] shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111111] group-focus-within:border-[#0866ff] xl:px-3.5 xl:text-[13px] 2xl:px-4"
+        className="flex h-[50px] shrink-0 items-center border-b-2 border-transparent px-2.5 text-[11px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111111] group-focus-within:border-[#0866ff] xl:px-3 xl:text-[12px]"
       >
         {label}
       </a>
