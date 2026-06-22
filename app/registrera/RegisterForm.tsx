@@ -72,7 +72,12 @@ export default function RegisterForm({ locale }: { locale: PublicLocale }) {
       </div>
       <label className="mt-5 flex gap-3 text-sm leading-6 text-[#667085]">
         <input name="acceptedTerms" type="checkbox" required className="mt-1 h-4 w-4" />
-        <span>I accept the <Link href="/villkor" className="font-bold text-[#0866ff]">marketplace terms</Link> and <Link href="/integritet" className="font-bold text-[#0866ff]">privacy notice</Link>.</span>
+        <span>
+          {copy.acceptPrefix}{' '}
+          <Link href="/villkor" className="font-bold text-[#0866ff]">{copy.marketplaceTerms}</Link>
+          {' '}{copy.acceptJoin}{' '}
+          <Link href="/integritet" className="font-bold text-[#0866ff]">{copy.privacyNotice}</Link>.
+        </span>
       </label>
       {error && <p role="alert" className="mt-4 rounded-[12px] bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <button disabled={loading} className="mt-6 min-h-13 w-full rounded-[15px] bg-[#0866ff] px-6 font-bold text-white disabled:opacity-60">

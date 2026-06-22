@@ -22,6 +22,11 @@ export type AccountCopy = {
   createAccount: string
   noAccount: string
   haveAccount: string
+  registerDescription: string
+  acceptPrefix: string
+  acceptJoin: string
+  marketplaceTerms: string
+  privacyNotice: string
 }
 
 const en: AccountCopy = {
@@ -46,11 +51,16 @@ const en: AccountCopy = {
   createAccount: 'Create account',
   noAccount: 'No account yet?',
   haveAccount: 'Already have an account?',
+  registerDescription: 'Create a private or business account to publish listings, save searches and contact sellers securely across Europe.',
+  acceptPrefix: 'I accept the',
+  acceptJoin: 'and',
+  marketplaceTerms: 'marketplace terms',
+  privacyNotice: 'privacy notice',
 }
 
 const translations: Partial<Record<PublicLocale, Partial<AccountCopy>>> = {
-  sv: { account: 'Konto', signIn: 'Logga in', register: 'Registrera', email: 'E-post', password: 'Lösenord', name: 'Namn', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto', company: 'Företagsnamn', registrationNumber: 'Organisationsnummer', profile: 'Profil', listings: 'Annonser', messages: 'Meddelanden', support: 'Hjälp & trygghet', signOut: 'Logga ut', save: 'Spara', createAccount: 'Skapa konto', noAccount: 'Inget konto ännu?', haveAccount: 'Har du redan ett konto?' },
-  de: { account: 'Konto', signIn: 'Anmelden', register: 'Registrieren', email: 'E-Mail', password: 'Passwort', name: 'Name', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Unternehmenskonto', company: 'Firmenname', registrationNumber: 'Handelsregisternummer', profile: 'Profil', listings: 'Anzeigen', messages: 'Nachrichten', support: 'Hilfe & Sicherheit', signOut: 'Abmelden', save: 'Speichern', createAccount: 'Konto erstellen', noAccount: 'Noch kein Konto?', haveAccount: 'Bereits registriert?' },
+  sv: { account: 'Konto', signIn: 'Logga in', register: 'Registrera', email: 'E-post', password: 'Lösenord', name: 'Namn', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto', company: 'Företagsnamn', registrationNumber: 'Organisationsnummer', profile: 'Profil', listings: 'Annonser', messages: 'Meddelanden', support: 'Hjälp & trygghet', signOut: 'Logga ut', save: 'Spara', createAccount: 'Skapa konto', noAccount: 'Inget konto ännu?', haveAccount: 'Har du redan ett konto?', registerDescription: 'Skapa ett privatkonto eller företagskonto för att publicera annonser, spara sökningar och kontakta säljare tryggt i hela Europa.', acceptPrefix: 'Jag godkänner', acceptJoin: 'och', marketplaceTerms: 'marknadsplatsens villkor', privacyNotice: 'integritetsmeddelandet' },
+  de: { account: 'Konto', signIn: 'Anmelden', register: 'Registrieren', email: 'E-Mail', password: 'Passwort', name: 'Name', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Unternehmenskonto', company: 'Firmenname', registrationNumber: 'Handelsregisternummer', profile: 'Profil', listings: 'Anzeigen', messages: 'Nachrichten', support: 'Hilfe & Sicherheit', signOut: 'Abmelden', save: 'Speichern', createAccount: 'Konto erstellen', noAccount: 'Noch kein Konto?', haveAccount: 'Bereits registriert?', registerDescription: 'Erstellen Sie ein Privat- oder Unternehmenskonto, um Anzeigen zu veröffentlichen, Suchanfragen zu speichern und Verkäufer in ganz Europa sicher zu kontaktieren.', acceptPrefix: 'Ich akzeptiere die', acceptJoin: 'und die', marketplaceTerms: 'Marktplatzbedingungen', privacyNotice: 'Datenschutzhinweise' },
   fr: { account: 'Compte', signIn: 'Se connecter', register: "S'inscrire", email: 'E-mail', password: 'Mot de passe', name: 'Nom', phone: 'Téléphone', country: 'Pays', privateAccount: 'Compte particulier', businessAccount: 'Compte entreprise', company: "Nom de l'entreprise", registrationNumber: "Numéro d'immatriculation", profile: 'Profil', listings: 'Annonces', messages: 'Messages', support: 'Aide et sécurité', signOut: 'Déconnexion', save: 'Enregistrer', createAccount: 'Créer un compte' },
   es: { account: 'Cuenta', signIn: 'Iniciar sesión', register: 'Registrarse', email: 'Correo electrónico', password: 'Contraseña', name: 'Nombre', phone: 'Teléfono', country: 'País', privateAccount: 'Cuenta particular', businessAccount: 'Cuenta de empresa', company: 'Empresa', registrationNumber: 'Número de registro', profile: 'Perfil', listings: 'Anuncios', messages: 'Mensajes', support: 'Ayuda y seguridad', signOut: 'Cerrar sesión', save: 'Guardar', createAccount: 'Crear cuenta' },
   it: { account: 'Account', signIn: 'Accedi', register: 'Registrati', email: 'E-mail', password: 'Password', name: 'Nome', phone: 'Telefono', country: 'Paese', privateAccount: 'Account privato', businessAccount: 'Account aziendale', company: 'Azienda', registrationNumber: 'Numero di registrazione', profile: 'Profilo', listings: 'Annunci', messages: 'Messaggi', support: 'Aiuto e sicurezza', signOut: 'Esci', save: 'Salva', createAccount: 'Crea account' },

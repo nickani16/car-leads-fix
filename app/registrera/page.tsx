@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import BrandLogo from '@/app/components/BrandLogo'
 import { getAccountCopy } from '@/lib/account-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -14,7 +15,7 @@ export default async function RegisterPage() {
           <section className="pt-5">
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">{copy.account}</p>
             <h1 className="mt-4 text-5xl leading-[1] tracking-[-.05em]">{copy.register}</h1>
-            <p className="mt-5 leading-7 text-[#667085]">Create a private or business account to publish listings, save searches and contact sellers securely across Europe.</p>
+            <p className="mt-5 leading-7 text-[#667085]">{copy.registerDescription}</p>
           </section>
           <RegisterForm locale={locale} />
         </div>
@@ -22,4 +23,3 @@ export default async function RegisterPage() {
     </main>
   )
 }
-import Link from 'next/link'
