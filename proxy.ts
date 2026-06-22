@@ -548,17 +548,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (
-    currentMarket &&
-    targetMarket &&
-    (targetMarket === 'sv' ||
-      targetMarket === 'de' ||
-      targetMarket === 'en') &&
-    targetMarket !== currentMarket
-  ) {
-    return redirectToHost(request, MARKET_HOSTS[targetMarket as Market], 307)
-  }
-
   if (hostname === 'www.autorell.com') {
     return NextResponse.rewrite(new URL('/eu', request.url))
   }
