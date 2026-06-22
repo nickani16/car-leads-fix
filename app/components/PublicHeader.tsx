@@ -7,12 +7,14 @@ import {
   Building2,
   ChevronDown,
   CircleHelp,
+  FileText,
   FilePlus2,
-  Headphones,
   Heart,
   LogIn,
   Menu,
   Search,
+  ShieldAlert,
+  ShieldCheck,
   Store,
   UserPlus,
   UserRound,
@@ -74,6 +76,11 @@ const copy = {
     about: 'Om Autorell',
     help: 'Hjälp',
     contact: 'Kontakt',
+    reportAbuse: 'Rapportera missbruk',
+    more: 'Mer',
+    faq: 'Vanliga frågor',
+    terms: 'Användarvillkor',
+    privacy: 'Integritet',
     saved: 'Sparade',
     search: 'Sök',
     menu: 'Meny',
@@ -102,6 +109,11 @@ const copy = {
     about: 'About Autorell',
     help: 'Help',
     contact: 'Contact',
+    reportAbuse: 'Report abuse',
+    more: 'More',
+    faq: 'Frequently asked questions',
+    terms: 'Terms of use',
+    privacy: 'Privacy',
     saved: 'Saved',
     search: 'Search',
     menu: 'Menu',
@@ -130,6 +142,11 @@ const copy = {
     about: 'Über Autorell',
     help: 'Hilfe',
     contact: 'Kontakt',
+    reportAbuse: 'Missbrauch melden',
+    more: 'Mehr',
+    faq: 'Häufige Fragen',
+    terms: 'Nutzungsbedingungen',
+    privacy: 'Datenschutz',
     saved: 'Gespeichert',
     search: 'Suche',
     menu: 'Menü',
@@ -213,9 +230,11 @@ export default function PublicHeader({
       : translatePublicObject(locale, copy.en)
   const [open, setOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const lastScrollY = useRef(0)
   const languageRef = useRef<HTMLDivElement>(null)
+  const moreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -227,6 +246,7 @@ export default function PublicHeader({
         setVisible(false)
         setOpen(false)
         setLanguageOpen(false)
+        setMoreOpen(false)
       } else if (difference < -4) setVisible(true)
 
       lastScrollY.current = currentScrollY
@@ -259,6 +279,22 @@ export default function PublicHeader({
       document.removeEventListener('keydown', closeOnEscape)
     }
   }, [languageOpen])
+
+  useEffect(() => {
+    if (!moreOpen) return
+    const close = (event: PointerEvent) => {
+      if (!moreRef.current?.contains(event.target as Node)) setMoreOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMoreOpen(false)
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [moreOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -337,6 +373,14 @@ export default function PublicHeader({
     [localizePublicHref(locale, '/om-oss'), t.about] as const,
     [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
   ]
+  const moreLinks = [
+    { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
+    { href: localizePublicHref(locale, '/kontakt'), label: t.contact, icon: UserRound },
+    { href: localizePublicHref(locale, '/villkor'), label: t.terms, icon: FileText },
+    { href: localizePublicHref(locale, '/integritet'), label: t.privacy, icon: ShieldCheck },
+    { href: localizePublicHref(locale, '/rapportera'), label: t.reportAbuse, icon: ShieldAlert },
+    { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
+  ]
 
   const languageOptions = [
     ['sv', 'SE', 'Svenska', 'https://www.autorell.se/'],
@@ -381,7 +425,7 @@ export default function PublicHeader({
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
-            <div className="mx-auto flex h-[30px] max-w-[1700px] items-center justify-between gap-5 px-5">
+            <div className="mx-auto flex h-[30px] max-w-[1600px] items-center justify-between gap-5 px-6">
               <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                 {buyItems.map(({ href, label }, index) => {
                   const isActive = pathname === href
@@ -409,11 +453,11 @@ export default function PublicHeader({
 
               <div className="flex h-full shrink-0 items-center">
                 <Link
-                  href={localizePublicHref(locale, '/kontakt')}
+                  href={localizePublicHref(locale, '/rapportera')}
                   className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
                 >
-                  <Headphones className="h-3.5 w-3.5" />
-                  {t.contact}
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  {t.reportAbuse}
                 </Link>
                 <div ref={languageRef} className="relative flex h-full">
                   <button
@@ -443,7 +487,7 @@ export default function PublicHeader({
             </div>
           </div>
 
-          <div className="relative mx-auto flex h-[64px] max-w-[1700px] items-center px-5 min-[1120px]:h-[50px]">
+          <div className="relative mx-auto flex h-[64px] max-w-[1600px] items-center px-6 min-[1120px]:h-[50px]">
             <div className="absolute inset-x-0 top-0 h-[64px] min-[1120px]:hidden">
               <div className="absolute inset-y-0 left-2 flex items-center">
                 <button
@@ -508,21 +552,16 @@ export default function PublicHeader({
                   onNavigate={handleInternalNavigation}
                 />
               ))}
-              <Link
-                href={localizePublicHref(locale, '/om-oss')}
-                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] xl:px-3.5 xl:text-[13px]"
-              >
-                {t.about}
-              </Link>
-              <Link
-                href={localizePublicHref(locale, '/hjalpcenter')}
-                className="flex h-full shrink-0 items-center border-b-2 border-transparent px-2.5 pt-0.5 text-[12px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] xl:px-3.5 xl:text-[13px]"
-              >
-                {t.help}
-              </Link>
             </nav>
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
+              <Link
+                href={searchHref}
+                className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+              >
+                <Search className="h-[19px] w-[19px]" strokeWidth={1.7} />
+                <span className="text-[10px] font-medium">{t.search}</span>
+              </Link>
               <Link
                 href="/registrera"
                 className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
@@ -537,6 +576,42 @@ export default function PublicHeader({
                 <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
                 <span className="text-[10px] font-medium">{t.signIn}</span>
               </Link>
+              <div ref={moreRef} className="relative flex h-full">
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen((current) => !current)}
+                  aria-label={t.more}
+                  aria-expanded={moreOpen}
+                  aria-haspopup="menu"
+                  className="flex min-w-[62px] flex-col items-center justify-center border-r border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                >
+                  <Menu className="h-[20px] w-[20px]" strokeWidth={1.8} />
+                  <span className="text-[10px] font-medium">{t.more}</span>
+                </button>
+                <div
+                  className={`absolute right-0 top-full z-50 w-[280px] pt-2 transition duration-150 ${
+                    moreOpen
+                      ? 'pointer-events-auto translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0'
+                  }`}
+                >
+                  <div role="menu" className="rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]">
+                    {moreLinks.map(({ href, label, icon: Icon }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setMoreOpen(false)}
+                        className="flex items-center gap-3 rounded-[11px] px-3 py-3 text-sm font-medium transition hover:bg-[#f2f6f7]"
+                      >
+                        <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#f2f6ff] text-[#0866ff]">
+                          <Icon className="h-[17px] w-[17px]" />
+                        </span>
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </header>
@@ -592,13 +667,13 @@ export default function PublicHeader({
             </Link>
 
             <Link
-              href={localizePublicHref(locale, '/kontakt')}
+              href={localizePublicHref(locale, '/rapportera')}
               onClick={closeMobile}
               className="mt-3 flex min-h-14 items-center justify-between rounded-[14px] bg-[#242424] px-5 text-base font-medium text-white shadow-[0_12px_28px_rgba(32,33,36,.16)]"
             >
               <span className="flex items-center gap-3">
-                <Headphones className="h-5 w-5" />
-                {t.contact}
+                <ShieldAlert className="h-5 w-5" />
+                {t.reportAbuse}
               </span>
               <ArrowRight className="h-5 w-5" />
             </Link>
