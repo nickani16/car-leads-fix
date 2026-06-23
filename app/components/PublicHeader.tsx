@@ -509,7 +509,14 @@ export default function PublicHeader({
 
   return (
     <>
-      <div className="h-[64px] min-[1120px]:h-[80px]" aria-hidden="true" />
+      <div
+        className={
+          categoryPrimaryLinks
+            ? 'h-[118px] min-[1120px]:h-[80px]'
+            : 'h-[64px] min-[1120px]:h-[80px]'
+        }
+        aria-hidden="true"
+      />
       <div
         className={`fixed inset-x-0 top-0 z-[100] transform-gpu transition-transform duration-300 ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
@@ -733,6 +740,29 @@ export default function PublicHeader({
               </div>
             </div>
           </div>
+
+          {categoryPrimaryLinks ? (
+            <nav
+              aria-label={`${activeCategoryCopy?.label || ''} navigation`}
+              className="flex h-[54px] items-stretch gap-7 overflow-x-auto border-t border-[#e7e9ee] bg-white px-6 text-[13px] font-semibold text-[#344054] [scrollbar-width:none] min-[1120px]:hidden [&::-webkit-scrollbar]:hidden"
+            >
+              {categoryPrimaryLinks.map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={pathname === href ? 'page' : undefined}
+                  onClick={closeMobile}
+                  className={`flex shrink-0 items-center border-b-[3px] pt-px ${
+                    pathname === href
+                      ? 'border-[#0866ff] font-bold text-[#101828]'
+                      : 'border-transparent'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
         </header>
 
         <div

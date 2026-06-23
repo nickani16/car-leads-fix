@@ -29,6 +29,7 @@ import {
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import type { PublicLocale } from '@/lib/public-i18n'
+import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -94,8 +95,8 @@ export default async function CategoryLandingPage({
       />
 
       <section className="relative pb-20 pt-5 sm:pb-24 sm:pt-7 lg:pb-28">
-        <div className="market-blob pointer-events-none absolute -left-24 top-8 h-64 w-64 bg-[#e5efff]" aria-hidden="true" />
-        <div className="market-blob pointer-events-none absolute -right-28 bottom-0 h-72 w-72 bg-[#e8f4ef]" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#e5efff] sm:block" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1600px] px-0 sm:px-6 lg:px-7">
           <div className="relative h-[410px] overflow-hidden sm:h-[490px] sm:rounded-[28px] lg:h-[520px]">
             <Image
@@ -162,57 +163,61 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -right-28 -top-28 h-72 w-72 bg-[#edf3ff]" aria-hidden="true" />
+      <section className="bg-white py-16 sm:py-20">
         <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-end">
+          <div className="grid gap-6 border-b border-[#e2e8f0] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end lg:pb-11">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
                 {locale === 'sv' ? 'En bättre marknadsplats' : locale === 'de' ? 'Ein besserer Marktplatz' : 'A better marketplace'}
               </p>
-              <h2 className="mt-4 text-[38px] leading-[1.02] tracking-[-0.05em] sm:text-5xl">
+              <h2 className="mt-4 max-w-2xl text-[36px] leading-[1.02] tracking-[-0.05em] sm:text-[48px]">
                 {trustHeading(locale, localized.label)}
               </h2>
             </div>
-            <p className="max-w-2xl text-base leading-7 text-[#667085] lg:justify-self-end">
+            <p className="max-w-2xl text-base leading-7 text-[#58677d] lg:justify-self-end">
               {trustIntro(locale)}
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="grid md:grid-cols-3">
             {trustFeatures(locale).map(({ title, text, icon: Icon }, index) => (
-              <article key={title} className="relative overflow-hidden rounded-[26px] border border-[#e1e6ee] bg-[#fbfcfe] p-6 sm:p-7">
-                <div className={`market-blob pointer-events-none absolute -right-12 -top-12 h-32 w-32 ${index === 1 ? 'bg-[#e7f4ef]' : 'bg-[#e8f0ff]'}`} aria-hidden="true" />
-                <span className="relative grid h-14 w-14 place-items-center rounded-[17px] border border-white bg-[linear-gradient(145deg,#ffffff,#eaf2ff)] text-[#0866ff] shadow-[0_12px_28px_rgba(8,102,255,.12)]">
-                  <Icon className="h-6 w-6" strokeWidth={1.7} />
+              <article
+                key={title}
+                className={`py-8 md:px-7 md:py-10 lg:px-9 ${
+                  index > 0 ? 'border-t border-[#e2e8f0] md:border-l md:border-t-0' : ''
+                }`}
+              >
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </span>
-                <h3 className="relative mt-6 text-xl tracking-[-0.035em]">{title}</h3>
-                <p className="relative mt-3 text-sm leading-6 text-[#667085]">{text}</p>
+                <h3 className="mt-5 text-lg tracking-[-0.03em]">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="guides" className="relative scroll-mt-28 overflow-hidden bg-[#f3f6fb] py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 bg-[#dfeaff]" aria-hidden="true" />
+      <section id="guides" className="scroll-mt-28 border-y border-[#e3e9f2] bg-[#f7f9fc] py-16 sm:py-20">
         <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">{copy.guideEyebrow}</p>
-            <h2 className="mt-4 break-words text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-5xl">{copy.guideTitle}</h2>
-            <p className="mt-4 text-base leading-7 text-[#667085]">{copy.guideText}</p>
+          <div className="grid gap-5 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">{copy.guideEyebrow}</p>
+              <h2 className="mt-4 break-words text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-[48px]">{copy.guideTitle}</h2>
+            </div>
+            <p className="max-w-xl text-base leading-7 text-[#667085] lg:justify-self-end">{copy.guideText}</p>
           </div>
 
-          <div className="mt-9 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-3 md:grid-cols-3">
             {localized.guideTopics.map((topic, index) => {
               const Icon = guideIcon(slug, index)
               return (
-                <article key={topic} className="group rounded-[26px] border border-[#dce4f0] bg-white p-6 shadow-[0_16px_42px_rgba(16,24,40,.05)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(16,24,40,.1)] sm:p-7">
-                  <span className="grid h-14 w-14 place-items-center rounded-[17px] bg-[#101828] text-white shadow-[0_12px_28px_rgba(16,24,40,.16)]">
-                    <Icon className="h-6 w-6" strokeWidth={1.65} />
+                <article key={topic} className="group flex min-h-[220px] flex-col rounded-[22px] border border-[#dce4ef] bg-white p-6 transition hover:border-[#a9c7f4] sm:p-7">
+                  <span className="grid h-11 w-11 place-items-center rounded-full border border-[#d7e5fa] bg-[#f4f8ff] text-[#0866ff]">
+                    <Icon className="h-5 w-5" strokeWidth={1.75} />
                   </span>
-                  <h3 className="mt-7 text-xl tracking-[-0.035em]">{topic}</h3>
-                  <Link href={`/marketplace/${slug}`} className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
+                  <h3 className="mt-6 text-xl tracking-[-0.035em]">{topic}</h3>
+                  <Link href={`/marketplace/${slug}`} className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-[#0866ff]">
                     {copy.readGuide}
                     <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                   </Link>
@@ -223,18 +228,16 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -right-24 bottom-8 h-64 w-64 bg-[#e5f2ed]" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[.92fr_1.08fr] lg:items-center">
-          <div className="relative overflow-hidden rounded-[30px] bg-[#101828] p-7 text-white shadow-[0_24px_65px_rgba(16,24,40,.17)] sm:p-10">
-            <div className="market-blob pointer-events-none absolute -right-16 -top-20 h-56 w-56 bg-[#1e62c9]" aria-hidden="true" />
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9ddcff]">
+      <section className="bg-white py-16 sm:py-20">
+        <div className="mx-auto grid max-w-[1280px] gap-5 px-5 sm:px-8 lg:grid-cols-[1.02fr_.98fr]">
+          <div className="rounded-[26px] border border-[#cfe0f7] bg-[linear-gradient(135deg,#eef5ff,#f8fbff)] p-7 sm:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
               {copy.sellPrefix} {localized.singular}
             </p>
-            <h2 className="mt-4 text-4xl leading-[1.02] tracking-[-0.05em]">
+            <h2 className="mt-4 max-w-xl text-[36px] leading-[1.02] tracking-[-0.05em] text-[#101828] sm:text-[44px]">
               {copy.sellPrefix} {localized.singular} {copy.sellSuffix}
             </h2>
-            <p className="mt-5 max-w-xl leading-7 text-white/68">{copy.sellText}</p>
+            <p className="mt-5 max-w-xl leading-7 text-[#5d6b7d]">{copy.sellText}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={`/salj-fordon?category=${slug}`}
@@ -245,18 +248,18 @@ export default async function CategoryLandingPage({
               </Link>
               <Link
                 href={`/marketplace/${slug}`}
-                className="inline-flex min-h-12 items-center rounded-[14px] border border-white/25 px-5 text-sm font-bold text-white"
+                className="inline-flex min-h-12 items-center rounded-[14px] border border-[#b8c9df] bg-white px-5 text-sm font-bold text-[#24344a]"
               >
                 {copy.browseCta}
               </Link>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="rounded-[26px] border border-[#e0e6ee] bg-white p-7 sm:p-10">
             <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
               {copy.faqEyebrow}
             </p>
-            <h2 className="mt-4 text-4xl leading-[1.05] tracking-[-0.05em]">
+            <h2 className="mt-4 text-[36px] leading-[1.05] tracking-[-0.05em] sm:text-[44px]">
               {copy.faqTitle}
             </h2>
             <div className="mt-7 divide-y divide-[#e4e7ec] border-y border-[#e4e7ec]">
@@ -279,6 +282,7 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
+      <NewsletterSignup locale={locale} category={slug} />
       <PublicFooter locale={locale} />
     </main>
   )
