@@ -433,11 +433,21 @@ export default function PublicHeader({
     },
   ]
 
-  const navLinks = [
-    ...menus.map(({ href, label }) => [href, label] as const),
-    [localizePublicHref(locale, '/om-oss'), t.about] as const,
-    [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
-  ]
+  const categoryPrimaryLinks =
+    activeCategoryConfig && activeCategoryCopy
+      ? [
+          [activeCategoryConfig.path, activeCategoryCopy.label] as const,
+          ...activeCategoryCopy.menu.map(
+            (label) =>
+              [categoryLandingMenuHref(activeCategoryConfig, label), label] as const,
+          ),
+        ]
+      : null
+  const navLinks = categoryPrimaryLinks ?? [
+      ...menus.map(({ href, label }) => [href, label] as const),
+      [localizePublicHref(locale, '/om-oss'), t.about] as const,
+      [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
+    ]
   const moreLinks = [
     { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
     { href: localizePublicHref(locale, '/kontakt'), label: t.contact, icon: UserRound },
@@ -635,16 +645,31 @@ export default function PublicHeader({
             </Link>
 
             <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
-              {menus.map((menu) => (
-                <DesktopMenu
-                  key={menu.href}
-                  label={menu.label}
-                  href={menu.href}
-                  menu={menu.data}
-                  icon={menu.icon}
-                  onNavigate={handleInternalNavigation}
-                />
-              ))}
+              {categoryPrimaryLinks
+                ? categoryPrimaryLinks.map(([href, label]) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      aria-current={pathname === href ? 'page' : undefined}
+                      className={`flex h-full items-center border-b-2 px-4 text-[13px] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-5 ${
+                        pathname === href
+                          ? 'border-[#0866ff] font-bold text-[#101828]'
+                          : 'border-transparent font-semibold text-[#344054]'
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ))
+                : menus.map((menu) => (
+                    <DesktopMenu
+                      key={menu.href}
+                      label={menu.label}
+                      href={menu.href}
+                      menu={menu.data}
+                      icon={menu.icon}
+                      onNavigate={handleInternalNavigation}
+                    />
+                  ))}
             </nav>
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
