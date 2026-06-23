@@ -29,6 +29,7 @@ import {
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import type { PublicLocale } from '@/lib/public-i18n'
+import MarketplaceChannelNav from './MarketplaceChannelNav'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -92,6 +93,7 @@ export default async function CategoryLandingPage({
         locale={locale}
         marketplaceChannel={{ label: localized.label, slug }}
       />
+      <MarketplaceChannelNav slug={slug} locale={locale} />
 
       <section className="relative pb-20 pt-5 sm:pb-24 sm:pt-7 lg:pb-28">
         <div className="market-blob pointer-events-none absolute -left-24 top-8 h-64 w-64 bg-[#e5efff]" aria-hidden="true" />
