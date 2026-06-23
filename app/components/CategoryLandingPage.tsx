@@ -4,24 +4,31 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import {
   ArrowRight,
-  BookOpen,
-  CheckCircle2,
+  BadgeCheck,
+  BarChart3,
   ChevronDown,
-  MapPin,
+  CircleHelp,
+  Compass,
+  Gauge,
+  Globe2,
+  Layers3,
+  MessagesSquare,
   Search,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
+  Wrench,
 } from 'lucide-react'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   categoryLandingCopy,
-  categoryLandingMenuHref,
   getCategoryLanding,
   localizedCategorySearchLabel,
   localizeCategoryLanding,
 } from '@/lib/category-landings'
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import type { PublicLocale } from '@/lib/public-i18n'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -67,14 +74,10 @@ export default async function CategoryLandingPage({
 }: {
   slug: MarketplaceCategorySlug
 }) {
-  const [locale, requestHeaders] = await Promise.all([
-    getRequestLocale(),
-    headers(),
-  ])
+  const locale = await getRequestLocale()
   const config = getCategoryLanding(slug)
   const localized = localizeCategoryLanding(config, locale)
   const copy = categoryLandingCopy(locale)
-  const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const searchLabel = localizedCategorySearchLabel(locale, localized.label)
   const countries = [...new Set(['SE', ...euBuyerMarkets.map((market) => market.code)])]
     .map((code) => ({
@@ -84,172 +87,145 @@ export default async function CategoryLandingPage({
     .sort((left, right) => left.label.localeCompare(right.label, locale))
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f5f7fa] text-[#101828]">
+    <main className="min-h-screen overflow-x-hidden bg-[#fbfaf7] text-[#101828]">
       <PublicHeader
         locale={locale}
-        marketCode={marketCode}
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <div className="hidden border-b border-[#e2e6ec] bg-white min-[1120px]:block">
-        <nav className="mx-auto flex h-[54px] max-w-[1440px] items-center gap-7 overflow-x-auto px-10 text-[13px] font-semibold text-[#344054] xl:px-14">
-          <Link href={config.path} className="flex h-full shrink-0 items-center border-b-2 border-[#0866ff] text-[#101828]">
-            {localized.label}
-          </Link>
-          {localized.menu.map((item, index) => (
-            <Link
-              key={item}
-              href={categoryLandingMenuHref(config, item, index)}
-              className="flex h-full shrink-0 items-center border-b-2 border-transparent transition hover:border-[#0866ff] hover:text-[#0866ff]"
-            >
-              {item}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
-      <section className="relative min-h-[620px] overflow-hidden bg-[#0d1b2b] lg:min-h-[680px]">
-        <Image
-          src={config.heroImage}
-          alt={localized.label}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-          style={{ objectPosition: config.heroPosition }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,18,31,.96)_0%,rgba(7,18,31,.87)_35%,rgba(7,18,31,.28)_68%,rgba(7,18,31,.08)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,18,31,.55)_0%,transparent_45%)]" />
-
-        <div className="relative mx-auto flex min-h-[620px] max-w-[1440px] items-center px-5 py-16 sm:px-8 lg:min-h-[680px] lg:px-12">
-          <div className="min-w-0 w-full max-w-[760px]">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9ddcff]">
-              {localized.eyebrow}
-            </p>
-            <h1 className="mt-4 max-w-[660px] break-words text-[42px] leading-[0.98] tracking-[-0.055em] text-white sm:text-[72px] lg:text-[88px]">
-              {localized.label}
-            </h1>
-            <p className="mt-6 max-w-[610px] text-base leading-7 text-white/78 sm:text-lg">
-              {localized.intro}
-            </p>
-
-            <form
-              action={`/marketplace/${slug}`}
-              method="get"
-              className="mt-9 grid min-w-0 gap-2 rounded-[22px] border border-white/20 bg-white p-3 shadow-[0_26px_70px_rgba(0,0,0,.28)] sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.35fr_auto]"
-            >
-              <label className="relative min-w-0">
-                <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-                <select
-                  name="country"
-                  defaultValue=""
-                  aria-label={copy.allEurope}
-                  className="h-13 min-w-0 w-full appearance-none rounded-[13px] border border-[#d8dde6] bg-white pl-10 pr-9 text-sm font-semibold outline-none focus:border-[#0866ff]"
-                >
-                  <option value="">{copy.allEurope}</option>
-                  {countries.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-              </label>
-
-              <label className="relative min-w-0">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-                <input
-                  name="make"
-                  placeholder={copy.allMakes}
-                  aria-label={copy.allMakes}
-                  className="h-13 min-w-0 w-full rounded-[13px] border border-[#d8dde6] bg-white pl-10 pr-4 text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#8a94a6] focus:border-[#0866ff]"
-                />
-              </label>
-
-              <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-                <input
-                  name="q"
-                  placeholder={localized.searchHint}
-                  className="h-13 min-w-0 w-full rounded-[13px] border border-[#d8dde6] bg-white pl-10 pr-4 text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#8a94a6] focus:border-[#0866ff]"
-                />
-              </label>
-
-              <button
-                type="submit"
-                className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[13px] bg-[#0866ff] px-6 text-sm font-bold text-white transition hover:bg-[#075bd8] sm:col-span-2 lg:col-span-1"
-              >
-                {searchLabel}
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </form>
-
-            <div className="mt-5 grid min-w-0 gap-3 text-xs font-semibold text-white/88 sm:flex sm:flex-wrap sm:gap-x-6 sm:text-sm">
-              <span className="flex min-w-0 items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#8be0b0]" />
-                {copy.allEurope}
-              </span>
-              <span className="flex min-w-0 items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#8be0b0]" />
-                {locale === 'sv' ? 'Privata och professionella säljare' : locale === 'de' ? 'Private und gewerbliche Verkäufer' : 'Private and business sellers'}
-              </span>
+      <section className="relative pb-20 pt-5 sm:pb-24 sm:pt-7 lg:pb-28">
+        <div className="market-blob pointer-events-none absolute -left-24 top-8 h-64 w-64 bg-[#e5efff]" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -right-28 bottom-0 h-72 w-72 bg-[#e8f4ef]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1600px] px-0 sm:px-6 lg:px-7">
+          <div className="relative h-[410px] overflow-hidden sm:h-[490px] sm:rounded-[28px] lg:h-[520px]">
+            <Image
+              src={config.heroImage}
+              alt={localized.label}
+              fill
+              priority
+              sizes="(min-width: 1600px) 1544px, 100vw"
+              className="object-cover brightness-[1.15] saturate-[.92]"
+              style={{ objectPosition: config.heroPosition }}
+            />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0c1e2f]/20 to-transparent" />
+            <div className="absolute left-5 top-7 max-w-[620px] rounded-[22px] bg-white/88 p-5 shadow-[0_18px_50px_rgba(16,24,40,.12)] backdrop-blur-md sm:left-9 sm:top-9 sm:p-7 lg:left-12 lg:top-12">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0866ff] sm:text-xs">
+                {localized.eyebrow}
+              </p>
+              <h1 className="mt-3 break-words text-[38px] leading-[.98] tracking-[-0.055em] text-[#101828] sm:text-[58px] lg:text-[68px]">
+                {localized.label}
+              </h1>
+              <p className="mt-4 max-w-[520px] text-sm leading-6 text-[#475467] sm:text-base sm:leading-7">
+                {localized.intro}
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="border-b border-[#e3e7ed] bg-white py-7 min-[1120px]:hidden">
-        <div className="mx-auto flex max-w-[1440px] gap-2 overflow-x-auto px-5 sm:px-8">
-          {localized.menu.map((item, index) => (
+          <form
+            action={`/marketplace/${slug}`}
+            method="get"
+            className="relative z-10 mx-5 -mt-16 grid min-w-0 gap-0 rounded-[24px] bg-white p-4 shadow-[0_22px_55px_rgba(16,24,40,.16)] sm:mx-8 sm:-mt-14 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-3 sm:p-5 lg:mx-auto lg:max-w-[1320px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
+          >
+            <SearchField label={copy.allEurope}>
+              <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
+                <option value="">{copy.allEurope}</option>
+                {countries.map((country) => (
+                  <option key={country.code} value={country.code}>{country.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-5 w-5 -translate-y-1/2 text-[#475467]" />
+            </SearchField>
+
+            <SearchField label={copy.allMakes}>
+              <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+            </SearchField>
+
+            <SearchField label={localized.searchHint}>
+              <input name="q" placeholder={localized.searchHint} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+            </SearchField>
+
             <Link
-              key={item}
-              href={categoryLandingMenuHref(config, item, index)}
-              className="shrink-0 rounded-full border border-[#d8dde6] bg-white px-4 py-2.5 text-xs font-semibold text-[#344054]"
+              href={`/marketplace/${slug}#marketplace-search`}
+              className="my-2 inline-flex min-h-11 items-center justify-center gap-2 border-b border-[#c8d6f0] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:my-0 lg:border-b-0 lg:underline lg:decoration-2 lg:underline-offset-8"
             >
-              {item}
+              <SlidersHorizontal className="h-4 w-4 lg:hidden" />
+              {locale === 'sv' ? 'Fler val' : locale === 'de' ? 'Mehr Optionen' : 'More options'}
             </Link>
-          ))}
+
+            <button type="submit" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8]">
+              <Search className="h-5 w-5" />
+              {searchLabel}
+            </button>
+          </form>
         </div>
       </section>
 
-      <section id="guides" className="scroll-mt-28 bg-[#f5f7fa] py-16 sm:py-20">
-        <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
-              {copy.guideEyebrow}
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -right-28 -top-28 h-72 w-72 bg-[#edf3ff]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
+          <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
+                {locale === 'sv' ? 'En bättre marknadsplats' : locale === 'de' ? 'Ein besserer Marktplatz' : 'A better marketplace'}
+              </p>
+              <h2 className="mt-4 text-[38px] leading-[1.02] tracking-[-0.05em] sm:text-5xl">
+                {trustHeading(locale, localized.label)}
+              </h2>
+            </div>
+            <p className="max-w-2xl text-base leading-7 text-[#667085] lg:justify-self-end">
+              {trustIntro(locale)}
             </p>
-            <h2 className="mt-4 break-words text-[34px] leading-[1.05] tracking-[-0.05em] sm:text-5xl">
-              {copy.guideTitle}
-            </h2>
-            <p className="mt-4 text-base leading-7 text-[#667085]">{copy.guideText}</p>
           </div>
 
-          <div className="mt-9 grid gap-4 md:grid-cols-3">
-            {localized.guideTopics.map((topic, index) => (
-              <article
-                key={topic}
-                className="group rounded-[24px] border border-[#dfe5ee] bg-white p-6 shadow-[0_15px_45px_rgba(16,24,40,.045)] transition hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(16,24,40,.08)]"
-              >
-                <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef4ff] text-[#0866ff]">
-                  {index === 0 ? <Sparkles className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {trustFeatures(locale).map(({ title, text, icon: Icon }, index) => (
+              <article key={title} className="relative overflow-hidden rounded-[26px] border border-[#e1e6ee] bg-[#fbfcfe] p-6 sm:p-7">
+                <div className={`market-blob pointer-events-none absolute -right-12 -top-12 h-32 w-32 ${index === 1 ? 'bg-[#e7f4ef]' : 'bg-[#e8f0ff]'}`} aria-hidden="true" />
+                <span className="relative grid h-14 w-14 place-items-center rounded-[17px] border border-white bg-[linear-gradient(145deg,#ffffff,#eaf2ff)] text-[#0866ff] shadow-[0_12px_28px_rgba(8,102,255,.12)]">
+                  <Icon className="h-6 w-6" strokeWidth={1.7} />
                 </span>
-                <h3 className="mt-6 text-xl tracking-[-0.03em]">{topic}</h3>
-                <Link
-                  href={`/marketplace/${slug}`}
-                  className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
-                >
-                  {copy.readGuide}
-                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
+                <h3 className="relative mt-6 text-xl tracking-[-0.035em]">{title}</h3>
+                <p className="relative mt-3 text-sm leading-6 text-[#667085]">{text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[.92fr_1.08fr] lg:items-center">
-          <div className="rounded-[28px] bg-[#101828] p-7 text-white sm:p-10">
+      <section id="guides" className="relative scroll-mt-28 overflow-hidden bg-[#f3f6fb] py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 bg-[#dfeaff]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">{copy.guideEyebrow}</p>
+            <h2 className="mt-4 break-words text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-5xl">{copy.guideTitle}</h2>
+            <p className="mt-4 text-base leading-7 text-[#667085]">{copy.guideText}</p>
+          </div>
+
+          <div className="mt-9 grid gap-4 md:grid-cols-3">
+            {localized.guideTopics.map((topic, index) => {
+              const Icon = guideIcon(slug, index)
+              return (
+                <article key={topic} className="group rounded-[26px] border border-[#dce4f0] bg-white p-6 shadow-[0_16px_42px_rgba(16,24,40,.05)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(16,24,40,.1)] sm:p-7">
+                  <span className="grid h-14 w-14 place-items-center rounded-[17px] bg-[#101828] text-white shadow-[0_12px_28px_rgba(16,24,40,.16)]">
+                    <Icon className="h-6 w-6" strokeWidth={1.65} />
+                  </span>
+                  <h3 className="mt-7 text-xl tracking-[-0.035em]">{topic}</h3>
+                  <Link href={`/marketplace/${slug}`} className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
+                    {copy.readGuide}
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </Link>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -right-24 bottom-8 h-64 w-64 bg-[#e5f2ed]" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[.92fr_1.08fr] lg:items-center">
+          <div className="relative overflow-hidden rounded-[30px] bg-[#101828] p-7 text-white shadow-[0_24px_65px_rgba(16,24,40,.17)] sm:p-10">
+            <div className="market-blob pointer-events-none absolute -right-16 -top-20 h-56 w-56 bg-[#1e62c9]" aria-hidden="true" />
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9ddcff]">
               {copy.sellPrefix} {localized.singular}
             </p>
@@ -274,7 +250,7 @@ export default async function CategoryLandingPage({
             </div>
           </div>
 
-          <div>
+          <div className="relative">
             <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
               {copy.faqEyebrow}
             </p>
@@ -304,6 +280,71 @@ export default async function CategoryLandingPage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function SearchField({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="relative min-w-0 border-b border-[#d8dde6] px-3 py-2 lg:border-b-0 lg:border-r lg:px-6 lg:py-0">
+      <span className="block text-xs font-bold text-[#101828]">{label}</span>
+      <span className="relative block">{children}</span>
+    </label>
+  )
+}
+
+function trustHeading(locale: PublicLocale, label: string) {
+  if (locale === 'sv') return `Din trygga marknadsplats för ${label.toLowerCase()}.`
+  if (locale === 'de') return `Ihr verlässlicher Marktplatz für ${label}.`
+  return `Your trusted marketplace for ${label.toLowerCase()}.`
+}
+
+function trustIntro(locale: PublicLocale) {
+  if (locale === 'sv') return 'Sök, jämför och sälj med tydlig information och verktyg anpassade för en europeisk fordonsmarknad.'
+  if (locale === 'de') return 'Suchen, vergleichen und verkaufen Sie mit klaren Informationen und Werkzeugen für den europäischen Fahrzeugmarkt.'
+  return 'Search, compare and sell with clear information and tools designed for a European vehicle marketplace.'
+}
+
+function trustFeatures(locale: PublicLocale) {
+  if (locale === 'sv') {
+    return [
+      { title: 'Sök konkret', text: 'Filtrera på plats, märke och relevant fordonsdata utan onödiga steg.', icon: Compass },
+      { title: 'Jämför i Europa', text: 'Se privat- och företagsannonser från flera europeiska marknader på ett ställe.', icon: Globe2 },
+      { title: 'Trygg kontakt', text: 'Hantera annons, sparade objekt och meddelanden genom ditt Autorell-konto.', icon: BadgeCheck },
+    ]
+  }
+  if (locale === 'de') {
+    return [
+      { title: 'Gezielt suchen', text: 'Filtern Sie nach Ort, Marke und relevanten Fahrzeugdaten ohne unnötige Schritte.', icon: Compass },
+      { title: 'Europaweit vergleichen', text: 'Private und gewerbliche Angebote aus mehreren Märkten an einem Ort.', icon: Globe2 },
+      { title: 'Sicher kontaktieren', text: 'Verwalten Sie Anzeigen, Favoriten und Nachrichten über Ihr Autorell-Konto.', icon: BadgeCheck },
+    ]
+  }
+  return [
+    { title: 'Search with purpose', text: 'Filter by location, make and relevant vehicle data without unnecessary steps.', icon: Compass },
+    { title: 'Compare across Europe', text: 'See private and business listings from multiple European markets in one place.', icon: Globe2 },
+    { title: 'Connect confidently', text: 'Manage listings, saved vehicles and messages through your Autorell account.', icon: BadgeCheck },
+  ]
+}
+
+function guideIcon(slug: MarketplaceCategorySlug, index: number) {
+  const profiles = {
+    cars: [Gauge, BarChart3, Sparkles],
+    vans: [Layers3, BarChart3, Wrench],
+    motorcycles: [Gauge, ShieldCheck, Compass],
+    motorhomes: [Layers3, Gauge, Compass],
+    caravans: [Layers3, ShieldCheck, Wrench],
+    trucks: [Layers3, BarChart3, Wrench],
+    agriculture: [Gauge, Wrench, Globe2],
+    construction: [Layers3, Wrench, ShieldCheck],
+    'electric-bikes': [Gauge, BarChart3, ShieldCheck],
+    'e-scooters': [Gauge, Wrench, CircleHelp],
+  } as const
+  return profiles[slug][index] || MessagesSquare
 }
 
 function countryName(code: string, locale: string) {

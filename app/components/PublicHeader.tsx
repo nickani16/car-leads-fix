@@ -38,7 +38,12 @@ import {
   marketplaceCategories,
   marketplaceLanguage,
 } from '@/lib/marketplace'
-import { categoryLandingPath } from '@/lib/category-landings'
+import {
+  categoryLandingMenuHref,
+  categoryLandingPath,
+  getCategoryLanding,
+  localizeCategoryLanding,
+} from '@/lib/category-landings'
 import {
   localizePublicHref,
   translatePublic,
@@ -351,6 +356,23 @@ export default function PublicHeader({
               ?.label || '',
         }
       : null)
+  const activeCategoryMenu = activeMarketplaceChannel
+    ? localizeCategoryLanding(
+        getCategoryLanding(
+          activeMarketplaceChannel.slug as (typeof marketplaceCategories)[number]['slug'],
+        ),
+        locale,
+      ).menu.map((label, index) => ({
+        label,
+        href: categoryLandingMenuHref(
+          getCategoryLanding(
+            activeMarketplaceChannel.slug as (typeof marketplaceCategories)[number]['slug'],
+          ),
+          label,
+          index,
+        ),
+      }))
+    : null
 
   const menus: Array<{
     label: string
@@ -399,11 +421,13 @@ export default function PublicHeader({
     },
   ]
 
-  const navLinks = [
-    ...menus.map(({ href, label }) => [href, label] as const),
-    [localizePublicHref(locale, '/om-oss'), t.about] as const,
-    [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
-  ]
+  const navLinks = activeCategoryMenu
+    ? activeCategoryMenu.map(({ href, label }) => [href, label] as const)
+    : [
+        ...menus.map(({ href, label }) => [href, label] as const),
+        [localizePublicHref(locale, '/om-oss'), t.about] as const,
+        [localizePublicHref(locale, '/hjalpcenter'), t.help] as const,
+      ]
   const moreLinks = [
     { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
     { href: localizePublicHref(locale, '/kontakt'), label: t.contact, icon: UserRound },
@@ -601,16 +625,29 @@ export default function PublicHeader({
             </Link>
 
             <nav className="ml-7 hidden h-full items-center whitespace-nowrap min-[1120px]:flex xl:ml-9">
-              {menus.map((menu) => (
-                <DesktopMenu
-                  key={menu.href}
-                  label={menu.label}
-                  href={menu.href}
-                  menu={menu.data}
-                  icon={menu.icon}
-                  onNavigate={handleInternalNavigation}
-                />
-              ))}
+              {activeCategoryMenu
+                ? activeCategoryMenu.map(({ href, label }, index) => (
+                    <Link
+                      key={`${href}-${label}`}
+                      href={href}
+                      onClick={(event) => handleInternalNavigation(event, href)}
+                      className={`flex h-[50px] shrink-0 items-center border-b-2 px-2.5 text-[13px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-3.5 ${
+                        index === 0 ? 'border-[#0866ff]' : 'border-transparent'
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ))
+                : menus.map((menu) => (
+                    <DesktopMenu
+                      key={menu.href}
+                      label={menu.label}
+                      href={menu.href}
+                      menu={menu.data}
+                      icon={menu.icon}
+                      onNavigate={handleInternalNavigation}
+                    />
+                  ))}
             </nav>
 
             <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
