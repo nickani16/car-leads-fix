@@ -244,6 +244,7 @@ export default function PublicHeader({
   const [open, setOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null)
   const [visible, setVisible] = useState(true)
   const lastScrollY = useRef(0)
   const languageRef = useRef<HTMLDivElement>(null)
@@ -260,6 +261,7 @@ export default function PublicHeader({
         setOpen(false)
         setLanguageOpen(false)
         setMoreOpen(false)
+        setDesktopMenuOpen(null)
       } else if (difference < -4) setVisible(true)
 
       lastScrollY.current = currentScrollY
@@ -308,6 +310,15 @@ export default function PublicHeader({
       document.removeEventListener('keydown', closeOnEscape)
     }
   }, [moreOpen])
+
+  useEffect(() => {
+    if (!desktopMenuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDesktopMenuOpen(null)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [desktopMenuOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -492,6 +503,8 @@ export default function PublicHeader({
     (['eu', 'EU', 'Europe', 'https://www.autorell.com/'] as const)
 
   const homeHref = localizePublicHref(locale, '/')
+  const isMarketplaceResults = pathname.startsWith('/marketplace/')
+
   function closeMobile() {
     setOpen(false)
   }
@@ -511,7 +524,7 @@ export default function PublicHeader({
     <>
       <div
         className={
-          categoryPrimaryLinks
+          categoryPrimaryLinks && !isMarketplaceResults
             ? 'h-[118px] min-[1120px]:h-[80px]'
             : 'h-[64px] min-[1120px]:h-[80px]'
         }
@@ -671,9 +684,15 @@ export default function PublicHeader({
                     <DesktopMenu
                       key={menu.href}
                       label={menu.label}
-                      href={menu.href}
                       menu={menu.data}
                       icon={menu.icon}
+                      open={desktopMenuOpen === menu.href}
+                      onToggle={() =>
+                        setDesktopMenuOpen((current) =>
+                          current === menu.href ? null : menu.href,
+                        )
+                      }
+                      onClose={() => setDesktopMenuOpen(null)}
                       onNavigate={handleInternalNavigation}
                     />
                   ))}
@@ -741,7 +760,7 @@ export default function PublicHeader({
             </div>
           </div>
 
-          {categoryPrimaryLinks ? (
+          {categoryPrimaryLinks && !isMarketplaceResults ? (
             <nav
               aria-label={`${activeCategoryCopy?.label || ''} navigation`}
               className="flex h-[54px] items-stretch gap-7 overflow-x-auto border-t border-[#e7e9ee] bg-white px-6 text-[13px] font-semibold text-[#344054] [scrollbar-width:none] min-[1120px]:hidden [&::-webkit-scrollbar]:hidden"
@@ -920,33 +939,65 @@ function LanguageMenu({
 
 function DesktopMenu({
   label,
-  href,
   menu,
   onNavigate,
+  open,
+  onToggle,
+  onClose,
   icon: MenuIcon,
 }: {
   label: string
-  href: string
   menu: DesktopMenuData
   onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
+  open: boolean
+  onToggle: () => void
+  onClose: () => void
   icon: LucideIcon
 }) {
   return (
-    <div className="group relative">
-      <a
-        href={href}
-        onClick={(event) => onNavigate(event, href)}
-        className="flex h-[50px] shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] font-semibold text-[#303640] transition hover:border-[#0866ff] hover:text-[#111] group-focus-within:border-[#0866ff] xl:px-4"
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={`flex h-[50px] shrink-0 items-center gap-1.5 border-b-2 px-3 text-[14px] font-semibold transition hover:border-[#0866ff] hover:text-[#111] xl:px-4 ${
+          open
+            ? 'border-[#0866ff] text-[#111]'
+            : 'border-transparent text-[#303640]'
+        }`}
       >
         {label}
-      </a>
+        <ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <button
+        type="button"
+        aria-label="Close menu"
+        onClick={onClose}
+        className={`fixed inset-x-0 bottom-0 top-[80px] z-30 bg-[#0b1728]/8 backdrop-blur-[1px] transition ${
+          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
 
       <div
-        className={`pointer-events-none fixed left-1/2 top-[68px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 translate-y-2 pt-[12px] opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+        className={`fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 transition duration-200 ${
+          open
+            ? 'pointer-events-auto translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-2 opacity-0'
+        } ${
           menu.items.length > 5 ? 'max-w-[900px]' : 'max-w-[780px]'
         }`}
       >
-        <div className="grid grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
+        <div role="menu" className="relative grid max-h-[calc(100dvh-96px)] grid-cols-[1.08fr_.92fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full border border-[#dce3ef] bg-white text-[#344054] shadow-sm transition hover:bg-[#f5f7fa]"
+          >
+            <X className="h-4 w-4" />
+          </button>
           <div className="min-w-0 bg-[#f3f7ff] p-7">
             <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#0866ff] text-white">
               <MenuIcon className="h-5 w-5" />
@@ -960,18 +1011,18 @@ function DesktopMenu({
             <p className="mt-3 whitespace-normal text-sm leading-6 text-[#5c707b]">
               {menu.text}
             </p>
-            <a href={menu.ctaHref} onClick={(event) => onNavigate(event, menu.ctaHref)} className="mt-6 inline-flex items-center gap-2 text-sm font-medium">
+            <a href={menu.ctaHref} onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }} className="mt-6 inline-flex items-center gap-2 text-sm font-medium">
               {menu.cta}
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
 
-          <div className={`min-w-0 p-4 ${menu.items.length > 5 ? 'grid max-h-[460px] grid-cols-2 content-start overflow-x-hidden overflow-y-auto' : ''}`}>
+          <div className={`min-w-0 overflow-y-auto p-4 pr-5 ${menu.items.length > 5 ? 'grid grid-cols-2 content-start' : ''}`}>
             {menu.items.map(({ href: itemHref, label: itemLabel, description, icon: Icon }) => (
               <a
                 key={`${itemHref}-${itemLabel}`}
                 href={itemHref}
-                onClick={(event) => onNavigate(event, itemHref)}
+                onClick={(event) => { onClose(); onNavigate(event, itemHref) }}
                 className="group/item flex items-center gap-4 rounded-[14px] p-4 transition hover:bg-[#f5f6f4]"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#dce1e3] text-[#4e626c]">

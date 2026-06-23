@@ -19,7 +19,6 @@ import {
   Sparkles,
   Wrench,
 } from 'lucide-react'
-import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   categoryLandingCopy,
   getCategoryLanding,
@@ -29,7 +28,7 @@ import {
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import type { PublicLocale } from '@/lib/public-i18n'
-import NewsletterSignup from './NewsletterSignup'
+import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -80,10 +79,11 @@ export default async function CategoryLandingPage({
   const localized = localizeCategoryLanding(config, locale)
   const copy = categoryLandingCopy(locale)
   const searchLabel = localizedCategorySearchLabel(locale, localized.label)
-  const countries = [...new Set(['SE', ...euBuyerMarkets.map((market) => market.code)])]
+  const countries = euCountries
+    .map(([code]) => code)
     .map((code) => ({
-      code,
-      label: countryName(code, locale),
+      code: code.toUpperCase(),
+      label: getEuCountryName(code, locale),
     }))
     .sort((left, right) => left.label.localeCompare(right.label, locale))
 
@@ -121,15 +121,25 @@ export default async function CategoryLandingPage({
               <p className="mt-5 max-w-[520px] text-sm leading-6 text-white/88 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7">
                 {localized.intro}
               </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {categoryHeroSignals(locale).map((signal) => (
+                  <span
+                    key={signal}
+                    className="rounded-full border border-white/25 bg-white/12 px-3 py-2 text-[11px] font-semibold text-white backdrop-blur-md sm:text-xs"
+                  >
+                    {signal}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-5 -mt-16 grid min-w-0 gap-0 rounded-[24px] bg-white p-4 shadow-[0_22px_55px_rgba(16,24,40,.16)] sm:mx-8 sm:-mt-14 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-3 sm:p-5 lg:mx-auto lg:max-w-[1320px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-20 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_24px_65px_rgba(16,24,40,.18)] backdrop-blur-xl sm:mx-8 sm:-mt-14 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:max-w-[1320px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
           >
-            <SearchField label={copy.allEurope}>
+            <SearchField label={copy.allEurope} icon={Globe2}>
               <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
                 <option value="">{copy.allEurope}</option>
                 {countries.map((country) => (
@@ -139,23 +149,23 @@ export default async function CategoryLandingPage({
               <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-5 w-5 -translate-y-1/2 text-[#475467]" />
             </SearchField>
 
-            <SearchField label={copy.allMakes}>
+            <SearchField label={copy.allMakes} icon={Layers3}>
               <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
-            <SearchField label={localized.searchHint}>
+            <SearchField label={localized.searchHint} icon={Search}>
               <input name="q" placeholder={localized.searchHint} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
             <Link
               href={`/marketplace/${slug}#marketplace-search`}
-              className="my-2 inline-flex min-h-11 items-center justify-center gap-2 border-b border-[#c8d6f0] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:my-0 lg:border-b-0 lg:underline lg:decoration-2 lg:underline-offset-8"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d8e4f6] bg-[#f4f8ff] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-2 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
             >
               <SlidersHorizontal className="h-4 w-4 lg:hidden" />
               {locale === 'sv' ? 'Fler val' : locale === 'de' ? 'Mehr Optionen' : 'More options'}
             </Link>
 
-            <button type="submit" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8]">
+            <button type="submit" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[16px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8] lg:min-h-14 lg:rounded-full">
               <Search className="h-5 w-5" />
               {searchLabel}
             </button>
@@ -163,42 +173,44 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -left-24 top-24 h-52 w-52 bg-[#eaf2ff] sm:h-72 sm:w-72" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -right-28 bottom-4 h-60 w-60 bg-[#edf8f3] sm:h-80 sm:w-80" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="grid gap-6 border-b border-[#e2e8f0] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end lg:pb-11">
-            <div>
+          <div className="grid min-w-0 gap-6 border-b border-[#e2e8f0] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end lg:pb-11">
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
                 {locale === 'sv' ? 'En bättre marknadsplats' : locale === 'de' ? 'Ein besserer Marktplatz' : 'A better marketplace'}
               </p>
-              <h2 className="mt-4 max-w-2xl text-[36px] leading-[1.02] tracking-[-0.05em] sm:text-[48px]">
+              <h2 className="mt-4 max-w-2xl break-words text-[36px] leading-[1.02] tracking-[-0.05em] sm:text-[48px]">
                 {trustHeading(locale, localized.label)}
               </h2>
             </div>
-            <p className="max-w-2xl text-base leading-7 text-[#58677d] lg:justify-self-end">
+            <p className="min-w-0 max-w-2xl break-words text-base leading-7 text-[#58677d] lg:justify-self-end">
               {trustIntro(locale)}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3">
-            {trustFeatures(locale).map(({ title, text, icon: Icon }, index) => (
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            {trustFeatures(locale).map(({ title, text, icon: Icon }) => (
               <article
                 key={title}
-                className={`py-8 md:px-7 md:py-10 lg:px-9 ${
-                  index > 0 ? 'border-t border-[#e2e8f0] md:border-l md:border-t-0' : ''
-                }`}
+                className="min-w-0 rounded-[22px] border border-[#e1e8f1] bg-white/88 p-6 shadow-[0_16px_45px_rgba(16,24,40,.055)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-[#bfd4f3] hover:shadow-[0_22px_55px_rgba(16,24,40,.09)] sm:p-7"
               >
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
                   <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </span>
                 <h3 className="mt-5 text-lg tracking-[-0.03em]">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
+                <p className="mt-2 break-words text-sm leading-6 text-[#667085]">{text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="guides" className="scroll-mt-28 border-y border-[#e3e9f2] bg-[#f7f9fc] py-16 sm:py-20">
+      <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#e3e9f2] bg-[#f7f9fc] py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -right-16 top-10 h-52 w-52 bg-[#dfeaff]" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -left-20 bottom-0 hidden h-64 w-64 bg-white sm:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
           <div className="grid gap-5 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
             <div>
@@ -212,7 +224,8 @@ export default async function CategoryLandingPage({
             {localized.guideTopics.map((topic, index) => {
               const Icon = guideIcon(slug, index)
               return (
-                <article key={topic} className="group flex min-h-[220px] flex-col rounded-[22px] border border-[#dce4ef] bg-white p-6 transition hover:border-[#a9c7f4] sm:p-7">
+                <article key={topic} className="group relative flex min-h-[220px] flex-col overflow-hidden rounded-[22px] border border-[#dce4ef] bg-white p-6 shadow-[0_14px_40px_rgba(16,24,40,.045)] transition hover:-translate-y-1 hover:border-[#a9c7f4] hover:shadow-[0_22px_55px_rgba(16,24,40,.08)] sm:p-7">
+                  <span className="market-blob pointer-events-none absolute -right-14 -top-16 h-36 w-36 bg-[#eef4ff] transition group-hover:scale-110" aria-hidden="true" />
                   <span className="grid h-11 w-11 place-items-center rounded-full border border-[#d7e5fa] bg-[#f4f8ff] text-[#0866ff]">
                     <Icon className="h-5 w-5" strokeWidth={1.75} />
                   </span>
@@ -228,61 +241,67 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="mx-auto grid max-w-[1280px] gap-5 px-5 sm:px-8 lg:grid-cols-[1.02fr_.98fr]">
-          <div className="rounded-[26px] border border-[#cfe0f7] bg-[linear-gradient(135deg,#eef5ff,#f8fbff)] p-7 sm:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-              {copy.sellPrefix} {localized.singular}
-            </p>
-            <h2 className="mt-4 max-w-xl text-[36px] leading-[1.02] tracking-[-0.05em] text-[#101828] sm:text-[44px]">
-              {copy.sellPrefix} {localized.singular} {copy.sellSuffix}
-            </h2>
-            <p className="mt-5 max-w-xl leading-7 text-[#5d6b7d]">{copy.sellText}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={`/salj-fordon?category=${slug}`}
-                className="inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white"
-              >
-                {copy.sellCta}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href={`/marketplace/${slug}`}
-                className="inline-flex min-h-12 items-center rounded-[14px] border border-[#b8c9df] bg-white px-5 text-sm font-bold text-[#24344a]"
-              >
-                {copy.browseCta}
-              </Link>
+      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -right-20 top-16 h-64 w-64 bg-[#e7f5ef]" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1280px] gap-5 px-5 sm:px-8 lg:grid-cols-[1.02fr_.98fr]">
+          <div className="relative overflow-hidden rounded-[26px] border border-[#cfe0f7] bg-[linear-gradient(135deg,#e9f2ff,#f8fbff)] p-7 shadow-[0_18px_50px_rgba(35,80,145,.08)] sm:p-10">
+            <div className="market-blob pointer-events-none absolute -bottom-28 -right-16 h-64 w-64 bg-white/70" aria-hidden="true" />
+            <div className="relative">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+                {copy.sellPrefix} {localized.singular}
+              </p>
+              <h2 className="mt-4 max-w-xl text-[36px] leading-[1.02] tracking-[-0.05em] text-[#101828] sm:text-[44px]">
+                {copy.sellPrefix} {localized.singular} {copy.sellSuffix}
+              </h2>
+              <p className="mt-5 max-w-xl leading-7 text-[#5d6b7d]">{copy.sellText}</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={`/salj-fordon?category=${slug}`}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white"
+                >
+                  {copy.sellCta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href={`/marketplace/${slug}`}
+                  className="inline-flex min-h-12 items-center rounded-[14px] border border-[#b8c9df] bg-white px-5 text-sm font-bold text-[#24344a]"
+                >
+                  {copy.browseCta}
+                </Link>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-[26px] border border-[#e0e6ee] bg-white p-7 sm:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
-              {copy.faqEyebrow}
-            </p>
-            <h2 className="mt-4 text-[36px] leading-[1.05] tracking-[-0.05em] sm:text-[44px]">
-              {copy.faqTitle}
-            </h2>
-            <div className="mt-7 divide-y divide-[#e4e7ec] border-y border-[#e4e7ec]">
-              {[
-                [copy.faqSearchQuestion, copy.faqSearchAnswer],
-                [copy.faqSellQuestion, copy.faqSellAnswer],
-              ].map(([question, answer]) => (
-                <details key={question} className="group py-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold [&::-webkit-details-marker]:hidden">
-                    {question}
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f0f4fa] text-[#0866ff] transition group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-                  <p className="max-w-2xl pt-4 text-sm leading-7 text-[#667085]">{answer}</p>
-                </details>
-              ))}
+          <div className="relative overflow-hidden rounded-[26px] border border-[#e0e6ee] bg-white p-7 shadow-[0_18px_50px_rgba(16,24,40,.055)] sm:p-10">
+            <div className="market-blob pointer-events-none absolute -right-20 -top-24 h-56 w-56 bg-[#f0f5ff]" aria-hidden="true" />
+            <div className="relative">
+              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
+                {copy.faqEyebrow}
+              </p>
+              <h2 className="mt-4 text-[36px] leading-[1.05] tracking-[-0.05em] sm:text-[44px]">
+                {copy.faqTitle}
+              </h2>
+              <div className="mt-7 divide-y divide-[#e4e7ec] border-y border-[#e4e7ec]">
+                {[
+                  [copy.faqSearchQuestion, copy.faqSearchAnswer],
+                  [copy.faqSellQuestion, copy.faqSellAnswer],
+                ].map(([question, answer]) => (
+                  <details key={question} className="group py-5">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold [&::-webkit-details-marker]:hidden">
+                      {question}
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f0f4fa] text-[#0866ff] transition group-open:rotate-45">
+                        +
+                      </span>
+                    </summary>
+                    <p className="max-w-2xl pt-4 text-sm leading-7 text-[#667085]">{answer}</p>
+                  </details>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <NewsletterSignup locale={locale} category={slug} />
       <PublicFooter locale={locale} />
     </main>
   )
@@ -290,15 +309,22 @@ export default async function CategoryLandingPage({
 
 function SearchField({
   label,
+  icon: Icon,
   children,
 }: {
   label: string
+  icon: typeof Search
   children: React.ReactNode
 }) {
   return (
-    <label className="relative min-w-0 border-b border-[#d8dde6] px-3 py-2 lg:border-b-0 lg:border-r lg:px-6 lg:py-0">
-      <span className="block text-xs font-bold text-[#101828]">{label}</span>
-      <span className="relative block">{children}</span>
+    <label className="relative flex min-w-0 items-center gap-3 rounded-[15px] border border-[#e1e7f0] bg-[#f8fafc] px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:rounded-none lg:border-0 lg:border-r lg:bg-transparent lg:px-6 lg:py-0 lg:focus-within:ring-0">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#eaf2ff] text-[#0866ff] lg:hidden">
+        <Icon className="h-[17px] w-[17px]" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#667085] lg:text-xs lg:normal-case lg:tracking-normal lg:text-[#101828]">{label}</span>
+        <span className="relative block">{children}</span>
+      </span>
     </label>
   )
 }
@@ -353,10 +379,8 @@ function guideIcon(slug: MarketplaceCategorySlug, index: number) {
   return profiles[slug][index] || MessagesSquare
 }
 
-function countryName(code: string, locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) || code
-  } catch {
-    return code
-  }
+function categoryHeroSignals(locale: PublicLocale) {
+  if (locale === 'sv') return ['Privat & företag', 'Hela Europa', 'Smarta filter']
+  if (locale === 'de') return ['Privat & Gewerbe', 'Europaweit', 'Intelligente Filter']
+  return ['Private & business', 'Across Europe', 'Smart filters']
 }

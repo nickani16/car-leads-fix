@@ -35,9 +35,17 @@ export type EuCountryCode = (typeof EU_COUNTRIES)[number][0]
 export const euCountryCodes = new Set<string>(EU_COUNTRIES.map(([code]) => code))
 
 export function getEuCountryName(code: string, locale = 'sv') {
+  const normalizedCode = code.toUpperCase()
+
   try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) || code
+    return (
+      new Intl.DisplayNames([locale], { type: 'region' }).of(normalizedCode) ||
+      normalizedCode
+    )
   } catch {
-    return EU_COUNTRIES.find(([countryCode]) => countryCode === code)?.[1] || code
+    return (
+      EU_COUNTRIES.find(([countryCode]) => countryCode === normalizedCode)?.[1] ||
+      normalizedCode
+    )
   }
 }

@@ -17,12 +17,12 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
-import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   translatePublic,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 
 const categoryRoutes: Record<string, string> = {
   cars: '/marketplace/cars',
@@ -153,12 +153,12 @@ export default function MarketplaceSearch({
         <SearchField label={copy.place} icon={MapPin}>
           <select value={country} onChange={(event) => setCountry(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             <option value="">{copy.allEurope}</option>
-            {['se', ...euBuyerMarkets.map((market) => market.code)]
-              .filter((code, index, values) => values.indexOf(code) === index)
-              .sort((a, b) => countryName(a, countryLocale).localeCompare(countryName(b, countryLocale), countryLocale))
+            {euCountries
+              .map(([code]) => code)
+              .sort((a, b) => getEuCountryName(a, countryLocale).localeCompare(getEuCountryName(b, countryLocale), countryLocale))
               .map((code) => (
                 <option key={code} value={code.toUpperCase()}>
-                  {countryName(code, countryLocale)}
+                  {getEuCountryName(code, countryLocale)}
                 </option>
               ))}
           </select>
@@ -172,14 +172,6 @@ export default function MarketplaceSearch({
       </div>
     </form>
   )
-}
-
-function countryName(code: string, locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code.toUpperCase()) || code
-  } catch {
-    return code.toUpperCase()
-  }
 }
 
 function SearchField({

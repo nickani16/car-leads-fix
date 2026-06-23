@@ -43,10 +43,12 @@ const newsletterCopy = {
 
 export default function NewsletterSignup({
   locale,
-  category,
+  category = 'footer',
+  variant = 'section',
 }: {
   locale: PublicLocale
-  category: string
+  category?: string
+  variant?: 'section' | 'footer'
 }) {
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
   const copy = newsletterCopy[language]
@@ -79,9 +81,12 @@ export default function NewsletterSignup({
     }
   }
 
-  return (
-    <section className="bg-white px-5 pb-16 pt-3 sm:px-8 sm:pb-20">
-      <div className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[30px] border border-[#cfe0fb] bg-[linear-gradient(135deg,#edf5ff_0%,#f8fbff_52%,#eef9f5_100%)] px-6 py-10 sm:px-10 sm:py-12 lg:px-14">
+  const content = (
+      <div className={`relative mx-auto overflow-hidden border border-[#cfe0fb] bg-[linear-gradient(135deg,#edf5ff_0%,#f8fbff_52%,#eef9f5_100%)] ${
+        variant === 'footer'
+          ? 'max-w-none rounded-[24px] px-5 py-8 sm:px-8 lg:px-10'
+          : 'max-w-[1280px] rounded-[30px] px-6 py-10 sm:px-10 sm:py-12 lg:px-14'
+      }`}>
         <div className="pointer-events-none absolute -right-20 -top-24 hidden h-64 w-64 rounded-full border-[46px] border-white/65 lg:block" aria-hidden="true" />
         <div className="relative grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
           <div>
@@ -140,6 +145,13 @@ export default function NewsletterSignup({
           </form>
         </div>
       </div>
+  )
+
+  if (variant === 'footer') return content
+
+  return (
+    <section className="bg-white px-5 pb-16 pt-3 sm:px-8 sm:pb-20">
+      {content}
     </section>
   )
 }

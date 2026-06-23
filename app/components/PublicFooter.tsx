@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
+import NewsletterSignup from './NewsletterSignup'
 import {
   localizePublicHref,
   translatePublicObject,
@@ -170,12 +171,15 @@ export default function PublicFooter({
         : '/villkor'
 
   return (
-    <footer className="relative overflow-hidden bg-[#f3f2ee] text-[#202124]">
+    <footer className="relative overflow-hidden bg-[#f5f5f5] text-[#202124]">
       <div
         className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] bg-[#dce9ff] sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px]"
         aria-hidden="true"
       />
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
+        <div className="pt-10 sm:pt-12">
+          <NewsletterSignup locale={locale} variant="footer" />
+        </div>
         <div className="flex flex-col gap-10 border-b border-[#d9d7d0] py-14 lg:flex-row lg:items-center lg:justify-between lg:py-16">
           <div>
             <a href={homeHref} aria-label={homeLabel}>

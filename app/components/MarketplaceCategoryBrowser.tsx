@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
@@ -12,7 +13,6 @@ import {
   MapPin,
   Search,
 } from 'lucide-react'
-import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   translatePublic,
   translatePublicObject,
@@ -20,6 +20,7 @@ import {
 } from '@/lib/public-i18n'
 import MessageSellerButton from './MessageSellerButton'
 import SavedListingButton from './SavedListingButton'
+import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 
 export type MarketplaceListing = {
   id: string
@@ -50,6 +51,8 @@ type CategoryConfig = {
   singular: string
   description: string
   filters: readonly string[]
+  heroImage: string
+  heroPosition: string
 }
 
 export default function MarketplaceCategoryBrowser({
@@ -91,8 +94,9 @@ export default function MarketplaceCategoryBrowser({
 
   const countries = useMemo(
     () =>
-      [...new Set(['SE', ...euBuyerMarkets.map((market) => market.code)])]
-        .sort((a, b) => countryName(a, displayLocale).localeCompare(countryName(b, displayLocale), displayLocale)),
+      euCountries
+        .map(([code]) => code)
+        .sort((a, b) => getEuCountryName(a, displayLocale).localeCompare(getEuCountryName(b, displayLocale), displayLocale)),
     [displayLocale],
   )
   const makes = useMemo(
@@ -194,42 +198,66 @@ export default function MarketplaceCategoryBrowser({
 
   return (
     <>
-      <section className="border-b border-[#e4e7ec] bg-white">
-        <div className="mx-auto max-w-[1380px] px-5 pb-9 pt-7 sm:px-8 lg:px-12">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
+      <section className="relative border-b border-[#dce4f0] bg-[#eef3fb] pb-8 sm:pb-10">
+        <div className="relative min-h-[270px] overflow-hidden bg-[#0a1b31] sm:min-h-[320px]">
+          <Image
+            src={category.heroImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-70 saturate-[.82]"
+            style={{ objectPosition: category.heroPosition }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,18,35,.94)_0%,rgba(5,18,35,.78)_38%,rgba(5,18,35,.22)_76%,rgba(5,18,35,.08)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_5%,rgba(25,116,255,.36),transparent_35%)]" />
+          <div className="relative mx-auto flex min-h-[270px] max-w-[1380px] items-center px-5 py-9 sm:min-h-[320px] sm:px-8 lg:px-12">
+            <div className="min-w-0 max-w-3xl">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#83c7ff]">
+                {copy.marketplaceEyebrow}
+              </p>
+              <h1 className="mt-3 max-w-full break-words text-[42px] leading-[.98] tracking-[-0.055em] text-white sm:text-[62px]">
                 {localizedCategory.label}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085] sm:text-base">
+              <p className="mt-4 max-w-2xl break-words text-sm leading-6 text-white/78 sm:text-base sm:leading-7">
                 {localizedCategory.description}
               </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {marketplaceSignals(locale).map((signal) => (
+                  <span key={signal} className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[11px] font-semibold text-white backdrop-blur-md">
+                    {signal}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="hidden gap-3 sm:flex">
+            <div className="absolute bottom-8 right-8 hidden gap-3 lg:flex">
               <Link
                 href={`/salj-fordon?category=${category.slug}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.28)]"
               >
                 {copy.sell} {localizedCategory.singular}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/foretag"
-                className="inline-flex min-h-12 items-center justify-center rounded-[15px] border border-[#d0d5dd] bg-white px-6 text-sm font-bold"
+                className="inline-flex min-h-12 items-center justify-center rounded-[15px] border border-white/30 bg-white/12 px-6 text-sm font-bold text-white backdrop-blur-md"
               >
                 {copy.sellBusiness}
               </Link>
             </div>
           </div>
+        </div>
 
-          <div className="mt-7 flex gap-2 overflow-x-auto pb-1">
+        <div className="relative z-10 mx-auto -mt-5 max-w-[1380px] px-4 sm:-mt-7 sm:px-8 lg:px-12">
+          <div className="overflow-hidden rounded-[24px] border border-white/80 bg-white p-3 shadow-[0_24px_65px_rgba(15,39,75,.14)] sm:p-5">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               type="button"
               onClick={() => setActiveFilter('')}
               className={`shrink-0 rounded-full border px-4 py-2.5 text-[13px] font-semibold transition ${
                 !activeFilter
-                  ? 'border-[#0866ff] bg-[#0866ff] text-white'
-                  : 'border-[#d8dde6] bg-white text-[#344054] hover:border-[#98a2b3]'
+                  ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_7px_18px_rgba(8,102,255,.2)]'
+                  : 'border-[#d8dde6] bg-[#f8fafc] text-[#344054] hover:border-[#98a2b3]'
               }`}
             >
               {copy.all}
@@ -242,7 +270,7 @@ export default function MarketplaceCategoryBrowser({
                 className={`shrink-0 rounded-full border px-4 py-2.5 text-[13px] font-semibold transition ${
                   activeFilter === filter
                     ? 'border-[#0866ff] bg-[#eef4ff] text-[#075bd8]'
-                    : 'border-[#d8dde6] bg-white text-[#344054] hover:border-[#98a2b3]'
+                    : 'border-[#d8dde6] bg-[#f8fafc] text-[#344054] hover:border-[#98a2b3]'
                 }`}
               >
                 {filter}
@@ -252,7 +280,7 @@ export default function MarketplaceCategoryBrowser({
 
           <div
             id="marketplace-search"
-            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-2.5 rounded-[20px] border border-[#dde2ea] bg-[#f8f9fb] p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4"
+            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-2.5 rounded-[18px] border border-[#e2e8f0] bg-[#f7f9fc] p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4"
           >
             <label className="relative">
               <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
@@ -264,7 +292,7 @@ export default function MarketplaceCategoryBrowser({
                 <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
                   <option key={code} value={code}>
-                    {countryName(code, displayLocale)}
+                    {getEuCountryName(code, displayLocale)}
                   </option>
                 ))}
               </select>
@@ -379,17 +407,18 @@ export default function MarketplaceCategoryBrowser({
               {copy.search} {localizedCategory.label.toLowerCase()}
             </a>
           </div>
+          </div>
         </div>
       </section>
 
       <section id="marketplace-results" className="scroll-mt-24 bg-[#f7f8fb] py-10 sm:py-14">
         <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
-          <div className="mb-6 flex items-center justify-between gap-5">
-            <p className="text-sm text-[#475467]">
+          <div className="mb-6 flex min-w-0 flex-wrap items-center justify-between gap-4">
+            <p className="min-w-0 text-sm text-[#475467]">
               <strong className="text-[#101828]">{visibleListings.length}</strong>{' '}
               {copy.listings} {localizedCategory.label.toLowerCase()}
             </p>
-            <div className="flex items-center gap-4">
+            <div className="ml-auto flex shrink-0 items-center gap-4">
               <label className="relative hidden sm:block">
                 <select
                   value={sort}
@@ -459,7 +488,7 @@ export default function MarketplaceCategoryBrowser({
                     <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
                       <div>
                         <span className="block text-xs text-[#98a2b3]">
-                          {countryName(listing.country, displayLocale)}
+                          {getEuCountryName(listing.country, displayLocale)}
                         </span>
                         <strong className="mt-1 block">{listing.priceLabel}</strong>
                       </div>
@@ -476,7 +505,7 @@ export default function MarketplaceCategoryBrowser({
                 <span className="mx-auto grid h-14 w-14 place-items-center rounded-[17px] bg-[#0866ff] text-white">
                   <Search className="h-6 w-6" />
                 </span>
-                <h2 className="mt-6 text-2xl tracking-[-0.035em]">
+                <h2 className="mx-auto mt-6 max-w-2xl break-words text-2xl tracking-[-0.035em]">
                   {copy.noResults}
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#667085]">
@@ -531,16 +560,9 @@ function FilterSelect({
   )
 }
 
-function countryName(code: string, locale: string) {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' }).of(code.toUpperCase()) || code
-  } catch {
-    return code
-  }
-}
-
 const marketplaceCopy = {
   sv: {
+    marketplaceEyebrow: 'Autorell marketplace',
     sell: 'Sälj',
     all: 'Alla',
     sellBusiness: 'Sälj som företag',
@@ -576,6 +598,7 @@ const marketplaceCopy = {
     businessSeller: 'Företagssäljare',
   },
   en: {
+    marketplaceEyebrow: 'Autorell marketplace',
     sell: 'Sell',
     all: 'All',
     sellBusiness: 'Sell as a business',
@@ -611,6 +634,7 @@ const marketplaceCopy = {
     businessSeller: 'Business seller',
   },
   de: {
+    marketplaceEyebrow: 'Autorell Marktplatz',
     sell: 'Verkaufen:',
     all: 'Alle',
     sellBusiness: 'Als Unternehmen verkaufen',
@@ -646,6 +670,12 @@ const marketplaceCopy = {
     businessSeller: 'Gewerblicher Verkäufer',
   },
 } as const
+
+function marketplaceSignals(locale: PublicLocale) {
+  if (locale === 'sv') return ['Privat & företag', 'Europeiska annonser', 'Spara din sökning']
+  if (locale === 'de') return ['Privat & Gewerbe', 'Europaweite Angebote', 'Suche speichern']
+  return ['Private & business', 'European listings', 'Save your search']
+}
 
 function secondarySearchLabel(slug: string, locale: PublicLocale) {
   if (['motorhomes', 'caravans'].includes(slug)) {
