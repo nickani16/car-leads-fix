@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import {
   ArrowRight,
-  BadgeCheck,
   BarChart3,
   ChevronDown,
   CircleHelp,
@@ -27,7 +26,6 @@ import {
 } from '@/lib/category-landings'
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
-import type { PublicLocale } from '@/lib/public-i18n'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -94,11 +92,11 @@ export default async function CategoryLandingPage({
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <section className="relative pb-20 pt-5 sm:pb-24 sm:pt-7 lg:pb-28">
+      <section className="relative pb-20 pt-0 sm:pb-24 lg:pb-28 lg:pt-7">
         <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#e5efff] sm:block" aria-hidden="true" />
         <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
-        <div className="relative mx-auto max-w-[1600px] px-0 sm:px-6 lg:px-7">
-          <div className="relative h-[410px] overflow-hidden sm:h-[490px] sm:rounded-[28px] lg:h-[520px]">
+        <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
+          <div className="relative h-[410px] overflow-hidden sm:h-[490px] lg:h-[520px] lg:rounded-[28px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
@@ -111,25 +109,17 @@ export default async function CategoryLandingPage({
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.72)_0%,rgba(7,20,34,.48)_28%,rgba(7,20,34,.12)_58%,transparent_82%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(70,151,255,.22),transparent_34%)]" />
             <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#071522]/45 via-[#071522]/10 to-transparent" />
-            <div className="absolute left-6 top-8 max-w-[600px] sm:left-10 sm:top-11 lg:left-14 lg:top-14">
+            <div className="absolute inset-0 flex items-center justify-center px-6 text-center lg:inset-auto lg:left-14 lg:top-14 lg:block lg:max-w-[600px] lg:px-0 lg:text-left">
+              <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9ed8ff] drop-shadow-sm sm:text-xs">
                 {localized.eyebrow}
               </p>
-              <h1 className="mt-3 break-words text-[42px] leading-[.96] tracking-[-0.055em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] sm:text-[62px] lg:text-[72px]">
+              <h1 className="mt-3 text-[34px] leading-[.96] tracking-[-0.055em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] [overflow-wrap:anywhere] sm:text-[56px] lg:text-[72px]">
                 {localized.label}
               </h1>
-              <p className="mt-5 max-w-[520px] text-sm leading-6 text-white/88 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7">
+              <p className="mx-auto mt-5 max-w-[520px] text-sm leading-6 text-white/88 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {categoryHeroSignals(locale).map((signal) => (
-                  <span
-                    key={signal}
-                    className="rounded-full border border-white/25 bg-white/12 px-3 py-2 text-[11px] font-semibold text-white backdrop-blur-md sm:text-xs"
-                  >
-                    {signal}
-                  </span>
-                ))}
               </div>
             </div>
           </div>
@@ -173,95 +163,32 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-16 sm:py-24">
-        <div className="market-blob pointer-events-none absolute -left-36 top-16 h-80 w-80 bg-[#e5efff]" aria-hidden="true" />
-        <div className="market-blob pointer-events-none absolute -right-40 bottom-0 h-96 w-96 bg-[#e8f5ef]" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1280px] gap-10 px-5 sm:px-8 lg:grid-cols-[.88fr_1.12fr] lg:items-center">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
-              {locale === 'sv' ? 'Byggd för fordonsaffärer' : locale === 'de' ? 'Für Fahrzeuggeschäfte gebaut' : 'Built for vehicle trading'}
-            </p>
-            <h2 className="mt-5 max-w-xl break-words text-[36px] leading-[1.01] tracking-[-0.055em] sm:text-[54px]">
-              {trustHeading(locale, localized.label)}
-            </h2>
-            <p className="mt-6 max-w-xl text-base leading-8 text-[#5d6b7d]">
-              {trustIntro(locale)}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={`/marketplace/${slug}`} className="inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white">
-                {copy.browseCta}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href={`/salj-fordon?category=${slug}`} className="inline-flex min-h-12 items-center gap-2 rounded-[14px] border border-[#c8d4e5] bg-white px-5 text-sm font-bold text-[#24344a]">
-                {copy.sellCta}
-              </Link>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[30px] border border-[#273b58] bg-[#0d1d32] text-white shadow-[0_30px_80px_rgba(13,29,50,.2)]">
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#80c5ff]">Autorell marketplace</p>
-                <p className="mt-1 text-sm text-white/62">{localized.label} · Europe</p>
-              </div>
-              <span className="hidden items-center gap-2 rounded-full bg-[#14355d] px-3 py-2 text-[11px] font-semibold text-[#9dd7ff] sm:inline-flex">
-                <span className="h-2 w-2 rounded-full bg-[#54d59b]" />
-                {locale === 'sv' ? 'Öppen marknad' : locale === 'de' ? 'Aktiver Markt' : 'Live market'}
-              </span>
-            </div>
-            <div className="divide-y divide-white/10">
-              {trustFeatures(locale).map(({ title, text, icon: Icon }, index) => (
-                <div key={title} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-6 sm:px-8">
-                  <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-white/8 text-[#81c7ff]">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0">
-                    <strong className="block text-base">{title}</strong>
-                    <span className="mt-1 block text-sm leading-6 text-white/58">{text}</span>
-                  </span>
-                  <span className="font-mono text-xs text-white/35">0{index + 1}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#dfe6ef] bg-[#f4f7fb] py-16 sm:py-24">
         <div className="market-blob pointer-events-none absolute -right-24 top-10 h-72 w-72 bg-[#dfeaff]" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[1.05fr_.95fr]">
-          <div className="relative min-h-[430px] overflow-hidden rounded-[30px] bg-[#dce8f6]">
-            <Image
-              src={config.heroImage}
-              alt={localized.label}
-              fill
-              sizes="(min-width: 1024px) 650px, 100vw"
-              className="object-cover"
-              style={{ objectPosition: config.heroPosition }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#08182d]/85 via-[#08182d]/10 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-7 text-white sm:p-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9ed8ff]">{copy.guideEyebrow}</p>
-              <h2 className="mt-3 max-w-xl text-[34px] leading-[1.02] tracking-[-0.05em] sm:text-[46px]">{copy.guideTitle}</h2>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-white/72">{copy.guideText}</p>
+        <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
+          <div className="grid gap-6 border-b border-[#d7e0eb] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">{copy.guideEyebrow}</p>
+              <h2 className="mt-4 max-w-2xl text-[36px] leading-[1.03] tracking-[-0.05em] sm:text-[48px]">{copy.guideTitle}</h2>
             </div>
+            <p className="max-w-xl text-base leading-7 text-[#667085] lg:justify-self-end">{copy.guideText}</p>
           </div>
 
-          <div className="flex flex-col rounded-[30px] border border-[#dbe3ef] bg-white px-6 py-4 shadow-[0_20px_60px_rgba(16,24,40,.07)] sm:px-8">
+          <div className="mt-8 divide-y divide-[#dbe3ed] rounded-[26px] border border-[#dbe3ed] bg-white px-5 shadow-[0_18px_50px_rgba(16,24,40,.06)] sm:px-8">
             {localized.guideTopics.map((topic, index) => {
               const Icon = guideIcon(slug, index)
               return (
                 <Link
                   key={topic}
                   href={`/marketplace/${slug}`}
-                  className="group grid flex-1 grid-cols-[auto_1fr_auto] items-center gap-4 border-b border-[#e5eaf1] py-7 last:border-0"
+                  className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 py-7 sm:py-8"
                 >
                   <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#edf4ff] text-[#0866ff]">
                     <Icon className="h-5 w-5" />
                   </span>
                   <span>
                     <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a96a8]">Guide 0{index + 1}</span>
-                    <strong className="mt-1 block text-xl tracking-[-0.03em]">{topic}</strong>
+                    <strong className="mt-1 block text-lg tracking-[-0.03em] sm:text-xl">{topic}</strong>
                   </span>
                   <ArrowRight className="h-5 w-5 text-[#0866ff] transition group-hover:translate-x-1" />
                 </Link>
@@ -340,40 +267,6 @@ function SearchField({
   )
 }
 
-function trustHeading(locale: PublicLocale, label: string) {
-  if (locale === 'sv') return `Din trygga marknadsplats för ${label.toLowerCase()}.`
-  if (locale === 'de') return `Ihr verlässlicher Marktplatz für ${label}.`
-  return `Your trusted marketplace for ${label.toLowerCase()}.`
-}
-
-function trustIntro(locale: PublicLocale) {
-  if (locale === 'sv') return 'Sök, jämför och sälj med tydlig information och verktyg anpassade för en europeisk fordonsmarknad.'
-  if (locale === 'de') return 'Suchen, vergleichen und verkaufen Sie mit klaren Informationen und Werkzeugen für den europäischen Fahrzeugmarkt.'
-  return 'Search, compare and sell with clear information and tools designed for a European vehicle marketplace.'
-}
-
-function trustFeatures(locale: PublicLocale) {
-  if (locale === 'sv') {
-    return [
-      { title: 'Sök konkret', text: 'Filtrera på plats, märke och relevant fordonsdata utan onödiga steg.', icon: Compass },
-      { title: 'Jämför i Europa', text: 'Se privat- och företagsannonser från flera europeiska marknader på ett ställe.', icon: Globe2 },
-      { title: 'Trygg kontakt', text: 'Hantera annons, sparade objekt och meddelanden genom ditt Autorell-konto.', icon: BadgeCheck },
-    ]
-  }
-  if (locale === 'de') {
-    return [
-      { title: 'Gezielt suchen', text: 'Filtern Sie nach Ort, Marke und relevanten Fahrzeugdaten ohne unnötige Schritte.', icon: Compass },
-      { title: 'Europaweit vergleichen', text: 'Private und gewerbliche Angebote aus mehreren Märkten an einem Ort.', icon: Globe2 },
-      { title: 'Sicher kontaktieren', text: 'Verwalten Sie Anzeigen, Favoriten und Nachrichten über Ihr Autorell-Konto.', icon: BadgeCheck },
-    ]
-  }
-  return [
-    { title: 'Search with purpose', text: 'Filter by location, make and relevant vehicle data without unnecessary steps.', icon: Compass },
-    { title: 'Compare across Europe', text: 'See private and business listings from multiple European markets in one place.', icon: Globe2 },
-    { title: 'Connect confidently', text: 'Manage listings, saved vehicles and messages through your Autorell account.', icon: BadgeCheck },
-  ]
-}
-
 function guideIcon(slug: MarketplaceCategorySlug, index: number) {
   const profiles = {
     cars: [Gauge, BarChart3, Sparkles],
@@ -388,10 +281,4 @@ function guideIcon(slug: MarketplaceCategorySlug, index: number) {
     'e-scooters': [Gauge, Wrench, CircleHelp],
   } as const
   return profiles[slug][index] || MessagesSquare
-}
-
-function categoryHeroSignals(locale: PublicLocale) {
-  if (locale === 'sv') return ['Privat & företag', 'Hela Europa', 'Smarta filter']
-  if (locale === 'de') return ['Privat & Gewerbe', 'Europaweit', 'Intelligente Filter']
-  return ['Private & business', 'Across Europe', 'Smart filters']
 }
