@@ -22,7 +22,6 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { getCategoryLanding } from '@/lib/category-landings'
 
 export function generateStaticParams() {
   return marketplaceCategories.map(({ slug }) => ({ category: slug }))
@@ -196,8 +195,6 @@ export default async function MarketplaceCategoryPage({
                 : locale === 'en'
                   ? ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage']
                   : translatePublicObject(locale, ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage']),
-          heroImage: getCategoryLanding(category.slug).heroImage,
-          heroPosition: getCategoryLanding(category.slug).heroPosition,
         }}
         listings={listings}
         locale={locale}

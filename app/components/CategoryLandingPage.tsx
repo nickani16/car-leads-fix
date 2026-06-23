@@ -173,129 +173,140 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -left-24 top-24 h-52 w-52 bg-[#eaf2ff] sm:h-72 sm:w-72" aria-hidden="true" />
-        <div className="market-blob pointer-events-none absolute -right-28 bottom-4 h-60 w-60 bg-[#edf8f3] sm:h-80 sm:w-80" aria-hidden="true" />
-        <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="grid min-w-0 gap-6 border-b border-[#e2e8f0] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end lg:pb-11">
-            <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
-                {locale === 'sv' ? 'En bättre marknadsplats' : locale === 'de' ? 'Ein besserer Marktplatz' : 'A better marketplace'}
-              </p>
-              <h2 className="mt-4 max-w-2xl break-words text-[36px] leading-[1.02] tracking-[-0.05em] sm:text-[48px]">
-                {trustHeading(locale, localized.label)}
-              </h2>
-            </div>
-            <p className="min-w-0 max-w-2xl break-words text-base leading-7 text-[#58677d] lg:justify-self-end">
+      <section className="relative overflow-hidden bg-white py-16 sm:py-24">
+        <div className="market-blob pointer-events-none absolute -left-36 top-16 h-80 w-80 bg-[#e5efff]" aria-hidden="true" />
+        <div className="market-blob pointer-events-none absolute -right-40 bottom-0 h-96 w-96 bg-[#e8f5ef]" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1280px] gap-10 px-5 sm:px-8 lg:grid-cols-[.88fr_1.12fr] lg:items-center">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+              {locale === 'sv' ? 'Byggd för fordonsaffärer' : locale === 'de' ? 'Für Fahrzeuggeschäfte gebaut' : 'Built for vehicle trading'}
+            </p>
+            <h2 className="mt-5 max-w-xl break-words text-[36px] leading-[1.01] tracking-[-0.055em] sm:text-[54px]">
+              {trustHeading(locale, localized.label)}
+            </h2>
+            <p className="mt-6 max-w-xl text-base leading-8 text-[#5d6b7d]">
               {trustIntro(locale)}
             </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={`/marketplace/${slug}`} className="inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white">
+                {copy.browseCta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href={`/salj-fordon?category=${slug}`} className="inline-flex min-h-12 items-center gap-2 rounded-[14px] border border-[#c8d4e5] bg-white px-5 text-sm font-bold text-[#24344a]">
+                {copy.sellCta}
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-8 grid gap-3 md:grid-cols-3">
-            {trustFeatures(locale).map(({ title, text, icon: Icon }) => (
-              <article
-                key={title}
-                className="min-w-0 rounded-[22px] border border-[#e1e8f1] bg-white/88 p-6 shadow-[0_16px_45px_rgba(16,24,40,.055)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-[#bfd4f3] hover:shadow-[0_22px_55px_rgba(16,24,40,.09)] sm:p-7"
-              >
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
-                  <Icon className="h-5 w-5" strokeWidth={1.8} />
-                </span>
-                <h3 className="mt-5 text-lg tracking-[-0.03em]">{title}</h3>
-                <p className="mt-2 break-words text-sm leading-6 text-[#667085]">{text}</p>
-              </article>
-            ))}
+          <div className="overflow-hidden rounded-[30px] border border-[#273b58] bg-[#0d1d32] text-white shadow-[0_30px_80px_rgba(13,29,50,.2)]">
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#80c5ff]">Autorell marketplace</p>
+                <p className="mt-1 text-sm text-white/62">{localized.label} · Europe</p>
+              </div>
+              <span className="hidden items-center gap-2 rounded-full bg-[#14355d] px-3 py-2 text-[11px] font-semibold text-[#9dd7ff] sm:inline-flex">
+                <span className="h-2 w-2 rounded-full bg-[#54d59b]" />
+                {locale === 'sv' ? 'Öppen marknad' : locale === 'de' ? 'Aktiver Markt' : 'Live market'}
+              </span>
+            </div>
+            <div className="divide-y divide-white/10">
+              {trustFeatures(locale).map(({ title, text, icon: Icon }, index) => (
+                <div key={title} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-6 sm:px-8">
+                  <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-white/8 text-[#81c7ff]">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <strong className="block text-base">{title}</strong>
+                    <span className="mt-1 block text-sm leading-6 text-white/58">{text}</span>
+                  </span>
+                  <span className="font-mono text-xs text-white/35">0{index + 1}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#e3e9f2] bg-[#f7f9fc] py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -right-16 top-10 h-52 w-52 bg-[#dfeaff]" aria-hidden="true" />
-        <div className="market-blob pointer-events-none absolute -left-20 bottom-0 hidden h-64 w-64 bg-white sm:block" aria-hidden="true" />
-        <div className="relative mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="grid gap-5 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">{copy.guideEyebrow}</p>
-              <h2 className="mt-4 break-words text-[36px] leading-[1.04] tracking-[-0.05em] sm:text-[48px]">{copy.guideTitle}</h2>
+      <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#dfe6ef] bg-[#f4f7fb] py-16 sm:py-24">
+        <div className="market-blob pointer-events-none absolute -right-24 top-10 h-72 w-72 bg-[#dfeaff]" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[1.05fr_.95fr]">
+          <div className="relative min-h-[430px] overflow-hidden rounded-[30px] bg-[#dce8f6]">
+            <Image
+              src={config.heroImage}
+              alt={localized.label}
+              fill
+              sizes="(min-width: 1024px) 650px, 100vw"
+              className="object-cover"
+              style={{ objectPosition: config.heroPosition }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#08182d]/85 via-[#08182d]/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-white sm:p-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9ed8ff]">{copy.guideEyebrow}</p>
+              <h2 className="mt-3 max-w-xl text-[34px] leading-[1.02] tracking-[-0.05em] sm:text-[46px]">{copy.guideTitle}</h2>
+              <p className="mt-4 max-w-lg text-sm leading-7 text-white/72">{copy.guideText}</p>
             </div>
-            <p className="max-w-xl text-base leading-7 text-[#667085] lg:justify-self-end">{copy.guideText}</p>
           </div>
 
-          <div className="mt-10 grid gap-3 md:grid-cols-3">
+          <div className="flex flex-col rounded-[30px] border border-[#dbe3ef] bg-white px-6 py-4 shadow-[0_20px_60px_rgba(16,24,40,.07)] sm:px-8">
             {localized.guideTopics.map((topic, index) => {
               const Icon = guideIcon(slug, index)
               return (
-                <article key={topic} className="group relative flex min-h-[220px] flex-col overflow-hidden rounded-[22px] border border-[#dce4ef] bg-white p-6 shadow-[0_14px_40px_rgba(16,24,40,.045)] transition hover:-translate-y-1 hover:border-[#a9c7f4] hover:shadow-[0_22px_55px_rgba(16,24,40,.08)] sm:p-7">
-                  <span className="market-blob pointer-events-none absolute -right-14 -top-16 h-36 w-36 bg-[#eef4ff] transition group-hover:scale-110" aria-hidden="true" />
-                  <span className="grid h-11 w-11 place-items-center rounded-full border border-[#d7e5fa] bg-[#f4f8ff] text-[#0866ff]">
-                    <Icon className="h-5 w-5" strokeWidth={1.75} />
+                <Link
+                  key={topic}
+                  href={`/marketplace/${slug}`}
+                  className="group grid flex-1 grid-cols-[auto_1fr_auto] items-center gap-4 border-b border-[#e5eaf1] py-7 last:border-0"
+                >
+                  <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#edf4ff] text-[#0866ff]">
+                    <Icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-6 text-xl tracking-[-0.035em]">{topic}</h3>
-                  <Link href={`/marketplace/${slug}`} className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-[#0866ff]">
-                    {copy.readGuide}
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                  </Link>
-                </article>
+                  <span>
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a96a8]">Guide 0{index + 1}</span>
+                    <strong className="mt-1 block text-xl tracking-[-0.03em]">{topic}</strong>
+                  </span>
+                  <ArrowRight className="h-5 w-5 text-[#0866ff] transition group-hover:translate-x-1" />
+                </Link>
               )
             })}
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-        <div className="market-blob pointer-events-none absolute -right-20 top-16 h-64 w-64 bg-[#e7f5ef]" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1280px] gap-5 px-5 sm:px-8 lg:grid-cols-[1.02fr_.98fr]">
-          <div className="relative overflow-hidden rounded-[26px] border border-[#cfe0f7] bg-[linear-gradient(135deg,#e9f2ff,#f8fbff)] p-7 shadow-[0_18px_50px_rgba(35,80,145,.08)] sm:p-10">
-            <div className="market-blob pointer-events-none absolute -bottom-28 -right-16 h-64 w-64 bg-white/70" aria-hidden="true" />
-            <div className="relative">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-                {copy.sellPrefix} {localized.singular}
-              </p>
-              <h2 className="mt-4 max-w-xl text-[36px] leading-[1.02] tracking-[-0.05em] text-[#101828] sm:text-[44px]">
-                {copy.sellPrefix} {localized.singular} {copy.sellSuffix}
-              </h2>
-              <p className="mt-5 max-w-xl leading-7 text-[#5d6b7d]">{copy.sellText}</p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href={`/salj-fordon?category=${slug}`}
-                  className="inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white"
-                >
+      <section className="bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
+          <div className="relative overflow-hidden rounded-[32px] border border-[#c9daf5] bg-[linear-gradient(125deg,#e8f2ff_0%,#f7faff_52%,#eaf7f1_100%)]">
+            <div className="market-blob pointer-events-none absolute -bottom-40 -right-20 h-96 w-96 bg-white/70" aria-hidden="true" />
+            <div className="relative grid lg:grid-cols-[1.02fr_.98fr]">
+              <div className="p-7 sm:p-11 lg:p-14">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+                  {copy.sellPrefix} {localized.singular}
+                </p>
+                <h2 className="mt-4 max-w-xl text-[38px] leading-[1.02] tracking-[-0.055em] sm:text-[50px]">
+                  {copy.sellPrefix} {localized.singular} {copy.sellSuffix}
+                </h2>
+                <p className="mt-5 max-w-xl leading-8 text-[#5d6b7d]">{copy.sellText}</p>
+                <Link href={`/salj-fordon?category=${slug}`} className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-bold text-white">
                   {copy.sellCta}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  href={`/marketplace/${slug}`}
-                  className="inline-flex min-h-12 items-center rounded-[14px] border border-[#b8c9df] bg-white px-5 text-sm font-bold text-[#24344a]"
-                >
-                  {copy.browseCta}
-                </Link>
               </div>
-            </div>
-          </div>
 
-          <div className="relative overflow-hidden rounded-[26px] border border-[#e0e6ee] bg-white p-7 shadow-[0_18px_50px_rgba(16,24,40,.055)] sm:p-10">
-            <div className="market-blob pointer-events-none absolute -right-20 -top-24 h-56 w-56 bg-[#f0f5ff]" aria-hidden="true" />
-            <div className="relative">
-              <p className="text-xs font-bold uppercase tracking-[0.19em] text-[#0866ff]">
-                {copy.faqEyebrow}
-              </p>
-              <h2 className="mt-4 text-[36px] leading-[1.05] tracking-[-0.05em] sm:text-[44px]">
-                {copy.faqTitle}
-              </h2>
-              <div className="mt-7 divide-y divide-[#e4e7ec] border-y border-[#e4e7ec]">
-                {[
-                  [copy.faqSearchQuestion, copy.faqSearchAnswer],
-                  [copy.faqSellQuestion, copy.faqSellAnswer],
-                ].map(([question, answer]) => (
-                  <details key={question} className="group py-5">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold [&::-webkit-details-marker]:hidden">
-                      {question}
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f0f4fa] text-[#0866ff] transition group-open:rotate-45">
-                        +
-                      </span>
-                    </summary>
-                    <p className="max-w-2xl pt-4 text-sm leading-7 text-[#667085]">{answer}</p>
-                  </details>
-                ))}
+              <div className="border-t border-[#c9daf5] bg-white/62 p-7 backdrop-blur-sm sm:p-10 lg:border-l lg:border-t-0">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">{copy.faqEyebrow}</p>
+                <h3 className="mt-3 text-3xl leading-[1.05] tracking-[-0.045em]">{copy.faqTitle}</h3>
+                <div className="mt-7 divide-y divide-[#dbe3ed] border-y border-[#dbe3ed]">
+                  {[
+                    [copy.faqSearchQuestion, copy.faqSearchAnswer],
+                    [copy.faqSellQuestion, copy.faqSellAnswer],
+                  ].map(([question, answer]) => (
+                    <details key={question} className="group py-5">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold [&::-webkit-details-marker]:hidden">
+                        {question}
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-[#0866ff] shadow-sm transition group-open:rotate-45">+</span>
+                      </summary>
+                      <p className="max-w-xl pt-4 text-sm leading-7 text-[#667085]">{answer}</p>
+                    </details>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
