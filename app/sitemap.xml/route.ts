@@ -23,11 +23,16 @@ export function GET(request: Request) {
       const priority =
         path === ''
           ? '1.0'
-          : path.startsWith('/marketplace/')
+          : path.startsWith('/marketplace/') ||
+              ['/cars', '/vans', '/motorcycles', '/motorhomes', '/caravans', '/trucks', '/farm', '/plant', '/electric-bikes', '/e-scooters'].includes(path)
             ? '0.9'
             : '0.7'
       const frequency =
-        path === '' || path.startsWith('/marketplace/') ? 'daily' : 'monthly'
+        path === '' ||
+        path.startsWith('/marketplace/') ||
+        ['/cars', '/vans', '/motorcycles', '/motorhomes', '/caravans', '/trucks', '/farm', '/plant', '/electric-bikes', '/e-scooters'].includes(path)
+          ? 'daily'
+          : 'monthly'
       return [
         '  <url>',
         `    <loc>${escapeXml(loc)}</loc>`,

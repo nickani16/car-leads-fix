@@ -29,16 +29,16 @@ import {
 } from '@/lib/public-i18n'
 
 const categoryItems = [
-  { labels: ['Bilar', 'Cars', 'Autos'], href: '/marketplace/cars', icon: CarFront },
-  { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/marketplace/vans', icon: BusFront },
-  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/marketplace/motorcycles', icon: Bike },
-  { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/marketplace/motorhomes', icon: BusFront },
-  { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/marketplace/caravans', icon: Warehouse },
-  { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/marketplace/trucks', icon: Truck },
-  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/marketplace/agriculture', icon: Tractor },
-  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/marketplace/construction', icon: Construction },
-  { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/marketplace/electric-bikes', icon: Leaf },
-  { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/marketplace/e-scooters', icon: Leaf },
+  { labels: ['Bilar', 'Cars', 'Autos'], href: '/cars', icon: CarFront },
+  { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/vans', icon: BusFront },
+  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/motorcycles', icon: Bike },
+  { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/motorhomes', icon: BusFront },
+  { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/caravans', icon: Warehouse },
+  { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/trucks', icon: Truck },
+  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/farm', icon: Tractor },
+  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/plant', icon: Construction },
+  { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/electric-bikes', icon: Leaf },
+  { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/e-scooters', icon: Leaf },
 ] as const
 
 const homeCopy = {
@@ -239,7 +239,7 @@ export default function BusinessMarketplaceHome({
                 {t.mobilityTitle}
               </h2>
             </div>
-            <Link href="/marketplace/cars" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
+            <Link href="/cars" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
               {t.explore}
               <ArrowRight className="h-4 w-4" />
             </Link>

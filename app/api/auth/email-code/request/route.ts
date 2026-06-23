@@ -29,37 +29,7 @@ function isRateLimited(key: string) {
   return false
 }
 
-function language(request: Request) {
-  const host = (
-    request.headers.get('x-forwarded-host') ||
-    request.headers.get('host') ||
-    ''
-  ).toLowerCase()
-  const requested = request.headers.get('x-autorell-language')
-  if (requested === 'sv' || host.includes('autorell.se')) return 'sv'
-  if (requested === 'de' || host.includes('autorell.de')) return 'de'
-  return 'en'
-}
-
-function emailCopy(locale: 'sv' | 'de' | 'en', code: string) {
-  if (locale === 'sv') {
-    return {
-      subject: `${code} är din inloggningskod för Autorell`,
-      heading: 'Din inloggningskod',
-      intro: 'Ange koden nedan för att fortsätta till ditt Autorell-konto.',
-      expiry: 'Koden gäller i 10 minuter och kan bara användas en gång.',
-      ignore: 'Om du inte begärde koden kan du ignorera mejlet.',
-    }
-  }
-  if (locale === 'de') {
-    return {
-      subject: `${code} ist Ihr Autorell-Anmeldecode`,
-      heading: 'Ihr Anmeldecode',
-      intro: 'Geben Sie den folgenden Code ein, um mit Ihrem Autorell-Konto fortzufahren.',
-      expiry: 'Der Code ist 10 Minuten gültig und kann nur einmal verwendet werden.',
-      ignore: 'Wenn Sie den Code nicht angefordert haben, können Sie diese E-Mail ignorieren.',
-    }
-  }
+function emailCopy(code: string) {
   return {
     subject: `${code} is your Autorell sign-in code`,
     heading: 'Your sign-in code',
@@ -119,7 +89,7 @@ export async function POST(request: Request) {
     })
     if (insertError) throw insertError
 
-    const copy = emailCopy(language(request), code)
+    const copy = emailCopy(code)
     const resend = new Resend(resendKey)
     const { error: sendError } = await resend.emails.send({
       from: 'Autorell <noreply@autorell.com>',

@@ -4,6 +4,7 @@ import {
   marketplaceLanguage,
   marketplacePublicSelect,
 } from '@/lib/marketplace'
+import { categoryLandingPath } from '@/lib/category-landings'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
   )
 
   const categories: SearchEntry[] = marketplaceCategories.map((category) => ({
-    href: `/marketplace/${category.slug}`,
+    href: categoryLandingPath(category.slug),
     title:
       locale === 'sv' || locale === 'de' || locale === 'en'
         ? category.labels[language]

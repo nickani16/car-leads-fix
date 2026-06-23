@@ -152,7 +152,7 @@ export default async function MarketplaceInformationPage({
           <h1 className="mt-5 max-w-4xl text-5xl leading-[1] tracking-[-.055em] sm:text-7xl">{content.heading}</h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">{content.intro}</p>
           {!['privacy', 'terms', 'cookies'].includes(page) && (
-            <Link href="/marketplace/cars" className="mt-8 inline-flex min-h-13 items-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white">
+            <Link href="/cars" className="mt-8 inline-flex min-h-13 items-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white">
               {translatePublicObject(publicLocale, { label: 'Explore the marketplace' }).label}
               <ArrowRight className="h-4 w-4" />
             </Link>

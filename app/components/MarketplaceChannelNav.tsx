@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { PublicLocale } from '@/lib/public-i18n'
+import { categoryLandingPath } from '@/lib/category-landings'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 
 const channelLinks: Record<string, Record<'sv' | 'en' | 'de', string[]>> = {
   cars: {
@@ -45,13 +47,18 @@ export default function MarketplaceChannelNav({
   return (
     <div className="hidden border-b border-[#e4e7ec] bg-white min-[1120px]:block">
       <nav className="mx-auto flex h-[52px] max-w-[1440px] items-center gap-7 overflow-x-auto px-10 text-[13px] font-semibold text-[#344054] xl:px-14">
-        <strong className="shrink-0 text-[#101828]">{label}</strong>
+        <Link
+          href={categoryLandingPath(slug as MarketplaceCategorySlug)}
+          className="flex h-full shrink-0 items-center border-b-2 border-[#0866ff] text-[#101828]"
+        >
+          {label}
+        </Link>
         {links.map((item, index) => (
           <Link
             key={item}
             href={index === 2 || item.toLowerCase().includes('sälj') || item.toLowerCase().includes('sell') || item.toLowerCase().includes('verkaufen')
               ? `/salj-fordon?category=${slug}`
-              : `/marketplace/${slug}${index === 0 ? '' : `?filter=${encodeURIComponent(item)}`}`}
+              : `/marketplace/${slug}?filter=${encodeURIComponent(item)}`}
             className="flex h-full shrink-0 items-center border-b-2 border-transparent transition hover:border-[#0866ff] hover:text-[#0866ff]"
           >
             {item}

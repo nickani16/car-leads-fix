@@ -38,6 +38,7 @@ import {
   marketplaceCategories,
   marketplaceLanguage,
 } from '@/lib/marketplace'
+import { categoryLandingPath } from '@/lib/category-landings'
 import {
   localizePublicHref,
   translatePublic,
@@ -309,7 +310,7 @@ export default function PublicHeader({
         ? category.labels[language]
         : translatePublic(locale, category.labels.en)
     return {
-      href: `/marketplace/${category.slug}`,
+      href: categoryLandingPath(category.slug),
       label,
       description:
         locale === 'sv'
@@ -334,16 +335,19 @@ export default function PublicHeader({
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? businessItems[language]
       : translatePublicObject(locale, businessItems.en)
-  const activeCategorySlug = pathname.startsWith('/marketplace/')
-    ? pathname.split('/')[2]
-    : null
+  const activeCategorySlug =
+    marketplaceCategories.find(
+      (category) =>
+        pathname === categoryLandingPath(category.slug) ||
+        pathname === `/marketplace/${category.slug}`,
+    )?.slug || null
   const activeMarketplaceChannel =
     marketplaceChannel ||
     (activeCategorySlug
       ? {
           slug: activeCategorySlug,
           label:
-            buyItems.find((item) => item.href === `/marketplace/${activeCategorySlug}`)
+            buyItems.find((item) => item.href === categoryLandingPath(activeCategorySlug))
               ?.label || '',
         }
       : null)
@@ -356,14 +360,14 @@ export default function PublicHeader({
   }> = [
     {
       label: t.buy,
-      href: '/marketplace/cars',
+      href: '/cars',
       icon: Search,
       data: {
         eyebrow: t.buy,
         title: t.buyTitle,
         text: t.buyText,
         cta: t.buyCta,
-        ctaHref: '/marketplace/cars',
+        ctaHref: '/cars',
         items: buyItems,
       },
     },
@@ -472,8 +476,10 @@ export default function PublicHeader({
             <div className="mx-auto flex h-[30px] max-w-[1600px] items-center justify-between gap-5 px-6">
               <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                 {buyItems.map(({ href, label }, index) => {
-                  const isActive = pathname === href
                   const category = marketplaceCategories[index]
+                  const isActive =
+                    pathname === href ||
+                    (category && pathname === `/marketplace/${category.slug}`)
                   const topLabel =
                     category && topCategoryLabels[category.slug]
                       ? topCategoryLabels[category.slug]![language]

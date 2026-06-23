@@ -31,7 +31,7 @@ export default async function NotFound() {
       ? (requestedLanguage as NotFoundLanguage)
       : fallbackLanguage
   const copy = getNotFoundCopy(language)
-  const actionHref = '/marketplace/cars'
+  const actionHref = '/cars'
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f6f4ef] text-[#202124]">
