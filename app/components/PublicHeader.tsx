@@ -368,7 +368,7 @@ export default function PublicHeader({
     activeCategoryConfig && activeCategoryCopy
       ? activeCategoryCopy.menu.map((label, index) => ({
           label,
-          href: categoryLandingMenuHref(activeCategoryConfig, label, index),
+          href: categoryLandingMenuHref(activeCategoryConfig, label),
           description:
             locale === 'sv'
               ? `Utforska ${activeCategoryCopy.label.toLowerCase()} på Autorell.`

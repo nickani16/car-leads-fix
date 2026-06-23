@@ -46,9 +46,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke eller modell', en: 'Make or model', de: 'Marke oder Modell' },
     menu: {
-      sv: ['Begagnade bilar', 'Nya bilar', 'Sälj din bil', 'Bilrecensioner', 'Elbilar'],
-      en: ['Used cars', 'New cars', 'Sell your car', 'Car reviews', 'Electric cars'],
-      de: ['Gebrauchtwagen', 'Neuwagen', 'Auto verkaufen', 'Autotests', 'Elektroautos'],
+      sv: ['Begagnade bilar', 'Nya bilar', 'Sälj din bil'],
+      en: ['Used cars', 'New cars', 'Sell your car'],
+      de: ['Gebrauchtwagen', 'Neuwagen', 'Auto verkaufen'],
     },
     guideTopics: {
       sv: ['Välja rätt bil', 'Köpa begagnat', 'Ladda elbil'],
@@ -70,9 +70,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller skåptyp', en: 'Make, model or van type', de: 'Marke, Modell oder Aufbau' },
     menu: {
-      sv: ['Begagnade transportbilar', 'Nya transportbilar', 'Sälj din transportbil', 'Transportbilsrecensioner', 'Eltransportbilar', 'Leasing', 'Försäkring'],
-      en: ['Used vans', 'New vans', 'Sell your van', 'Van reviews', 'Electric vans', 'Van leasing', 'Insurance'],
-      de: ['Gebrauchte Transporter', 'Neue Transporter', 'Transporter verkaufen', 'Transporter-Tests', 'Elektrotransporter', 'Leasing', 'Versicherung'],
+      sv: ['Begagnade transportbilar', 'Nya transportbilar', 'Sälj din transportbil'],
+      en: ['Used vans', 'New vans', 'Sell your van'],
+      de: ['Gebrauchte Transporter', 'Neue Transporter', 'Transporter verkaufen'],
     },
     guideTopics: {
       sv: ['Rätt lastutrymme', 'Transportbil för företag', 'Eltransportbil i vardagen'],
@@ -94,9 +94,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller MC-typ', en: 'Make, model or bike type', de: 'Marke, Modell oder Motorradtyp' },
     menu: {
-      sv: ['Begagnade motorcyklar', 'Nya motorcyklar', 'Sälj din motorcykel', 'MC-recensioner', 'Elmoto', 'Touring'],
-      en: ['Used motorcycles', 'New motorcycles', 'Sell your motorcycle', 'Motorcycle reviews', 'Electric motorcycles', 'Touring bikes'],
-      de: ['Gebrauchte Motorräder', 'Neue Motorräder', 'Motorrad verkaufen', 'Motorradtests', 'Elektromotorräder', 'Tourer'],
+      sv: ['Begagnade motorcyklar', 'Nya motorcyklar', 'Sälj din motorcykel'],
+      en: ['Used motorcycles', 'New motorcycles', 'Sell your motorcycle'],
+      de: ['Gebrauchte Motorräder', 'Neue Motorräder', 'Motorrad verkaufen'],
     },
     guideTopics: {
       sv: ['Välj rätt MC-typ', 'Kontrollera en begagnad MC', 'Utrustning för längre resor'],
@@ -118,9 +118,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller sovplatser', en: 'Make, model or berths', de: 'Marke, Modell oder Schlafplätze' },
     menu: {
-      sv: ['Begagnade husbilar', 'Nya husbilar', 'Sälj din husbil', 'Husbilsrecensioner', 'Kompakta husbilar', 'Reseguider'],
-      en: ['Used motorhomes', 'New motorhomes', 'Sell your motorhome', 'Motorhome reviews', 'Compact motorhomes', 'Travel guides'],
-      de: ['Gebrauchte Wohnmobile', 'Neue Wohnmobile', 'Wohnmobil verkaufen', 'Wohnmobiltests', 'Kompakte Wohnmobile', 'Reiseratgeber'],
+      sv: ['Begagnade husbilar', 'Nya husbilar', 'Sälj din husbil'],
+      en: ['Used motorhomes', 'New motorhomes', 'Sell your motorhome'],
+      de: ['Gebrauchte Wohnmobile', 'Neue Wohnmobile', 'Wohnmobil verkaufen'],
     },
     guideTopics: {
       sv: ['Planlösning och sovplatser', 'Vikt och körkort', 'Köpa husbil utomlands'],
@@ -142,9 +142,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller sovplatser', en: 'Make, model or berths', de: 'Marke, Modell oder Schlafplätze' },
     menu: {
-      sv: ['Begagnade husvagnar', 'Nya husvagnar', 'Sälj din husvagn', 'Husvagnsrecensioner', 'Familjehusvagnar', 'Tillbehör'],
-      en: ['Used caravans', 'New caravans', 'Sell your caravan', 'Caravan reviews', 'Family caravans', 'Accessories'],
-      de: ['Gebrauchte Wohnwagen', 'Neue Wohnwagen', 'Wohnwagen verkaufen', 'Wohnwagentests', 'Familienwohnwagen', 'Zubehör'],
+      sv: ['Begagnade husvagnar', 'Nya husvagnar', 'Sälj din husvagn'],
+      en: ['Used caravans', 'New caravans', 'Sell your caravan'],
+      de: ['Gebrauchte Wohnwagen', 'Neue Wohnwagen', 'Wohnwagen verkaufen'],
     },
     guideTopics: {
       sv: ['Dragvikt och totalvikt', 'Enkel- eller dubbelaxel', 'Kontroll före köp'],
@@ -166,9 +166,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller påbyggnad', en: 'Make, model or body type', de: 'Marke, Modell oder Aufbau' },
     menu: {
-      sv: ['Begagnade lastbilar', 'Nya lastbilar', 'Sälj din lastbil', 'Dragbilar', 'Lastväxlare', 'El-lastbilar'],
-      en: ['Used trucks', 'New trucks', 'Sell your truck', 'Tractor units', 'Hook loaders', 'Electric trucks'],
-      de: ['Gebrauchte Lkw', 'Neue Lkw', 'Lkw verkaufen', 'Sattelzugmaschinen', 'Abrollkipper', 'Elektro-Lkw'],
+      sv: ['Begagnade lastbilar', 'Nya lastbilar', 'Sälj din lastbil'],
+      en: ['Used trucks', 'New trucks', 'Sell your truck'],
+      de: ['Gebrauchte Lkw', 'Neue Lkw', 'Lkw verkaufen'],
     },
     guideTopics: {
       sv: ['Välj rätt påbyggnad', 'Axelkonfiguration och last', 'Driftkostnad och export'],
@@ -190,9 +190,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller maskintyp', en: 'Make, model or machine type', de: 'Marke, Modell oder Maschinentyp' },
     menu: {
-      sv: ['Traktorer', 'Skördemaskiner', 'Redskap', 'Sälj lantbruksmaskin', 'Nya maskiner', 'Lantbruksguider'],
-      en: ['Tractors', 'Harvesting machinery', 'Implements', 'Sell farm machinery', 'New machinery', 'Farming guides'],
-      de: ['Traktoren', 'Erntemaschinen', 'Anbaugeräte', 'Landmaschine verkaufen', 'Neue Maschinen', 'Landwirtschaftsratgeber'],
+      sv: ['Begagnade lantbruksmaskiner', 'Nya lantbruksmaskiner', 'Sälj din lantbruksmaskin'],
+      en: ['Used farm machinery', 'New farm machinery', 'Sell your farm machinery'],
+      de: ['Gebrauchte Landmaschinen', 'Neue Landmaschinen', 'Landmaschine verkaufen'],
     },
     guideTopics: {
       sv: ['Effekt och redskapsbehov', 'Drifttimmar och service', 'Köpa maskin i Europa'],
@@ -214,9 +214,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller maskintyp', en: 'Make, model or machine type', de: 'Marke, Modell oder Maschinentyp' },
     menu: {
-      sv: ['Grävmaskiner', 'Lastare', 'Dumprar', 'Sälj entreprenadmaskin', 'Nya maskiner', 'Maskinguider'],
-      en: ['Excavators', 'Loaders', 'Dumpers', 'Sell construction machinery', 'New machinery', 'Machine guides'],
-      de: ['Bagger', 'Lader', 'Dumper', 'Baumaschine verkaufen', 'Neue Maschinen', 'Maschinenratgeber'],
+      sv: ['Begagnade entreprenadmaskiner', 'Nya entreprenadmaskiner', 'Sälj din entreprenadmaskin'],
+      en: ['Used construction machinery', 'New construction machinery', 'Sell your construction machinery'],
+      de: ['Gebrauchte Baumaschinen', 'Neue Baumaschinen', 'Baumaschine verkaufen'],
     },
     guideTopics: {
       sv: ['Storlek och arbetsvikt', 'Redskap och hydraulik', 'Kontroll av begagnad maskin'],
@@ -238,9 +238,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller cykeltyp', en: 'Make, model or bike type', de: 'Marke, Modell oder Fahrradtyp' },
     menu: {
-      sv: ['Begagnade elcyklar', 'Nya elcyklar', 'Sälj din elcykel', 'Lastcyklar', 'Pendlingscyklar', 'Batteriguider'],
-      en: ['Used electric bikes', 'New electric bikes', 'Sell your e-bike', 'Cargo bikes', 'Commuter bikes', 'Battery guides'],
-      de: ['Gebrauchte E-Bikes', 'Neue E-Bikes', 'E-Bike verkaufen', 'Lastenräder', 'Pendler-E-Bikes', 'Akkuratgeber'],
+      sv: ['Begagnade elcyklar', 'Nya elcyklar', 'Sälj din elcykel'],
+      en: ['Used electric bikes', 'New electric bikes', 'Sell your e-bike'],
+      de: ['Gebrauchte E-Bikes', 'Neue E-Bikes', 'E-Bike verkaufen'],
     },
     guideTopics: {
       sv: ['Motorplacering och känsla', 'Batteri och räckvidd', 'Kontrollera en begagnad elcykel'],
@@ -262,9 +262,9 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     },
     searchHint: { sv: 'Märke, modell eller användning', en: 'Make, model or use', de: 'Marke, Modell oder Nutzung' },
     menu: {
-      sv: ['Begagnade elsparkcyklar', 'Nya elsparkcyklar', 'Sälj din elsparkcykel', 'Pendlingsmodeller', 'Räckvidd', 'Säkerhetsguider'],
-      en: ['Used e-scooters', 'New e-scooters', 'Sell your e-scooter', 'Commuter models', 'Range', 'Safety guides'],
-      de: ['Gebrauchte E-Scooter', 'Neue E-Scooter', 'E-Scooter verkaufen', 'Pendlermodelle', 'Reichweite', 'Sicherheitsratgeber'],
+      sv: ['Begagnade elsparkcyklar', 'Nya elsparkcyklar', 'Sälj din elsparkcykel'],
+      en: ['Used e-scooters', 'New e-scooters', 'Sell your e-scooter'],
+      de: ['Gebrauchte E-Scooter', 'Neue E-Scooter', 'E-Scooter verkaufen'],
     },
     guideTopics: {
       sv: ['Räckvidd i verkligheten', 'Däck, bromsar och komfort', 'Regler i olika länder'],
@@ -313,7 +313,6 @@ export function localizeCategoryLanding(
 export function categoryLandingMenuHref(
   config: CategoryLandingConfig,
   item: string,
-  index: number,
 ) {
   const normalized = item.toLowerCase()
   if (
@@ -323,23 +322,7 @@ export function categoryLandingMenuHref(
   ) {
     return `/salj-fordon?category=${config.slug}`
   }
-  if (
-    normalized.includes('review') ||
-    normalized.includes('recension') ||
-    normalized.includes('test') ||
-    normalized.includes('guide') ||
-    normalized.includes('ratgeber') ||
-    normalized.includes('insurance') ||
-    normalized.includes('försäkring') ||
-    normalized.includes('versicherung') ||
-    normalized.includes('leasing') ||
-    normalized.includes('accessor') ||
-    normalized.includes('tillbehör') ||
-    normalized.includes('zubehör')
-  ) {
-    return `${config.path}#guides`
-  }
-  return `/marketplace/${config.slug}?filter=${encodeURIComponent(item || String(index))}`
+  return `/marketplace/${config.slug}?filter=${encodeURIComponent(item)}`
 }
 
 export function categoryLandingCopy(locale: PublicLocale) {

@@ -4,7 +4,6 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import MarketplaceCategoryBrowser, {
   type MarketplaceListing,
 } from '@/app/components/MarketplaceCategoryBrowser'
-import MarketplaceChannelNav from '@/app/components/MarketplaceChannelNav'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import {
@@ -182,7 +181,6 @@ export default async function MarketplaceCategoryPage({
         marketCode={marketCode}
         marketplaceChannel={{ label, slug: category.slug }}
       />
-      <MarketplaceChannelNav slug={category.slug} label={label} locale={locale} />
       <MarketplaceCategoryBrowser
         category={{
           slug: category.slug,

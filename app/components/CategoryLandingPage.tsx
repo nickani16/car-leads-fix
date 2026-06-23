@@ -104,18 +104,20 @@ export default async function CategoryLandingPage({
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.15] saturate-[.92]"
+              className="object-cover brightness-[1.07] saturate-[.95] contrast-[1.02]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0c1e2f]/20 to-transparent" />
-            <div className="absolute left-5 top-7 max-w-[620px] rounded-[22px] bg-white/88 p-5 shadow-[0_18px_50px_rgba(16,24,40,.12)] backdrop-blur-md sm:left-9 sm:top-9 sm:p-7 lg:left-12 lg:top-12">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0866ff] sm:text-xs">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.72)_0%,rgba(7,20,34,.48)_28%,rgba(7,20,34,.12)_58%,transparent_82%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(70,151,255,.22),transparent_34%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#071522]/45 via-[#071522]/10 to-transparent" />
+            <div className="absolute left-6 top-8 max-w-[600px] sm:left-10 sm:top-11 lg:left-14 lg:top-14">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9ed8ff] drop-shadow-sm sm:text-xs">
                 {localized.eyebrow}
               </p>
-              <h1 className="mt-3 break-words text-[38px] leading-[.98] tracking-[-0.055em] text-[#101828] sm:text-[58px] lg:text-[68px]">
+              <h1 className="mt-3 break-words text-[42px] leading-[.96] tracking-[-0.055em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] sm:text-[62px] lg:text-[72px]">
                 {localized.label}
               </h1>
-              <p className="mt-4 max-w-[520px] text-sm leading-6 text-[#475467] sm:text-base sm:leading-7">
+              <p className="mt-5 max-w-[520px] text-sm leading-6 text-white/88 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7">
                 {localized.intro}
               </p>
             </div>
