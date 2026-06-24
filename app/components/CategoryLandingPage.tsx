@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import {
   ArrowRight,
   BarChart3,
+  BadgeCheck,
   ChevronDown,
   CircleHelp,
   Compass,
@@ -26,6 +27,7 @@ import {
 } from '@/lib/category-landings'
 import { getRequestLocale } from '@/lib/request-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import type { PublicLocale } from '@/lib/public-i18n'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -77,6 +79,7 @@ export default async function CategoryLandingPage({
   const localized = localizeCategoryLanding(config, locale)
   const copy = categoryLandingCopy(locale)
   const searchLabel = localizedCategorySearchLabel(locale, localized.label)
+  const belowSearch = categoryBelowSearchContent(slug, locale, localized.label)
   const countries = euCountries
     .map(([code]) => code)
     .map((code) => ({
@@ -103,18 +106,18 @@ export default async function CategoryLandingPage({
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.16] saturate-[.98] contrast-[.98]"
+              className="object-cover brightness-[1.28] saturate-[1.02] contrast-[.96]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.48)_0%,rgba(7,20,34,.28)_34%,rgba(7,20,34,.07)_62%,transparent_88%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.08),transparent_34%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/26 via-[#071522]/6 to-transparent" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.34)_0%,rgba(7,20,34,.2)_34%,rgba(7,20,34,.05)_62%,transparent_88%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.05),transparent_34%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/18 via-[#071522]/4 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center px-6 pb-8 text-center sm:pb-4 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[620px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
-              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-white drop-shadow-[0_3px_16px_rgba(0,0,0,.25)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
+              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-white drop-shadow-[0_4px_22px_rgba(0,0,0,.42)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
                 {localized.label}
               </h1>
-              <p className="mx-auto mt-3 max-w-[540px] text-sm leading-6 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,.2)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
+              <p className="mx-auto mt-3 max-w-[540px] text-sm leading-6 text-white drop-shadow-[0_3px_16px_rgba(0,0,0,.5)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
               </div>
@@ -124,7 +127,7 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-[#f2f5f9]/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-full lg:px-5 lg:py-4"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
               <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
@@ -159,6 +162,12 @@ export default async function CategoryLandingPage({
           </form>
         </div>
       </section>
+
+      <CategoryBelowSearchSection
+        slug={slug}
+        content={belowSearch}
+        heroImage={config.heroImage}
+      />
 
       <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#e5e7eb] bg-[#f8f8f6] py-14 sm:py-20">
         <div className="market-blob pointer-events-none absolute -right-24 top-10 h-72 w-72 bg-[#0866ff]/8" aria-hidden="true" />
@@ -252,7 +261,7 @@ function SearchField({
   children: React.ReactNode
 }) {
   return (
-    <label className="relative flex min-w-0 items-center gap-3 rounded-[15px] border border-[#e1e7f0] bg-[#f8fafc] px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:rounded-none lg:border-0 lg:border-r lg:bg-transparent lg:px-6 lg:py-0 lg:focus-within:ring-0">
+    <label className="relative flex min-w-0 items-center gap-3 rounded-[15px] border border-[#dce4ee] bg-[#eef3f8] px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:rounded-[18px] lg:px-5 lg:py-2 lg:focus-within:ring-2">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#eaf2ff] text-[#0866ff] lg:hidden">
         <Icon className="h-[17px] w-[17px]" />
       </span>
@@ -262,6 +271,293 @@ function SearchField({
       </span>
     </label>
   )
+}
+
+type BelowSearchContent = {
+  discoverTitle: string
+  topRatedTitle: string
+  popularTitle: string
+  viewAll: string
+  discover: Array<{
+    title: string
+    text: string
+    href: string
+    image: string
+  }>
+  topRated: Array<{
+    title: string
+    meta: string
+    price: string
+  }>
+  popular: string[]
+}
+
+function CategoryBelowSearchSection({
+  slug,
+  content,
+  heroImage,
+}: {
+  slug: MarketplaceCategorySlug
+  content: BelowSearchContent
+  heroImage: string
+}) {
+  return (
+    <section className="bg-white py-12 sm:py-16">
+      <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
+        <h2 className="text-center text-xl font-semibold tracking-[-0.03em] text-[#101828]">
+          {content.discoverTitle}
+        </h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {content.discover.map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="group overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white shadow-[0_12px_30px_rgba(16,24,40,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(16,24,40,.1)]"
+            >
+              <div className="relative aspect-[16/9] overflow-hidden bg-[#eef3f8]">
+                <Image
+                  src={item.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 33vw, 100vw"
+                  className="object-cover brightness-[1.12] transition duration-500 group-hover:scale-[1.03]"
+                />
+              </div>
+              <div className="p-4">
+                <span className="inline-flex rounded-[4px] bg-[#0866ff] px-2 py-1 text-[10px] font-bold text-white">
+                  Autorell
+                </span>
+                <h3 className="mt-3 text-base font-bold leading-5 tracking-[-0.03em] text-[#101828]">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#667085]">{item.text}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-12">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">
+              {content.topRatedTitle}
+            </h2>
+            <Link href={`/marketplace/${slug}`} className="hidden text-sm font-bold text-[#0866ff] underline underline-offset-4 sm:inline-flex">
+              {content.viewAll}
+            </Link>
+          </div>
+          <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3">
+            {content.topRated.map((item, index) => (
+              <Link
+                key={item.title}
+                href={`/marketplace/${slug}`}
+                className="min-w-[230px] snap-start overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white shadow-[0_10px_28px_rgba(16,24,40,.06)] sm:min-w-[260px]"
+              >
+                <div className="relative aspect-[16/10] bg-[#eef3f8]">
+                  <Image
+                    src={heroImage}
+                    alt=""
+                    fill
+                    sizes="260px"
+                    className="object-cover brightness-[1.14]"
+                  />
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-[4px] bg-white/94 px-2 py-1 text-[10px] font-bold text-[#101828] shadow-sm">
+                    <BadgeCheck className="h-3.5 w-3.5 text-[#0866ff]" />
+                    {index + 1}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-bold leading-5 text-[#101828]">{item.title}</h3>
+                  <p className="mt-2 text-xs font-medium text-[#667085]">{item.meta}</p>
+                  <p className="mt-4 text-lg font-bold tracking-[-0.03em] text-[#101828]">{item.price}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-12">
+          <h2 className="text-center text-xl font-semibold tracking-[-0.03em] text-[#101828]">
+            {content.popularTitle}
+          </h2>
+          <div className="mx-auto mt-6 grid max-w-[920px] grid-cols-2 gap-3 sm:grid-cols-4">
+            {content.popular.map((item) => (
+              <Link
+                key={item}
+                href={`/marketplace/${slug}?q=${encodeURIComponent(item)}`}
+                className="grid min-h-20 place-items-center rounded-[8px] border border-[#dfe5ee] bg-[#f8fafc] px-3 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#344054] transition hover:border-[#9bbdf0] hover:bg-white hover:text-[#0866ff]"
+              >
+                {item}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function categoryBelowSearchContent(
+  slug: MarketplaceCategorySlug,
+  locale: PublicLocale,
+  label: string,
+): BelowSearchContent {
+  const isDe = locale === 'de'
+  const isEn = locale !== 'sv' && locale !== 'de'
+  const discoverTitle = isDe
+    ? `Mehr rund um ${label}`
+    : isEn
+      ? `Discover more for ${label.toLowerCase()}`
+      : `Upptäck mer för ${label.toLowerCase()}`
+  const topRatedTitle = isDe ? 'Top bewertete Anzeigen' : isEn ? 'Top rated listings' : 'Topprankade annonser'
+  const popularTitle = isDe ? 'Beliebte Suchen' : isEn ? 'Popular searches' : 'Populära sökningar'
+  const viewAll = isDe ? 'Alle anzeigen' : isEn ? 'View all' : 'Visa alla'
+  const shared = categorySpecificContent(slug)
+
+  return {
+    discoverTitle,
+    topRatedTitle,
+    popularTitle,
+    viewAll,
+    discover: shared.discover.map((item) => ({
+      title: translateThree(item.title, locale),
+      text: translateThree(item.text, locale),
+      href: item.href,
+      image: item.image,
+    })),
+    topRated: shared.topRated.map((item) => ({
+      title: translateThree(item.title, locale),
+      meta: translateThree(item.meta, locale),
+      price: item.price,
+    })),
+    popular: shared.popular,
+  }
+}
+
+function translateThree(text: Record<'sv' | 'en' | 'de', string>, locale: PublicLocale) {
+  return locale === 'de' ? text.de : locale === 'sv' ? text.sv : text.en
+}
+
+function categorySpecificContent(slug: MarketplaceCategorySlug) {
+  const content = {
+    cars: {
+      discover: [
+        card('Jämför bilar över hela EU', 'Compare cars across the EU', 'Autos in der EU vergleichen', 'Filtrera på land, skick och drivlina innan du kontaktar säljaren.', 'Filter by country, condition and drivetrain before contacting the seller.', 'Nach Land, Zustand und Antrieb filtern, bevor Sie den Verkäufer kontaktieren.', '/marketplace/cars', '/category-cars-hero.jpg'),
+        card('Sälj din bil tryggt', 'Sell your car safely', 'Auto sicher verkaufen', 'Skapa annons, samla leads och hantera intresse direkt i Autorell.', 'Create a listing, collect leads and manage interest in Autorell.', 'Anzeige erstellen, Leads sammeln und Anfragen in Autorell verwalten.', '/salj-fordon?category=cars', '/category-vans-hero.jpg'),
+        card('El, hybrid eller bensin', 'Electric, hybrid or petrol', 'Elektro, Hybrid oder Benzin', 'Hitta rätt drivlina för vardag, långresa och budget.', 'Find the right drivetrain for daily use, longer trips and budget.', 'Den passenden Antrieb für Alltag, Reise und Budget finden.', '/marketplace/cars?filter=El', '/category-cars-hero.jpg'),
+      ],
+      topRated: top(['Volkswagen Golf eHybrid', '10 200 mil · Sverige', '179 000 kr'], ['BMW 320d Touring', '8 400 mil · Tyskland', '21 900 €'], ['Volvo XC60 Recharge', '5 900 mil · Nederländerna', '389 000 kr'], ['Tesla Model 3 Long Range', '6 800 mil · Danmark', '31 500 €']),
+      popular: ['Volvo', 'BMW', 'Audi', 'Tesla'],
+    },
+    vans: {
+      discover: [
+        card('Rätt skåp för jobbet', 'The right van for the job', 'Der richtige Transporter', 'Jämför lastutrymme, höjd och dragvikt för verksamheten.', 'Compare load space, height and towing weight for your business.', 'Laderaum, Höhe und Anhängelast für Ihr Geschäft vergleichen.', '/marketplace/vans', '/category-vans-hero.jpg'),
+        card('Företagsklar transportbil', 'Business-ready vans', 'Bereit fürs Unternehmen', 'Hitta fordon med moms, historik och exportvänliga uppgifter.', 'Find vehicles with VAT, history and export-ready details.', 'Fahrzeuge mit MwSt., Historie und exportfähigen Daten finden.', '/marketplace/vans?filter=Moms', '/category-trucks-hero.jpg'),
+        card('Eltransport i vardagen', 'Electric vans in daily use', 'Elektrotransporter im Alltag', 'Se räckvidd, laddning och total kostnad innan du väljer.', 'Review range, charging and total cost before choosing.', 'Reichweite, Laden und Gesamtkosten vor der Wahl prüfen.', '/marketplace/vans?filter=El', '/category-vans-hero.jpg'),
+      ],
+      topRated: top(['Mercedes-Benz Sprinter', '12 000 mil · Polen', '24 900 €'], ['Volkswagen Transporter', '9 500 mil · Sverige', '289 000 kr'], ['Ford Transit Custom', '7 800 mil · Tyskland', '22 400 €'], ['Renault Master L3H2', '11 400 mil · Frankrike', '18 900 €']),
+      popular: ['Sprinter', 'Transit', 'Transporter', 'Master'],
+    },
+    motorcycles: {
+      discover: [
+        card('Touring eller pendling', 'Touring or commuting', 'Touring oder Pendeln', 'Välj MC efter sittställning, effekt och körmiljö.', 'Choose by riding position, power and use case.', 'Nach Sitzposition, Leistung und Einsatz wählen.', '/marketplace/motorcycles', '/category-motorcycles-hero.jpg'),
+        card('Kontrollera begagnad MC', 'Check a used motorcycle', 'Gebrauchtes Motorrad prüfen', 'Fokusera på service, däck, bromsar och tidigare ägare.', 'Focus on service, tyres, brakes and ownership history.', 'Service, Reifen, Bremsen und Vorbesitzer prüfen.', '/marketplace/motorcycles?filter=Begagnad', '/category-motorcycles-hero.jpg'),
+        card('Sälj inför säsongen', 'Sell before the season', 'Vor der Saison verkaufen', 'Lägg upp bilder och fakta som gör din motorcykel lätt att jämföra.', 'Publish photos and facts that make your bike easy to compare.', 'Bilder und Daten veröffentlichen, die den Vergleich erleichtern.', '/salj-fordon?category=motorcycles', '/category-cars-hero.jpg'),
+      ],
+      topRated: top(['BMW R 1250 GS', '3 200 mil · Tyskland', '16 900 €'], ['Yamaha MT-07', '1 800 mil · Sverige', '69 000 kr'], ['Honda Africa Twin', '2 900 mil · Italien', '12 800 €'], ['Kawasaki Z900', '2 100 mil · Polen', '8 900 €']),
+      popular: ['BMW GS', 'Yamaha MT', 'Honda', 'Kawasaki'],
+    },
+    motorhomes: {
+      discover: [
+        card('Planlösning som passar', 'Layouts that fit', 'Passender Grundriss', 'Jämför sovplatser, längd och förvaring inför nästa resa.', 'Compare berths, length and storage before your next trip.', 'Schlafplätze, Länge und Stauraum vergleichen.', '/marketplace/motorhomes', '/category-motorhomes-hero.jpg'),
+        card('Importera tryggare', 'Buy across borders safely', 'Sicher grenzübergreifend kaufen', 'Se land, utrustning och dokument innan du bokar visning.', 'Review country, equipment and documents before booking a viewing.', 'Land, Ausstattung und Unterlagen vor Besichtigung prüfen.', '/marketplace/motorhomes?country=', '/category-caravans-hero.jpg'),
+        card('Sälj din husbil', 'Sell your motorhome', 'Wohnmobil verkaufen', 'Visa planlösning, service och skick tydligt för seriösa köpare.', 'Show layout, service and condition clearly for serious buyers.', 'Grundriss, Service und Zustand klar darstellen.', '/salj-fordon?category=motorhomes', '/category-motorhomes-hero.jpg'),
+      ],
+      topRated: top(['Hymer B-Class', '6 700 mil · Tyskland', '74 900 €'], ['Knaus Sky TI', '4 800 mil · Sverige', '699 000 kr'], ['Adria Matrix Plus', '5 200 mil · Nederländerna', '62 500 €'], ['Dethleffs Trend', '7 100 mil · Danmark', '58 900 €']),
+      popular: ['Hymer', 'Knaus', 'Adria', 'Dethleffs'],
+    },
+    caravans: {
+      discover: [
+        card('Husvagn för familjen', 'Caravans for families', 'Wohnwagen für Familien', 'Jämför sovplatser, totalvikt och smart förvaring.', 'Compare berths, total weight and practical storage.', 'Schlafplätze, Gesamtgewicht und Stauraum vergleichen.', '/marketplace/caravans', '/category-caravans-hero.jpg'),
+        card('Dragvikt utan krångel', 'Towing without guesswork', 'Anhängen ohne Rätsel', 'Hitta modeller som passar bilen och körkortet.', 'Find models that fit your car and driving licence.', 'Modelle passend zu Auto und Führerschein finden.', '/marketplace/caravans?filter=Dragvikt', '/category-vans-hero.jpg'),
+        card('Säsongsklar annons', 'A listing ready for the season', 'Saisonfertige Anzeige', 'Lyft fram fukttest, utrustning och planlösning.', 'Highlight damp checks, equipment and layout.', 'Dichtigkeitsprüfung, Ausstattung und Grundriss zeigen.', '/salj-fordon?category=caravans', '/category-caravans-hero.jpg'),
+      ],
+      topRated: top(['Hobby Excellent', '2021 · Sverige', '279 000 kr'], ['Kabe Royal', '2020 · Sverige', '449 000 kr'], ['Adria Alpina', '2019 · Tyskland', '31 900 €'], ['Fendt Bianco', '2022 · Nederländerna', '28 500 €']),
+      popular: ['Kabe', 'Hobby', 'Adria', 'Fendt'],
+    },
+    trucks: {
+      discover: [
+        card('Lastbil för rätt uppdrag', 'Trucks for the right job', 'Lkw für den Einsatz', 'Jämför axlar, påbyggnad och driftprofil.', 'Compare axle setup, body type and operating profile.', 'Achsen, Aufbau und Einsatzprofil vergleichen.', '/marketplace/trucks', '/category-trucks-hero.jpg'),
+        card('Export och dokument', 'Export and documents', 'Export und Unterlagen', 'Se land, moms och tekniska uppgifter innan kontakt.', 'Review country, VAT and technical data before contact.', 'Land, MwSt. und technische Daten vor Kontakt prüfen.', '/marketplace/trucks?filter=Export', '/category-vans-hero.jpg'),
+        card('Sälj tyngre fordon', 'Sell heavy vehicles', 'Schwere Fahrzeuge verkaufen', 'Bygg en annons med bilder, mått, vikt och service.', 'Create a listing with photos, dimensions, weight and service.', 'Anzeige mit Bildern, Maßen, Gewicht und Service erstellen.', '/salj-fordon?category=trucks', '/category-trucks-hero.jpg'),
+      ],
+      topRated: top(['Volvo FH 500', '68 000 mil · Sverige', '54 900 €'], ['Scania R450', '72 000 mil · Polen', '49 500 €'], ['Mercedes Actros', '61 000 mil · Tyskland', '57 900 €'], ['MAN TGX 18.470', '58 000 mil · Nederländerna', '52 900 €']),
+      popular: ['Volvo FH', 'Scania', 'Actros', 'MAN'],
+    },
+    agriculture: {
+      discover: [
+        card('Maskiner för säsongen', 'Machines for the season', 'Maschinen für die Saison', 'Jämför timmar, effekt och redskap för lantbruket.', 'Compare hours, power and implements for farming.', 'Stunden, Leistung und Geräte vergleichen.', '/marketplace/agriculture', '/category-agriculture-hero.jpg'),
+        card('Drifttimmar och service', 'Hours and service', 'Stunden und Service', 'Se vad som är dokumenterat innan du planerar transport.', 'Review documentation before planning transport.', 'Unterlagen prüfen, bevor Transport geplant wird.', '/marketplace/agriculture?filter=Service', '/category-construction-hero.jpg'),
+        card('Sälj lantbruksmaskin', 'Sell farm machinery', 'Landmaschine verkaufen', 'Visa skick, redskap och kapacitet för rätt köpare.', 'Show condition, implements and capacity for the right buyer.', 'Zustand, Geräte und Kapazität klar zeigen.', '/salj-fordon?category=agriculture', '/category-agriculture-hero.jpg'),
+      ],
+      topRated: top(['John Deere 6155R', '4 200 h · Danmark', '92 000 €'], ['Fendt 724 Vario', '5 100 h · Tyskland', '118 000 €'], ['Valtra T174', '3 900 h · Finland', '86 500 €'], ['New Holland T7', '4 800 h · Polen', '74 900 €']),
+      popular: ['John Deere', 'Fendt', 'Valtra', 'New Holland'],
+    },
+    construction: {
+      discover: [
+        card('Entreprenad för jobbet', 'Construction machines for the job', 'Baumaschinen für den Einsatz', 'Jämför vikt, hydraulik och redskap innan köp.', 'Compare weight, hydraulics and attachments before buying.', 'Gewicht, Hydraulik und Anbaugeräte vergleichen.', '/marketplace/construction', '/category-construction-hero.jpg'),
+        card('Kontroll före transport', 'Check before transport', 'Vor Transport prüfen', 'Se mått, skick och servicehistorik tydligare.', 'Review dimensions, condition and service history clearly.', 'Maße, Zustand und Servicehistorie prüfen.', '/marketplace/construction?filter=Service', '/category-trucks-hero.jpg'),
+        card('Sälj maskin med fakta', 'Sell machinery with facts', 'Maschine mit Daten verkaufen', 'Lägg upp timmar, vikt, redskap och bilder i samma flöde.', 'Publish hours, weight, attachments and photos in one flow.', 'Stunden, Gewicht, Geräte und Bilder veröffentlichen.', '/salj-fordon?category=construction', '/category-construction-hero.jpg'),
+      ],
+      topRated: top(['Volvo EC220E', '5 600 h · Sverige', '86 000 €'], ['CAT 320', '6 100 h · Tyskland', '92 500 €'], ['Hitachi ZX210', '4 900 h · Polen', '79 900 €'], ['Komatsu WA320', '7 200 h · Nederländerna', '68 500 €']),
+      popular: ['Volvo CE', 'CAT', 'Hitachi', 'Komatsu'],
+    },
+    'electric-bikes': {
+      discover: [
+        card('Elcykel för vardagen', 'E-bikes for daily life', 'E-Bikes für den Alltag', 'Jämför batteri, motorplacering och användning.', 'Compare battery, motor position and use case.', 'Akku, Motorposition und Nutzung vergleichen.', '/marketplace/electric-bikes', '/category-electric-bikes-hero.jpg'),
+        card('Pendla smartare', 'Commute smarter', 'Smarter pendeln', 'Hitta city, cargo och trekking-modeller i hela EU.', 'Find city, cargo and trekking models across the EU.', 'City-, Cargo- und Trekkingmodelle in der EU finden.', '/marketplace/electric-bikes?filter=Pendling', '/category-e-scooters-hero.jpg'),
+        card('Sälj din elcykel', 'Sell your e-bike', 'E-Bike verkaufen', 'Visa batteriskick, laddare och kvitto för tryggare affär.', 'Show battery condition, charger and receipt for trust.', 'Akkuzustand, Ladegerät und Rechnung zeigen.', '/salj-fordon?category=electric-bikes', '/category-electric-bikes-hero.jpg'),
+      ],
+      topRated: top(['Trek Allant+ 7', '625 Wh · Sverige', '24 900 kr'], ['Cube Kathmandu Hybrid', '750 Wh · Tyskland', '2 650 €'], ['Riese & Müller Charger', '625 Wh · Nederländerna', '3 100 €'], ['Specialized Turbo Vado', '710 Wh · Danmark', '2 900 €']),
+      popular: ['Trek', 'Cube', 'Riese Müller', 'Specialized'],
+    },
+    'e-scooters': {
+      discover: [
+        card('Elspark för korta resor', 'E-scooters for short trips', 'E-Scooter für kurze Wege', 'Jämför räckvidd, bromsar och vikt för vardagen.', 'Compare range, brakes and weight for everyday use.', 'Reichweite, Bremsen und Gewicht vergleichen.', '/marketplace/e-scooters', '/category-e-scooters-hero.jpg'),
+        card('Regler i olika länder', 'Rules across countries', 'Regeln nach Land', 'Välj modell med koll på hastighet och användningsområde.', 'Choose with speed and use case in mind.', 'Mit Blick auf Geschwindigkeit und Nutzung wählen.', '/marketplace/e-scooters?filter=Regler', '/category-electric-bikes-hero.jpg'),
+        card('Sälj kompakt mobilitet', 'Sell compact mobility', 'Kompakte Mobilität verkaufen', 'Lägg upp batteri, skick och tillbehör tydligt.', 'Show battery, condition and accessories clearly.', 'Akku, Zustand und Zubehör klar zeigen.', '/salj-fordon?category=e-scooters', '/category-e-scooters-hero.jpg'),
+      ],
+      topRated: top(['Ninebot Max G2', '70 km räckvidd · Sverige', '6 900 kr'], ['Xiaomi 4 Ultra', '55 km räckvidd · Tyskland', '620 €'], ['Vsett 9+', '85 km räckvidd · Polen', '890 €'], ['NIU KQi3 Max', '65 km räckvidd · Danmark', '740 €']),
+      popular: ['Ninebot', 'Xiaomi', 'Vsett', 'NIU'],
+    },
+  }
+
+  return content[slug]
+}
+
+function card(
+  svTitle: string,
+  enTitle: string,
+  deTitle: string,
+  svText: string,
+  enText: string,
+  deText: string,
+  href: string,
+  image: string,
+) {
+  return {
+    title: { sv: svTitle, en: enTitle, de: deTitle },
+    text: { sv: svText, en: enText, de: deText },
+    href,
+    image,
+  }
+}
+
+function top(...items: Array<[string, string, string]>) {
+  return items.map(([title, meta, price]) => ({
+    title: { sv: title, en: title, de: title },
+    meta: { sv: meta, en: meta, de: meta },
+    price,
+  }))
 }
 
 function guideIcon(slug: MarketplaceCategorySlug, index: number) {
