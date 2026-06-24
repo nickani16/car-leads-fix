@@ -130,19 +130,17 @@ export default async function CategoryLandingPage({
         <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#0866ff]/10 sm:block" aria-hidden="true" />
         <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
-          <div className="relative h-[270px] overflow-hidden sm:h-[330px] lg:h-[310px] lg:rounded-[28px] xl:h-[330px]">
+          <div className="relative h-[270px] overflow-hidden shadow-[0_10px_28px_rgba(16,24,40,.08)] sm:h-[330px] lg:h-[310px] lg:rounded-[28px] xl:h-[330px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.16] saturate-[1.04] contrast-[1.01]"
+              className="object-cover"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(241,247,255,.82)_0%,rgba(236,245,255,.58)_31%,rgba(8,102,255,.10)_64%,rgba(8,102,255,0)_100%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.18)_0%,rgba(255,255,255,0)_42%,rgba(241,247,255,.22)_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#fbfaf7]/45 via-[#eef6ff]/12 to-transparent" />
+            <div className="absolute inset-0 shadow-[inset_0_0_42px_rgba(16,24,40,.14)]" />
             <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 text-center sm:pb-6 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[610px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
               <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-[#101828] drop-shadow-[0_2px_14px_rgba(255,255,255,.9)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
@@ -380,18 +378,15 @@ function CategoryBelowSearchSection({
                 href={`/marketplace/${slug}`}
                 className="min-w-[230px] snap-start overflow-hidden rounded-[24px] border border-[#dfe5ee] bg-white shadow-[0_10px_28px_rgba(16,24,40,.06)] sm:min-w-[260px]"
               >
-                <div className="relative aspect-[16/10] bg-[#eef6ff]">
+                <div className="relative aspect-[16/10] bg-[#f4f7fb] shadow-[inset_0_0_22px_rgba(16,24,40,.08)]">
                   {item.imageUrl ? (
-                    <>
-                      <Image
-                        src={item.imageUrl}
-                        alt=""
-                        fill
-                        sizes="260px"
-                        className="object-cover brightness-[1.1] saturate-[1.03] contrast-[.98]"
-                      />
-                      <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(8,102,255,.14),rgba(238,246,255,.18)_46%,rgba(255,255,255,.08))]" />
-                    </>
+                    <Image
+                      src={item.imageUrl}
+                      alt=""
+                      fill
+                      sizes="260px"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="grid h-full place-items-center text-[#0866ff]">
                       <BadgeCheck className="h-10 w-10" />

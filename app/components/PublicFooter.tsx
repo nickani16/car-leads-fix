@@ -176,23 +176,17 @@ export default function PublicFooter({
         : ['EU marketplace', 'Secure accounts', 'Verified flow']
 
   return (
-    <footer className="relative overflow-hidden border-t border-[#d9e6f8] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9ff_42%,#eef6ff_100%)] text-[#101828]">
-      <div
-        className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[240px] w-[240px] bg-[#0866ff]/12 sm:-bottom-28 sm:-right-24 sm:h-[330px] sm:w-[330px]"
-        aria-hidden="true"
-      />
-      <div className="pointer-events-none absolute -left-28 top-10 h-72 w-72 rounded-full bg-[#0866ff]/8 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(1120px,80vw)] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,#86b7ff,transparent)]" aria-hidden="true" />
-      <div className="relative mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 xl:px-16">
-        <div className="grid gap-8 rounded-[32px] border border-white/90 bg-white/82 p-6 shadow-[0_28px_80px_rgba(8,34,78,.10)] ring-1 ring-[#0866ff]/8 backdrop-blur-xl sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
-          <div>
+    <footer className="border-t border-[#e4e7ec] bg-white text-[#101828]">
+      <div className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8 lg:py-16">
+        <div className="grid gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
+          <div className="lg:pt-1">
             <a href={homeHref} aria-label={homeLabel}>
               <BrandLogo />
             </a>
-            <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#475467]">
+            <p className="mt-5 max-w-[270px] text-sm leading-6 text-[#667085]">
               {t.description}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold text-[#344054]">
+            <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-[#344054]">
               {[
                 [Globe2, trustBadges[0]],
                 [ShieldCheck, trustBadges[1]],
@@ -200,7 +194,7 @@ export default function PublicFooter({
               ].map(([Icon, label]) => {
                 const FooterIcon = Icon as typeof Globe2
                 return (
-                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#d7e7ff] bg-[#f5f9ff] px-3 py-2 shadow-[0_8px_22px_rgba(8,102,255,.08)]">
+                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-3 py-2">
                     <FooterIcon className="h-4 w-4 text-[#0866ff]" />
                     {label as string}
                   </span>
@@ -208,78 +202,71 @@ export default function PublicFooter({
               })}
             </div>
           </div>
-          <div className="rounded-[28px] border border-[#cfe2ff] bg-[linear-gradient(145deg,#ffffff_0%,#f2f7ff_100%)] p-5 shadow-[0_22px_55px_rgba(8,102,255,.13)] sm:min-w-[360px]">
-            <p className="max-w-xs text-sm font-semibold leading-6 text-[#243044]">
-              {t.question}
-            </p>
-            <Link
-              href={
-                locale === 'sv'
-                  ? '/registrera'
-                  : locale === 'de'
-                    ? '/registrera'
-                    : '/registrera'
-              }
-              className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.26)] transition hover:bg-[#0057e6]"
-            >
-              {t.cta}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
 
-        <div className="grid gap-10 py-10 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-8 lg:py-12">
-          <p className="max-w-sm text-2xl font-semibold leading-9 tracking-[-0.035em] text-[#101828]">
-            {t.statement}
-          </p>
+          <div>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+              <FooterColumn
+                title={t.sellerTitle}
+                links={t.sellerLinks.map(([label, href]) => [
+                  href === '/find-cars' ||
+                  href === '/hitta-bilar' ||
+                  href === '/fahrzeuge-finden'
+                    ? buyCarLabels[locale]
+                    : label,
+                  localizePublicHref(locale, href),
+                ])}
+              />
+              <FooterColumn
+                title={t.businessTitle}
+                links={t.businessLinks.map(([label, href]) => [
+                  label,
+                  localizePublicHref(locale, href),
+                ])}
+              />
+              <FooterColumn
+                title={t.dealerTitle}
+                links={t.dealerLinks.map(([label, href]) => [
+                  label,
+                  localizePublicHref(locale, href),
+                ])}
+              />
 
-          <FooterColumn
-            title={t.sellerTitle}
-            links={t.sellerLinks.map(([label, href]) => [
-              href === '/find-cars' ||
-              href === '/hitta-bilar' ||
-              href === '/fahrzeuge-finden'
-                ? buyCarLabels[locale]
-                : label,
-              localizePublicHref(locale, href),
-            ])}
-          />
-          <FooterColumn
-            title={t.businessTitle}
-            links={t.businessLinks.map(([label, href]) => [
-              label,
-              localizePublicHref(locale, href),
-            ])}
-          />
-          <FooterColumn
-            title={t.dealerTitle}
-            links={t.dealerLinks.map(([label, href]) => [
-              label,
-              localizePublicHref(locale, href),
-            ])}
-          />
+              <div>
+                <h3 className="text-sm font-bold text-[#101828]">
+                  {t.contact}
+                </h3>
+                <div className="mt-4 flex flex-col gap-3 text-sm text-[#475467]">
+                  <a href="mailto:info@autorell.com" className="inline-flex items-center gap-2 font-semibold text-[#101828] transition hover:text-[#0866ff]">
+                    <Mail className="h-4 w-4 text-[#0866ff]" />
+                    info@autorell.com
+                  </a>
+                  <Link href={contactHref} className="transition hover:text-[#0866ff]">
+                    {t.contactLink}
+                  </Link>
+                  <p className="max-w-[240px] leading-6">
+                    {t.support}
+                  </p>
+                  <SocialIcons className="pt-1" />
+                </div>
+              </div>
+            </div>
 
-          <div className="rounded-[28px] border border-[#d7e7ff] bg-white/88 p-5 shadow-[0_16px_42px_rgba(8,34,78,.08)] ring-1 ring-white/80">
-            <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-              {t.contact}
-            </h3>
-            <div className="mt-6 flex flex-col gap-4 text-sm">
-              <a href="mailto:info@autorell.com" className="inline-flex items-center gap-2 font-semibold transition hover:text-[#0866ff]">
-                <Mail className="h-4 w-4 text-[#0866ff]" />
-                info@autorell.com
-              </a>
-              <Link href={contactHref} className="font-semibold text-[#0866ff] transition hover:text-[#0057e6]">
-                {t.contactLink}
-              </Link>
-              <p className="max-w-[240px] leading-6 text-[#667085]">
-                {t.support}
+            <div className="mt-10 rounded-[20px] border border-[#e4e7ec] bg-[#f9fafb] p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
+              <p className="max-w-xl text-sm font-semibold leading-6 text-[#344054]">
+                {t.question}
               </p>
-              <SocialIcons className="pt-2" />
+              <Link
+                href="/registrera"
+                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#0057e6] sm:mt-0"
+              >
+                {t.cta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-[#d9e6f8] py-7 text-xs text-[#667085] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-5 border-t border-[#e4e7ec] pt-7 text-xs text-[#667085] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link href={privacyHref} className="transition hover:text-[#0866ff]">
