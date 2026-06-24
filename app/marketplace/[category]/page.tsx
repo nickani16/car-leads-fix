@@ -22,6 +22,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { euCountryCodes } from '@/lib/eu-countries'
 
 export function generateStaticParams() {
   return marketplaceCategories.map(({ slug }) => ({ category: slug }))
@@ -112,6 +113,10 @@ export default async function MarketplaceCategoryPage({
   ).toLowerCase()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
+  const defaultCountry =
+    marketCode && euCountryCodes.has(marketCode.toUpperCase())
+      ? marketCode.toUpperCase()
+      : ''
   const locale: PublicLocale =
     requestedLanguage && isPublicLanguage(requestedLanguage)
       ? requestedLanguage
@@ -146,6 +151,7 @@ export default async function MarketplaceCategoryPage({
     condition: listing.condition,
     equipment: listing.equipment,
     country: listing.country_code,
+    city: listing.city,
     priceLabel: formatMarketplacePrice(
       Number(listing.price),
       listing.currency,
@@ -198,6 +204,7 @@ export default async function MarketplaceCategoryPage({
         }}
         listings={listings}
         locale={locale}
+        defaultCountry={defaultCountry}
       />
       <PublicFooter locale={locale} />
     </main>

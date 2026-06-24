@@ -92,11 +92,11 @@ export default async function CategoryLandingPage({
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <section className="relative pb-20 pt-0 sm:pb-24 lg:pb-16 lg:pt-7">
-        <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#e5efff] sm:block" aria-hidden="true" />
+      <section className="relative pb-14 pt-0 sm:pb-16 lg:pb-12 lg:pt-6">
+        <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#0866ff]/10 sm:block" aria-hidden="true" />
         <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
-          <div className="relative h-[410px] overflow-hidden sm:h-[490px] lg:h-[390px] lg:rounded-[28px] xl:h-[410px]">
+          <div className="relative h-[330px] overflow-hidden sm:h-[360px] lg:h-[300px] lg:rounded-[28px] xl:h-[320px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
@@ -107,17 +107,17 @@ export default async function CategoryLandingPage({
               style={{ objectPosition: config.heroPosition }}
             />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.72)_0%,rgba(7,20,34,.48)_28%,rgba(7,20,34,.12)_58%,transparent_82%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(70,151,255,.22),transparent_34%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#071522]/45 via-[#071522]/10 to-transparent" />
-            <div className="absolute inset-0 flex items-center justify-center px-6 text-center lg:inset-auto lg:left-14 lg:top-14 lg:block lg:max-w-[600px] lg:px-0 lg:text-left">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.16),transparent_34%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#071522]/42 via-[#071522]/10 to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-center px-6 text-center lg:inset-auto lg:left-14 lg:top-11 lg:block lg:max-w-[600px] lg:px-0 lg:text-left">
               <div>
               <p className="inline-flex rounded-full bg-white/92 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#0866ff] shadow-sm backdrop-blur-sm sm:text-xs">
                 {localized.eyebrow}
               </p>
-              <h1 className="mt-4 text-[34px] leading-[.96] tracking-[-0.055em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] [overflow-wrap:anywhere] sm:text-[56px] lg:text-[58px] xl:text-[64px]">
+              <h1 className="mt-4 text-[34px] leading-[.96] tracking-[-0.04em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] [overflow-wrap:anywhere] sm:text-[50px] lg:text-[52px] xl:text-[56px]">
                 {localized.label}
               </h1>
-              <p className="mx-auto mt-5 max-w-[520px] text-sm leading-6 text-white/88 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7 lg:mx-0">
+              <p className="mx-auto mt-4 max-w-[520px] text-sm leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
               </div>
@@ -127,7 +127,7 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-20 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_24px_65px_rgba(16,24,40,.18)] backdrop-blur-xl sm:mx-8 sm:-mt-14 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-12 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-12 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
               <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
@@ -148,7 +148,7 @@ export default async function CategoryLandingPage({
             </SearchField>
 
             <Link
-              href={`/marketplace/${slug}#marketplace-search`}
+              href={`/marketplace/${slug}#marketplace-results`}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d8e4f6] bg-[#f4f8ff] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-2 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
             >
               <SlidersHorizontal className="h-4 w-4 lg:hidden" />
@@ -163,8 +163,8 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#dfe6ef] bg-[#f4f7fb] py-16 sm:py-24">
-        <div className="market-blob pointer-events-none absolute -right-24 top-10 h-72 w-72 bg-[#dfeaff]" aria-hidden="true" />
+      <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#e5e7eb] bg-[#f8f8f6] py-14 sm:py-20">
+        <div className="market-blob pointer-events-none absolute -right-24 top-10 h-72 w-72 bg-[#0866ff]/8" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1180px] px-5 sm:px-8">
           <div className="grid gap-6 border-b border-[#d7e0eb] pb-9 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
             <div>
@@ -187,7 +187,7 @@ export default async function CategoryLandingPage({
                     <Icon className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a96a8]">Guide 0{index + 1}</span>
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#0866ff]">Guide 0{index + 1}</span>
                     <strong className="mt-1 block text-lg tracking-[-0.03em] sm:text-xl">{topic}</strong>
                   </span>
                   <ArrowRight className="h-5 w-5 text-[#0866ff] transition group-hover:translate-x-1" />
@@ -200,7 +200,7 @@ export default async function CategoryLandingPage({
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="relative overflow-hidden rounded-[32px] border border-[#c9daf5] bg-[linear-gradient(125deg,#e8f2ff_0%,#f7faff_52%,#eaf7f1_100%)]">
+          <div className="relative overflow-hidden rounded-[28px] border border-[#d7dde8] bg-[linear-gradient(125deg,#ffffff_0%,#f8fbff_52%,#f4f8f5_100%)]">
             <div className="market-blob pointer-events-none absolute -bottom-40 -right-20 h-96 w-96 bg-white/70" aria-hidden="true" />
             <div className="relative grid lg:grid-cols-[1.02fr_.98fr]">
               <div className="p-7 sm:p-11 lg:p-14">
@@ -217,7 +217,7 @@ export default async function CategoryLandingPage({
                 </Link>
               </div>
 
-              <div className="border-t border-[#c9daf5] bg-white/62 p-7 backdrop-blur-sm sm:p-10 lg:border-l lg:border-t-0">
+              <div className="border-t border-[#d7dde8] bg-white/72 p-7 backdrop-blur-sm sm:p-10 lg:border-l lg:border-t-0">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">{copy.faqEyebrow}</p>
                 <h3 className="mt-3 text-3xl leading-[1.05] tracking-[-0.045em]">{copy.faqTitle}</h3>
                 <div className="mt-7 divide-y divide-[#dbe3ed] border-y border-[#dbe3ed]">
@@ -260,7 +260,7 @@ function SearchField({
         <Icon className="h-[17px] w-[17px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#667085] lg:text-xs lg:normal-case lg:tracking-normal lg:text-[#101828]">{label}</span>
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#0866ff] lg:text-xs lg:normal-case lg:tracking-normal lg:text-[#101828]">{label}</span>
         <span className="relative block">{children}</span>
       </span>
     </label>

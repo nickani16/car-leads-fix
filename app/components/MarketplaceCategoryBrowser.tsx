@@ -11,6 +11,8 @@ import {
   ImageIcon,
   MapPin,
   Search,
+  ShieldCheck,
+  X,
 } from 'lucide-react'
 import {
   translatePublic,
@@ -35,6 +37,7 @@ export type MarketplaceListing = {
   condition: string | null
   equipment: string | null
   country: string
+  city?: string | null
   priceLabel: string
   priceValue: number | null
   imageAvailable: boolean
@@ -56,10 +59,12 @@ export default function MarketplaceCategoryBrowser({
   category,
   listings,
   locale = 'sv',
+  defaultCountry = '',
 }: {
   category: CategoryConfig
   listings: MarketplaceListing[]
   locale?: PublicLocale
+  defaultCountry?: string
 }) {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
@@ -74,7 +79,8 @@ export default function MarketplaceCategoryBrowser({
   const [maxMileage, setMaxMileage] = useState(searchParams.get('maxMileage') || '')
   const [maxHours, setMaxHours] = useState(searchParams.get('maxHours') || '')
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
-  const [country, setCountry] = useState((searchParams.get('country') || '').toUpperCase())
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [country, setCountry] = useState((searchParams.get('country') || defaultCountry || '').toUpperCase())
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
   const [savedSearchKey, setSavedSearchKey] = useState('')
@@ -93,8 +99,12 @@ export default function MarketplaceCategoryBrowser({
     () =>
       euCountries
         .map(([code]) => code)
-        .sort((a, b) => getEuCountryName(a, displayLocale).localeCompare(getEuCountryName(b, displayLocale), displayLocale)),
-    [displayLocale],
+        .sort((a, b) => {
+          if (defaultCountry && a === defaultCountry) return -1
+          if (defaultCountry && b === defaultCountry) return 1
+          return getEuCountryName(a, displayLocale).localeCompare(getEuCountryName(b, displayLocale), displayLocale)
+        }),
+    [defaultCountry, displayLocale],
   )
   const makes = useMemo(
     () => [...new Set(listings.map((listing) => listing.make).filter(Boolean))].sort((a, b) => a.localeCompare(b, displayLocale)),
@@ -165,12 +175,18 @@ export default function MarketplaceCategoryBrowser({
     })
 
     return [...filtered].sort((a, b) => {
+      const localA = defaultCountry && a.country.toUpperCase() === defaultCountry ? 1 : 0
+      const localB = defaultCountry && b.country.toUpperCase() === defaultCountry ? 1 : 0
+      if (sort === 'recommended' && localA !== localB) return localB - localA
       if (sort === 'newest') return Number(b.year || 0) - Number(a.year || 0)
       if (sort === 'mileage') return (a.mileageKm ?? Number.MAX_SAFE_INTEGER) - (b.mileageKm ?? Number.MAX_SAFE_INTEGER)
       if (sort === 'price') return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
+      if (sort === 'recommended' && (a.priceValue || b.priceValue)) {
+        return (a.priceValue ?? Number.MAX_SAFE_INTEGER) - (b.priceValue ?? Number.MAX_SAFE_INTEGER)
+      }
       return a.title.localeCompare(b.title, displayLocale)
     })
-  }, [activeFilter, bodyType, condition, country, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxHours, maxMileage, modelQuery, query, sort, yearFrom])
+  }, [activeFilter, bodyType, condition, country, defaultCountry, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxHours, maxMileage, modelQuery, query, sort, yearFrom])
 
   const currentSearchKey = `autorell-search-${category.slug}-${query}-${country}-${activeFilter}`
   const saved = savedSearchKey === currentSearchKey
@@ -192,6 +208,151 @@ export default function MarketplaceCategoryBrowser({
     if (['pris', 'price', 'preis'].includes(normalized)) setSort('price')
     if (['miltal', 'mileage', 'kilometer'].includes(normalized)) setSort('mileage')
   }
+
+  const filterPanel = (
+    <div className="rounded-[8px] border border-[#d9e1ec] bg-white shadow-[0_18px_55px_rgba(16,24,40,.08)]">
+      <div className="flex items-center justify-between border-b border-[#e4e9f2] px-4 py-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-[-0.03em]">{copy.filtersTitle}</h2>
+          <p className="mt-1 text-xs font-semibold text-[#667085]">{copy.euReady}</p>
+        </div>
+        <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" />
+      </div>
+      <div className="grid grid-cols-3 border-b border-[#e4e9f2] text-center text-[12px] font-bold">
+        <button type="button" className="border-b-[3px] border-[#0866ff] px-2 py-3 text-[#0866ff]">{copy.all}</button>
+        <button type="button" className="px-2 py-3 text-[#667085]">{copy.savedTab}</button>
+        <button type="button" className="px-2 py-3 text-[#667085]">{copy.recentTab}</button>
+      </div>
+      <div className="space-y-5 p-4">
+        <FilterGroup title={copy.countryLabel}>
+          <label className="relative block">
+            <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+            <select
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
+              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+            >
+              <option value="">{copy.allEurope}</option>
+              {countries.map((code) => (
+                <option key={code} value={code}>
+                  {getEuCountryName(code, displayLocale)}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+          </label>
+        </FilterGroup>
+
+        <FilterGroup title={copy.makeAndModel}>
+          <div className="grid gap-2">
+            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} />
+            <input
+              value={modelQuery}
+              onChange={(event) => setModelQuery(event.target.value)}
+              placeholder={secondarySearchLabel(category.slug, locale)}
+              className="marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+            />
+          </div>
+        </FilterGroup>
+
+        <FilterGroup title={copy.keywordLabel}>
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={copy.keyword}
+              className="marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+            />
+          </label>
+        </FilterGroup>
+
+        {filterProfile.basic.includes('fuel') ? (
+          <FilterGroup title={copy.fuelTitle}>
+            <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
+          </FilterGroup>
+        ) : null}
+        {filterProfile.basic.includes('gearbox') ? (
+          <FilterGroup title={copy.gearboxTitle}>
+            <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
+          </FilterGroup>
+        ) : null}
+        {filterProfile.basic.includes('bodyType') ? (
+          <FilterGroup title={copy.typeTitle}>
+            <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
+          </FilterGroup>
+        ) : null}
+        {filterProfile.basic.includes('condition') ? (
+          <FilterGroup title={copy.conditionTitle}>
+            <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
+          </FilterGroup>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => setMoreFiltersOpen((current) => !current)}
+          aria-expanded={moreFiltersOpen}
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-[#cfd7e6] bg-[#f8fafc] px-3.5 text-[13px] font-bold text-[#344054] transition hover:border-[#98a2b3] hover:bg-white"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          {moreFiltersOpen ? copy.fewerFilters : copy.moreFilters}
+          <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {moreFiltersOpen ? (
+          <div className="grid gap-2.5 border-t border-[#e4e9f2] pt-4">
+            {filterProfile.advanced.includes('fuel') ? (
+              <FilterSelect value={fuel} onChange={setFuel} label={copy.fuel} options={fuels} />
+            ) : null}
+            {filterProfile.advanced.includes('gearbox') ? (
+              <FilterSelect value={gearbox} onChange={setGearbox} label={copy.gearbox} options={gearboxes} />
+            ) : null}
+            {filterProfile.advanced.includes('bodyType') ? (
+              <FilterSelect value={bodyType} onChange={setBodyType} label={categoryTypeLabel(category.slug, locale)} options={bodyTypes} />
+            ) : null}
+            {filterProfile.advanced.includes('condition') ? (
+              <FilterSelect value={condition} onChange={setCondition} label={copy.condition} options={conditions} />
+            ) : null}
+            {filterProfile.advanced.includes('year') ? (
+              <input
+                value={yearFrom}
+                onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                inputMode="numeric"
+                placeholder={copy.yearFrom}
+                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              />
+            ) : null}
+            {filterProfile.advanced.includes('mileage') ? (
+              <input
+                value={maxMileage}
+                onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
+                inputMode="numeric"
+                placeholder={copy.maxMileage}
+                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              />
+            ) : null}
+            {filterProfile.advanced.includes('hours') ? (
+              <input
+                value={maxHours}
+                onChange={(event) => setMaxHours(event.target.value.replace(/\D/g, '').slice(0, 7))}
+                inputMode="numeric"
+                placeholder={copy.maxHours}
+                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              />
+            ) : null}
+            {filterProfile.advanced.includes('equipment') ? (
+              <input
+                value={equipmentQuery}
+                onChange={(event) => setEquipmentQuery(event.target.value)}
+                placeholder={equipmentLabel(category.slug, locale)}
+                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
 
   return (
     <>
@@ -256,7 +417,7 @@ export default function MarketplaceCategoryBrowser({
 
           <div
             id="marketplace-search"
-            className="mt-4 grid w-full min-w-0 max-w-full scroll-mt-24 gap-2.5 rounded-[20px] border border-[#dde2ea] bg-[#f8f9fb] p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4"
+            className="hidden w-full min-w-0 max-w-full scroll-mt-24 gap-2.5 rounded-[20px] border border-[#dde2ea] bg-[#f8f9fb] p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4"
           >
             <label className="relative">
               <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
@@ -386,15 +547,38 @@ export default function MarketplaceCategoryBrowser({
         </div>
       </section>
 
-      <section id="marketplace-results" className="scroll-mt-24 overflow-hidden bg-[#f7f8fb] py-10 sm:py-14">
+      <section id="marketplace-results" className="scroll-mt-24 overflow-hidden bg-[#eef3fb] py-5 sm:py-8">
         <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
-          <div className="mb-6 flex min-w-0 flex-wrap items-center justify-between gap-4">
+          <div className="grid gap-5 lg:grid-cols-[310px_minmax(0,1fr)]">
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">{filterPanel}</div>
+            </aside>
+            <div className="min-w-0">
+          <div className="mb-4 rounded-[8px] border border-[#d9e1ec] bg-white p-3 shadow-[0_14px_40px_rgba(16,24,40,.06)] sm:p-4">
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-[8px] bg-[#f8fbff] px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <ShieldCheck className="h-5 w-5 shrink-0 text-[#0866ff]" />
+                <p className="min-w-0 text-sm font-bold text-[#101828]">{copy.buyGuideTitle}</p>
+              </div>
+              <Link href="/hjalpcenter" className="hidden rounded-[8px] border border-[#cfd7e6] px-4 py-2 text-xs font-bold text-[#344054] sm:inline-flex">
+                {copy.findOutMore}
+              </Link>
+            </div>
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
             <p className="min-w-0 text-sm text-[#475467]">
               <strong className="text-[#101828]">{visibleListings.length}</strong>{' '}
               {copy.listings} {localizedCategory.label.toLowerCase()}
             </p>
             <div className="flex w-full items-center justify-between gap-4 sm:ml-auto sm:w-auto sm:shrink-0 sm:justify-start">
-              <label className="relative hidden sm:block">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen((current) => !current)}
+                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white lg:hidden"
+              >
+                {mobileFiltersOpen ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+                {copy.filtersTitle}
+              </button>
+              <label className="relative">
                 <select
                   value={sort}
                   onChange={(event) => setSort(event.target.value)}
@@ -419,15 +603,19 @@ export default function MarketplaceCategoryBrowser({
               </button>
             </div>
           </div>
+          </div>
+
+          {mobileFiltersOpen ? <div className="mb-4 lg:hidden">{filterPanel}</div> : null}
 
           {visibleListings.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4">
               {visibleListings.map((listing) => (
                 <article
                   key={listing.id}
-                  className="group overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.06)] transition hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(16,24,40,.1)]"
+                  className="group overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white shadow-[0_12px_36px_rgba(16,24,40,.07)] transition hover:shadow-[0_18px_50px_rgba(16,24,40,.11)]"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]">
+                  <div className="grid min-w-0 md:grid-cols-[300px_minmax(0,1fr)]">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)] md:aspect-auto md:min-h-[218px]">
                     {listing.imageUrl ? (
                       // Supabase public URLs are user-generated and intentionally
                       // rendered without Next image-domain coupling.
@@ -446,12 +634,13 @@ export default function MarketplaceCategoryBrowser({
                     <div className="absolute right-4 top-4">
                       <SavedListingButton listingId={listing.id} />
                     </div>
-                    <span className="absolute bottom-4 left-4 rounded-[10px] bg-white/92 px-3 py-1.5 text-[11px] font-bold text-[#344054] shadow-sm">
-                      {copy.listing}
+                    <span className="absolute left-3 top-3 rounded-[7px] bg-[#0866ff] px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+                      {copy.verified}
                     </span>
                   </div>
-                  <div className="p-5">
-                    <h2 className="text-xl tracking-[-0.035em]">{listing.title}</h2>
+                  <div className="grid min-w-0 gap-4 p-4 md:grid-cols-[minmax(0,1fr)_180px] md:p-5">
+                    <div className="min-w-0">
+                    <h2 className="break-words text-xl font-bold tracking-[-0.035em] text-[#101828] sm:text-2xl">{listing.title}</h2>
                     <p className="mt-2 text-sm text-[#667085]">
                       {[listing.year, listing.fuelType, listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null]
                         .filter(Boolean)
@@ -460,15 +649,26 @@ export default function MarketplaceCategoryBrowser({
                     <p className="mt-3 text-xs font-semibold text-[#475467]">
                       {listing.sellerIsTrader ? copy.businessSeller : copy.privateSeller} · {listing.sellerName}
                     </p>
-                    <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
+                    <div className="mt-5 flex items-start gap-3 border-t border-[#edf1f6] pt-4">
+                      <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
                       <div>
-                        <span className="block text-xs text-[#98a2b3]">
-                          {getEuCountryName(listing.country, displayLocale)}
-                        </span>
-                        <strong className="mt-1 block">{listing.priceLabel}</strong>
+                        <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">{copy.listingCountry}</p>
+                        <p className="mt-1 text-sm font-bold text-[#101828]">
+                          {[listing.city, getEuCountryName(listing.country, displayLocale)].filter(Boolean).join(', ')}
+                        </p>
+                        <p className="mt-1 text-xs text-[#667085]">{copy.euTradeHint}</p>
+                      </div>
+                    </div>
+                    </div>
+                    <div className="flex min-w-0 flex-row items-end justify-between gap-4 border-t border-[#edf1f6] pt-4 md:flex-col md:items-end md:border-l md:border-t-0 md:pl-5 md:pt-0">
+                      <div className="text-left md:text-right">
+                        <span className="block text-xs font-semibold text-[#667085]">{copy.fixedPrice}</span>
+                        <strong className="mt-1 block text-2xl tracking-[-0.04em] text-[#101828]">{listing.priceLabel}</strong>
+                        <span className="mt-1 block text-xs font-semibold text-[#667085]">{listing.sellerName}</span>
                       </div>
                       <MessageSellerButton listingId={listing.id} enabled={listing.messagingEnabled} />
                     </div>
+                  </div>
                   </div>
                 </article>
               ))}
@@ -499,6 +699,8 @@ export default function MarketplaceCategoryBrowser({
               </div>
             </div>
           )}
+            </div>
+          </div>
         </div>
       </section>
     </>
@@ -532,6 +734,23 @@ function FilterSelect({
       </select>
       <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
     </label>
+  )
+}
+
+function FilterGroup({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section>
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#101828]">
+        {title}
+      </h3>
+      {children}
+    </section>
   )
 }
 
@@ -571,6 +790,26 @@ const marketplaceCopy = {
     viewListing: 'Visa annons',
     privateSeller: 'Privat säljare',
     businessSeller: 'Företagssäljare',
+    filtersTitle: 'Filter',
+    euReady: 'Land, sökning och fordonsdata',
+    savedTab: 'Sparade',
+    recentTab: 'Historik',
+    countryLabel: 'Land',
+    makeAndModel: 'Märke och modell',
+    keywordLabel: 'Sökord',
+    fuelTitle: 'Bränsle',
+    gearboxTitle: 'Växellåda',
+    typeTitle: 'Typ',
+    conditionTitle: 'Skick',
+    buyGuideTitle: 'Trygg EU-affär med Autorell',
+    findOutMore: 'Läs mer',
+    verifiedListings: 'Verifierade annonser',
+    verified: 'Verifierad',
+    listingCountry: 'Annonsland',
+    euTradeHint: 'Anpassad för köpare i hela EU.',
+    showingCountry: 'Visar annonser från',
+    showingEurope: 'Visar',
+    localFirst: 'Din marknad visas först:',
   },
   en: {
     marketplaceEyebrow: 'Search listings',
@@ -607,6 +846,26 @@ const marketplaceCopy = {
     viewListing: 'View listing',
     privateSeller: 'Private seller',
     businessSeller: 'Business seller',
+    filtersTitle: 'Filter',
+    euReady: 'Country, search and vehicle data',
+    savedTab: 'Saved',
+    recentTab: 'History',
+    countryLabel: 'Country',
+    makeAndModel: 'Make and model',
+    keywordLabel: 'Keyword',
+    fuelTitle: 'Fuel',
+    gearboxTitle: 'Gearbox',
+    typeTitle: 'Type',
+    conditionTitle: 'Condition',
+    buyGuideTitle: 'Safer EU trading with Autorell',
+    findOutMore: 'Find out more',
+    verifiedListings: 'Verified listings',
+    verified: 'Verified',
+    listingCountry: 'Listing country',
+    euTradeHint: 'Built for buyers across the EU.',
+    showingCountry: 'Showing listings from',
+    showingEurope: 'Showing',
+    localFirst: 'Your market is prioritised:',
   },
   de: {
     marketplaceEyebrow: 'Anzeigen suchen',
@@ -643,6 +902,26 @@ const marketplaceCopy = {
     viewListing: 'Anzeige ansehen',
     privateSeller: 'Privater Verkäufer',
     businessSeller: 'Gewerblicher Verkäufer',
+    filtersTitle: 'Filter',
+    euReady: 'Land, Suche und Fahrzeugdaten',
+    savedTab: 'Gespeichert',
+    recentTab: 'Verlauf',
+    countryLabel: 'Land',
+    makeAndModel: 'Marke und Modell',
+    keywordLabel: 'Suchwort',
+    fuelTitle: 'Kraftstoff',
+    gearboxTitle: 'Getriebe',
+    typeTitle: 'Typ',
+    conditionTitle: 'Zustand',
+    buyGuideTitle: 'Sicherer EU-Handel mit Autorell',
+    findOutMore: 'Mehr erfahren',
+    verifiedListings: 'Geprüfte Anzeigen',
+    verified: 'Geprüft',
+    listingCountry: 'Anzeigenland',
+    euTradeHint: 'Für Käufer in der ganzen EU gebaut.',
+    showingCountry: 'Anzeigen aus',
+    showingEurope: 'Anzeige',
+    localFirst: 'Ihr Markt wird priorisiert:',
   },
 } as const
 

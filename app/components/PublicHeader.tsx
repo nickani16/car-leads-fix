@@ -630,7 +630,7 @@ export default function PublicHeader({
               >
                 <BrandLogo />
                 {activeMarketplaceChannel?.label ? (
-                  <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#344054]">
+                  <span className="mt-0.5 max-w-28 truncate text-[9px] font-semibold leading-none text-[#0866ff]">
                     {activeMarketplaceChannel.label}
                   </span>
                 ) : null}
@@ -658,7 +658,7 @@ export default function PublicHeader({
             >
               <BrandLogo />
               {activeMarketplaceChannel?.label ? (
-                <span className="mt-0.5 max-w-[120px] truncate text-[9px] font-semibold leading-none text-[#344054]">
+                <span className="mt-0.5 max-w-[120px] truncate text-[9px] font-semibold leading-none text-[#0866ff]">
                   {activeMarketplaceChannel.label}
                 </span>
               ) : null}
