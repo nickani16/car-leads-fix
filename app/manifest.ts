@@ -12,8 +12,20 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0866ff',
     icons: [
       {
+        src: '/icon-72.png',
+        sizes: '72x72',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
         src: '/icon-96.png',
         sizes: '96x96',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-128.png',
+        sizes: '128x128',
         type: 'image/png',
         purpose: 'any',
       },
@@ -24,8 +36,32 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any',
       },
       {
+        src: '/icon-152.png',
+        sizes: '152x152',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-167.png',
+        sizes: '167x167',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-180.png',
+        sizes: '180x180',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
         src: '/icon-192.png',
         sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-384.png',
+        sizes: '384x384',
         type: 'image/png',
         purpose: 'any',
       },

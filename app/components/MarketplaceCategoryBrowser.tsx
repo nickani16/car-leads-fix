@@ -569,20 +569,20 @@ export default function MarketplaceCategoryBrowser({
               <strong className="text-[#101828]">{visibleListings.length}</strong>{' '}
               {copy.listings} {localizedCategory.label.toLowerCase()}
             </p>
-            <div className="flex w-full items-center justify-between gap-4 sm:ml-auto sm:w-auto sm:shrink-0 sm:justify-start">
+            <div className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:ml-auto sm:w-auto sm:grid-cols-[auto_auto_auto] sm:gap-4">
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen((current) => !current)}
-                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white lg:hidden"
+                className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white lg:hidden"
               >
                 {mobileFiltersOpen ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
                 {copy.filtersTitle}
               </button>
-              <label className="relative">
+              <label className="relative min-w-0">
                 <select
                   value={sort}
                   onChange={(event) => setSort(event.target.value)}
-                  className="h-10 appearance-none rounded-[13px] border border-[#d0d5dd] bg-white pl-4 pr-9 text-xs font-semibold outline-none"
+                  className="h-10 w-full min-w-0 appearance-none rounded-[13px] border border-[#d0d5dd] bg-white pl-4 pr-9 text-xs font-semibold outline-none sm:w-auto"
                   aria-label={copy.sort}
                 >
                   <option value="recommended">{copy.recommended}</option>
@@ -596,9 +596,10 @@ export default function MarketplaceCategoryBrowser({
                 type="button"
                 onClick={toggleSavedSearch}
                 aria-pressed={saved}
-                className="ml-auto inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#0866ff]"
+                aria-label={saved ? copy.saved : copy.saveSearch}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-[8px] border border-[#cfd7e6] bg-white text-sm font-bold text-[#0866ff] sm:w-auto sm:border-transparent sm:bg-transparent sm:px-0"
               >
-                {saved ? copy.saved : copy.saveSearch}
+                <span className="hidden sm:inline">{saved ? copy.saved : copy.saveSearch}</span>
                 <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
               </button>
             </div>
