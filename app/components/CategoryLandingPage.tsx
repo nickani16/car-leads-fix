@@ -92,32 +92,29 @@ export default async function CategoryLandingPage({
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <section className="relative pb-14 pt-0 sm:pb-16 lg:pb-12 lg:pt-6">
+      <section className="relative pb-10 pt-0 sm:pb-16 lg:pb-12 lg:pt-6">
         <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#0866ff]/10 sm:block" aria-hidden="true" />
         <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
-          <div className="relative h-[330px] overflow-hidden sm:h-[360px] lg:h-[300px] lg:rounded-[28px] xl:h-[320px]">
+          <div className="relative h-[260px] overflow-hidden sm:h-[330px] lg:h-[300px] lg:rounded-[28px] xl:h-[320px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.07] saturate-[.95] contrast-[1.02]"
+              className="object-cover brightness-[1.16] saturate-[.98] contrast-[.98]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.72)_0%,rgba(7,20,34,.48)_28%,rgba(7,20,34,.12)_58%,transparent_82%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.16),transparent_34%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#071522]/42 via-[#071522]/10 to-transparent" />
-            <div className="absolute inset-0 flex items-center justify-center px-6 text-center lg:inset-auto lg:left-14 lg:top-11 lg:block lg:max-w-[600px] lg:px-0 lg:text-left">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.48)_0%,rgba(7,20,34,.28)_34%,rgba(7,20,34,.07)_62%,transparent_88%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.08),transparent_34%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/26 via-[#071522]/6 to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-center px-6 pb-8 text-center sm:pb-4 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[620px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
-              <p className="inline-flex rounded-full bg-white/92 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#0866ff] shadow-sm backdrop-blur-sm sm:text-xs">
-                {localized.eyebrow}
-              </p>
-              <h1 className="mt-4 text-[34px] leading-[.96] tracking-[-0.04em] text-white drop-shadow-[0_3px_18px_rgba(0,0,0,.28)] [overflow-wrap:anywhere] sm:text-[50px] lg:text-[52px] xl:text-[56px]">
+              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-white drop-shadow-[0_3px_16px_rgba(0,0,0,.25)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
                 {localized.label}
               </h1>
-              <p className="mx-auto mt-4 max-w-[520px] text-sm leading-6 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,.25)] sm:text-base sm:leading-7 lg:mx-0">
+              <p className="mx-auto mt-3 max-w-[540px] text-sm leading-6 text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,.2)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
               </div>
@@ -127,7 +124,7 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-12 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-white/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-full lg:px-5 lg:py-4"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
               <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
