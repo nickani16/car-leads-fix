@@ -135,7 +135,12 @@ export default function EmailCodeAuth({
       options: { redirectTo },
     })
     if (providerError) {
-      setError(copy.connectionError)
+      setError(
+        providerError.message.toLowerCase().includes('provider is not enabled') ||
+          providerError.message.toLowerCase().includes('unsupported provider')
+          ? copy.providerNotEnabled
+          : providerError.message || copy.connectionError,
+      )
       setLoading(false)
     }
   }
@@ -402,6 +407,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
     sendError: 'The code could not be sent.',
     codeError: 'The code is incorrect or has expired.',
     connectionError: 'The connection was interrupted. Try again.',
+    providerNotEnabled: 'This sign-in method is not enabled in Supabase yet. Enable the provider and add the Autorell callback URL.',
   }
   if (locale === 'sv') {
     return {
@@ -433,6 +439,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       sendError: 'Koden kunde inte skickas.',
       codeError: 'Koden är felaktig eller har gått ut.',
       connectionError: 'Anslutningen avbröts. Försök igen.',
+      providerNotEnabled: 'Den här inloggningsmetoden är inte aktiverad i Supabase ännu. Aktivera providern och lägg till Autorells callback-URL.',
     }
   }
   if (locale === 'de') {
@@ -465,6 +472,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       sendError: 'Der Code konnte nicht gesendet werden.',
       codeError: 'Der Code ist falsch oder abgelaufen.',
       connectionError: 'Die Verbindung wurde unterbrochen. Erneut versuchen.',
+      providerNotEnabled: 'Diese Anmeldemethode ist in Supabase noch nicht aktiviert. Aktivieren Sie den Provider und fügen Sie die Autorell Callback-URL hinzu.',
     }
   }
   return locale === 'en' ? en : translatePublicObject(locale, en)
