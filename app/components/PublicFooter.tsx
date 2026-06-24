@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, Globe2, Mail, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Mail } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 import {
@@ -168,13 +168,6 @@ export default function PublicFooter({
       : locale !== 'sv'
         ? localizePublicHref(locale, '/terms')
         : '/villkor'
-  const trustBadges =
-    locale === 'sv'
-      ? ['EU-marknadsplats', 'Trygga konton', 'Verifierat flÃ¶de']
-      : locale === 'de'
-        ? ['EU-Marktplatz', 'Sichere Konten', 'Verifizierter Ablauf']
-        : ['EU marketplace', 'Secure accounts', 'Verified flow']
-
   return (
     <footer className="border-t border-[#e4e7ec] bg-white text-[#101828]">
       <div className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8 lg:py-16">
@@ -186,21 +179,6 @@ export default function PublicFooter({
             <p className="mt-5 max-w-[270px] text-sm leading-6 text-[#667085]">
               {t.description}
             </p>
-            <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-[#344054]">
-              {[
-                [Globe2, trustBadges[0]],
-                [ShieldCheck, trustBadges[1]],
-                [BadgeCheck, trustBadges[2]],
-              ].map(([Icon, label]) => {
-                const FooterIcon = Icon as typeof Globe2
-                return (
-                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-3 py-2">
-                    <FooterIcon className="h-4 w-4 text-[#0866ff]" />
-                    {label as string}
-                  </span>
-                )
-              })}
-            </div>
           </div>
 
           <div>

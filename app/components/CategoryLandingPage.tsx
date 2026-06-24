@@ -126,21 +126,20 @@ export default async function CategoryLandingPage({
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <section className="relative pb-10 pt-0 sm:pb-14 lg:pb-12 lg:pt-6">
-        <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#0866ff]/10 sm:block" aria-hidden="true" />
-        <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
+      <section className="relative bg-white pb-10 pt-0 sm:pb-14 lg:pb-12 lg:pt-6">
         <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
-          <div className="relative h-[270px] overflow-hidden shadow-[0_10px_28px_rgba(16,24,40,.08)] sm:h-[330px] lg:h-[310px] lg:rounded-[28px] xl:h-[330px]">
+          <div className="relative h-[270px] overflow-hidden bg-[#f4f7fb] shadow-[0_8px_22px_rgba(16,24,40,.06)] sm:h-[330px] lg:h-[310px] lg:rounded-[24px] xl:h-[330px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover"
+              className="object-cover brightness-[1.12] contrast-[.96] saturate-[1.02]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 shadow-[inset_0_0_42px_rgba(16,24,40,.14)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.76)_0%,rgba(255,255,255,.52)_34%,rgba(255,255,255,.16)_64%,rgba(255,255,255,0)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/30 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 text-center sm:pb-6 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[610px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
               <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-[#101828] drop-shadow-[0_2px_14px_rgba(255,255,255,.9)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
