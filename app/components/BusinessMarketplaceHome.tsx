@@ -7,13 +7,12 @@ import {
   BriefcaseBusiness,
   BusFront,
   CarFront,
-  Check,
+  CircleHelp,
   Construction,
   Globe2,
   Handshake,
   Leaf,
   ShieldCheck,
-  Sparkles,
   Tractor,
   Truck,
   UserRound,
@@ -176,52 +175,47 @@ export default function BusinessMarketplaceHome({
     <main className="min-h-screen overflow-hidden bg-[#f7f8fb] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="px-4 pb-20 pt-7 sm:px-7 sm:pb-24 sm:pt-9 lg:px-10">
-        <div className="relative mx-auto max-w-[1340px]">
-          <div className="relative min-h-[480px] overflow-hidden rounded-[30px] border border-[#dce5f7] bg-white sm:min-h-[570px]">
+      <section className="bg-white pb-16 lg:pb-20">
+        <div className="relative isolate overflow-hidden bg-[#17257f]">
+          <div className="absolute inset-0">
             <Image
-              src="/autorell-volvo-hero.jpg"
+              src="/autorell-woman-driving-hero.jpeg"
               alt={t.heroAlt}
               fill
               preload
-              className="object-cover object-[72%_center]"
-              sizes="(max-width: 1400px) 100vw, 1340px"
+              className="object-cover object-[58%_center]"
+              sizes="100vw"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(252,253,255,.99)_0%,rgba(238,245,255,.97)_34%,rgba(230,240,255,.7)_58%,rgba(255,255,255,0)_82%)]" />
-            <div className="market-blob absolute -left-32 -top-40 h-[460px] w-[460px] bg-[#dfeaff]/55" />
-
-            <div className="relative flex min-h-[480px] max-w-[720px] flex-col justify-center px-7 pb-28 pt-12 text-[#101828] sm:min-h-[570px] sm:px-14 sm:pb-32 lg:px-20">
-              <span className="inline-flex w-fit items-center gap-2 rounded-[13px] border border-[#c9d9ff] bg-white/75 px-4 py-2 text-xs font-semibold text-[#0866ff] backdrop-blur-md">
-                <Sparkles className="h-4 w-4" />
-                {t.eyebrow}
-              </span>
-              <h1 className="mt-7 max-w-[300px] text-[38px] leading-[.98] tracking-[-0.055em] sm:max-w-[610px] sm:text-6xl sm:leading-[.97] sm:tracking-[-0.06em] lg:text-[74px]">
-                {t.heroTitle}
-              </h1>
-              <p className="mt-6 max-w-[300px] text-base leading-7 text-[#526179] sm:max-w-[580px] sm:text-lg sm:leading-8">
-                {t.heroText}
-              </p>
-              <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3">
-                {t.assurances.map((item) => (
-                  <span key={item} className="inline-flex items-center gap-2 text-xs font-semibold text-[#475467]">
-                    <Check className="h-4 w-4 text-[#0866ff]" />
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,30,111,.94)_0%,rgba(18,30,111,.82)_34%,rgba(8,102,255,.36)_62%,rgba(8,102,255,.08)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#17257f] to-transparent" />
           </div>
 
-          <div className="relative z-10 -mt-[78px] min-w-0 px-3 sm:-mt-[52px] sm:px-8 lg:px-16">
-            <MarketplaceSearch locale={locale} />
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold text-[#475467]">
-              <Link href="/salj-fordon" className="inline-flex items-center gap-2 transition hover:text-[#0866ff]">
+          <div className="relative mx-auto max-w-[1220px] px-4 pb-16 pt-12 sm:px-8 sm:pb-20 lg:pt-16">
+            <div className="max-w-[640px] text-white">
+              <h1 className="text-[38px] font-extrabold leading-[1.05] tracking-[-0.05em] sm:text-[58px] lg:text-[66px]">
+                {t.heroTitle}
+              </h1>
+              <p className="mt-5 max-w-[540px] text-base font-medium leading-7 text-white/86 sm:text-lg sm:leading-8">
+                {t.heroText}
+              </p>
+            </div>
+
+            <div className="mt-8 max-w-[590px]">
+              <MarketplaceSearch locale={locale} />
+            </div>
+
+            <div className="mt-6 max-w-[780px]">
+              <HomeTrustAccordion locale={locale} />
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm font-semibold text-white/86">
+              <Link href="/salj-fordon" className="inline-flex items-center gap-2 transition hover:text-white">
                 {t.sellVehicle}
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/foretag" className="inline-flex items-center gap-2 transition hover:text-[#0866ff]">
+              <Link href="/foretag" className="inline-flex items-center gap-2 transition hover:text-white">
                 {t.businessSolutions}
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -388,5 +382,87 @@ export default function BusinessMarketplaceHome({
 
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+function HomeTrustAccordion({ locale }: { locale: PublicLocale }) {
+  const items =
+    locale === 'sv'
+      ? [
+          {
+            icon: ShieldCheck,
+            title: 'Hur gör Autorell affären tryggare?',
+            text: 'Vi bygger flödet runt tydliga fordonsuppgifter, seriösa konton och kontaktvägar som gör det enklare att förstå vem du gör affär med innan nästa steg.',
+          },
+          {
+            icon: Globe2,
+            title: 'Kan jag köpa och sälja i hela Europa?',
+            text: 'Ja. Autorell är byggt för en europeisk marknad där land, kategori och fordonsdata är enkla att jämföra över gränser.',
+          },
+          {
+            icon: CircleHelp,
+            title: 'Varför välja Autorell framför en vanlig annonssida?',
+            text: 'Du får en mer strukturerad marknadsplats för fordon, med filter, säljflöden och paketering som passar både privatpersoner och företag.',
+          },
+        ]
+      : locale === 'de'
+        ? [
+            {
+              icon: ShieldCheck,
+              title: 'Wie macht Autorell den Handel sicherer?',
+              text: 'Wir setzen auf klare Fahrzeugdaten, seriöse Konten und Kontaktwege, damit Käufer und Verkäufer den nächsten Schritt besser einschätzen können.',
+            },
+            {
+              icon: Globe2,
+              title: 'Kann ich europaweit kaufen und verkaufen?',
+              text: 'Ja. Autorell ist für einen europäischen Markt gebaut, in dem Land, Kategorie und Fahrzeugdaten einfach vergleichbar sind.',
+            },
+            {
+              icon: CircleHelp,
+              title: 'Warum Autorell statt einer normalen Anzeigenbörse?',
+              text: 'Autorell ist strukturierter für Fahrzeuge: mit Filtern, Verkaufsabläufen und Angeboten für private und gewerbliche Nutzer.',
+            },
+          ]
+        : [
+            {
+              icon: ShieldCheck,
+              title: 'How does Autorell make deals safer?',
+              text: 'We structure the flow around clear vehicle data, serious accounts and contact paths that help buyers and sellers understand the next step.',
+            },
+            {
+              icon: Globe2,
+              title: 'Can I buy and sell across Europe?',
+              text: 'Yes. Autorell is built for a European marketplace where country, category and vehicle data are easy to compare across borders.',
+            },
+            {
+              icon: CircleHelp,
+              title: 'Why use Autorell instead of a regular classifieds site?',
+              text: 'You get a more structured vehicle marketplace with filters, selling flows and listing packages for both private sellers and businesses.',
+            },
+          ]
+
+  return (
+    <div className="overflow-hidden rounded-[16px] border border-white/16 bg-white/92 shadow-[0_18px_45px_rgba(0,0,0,.18)] backdrop-blur-md">
+      {items.map(({ icon: Icon, title, text }, index) => (
+        <details
+          key={title}
+          className="group border-b border-[#d8e1f3] last:border-b-0 open:bg-white"
+          open={index === 0}
+        >
+          <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 text-[#08142f] [&::-webkit-details-marker]:hidden">
+            <Icon className="h-6 w-6 text-[#496391]" strokeWidth={1.7} />
+            <span className="text-sm font-extrabold tracking-[-0.02em] sm:text-base">
+              {title}
+            </span>
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-[#3d49df] text-sm font-bold leading-none text-white group-open:rotate-45">
+              +
+            </span>
+          </summary>
+          <p className="px-5 pb-5 pl-[62px] text-sm leading-6 text-[#475467]">
+            {text}
+          </p>
+        </details>
+      ))}
+    </div>
   )
 }
