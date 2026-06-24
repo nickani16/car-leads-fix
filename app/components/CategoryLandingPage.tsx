@@ -126,28 +126,28 @@ export default async function CategoryLandingPage({
         marketplaceChannel={{ label: localized.label, slug }}
       />
 
-      <section className="relative pb-10 pt-0 sm:pb-16 lg:pb-12 lg:pt-6">
+      <section className="relative pb-10 pt-0 sm:pb-14 lg:pb-12 lg:pt-6">
         <div className="market-blob pointer-events-none absolute -left-24 top-8 hidden h-64 w-64 bg-[#0866ff]/10 sm:block" aria-hidden="true" />
         <div className="market-blob pointer-events-none absolute -right-28 bottom-0 hidden h-72 w-72 bg-[#e8f4ef] lg:block" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1600px] px-0 lg:px-7">
-          <div className="relative h-[260px] overflow-hidden sm:h-[330px] lg:h-[300px] lg:rounded-[28px] xl:h-[320px]">
+          <div className="relative h-[270px] overflow-hidden sm:h-[330px] lg:h-[310px] lg:rounded-[28px] xl:h-[330px]">
             <Image
               src={config.heroImage}
               alt={localized.label}
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.72] saturate-[1.02] contrast-[.88]"
+              className="object-cover brightness-[1.14] saturate-[1.04] contrast-[1.02]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.42)_0%,rgba(255,255,255,.18)_38%,rgba(255,255,255,.04)_72%,transparent_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/18 via-white/5 to-transparent" />
-            <div className="absolute inset-0 flex items-center justify-center px-6 pb-8 text-center sm:pb-4 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[620px] lg:px-0 lg:pb-0 lg:text-left">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.78)_0%,rgba(255,255,255,.54)_30%,rgba(255,255,255,.14)_62%,rgba(255,255,255,0)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#fbfaf7]/45 via-[#fbfaf7]/10 to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 text-center sm:pb-6 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[610px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
-              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-[#101828] drop-shadow-[0_2px_12px_rgba(255,255,255,.72)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
+              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-[#101828] drop-shadow-[0_2px_14px_rgba(255,255,255,.9)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
                 {localized.label}
               </h1>
-              <p className="mx-auto mt-3 max-w-[540px] text-sm font-medium leading-6 text-[#243044] drop-shadow-[0_2px_10px_rgba(255,255,255,.78)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
+              <p className="mx-auto mt-3 max-w-[540px] text-sm font-medium leading-6 text-[#344054] drop-shadow-[0_2px_12px_rgba(255,255,255,.85)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
               </div>
@@ -157,10 +157,10 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[26px] border border-[#e3e8f0] bg-white p-3 shadow-[0_20px_50px_rgba(16,24,40,.14)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-4 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-[30px] lg:px-4 lg:py-3"
+            className="relative z-10 mx-4 -mt-9 grid min-w-0 gap-2 rounded-[24px] border border-[#e1e7f0] bg-white p-3 shadow-[0_18px_42px_rgba(16,24,40,.10)] sm:mx-8 sm:-mt-9 sm:grid-cols-2 sm:gap-3 sm:p-4 lg:mx-auto lg:-mt-9 lg:max-w-[1180px] lg:grid-cols-[1fr_1fr_1.2fr_auto_auto] lg:items-center lg:gap-0 lg:rounded-[24px] lg:px-4 lg:py-3"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
-              <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-9 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
+              <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-10 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
                 <option value="">{copy.allEurope}</option>
                 {countries.map((country) => (
                   <option key={country.code} value={country.code}>{country.label}</option>
@@ -170,22 +170,22 @@ export default async function CategoryLandingPage({
             </SearchField>
 
             <SearchField label={copy.allMakes} icon={Layers3}>
-              <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-9 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+              <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-10 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
             <SearchField label={localized.searchHint} icon={Search}>
-              <input name="q" placeholder={localized.searchHint} className="h-9 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+              <input name="q" placeholder={localized.searchHint} className="h-10 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
             <Link
               href={`/marketplace/${slug}#marketplace-results`}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border border-[#d8e4f6] bg-white px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-2 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[16px] border border-[#d8e4f6] bg-[#f8fbff] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-3 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
             >
               <SlidersHorizontal className="h-4 w-4 lg:hidden" />
               {locale === 'sv' ? 'Fler val' : locale === 'de' ? 'Mehr Optionen' : 'More options'}
             </Link>
 
-            <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8] lg:rounded-full">
+            <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8] lg:rounded-[20px]">
               <Search className="h-5 w-5" />
               {searchLabel}
             </button>
@@ -291,12 +291,12 @@ function SearchField({
   children: React.ReactNode
 }) {
   return (
-    <label className="relative flex min-w-0 items-center gap-3 rounded-[20px] border border-[#dce4ee] bg-white px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:px-5 lg:py-1.5 lg:focus-within:ring-2">
+    <label className="relative flex min-w-0 items-center gap-3 rounded-[18px] border border-[#dce4ee] bg-white px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:rounded-none lg:border-0 lg:border-r lg:border-[#e3e8f0] lg:px-5 lg:py-0 lg:focus-within:ring-0">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-[#f2f6ff] text-[#0866ff] lg:hidden">
         <Icon className="h-[17px] w-[17px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#101828] lg:text-[11px] lg:normal-case lg:tracking-normal">{label}</span>
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#101828] lg:text-[11px] lg:tracking-normal">{label}</span>
         <span className="relative block">{children}</span>
       </span>
     </label>
