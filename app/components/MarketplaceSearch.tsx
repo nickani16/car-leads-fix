@@ -1,28 +1,13 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
 import {
-  translatePublic,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { euCountries, getEuCountryName } from '@/lib/eu-countries'
-
-const categories = [
-  { value: 'cars', sv: 'Bilar', en: 'Cars', de: 'Autos' },
-  { value: 'vans', sv: 'Transportbilar', en: 'Vans', de: 'Transporter' },
-  { value: 'motorcycles', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder' },
-  { value: 'motorhomes', sv: 'Husbilar', en: 'Motorhomes', de: 'Wohnmobile' },
-  { value: 'caravans', sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen' },
-  { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw' },
-  { value: 'agriculture', sv: 'Lantbruk', en: 'Agriculture', de: 'Landmaschinen' },
-  { value: 'construction', sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
-  { value: 'electric-bikes', sv: 'Elcyklar', en: 'Electric bikes', de: 'E-Bikes' },
-  { value: 'e-scooters', sv: 'Elsparkcyklar', en: 'E-scooters', de: 'E-Scooter' },
-] as const
 
 const popularMakes = [
   'Audi',
@@ -43,128 +28,133 @@ export default function MarketplaceSearch({
   locale?: PublicLocale
 }) {
   const router = useRouter()
-  const [category, setCategory] = useState('cars')
-  const [country, setCountry] = useState('')
   const [query, setQuery] = useState('')
+  const [mileage, setMileage] = useState('')
+  const [registration, setRegistration] = useState('')
   const [price, setPrice] = useState('')
+  const [vat, setVat] = useState(false)
   const copy =
     locale === 'sv'
       ? {
-          category: 'Fordonskategori',
-          country: 'Land',
-          allEurope: 'Hela Europa',
           queryPlaceholder: 'Märke eller modell',
+          mileage: 'Miltal',
+          registration: 'Årsmodell från',
           price: 'Pris upp till',
-          search: 'Sök fordon',
-          advanced: 'Fler filter',
+          vat: 'Momsavdrag',
+          search: 'Sök annonser',
+          advanced: 'Avancerad sökning',
         }
       : locale === 'de'
         ? {
-            category: 'Fahrzeugkategorie',
-            country: 'Land',
-            allEurope: 'Ganz Europa',
             queryPlaceholder: 'Marke oder Modell',
+            mileage: 'Kilometerstand',
+            registration: 'Erstzulassung ab',
             price: 'Preis bis',
-            search: 'Fahrzeuge suchen',
-            advanced: 'Mehr Filter',
+            vat: 'MwSt. ausweisbar',
+            search: 'Angebote suchen',
+            advanced: 'Erweiterte Suche',
           }
         : locale === 'en'
           ? {
-              category: 'Vehicle category',
-              country: 'Country',
-              allEurope: 'All of Europe',
               queryPlaceholder: 'Make or model',
+              mileage: 'Mileage',
+              registration: 'Registration from',
               price: 'Price up to',
-              search: 'Search vehicles',
-              advanced: 'More filters',
+              vat: 'VAT deduction',
+              search: 'Search listings',
+              advanced: 'Advanced search',
             }
           : translatePublicObject(locale, {
-              category: 'Vehicle category',
-              country: 'Country',
-              allEurope: 'All of Europe',
               queryPlaceholder: 'Make or model',
+              mileage: 'Mileage',
+              registration: 'Registration from',
               price: 'Price up to',
-              search: 'Search vehicles',
-              advanced: 'More filters',
+              vat: 'VAT deduction',
+              search: 'Search listings',
+              advanced: 'Advanced search',
             })
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
-    if (country) params.set('country', country)
     if (query.trim()) params.set('q', query.trim())
+    if (mileage) params.set('mileageMax', mileage)
+    if (registration) params.set('yearFrom', registration)
     if (price) params.set('priceMax', price)
-    router.push(`/marketplace/${category}${params.size ? `?${params}` : ''}`)
+    if (vat) params.set('vat', '1')
+    router.push(`/marketplace/cars${params.size ? `?${params}` : ''}`)
   }
 
   return (
     <form
       onSubmit={submit}
-      className="w-full rounded-[22px] border border-white/80 bg-white p-4 shadow-[0_18px_45px_rgba(8,27,74,.20)] sm:p-5"
+      className="w-full min-w-0 max-w-full overflow-hidden rounded-[22px] bg-white p-4 shadow-[0_20px_55px_rgba(8,27,74,.22)] sm:p-5"
       role="search"
     >
-      <div className="grid gap-3 md:grid-cols-[1fr_1fr_1.15fr_.8fr_auto] md:items-end">
-        <SelectField value={category} onChange={setCategory} label={copy.category}>
-          {categories.map((item) => (
-            <option key={item.value} value={item.value}>
-              {locale === 'sv' || locale === 'de' || locale === 'en'
-                ? item[locale]
-                : translatePublic(locale, item.en)}
-            </option>
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[1fr_.54fr]">
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={copy.queryPlaceholder}
+          list="marketplace-makes"
+          className="h-12 w-full rounded-[12px] border border-[#b8c7e6] bg-white px-4 text-sm font-semibold text-[#22304a] outline-none transition placeholder:font-medium placeholder:text-[#526179] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        />
+        <datalist id="marketplace-makes">
+          {popularMakes.map((make) => (
+            <option key={make} value={make} />
           ))}
-        </SelectField>
+        </datalist>
 
-        <SelectField value={country} onChange={setCountry} label={copy.country}>
-          <option value="">{copy.allEurope}</option>
-          {euCountries
-            .map(([code]) => code)
-            .sort((a, b) =>
-              getEuCountryName(a, locale).localeCompare(getEuCountryName(b, locale), locale),
-            )
-            .map((code) => (
-              <option key={code} value={code.toUpperCase()}>
-                {getEuCountryName(code, locale)}
-              </option>
-            ))}
+        <SelectField value={mileage} onChange={setMileage} label={copy.mileage}>
+          <option value="">{copy.mileage}</option>
+          <option value="5000">5 000 km</option>
+          <option value="10000">10 000 km</option>
+          <option value="30000">30 000 km</option>
+          <option value="60000">60 000 km</option>
+          <option value="100000">100 000 km</option>
         </SelectField>
+      </div>
 
-        <label className="block">
-          <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-[#667085]">
-            {copy.queryPlaceholder}
-          </span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={copy.queryPlaceholder}
-            list="marketplace-makes"
-            className="h-12 w-full rounded-[12px] border border-[#cfd8ea] bg-white px-4 text-sm font-semibold text-[#22304a] outline-none transition placeholder:font-medium placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-          />
-          <datalist id="marketplace-makes">
-            {popularMakes.map((make) => (
-              <option key={make} value={make} />
-            ))}
-          </datalist>
-        </label>
+      <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-[.52fr_.52fr_.6fr] sm:items-center">
+        <SelectField value={registration} onChange={setRegistration} label={copy.registration}>
+          <option value="">{copy.registration}</option>
+          <option value="2024">2024</option>
+          <option value="2022">2022</option>
+          <option value="2020">2020</option>
+          <option value="2018">2018</option>
+          <option value="2015">2015</option>
+        </SelectField>
 
         <SelectField value={price} onChange={setPrice} label={copy.price}>
           <option value="">{copy.price}</option>
-          <option value="100000">100 000</option>
-          <option value="250000">250 000</option>
-          <option value="500000">500 000</option>
-          <option value="750000">750 000</option>
-          <option value="1000000">1 000 000</option>
+          <option value="100000">100 000 kr</option>
+          <option value="200000">200 000 kr</option>
+          <option value="350000">350 000 kr</option>
+          <option value="500000">500 000 kr</option>
+          <option value="750000">750 000 kr</option>
         </SelectField>
 
-        <button type="submit" className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_22px_rgba(8,102,255,.24)] transition hover:bg-[#0057e6]">
+        <label className="inline-flex h-12 items-center gap-3 rounded-[12px] border border-[#b8c7e6] bg-white px-4 text-sm font-semibold text-[#22304a]">
+          <input
+            type="checkbox"
+            checked={vat}
+            onChange={(event) => setVat(event.target.checked)}
+            className="h-5 w-5 rounded border-[#9aa8c4] text-[#0866ff] focus:ring-[#0866ff]"
+          />
+          {copy.vat}
+        </label>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/marketplace/cars" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff] underline underline-offset-4">
+          {copy.advanced}
+          <ChevronDown className="-rotate-90 h-4 w-4" />
+        </Link>
+
+        <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-8 text-sm font-bold text-white shadow-[0_12px_28px_rgba(8,102,255,.26)] transition hover:bg-[#0057e6]">
           <Search className="h-5 w-5" />
           {copy.search}
         </button>
-      </div>
-
-      <div className="mt-4 flex justify-end">
-        <Link href={`/marketplace/${category}`} className="text-sm font-bold text-[#0866ff] underline underline-offset-4">
-          {copy.advanced}
-        </Link>
       </div>
     </form>
   )
@@ -183,17 +173,15 @@ function SelectField({
 }) {
   return (
     <label className="relative block">
-      <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-[#667085]">
-        {label}
-      </span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-12 w-full appearance-none rounded-[12px] border border-[#cfd8ea] bg-white px-4 pr-10 text-sm font-semibold text-[#22304a] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        aria-label={label}
+        className="h-12 w-full appearance-none rounded-[12px] border border-[#b8c7e6] bg-white px-4 pr-10 text-sm font-semibold text-[#22304a] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       >
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute bottom-4 right-4 h-4 w-4 text-[#344054]" />
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#344054]" />
     </label>
   )
 }
