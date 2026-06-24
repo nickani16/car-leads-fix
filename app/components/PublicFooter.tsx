@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Globe2, Mail, ShieldCheck } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import SocialIcons from './SocialIcons'
 import {
@@ -168,15 +168,22 @@ export default function PublicFooter({
       : locale !== 'sv'
         ? localizePublicHref(locale, '/terms')
         : '/villkor'
+  const trustBadges =
+    locale === 'sv'
+      ? ['EU-marknadsplats', 'Trygga konton', 'Verifierat flÃ¶de']
+      : locale === 'de'
+        ? ['EU-Marktplatz', 'Sichere Konten', 'Verifizierter Ablauf']
+        : ['EU marketplace', 'Secure accounts', 'Verified flow']
 
   return (
-    <footer className="relative overflow-hidden bg-[#f5f5f5] text-[#202124]">
+    <footer className="relative overflow-hidden bg-[#f7f9fc] text-[#202124]">
       <div
         className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] bg-[#dce9ff] sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px]"
         aria-hidden="true"
       />
+      <div className="pointer-events-none absolute -left-32 top-12 h-72 w-72 rounded-full bg-white/80 blur-3xl" aria-hidden="true" />
       <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
-        <div className="flex flex-col gap-10 border-b border-[#d9d7d0] py-14 lg:flex-row lg:items-center lg:justify-between lg:py-16">
+        <div className="grid gap-8 border-b border-[#dce3ee] py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:py-16">
           <div>
             <a href={homeHref} aria-label={homeLabel}>
               <BrandLogo />
@@ -184,9 +191,24 @@ export default function PublicFooter({
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#666864]">
               {t.description}
             </p>
+            <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold text-[#344054]">
+              {[
+                [Globe2, trustBadges[0]],
+                [ShieldCheck, trustBadges[1]],
+                [BadgeCheck, trustBadges[2]],
+              ].map(([Icon, label]) => {
+                const FooterIcon = Icon as typeof Globe2
+                return (
+                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#dbe4f0] bg-white px-3 py-2 shadow-sm">
+                    <FooterIcon className="h-4 w-4 text-[#0866ff]" />
+                    {label as string}
+                  </span>
+                )
+              })}
+            </div>
           </div>
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <p className="max-w-xs text-sm leading-6 text-[#666864]">
+          <div className="rounded-[28px] border border-[#dbe4f0] bg-white p-5 shadow-[0_18px_48px_rgba(16,24,40,.08)] sm:min-w-[360px]">
+            <p className="max-w-xs text-sm font-semibold leading-6 text-[#344054]">
               {t.question}
             </p>
             <Link
@@ -197,7 +219,7 @@ export default function PublicFooter({
                     ? '/registrera'
                     : '/registrera'
               }
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0057e6]"
+              className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#0057e6]"
             >
               {t.cta}
               <ArrowRight className="h-4 w-4" />
@@ -205,7 +227,7 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-10">
+        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-10">
           <p className="max-w-sm text-2xl leading-9 tracking-[-0.025em] text-[#2b2b2a]">
             {t.statement}
           </p>
@@ -236,12 +258,13 @@ export default function PublicFooter({
             ])}
           />
 
-          <div>
+          <div className="rounded-[26px] border border-[#dbe4f0] bg-white p-5 shadow-[0_12px_32px_rgba(16,24,40,.06)]">
             <h3 className="text-xs font-medium uppercase tracking-[0.18em] text-[#898a85]">
               {t.contact}
             </h3>
             <div className="mt-6 flex flex-col gap-4 text-sm">
-              <a href="mailto:info@autorell.com" className="transition hover:opacity-55">
+              <a href="mailto:info@autorell.com" className="inline-flex items-center gap-2 font-semibold transition hover:text-[#0866ff]">
+                <Mail className="h-4 w-4 text-[#0866ff]" />
                 info@autorell.com
               </a>
               <Link href={contactHref} className="transition hover:opacity-55">
@@ -255,7 +278,7 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-[#d9d7d0] py-7 text-xs text-[#858681] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-[#dce3ee] py-7 text-xs text-[#858681] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link href={privacyHref} className="transition hover:text-[#242424]">

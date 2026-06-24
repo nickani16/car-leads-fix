@@ -13,6 +13,7 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import BrandLogo from './BrandLogo'
+import { createClient } from '@/lib/supabase/client'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
@@ -20,9 +21,13 @@ const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 export default function EmailCodeAuth({
   locale,
   mode = 'login',
+  variant = 'page',
+  onModeChange,
 }: {
   locale: PublicLocale
   mode?: 'login' | 'register'
+  variant?: 'page' | 'modal'
+  onModeChange?: (mode: 'login' | 'register') => void
 }) {
   const router = useRouter()
   const copy = getCopy(locale, mode)
@@ -35,6 +40,7 @@ export default function EmailCodeAuth({
   const [requestedPath, setRequestedPath] = useState('')
   const [retryAfter, setRetryAfter] = useState(0)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
+  const isModal = variant === 'modal'
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -119,6 +125,21 @@ export default function EmailCodeAuth({
     }
   }
 
+  async function signInWithProvider(provider: 'google' | 'facebook' | 'apple') {
+    setError('')
+    setLoading(true)
+    const next = requestedPath || '/konto'
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+    const { error: providerError } = await createClient().auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    })
+    if (providerError) {
+      setError(copy.connectionError)
+      setLoading(false)
+    }
+  }
+
   function updateDigit(index: number, value: string) {
     const clean = value.replace(/\D/g, '').slice(-1)
     const next = [...digits]
@@ -138,13 +159,13 @@ export default function EmailCodeAuth({
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f6f8] px-5 py-8 text-[#101828] sm:py-12">
-      <div className="mx-auto max-w-[1160px]">
-        <Link href="/" aria-label="Autorell" className="inline-flex">
+    <main className={isModal ? 'text-[#101828]' : 'min-h-screen bg-[#f5f6f8] px-5 py-8 text-[#101828] sm:py-12'}>
+      <div className={isModal ? 'mx-auto max-w-[430px]' : 'mx-auto max-w-[1160px]'}>
+        {!isModal ? <Link href="/" aria-label="Autorell" className="inline-flex">
           <BrandLogo />
-        </Link>
+        </Link> : null}
 
-        <div className="mt-9 grid overflow-hidden rounded-[28px] border border-[#dfe3e8] bg-white shadow-[0_30px_90px_rgba(16,24,40,.10)] lg:grid-cols-[1fr_520px]">
+        <div className={isModal ? 'overflow-hidden rounded-[28px] bg-white' : 'mt-9 grid overflow-hidden rounded-[28px] border border-[#dfe3e8] bg-white shadow-[0_30px_90px_rgba(16,24,40,.10)] lg:grid-cols-[1fr_520px]'}>
           <section className="relative hidden min-h-[650px] overflow-hidden border-r border-[#e5e7eb] bg-[#f8faff] p-12 lg:block">
             <div className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#e4edff]" />
             <span className="relative inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#0866ff] shadow-sm">
@@ -176,9 +197,9 @@ export default function EmailCodeAuth({
             </div>
           </section>
 
-          <section className="flex min-h-[560px] items-center p-6 sm:p-10 lg:min-h-[650px] lg:p-12">
+          <section className={isModal ? 'p-6 sm:p-7' : 'flex min-h-[560px] items-center p-6 sm:p-10 lg:min-h-[650px] lg:p-12'}>
             <div className="mx-auto w-full max-w-[410px]">
-              <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white">
+              <span className="grid h-12 w-12 place-items-center rounded-[17px] bg-[#0866ff] text-white">
                 <Mail className="h-5 w-5" />
               </span>
               <p className="mt-7 text-xs font-bold uppercase tracking-[.17em] text-[#0866ff]">
@@ -194,7 +215,36 @@ export default function EmailCodeAuth({
               </p>
 
               {step === 'email' ? (
-                <form onSubmit={requestCode} className="mt-8">
+                <>
+                  <div className="mt-7 grid gap-3">
+                    {[
+                      ['google', 'Google', 'G'],
+                      ['facebook', 'Facebook', 'f'],
+                      ['apple', 'Apple', ''],
+                    ].map(([provider, label, mark]) => (
+                      <button
+                        key={provider}
+                        type="button"
+                        onClick={() => void signInWithProvider(provider as 'google' | 'facebook' | 'apple')}
+                        className="inline-flex min-h-12 items-center justify-center gap-3 rounded-[16px] border border-[#cfd7e6] bg-white px-4 text-sm font-bold text-[#172033] transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
+                      >
+                        <span className="grid h-6 w-6 place-items-center rounded-full text-base font-black text-[#0866ff]">
+                          {mark}
+                        </span>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="my-6 flex items-center gap-3 text-xs font-medium text-[#98a2b3]">
+                    <span className="h-px flex-1 bg-[#e4e7ec]" />
+                    {copy.or}
+                    <span className="h-px flex-1 bg-[#e4e7ec]" />
+                  </div>
+                </>
+              ) : null}
+
+              {step === 'email' ? (
+                <form onSubmit={requestCode}>
                   <label className="block text-sm font-semibold">
                     {copy.email}
                     <input
@@ -295,6 +345,13 @@ export default function EmailCodeAuth({
                 {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
                 <Link
                   href={mode === 'login' ? '/registrera' : '/login'}
+                  onClick={(event) => {
+                    if (!onModeChange) return
+                    event.preventDefault()
+                    setStep('email')
+                    setError('')
+                    onModeChange(mode === 'login' ? 'register' : 'login')
+                  }}
                   className="font-bold text-[#0866ff]"
                 >
                   {mode === 'login' ? copy.createAccount : copy.signIn}
@@ -330,6 +387,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
     email: 'Email address',
     remember: 'Remember my email',
     continue: 'Continue',
+    or: 'or',
     sending: 'Sending code…',
     checkInbox: 'Check your inbox',
     codeSent: 'Enter the code we sent to',
@@ -360,6 +418,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       email: 'Mejladress',
       remember: 'Kom ihåg min mejladress',
       continue: 'Fortsätt',
+      or: 'eller',
       sending: 'Skickar kod…',
       checkInbox: 'Titta i din inkorg',
       codeSent: 'Ange koden vi skickade till',
@@ -391,6 +450,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       email: 'E-Mail-Adresse',
       remember: 'E-Mail-Adresse merken',
       continue: 'Weiter',
+      or: 'oder',
       sending: 'Code wird gesendet…',
       checkInbox: 'Posteingang prüfen',
       codeSent: 'Geben Sie den Code ein, den wir gesendet haben an',

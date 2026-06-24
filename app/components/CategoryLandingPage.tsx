@@ -137,17 +137,17 @@ export default async function CategoryLandingPage({
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.48] saturate-[1.02] contrast-[.92]"
+              className="object-cover brightness-[1.72] saturate-[1.02] contrast-[.88]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.22)_0%,rgba(7,20,34,.14)_34%,rgba(7,20,34,.03)_62%,transparent_88%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/12 via-[#071522]/3 to-transparent" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.42)_0%,rgba(255,255,255,.18)_38%,rgba(255,255,255,.04)_72%,transparent_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/18 via-white/5 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center px-6 pb-8 text-center sm:pb-4 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[620px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
-              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-white drop-shadow-[0_4px_22px_rgba(0,0,0,.42)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
+              <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-[#101828] drop-shadow-[0_2px_12px_rgba(255,255,255,.72)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
                 {localized.label}
               </h1>
-              <p className="mx-auto mt-3 max-w-[540px] text-sm leading-6 text-white drop-shadow-[0_3px_16px_rgba(0,0,0,.5)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
+              <p className="mx-auto mt-3 max-w-[540px] text-sm font-medium leading-6 text-[#243044] drop-shadow-[0_2px_10px_rgba(255,255,255,.78)] sm:mt-4 sm:text-base sm:leading-7 lg:mx-0">
                 {localized.intro}
               </p>
               </div>
@@ -157,10 +157,10 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[26px] border border-[#e3e8f0] bg-white p-3 shadow-[0_20px_50px_rgba(16,24,40,.14)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[26px] border border-[#e3e8f0] bg-white p-3 shadow-[0_20px_50px_rgba(16,24,40,.14)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-4 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-[30px] lg:px-4 lg:py-3"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
-              <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
+              <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-9 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
                 <option value="">{copy.allEurope}</option>
                 {countries.map((country) => (
                   <option key={country.code} value={country.code}>{country.label}</option>
@@ -170,22 +170,22 @@ export default async function CategoryLandingPage({
             </SearchField>
 
             <SearchField label={copy.allMakes} icon={Layers3}>
-              <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+              <input name="make" placeholder={copy.allMakes} aria-label={copy.allMakes} className="h-9 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
             <SearchField label={localized.searchHint} icon={Search}>
-              <input name="q" placeholder={localized.searchHint} className="h-11 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
+              <input name="q" placeholder={localized.searchHint} className="h-9 w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-[#475467]" />
             </SearchField>
 
             <Link
               href={`/marketplace/${slug}#marketplace-results`}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#d8e4f6] bg-[#f4f8ff] px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-2 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[18px] border border-[#d8e4f6] bg-white px-3 text-sm font-semibold text-[#0866ff] sm:col-span-2 lg:col-span-1 lg:mx-2 lg:border-0 lg:bg-transparent lg:underline lg:decoration-2 lg:underline-offset-8"
             >
               <SlidersHorizontal className="h-4 w-4 lg:hidden" />
               {locale === 'sv' ? 'Fler val' : locale === 'de' ? 'Mehr Optionen' : 'More options'}
             </Link>
 
-            <button type="submit" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[16px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8] lg:min-h-14 lg:rounded-full">
+            <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#075bd8] lg:rounded-full">
               <Search className="h-5 w-5" />
               {searchLabel}
             </button>
@@ -291,12 +291,12 @@ function SearchField({
   children: React.ReactNode
 }) {
   return (
-    <label className="relative flex min-w-0 items-center gap-3 rounded-[18px] border border-[#dce4ee] bg-white px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:px-5 lg:py-2 lg:focus-within:ring-2">
+    <label className="relative flex min-w-0 items-center gap-3 rounded-[20px] border border-[#dce4ee] bg-white px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:px-5 lg:py-1.5 lg:focus-within:ring-2">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-[#f2f6ff] text-[#0866ff] lg:hidden">
         <Icon className="h-[17px] w-[17px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#0866ff] lg:text-xs lg:normal-case lg:tracking-normal lg:text-[#101828]">{label}</span>
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#101828] lg:text-[11px] lg:normal-case lg:tracking-normal">{label}</span>
         <span className="relative block">{children}</span>
       </span>
     </label>

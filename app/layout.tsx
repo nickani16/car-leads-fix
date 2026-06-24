@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
 import { cookies, headers } from 'next/headers'
+import AuthModalProvider from './components/AuthModalProvider'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
@@ -93,6 +94,13 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
+        <AuthModalProvider
+          locale={
+            (requestedLanguage || marketLanguage) as Parameters<
+              typeof AuthModalProvider
+            >[0]['locale']
+          }
+        />
         <CookieConsent
           initialLocale={
             (requestedLanguage || marketLanguage) as Parameters<
