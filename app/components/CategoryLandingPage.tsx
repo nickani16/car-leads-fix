@@ -26,9 +26,15 @@ import {
   localizeCategoryLanding,
 } from '@/lib/category-landings'
 import { getRequestLocale } from '@/lib/request-locale'
-import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import {
+  formatMarketplacePrice,
+  marketplacePublicSelect,
+  normalizeMarketplaceCategory,
+  type MarketplaceCategorySlug,
+} from '@/lib/marketplace'
 import type { PublicLocale } from '@/lib/public-i18n'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
+import { createAdminClient } from '@/lib/supabase/admin'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 
@@ -80,6 +86,31 @@ export default async function CategoryLandingPage({
   const copy = categoryLandingCopy(locale)
   const searchLabel = localizedCategorySearchLabel(locale, localized.label)
   const belowSearch = categoryBelowSearchContent(slug, locale, localized.label)
+  const { data: featuredListings } = await createAdminClient()
+    .from('marketplace_listings')
+    .select(marketplacePublicSelect)
+    .eq('status', 'published')
+    .eq('category', normalizeMarketplaceCategory(slug))
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .order('priority', { ascending: false })
+    .order('published_at', { ascending: false })
+    .limit(8)
+  const topListings: LandingTopListing[] = (featuredListings || []).map((listing) => ({
+    id: listing.id,
+    title: listing.title,
+    meta: [
+      listing.model_year,
+      listing.mileage_km ? `${Number(listing.mileage_km).toLocaleString('sv-SE')} km` : null,
+      listing.operating_hours ? `${Number(listing.operating_hours).toLocaleString('sv-SE')} h` : null,
+      listing.country_code,
+    ]
+      .filter(Boolean)
+      .join(' · '),
+    price: formatMarketplacePrice(Number(listing.price), listing.currency, locale),
+    imageUrl: listing.images?.[0] || null,
+    packageId: listing.package_id || 'free_7d',
+    priority: Number(listing.priority || 0),
+  }))
   const countries = euCountries
     .map(([code]) => code)
     .map((code) => ({
@@ -106,12 +137,11 @@ export default async function CategoryLandingPage({
               fill
               priority
               sizes="(min-width: 1600px) 1544px, 100vw"
-              className="object-cover brightness-[1.28] saturate-[1.02] contrast-[.96]"
+              className="object-cover brightness-[1.48] saturate-[1.02] contrast-[.92]"
               style={{ objectPosition: config.heroPosition }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.34)_0%,rgba(7,20,34,.2)_34%,rgba(7,20,34,.05)_62%,transparent_88%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(8,102,255,.05),transparent_34%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/18 via-[#071522]/4 to-transparent" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,20,34,.22)_0%,rgba(7,20,34,.14)_34%,rgba(7,20,34,.03)_62%,transparent_88%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#071522]/12 via-[#071522]/3 to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center px-6 pb-8 text-center sm:pb-4 lg:inset-auto lg:left-14 lg:top-20 lg:block lg:max-w-[620px] lg:px-0 lg:pb-0 lg:text-left">
               <div>
               <h1 className="text-[32px] leading-[.98] tracking-[-0.04em] text-white drop-shadow-[0_4px_22px_rgba(0,0,0,.42)] [overflow-wrap:anywhere] sm:text-[48px] lg:text-[52px] xl:text-[56px]">
@@ -127,7 +157,7 @@ export default async function CategoryLandingPage({
           <form
             action={`/marketplace/${slug}`}
             method="get"
-            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[24px] border border-white/80 bg-[#f2f5f9]/97 p-3 shadow-[0_20px_50px_rgba(16,24,40,.16)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-full lg:px-5 lg:py-4"
+            className="relative z-10 mx-4 -mt-8 grid min-w-0 gap-2 rounded-[26px] border border-[#e3e8f0] bg-white p-3 shadow-[0_20px_50px_rgba(16,24,40,.14)] backdrop-blur-xl sm:mx-8 sm:-mt-10 sm:grid-cols-2 sm:gap-3 sm:p-5 lg:mx-auto lg:-mt-10 lg:max-w-[1280px] lg:grid-cols-[1fr_1fr_1.25fr_auto_auto] lg:items-center lg:gap-2 lg:rounded-full lg:px-5 lg:py-4"
           >
             <SearchField label={copy.allEurope} icon={Globe2}>
               <select name="country" defaultValue="" aria-label={copy.allEurope} className="h-11 w-full appearance-none bg-transparent pr-8 text-[15px] font-medium outline-none">
@@ -166,7 +196,7 @@ export default async function CategoryLandingPage({
       <CategoryBelowSearchSection
         slug={slug}
         content={belowSearch}
-        heroImage={config.heroImage}
+        topListings={topListings}
       />
 
       <section id="guides" className="relative scroll-mt-28 overflow-hidden border-y border-[#e5e7eb] bg-[#f8f8f6] py-14 sm:py-20">
@@ -261,8 +291,8 @@ function SearchField({
   children: React.ReactNode
 }) {
   return (
-    <label className="relative flex min-w-0 items-center gap-3 rounded-[15px] border border-[#dce4ee] bg-[#eef3f8] px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:rounded-[18px] lg:px-5 lg:py-2 lg:focus-within:ring-2">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#eaf2ff] text-[#0866ff] lg:hidden">
+    <label className="relative flex min-w-0 items-center gap-3 rounded-[18px] border border-[#dce4ee] bg-white px-3 py-2 transition focus-within:border-[#9bbdf0] focus-within:ring-4 focus-within:ring-[#0866ff]/8 lg:px-5 lg:py-2 lg:focus-within:ring-2">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-[#f2f6ff] text-[#0866ff] lg:hidden">
         <Icon className="h-[17px] w-[17px]" />
       </span>
       <span className="min-w-0 flex-1">
@@ -278,28 +308,35 @@ type BelowSearchContent = {
   topRatedTitle: string
   popularTitle: string
   viewAll: string
+  upgradeTitle: string
+  upgradeText: string
+  upgradeCta: string
   discover: Array<{
     title: string
     text: string
     href: string
-    image: string
-  }>
-  topRated: Array<{
-    title: string
-    meta: string
-    price: string
   }>
   popular: string[]
+}
+
+type LandingTopListing = {
+  id: string
+  title: string
+  meta: string
+  price: string
+  imageUrl: string | null
+  packageId: string
+  priority: number
 }
 
 function CategoryBelowSearchSection({
   slug,
   content,
-  heroImage,
+  topListings,
 }: {
   slug: MarketplaceCategorySlug
   content: BelowSearchContent
-  heroImage: string
+  topListings: LandingTopListing[]
 }) {
   return (
     <section className="bg-white py-12 sm:py-16">
@@ -312,26 +349,15 @@ function CategoryBelowSearchSection({
             <Link
               key={item.title}
               href={item.href}
-              className="group overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white shadow-[0_12px_30px_rgba(16,24,40,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(16,24,40,.1)]"
+              className="group rounded-[24px] border border-[#dfe5ee] bg-[linear-gradient(145deg,#ffffff,#f8fbff)] p-5 shadow-[0_12px_30px_rgba(16,24,40,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(16,24,40,.1)]"
             >
-              <div className="relative aspect-[16/9] overflow-hidden bg-[#eef3f8]">
-                <Image
-                  src={item.image}
-                  alt=""
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover brightness-[1.12] transition duration-500 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="p-4">
-                <span className="inline-flex rounded-[4px] bg-[#0866ff] px-2 py-1 text-[10px] font-bold text-white">
-                  Autorell
-                </span>
-                <h3 className="mt-3 text-base font-bold leading-5 tracking-[-0.03em] text-[#101828]">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{item.text}</p>
-              </div>
+              <span className="grid h-11 w-11 place-items-center rounded-[16px] bg-[#edf4ff] text-[#0866ff]">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-base font-bold leading-5 tracking-[-0.03em] text-[#101828]">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#667085]">{item.text}</p>
             </Link>
           ))}
         </div>
@@ -345,24 +371,31 @@ function CategoryBelowSearchSection({
               {content.viewAll}
             </Link>
           </div>
+          {topListings.length ? (
           <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3">
-            {content.topRated.map((item, index) => (
+            {topListings.map((item, index) => (
               <Link
-                key={item.title}
+                key={item.id}
                 href={`/marketplace/${slug}`}
-                className="min-w-[230px] snap-start overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white shadow-[0_10px_28px_rgba(16,24,40,.06)] sm:min-w-[260px]"
+                className="min-w-[230px] snap-start overflow-hidden rounded-[24px] border border-[#dfe5ee] bg-white shadow-[0_10px_28px_rgba(16,24,40,.06)] sm:min-w-[260px]"
               >
-                <div className="relative aspect-[16/10] bg-[#eef3f8]">
-                  <Image
-                    src={heroImage}
-                    alt=""
-                    fill
-                    sizes="260px"
-                    className="object-cover brightness-[1.14]"
-                  />
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-[4px] bg-white/94 px-2 py-1 text-[10px] font-bold text-[#101828] shadow-sm">
+                <div className="relative aspect-[16/10] bg-[#f4f7fb]">
+                  {item.imageUrl ? (
+                    <Image
+                      src={item.imageUrl}
+                      alt=""
+                      fill
+                      sizes="260px"
+                      className="object-cover brightness-[1.08]"
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-[#0866ff]">
+                      <BadgeCheck className="h-10 w-10" />
+                    </div>
+                  )}
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/94 px-3 py-1 text-[10px] font-bold text-[#101828] shadow-sm">
                     <BadgeCheck className="h-3.5 w-3.5 text-[#0866ff]" />
-                    {index + 1}
+                    {item.priority > 0 || item.packageId.includes('premium') ? 'Premium' : index + 1}
                   </span>
                 </div>
                 <div className="p-4">
@@ -373,6 +406,17 @@ function CategoryBelowSearchSection({
               </Link>
             ))}
           </div>
+          ) : (
+            <div className="mt-5 rounded-[28px] border border-[#dfe5ee] bg-[linear-gradient(145deg,#ffffff,#f7fbff)] p-6 shadow-[0_12px_32px_rgba(16,24,40,.06)] sm:flex sm:items-center sm:justify-between sm:gap-6">
+              <div>
+                <h3 className="text-lg font-bold tracking-[-0.03em] text-[#101828]">{content.upgradeTitle}</h3>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{content.upgradeText}</p>
+              </div>
+              <Link href={`/salj-fordon?category=${slug}&package=featured`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#0866ff] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] sm:mt-0">
+                {content.upgradeCta}
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="mt-12">
@@ -384,7 +428,7 @@ function CategoryBelowSearchSection({
               <Link
                 key={item}
                 href={`/marketplace/${slug}?q=${encodeURIComponent(item)}`}
-                className="grid min-h-20 place-items-center rounded-[8px] border border-[#dfe5ee] bg-[#f8fafc] px-3 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#344054] transition hover:border-[#9bbdf0] hover:bg-white hover:text-[#0866ff]"
+                className="grid min-h-20 place-items-center rounded-[22px] border border-[#dfe5ee] bg-[#f8fafc] px-3 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#344054] transition hover:border-[#9bbdf0] hover:bg-white hover:text-[#0866ff]"
               >
                 {item}
               </Link>
@@ -411,6 +455,17 @@ function categoryBelowSearchContent(
   const topRatedTitle = isDe ? 'Top bewertete Anzeigen' : isEn ? 'Top rated listings' : 'Topprankade annonser'
   const popularTitle = isDe ? 'Beliebte Suchen' : isEn ? 'Popular searches' : 'Populära sökningar'
   const viewAll = isDe ? 'Alle anzeigen' : isEn ? 'View all' : 'Visa alla'
+  const upgradeTitle = isDe
+    ? 'Top-Platz fÃ¼r Ihre Anzeige buchen'
+    : isEn
+      ? 'Book higher listing visibility'
+      : 'Boka hÃ¶gre synlighet fÃ¶r din annons'
+  const upgradeText = isDe
+    ? 'Top bewertete PlÃ¤tze werden aus echten Marketplace-Anzeigen mit hÃ¶herer PrioritÃ¤t gefÃ¼llt. Det nya paketet lyfter riktiga annonser, inte statiska exempel.'
+    : isEn
+      ? 'Top rated positions are filled from real marketplace listings with higher priority. The new package promotes real customer and business listings, not static examples.'
+      : 'Topprankade platser fylls frÃ¥n riktiga marketplace-annonser med hÃ¶gre prioritet. Det nya paketet lyfter kunders och fÃ¶retags annonser, inte statiska exempel.'
+  const upgradeCta = isDe ? 'Anzeige hervorheben' : isEn ? 'Promote listing' : 'Lyft annons'
   const shared = categorySpecificContent(slug)
 
   return {
@@ -418,16 +473,13 @@ function categoryBelowSearchContent(
     topRatedTitle,
     popularTitle,
     viewAll,
+    upgradeTitle,
+    upgradeText,
+    upgradeCta,
     discover: shared.discover.map((item) => ({
       title: translateThree(item.title, locale),
       text: translateThree(item.text, locale),
       href: item.href,
-      image: item.image,
-    })),
-    topRated: shared.topRated.map((item) => ({
-      title: translateThree(item.title, locale),
-      meta: translateThree(item.meta, locale),
-      price: item.price,
     })),
     popular: shared.popular,
   }

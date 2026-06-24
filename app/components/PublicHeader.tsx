@@ -351,6 +351,8 @@ export default function PublicHeader({
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? businessItems[language]
       : translatePublicObject(locale, businessItems.en)
+  const mobileSellLabel =
+    language === 'de' ? 'Verkaufen' : language === 'en' ? 'Sell' : t.sell
   const activeCategorySlug =
     marketplaceCategories.find(
       (category) =>
@@ -610,7 +612,7 @@ export default function PublicHeader({
                   className="flex w-11 shrink-0 flex-col items-center justify-center"
                 >
                   {open ? <X className="h-[22px] w-[22px]" strokeWidth={1.8} /> : <Menu className="h-[23px] w-[23px]" strokeWidth={1.8} />}
-                  <span className="mt-0.5 text-[10px] leading-none">{t.menu}</span>
+                  <span className="mt-0.5 text-[10px] font-normal leading-none">{t.menu}</span>
                 </button>
                 <Link
                   href={`/salj-fordon${activeMarketplaceChannel ? `?category=${activeMarketplaceChannel.slug}` : ''}`}
@@ -618,7 +620,7 @@ export default function PublicHeader({
                   className="flex w-11 shrink-0 flex-col items-center justify-center"
                 >
                   <Store className="h-[21px] w-[21px]" strokeWidth={1.7} />
-                  <span className="mt-0.5 text-[10px] leading-none">{t.sell}</span>
+                  <span className="mt-0.5 text-[10px] font-normal leading-none">{mobileSellLabel}</span>
                 </Link>
               </div>
 
@@ -639,7 +641,7 @@ export default function PublicHeader({
               <div className="absolute inset-y-0 right-2 flex items-center">
                 <Link href="/sparade" onClick={closeMobile} className="flex w-11 shrink-0 flex-col items-center justify-center">
                   <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
-                  <span className="mt-0.5 text-[10px] leading-none">{t.saved}</span>
+                  <span className="mt-0.5 text-[10px] font-normal leading-none">{t.saved}</span>
                 </Link>
                 <div className="flex w-11 shrink-0 items-center justify-center">
                   <SiteSearch
