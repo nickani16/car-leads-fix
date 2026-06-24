@@ -176,19 +176,20 @@ export default function PublicFooter({
         : ['EU marketplace', 'Secure accounts', 'Verified flow']
 
   return (
-    <footer className="relative overflow-hidden bg-[#f7f9fc] text-[#202124]">
+    <footer className="relative overflow-hidden border-t border-[#d9e6f8] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9ff_42%,#eef6ff_100%)] text-[#101828]">
       <div
-        className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[210px] w-[210px] bg-[#dce9ff] sm:-bottom-24 sm:-right-20 sm:h-[270px] sm:w-[270px]"
+        className="market-blob pointer-events-none absolute -bottom-20 -right-16 h-[240px] w-[240px] bg-[#0866ff]/12 sm:-bottom-28 sm:-right-24 sm:h-[330px] sm:w-[330px]"
         aria-hidden="true"
       />
-      <div className="pointer-events-none absolute -left-32 top-12 h-72 w-72 rounded-full bg-white/80 blur-3xl" aria-hidden="true" />
-      <div className="relative mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
-        <div className="grid gap-8 border-b border-[#dce3ee] py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:py-16">
+      <div className="pointer-events-none absolute -left-28 top-10 h-72 w-72 rounded-full bg-[#0866ff]/8 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(1120px,80vw)] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,#86b7ff,transparent)]" aria-hidden="true" />
+      <div className="relative mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 xl:px-16">
+        <div className="grid gap-8 rounded-[32px] border border-white/90 bg-white/82 p-6 shadow-[0_28px_80px_rgba(8,34,78,.10)] ring-1 ring-[#0866ff]/8 backdrop-blur-xl sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
           <div>
             <a href={homeHref} aria-label={homeLabel}>
               <BrandLogo />
             </a>
-            <p className="mt-5 max-w-lg text-[15px] leading-7 text-[#666864]">
+            <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#475467]">
               {t.description}
             </p>
             <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold text-[#344054]">
@@ -199,7 +200,7 @@ export default function PublicFooter({
               ].map(([Icon, label]) => {
                 const FooterIcon = Icon as typeof Globe2
                 return (
-                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#dbe4f0] bg-white px-3 py-2 shadow-sm">
+                  <span key={label as string} className="inline-flex items-center gap-2 rounded-full border border-[#d7e7ff] bg-[#f5f9ff] px-3 py-2 shadow-[0_8px_22px_rgba(8,102,255,.08)]">
                     <FooterIcon className="h-4 w-4 text-[#0866ff]" />
                     {label as string}
                   </span>
@@ -207,8 +208,8 @@ export default function PublicFooter({
               })}
             </div>
           </div>
-          <div className="rounded-[28px] border border-[#dbe4f0] bg-white p-5 shadow-[0_18px_48px_rgba(16,24,40,.08)] sm:min-w-[360px]">
-            <p className="max-w-xs text-sm font-semibold leading-6 text-[#344054]">
+          <div className="rounded-[28px] border border-[#cfe2ff] bg-[linear-gradient(145deg,#ffffff_0%,#f2f7ff_100%)] p-5 shadow-[0_22px_55px_rgba(8,102,255,.13)] sm:min-w-[360px]">
+            <p className="max-w-xs text-sm font-semibold leading-6 text-[#243044]">
               {t.question}
             </p>
             <Link
@@ -219,7 +220,7 @@ export default function PublicFooter({
                     ? '/registrera'
                     : '/registrera'
               }
-              className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#0057e6]"
+              className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-[18px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.26)] transition hover:bg-[#0057e6]"
             >
               {t.cta}
               <ArrowRight className="h-4 w-4" />
@@ -227,8 +228,8 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-10">
-          <p className="max-w-sm text-2xl leading-9 tracking-[-0.025em] text-[#2b2b2a]">
+        <div className="grid gap-10 py-10 sm:grid-cols-2 lg:grid-cols-[1.15fr_.72fr_.72fr_.72fr_.9fr] lg:gap-8 lg:py-12">
+          <p className="max-w-sm text-2xl font-semibold leading-9 tracking-[-0.035em] text-[#101828]">
             {t.statement}
           </p>
 
@@ -258,8 +259,8 @@ export default function PublicFooter({
             ])}
           />
 
-          <div className="rounded-[26px] border border-[#dbe4f0] bg-white p-5 shadow-[0_12px_32px_rgba(16,24,40,.06)]">
-            <h3 className="text-xs font-medium uppercase tracking-[0.18em] text-[#898a85]">
+          <div className="rounded-[28px] border border-[#d7e7ff] bg-white/88 p-5 shadow-[0_16px_42px_rgba(8,34,78,.08)] ring-1 ring-white/80">
+            <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
               {t.contact}
             </h3>
             <div className="mt-6 flex flex-col gap-4 text-sm">
@@ -267,10 +268,10 @@ export default function PublicFooter({
                 <Mail className="h-4 w-4 text-[#0866ff]" />
                 info@autorell.com
               </a>
-              <Link href={contactHref} className="transition hover:opacity-55">
+              <Link href={contactHref} className="font-semibold text-[#0866ff] transition hover:text-[#0057e6]">
                 {t.contactLink}
               </Link>
-              <p className="max-w-[240px] leading-6 text-[#72736f]">
+              <p className="max-w-[240px] leading-6 text-[#667085]">
                 {t.support}
               </p>
               <SocialIcons className="pt-2" />
@@ -278,16 +279,16 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-[#dce3ee] py-7 text-xs text-[#858681] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-[#d9e6f8] py-7 text-xs text-[#667085] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Autorell AB</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href={privacyHref} className="transition hover:text-[#242424]">
+            <Link href={privacyHref} className="transition hover:text-[#0866ff]">
               {t.privacy}
             </Link>
-            <Link href={localizePublicHref(locale, '/cookies')} className="transition hover:text-[#242424]">
+            <Link href={localizePublicHref(locale, '/cookies')} className="transition hover:text-[#0866ff]">
               {t.cookies}
             </Link>
-            <Link href={termsHref} className="transition hover:text-[#242424]">
+            <Link href={termsHref} className="transition hover:text-[#0866ff]">
               {t.terms}
             </Link>
             <button
@@ -297,7 +298,7 @@ export default function PublicFooter({
                   new Event('autorell-open-cookie-settings')
                 )
               }
-              className="transition hover:text-[#242424]"
+              className="transition hover:text-[#0866ff]"
             >
               {t.cookieSettings}
             </button>
@@ -317,12 +318,12 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-xs font-medium uppercase tracking-[0.18em] text-[#898a85]">
+      <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
         {title}
       </h3>
-      <nav className="mt-6 flex flex-col items-start gap-4 text-sm">
+      <nav className="mt-6 flex flex-col items-start gap-4 text-sm text-[#344054]">
         {links.map(([label, href]) => (
-          <Link key={href} href={href} className="transition hover:opacity-55">
+          <Link key={href} href={href} className="transition hover:text-[#0866ff]">
             {label}
           </Link>
         ))}
