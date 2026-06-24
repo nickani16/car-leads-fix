@@ -29,16 +29,16 @@ import {
 } from '@/lib/public-i18n'
 
 const categoryItems = [
-  { labels: ['Bilar', 'Cars', 'Autos'], href: '/cars', icon: CarFront },
-  { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/vans', icon: BusFront },
-  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/motorcycles', icon: Bike },
-  { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/motorhomes', icon: BusFront },
-  { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/caravans', icon: Warehouse },
-  { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/trucks', icon: Truck },
-  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/farm', icon: Tractor },
-  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/plant', icon: Construction },
-  { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/electric-bikes', icon: Leaf },
-  { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/e-scooters', icon: Leaf },
+  { labels: ['Bilar', 'Cars', 'Autos'], href: '/cars', icon: CarFront, image: '/category-cars-hero.jpg' },
+  { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/vans', icon: BusFront, image: '/category-vans-hero.jpg' },
+  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/motorcycles', icon: Bike, image: '/category-motorcycles-hero.jpg' },
+  { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/motorhomes', icon: BusFront, image: '/category-motorhomes-hero.jpg' },
+  { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/caravans', icon: Warehouse, image: '/category-caravans-hero.jpg' },
+  { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/trucks', icon: Truck, image: '/category-trucks-hero.jpg' },
+  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/farm', icon: Tractor, image: '/category-agriculture-hero.jpg' },
+  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/plant', icon: Construction, image: '/category-construction-hero.jpg' },
+  { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/electric-bikes', icon: Leaf, image: '/category-electric-bikes-hero.jpg' },
+  { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/e-scooters', icon: Leaf, image: '/category-e-scooters-hero.jpg' },
 ] as const
 
 const homeCopy = {
@@ -180,11 +180,11 @@ export default function BusinessMarketplaceHome({
         <div className="relative mx-auto max-w-[1340px]">
           <div className="relative min-h-[480px] overflow-hidden rounded-[30px] border border-[#dce5f7] bg-white sm:min-h-[570px]">
             <Image
-              src="/autorell-volvo-hero.jpg"
+              src="/autorell-woman-driving-hero.jpeg"
               alt={t.heroAlt}
               fill
               preload
-              className="object-cover object-[72%_center]"
+              className="object-cover object-[58%_center]"
               sizes="(max-width: 1400px) 100vw, 1340px"
             />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(252,253,255,.99)_0%,rgba(238,245,255,.97)_34%,rgba(230,240,255,.7)_58%,rgba(255,255,255,0)_82%)]" />
@@ -245,21 +245,29 @@ export default function BusinessMarketplaceHome({
             </Link>
           </div>
 
-          <div className="mt-10 grid grid-cols-2 overflow-hidden rounded-[26px] border border-[#e4e7ec] bg-[#f9fafb] sm:grid-cols-3 lg:grid-cols-5">
-            {categories.map(({ label, href, icon: Icon }, index) => (
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {categories.map(({ label, href, icon: Icon, image }) => (
               <Link
                 key={label}
                 href={href}
-                className={`group min-h-36 border-[#e4e7ec] bg-white p-5 transition hover:z-10 hover:bg-[#f4f7ff] ${
-                  index % 2 === 0 ? 'border-r' : ''
-                } ${index < 5 ? 'border-b' : ''} sm:border-r`}
+                className="group overflow-hidden rounded-[24px] border border-[#e1e7f0] bg-white shadow-[0_14px_36px_rgba(16,24,40,.06)] transition duration-300 hover:-translate-y-1 hover:border-[#bdd4ff] hover:shadow-[0_22px_55px_rgba(8,102,255,.14)]"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-[#dce6ff] bg-[#eef4ff] text-[#0866ff] transition group-hover:scale-105 group-hover:bg-[#0866ff] group-hover:text-white">
-                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                <span className="relative block aspect-[16/10] overflow-hidden bg-[#eef4ff]">
+                  <Image
+                    src={image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 220px, 50vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-[#08142f]/45 via-transparent to-transparent" />
+                  <span className="absolute left-4 top-4 grid h-11 w-11 place-items-center rounded-[15px] bg-white/92 text-[#0866ff] shadow-sm backdrop-blur-sm transition group-hover:bg-[#0866ff] group-hover:text-white">
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                  </span>
                 </span>
-                <span className="mt-7 flex items-center justify-between gap-2 font-semibold">
-                  {label}
-                  <ArrowRight className="h-4 w-4 text-[#0866ff] transition group-hover:translate-x-1" />
+                <span className="flex min-h-[76px] items-center justify-between gap-3 px-5 py-4 font-semibold">
+                  <span>{label}</span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[#0866ff] transition group-hover:translate-x-1" />
                 </span>
               </Link>
             ))}
@@ -279,10 +287,19 @@ export default function BusinessMarketplaceHome({
           </div>
 
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="relative overflow-hidden rounded-[30px] border border-[#dde3ef] bg-white p-8 shadow-[0_18px_55px_rgba(16,24,40,.06)] sm:p-11">
-              <div className="market-blob absolute -right-20 -top-24 h-64 w-64 bg-[#eaf1ff]" />
-              <div className="relative">
-                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white">
+            <article className="group relative overflow-hidden rounded-[30px] border border-[#dde3ef] bg-white shadow-[0_18px_55px_rgba(16,24,40,.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(16,24,40,.10)]">
+              <div className="relative aspect-[16/7] overflow-hidden bg-[#eef4ff]">
+                <Image
+                  src="/category-cars-hero.jpg"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 600px, 100vw"
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#08142f]/40 to-transparent" />
+              </div>
+              <div className="relative p-8 sm:p-10">
+                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white shadow-[0_12px_24px_rgba(8,102,255,.24)]">
                   <UserRound className="h-6 w-6" />
                 </span>
                 <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">
@@ -301,10 +318,19 @@ export default function BusinessMarketplaceHome({
               </div>
             </article>
 
-            <article className="relative overflow-hidden rounded-[30px] border border-[#cad9fb] bg-[#edf4ff] p-8 text-[#101828] shadow-[0_18px_55px_rgba(16,24,40,.06)] sm:p-11">
-              <div className="market-blob absolute -bottom-32 -right-20 h-72 w-72 bg-[#d9e7ff]" />
-              <div className="relative">
-                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white">
+            <article className="group relative overflow-hidden rounded-[30px] border border-[#cad9fb] bg-[#edf4ff] text-[#101828] shadow-[0_18px_55px_rgba(16,24,40,.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(8,102,255,.12)]">
+              <div className="relative aspect-[16/7] overflow-hidden bg-[#dce9ff]">
+                <Image
+                  src="/category-vans-hero.jpg"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 600px, 100vw"
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#08142f]/42 to-transparent" />
+              </div>
+              <div className="relative p-8 sm:p-10">
+                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white shadow-[0_12px_24px_rgba(8,102,255,.24)]">
                   <BriefcaseBusiness className="h-6 w-6" />
                 </span>
                 <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">
@@ -328,7 +354,7 @@ export default function BusinessMarketplaceHome({
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <div className="overflow-hidden rounded-[32px] border border-[#cbdafb] bg-[linear-gradient(125deg,#f6f9ff_0%,#eaf2ff_55%,#dce9ff_100%)] text-[#101828]">
+          <div className="overflow-hidden rounded-[32px] border border-[#cbdafb] bg-[linear-gradient(125deg,#ffffff_0%,#f3f7ff_52%,#e4efff_100%)] text-[#101828] shadow-[0_24px_70px_rgba(8,34,78,.08)]">
             <div className="grid lg:grid-cols-[1.05fr_.95fr]">
               <div className="p-8 sm:p-12 lg:p-14">
                 <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-[#0866ff]">
@@ -349,8 +375,8 @@ export default function BusinessMarketplaceHome({
                   ['1', t.statMarket],
                   ['EU', t.statReach],
                 ].map(([value, label]) => (
-                  <div key={label} className="border-b border-r border-[#cbdafb] p-7 sm:p-9">
-                    <strong className="block text-3xl tracking-[-0.04em] text-[#0866ff]">{value}</strong>
+                  <div key={label} className="group border-b border-r border-[#cbdafb] p-7 transition hover:bg-white/70 sm:p-9">
+                    <strong className="block text-3xl tracking-[-0.04em] text-[#0866ff] transition group-hover:scale-105">{value}</strong>
                     <span className="mt-2 block text-xs leading-5 text-[#667085]">{label}</span>
                   </div>
                 ))}
@@ -376,8 +402,10 @@ export default function BusinessMarketplaceHome({
                 text: t.crossText,
               },
             ].map(({ icon: Icon, title, text }) => (
-              <article key={title} className="rounded-[24px] border border-[#e4e7ec] bg-[#f9fafb] p-7">
-                <Icon className="h-6 w-6 text-[#0866ff]" />
+              <article key={title} className="group rounded-[24px] border border-[#e4e7ec] bg-white p-7 shadow-[0_12px_34px_rgba(16,24,40,.05)] transition duration-300 hover:-translate-y-1 hover:border-[#bdd4ff] hover:shadow-[0_20px_55px_rgba(8,102,255,.12)]">
+                <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#eef4ff] text-[#0866ff] transition group-hover:bg-[#0866ff] group-hover:text-white">
+                  <Icon className="h-6 w-6" />
+                </span>
                 <h3 className="mt-6 text-xl tracking-[-0.03em]">{title}</h3>
                 <p className="mt-3 text-sm leading-6 text-[#667085]">{text}</p>
               </article>
