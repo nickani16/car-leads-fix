@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 
 const source = 'public/autorell-favicon-master.png'
 
@@ -70,3 +70,11 @@ icoImages.forEach((image, index) => {
 })
 
 await writeFile('public/favicon.ico', ico)
+
+const sourceImage = await readFile(source)
+const faviconSvg = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <image width="512" height="512" href="data:image/png;base64,${sourceImage.toString('base64')}" />
+</svg>
+`
+
+await writeFile('public/favicon.svg', faviconSvg)

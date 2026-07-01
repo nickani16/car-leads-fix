@@ -8,22 +8,23 @@ import {
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
-  'autorell.de': 'www.autorell.de',
-  'autorell.eu': 'www.autorell.eu',
-  'autorell.se': 'www.autorell.se',
+  'autorell.de': 'www.autorell.com',
+  'www.autorell.de': 'www.autorell.com',
+  'autorell.eu': 'www.autorell.com',
+  'www.autorell.eu': 'www.autorell.com',
+  'autorell.se': 'www.autorell.com',
+  'www.autorell.se': 'www.autorell.com',
 }
 
 const MARKET_HOSTS = {
-  sv: 'www.autorell.se',
-  de: 'www.autorell.de',
+  sv: 'www.autorell.com',
+  de: 'www.autorell.com',
   en: 'www.autorell.com',
 } as const
 
 type Market = keyof typeof MARKET_HOSTS
 
 const MARKET_BY_HOST: Record<string, Market> = {
-  'www.autorell.se': 'sv',
-  'www.autorell.de': 'de',
   'www.autorell.com': 'en',
 }
 
@@ -32,7 +33,33 @@ const SEARCH_CRAWLER_PATTERN =
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
-const GERMAN_IMPORT_GUIDE_PATH = '/ratgeber/fahrzeugimport-aus-schweden'
+const LOCALIZED_PUBLIC_ALIASES = new Map([
+  ['cookie-policy', 'cookies'],
+  ['privacy', 'integritet'],
+  ['privacy-policy', 'integritet'],
+  ['datenschutz', 'integritet'],
+  ['terms-and-conditions', 'villkor'],
+  ['terms', 'villkor'],
+  ['nutzungsbedingungen', 'villkor'],
+  ['villkor', 'villkor'],
+  ['refund-policy', 'aterbetalningspolicy'],
+  ['aterbetalningspolicy', 'aterbetalningspolicy'],
+  ['report', 'rapportera'],
+  ['rapportera', 'rapportera'],
+  ['contact', 'kontakt'],
+  ['kontakt', 'kontakt'],
+  ['help-center', 'hjalpcenter'],
+  ['help-centre', 'hjalpcenter'],
+  ['hilfe', 'hjalpcenter'],
+  ['faq', 'vanliga-fragor'],
+  ['vanliga-fragor', 'vanliga-fragor'],
+  ['register', 'register'],
+  ['registrera', 'register'],
+])
+const CANONICAL_LOCALIZED_SLUGS = new Map([
+  ['kontakt', 'contact'],
+  ['hjalpcenter', 'help-center'],
+])
 const PUBLIC_LANGUAGE_PAGES = new Map([
   ['find-cars', '/find-cars'],
   ['vehicles', '/dealer-market/__locale__/vehicles'],
@@ -44,8 +71,9 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['privacy', '/dealer-market/__locale__/privacy'],
   ['cookies', '/dealer-market/__locale__/cookies'],
   ['terms', '/dealer-market/__locale__/terms'],
+  ['refund-policy', '/refund-policy'],
   ['login', '/login'],
-  ['register', '/registrera'],
+  ['register', '/register'],
 ])
 const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
   SE: 'sv',
@@ -96,14 +124,44 @@ const RETIRED_BUSINESS_MODEL_ROUTES = new Map([
   ['/sell-stock', '/salj-fordon'],
   ['/fahrzeugbestand-verkaufen', '/salj-fordon'],
   ['/for-handlare', '/foretag'],
-  ['/dealer-apply', '/registrera'],
-  ['/bli-bilhandlare', '/registrera'],
-  ['/haendlerzugang', '/registrera'],
+  ['/dealer-apply', '/register'],
+  ['/bli-bilhandlare', '/register'],
+  ['/haendlerzugang', '/register'],
   ['/dealer-terms', '/villkor'],
   ['/dealer-benefits', '/benefits'],
   ['/handlarvillkor', '/villkor'],
   ['/haendlerbedingungen', '/villkor'],
 ])
+
+const LEGACY_ACCOUNT_ROUTES = new Map([
+  ['/konto', '/account'],
+  ['/konto/annonser', '/account/listings'],
+  ['/konto/annonser/ny', '/account/listings/new'],
+  ['/konto/meddelanden', '/account/messages'],
+])
+
+function getLegacyAccountTarget(pathname: string) {
+  const directTarget = LEGACY_ACCOUNT_ROUTES.get(pathname)
+  if (directTarget) return directTarget
+
+  const withoutMarketPrefix = `/${pathname
+    .split('/')
+    .filter(Boolean)
+    .slice(1)
+    .join('/')}`
+  const prefixedTarget = LEGACY_ACCOUNT_ROUTES.get(withoutMarketPrefix)
+  if (prefixedTarget) return prefixedTarget
+
+  const editMatch = pathname.match(
+    /^(?:\/(se|de|[a-z]{2}))?\/(?:konto\/annonser|account\/listings)\/([^/]+)\/(?:redigera|edit)\/?$/,
+  )
+
+  if (editMatch?.[2]) {
+    return `/account/listings/${editMatch[2]}/edit`
+  }
+
+  return null
+}
 
 const LEGACY_CORE_ROUTES = {
   sv: new Map([
@@ -126,9 +184,6 @@ const DEALER_MARKET_ROUTES = {
     ['/ueber-autorell', 'about'],
     ['/faq', 'faq'],
     ['/kontakt', 'contact'],
-    ['/datenschutz', 'privacy'],
-    ['/nutzungsbedingungen', 'terms'],
-    ['/cookies', 'cookies'],
   ]),
   en: new Map([
     ['/vehicles', 'vehicles'],
@@ -137,9 +192,6 @@ const DEALER_MARKET_ROUTES = {
     ['/about', 'about'],
     ['/faq', 'faq'],
     ['/contact', 'contact'],
-    ['/privacy', 'privacy'],
-    ['/terms', 'terms'],
-    ['/cookies', 'cookies'],
   ]),
 } as const
 
@@ -188,15 +240,14 @@ function isMarketSelection(value: string | null): value is string {
 
 function redirectToMarket(request: NextRequest, market: string) {
   const hostname = getHostname(request)
-  const isEuropeanCountry = EU_BUYER_MARKET_CODES.has(market)
-  const targetHostname = isEuropeanCountry
-    ? MARKET_HOSTS.en
-    : MARKET_HOSTS[market as Market]
+  const isLocalizedMarket =
+    market === 'sv' || market === 'de' || EU_BUYER_MARKET_CODES.has(market)
+  const targetHostname = MARKET_HOSTS.en
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
   url.hostname = targetHostname
   url.port = ''
-  url.pathname = isEuropeanCountry ? `/${market}` : '/'
+  url.pathname = isLocalizedMarket ? `/${market === 'sv' ? 'se' : market}` : '/'
 
   if (hostname !== targetHostname) {
     url.searchParams.set('market', market)
@@ -239,7 +290,39 @@ function getCountryMarket(request: NextRequest): string | null {
   const country = request.headers.get('x-vercel-ip-country')?.toUpperCase()
 
   if (!country) return null
+  if (country === 'SE') return 'sv'
+  if (country === 'DE') return 'de'
+  const euMarketCode = country.toLowerCase()
+  if (EU_BUYER_MARKET_CODES.has(euMarketCode)) return euMarketCode
   return LANGUAGE_BY_COUNTRY[country] || 'en'
+}
+
+function getLocaleFromPathMarket(marketCode: string): {
+  language: string
+  market: string
+  marketHeader: string
+} | null {
+  if (marketCode === 'se') {
+    return { language: 'sv', market: 'sv', marketHeader: 'SE' }
+  }
+  if (marketCode === 'de') {
+    return { language: 'de', market: 'de', marketHeader: 'DE' }
+  }
+  const market = euBuyerMarkets.find((item) => item.code === marketCode)
+  if (!market) return null
+  return {
+    language: market.language,
+    market: market.code,
+    marketHeader: market.code.toUpperCase(),
+  }
+}
+
+function internalPathFromLocalizedSegments(segments: string[]) {
+  if (segments.length === 0) return null
+  const normalized = segments.map((segment, index) =>
+    index === 0 ? LOCALIZED_PUBLIC_ALIASES.get(segment) || segment : segment,
+  )
+  return `/${normalized.join('/')}`
 }
 
 function withLanguageCookie(response: NextResponse, language: string) {
@@ -272,6 +355,23 @@ export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   if (methodCanRedirect) {
+    const legacyAccountTarget = getLegacyAccountTarget(pathname)
+    if (
+      legacyAccountTarget &&
+      (pathname.startsWith('/konto') ||
+        pathname.startsWith('/account') ||
+        /^\/(se|de|[a-z]{2})\/(?:konto|account)(\/|$)/.test(pathname))
+    ) {
+      const segments = pathname.split('/').filter(Boolean)
+      const hasMarketPrefix = segments[0] !== 'konto' && segments[0] !== 'account'
+      const marketPrefix = hasMarketPrefix ? `/${segments[0]}` : ''
+      const url = request.nextUrl.clone()
+      url.pathname = `${marketPrefix}${legacyAccountTarget}`
+      if (url.pathname !== pathname) {
+        return NextResponse.redirect(url, 308)
+      }
+    }
+
     const retiredTarget = RETIRED_BUSINESS_MODEL_ROUTES.get(pathname)
     if (retiredTarget) {
       const url = request.nextUrl.clone()
@@ -290,7 +390,7 @@ export function proxy(request: NextRequest) {
       pathname.startsWith('/saljarportal/')
     ) {
       const url = request.nextUrl.clone()
-      url.pathname = pathname.startsWith('/admin') ? '/admin' : '/konto'
+      url.pathname = pathname.startsWith('/admin') ? '/admin' : '/account'
       url.search = ''
       return NextResponse.redirect(url, 308)
     }
@@ -340,6 +440,62 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  if (
+    hostname === MARKET_HOSTS.en ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1'
+  ) {
+    const segments = pathname.split('/').filter(Boolean)
+    const pathMarket = segments[0]
+    const localeContext = pathMarket
+      ? getLocaleFromPathMarket(pathMarket)
+      : null
+
+    if (localeContext) {
+      const canonicalSlug = segments[1]
+        ? CANONICAL_LOCALIZED_SLUGS.get(segments[1])
+        : null
+      if (methodCanRedirect && canonicalSlug) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${pathMarket}/${[
+          canonicalSlug,
+          ...segments.slice(2),
+        ].join('/')}`
+        return NextResponse.redirect(url, 308)
+      }
+
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-autorell-language', localeContext.language)
+      requestHeaders.set('x-autorell-market', localeContext.marketHeader)
+      requestHeaders.set('x-autorell-pathname', pathname)
+
+      if (segments.length === 1) {
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.next({ request: { headers: requestHeaders } }),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
+
+      const localizedUrl = request.nextUrl.clone()
+      localizedUrl.pathname = internalPathFromLocalizedSegments(
+        segments.slice(1),
+      ) || '/'
+
+      return withMarketCookie(
+        withLanguageCookie(
+          NextResponse.rewrite(localizedUrl, {
+            request: { headers: requestHeaders },
+          }),
+          localeContext.language,
+        ),
+        localeContext.market,
+      )
+    }
+  }
+
   if (methodCanRedirect && isPublicLanguage(selectedLanguage || '')) {
     const language = selectedLanguage as PublicLanguage
     const url = request.nextUrl.clone()
@@ -376,6 +532,10 @@ export function proxy(request: NextRequest) {
     preferredMarket ||
     (isPublicLanguage(preferredLanguage || '') ? preferredLanguage! : null) ||
     countryMarket
+  const isAccountRoute =
+    pathname === '/account' ||
+    pathname.startsWith('/account/') ||
+    /^\/(se|de|[a-z]{2})\/account(\/|$)/.test(pathname)
 
   if (
     hostname === MARKET_HOSTS.en ||
@@ -394,6 +554,7 @@ export function proxy(request: NextRequest) {
     ) {
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-autorell-language', language)
+      requestHeaders.set('x-autorell-pathname', pathname)
       const target =
         segments.length === 1
           ? '/eu'
@@ -410,18 +571,42 @@ export function proxy(request: NextRequest) {
 
     if (methodCanRedirect && pathname === '/') {
       if (targetMarket === 'sv') {
-        return redirectToHost(request, MARKET_HOSTS.sv, 307)
+        const url = request.nextUrl.clone()
+        url.protocol = 'https:'
+        url.hostname = MARKET_HOSTS.en
+        url.port = ''
+        url.pathname = '/se'
+        return withMarketCookie(
+          withLanguageCookie(NextResponse.redirect(url, 307), 'sv'),
+          'sv',
+        )
       }
       if (targetMarket === 'de') {
-        return redirectToHost(request, MARKET_HOSTS.de, 307)
+        const url = request.nextUrl.clone()
+        url.protocol = 'https:'
+        url.hostname = MARKET_HOSTS.en
+        url.port = ''
+        url.pathname = '/de'
+        return withMarketCookie(
+          withLanguageCookie(NextResponse.redirect(url, 307), 'de'),
+          'de',
+        )
       }
       if (targetMarket && EU_BUYER_MARKET_CODES.has(targetMarket)) {
         const url = request.nextUrl.clone()
         url.pathname = `/${targetMarket}`
-        return NextResponse.redirect(url, 307)
+        const market = euBuyerMarkets.find((item) => item.code === targetMarket)
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.redirect(url, 307),
+            market?.language || 'en',
+          ),
+          targetMarket,
+        )
       }
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-autorell-language', 'en')
+      requestHeaders.set('x-autorell-pathname', pathname)
       const localizedUrl = request.nextUrl.clone()
       localizedUrl.pathname = '/eu'
       return withLanguageCookie(
@@ -451,6 +636,7 @@ export function proxy(request: NextRequest) {
     methodCanRedirect &&
     targetMarket &&
     EU_BUYER_MARKET_CODES.has(targetMarket) &&
+    !isAccountRoute &&
     (hostname !== MARKET_HOSTS.en ||
       !pathname.startsWith(`/${targetMarket}`))
   ) {
@@ -482,17 +668,19 @@ export function proxy(request: NextRequest) {
   if (
     methodCanRedirect &&
     pathname.startsWith('/salj-bil/') &&
-    (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
+    hostname === 'www.autorell.com'
   ) {
-    return redirectToHost(request, MARKET_HOSTS.sv, 308)
+    const url = request.nextUrl.clone()
+    url.pathname = '/se'
+    return NextResponse.redirect(url, 308)
   }
 
   if (
     methodCanRedirect &&
-    (hostname === 'www.autorell.de' || hostname === 'www.autorell.com')
+    hostname === 'www.autorell.com'
   ) {
-    const locale = hostname === 'www.autorell.de' ? 'de' : 'en'
-    const dealerSeoBase = locale === 'de' ? '/haendler' : '/dealers'
+    const locale = 'en'
+    const dealerSeoBase = '/dealers'
 
     if (locale === 'en') {
       const segments = pathname.split('/').filter(Boolean)
@@ -508,6 +696,7 @@ export function proxy(request: NextRequest) {
           market?.language ?? 'en',
         )
         requestHeaders.set('x-autorell-market', marketCode)
+        requestHeaders.set('x-autorell-pathname', pathname)
         const isMarketHub = segments.length === 1
         const isMarketCity =
           segments.length === 3 && segments[1] === 'dealers'
@@ -565,12 +754,6 @@ export function proxy(request: NextRequest) {
       }
     }
 
-    if (locale === 'de' && pathname === GERMAN_IMPORT_GUIDE_PATH) {
-      const localizedUrl = request.nextUrl.clone()
-      localizedUrl.pathname = '/eu-guide/de/import-from-sweden'
-      return NextResponse.rewrite(localizedUrl)
-    }
-
     if (pathname === dealerSeoBase || pathname.startsWith(`${dealerSeoBase}/`)) {
       const slug = pathname === dealerSeoBase
         ? 'index'
@@ -596,6 +779,25 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  if (
+    hostname === MARKET_HOSTS.en &&
+    (pathname === '/se' || pathname === '/de')
+  ) {
+    const language = pathname === '/se' ? 'sv' : 'de'
+    const market = pathname === '/se' ? 'sv' : 'de'
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-autorell-language', language)
+    requestHeaders.set('x-autorell-market', pathname === '/se' ? 'SE' : 'DE')
+    requestHeaders.set('x-autorell-pathname', pathname)
+    return withMarketCookie(
+      withLanguageCookie(
+        NextResponse.next({ request: { headers: requestHeaders } }),
+        language,
+      ),
+      market,
+    )
+  }
+
   if (pathname !== '/') {
     if (
       hostname === MARKET_HOSTS.en &&
@@ -603,6 +805,7 @@ export function proxy(request: NextRequest) {
     ) {
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-autorell-language', preferredLanguage!)
+      requestHeaders.set('x-autorell-pathname', pathname)
       if (preferredMarket && EU_BUYER_MARKET_CODES.has(preferredMarket)) {
         requestHeaders.set('x-autorell-market', preferredMarket)
       }
@@ -615,13 +818,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL('/eu', request.url))
   }
 
-  if (hostname === 'www.autorell.de') {
-    return NextResponse.rewrite(new URL('/de', request.url))
-  }
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: '/:path*',
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|favicon-.*\\.png|icon.*\\.png|apple-icon.png|manifest.webmanifest|.*\\..*).*)',
+  ],
 }

@@ -5,19 +5,11 @@ import { createPublicMetadata } from '@/lib/public-seo'
 
 async function getRootMarket() {
   const requestHeaders = await headers()
-  const hostname = (
-    requestHeaders.get('host') ||
-    requestHeaders.get('x-forwarded-host') ||
-    ''
-  )
-    .split(',')[0]
-    .trim()
-    .split(':')[0]
-    .toLowerCase()
-
-  if (hostname.endsWith('autorell.de')) return 'de'
-  if (hostname.endsWith('autorell.com')) return 'en'
-  return 'sv'
+  const requestedLanguage = requestHeaders.get('x-autorell-language')
+  if (requestedLanguage === 'sv' || requestedLanguage === 'de' || requestedLanguage === 'en') {
+    return requestedLanguage
+  }
+  return 'en'
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const market = await getRootMarket()
+  const requestHeaders = await headers()
+  const marketCode = requestHeaders.get('x-autorell-market') || undefined
 
-  return <BusinessMarketplaceHome locale={market} />
+  return <BusinessMarketplaceHome locale={market} marketCode={marketCode} />
 }

@@ -9,7 +9,7 @@ export default async function InboxGatewayPage() {
 
   redirect(
     user
-      ? '/konto/meddelanden'
-      : '/login?next=/konto/meddelanden',
+      ? '/account/messages'
+      : '/se',
   )
 }

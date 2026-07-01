@@ -79,8 +79,8 @@ export async function POST(request: Request) {
       listingId: listing.id,
       package: packageId,
     },
-    success_url: `${origin}/konto/annonser?payment=success`,
-    cancel_url: `${origin}/konto/annonser?payment=cancelled`,
+    success_url: `${origin}/account/listings?payment=success`,
+    cancel_url: `${origin}/account/listings?payment=cancelled`,
   })
 
   await admin

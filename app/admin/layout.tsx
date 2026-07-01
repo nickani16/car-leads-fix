@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import InactivityLogout from '@/app/components/InactivityLogout'
+import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 import AdminShell from './AdminShell'
 
 export default async function AdminLayout({
@@ -15,7 +16,11 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login?next=/admin')
+    redirect('/se')
+  }
+
+  if (!isAllowedAdminEmail(user.email)) {
+    redirect('/se')
   }
 
   const { data: adminUser, error } = await supabase
@@ -26,7 +31,7 @@ export default async function AdminLayout({
     .maybeSingle()
 
   if (error || !adminUser) {
-    redirect('/login?status=admin-required')
+    redirect('/se')
   }
 
   return (

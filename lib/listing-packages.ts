@@ -47,9 +47,10 @@ export async function fulfillListingCheckout(session: Stripe.Checkout.Session) {
   const { error: listingError } = await supabase
     .from('marketplace_listings')
     .update({
-      status: 'pending_review',
+      status: 'published',
       package_id: packageId,
       priority: details.priority,
+      published_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     })
     .eq('id', listingId)

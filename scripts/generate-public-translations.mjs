@@ -12,9 +12,25 @@ const files = [
   'app/dealer-market/[locale]/[page]/page.tsx',
   'app/components/PublicContactPage.tsx',
   'app/components/ContactForm.tsx',
+  'app/vanliga-fragor/page.tsx',
+  'app/vanliga-fragor/FaqPageClient.tsx',
   'app/components/CookieConsent.tsx',
+  'app/components/PublicLegalPage.tsx',
   'app/components/EmailCodeAuth.tsx',
   'app/login/page.tsx',
+  'app/foretag/page.tsx',
+  'app/listings/[slug]/ListingDetailPage.tsx',
+  'app/components/ListingReportButton.tsx',
+  'app/components/MessageSellerButton.tsx',
+  'app/components/RevealPhoneButton.tsx',
+  'app/components/SavedListingButton.tsx',
+  'app/components/ShareListingButton.tsx',
+  'app/registrera/page.tsx',
+  'app/registrera/RegisterForm.tsx',
+  'app/konto/annonser/ny/page.tsx',
+  'app/konto/annonser/ny/NewListingForm.tsx',
+  'app/account/listings/[id]/edit/page.tsx',
+  'lib/listing-equipment.ts',
 ]
 
 const locales = [
@@ -115,6 +131,38 @@ function collectRenderableStrings(node, output) {
   ts.forEachChild(node, (child) => collectRenderableStrings(child, output))
 }
 
+function collectEquipmentStrings(node, output) {
+  if (
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === 'option' &&
+    node.arguments[2] &&
+    ts.isStringLiteral(node.arguments[2])
+  ) {
+    collectStrings(node.arguments[2], output)
+  }
+
+  if (
+    ts.isObjectLiteralExpression(node) &&
+    node.properties.some(
+      (property) =>
+        ts.isPropertyAssignment(property) &&
+        propertyName(property.name) === 'key',
+    )
+  ) {
+    for (const property of node.properties) {
+      if (
+        ts.isPropertyAssignment(property) &&
+        propertyName(property.name) === 'en'
+      ) {
+        collectStrings(property.initializer, output)
+      }
+    }
+  }
+
+  ts.forEachChild(node, (child) => collectEquipmentStrings(child, output))
+}
+
 function extractEnglishStrings() {
   const output = new Set(manualStrings)
 
@@ -140,6 +188,10 @@ function extractEnglishStrings() {
 
     visit(ast)
 
+    if (file.endsWith('listing-equipment.ts')) {
+      collectEquipmentStrings(ast, output)
+    }
+
     if (
       file.endsWith('PublicHeader.tsx') ||
       file.endsWith('BusinessMarketplaceHome.tsx') ||
@@ -148,6 +200,14 @@ function extractEnglishStrings() {
       file.endsWith('EmailCodeAuth.tsx') ||
       file.endsWith('PublicContactPage.tsx') ||
       file.endsWith('ContactForm.tsx') ||
+      file.endsWith('registrera/page.tsx') ||
+      file.endsWith('RegisterForm.tsx') ||
+      file.endsWith('konto/annonser/ny/page.tsx') ||
+      file.endsWith('NewListingForm.tsx') ||
+      file.endsWith('account/listings/[id]/edit/page.tsx') ||
+      file.endsWith('vanliga-fragor/page.tsx') ||
+      file.endsWith('FaqPageClient.tsx') ||
+      file.endsWith('PublicLegalPage.tsx') ||
       file.includes('dealer-market')
     ) {
       collectRenderableStrings(ast, output)
@@ -232,8 +292,10 @@ async function main() {
       continue
     }
 
+    const existing = output[locale] || {}
+    const missingStrings = strings.filter((value) => !Object.hasOwn(existing, value))
     const translated = []
-    for (const group of chunks(strings)) {
+    for (const group of chunks(missingStrings)) {
       let result
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
@@ -247,10 +309,13 @@ async function main() {
       translated.push(...result)
       await new Promise((resolve) => setTimeout(resolve, 150))
     }
-    output[locale] = Object.fromEntries(
-      strings.map((value, index) => [value, translated[index]]),
+    const translatedMissing = Object.fromEntries(
+      missingStrings.map((value, index) => [value, translated[index]]),
     )
-    console.log(`${locale}: ${strings.length} strings`)
+    output[locale] = Object.fromEntries(
+      strings.map((value) => [value, translatedMissing[value] || existing[value]]),
+    )
+    console.log(`${locale}: ${missingStrings.length} new strings, ${strings.length} total`)
     fs.writeFileSync(
       outputPath,
       `${JSON.stringify(output, null, 2)}\n`,
@@ -258,11 +323,6 @@ async function main() {
     )
   }
 
-  fs.writeFileSync(
-    outputPath,
-    `${JSON.stringify(output, null, 2)}\n`,
-    'utf8',
-  )
 }
 
 await main()

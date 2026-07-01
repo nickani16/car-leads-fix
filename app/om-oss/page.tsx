@@ -15,7 +15,7 @@ export default function AboutPage() {
     <main className="bg-[#f7f8fb] text-[#101828]">
       <PublicHeader />
       <section className="border-b border-[#dce3ef] bg-[linear-gradient(135deg,#f8faff,#e8f1ff)]">
-        <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Om Autorell</p>
           <h1 className="mt-5 max-w-5xl text-5xl leading-[1] tracking-[-.055em] sm:text-7xl">
             En sammanhållen marknadsplats för Europas fordonsmarknad.
@@ -27,7 +27,7 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
-      <section className="mx-auto grid max-w-[1240px] gap-5 px-5 py-16 sm:px-8 md:grid-cols-2">
+      <section className="mx-auto grid max-w-[var(--autorell-page-max)] gap-5 px-5 py-16 sm:px-8 md:grid-cols-2">
         {[
           [Globe2, 'Byggd för EU', 'Lokala språk, relevanta valutor och landbaserad sökning gör marknaden användbar i hela unionen.'],
           [Layers3, 'Många kategorier', 'Från bilar och motorcyklar till fritidsfordon, transport, lantbruk, entreprenad och elektrisk mobilitet.'],

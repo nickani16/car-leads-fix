@@ -16,13 +16,32 @@ type MarketPageProps = {
 export const dynamicParams = false
 
 export function generateStaticParams() {
-  return euBuyerMarkets.map((market) => ({ market: market.code }))
+  return [
+    { market: 'se' },
+    ...euBuyerMarkets.map((market) => ({ market: market.code })),
+  ]
 }
 
 export async function generateMetadata({
   params,
 }: MarketPageProps): Promise<Metadata> {
   const { market: marketCode } = await params
+  if (marketCode === 'se') {
+    return {
+      title: { absolute: 'Europas marknadsplats för fordon | Autorell' },
+      description:
+        'Köp och sälj bilar, transportbilar, motorcyklar, fritidsfordon och maskiner över hela Europa.',
+      alternates: { canonical: 'https://www.autorell.com/se' },
+    }
+  }
+  if (marketCode === 'de') {
+    return {
+      title: { absolute: 'Europas Marktplatz für Fahrzeuge | Autorell' },
+      description:
+        'Fahrzeuge und Maschinen in ganz Europa kaufen und verkaufen.',
+      alternates: { canonical: 'https://www.autorell.com/de' },
+    }
+  }
   const market = getEuBuyerMarket(marketCode)
   if (!market) return {}
   const canonical = `https://www.autorell.com/${market.code}`
@@ -51,6 +70,12 @@ export async function generateMetadata({
 
 export default async function MarketPage({ params }: MarketPageProps) {
   const { market: marketCode } = await params
+  if (marketCode === 'se') {
+    return <BusinessMarketplaceHome locale="sv" marketCode="SE" />
+  }
+  if (marketCode === 'de') {
+    return <BusinessMarketplaceHome locale="de" marketCode="DE" />
+  }
   const market = getEuBuyerMarket(marketCode)
   if (!market) notFound()
   return (

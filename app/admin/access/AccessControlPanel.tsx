@@ -191,6 +191,7 @@ export default function AccessControlPanel({
             >
               <option value="sales">Sales</option>
               <option value="operations">Operations</option>
+              <option value="support">Support</option>
               <option value="legal">Legal</option>
             </select>
           </label>

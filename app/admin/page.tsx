@@ -1,95 +1,108 @@
-import { CheckCircle2, Clock3, FileText, PauseCircle } from 'lucide-react'
-import { createAdminClient } from '@/lib/supabase/admin'
+import Link from 'next/link'
+import { requireAdmin } from '@/lib/admin-auth'
+import {
+  AdminPageHeader,
+  AdminStatCard,
+  AdminTable,
+  Badge,
+} from './AdminUI'
+import { categoryLabel, formatDate, formatNumber, statusTone } from './admin-helpers'
 
-export default async function AdminPage() {
-  const supabase = createAdminClient()
-  const [{ count: published }, { count: review }, { count: paused }, { data }] =
-    await Promise.all([
-      supabase
-        .from('marketplace_listings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'published'),
-      supabase
-        .from('marketplace_listings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending_review'),
-      supabase
-        .from('marketplace_listings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'paused'),
-      supabase
-        .from('marketplace_listings')
-        .select('id,title,category,status,country_code,price,currency,seller_name,created_at')
-        .order('created_at', { ascending: false })
-        .limit(30),
-    ])
+export const dynamic = 'force-dynamic'
+
+export default async function AdminDashboardPage() {
+  const { adminClient } = await requireAdmin()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const [
+    listings,
+    users,
+    companies,
+    privateUsers,
+    newToday,
+    reports,
+    support,
+    latestListings,
+  ] = await Promise.all([
+    adminClient.from('marketplace_listings').select('id', { count: 'exact', head: true }),
+    adminClient.from('marketplace_profiles').select('user_id', { count: 'exact', head: true }),
+    adminClient
+      .from('marketplace_profiles')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('account_type', 'business'),
+    adminClient
+      .from('marketplace_profiles')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('account_type', 'private'),
+    adminClient
+      .from('marketplace_listings')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', today.toISOString()),
+    adminClient
+      .from('marketplace_reports')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['new', 'reviewing', 'in_progress']),
+    adminClient
+      .from('admin_support_cases')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['new', 'in_progress', 'waiting_customer']),
+    adminClient
+      .from('marketplace_listings')
+      .select('id,title,category,status,review_status,country_code,city,created_at')
+      .order('created_at', { ascending: false })
+      .limit(8),
+  ])
 
   return (
-    <main className="mx-auto max-w-[1380px] px-5 py-10 sm:px-8 lg:px-12">
-      <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">
-        Marketplace operations
-      </p>
-      <h1 className="mt-3 text-4xl tracking-[-.04em]">
-        Listings and platform quality
-      </h1>
-      <p className="mt-3 max-w-3xl text-[#667085]">
-        Moderate listings, monitor marketplace health and support user accounts.
-        Autorell is not a buyer, bidder or contracting vehicle seller.
-      </p>
+    <main className="px-4 py-7 sm:px-6 lg:px-8">
+      <AdminPageHeader
+        eyebrow="Autorell admin"
+        title="Kontrollcenter"
+        description="Överblick över användare, företag, annonser, rapporter och supportärenden. Annonser publiceras utan manuell kö, men kan granskas, flaggas och tas bort härifrån."
+      />
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Metric icon={CheckCircle2} label="Published" value={published || 0} />
-        <Metric icon={Clock3} label="Pending review" value={review || 0} />
-        <Metric icon={PauseCircle} label="Paused" value={paused || 0} />
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AdminStatCard label="Annonser" value={formatNumber(listings.count)} helper="Alla statusar" />
+        <AdminStatCard label="Användare" value={formatNumber(users.count)} helper="Registrerade konton" />
+        <AdminStatCard label="Företag" value={formatNumber(companies.count)} helper="Business-konton" />
+        <AdminStatCard label="Privatpersoner" value={formatNumber(privateUsers.count)} helper="Privata konton" />
+        <AdminStatCard label="Nya annonser idag" value={formatNumber(newToday.count)} helper="Skapade sedan midnatt" />
+        <AdminStatCard label="Rapporterade annonser" value={formatNumber(reports.count)} helper="Öppna rapporter" />
+        <AdminStatCard label="Support väntar" value={formatNumber(support.count)} helper="Aktiva ärenden" />
+        <AdminStatCard label="Moderering" value="Live" helper="Efterhandskontroll" />
       </section>
 
-      <section className="mt-8 overflow-hidden rounded-[22px] border border-[#e1e5ec] bg-white">
-        <div className="border-b border-[#e1e5ec] px-5 py-4">
-          <h2 className="font-bold">Latest listings</h2>
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-xl font-black">Senaste annonser</h2>
+          <Link href="/admin/listings" className="text-sm font-bold text-[#0866ff]">
+            Visa alla
+          </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left text-sm">
-            <thead className="bg-[#f8fafc] text-xs uppercase tracking-[.08em] text-[#667085]">
-              <tr>
-                <th className="px-5 py-3">Listing</th>
-                <th className="px-5 py-3">Seller</th>
-                <th className="px-5 py-3">Market</th>
-                <th className="px-5 py-3">Price</th>
-                <th className="px-5 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data?.map((listing) => (
-                <tr key={listing.id} className="border-t border-[#eaecf0]">
-                  <td className="px-5 py-4"><strong>{listing.title}</strong><span className="mt-1 block text-xs text-[#667085]">{listing.category} · {listing.id}</span></td>
-                  <td className="px-5 py-4">{listing.seller_name}</td>
-                  <td className="px-5 py-4">{listing.country_code}</td>
-                  <td className="px-5 py-4">{Number(listing.price).toLocaleString()} {listing.currency}</td>
-                  <td className="px-5 py-4">{listing.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={['Annons', 'Kategori', 'Plats', 'Status', 'Skapad']}>
+          {(latestListings.data || []).map((listing) => (
+            <tr key={listing.id} className="hover:bg-[#f8fafc]">
+              <td className="px-4 py-4">
+                <Link href={`/admin/listings/${listing.id}`} className="font-bold text-[#101828] hover:text-[#0866ff]">
+                  {listing.title}
+                </Link>
+              </td>
+              <td className="px-4 py-4 text-[#475467]">{categoryLabel(listing.category)}</td>
+              <td className="px-4 py-4 text-[#475467]">
+                {listing.city || 'Saknas'}, {listing.country_code || '--'}
+              </td>
+              <td className="px-4 py-4">
+                <div className="flex flex-wrap gap-2">
+                  <Badge label={listing.status || 'okänd'} tone={statusTone(listing.status)} />
+                  <Badge label={listing.review_status || 'ej satt'} tone={statusTone(listing.review_status)} />
+                </div>
+              </td>
+              <td className="px-4 py-4 text-[#667085]">{formatDate(listing.created_at)}</td>
+            </tr>
+          ))}
+        </AdminTable>
       </section>
     </main>
-  )
-}
-
-function Metric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof FileText
-  label: string
-  value: number
-}) {
-  return (
-    <article className="rounded-[20px] border border-[#e1e5ec] bg-white p-6">
-      <Icon className="h-5 w-5 text-[#0866ff]" />
-      <strong className="mt-5 block text-3xl">{value}</strong>
-      <span className="mt-1 block text-sm text-[#667085]">{label}</span>
-    </article>
   )
 }

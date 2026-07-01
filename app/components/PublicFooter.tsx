@@ -1,277 +1,534 @@
 'use client'
 
+import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Mail } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import {
+  Check,
+  ChevronDown,
+  Globe2,
+} from 'lucide-react'
 import BrandLogo from './BrandLogo'
-import SocialIcons from './SocialIcons'
 import {
   localizePublicHref,
+  stripLocalePrefix,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
-
-const buyCarLabels: Record<PublicLocale, string> = {
-  sv: 'Köp bil', de: 'Fahrzeuge kaufen', en: 'Buy cars',
-  fr: 'Acheter des véhicules', es: 'Comprar vehículos',
-  it: 'Acquista veicoli', pl: 'Kup pojazdy', nl: 'Voertuigen kopen',
-  pt: 'Comprar veículos', fi: 'Osta ajoneuvoja', da: 'Køb køretøjer',
-  cs: 'Koupit vozidla', ro: 'Cumpără vehicule', bg: 'Купи автомобили',
-  hr: 'Kupi vozila', el: 'Αγορά οχημάτων', hu: 'Járművásárlás',
-  sk: 'Kúpiť vozidlá', sl: 'Kupi vozila', et: 'Osta sõidukeid',
-  lv: 'Pirkt transportlīdzekļus', lt: 'Pirkti automobilius',
-}
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
 const footerCopy = {
   sv: {
-    description: 'Europas marknadsplats för fordon — skapad för privatpersoner och företag.',
-    question: 'Vill du köpa, sälja eller nå en större europeisk marknad?',
-    cta: 'Utforska marknaden',
-    statement: 'Fordon, köpare och säljare. Samlade över hela Europa.',
-    sellerTitle: 'Marketplace',
-    sellerLinks: [
-      ['Bilar', '/cars'],
-      ['Transportbilar', '/vans'],
-      ['Motorcyklar', '/motorcycles'],
-      ['Lastbilar', '/trucks'],
-    ] as [string, string][],
-    businessTitle: 'Företag',
-    businessLinks: [
-      ['Skapa privat- eller företagskonto', '/registrera'],
-      ['Logga in', '/login'],
-      ['Priser', '/salj-fordon#priser'],
-      ['Hjälpcenter', '/hjalpcenter'],
-    ] as [string, string][],
-    dealerTitle: 'Fler kategorier',
-    dealerLinks: [
-      ['Husbilar', '/motorhomes'],
-      ['Husvagnar', '/caravans'],
-      ['Lantbruk & entreprenad', '/farm'],
-      ['Elcyklar', '/electric-bikes'],
-      ['Elsparkcyklar', '/e-scooters'],
-    ] as [string, string][],
-    contact: 'Kontakt',
-    support: 'Support för privatpersoner, företag, köpare och säljare i hela EU.',
-    contactLink: 'Kontakta oss',
-    privacy: 'Integritetspolicy',
-    cookies: 'Cookies',
+    description:
+      'Europas betrodda marknadsplats för att köpa och sälja fordon. För privatpersoner och företag i 27 länder.',
+    columns: [
+      {
+        title: 'Marketplace',
+        links: [
+          ['Alla fordon', '/marketplace/cars'],
+          ['Bilar', '/cars'],
+          ['Transportbilar', '/vans'],
+          ['Lastbilar', '/trucks'],
+          ['Motorcyklar', '/motorcycles'],
+          ['Husbilar', '/motorhomes'],
+          ['Husvagnar', '/caravans'],
+        ],
+      },
+      {
+        title: 'Sälj',
+        links: [
+          ['Sälj ditt fordon', '/salj-fordon'],
+          ['Så fungerar det', '/salj-fordon#sa-fungerar-det'],
+          ['Priser', '/salj-fordon#priser'],
+          ['För företag', '/foretag'],
+          ['Dealer solutions', '/foretag'],
+        ],
+      },
+      {
+        title: 'Köp',
+        links: [
+          ['Sök fordon', '/marketplace/cars'],
+          ['Sparade sökningar', '/sparade'],
+          ['Jämför fordon', '/marketplace/cars'],
+          ['Fordonshistorik', '/help-center'],
+          ['Köpguide', '/trygg-affar'],
+        ],
+      },
+      {
+        title: 'Företag',
+        links: [
+          ['Om Autorell', '/om-oss'],
+          ['Karriär', '/om-oss'],
+          ['Press', '/om-oss'],
+          ['Partners', '/foretag'],
+          ['Kontakta oss', '/contact'],
+        ],
+      },
+      {
+        title: 'Support',
+        links: [
+          ['Hjälpcenter', '/help-center'],
+          ['Säkerhetstips', '/trygg-affar'],
+          ['Betalningar', '/trygg-affar'],
+          ['Frakt & leverans', '/help-center'],
+          ['Rapportera problem', '/report'],
+        ],
+      },
+    ],
+    newsletterTitle: 'Håll dig uppdaterad',
+    newsletterText:
+      'Få de senaste fordonen, marknadstrenderna och tipsen direkt till din inkorg.',
+    emailPlaceholder: 'Ange din e-post',
+    subscribe: 'Prenumerera',
+    trust: [
+      ['Verifierade annonser', 'Alla annonser kontrolleras för kvalitet och äkthet.'],
+      ['Säkra betalningar', 'Dina betalningar skyddas i varje steg.'],
+      ['Täckning i hela Europa', 'Köp och sälj i 27 länder i Europa.'],
+      ['Expertsupport', 'Vårt team hjälper dig hela vägen.'],
+    ],
+    country: 'Sverige (SE)',
+    language: 'Svenska',
+    marketCta: 'Välj språk och marknad',
+    marketEyebrow: 'Välj språk och marknad',
+    marketTitle: 'Välj ditt språk och marknad',
+    marketText:
+      'Välj din plats så visar vi relevanta fordon, priser och information för din marknad.',
+    popularMarkets: 'Populära marknader',
+    allMarkets: 'Alla marknader',
+    missingMarketTitle: 'Hittar du inte din marknad?',
+    missingMarketText:
+      'Vi expanderar ständigt. Kontakta oss om du vill att vi ska lägga till din marknad.',
+    close: 'Stäng',
     terms: 'Användarvillkor',
-    cookieSettings: 'Cookieinställningar',
+    purchaseTerms: 'Köpvillkor',
+    refundPolicy: 'Återbetalningspolicy',
+    privacy: 'Integritetspolicy',
+    cookies: 'Cookiepolicy',
+    legalNotice:
+      'Autorell \u00e4r en europeisk marknadsplats f\u00f6r fordonsannonser. Inneh\u00e5ll, fordonsdata, bilder och annonsinformation f\u00e5r inte kopieras, skrapas eller \u00e5teranv\u00e4ndas utan tillst\u00e5nd fr\u00e5n Autorell.',
   },
   de: {
-    description: 'Europas Fahrzeugmarktplatz für Privatpersonen und Unternehmen.',
-    question: 'Möchten Sie Fahrzeuge in ganz Europa kaufen oder verkaufen?',
-    cta: 'Konto erstellen',
-    statement: 'Fahrzeuge handeln. Europa verbinden.',
-    sellerTitle: 'Fahrzeuge & Einkauf',
-    sellerLinks: [
-      ['Fahrzeuge kaufen', '/cars'],
-      ['Fahrzeug verkaufen', '/salj-fordon'],
-      ['Preise', '/salj-fordon#priser'],
-      ['Hilfe', '/hjalpcenter'],
-      ['Problem melden', '/rapportera'],
-    ] as [string, string][],
-    businessTitle: 'Autorell',
-    businessLinks: [
-      ['Über Autorell', '/ueber-autorell'],
-      ['Kontakt', '/kontakt'],
-      ['Datenschutz', '/datenschutz'],
-      ['Cookies', '/cookies'],
-    ] as [string, string][],
-    dealerTitle: 'Konto & Verkauf',
-    dealerLinks: [
-      ['Konto erstellen', '/registrera'],
-      ['Unternehmenslösungen', '/foretag'],
-      ['Nachrichten', '/konto/meddelanden'],
-      ['Anmelden', '/login'],
-    ] as [string, string][],
-    contact: 'Kontakt',
-    support: 'Support für private und gewerbliche Käufer und Verkäufer in der EU.',
-    contactLink: 'Kontakt aufnehmen',
-    privacy: 'Datenschutz',
-    cookies: 'Cookies',
+    description:
+      'Europas vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen. Für private Verkäufer und Unternehmen in 27 Ländern.',
+    columns: [
+      {
+        title: 'Marketplace',
+        links: [
+          ['Alle Fahrzeuge', '/marketplace/cars'],
+          ['Autos', '/cars'],
+          ['Transporter', '/vans'],
+          ['Lkw', '/trucks'],
+          ['Motorräder', '/motorcycles'],
+          ['Wohnmobile', '/motorhomes'],
+          ['Wohnwagen', '/caravans'],
+        ],
+      },
+      {
+        title: 'Verkaufen',
+        links: [
+          ['Fahrzeug verkaufen', '/salj-fordon'],
+          ['So funktioniert es', '/salj-fordon#sa-fungerar-det'],
+          ['Preise', '/salj-fordon#priser'],
+          ['Für Unternehmen', '/foretag'],
+          ['Dealer solutions', '/foretag'],
+        ],
+      },
+      {
+        title: 'Kaufen',
+        links: [
+          ['Fahrzeuge suchen', '/marketplace/cars'],
+          ['Gespeicherte Suchen', '/sparade'],
+          ['Fahrzeuge vergleichen', '/marketplace/cars'],
+          ['Fahrzeughistorie', '/help-center'],
+          ['Kaufberatung', '/trygg-affar'],
+        ],
+      },
+      {
+        title: 'Unternehmen',
+        links: [
+          ['Über Autorell', '/om-oss'],
+          ['Karriere', '/om-oss'],
+          ['Presse', '/om-oss'],
+          ['Partner', '/foretag'],
+          ['Kontakt', '/contact'],
+        ],
+      },
+      {
+        title: 'Support',
+        links: [
+          ['Hilfe', '/help-center'],
+          ['Sicherheitstipps', '/trygg-affar'],
+          ['Zahlungen', '/trygg-affar'],
+          ['Versand & Lieferung', '/help-center'],
+          ['Problem melden', '/report'],
+        ],
+      },
+    ],
+    newsletterTitle: 'Auf dem Laufenden bleiben',
+    newsletterText:
+      'Erhalten Sie neue Fahrzeuge, Markttrends und Tipps direkt in Ihr Postfach.',
+    emailPlaceholder: 'E-Mail-Adresse eingeben',
+    subscribe: 'Abonnieren',
+    trust: [
+      ['Verifizierte Anzeigen', 'Alle Anzeigen werden auf Qualität und Echtheit geprüft.'],
+      ['Sichere Zahlungen', 'Ihre Zahlungen sind in jedem Schritt geschützt.'],
+      ['Europaweite Abdeckung', 'Kaufen und verkaufen in 27 Ländern Europas.'],
+      ['Experten-Support', 'Unser Team hilft Ihnen jederzeit weiter.'],
+    ],
+    country: 'Deutschland (DE)',
+    language: 'Deutsch',
+    marketCta: 'Sprache und Markt wählen',
+    marketEyebrow: 'Sprache und Markt wählen',
+    marketTitle: 'Wählen Sie Sprache und Markt',
+    marketText:
+      'Wählen Sie Ihren Standort, damit wir passende Fahrzeuge, Preise und Informationen anzeigen.',
+    popularMarkets: 'Beliebte Märkte',
+    allMarkets: 'Alle Märkte',
+    missingMarketTitle: 'Finden Sie Ihren Markt nicht?',
+    missingMarketText:
+      'Wir expandieren laufend. Kontaktieren Sie uns, wenn wir Ihren Markt hinzufügen sollen.',
+    close: 'Schließen',
     terms: 'Nutzungsbedingungen',
-    cookieSettings: 'Cookie-Einstellungen',
+    purchaseTerms: 'Kaufbedingungen',
+    refundPolicy: 'Erstattungsrichtlinie',
+    privacy: 'Datenschutz',
+    cookies: 'Cookie-Richtlinie',
+    legalNotice:
+      'Autorell ist ein europ\u00e4ischer Marktplatz f\u00fcr Fahrzeuganzeigen. Inhalte, Fahrzeugdaten, Bilder und Anzeigeninformationen d\u00fcrfen ohne Genehmigung von Autorell nicht kopiert, ausgelesen oder wiederverwendet werden.',
   },
   en: {
-    description: "Europe's vehicle marketplace for private sellers and businesses.",
-    question: 'Ready to buy or sell vehicles across Europe?',
-    cta: 'Create account',
-    statement: 'Vehicles, buyers and sellers connected across Europe.',
-    sellerTitle: 'Vehicles & buying',
-    sellerLinks: [
-      ['Buy cars', '/cars'],
-      ['Sell a vehicle', '/salj-fordon'],
-      ['Pricing', '/salj-fordon#priser'],
-      ['Help centre', '/hjalpcenter'],
-      ['Report a problem', '/rapportera'],
-    ] as [string, string][],
-    businessTitle: 'Autorell',
-    businessLinks: [
-      ['About Autorell', '/about'],
-      ['Contact', '/contact'],
-      ['Privacy policy', '/privacy'],
-      ['Cookies', '/cookies'],
-    ] as [string, string][],
-    dealerTitle: 'Account & selling',
-    dealerLinks: [
-      ['Create account', '/registrera'],
-      ['Business solutions', '/foretag'],
-      ['Messages', '/konto/meddelanden'],
-      ['Log in', '/login'],
-    ] as [string, string][],
-    contact: 'Contact',
-    support: 'Support for private and business buyers and sellers across the EU.',
-    contactLink: 'Contact us',
-    privacy: 'Privacy policy',
-    cookies: 'Cookies',
-    terms: 'Terms of use',
-    cookieSettings: 'Cookie settings',
+    description:
+      "Europe's trusted marketplace for buying and selling vehicles. For private sellers and businesses in 27 countries.",
+    columns: [
+      {
+        title: 'Marketplace',
+        links: [
+          ['All vehicles', '/marketplace/cars'],
+          ['Cars', '/cars'],
+          ['Vans', '/vans'],
+          ['Trucks', '/trucks'],
+          ['Motorcycles', '/motorcycles'],
+          ['Motorhomes', '/motorhomes'],
+          ['Caravans', '/caravans'],
+        ],
+      },
+      {
+        title: 'Sell',
+        links: [
+          ['Sell your vehicle', '/salj-fordon'],
+          ['How it works', '/salj-fordon#sa-fungerar-det'],
+          ['Pricing', '/salj-fordon#priser'],
+          ['For businesses', '/foretag'],
+          ['Dealer solutions', '/foretag'],
+        ],
+      },
+      {
+        title: 'Buy',
+        links: [
+          ['Search vehicles', '/marketplace/cars'],
+          ['Saved searches', '/sparade'],
+          ['Compare vehicles', '/marketplace/cars'],
+          ['Vehicle history', '/help-center'],
+          ['Buying guide', '/trygg-affar'],
+        ],
+      },
+      {
+        title: 'Company',
+        links: [
+          ['About Autorell', '/om-oss'],
+          ['Careers', '/om-oss'],
+          ['Press', '/om-oss'],
+          ['Partners', '/foretag'],
+          ['Contact us', '/contact'],
+        ],
+      },
+      {
+        title: 'Support',
+        links: [
+          ['Help center', '/help-center'],
+          ['Safety tips', '/trygg-affar'],
+          ['Payments', '/trygg-affar'],
+          ['Shipping & delivery', '/help-center'],
+          ['Report a problem', '/report'],
+        ],
+      },
+    ],
+    newsletterTitle: 'Stay up to date',
+    newsletterText:
+      'Get the latest vehicles, market trends and tips straight to your inbox.',
+    emailPlaceholder: 'Enter your email',
+    subscribe: 'Subscribe',
+    trust: [
+      ['Verified listings', 'All listings are checked for quality and authenticity.'],
+      ['Secure payments', 'Your payments are protected every step of the way.'],
+      ['Europe-wide coverage', 'Buy and sell in 27 countries across Europe.'],
+      ['Expert support', 'Our team is here to help you at every step.'],
+    ],
+    country: 'Sweden (SE)',
+    language: 'English',
+    marketCta: 'Choose language and market',
+    marketEyebrow: 'Choose language and market',
+    marketTitle: 'Choose your language and market',
+    marketText:
+      'Choose your location so we can show relevant vehicles, prices and information for your market.',
+    popularMarkets: 'Popular markets',
+    allMarkets: 'All markets',
+    missingMarketTitle: 'Can’t find your market?',
+    missingMarketText:
+      'We are expanding constantly. Contact us if you want us to add your market.',
+    close: 'Close',
+    terms: 'Terms of Service',
+    purchaseTerms: 'Purchase terms',
+    refundPolicy: 'Refund policy',
+    privacy: 'Privacy Policy',
+    cookies: 'Cookie Policy',
+    legalNotice:
+      'Autorell is a European marketplace for vehicle listings. Content, vehicle data, images and listing information may not be copied, scraped or reused without permission from Autorell.',
   },
 } as const
 
+const popularMarkets = [
+  ['SE', 'Sverige', 'Svenska', true],
+  ['DK', 'Danmark', 'Dansk'],
+  ['DE', 'Deutschland', 'Deutsch'],
+  ['FR', 'France', 'Français'],
+  ['NL', 'Nederland', 'Nederlands'],
+] as const
+
+const allMarkets = [
+  ['AT', 'Austria', 'Deutsch'],
+  ['BE', 'Belgique', 'Français'],
+  ['BE', 'Belgie', 'Nederlands'],
+  ['BG', 'България', 'Български'],
+  ['HR', 'Hrvatska', 'Hrvatski'],
+  ['CY', 'Κύπρος', 'Ελληνικά'],
+  ['CZ', 'Česká republika', 'Čeština'],
+  ['DK', 'Danmark', 'Dansk'],
+  ['EE', 'Eesti', 'Eesti'],
+  ['FI', 'Suomi', 'Suomi'],
+  ['FR', 'France', 'Français'],
+  ['DE', 'Deutschland', 'Deutsch'],
+  ['GR', 'Ελλάδα', 'Ελληνικά'],
+  ['HU', 'Magyarország', 'Magyar'],
+  ['IE', 'Ireland', 'English'],
+  ['IT', 'Italia', 'Italiano'],
+  ['LV', 'Latvija', 'Latviešu'],
+  ['LT', 'Lietuva', 'Lietuvių'],
+  ['LU', 'Luxembourg', 'Français'],
+  ['MT', 'Malta', 'English'],
+  ['NL', 'Nederland', 'Nederlands'],
+  ['PL', 'Polska', 'Polski'],
+  ['PT', 'Portugal', 'Português'],
+  ['RO', 'România', 'Română'],
+  ['SK', 'Slovensko', 'Slovenčina'],
+  ['SI', 'Slovenija', 'Slovenščina'],
+  ['ES', 'España', 'Español'],
+  ['SE', 'Sverige', 'Svenska'],
+] as const
+
 export default function PublicFooter({
-  locale = 'sv',
+  locale: providedLocale,
 }: {
   locale?: PublicLocale
 }) {
+  const pathname = usePathname()
+  const locale = providedLocale || localeFromPathname(pathname)
+  const activePathMarket = pathname.split('/').filter(Boolean)[0]
+  const footerMarket = getFooterMarket(activePathMarket, locale)
+  const [isMarketOpen, setIsMarketOpen] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.location.hash === '#market-selector',
+  )
   const t =
     locale === 'sv'
       ? footerCopy.sv
       : locale === 'de'
         ? footerCopy.de
         : translatePublicObject(locale, footerCopy.en)
-  const homeHref =
-    locale === 'de'
-      ? 'https://www.autorell.de/'
-      : locale === 'en'
-        ? 'https://www.autorell.com/'
-        : locale !== 'sv'
-        ? `https://www.autorell.com/${locale}`
-        : 'https://www.autorell.se/'
-  const contactHref = localizePublicHref(
-    locale,
-    locale === 'sv' || locale === 'de' ? '/kontakt' : '/contact',
-  )
-  const homeLabel =
-    locale === 'de'
-      ? 'Autorell Startseite'
-      : locale !== 'sv'
-        ? 'Autorell home'
-        : 'Autorell startsida'
-  const privacyHref = localizePublicHref(
-    locale,
-    locale === 'de' ? '/datenschutz' : locale === 'sv' ? '/integritet' : '/privacy',
-  )
-  const termsHref =
-    locale === 'de'
-      ? '/nutzungsbedingungen'
-      : locale !== 'sv'
-        ? localizePublicHref(locale, '/terms')
-        : '/villkor'
+
+  const privacyHref = localizePublicHref(locale, '/privacy')
+  const termsHref = localizePublicHref(locale, '/terms')
+  const purchaseTermsHref = `${termsHref}#purchase-terms`
+  const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
+
   return (
-    <footer className="border-t border-[#e4e7ec] bg-white text-[#101828]">
-      <div className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8 lg:py-16">
-        <div className="grid gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
-          <div className="lg:pt-1">
-            <a href={homeHref} aria-label={homeLabel}>
-              <BrandLogo />
-            </a>
-            <p className="mt-5 max-w-[270px] text-sm leading-6 text-[#667085]">
-              {t.description}
-            </p>
-          </div>
+    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-8 lg:pt-10">
+      <div className="mx-auto max-w-[var(--autorell-page-max)] bg-white">
+        <div className="grid grid-cols-2 gap-x-7 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 xl:gap-x-9">
+          {t.columns.map((column) => (
+            <FooterColumn
+              key={column.title}
+              title={column.title}
+              links={column.links.map(([label, href]) => [
+                label,
+                localizePublicHref(locale, href),
+              ])}
+            />
+          ))}
+        </div>
 
-          <div>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
-              <FooterColumn
-                title={t.sellerTitle}
-                links={t.sellerLinks.map(([label, href]) => [
-                  href === '/find-cars' ||
-                  href === '/hitta-bilar' ||
-                  href === '/fahrzeuge-finden'
-                    ? buyCarLabels[locale]
-                    : label,
-                  localizePublicHref(locale, href),
-                ])}
-              />
-              <FooterColumn
-                title={t.businessTitle}
-                links={t.businessLinks.map(([label, href]) => [
-                  label,
-                  localizePublicHref(locale, href),
-                ])}
-              />
-              <FooterColumn
-                title={t.dealerTitle}
-                links={t.dealerLinks.map(([label, href]) => [
-                  label,
-                  localizePublicHref(locale, href),
-                ])}
-              />
+        <div className="my-7 h-px bg-[#dfe5ee]" />
 
-              <div>
-                <h3 className="text-sm font-bold text-[#101828]">
-                  {t.contact}
-                </h3>
-                <div className="mt-4 flex flex-col gap-3 text-sm text-[#475467]">
-                  <a href="mailto:info@autorell.com" className="inline-flex items-center gap-2 font-semibold text-[#101828] transition hover:text-[#0866ff]">
-                    <Mail className="h-4 w-4 text-[#0866ff]" />
-                    info@autorell.com
-                  </a>
-                  <Link href={contactHref} className="transition hover:text-[#0866ff]">
-                    {t.contactLink}
-                  </Link>
-                  <p className="max-w-[240px] leading-6">
-                    {t.support}
-                  </p>
-                  <SocialIcons className="pt-1" />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10 rounded-[20px] border border-[#e4e7ec] bg-[#f9fafb] p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
-              <p className="max-w-xl text-sm font-semibold leading-6 text-[#344054]">
-                {t.question}
-              </p>
-              <Link
-                href="/registrera"
-                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#0057e6] sm:mt-0"
-              >
-                {t.cta}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:gap-12">
+          <SocialLinks />
+          <div className="max-w-[760px] text-[12px] leading-6 text-[#475467]">
+            <p>{t.legalNotice}</p>
+            <p className="mt-4">© 2026 Autorell</p>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-5 border-t border-[#e4e7ec] pt-7 text-xs text-[#667085] sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Autorell AB</p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href={privacyHref} className="transition hover:text-[#0866ff]">
-              {t.privacy}
-            </Link>
-            <Link href={localizePublicHref(locale, '/cookies')} className="transition hover:text-[#0866ff]">
-              {t.cookies}
-            </Link>
-            <Link href={termsHref} className="transition hover:text-[#0866ff]">
-              {t.terms}
-            </Link>
+        <div className="my-6 h-px bg-[#dfe5ee]" />
+
+        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(2rem,calc((100vw-1280px)/2+2rem))]">
+          <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-semibold">
             <button
               type="button"
-              onClick={() =>
-                window.dispatchEvent(
-                  new Event('autorell-open-cookie-settings')
-                )
-              }
-              className="transition hover:text-[#0866ff]"
+              onClick={() => setIsMarketOpen(true)}
+              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-semibold transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
             >
-              {t.cookieSettings}
+              <span className="inline-flex items-center gap-2">
+                <FlagIcon code={footerMarket.flagCode} size="sm" />
+                {footerMarket.label}
+              </span>
+              <ChevronDown className="h-4 w-4" />
             </button>
+            <FooterSelect
+              ariaLabel="Currency"
+              defaultValue={footerMarket.currency}
+              options={[
+                ['eur', 'EUR'],
+                ['sek', 'SEK'],
+                ['dkk', 'DKK'],
+                ['pln', 'PLN'],
+                ['czk', 'CZK'],
+                ['huf', 'HUF'],
+                ['ron', 'RON'],
+                ['bgn', 'BGN'],
+                ['nok', 'NOK'],
+                ['chf', 'CHF'],
+                ['gbp', 'GBP'],
+                ['usd', 'USD'],
+              ]}
+            />
           </div>
+
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-semibold">
+            <Link href={termsHref} className="transition hover:text-[#075fff]">
+              {t.terms}
+            </Link>
+            <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
+              {t.purchaseTerms}
+            </Link>
+            <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
+              {t.refundPolicy}
+            </Link>
+            <Link href={privacyHref} className="transition hover:text-[#075fff]">
+              {t.privacy}
+            </Link>
+            <Link
+              href={localizePublicHref(locale, '/cookies')}
+              className="transition hover:text-[#075fff]"
+            >
+              {t.cookies}
+            </Link>
+          </nav>
         </div>
       </div>
+      <MarketSelectorModal
+        isOpen={isMarketOpen}
+        onClose={() => setIsMarketOpen(false)}
+        locale={locale}
+      />
     </footer>
   )
+}
+
+function localeFromPathname(pathname: string): PublicLocale {
+  const first = pathname.split('/').filter(Boolean)[0]
+  if (first === 'se') return 'sv'
+  if (first === 'de') return 'de'
+  const market = euBuyerMarkets.find((item) => item.code === first)
+  if (market) return market.language as PublicLocale
+  if (
+    [
+      'en',
+      'fr',
+      'es',
+      'it',
+      'pl',
+      'nl',
+      'pt',
+      'fi',
+      'da',
+      'cs',
+      'ro',
+      'bg',
+      'hr',
+      'el',
+      'hu',
+      'sk',
+      'sl',
+      'et',
+      'lv',
+      'lt',
+    ].includes(first)
+  ) {
+    return first as PublicLocale
+  }
+  return 'en'
+}
+
+function getFooterMarket(pathMarket: string, locale: PublicLocale) {
+  if (pathMarket === 'se' || (!pathMarket && locale === 'sv')) {
+    return { flagCode: 'SE', label: 'Sverige (SE)', currency: 'sek' }
+  }
+  if (pathMarket === 'de' || (!pathMarket && locale === 'de')) {
+    return { flagCode: 'DE', label: 'Deutschland (DE)', currency: 'eur' }
+  }
+
+  const market = euBuyerMarkets.find((item) => item.code === pathMarket)
+  if (market) {
+    return {
+      flagCode: market.code.toUpperCase(),
+      label: `${market.countryLocal} (${market.code.toUpperCase()})`,
+      currency: currencyByMarketCode(market.code),
+    }
+  }
+
+  return { flagCode: 'EU', label: 'Europe (EU)', currency: 'eur' }
+}
+
+function currencyByMarketCode(code: string) {
+  switch (code) {
+    case 'se':
+      return 'sek'
+    case 'dk':
+      return 'dkk'
+    case 'pl':
+      return 'pln'
+    case 'cz':
+      return 'czk'
+    case 'hu':
+      return 'huf'
+    case 'ro':
+      return 'ron'
+    case 'bg':
+      return 'bgn'
+    case 'no':
+      return 'nok'
+    case 'ch':
+      return 'chf'
+    case 'gb':
+    case 'uk':
+      return 'gbp'
+    case 'us':
+      return 'usd'
+    default:
+      return 'eur'
+  }
 }
 
 function FooterColumn({
@@ -279,20 +536,515 @@ function FooterColumn({
   links,
 }: {
   title: string
-  links: [string, string][]
+  links: readonly (readonly [string, string])[]
 }) {
   return (
     <div>
-      <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-        {title}
-      </h3>
-      <nav className="mt-6 flex flex-col items-start gap-4 text-sm text-[#344054]">
+      <h3 className="text-[15px] font-extrabold text-[#101828]">{title}</h3>
+      <nav className="mt-4 flex flex-col items-start gap-2.5 text-[13px] leading-5 text-[#344054]">
         {links.map(([label, href]) => (
-          <Link key={href} href={href} className="transition hover:text-[#0866ff]">
+          <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
             {label}
           </Link>
         ))}
       </nav>
+    </div>
+  )
+}
+
+function FooterSelect({
+  ariaLabel,
+  defaultValue,
+  icon,
+  options,
+}: {
+  ariaLabel: string
+  defaultValue: string
+  icon?: ReactNode
+  options: readonly (readonly [string, string])[]
+}) {
+  return (
+    <label className="relative inline-flex items-center gap-2 text-[#18315f]">
+      {icon}
+      <select
+        aria-label={ariaLabel}
+        defaultValue={defaultValue}
+        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#eaf4ff] py-1 pl-2 pr-8 font-semibold outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
+      >
+        {options.map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-[#18315f]" />
+    </label>
+  )
+}
+
+function SocialLinks() {
+  const links = [
+    [
+      'Facebook',
+      'https://www.facebook.com/autorell',
+      'M14 8.5h3V5h-3c-3.4 0-5.5 2.1-5.5 5.7V13H6v3.5h2.5V23h4v-6.5h3.2l.6-3.5h-3.8v-2c0-1.7.5-2.5 1.5-2.5Z',
+    ],
+    [
+      'Instagram',
+      'https://www.instagram.com/autorellgroup/',
+      'M12 7.8A4.2 4.2 0 1 0 12 16.2 4.2 4.2 0 0 0 12 7.8Zm0 6.9a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Zm5.4-7.1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM20.2 8c-.1-1.5-.4-2.7-1.5-3.7S16.5 2.9 15 2.8c-1.5-.1-6.5-.1-8 0-1.5.1-2.7.4-3.7 1.5S1.9 6.5 1.8 8c-.1 1.5-.1 6.5 0 8 .1 1.5.4 2.7 1.5 3.7s2.2 1.4 3.7 1.5c1.5.1 6.5.1 8 0 1.5-.1 2.7-.4 3.7-1.5s1.4-2.2 1.5-3.7c.1-1.5.1-6.5 0-8Zm-1.9 9.6c-.3.8-.9 1.4-1.7 1.7-1.2.5-4 .4-4.6.4s-3.4.1-4.6-.4a3 3 0 0 1-1.7-1.7c-.5-1.2-.4-4-.4-4.6s-.1-3.4.4-4.6A3 3 0 0 1 7.4 6.7c1.2-.5 4-.4 4.6-.4s3.4-.1 4.6.4a3 3 0 0 1 1.7 1.7c.5 1.2.4 4 .4 4.6s.1 3.4-.4 4.6Z',
+    ],
+    [
+      'LinkedIn',
+      'https://www.linkedin.com/company/autorell',
+      'M5.3 7.6A2.3 2.3 0 1 0 5.3 3a2.3 2.3 0 0 0 0 4.6ZM3.4 9.3h3.8V21H3.4V9.3Zm6.1 0h3.6v1.6h.1c.5-1 1.8-2 3.6-2 3.9 0 4.6 2.5 4.6 5.9V21h-3.8v-5.5c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V21H9.5V9.3Z',
+    ],
+  ] as const
+
+  return (
+    <div className="flex items-center gap-5">
+      {links.map(([label, href, path]) => (
+        <a
+          key={label}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+          className="grid h-9 w-9 place-items-center rounded-full bg-[#eaf4ff] text-[#075fff] ring-1 ring-[#cfe0ff] transition hover:-translate-y-0.5 hover:bg-[#ddecff]"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-5 w-5 fill-current"
+          >
+            <path d={path} />
+          </svg>
+        </a>
+      ))}
+    </div>
+  )
+}
+
+export function MarketSelectorModal({
+  isOpen,
+  onClose,
+  locale = 'sv',
+}: {
+  isOpen: boolean
+  onClose: () => void
+  locale?: PublicLocale
+}) {
+  const pathname = usePathname()
+  if (!isOpen) return null
+  const copy =
+    locale === 'sv'
+      ? footerCopy.sv
+      : locale === 'de'
+        ? footerCopy.de
+        : translatePublicObject(locale, footerCopy.en)
+
+  return (
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#f8fbff] text-[#101828]">
+      <div className="sticky top-0 z-10 border-b border-[#dfe5ee] bg-white/95 py-4 backdrop-blur">
+        <div className="mx-auto flex max-w-[var(--autorell-page-max)] items-center justify-between px-5 sm:px-8">
+          <BrandLogo />
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 items-center gap-3 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-bold text-[#101828] shadow-sm transition hover:border-[#b7cdfb] hover:text-[#075fff]"
+          >
+            <span aria-hidden="true">×</span>
+            {copy.close}
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
+          <div>
+            <p className="inline-flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#075fff]">
+              <Globe2 className="h-5 w-5" />
+              {copy.marketEyebrow}
+            </p>
+            <h2 className="mt-6 max-w-[560px] text-[40px] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
+              {copy.marketTitle}
+            </h2>
+            <p className="mt-6 max-w-[430px] text-[16px] leading-8 text-[#344054]">
+              {copy.marketText}
+            </p>
+          </div>
+
+          <WorldMapGraphic />
+        </div>
+
+        <section className="mt-10">
+          <h3 className="text-base font-extrabold">{copy.popularMarkets}</h3>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {popularMarkets.map(([code, market, language]) => (
+              <MarketCard
+                key={code}
+                countryCode={code}
+                market={market}
+                language={language}
+                href={marketHref(code, pathname)}
+                selected={isActiveMarket(code, pathname, locale)}
+                onNavigate={onClose}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <h3 className="text-base font-extrabold">{copy.allMarkets}</h3>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {allMarkets.map(([code, market, language], index) => (
+              <MarketCard
+                key={`${code}-${market}-${index}`}
+                countryCode={code}
+                market={market}
+                language={language}
+                href={marketHref(code, pathname)}
+                selected={isActiveMarket(code, pathname, locale)}
+                onNavigate={onClose}
+              />
+            ))}
+          </div>
+        </section>
+
+        <div className="mx-auto mt-10 flex max-w-[560px] items-center gap-4 rounded-[18px] border border-[#d9e7ff] bg-[#edf5ff] p-5 text-[#18315f]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#075fff]">
+            <Globe2 className="h-5 w-5" />
+          </span>
+          <span>
+            <strong className="block text-sm font-extrabold">
+              {copy.missingMarketTitle}
+            </strong>
+            <span className="mt-1 block text-sm leading-6">
+              {copy.missingMarketText}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MarketCard({
+  countryCode,
+  market,
+  language,
+  href,
+  onNavigate,
+  selected = false,
+}: {
+  countryCode: string
+  market: string
+  language: string
+  href: string
+  onNavigate?: () => void
+  selected?: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={`flex min-h-[78px] items-center gap-4 rounded-[14px] border bg-white px-5 text-left shadow-[0_12px_34px_rgba(16,24,40,0.045)] transition hover:-translate-y-0.5 hover:border-[#075fff] ${
+        selected ? 'border-[#075fff] ring-2 ring-[#075fff]/10' : 'border-[#dfe5ee]'
+      }`}
+    >
+      <FlagIcon code={countryCode} />
+      <span className="min-w-0 flex-1">
+        <strong className="block truncate text-[15px] font-extrabold text-[#101828]">
+          {market}
+        </strong>
+        <span className="mt-0.5 block truncate text-[13px] text-[#667085]">
+          {language}
+        </span>
+      </span>
+      {selected ? (
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-[#075fff] text-white">
+          <Check className="h-4 w-4" />
+        </span>
+      ) : (
+        <ChevronDown className="-rotate-90 h-4 w-4 text-[#344054]" />
+      )}
+    </Link>
+  )
+}
+
+function marketHref(countryCode: string, pathname: string) {
+  const targetPrefix =
+    countryCode === 'SE'
+      ? '/se'
+      : countryCode === 'DE'
+        ? '/de'
+        : `/${countryCode.toLowerCase()}`
+  const current = stripLocalePrefix(pathname || '/')
+  return current === '/' ? targetPrefix : `${targetPrefix}${current}`
+}
+
+function isActiveMarket(
+  countryCode: string,
+  pathname: string,
+  locale: PublicLocale,
+) {
+  const current = pathname.split('/').filter(Boolean)[0]
+  if (countryCode === 'SE') return current === 'se' || (!current && locale === 'sv')
+  if (countryCode === 'DE') return current === 'de' || (!current && locale === 'de')
+  return current === countryCode.toLowerCase()
+}
+
+export function FlagIcon({
+  code,
+  size = 'md',
+}: {
+  code: string
+  size?: 'sm' | 'md'
+}) {
+  return (
+    <span
+      className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-[#d7e2f2] ${
+        size === 'sm' ? 'h-5 w-5' : 'h-10 w-10'
+      }`}
+      aria-label={`${code} flagga`}
+      title={code}
+    >
+      <svg viewBox="0 0 36 36" aria-hidden="true" className="h-full w-full">
+        <circle cx="18" cy="18" r="18" fill="#fff" />
+        <g clipPath="url(#flag-circle)">
+          <FlagArtwork code={code} />
+        </g>
+        <defs>
+          <clipPath id="flag-circle">
+            <circle cx="18" cy="18" r="18" />
+          </clipPath>
+        </defs>
+      </svg>
+    </span>
+  )
+}
+
+function FlagArtwork({ code }: { code: string }) {
+  switch (code) {
+    case 'AT':
+      return <HorizontalFlag colors={['#ed2939', '#ffffff', '#ed2939']} />
+    case 'BE':
+      return <VerticalFlag colors={['#111111', '#ffd90c', '#ef3340']} />
+    case 'BG':
+      return <HorizontalFlag colors={['#ffffff', '#00966e', '#d62612']} />
+    case 'HR':
+      return (
+        <>
+          <HorizontalFlag colors={['#ff0000', '#ffffff', '#171796']} />
+          <rect x="15" y="13" width="6" height="8" rx="1" fill="#d00000" />
+        </>
+      )
+    case 'CY':
+      return (
+        <>
+          <rect width="36" height="36" fill="#ffffff" />
+          <ellipse cx="19" cy="17" rx="7" ry="4" fill="#d57800" />
+          <path d="M13 24c4 2 7 2 11 0" stroke="#4e8f45" strokeWidth="2" fill="none" />
+        </>
+      )
+    case 'CZ':
+      return (
+        <>
+          <rect width="36" height="18" fill="#ffffff" />
+          <rect y="18" width="36" height="18" fill="#d7141a" />
+          <path d="M0 0 20 18 0 36Z" fill="#11457e" />
+        </>
+      )
+    case 'DK':
+      return <NordicFlag base="#c60c30" cross="#ffffff" />
+    case 'EE':
+      return <HorizontalFlag colors={['#4891d9', '#111111', '#ffffff']} />
+    case 'FI':
+      return <NordicFlag base="#ffffff" cross="#002f6c" />
+    case 'FR':
+      return <VerticalFlag colors={['#0055a4', '#ffffff', '#ef4135']} />
+    case 'DE':
+      return <HorizontalFlag colors={['#000000', '#dd0000', '#ffce00']} />
+    case 'GR':
+      return (
+        <>
+          {Array.from({ length: 9 }).map((_, index) => (
+            <rect
+              key={index}
+              y={index * 4}
+              width="36"
+              height="4"
+              fill={index % 2 === 0 ? '#0d5eaf' : '#ffffff'}
+            />
+          ))}
+          <rect width="16" height="16" fill="#0d5eaf" />
+          <rect x="6" width="4" height="16" fill="#ffffff" />
+          <rect y="6" width="16" height="4" fill="#ffffff" />
+        </>
+      )
+    case 'HU':
+      return <HorizontalFlag colors={['#ce2939', '#ffffff', '#477050']} />
+    case 'IE':
+      return <VerticalFlag colors={['#169b62', '#ffffff', '#ff883e']} />
+    case 'IT':
+      return <VerticalFlag colors={['#009246', '#ffffff', '#ce2b37']} />
+    case 'LV':
+      return (
+        <>
+          <rect width="36" height="36" fill="#9e3039" />
+          <rect y="15" width="36" height="6" fill="#ffffff" />
+        </>
+      )
+    case 'LT':
+      return <HorizontalFlag colors={['#fdb913', '#006a44', '#c1272d']} />
+    case 'LU':
+      return <HorizontalFlag colors={['#ef3340', '#ffffff', '#00a3e0']} />
+    case 'MT':
+      return (
+        <>
+          <rect width="18" height="36" fill="#ffffff" />
+          <rect x="18" width="18" height="36" fill="#cf142b" />
+          <path d="M8 7h4v3h3v4h-3v3H8v-3H5v-4h3Z" fill="#9aa6b2" />
+        </>
+      )
+    case 'NL':
+      return <HorizontalFlag colors={['#ae1c28', '#ffffff', '#21468b']} />
+    case 'PL':
+      return (
+        <>
+          <rect width="36" height="18" fill="#ffffff" />
+          <rect y="18" width="36" height="18" fill="#dc143c" />
+        </>
+      )
+    case 'PT':
+      return (
+        <>
+          <rect width="14" height="36" fill="#006600" />
+          <rect x="14" width="22" height="36" fill="#ff0000" />
+          <circle cx="14" cy="18" r="4" fill="#ffcc00" />
+        </>
+      )
+    case 'RO':
+      return <VerticalFlag colors={['#002b7f', '#fcd116', '#ce1126']} />
+    case 'SK':
+      return (
+        <>
+          <HorizontalFlag colors={['#ffffff', '#0b4ea2', '#ee1c25']} />
+          <rect x="9" y="13" width="7" height="9" rx="1" fill="#ee1c25" />
+        </>
+      )
+    case 'SI':
+      return (
+        <>
+          <HorizontalFlag colors={['#ffffff', '#005da4', '#ed1c24']} />
+          <path d="M9 12h7v8l-3.5 2L9 20Z" fill="#005da4" />
+        </>
+      )
+    case 'ES':
+      return (
+        <>
+          <rect width="36" height="9" fill="#aa151b" />
+          <rect y="9" width="36" height="18" fill="#f1bf00" />
+          <rect y="27" width="36" height="9" fill="#aa151b" />
+        </>
+      )
+    case 'SE':
+      return <NordicFlag base="#006aa7" cross="#fecc00" />
+    case 'EU':
+      return (
+        <>
+          <rect width="36" height="36" fill="#075fff" />
+          {Array.from({ length: 12 }).map((_, index) => {
+            const angle = (index / 12) * Math.PI * 2
+            const x = 18 + Math.cos(angle) * 8
+            const y = 18 + Math.sin(angle) * 8
+            return <circle key={index} cx={x} cy={y} r="1.2" fill="#ffcc00" />
+          })}
+        </>
+      )
+    default:
+      return <rect width="36" height="36" fill="#f3f7ff" />
+  }
+}
+
+function HorizontalFlag({ colors }: { colors: [string, string, string] }) {
+  return (
+    <>
+      {colors.map((color, index) => (
+        <rect key={color} y={index * 12} width="36" height="12" fill={color} />
+      ))}
+    </>
+  )
+}
+
+function VerticalFlag({ colors }: { colors: [string, string, string] }) {
+  return (
+    <>
+      {colors.map((color, index) => (
+        <rect key={color} x={index * 12} width="12" height="36" fill={color} />
+      ))}
+    </>
+  )
+}
+
+function NordicFlag({ base, cross }: { base: string; cross: string }) {
+  return (
+    <>
+      <rect width="36" height="36" fill={base} />
+      <rect x="11" width="5" height="36" fill={cross} />
+      <rect y="15" width="36" height="5" fill={cross} />
+    </>
+  )
+}
+
+function WorldMapGraphic() {
+  const markers = [
+    [517, 112],
+    [530, 126],
+    [542, 145],
+    [555, 130],
+    [569, 150],
+    [586, 136],
+    [600, 156],
+    [615, 142],
+    [632, 164],
+  ] as const
+
+  return (
+    <div className="relative min-h-[220px] lg:min-h-[330px]">
+      <svg
+        viewBox="0 0 900 360"
+        role="img"
+        aria-label="Världskarta med europeiska marknader"
+        className="h-full min-h-[220px] w-full lg:min-h-[330px]"
+      >
+        <defs>
+          <pattern id="footer-map-dots" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="1.5" cy="1.5" r="1.45" fill="#9fc7ff" />
+          </pattern>
+          <filter id="footer-map-marker-shadow" x="-80%" y="-80%" width="260%" height="260%">
+            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#075fff" floodOpacity="0.25" />
+          </filter>
+        </defs>
+        <g fill="url(#footer-map-dots)" opacity="0.72">
+          <path d="M95 78 128 46l64-16 68 15 37 34-13 45-47 24-28 47 18 45-29 31-48-19-39-56-56-27-23-51 33-40Z" />
+          <path d="m257 203 37 23 28 56-19 53-37 4-25-37-19-58 35-41Z" />
+          <path d="m441 86 69-31 73 14 41 35-22 41-55 13-54-9-52 23-39-36 39-50Z" />
+          <path d="m507 161 76-10 51 30 23 64-31 64-68 22-54-45-29-73 32-52Z" />
+          <path d="m611 71 96-26 82 22 59 52-25 54-75 13-45 44-65-18-51-55 24-86Z" />
+          <path d="m727 232 58 7 46 39-21 45-57 7-42-32 16-66Z" />
+        </g>
+        {markers.map(([cx, cy]) => (
+          <circle
+            key={`${cx}-${cy}`}
+            cx={cx}
+            cy={cy}
+            r="6"
+            fill="#075fff"
+            filter="url(#footer-map-marker-shadow)"
+          />
+        ))}
+      </svg>
     </div>
   )
 }

@@ -67,3 +67,45 @@ och be om godkännande innan implementation.
 4. Nya funktioner
 
 Ingen ny funktion får försämra befintliga sidor.
+
+## Performance & Production Rules
+
+Alla nya funktioner ska utvecklas med prestanda och skalbarhet i åtanke.
+
+### Rendering
+
+* Använd statisk rendering när det är möjligt.
+* Använd endast dynamisk rendering när funktionaliteten kräver det.
+* Undvik onödiga `headers()`, `cookies()` och `dynamic = "force-dynamic"`.
+
+### Cache
+
+* Publika annonser, kategorisidor och sökresultat får cacheas.
+* Privat användardata får aldrig cacheas publikt.
+* Alla ändringar av annonser (publicera, redigera, sälja, pausa, radera eller godkänna) ska invalidiera relevant cache direkt.
+
+### API
+
+* Undvik upprepade API-anrop från listor och kortkomponenter.
+* Gemensam data ska hämtas en gång och återanvändas.
+* Hämta endast de fält som faktiskt används.
+
+### Säkerhet
+
+* Service Role-nycklar får aldrig exponeras i frontend.
+* Följ alltid Supabase RLS.
+* Admin-, konto-, dealer- och meddelanderutter ska alltid vara privata.
+
+### Kvalitetssäkring
+
+Efter varje större uppgift ska följande genomföras:
+
+* npm run lint
+* npm run build
+
+Sammanfatta alltid:
+
+* vilka filer som ändrats
+* eventuella risker
+* påverkan på prestanda
+* om lösningen är säker för produktion

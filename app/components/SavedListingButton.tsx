@@ -16,6 +16,7 @@ export default function SavedListingButton({
   label?: string
 }) {
   const [saved, setSaved] = useState(false)
+  const [authenticated, setAuthenticated] = useState(false)
 
   useEffect(() => {
     const sync = () => setSaved(readSavedListingIds().includes(listingId))
@@ -28,7 +29,33 @@ export default function SavedListingButton({
     }
   }, [listingId])
 
+  useEffect(() => {
+    const syncAuth = (event?: Event) => {
+      const detail = (event as CustomEvent<{ authenticated?: boolean }> | undefined)?.detail
+      const cached = window.__autorellHeaderAccount
+      setAuthenticated(Boolean(detail?.authenticated ?? cached?.authenticated))
+    }
+    syncAuth()
+    window.addEventListener('autorell:header-account', syncAuth)
+    return () => {
+      window.removeEventListener('autorell:header-account', syncAuth)
+    }
+  }, [])
+
   function toggle() {
+    if (!authenticated) {
+      const firstSegment = window.location.pathname.split('/').filter(Boolean)[0]
+      const prefix =
+        firstSegment && /^[a-z]{2}$/.test(firstSegment) && firstSegment !== 'en' && firstSegment !== 'eu'
+          ? `/${firstSegment}`
+          : ''
+      window.dispatchEvent(
+        new CustomEvent('autorell:open-auth', {
+          detail: { mode: 'login', destination: `${prefix}/sparade` },
+        }),
+      )
+      return
+    }
     const current = readSavedListingIds()
     writeSavedListingIds(
       current.includes(listingId)

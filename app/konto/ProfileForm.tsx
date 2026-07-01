@@ -3,6 +3,10 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { CheckCircle2, Clock3, ShieldAlert } from 'lucide-react'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
+import {
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 type Profile = {
   account_type: 'private' | 'business'
@@ -15,6 +19,8 @@ type Profile = {
   company_name: string | null
   registration_number: string | null
   vat_number: string | null
+  website_url: string | null
+  logo_url: string | null
   address_line_1: string | null
   address_line_2: string | null
   city: string | null
@@ -26,14 +32,23 @@ type Profile = {
   national_id_last4: string | null
 }
 
-export default function ProfileForm({ profile }: { profile: Profile }) {
+export default function ProfileForm({
+  profile,
+  locale,
+}: {
+  profile: Profile
+  locale: PublicLocale
+}) {
+  const copy = getProfileCopy(locale)
   const [message, setMessage] = useState('')
+  const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
+  const [logoUploading, setLogoUploading] = useState(false)
   const countries = useMemo(
     () =>
       euCountries
-        .map(([code]) => ({ code, name: getEuCountryName(code, 'sv') }))
-        .sort((a, b) => a.name.localeCompare(b.name, 'sv')),
-    [],
+        .map(([code]) => ({ code, name: getEuCountryName(code, locale) }))
+        .sort((a, b) => a.name.localeCompare(b.name, locale)),
+    [locale],
   )
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -45,7 +60,27 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       body: JSON.stringify(Object.fromEntries(form)),
     })
     const result = (await response.json()) as { error?: string }
-    setMessage(response.ok ? 'Profilen är uppdaterad.' : result.error || 'Kunde inte spara.')
+    setMessage(response.ok ? copy.saved : result.error || copy.saveError)
+  }
+
+  async function uploadLogo(file?: File) {
+    if (!file) return
+    setLogoUploading(true)
+    setMessage('')
+    const form = new FormData()
+    form.set('logo', file)
+    const response = await fetch('/api/account/company-logo', {
+      method: 'POST',
+      body: form,
+    })
+    const result = (await response.json()) as { error?: string; logoUrl?: string }
+    setLogoUploading(false)
+    if (!response.ok || !result.logoUrl) {
+      setMessage(result.error || copy.logoUploadError)
+      return
+    }
+    setLogoUrl(result.logoUrl)
+    setMessage(copy.logoUploaded)
   }
 
   const status =
@@ -55,26 +90,30 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
   return (
     <div className="grid gap-6">
-      <VerificationCard status={status || 'pending'} riskStatus={profile.risk_status} />
+      <VerificationCard
+        copy={copy}
+        status={status || 'pending'}
+        riskStatus={profile.risk_status}
+      />
       <form
         onSubmit={submit}
         className="grid gap-4 rounded-[22px] border border-[#e1e5ec] bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-8"
       >
-        <Field name="firstName" label="Förnamn" defaultValue={profile.first_name || ''} required />
-        <Field name="lastName" label="Efternamn" defaultValue={profile.last_name || ''} required />
-        <Field name="birthDate" label="Födelsedatum" type="date" defaultValue={profile.birth_date || ''} required />
-        <Field name="phone" label="Telefonnummer" defaultValue={profile.phone} required />
+        <Field name="firstName" label={copy.firstName} defaultValue={profile.first_name || ''} required />
+        <Field name="lastName" label={copy.lastName} defaultValue={profile.last_name || ''} required />
+        <Field name="birthDate" label={copy.birthDate} type="date" defaultValue={profile.birth_date || ''} required={profile.account_type === 'private'} />
+        <Field name="phone" label={copy.phone} defaultValue={profile.phone} required />
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold">Land</span>
+          <span className="mb-2 block text-sm font-semibold">{copy.country}</span>
           <select name="countryCode" defaultValue={profile.country_code} className={controlClass} required>
             {countries.map(({ code, name }) => <option key={code} value={code}>{name}</option>)}
           </select>
         </label>
         {profile.account_type === 'private' && (
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold">Identitetsnummer</span>
+            <span className="mb-2 block text-sm font-semibold">{copy.identityNumber}</span>
             <input
-              value={profile.national_id_last4 ? `••••••${profile.national_id_last4}` : 'Ej registrerat'}
+              value={profile.national_id_last4 ? `......${profile.national_id_last4}` : copy.notRegistered}
               disabled
               className={`${controlClass} bg-[#f5f6f8]`}
             />
@@ -82,24 +121,48 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         )}
         {profile.account_type === 'business' && (
           <>
-            <Field name="companyName" label="Företagsnamn" defaultValue={profile.company_name || ''} required />
-            <Field name="registrationNumber" label="Registreringsnummer" defaultValue={profile.registration_number || ''} required />
-            <Field name="vatNumber" label="VAT-nummer" defaultValue={profile.vat_number || ''} />
+            <div className="sm:col-span-2 rounded-[16px] border border-[#d8e3f7] bg-[#f8fbff] p-4">
+              <span className="mb-2 block text-sm font-semibold">{copy.companyLogo}</span>
+              <div className="flex flex-wrap items-center gap-4">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt=""
+                    className="h-14 w-14 rounded-[12px] border border-[#d7deed] bg-white object-contain p-1"
+                  />
+                ) : null}
+                <label className="inline-flex min-h-11 cursor-pointer items-center rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-bold text-[#0866ff]">
+                  {logoUploading ? copy.uploadingLogo : copy.uploadLogo}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="sr-only"
+                    onChange={(event) => void uploadLogo(event.target.files?.[0])}
+                  />
+                </label>
+                <span className="text-xs leading-5 text-[#667085]">{copy.logoHelp}</span>
+              </div>
+            </div>
+            <Field name="companyName" label={copy.companyName} defaultValue={profile.company_name || ''} required />
+            <Field name="registrationNumber" label={copy.registrationNumber} defaultValue={profile.registration_number || ''} required />
+            <Field name="vatNumber" label={copy.vatNumber} defaultValue={profile.vat_number || ''} />
+            <Field name="websiteUrl" label={copy.websiteUrl} defaultValue={profile.website_url || ''} />
           </>
         )}
-        <Field name="addressLine1" label="Gatuadress" defaultValue={profile.address_line_1 || ''} required />
-        <Field name="addressLine2" label="Lägenhet, våning eller c/o" defaultValue={profile.address_line_2 || ''} />
-        <Field name="postalCode" label="Postnummer" defaultValue={profile.postal_code || ''} required />
-        <Field name="city" label="Ort" defaultValue={profile.city || ''} required />
-        <Field name="region" label="Region eller delstat" defaultValue={profile.region || ''} />
+        <Field name="addressLine1" label={copy.addressLine1} defaultValue={profile.address_line_1 || ''} required />
+        <Field name="addressLine2" label={copy.addressLine2} defaultValue={profile.address_line_2 || ''} />
+        <Field name="postalCode" label={copy.postalCode} defaultValue={profile.postal_code || ''} required />
+        <Field name="city" label={copy.city} defaultValue={profile.city || ''} required />
+        <Field name="region" label={copy.region} defaultValue={profile.region || ''} />
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold">E-post</span>
+          <span className="mb-2 block text-sm font-semibold">{copy.email}</span>
           <input value={profile.email} disabled className={`${controlClass} bg-[#f5f6f8]`} />
         </label>
         <div className="sm:col-span-2">
           {message && <p className="mb-4 text-sm text-[#475467]">{message}</p>}
           <button className="min-h-12 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white">
-            Spara profil
+            {copy.saveProfile}
           </button>
         </div>
       </form>
@@ -107,7 +170,15 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
   )
 }
 
-function VerificationCard({ status, riskStatus }: { status: string; riskStatus: string }) {
+function VerificationCard({
+  status,
+  riskStatus,
+  copy,
+}: {
+  status: string
+  riskStatus: string
+  copy: ReturnType<typeof getProfileCopy>
+}) {
   const verified = status === 'verified' || status === 'vat_validated' || status === 'format_validated'
   const Icon = riskStatus !== 'standard' ? ShieldAlert : verified ? CheckCircle2 : Clock3
   return (
@@ -118,14 +189,13 @@ function VerificationCard({ status, riskStatus }: { status: string; riskStatus: 
       <div>
         <h2 className="font-semibold">
           {riskStatus !== 'standard'
-            ? 'Kontot behöver granskas'
+            ? copy.needsReview
             : verified
-              ? 'Grundkontrollen är genomförd'
-              : 'Verifiering pågår'}
+              ? copy.basicCheckDone
+              : copy.verificationPending}
         </h2>
         <p className="mt-1 text-sm leading-6 text-[#667085]">
-          Automatiska kontroller ersätter inte en full identitetskontroll. Autorell kan begära
-          ytterligare dokument eller e-legitimation vid risk, rapport eller publicering.
+          {copy.verificationText}
         </p>
       </div>
     </section>
@@ -143,4 +213,114 @@ function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
       <input {...rest} className={controlClass} />
     </label>
   )
+}
+
+function getProfileCopy(locale: PublicLocale) {
+  const en = {
+    saved: 'Profile updated.',
+    saveError: 'Could not save.',
+    firstName: 'First name',
+    lastName: 'Last name',
+    birthDate: 'Date of birth',
+    phone: 'Phone number',
+    country: 'Country',
+    identityNumber: 'Identity number',
+    notRegistered: 'Not registered',
+    companyName: 'Company name',
+    companyLogo: 'Company logo',
+    uploadLogo: 'Upload logo',
+    uploadingLogo: 'Uploading...',
+    logoUploaded: 'Logo uploaded.',
+    logoUploadError: 'Could not upload logo.',
+    logoHelp: 'PNG, JPG or WebP under 2 MB.',
+    registrationNumber: 'Registration number',
+    vatNumber: 'VAT number',
+    websiteUrl: 'Website',
+    addressLine1: 'Street address',
+    addressLine2: 'Apartment, floor or c/o',
+    postalCode: 'Postal code',
+    city: 'City',
+    region: 'Region or state',
+    email: 'Email',
+    saveProfile: 'Save profile',
+    needsReview: 'The account needs review',
+    basicCheckDone: 'Basic check is complete',
+    verificationPending: 'Verification in progress',
+    verificationText:
+      'Automated checks do not replace a full identity check. Autorell may request additional documents or e-identification if there is risk, a report or publication.',
+  }
+  if (locale === 'sv') {
+    return {
+      ...en,
+      saved: 'Profilen är uppdaterad.',
+      saveError: 'Kunde inte spara.',
+      firstName: 'Förnamn',
+      lastName: 'Efternamn',
+      birthDate: 'Födelsedatum',
+      phone: 'Telefonnummer',
+      country: 'Land',
+      identityNumber: 'Identitetsnummer',
+      notRegistered: 'Ej registrerat',
+      companyName: 'Företagsnamn',
+      companyLogo: 'Företagslogotyp',
+      uploadLogo: 'Ladda upp logotyp',
+      uploadingLogo: 'Laddar upp...',
+      logoUploaded: 'Logotypen är uppladdad.',
+      logoUploadError: 'Kunde inte ladda upp logotypen.',
+      logoHelp: 'PNG, JPG eller WebP under 2 MB.',
+      registrationNumber: 'Registreringsnummer',
+      vatNumber: 'VAT-nummer',
+      websiteUrl: 'Webbplats',
+      addressLine1: 'Gatuadress',
+      addressLine2: 'Lägenhet, våning eller c/o',
+      postalCode: 'Postnummer',
+      city: 'Ort',
+      region: 'Region eller delstat',
+      email: 'E-post',
+      saveProfile: 'Spara profil',
+      needsReview: 'Kontot behöver granskas',
+      basicCheckDone: 'Grundkontrollen är genomförd',
+      verificationPending: 'Verifiering pågår',
+      verificationText:
+        'Automatiska kontroller ersätter inte en full identitetskontroll. Autorell kan begära ytterligare dokument eller e-legitimation vid risk, rapport eller publicering.',
+    }
+  }
+  if (locale === 'es') {
+    return {
+      ...en,
+      saved: 'Perfil actualizado.',
+      saveError: 'No se pudo guardar.',
+      firstName: 'Nombre',
+      lastName: 'Apellidos',
+      birthDate: 'Fecha de nacimiento',
+      phone: 'Número de teléfono',
+      country: 'País',
+      identityNumber: 'Número de identidad',
+      notRegistered: 'No registrado',
+      companyName: 'Nombre de la empresa',
+      companyLogo: 'Logotipo de la empresa',
+      uploadLogo: 'Subir logotipo',
+      uploadingLogo: 'Subiendo...',
+      logoUploaded: 'Logotipo subido.',
+      logoUploadError: 'No se pudo subir el logotipo.',
+      logoHelp: 'PNG, JPG o WebP de menos de 2 MB.',
+      registrationNumber: 'Número de registro',
+      vatNumber: 'Número de IVA',
+      websiteUrl: 'Sitio web',
+      addressLine1: 'Dirección',
+      addressLine2: 'Apartamento, planta o c/o',
+      postalCode: 'Código postal',
+      city: 'Ciudad',
+      region: 'Región o provincia',
+      email: 'Correo electrónico',
+      saveProfile: 'Guardar perfil',
+      needsReview: 'La cuenta necesita revisión',
+      basicCheckDone: 'La comprobación básica se ha completado',
+      verificationPending: 'Verificación en curso',
+      verificationText:
+        'Las comprobaciones automáticas no sustituyen una verificación completa de identidad. Autorell puede solicitar documentos adicionales o identificación electrónica si hay riesgo, una denuncia o una publicación.',
+    }
+  }
+  if (locale === 'en') return en
+  return translatePublicObject(locale, en)
 }

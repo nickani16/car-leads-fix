@@ -32,6 +32,7 @@ const contactCopy = {
     privacyEnd: 'och förstår att Autorell behandlar uppgifterna för att besvara min fråga.',
     sending: 'Skickar...',
     send: 'Skicka meddelande',
+    footerNote: 'Din fråga skickas direkt till Autorell och används endast för att hantera ditt ärende.',
   },
   de: {
     eyebrow: 'Autorell kontaktieren',
@@ -55,6 +56,7 @@ const contactCopy = {
     privacyEnd: 'gelesen und bin mit der Verarbeitung meiner Angaben zur Beantwortung der Anfrage einverstanden.',
     sending: 'Wird gesendet...',
     send: 'Nachricht senden',
+    footerNote: 'Ihre Anfrage wird direkt an Autorell gesendet und nur zur Bearbeitung Ihres Anliegens verwendet.',
   },
   en: {
     eyebrow: 'Contact Autorell',
@@ -78,6 +80,7 @@ const contactCopy = {
     privacyEnd: 'and understand that Autorell processes my details to answer this enquiry.',
     sending: 'Sending...',
     send: 'Send message',
+    footerNote: 'Your enquiry is sent directly to Autorell and used only to handle your request.',
   },
 } as const
 
@@ -94,7 +97,7 @@ export default function ContactForm({
         : translatePublicObject(locale, contactCopy.en)
   const privacyHref = localizePublicHref(
     locale,
-    locale === 'de' ? '/datenschutz' : locale === 'sv' ? '/integritet' : '/privacy',
+    '/privacy',
   )
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -211,11 +214,7 @@ export default function ContactForm({
       <div className="mt-auto pt-8">
         <div className="flex flex-col gap-5 border-t border-[#dce6ea] pt-7 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-sm text-xs leading-5 text-[#77848a]">
-            {locale === 'sv'
-              ? 'Din fråga skickas direkt till Autorell och används endast för att hantera ditt ärende.'
-              : locale === 'de'
-                ? 'Ihre Anfrage wird direkt an Autorell gesendet und nur zur Bearbeitung Ihres Anliegens verwendet.'
-                : 'Your enquiry is sent directly to Autorell and used only to handle your request.'}
+            {t.footerNote}
           </p>
           <button
             type="submit"

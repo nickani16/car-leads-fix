@@ -16,17 +16,12 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { formatListingPrice, marketplaceCategories } from '@/lib/marketplace-pricing'
-import { isPublicLanguage, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { isPublicLanguage, localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 export async function generateMetadata(): Promise<Metadata> {
   const headerStore = await headers()
   const locale = getRequestedLocale(headerStore)
-  const hostname = headerStore.get('host') || ''
-  const host = hostname.includes('autorell.de')
-    ? 'https://www.autorell.de'
-    : hostname.includes('autorell.com')
-      ? 'https://www.autorell.com'
-      : 'https://www.autorell.se'
+  const host = 'https://www.autorell.com'
   const title =
     locale === 'sv'
       ? 'Sälj fordon i Sverige och Europa | Autorell'
@@ -82,7 +77,7 @@ export default async function SellVehiclePage({
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <section className="border-b border-[#e4e7ec] bg-white">
-        <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
             Publicera på Autorell
           </span>
@@ -105,11 +100,11 @@ export default async function SellVehiclePage({
       </section>
 
       <section className="py-14 sm:py-20">
-        <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {categories.map(({ slug, label, icon: Icon }) => {
               const isSelected = category === slug
-              const href = `/konto/annonser/ny?category=${slug}`
+              const href = `/account/listings/new?category=${slug}`
               return (
                 <Link
                   key={slug}
@@ -165,7 +160,7 @@ export default async function SellVehiclePage({
                   Inga fasta abonnemang krävs. Standard- och premiumpaket väljs
                   separat för varje godkänt fordon.
                 </p>
-                <Link href="/kontakt" className="mt-7 inline-flex items-center gap-2 font-bold text-[#0866ff]">
+                <Link href={localizePublicHref(locale, '/contact')} className="mt-7 inline-flex items-center gap-2 font-bold text-[#0866ff]">
                   Frågor om större volymer
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -176,7 +171,7 @@ export default async function SellVehiclePage({
       </section>
 
       <section id="priser" className="scroll-mt-28 border-y border-[#e4e7ec] bg-white py-14 sm:py-20">
-        <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Prissättning per annons</p>
           <h2 className="mt-4 text-4xl tracking-[-.045em]">Tydligt pris för varje kategori.</h2>
           <p className="mt-3 max-w-2xl text-[#667085]">Samma tydliga kategoripris gäller för privatpersoner och företag. Alla priser visas inklusive tillämplig moms före betalning.</p>

@@ -13,7 +13,11 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import BrandLogo from './BrandLogo'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
@@ -32,17 +36,16 @@ export default function EmailCodeAuth({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [remember, setRemember] = useState(true)
-  const [requestedPath, setRequestedPath] = useState('')
   const [retryAfter, setRetryAfter] = useState(0)
+  const [registerAccountType, setRegisterAccountType] = useState<'private' | 'business'>('private')
   const inputs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const params = new URLSearchParams(window.location.search)
-      const next = params.get('next')
       const remembered = window.localStorage.getItem(REMEMBERED_LOGIN_KEY)
       if (remembered) setEmail(remembered)
-      if (next === '/admin' || next?.startsWith('/konto')) setRequestedPath(next)
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('account') === 'business') setRegisterAccountType('business')
     }, 0)
     return () => window.clearTimeout(timer)
   }, [])
@@ -92,13 +95,22 @@ export default function EmailCodeAuth({
     setError('')
     setLoading(true)
     try {
+      const registerDestination = localizePublicHref(
+        locale,
+        registerAccountType === 'business'
+          ? '/register?onboarding=1&account=business'
+          : '/register?onboarding=1',
+      )
       const response = await fetch('/api/auth/email-code/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           code,
-          next: requestedPath || undefined,
+          next:
+            mode === 'register'
+              ? registerDestination
+              : localizePublicHref(locale, '/account'),
         }),
       })
       const result = (await response.json()) as {
@@ -110,7 +122,12 @@ export default function EmailCodeAuth({
         setError(result.error || copy.codeError)
         return
       }
-      router.replace(result.destination || '/konto')
+      router.replace(
+        result.destination ||
+          (mode === 'register'
+            ? registerDestination
+            : localizePublicHref(locale, '/account')),
+      )
       router.refresh()
     } catch {
       setError(copy.connectionError)
@@ -140,7 +157,7 @@ export default function EmailCodeAuth({
   return (
     <main className="min-h-screen bg-[#f5f6f8] px-5 py-8 text-[#101828] sm:py-12">
       <div className="mx-auto max-w-[1160px]">
-        <Link href="/" aria-label="Autorell" className="inline-flex">
+        <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="inline-flex">
           <BrandLogo />
         </Link>
 
@@ -294,7 +311,7 @@ export default function EmailCodeAuth({
               <p className="mt-8 border-t border-[#eaecf0] pt-6 text-center text-sm text-[#667085]">
                 {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
                 <Link
-                  href={mode === 'login' ? '/registrera' : '/login'}
+                  href={mode === 'login' ? localizePublicHref(locale, '/register') : localizePublicHref(locale, '/')}
                   className="font-bold text-[#0866ff]"
                 >
                   {mode === 'login' ? copy.createAccount : copy.signIn}

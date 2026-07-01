@@ -45,8 +45,27 @@ export function codeExpiresAt() {
 
 export function safeAuthDestination(value: unknown) {
   const destination = String(value || '')
-  if (destination === '/admin' || destination.startsWith('/konto')) {
+  if (!destination || !destination.startsWith('/') || destination.startsWith('//')) {
+    return '/account'
+  }
+  if (destination.startsWith('/api/') || destination.startsWith('/_next/')) {
+    return '/account'
+  }
+  if (destination === '/konto') return '/account'
+  if (destination.startsWith('/konto/meddelanden')) {
+    return destination.replace('/konto/meddelanden', '/account/messages')
+  }
+  if (destination.startsWith('/konto/annonser/ny')) {
+    return destination.replace('/konto/annonser/ny', '/account/listings/new')
+  }
+  if (destination.startsWith('/konto/annonser')) {
+    return destination.replace('/konto/annonser', '/account/listings')
+  }
+  if (destination.startsWith('/konto')) {
+    return destination.replace('/konto', '/account')
+  }
+  if (destination) {
     return destination
   }
-  return '/konto'
+  return '/account'
 }

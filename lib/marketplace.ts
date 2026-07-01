@@ -67,13 +67,27 @@ export function marketplaceLanguage(locale: PublicLocale): 'sv' | 'en' | 'de' {
   return locale === 'sv' || locale === 'de' ? locale : 'en'
 }
 
-export const euCurrencies = [
-  'EUR', 'SEK', 'DKK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN',
+export const supportedCurrencies = [
+  'EUR',
+  'SEK',
+  'DKK',
+  'PLN',
+  'CZK',
+  'HUF',
+  'RON',
+  'BGN',
+  'NOK',
+  'CHF',
+  'GBP',
+  'USD',
 ] as const
 
-export type EuCurrency = (typeof euCurrencies)[number]
+export const euCurrencies = supportedCurrencies
 
-const currencyByCountry: Record<string, EuCurrency> = {
+export type SupportedCurrency = (typeof supportedCurrencies)[number]
+export type EuCurrency = SupportedCurrency
+
+const currencyByCountry: Record<string, SupportedCurrency> = {
   SE: 'SEK',
   DK: 'DKK',
   PL: 'PLN',
@@ -81,9 +95,18 @@ const currencyByCountry: Record<string, EuCurrency> = {
   HU: 'HUF',
   RO: 'RON',
   BG: 'BGN',
+  NO: 'NOK',
+  CH: 'CHF',
+  GB: 'GBP',
+  UK: 'GBP',
+  US: 'USD',
 }
 
-export function currencyForCountry(countryCode?: string | null): EuCurrency {
+export function isSupportedCurrency(value?: string | null): value is SupportedCurrency {
+  return supportedCurrencies.includes((value || '').toUpperCase() as SupportedCurrency)
+}
+
+export function currencyForCountry(countryCode?: string | null): SupportedCurrency {
   return currencyByCountry[(countryCode || '').toUpperCase()] || 'EUR'
 }
 
@@ -92,12 +115,17 @@ export function formatMarketplacePrice(
   currency: string,
   locale: PublicLocale,
 ) {
-  return new Intl.NumberFormat(locale === 'sv' ? 'sv-SE' : locale === 'de' ? 'de-DE' : locale, {
-    style: 'currency',
-    currency,
+  void locale
+  const normalizedCurrency = currency.toUpperCase()
+  const formattedAmount = new Intl.NumberFormat('sv-SE', {
     maximumFractionDigits: 0,
-  }).format(amount)
+    minimumFractionDigits: 0,
+    useGrouping: true,
+  }).format(Math.round(amount))
+  const suffix = normalizedCurrency === 'EUR' ? '€' : normalizedCurrency
+
+  return `${formattedAmount} ${suffix}`
 }
 
 export const marketplacePublicSelect =
-  'id,category,title,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,condition,equipment,country_code,city,price,currency,images,seller_name,seller_type,package_id,priority,created_at,published_at'
+  'id,seller_user_id,listing_number,reference_number,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,country_code,city,municipality,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,created_at,published_at,expires_at'

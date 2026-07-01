@@ -8,6 +8,46 @@ import {
   normalizeEmail,
   safeAuthDestination,
 } from '@/lib/email-code-auth'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+
+const marketPathPrefixes = new Set([
+  'se',
+  'de',
+  'fr',
+  'es',
+  'it',
+  'pl',
+  'nl',
+  'pt',
+  'fi',
+  'dk',
+  'cz',
+  'ro',
+  'bg',
+  'hr',
+  'gr',
+  'hu',
+  'sk',
+  'si',
+  'ee',
+  'lv',
+  'lt',
+])
+
+function onboardingDestination(requested: string) {
+  const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
+  const accountType = requested.includes('account=business') ? '&account=business' : ''
+  return firstSegment && marketPathPrefixes.has(firstSegment)
+    ? `/${firstSegment}/register?onboarding=1${accountType}`
+    : `/register?onboarding=1${accountType}`
+}
+
+function accountDestination(requested: string) {
+  const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
+  return firstSegment && marketPathPrefixes.has(firstSegment)
+    ? `/${firstSegment}/account`
+    : '/account'
+}
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +62,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Ange den sexsiffriga koden från mejlet.' },
         { status: 400 },
+      )
+    }
+
+    const verifyLimit = checkRateLimit({
+      key: `email-code-verify:${getClientIp(request)}:${email}`,
+      limit: 10,
+      windowMs: 10 * 60 * 1000,
+    })
+    if (verifyLimit.limited) {
+      return NextResponse.json(
+        { error: 'FÃ¶r mÃ¥nga fÃ¶rsÃ¶k. VÃ¤nta en stund och fÃ¶rsÃ¶k igen.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(verifyLimit.retryAfter) },
+        },
       )
     }
 
@@ -100,12 +155,10 @@ export async function POST(request: Request) {
 
     const requested = safeAuthDestination(body.next)
     const destination = profile
-      ? requested.startsWith('/konto')
-        ? requested
-        : '/konto'
+      ? accountDestination(requested)
       : adminUser
         ? '/admin'
-        : '/registrera?onboarding=1'
+        : onboardingDestination(requested)
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {

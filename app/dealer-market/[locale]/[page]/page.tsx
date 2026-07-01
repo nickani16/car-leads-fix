@@ -147,7 +147,7 @@ export default async function MarketplaceInformationPage({
     <main className="bg-[#f7f8fb] text-[#101828]">
       <PublicHeader locale={publicLocale} />
       <section className="border-b border-[#dce3ef] bg-[linear-gradient(135deg,#f7faff,#eaf2ff)]">
-        <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Autorell marketplace</p>
           <h1 className="mt-5 max-w-4xl text-5xl leading-[1] tracking-[-.055em] sm:text-7xl">{content.heading}</h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">{content.intro}</p>
@@ -159,7 +159,7 @@ export default async function MarketplaceInformationPage({
           )}
         </div>
       </section>
-      <section className="mx-auto grid max-w-[1240px] gap-5 px-5 py-14 sm:px-8 md:grid-cols-2">
+      <section className="mx-auto grid max-w-[var(--autorell-page-max)] gap-5 px-5 py-14 sm:px-8 md:grid-cols-2">
         {content.sections.map((section) => (
           <article key={section.title} className="rounded-[22px] border border-[#e1e5ec] bg-white p-7">
             <CheckCircle2 className="h-5 w-5 text-[#0866ff]" />

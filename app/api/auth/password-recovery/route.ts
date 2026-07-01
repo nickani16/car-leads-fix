@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 const requestWindow = new Map<string, number>()
 const REQUEST_COOLDOWN_MS = 60_000
@@ -20,8 +21,8 @@ function getHostname(request: Request) {
 function getOrigin(request: Request) {
   const hostname = getHostname(request)
 
-  if (hostname.endsWith('autorell.de')) return 'https://www.autorell.de'
-  if (hostname.endsWith('autorell.se')) return 'https://www.autorell.se'
+  if (hostname.endsWith('autorell.de')) return 'https://www.autorell.com/de'
+  if (hostname.endsWith('autorell.se')) return 'https://www.autorell.com/se'
   return 'https://www.autorell.com'
 }
 
@@ -66,6 +67,15 @@ export async function POST(request: Request) {
         { error: 'Enter a valid email address.' },
         { status: 400 },
       )
+    }
+
+    const recoveryLimit = checkRateLimit({
+      key: `password-recovery:${getClientIp(request)}:${email}`,
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    })
+    if (recoveryLimit.limited) {
+      return genericResponse
     }
 
     if (isRateLimited(getClientKey(request, email))) {

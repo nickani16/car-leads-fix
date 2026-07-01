@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
       credentials: 'same-origin',
     })
     await supabase.auth.signOut()
-    router.replace('/login?status=password-updated')
+    router.replace('/se')
     router.refresh()
   }
 
@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
-          <Link href="/" className={styles.logo} aria-label="Autorell home">
+          <Link href="/se" className={styles.logo} aria-label="Autorell home">
             <BrandLogo />
           </Link>
           <div className={styles.badge}>Secure marketplace access</div>

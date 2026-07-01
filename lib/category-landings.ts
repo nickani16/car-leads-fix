@@ -36,8 +36,8 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     slug: 'cars',
     path: '/cars',
     aliases: ['/car'],
-    heroImage: '/category-cars-hero.jpg',
-    heroPosition: '54% center',
+    heroImage: '/category-cars-hero-family.webp',
+    heroPosition: '61% 34%',
     eyebrow: sharedEyebrow,
     intro: {
       sv: 'Hitta rätt bil bland annonser från privatpersoner och företag i hela Europa.',
@@ -60,7 +60,7 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     slug: 'vans',
     path: '/vans',
     aliases: ['/van'],
-    heroImage: '/category-vans-hero.jpg',
+    heroImage: '/category-vans-hero-autorell.webp',
     heroPosition: '72% center',
     eyebrow: sharedEyebrow,
     intro: {
@@ -204,7 +204,7 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     slug: 'construction',
     path: '/plant',
     aliases: ['/construction'],
-    heroImage: '/category-construction-hero.jpg',
+    heroImage: '/category-construction-hero-autorell.webp',
     heroPosition: '68% center',
     eyebrow: sharedEyebrow,
     intro: {

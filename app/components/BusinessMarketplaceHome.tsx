@@ -3,153 +3,213 @@ import Link from 'next/link'
 import {
   ArrowRight,
   BadgeCheck,
-  Bike,
-  BriefcaseBusiness,
-  BusFront,
   CarFront,
-  Check,
-  Construction,
   Globe2,
-  Handshake,
-  Leaf,
-  ShieldCheck,
-  Sparkles,
-  Tractor,
-  Truck,
-  UserRound,
-  Warehouse,
+  LockKeyhole,
+  MapPin,
+  Search,
 } from 'lucide-react'
 import MarketplaceSearch from './MarketplaceSearch'
+import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
+import CountryFlag from './CountryFlag'
+import SavedListingButton from './SavedListingButton'
+import HeroTypingText from './HeroTypingText'
+import VehicleCategoryShowcase from './VehicleCategoryShowcase'
 import {
+  marketplaceCategories,
+  marketplaceLanguage,
+  type MarketplaceCategorySlug,
+} from '@/lib/marketplace'
+import {
+  displayCurrencyForMarket,
+  formatMarketplacePriceDisplay,
+} from '@/lib/currency-rates'
+import { categoryLandingPath } from '@/lib/category-landings'
+import { getEuCountryName } from '@/lib/eu-countries'
+import { buildListingSpecChips } from '@/lib/listing-display'
+import { buildListingPath } from '@/lib/listing-url'
+import {
+  getMarketplaceSellerTrustByUserIds,
+  getPublishedMarketplaceListings,
+} from '@/lib/marketplace-public-data'
+import {
+  localizePublicHref,
   translatePublic,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
 
-const categoryItems = [
-  { labels: ['Bilar', 'Cars', 'Autos'], href: '/cars', icon: CarFront },
-  { labels: ['Transportbilar', 'Vans', 'Transporter'], href: '/vans', icon: BusFront },
-  { labels: ['Motorcyklar', 'Motorcycles', 'Motorräder'], href: '/motorcycles', icon: Bike },
-  { labels: ['Husbilar', 'Motorhomes', 'Wohnmobile'], href: '/motorhomes', icon: BusFront },
-  { labels: ['Husvagnar', 'Caravans', 'Wohnwagen'], href: '/caravans', icon: Warehouse },
-  { labels: ['Lastbilar', 'Trucks', 'Lkw'], href: '/trucks', icon: Truck },
-  { labels: ['Lantbruksmaskiner', 'Agricultural machinery', 'Landmaschinen'], href: '/farm', icon: Tractor },
-  { labels: ['Entreprenadmaskiner', 'Construction machinery', 'Baumaschinen'], href: '/plant', icon: Construction },
-  { labels: ['Elcyklar', 'Electric bikes', 'E-Bikes'], href: '/electric-bikes', icon: Leaf },
-  { labels: ['Elsparkcyklar', 'E-scooters', 'E-Scooter'], href: '/e-scooters', icon: Leaf },
-] as const
+type HomeListing = {
+  id: string
+  slug: MarketplaceCategorySlug
+  categoryLabel: string
+  title: string
+  meta: string
+  location: string
+  countryCode: string
+  price: string
+  imageUrl: string | null
+  fuelType: string | null
+  gearbox: string | null
+  mileageKm: number | null
+  modelYear: number | null
+  sellerTrust: 'verified' | 'unverified'
+}
+
+type CategoryCard = {
+  slug: MarketplaceCategorySlug
+  label: string
+  href: string
+  count: number
+}
+
+const homeContainerClass =
+  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
 const homeCopy = {
   sv: {
     heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
-    eyebrow: 'Europas marknadsplats för fordon',
+    heroEyebrow: 'Europas fordonsmarknad',
     heroTitle: 'Köp och sälj fordon över hela Europa.',
-    heroText: 'En sammanhållen marknadsplats för privatpersoner och företag. Hitta rätt fordon, nå fler köpare och genomför tryggare affärer över landsgränser.',
-    assurances: ['Verifierade konton', 'Handel över hela EU', 'Strukturerad fordonsdata'],
-    sellVehicle: 'Sälj ett fordon',
-    businessSolutions: 'Lösningar för företag',
-    mobilityEyebrow: 'En marknad för all mobilitet',
-    mobilityTitle: 'Från vardagsbil till tung utrustning.',
-    explore: 'Utforska hela marknaden',
-    builtFor: 'Byggd för hela marknaden',
-    platformTitle: 'En plattform. Olika behov. Samma höga standard.',
-    privateEyebrow: 'För privatpersoner',
-    privateTitle: 'Köp smartare. Sälj till en större marknad.',
-    privateText: 'Hitta fordon i flera europeiska marknader eller skapa en tydlig försäljning med räckvidd bortom din lokala marknad.',
-    sellYours: 'Sälj ditt fordon',
-    businessEyebrow: 'För företag',
-    businessTitle: 'Hantera lager, volymer och affärer i Europa.',
-    businessText: 'Publicera fordon, nå professionella köpare och samla gränsöverskridande handel i ett strukturerat arbetsflöde.',
-    discoverBusiness: 'Upptäck företagslösningen',
-    reachEyebrow: 'Europeisk räckvidd',
-    reachTitle: 'Fler möjligheter på varje sida av affären.',
-    reachText: 'Autorell för samman utbud och efterfrågan mellan europeiska marknader — med tydligare information och tryggare motparter.',
-    statMarkets: 'EU-marknader',
-    statCategories: 'fordonskategorier',
-    statMarket: 'sammanhållen marknad',
-    statReach: 'gränsöverskridande räckvidd',
-    verifiedTitle: 'Verifierade aktörer',
-    verifiedText: 'Tydligare identitet och professionella konton skapar bättre förutsättningar för varje affär.',
-    safeTitle: 'Tryggare process',
-    safeText: 'Strukturerad information och tydliga steg minskar osäkerheten mellan köpare och säljare.',
-    crossTitle: 'Enklare över gränser',
-    crossText: 'En gemensam marknad gör det lättare att hitta rätt motpart i Sverige och resten av Europa.',
+    heroTypingPrefix: 'Europas marknadsplats för',
+    heroText:
+      'Europas marknadsplats för bilar, transportbilar, motorcyklar, lastbilar och mer. Riktiga annonser. En plattform.',
+    statIntroTitle: 'En marknadsplats. Hela Europa.',
+    statIntroText: 'Riktiga fordon. Riktiga människor. Riktiga möjligheter.',
+    countries: 'Länder',
+    categories: 'Alla större kategorier',
+    realListings: 'Riktiga annonser från säljare',
+    safeTrade: 'Tryggare affärer',
+    featuredTitle: 'Utvalda annonser från alla kategorier',
+    viewAllListings: 'Visa alla annonser',
+    viewAllVehicles: 'Visa alla fordon',
+    vehicleFinderEyebrow: 'Hitta ditt fordon',
+    vehicleFinderTitle: 'Välj fordonstyp och hitta rätt annons.',
+    vehicleFinderText:
+      'Oavsett vad du söker har vi rätt fordon för dig. Välj en kategori för att komma igång.',
+    noListingsTitle: 'Inga publicerade annonser ännu.',
+    noListingsText:
+      'När riktiga annonser publiceras visas de här automatiskt. Bli först med att lägga upp ett fordon på Autorell.',
+    createListing: 'Lägg upp annons',
+    browseTitle: 'Bläddra efter kategori',
+    listing: 'annons',
+    listings: 'annonser',
+    sellTitle: 'Sälj ditt fordon till köpare över hela Europa',
+    sellText: 'Det är gratis att börja. Få mer synlighet och sälj snabbare.',
+    sellCta: 'Sälj ditt fordon',
+    whyTitle: 'Därför väljer säljare Autorell',
+    whyText:
+      'Vi gör det enklare att köpa och sälja fordon över landsgränser, med tydligare information och seriösare kontakter.',
+    verifiedTitle: 'Verifierade säljare',
+    verifiedText: 'Konton och annonser granskas för bättre förtroende.',
+    secureTitle: 'Tryggare process',
+    secureText: 'Strukturerad fordonsdata och tydliga kontaktflöden.',
+    europeTitle: 'Byggt för EU',
+    europeText: 'Land, stad, valuta och fordonsdata visas tydligt.',
+    countryTitle: 'Populärt i ditt land',
+    countryChange: 'Ändra',
+    today: 'Nya annonser idag',
+    priceDrops: 'Prisändringar idag',
+    soldWeek: 'Fordon sålda denna vecka',
+    seeLocal: 'Se svenska annonser',
   },
   en: {
     heroAlt: 'European vehicle marketplace for private and business sellers',
-    eyebrow: "Europe's vehicle marketplace",
+    heroEyebrow: "Europe's vehicle marketplace",
     heroTitle: 'Buy and sell vehicles across Europe.',
-    heroText: 'One connected marketplace for private sellers and businesses. Find the right vehicle, reach more buyers and trade with greater confidence across borders.',
-    assurances: ['Verified accounts', 'Trade across the EU', 'Structured vehicle data'],
-    sellVehicle: 'Sell a vehicle',
-    businessSolutions: 'Business solutions',
-    mobilityEyebrow: 'One market for every kind of mobility',
-    mobilityTitle: 'From everyday cars to heavy equipment.',
-    explore: 'Explore the marketplace',
-    builtFor: 'Built for the whole market',
-    platformTitle: 'One platform. Different needs. The same high standard.',
-    privateEyebrow: 'For private sellers',
-    privateTitle: 'Buy smarter. Sell to a larger market.',
-    privateText: 'Find vehicles across European markets or create a clear listing with reach beyond your local market.',
-    sellYours: 'Sell your vehicle',
-    businessEyebrow: 'For businesses',
-    businessTitle: 'Manage inventory, volume and deals across Europe.',
-    businessText: 'List vehicles, reach professional buyers and manage cross-border trade in one structured workflow.',
-    discoverBusiness: 'Explore business solutions',
-    reachEyebrow: 'European reach',
-    reachTitle: 'More opportunities on both sides of every deal.',
-    reachText: 'Autorell connects supply and demand across European markets with clearer information and more trusted counterparties.',
-    statMarkets: 'EU markets',
-    statCategories: 'vehicle categories',
-    statMarket: 'connected marketplace',
-    statReach: 'cross-border reach',
-    verifiedTitle: 'Verified participants',
-    verifiedText: 'Clearer identities and professional accounts create better conditions for every transaction.',
-    safeTitle: 'A safer process',
-    safeText: 'Structured information and clear steps reduce uncertainty between buyers and sellers.',
-    crossTitle: 'Simpler across borders',
-    crossText: 'One marketplace makes it easier to find the right counterparty across Europe.',
+    heroTypingPrefix: "Europe's marketplace for",
+    heroText:
+      "Europe's marketplace for cars, vans, motorcycles, trucks and more. Real listings. One platform.",
+    statIntroTitle: 'One marketplace. All of Europe.',
+    statIntroText: 'Real vehicles. Real people. Real opportunities.',
+    countries: 'Countries',
+    categories: 'All major categories',
+    realListings: 'Real listings from sellers',
+    safeTrade: 'Safe and secure trade',
+    featuredTitle: 'Featured listings from all categories',
+    viewAllListings: 'View all listings',
+    viewAllVehicles: 'View all vehicles',
+    vehicleFinderEyebrow: 'Find your vehicle',
+    vehicleFinderTitle: 'Choose a vehicle type and find the right listing.',
+    vehicleFinderText:
+      'Whatever you are looking for, Autorell helps you start in the right category.',
+    noListingsTitle: 'No published listings yet.',
+    noListingsText:
+      'When real listings are published, they will appear here automatically. Be the first to list a vehicle on Autorell.',
+    createListing: 'Create listing',
+    browseTitle: 'Browse by category',
+    listing: 'listing',
+    listings: 'listings',
+    sellTitle: 'Sell your vehicle to buyers across Europe',
+    sellText: 'It is free to start. Get more visibility and sell faster.',
+    sellCta: 'Sell your vehicle',
+    whyTitle: 'Why sellers choose Autorell',
+    whyText:
+      'We make it easier to buy and sell vehicles across borders, with clearer information and more serious contacts.',
+    verifiedTitle: 'Verified sellers',
+    verifiedText: 'Accounts and listings are reviewed for better trust.',
+    secureTitle: 'Safer process',
+    secureText: 'Structured vehicle data and clear contact flows.',
+    europeTitle: 'Built for the EU',
+    europeText: 'Country, city, currency and vehicle data are shown clearly.',
+    countryTitle: 'Popular in your country',
+    countryChange: 'Change',
+    today: 'New listings today',
+    priceDrops: 'Price drops today',
+    soldWeek: 'Vehicles sold this week',
+    seeLocal: 'See local listings',
   },
   de: {
     heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
-    eyebrow: 'Europas Marktplatz für Fahrzeuge',
+    heroEyebrow: 'Europas Fahrzeugmarkt',
     heroTitle: 'Fahrzeuge in ganz Europa kaufen und verkaufen.',
-    heroText: 'Ein gemeinsamer Marktplatz für Privatpersonen und Unternehmen. Finden Sie das richtige Fahrzeug, erreichen Sie mehr Käufer und handeln Sie sicherer über Grenzen hinweg.',
-    assurances: ['Verifizierte Konten', 'Handel in der gesamten EU', 'Strukturierte Fahrzeugdaten'],
-    sellVehicle: 'Fahrzeug verkaufen',
-    businessSolutions: 'Lösungen für Unternehmen',
-    mobilityEyebrow: 'Ein Markt für jede Art von Mobilität',
-    mobilityTitle: 'Vom Alltagsauto bis zur schweren Maschine.',
-    explore: 'Marktplatz entdecken',
-    builtFor: 'Für den gesamten Markt entwickelt',
-    platformTitle: 'Eine Plattform. Verschiedene Bedürfnisse. Ein hoher Standard.',
-    privateEyebrow: 'Für Privatpersonen',
-    privateTitle: 'Cleverer kaufen. In einen größeren Markt verkaufen.',
-    privateText: 'Finden Sie Fahrzeuge auf europäischen Märkten oder erstellen Sie eine klare Anzeige mit Reichweite über Ihren lokalen Markt hinaus.',
-    sellYours: 'Fahrzeug verkaufen',
-    businessEyebrow: 'Für Unternehmen',
-    businessTitle: 'Bestand, Volumen und Geschäfte in Europa verwalten.',
-    businessText: 'Fahrzeuge inserieren, professionelle Käufer erreichen und grenzüberschreitenden Handel strukturiert verwalten.',
-    discoverBusiness: 'Unternehmenslösung entdecken',
-    reachEyebrow: 'Europäische Reichweite',
-    reachTitle: 'Mehr Möglichkeiten auf beiden Seiten des Geschäfts.',
-    reachText: 'Autorell verbindet Angebot und Nachfrage auf europäischen Märkten mit klareren Informationen und verlässlicheren Handelspartnern.',
-    statMarkets: 'EU-Märkte',
-    statCategories: 'Fahrzeugkategorien',
-    statMarket: 'gemeinsamer Marktplatz',
-    statReach: 'grenzüberschreitende Reichweite',
-    verifiedTitle: 'Verifizierte Teilnehmer',
-    verifiedText: 'Klare Identitäten und professionelle Konten schaffen bessere Voraussetzungen für jedes Geschäft.',
-    safeTitle: 'Sicherer Prozess',
-    safeText: 'Strukturierte Informationen und klare Schritte reduzieren Unsicherheit zwischen Käufern und Verkäufern.',
-    crossTitle: 'Einfacher über Grenzen',
-    crossText: 'Ein gemeinsamer Marktplatz erleichtert die Suche nach dem richtigen Handelspartner in Europa.',
+    heroTypingPrefix: 'Europas Marktplatz für',
+    heroText:
+      'Europas Marktplatz für Autos, Transporter, Motorräder, Lkw und mehr. Echte Anzeigen. Eine Plattform.',
+    statIntroTitle: 'Ein Marktplatz. Ganz Europa.',
+    statIntroText: 'Echte Fahrzeuge. Echte Menschen. Echte Möglichkeiten.',
+    countries: 'Länder',
+    categories: 'Alle wichtigen Kategorien',
+    realListings: 'Echte Anzeigen von Verkäufern',
+    safeTrade: 'Sichere Geschäfte',
+    featuredTitle: 'Ausgewählte Anzeigen aus allen Kategorien',
+    viewAllListings: 'Alle Anzeigen ansehen',
+    viewAllVehicles: 'Alle Fahrzeuge ansehen',
+    vehicleFinderEyebrow: 'Fahrzeug finden',
+    vehicleFinderTitle: 'Fahrzeugtyp wählen und passende Anzeige finden.',
+    vehicleFinderText:
+      'Egal wonach Sie suchen, Autorell hilft Ihnen beim Start in der richtigen Kategorie.',
+    noListingsTitle: 'Noch keine veröffentlichten Anzeigen.',
+    noListingsText:
+      'Sobald echte Anzeigen veröffentlicht werden, erscheinen sie hier automatisch. Inserieren Sie als Erste ein Fahrzeug auf Autorell.',
+    createListing: 'Anzeige erstellen',
+    browseTitle: 'Nach Kategorie stöbern',
+    listing: 'Anzeige',
+    listings: 'Anzeigen',
+    sellTitle: 'Verkaufen Sie Ihr Fahrzeug an Käufer in ganz Europa',
+    sellText: 'Der Einstieg ist kostenlos. Erhalten Sie mehr Sichtbarkeit und verkaufen Sie schneller.',
+    sellCta: 'Fahrzeug verkaufen',
+    whyTitle: 'Warum Verkäufer Autorell wählen',
+    whyText:
+      'Wir machen den Fahrzeughandel über Grenzen hinweg einfacher, mit klareren Informationen und seriöseren Kontakten.',
+    verifiedTitle: 'Verifizierte Verkäufer',
+    verifiedText: 'Konten und Anzeigen werden für mehr Vertrauen geprüft.',
+    secureTitle: 'Sicherer Prozess',
+    secureText: 'Strukturierte Fahrzeugdaten und klare Kontaktwege.',
+    europeTitle: 'Für die EU gebaut',
+    europeText: 'Land, Stadt, Währung und Fahrzeugdaten werden klar angezeigt.',
+    countryTitle: 'Beliebt in Ihrem Land',
+    countryChange: 'Ändern',
+    today: 'Neue Anzeigen heute',
+    priceDrops: 'Preisänderungen heute',
+    soldWeek: 'Verkaufte Fahrzeuge diese Woche',
+    seeLocal: 'Lokale Anzeigen ansehen',
   },
 } as const
 
-export default function BusinessMarketplaceHome({
+export default async function BusinessMarketplaceHome({
   locale = 'sv',
   marketCode,
 }: {
@@ -164,229 +224,474 @@ export default function BusinessMarketplaceHome({
         : locale === 'en'
           ? homeCopy.en
           : translatePublicObject(locale, homeCopy.en)
-  const labelIndex = locale === 'sv' ? 0 : locale === 'de' ? 2 : 1
-  const categories = categoryItems.map((item) => ({
-    ...item,
-    label:
-      locale === 'sv' || locale === 'de' || locale === 'en'
-        ? item.labels[labelIndex]
-        : translatePublic(locale, item.labels[1]),
-  }))
+  const { featuredListings, categoryCards } = await getHomeMarketplaceData(locale, marketCode)
+  const heroTypingItems = marketplaceCategories.map((category) => {
+    if (locale === 'sv') {
+      if (category.slug === 'agriculture') return 'Lantbruk'
+      if (category.slug === 'construction') return 'Entreprenad maskiner'
+      return category.labels.sv
+    }
+
+    const language = marketplaceLanguage(locale)
+    const label = category.labels[language]
+    return locale === 'de' || locale === 'en' ? label : translatePublic(locale, label)
+  })
+  const localMarketCode =
+    marketCode || (locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : 'EU')
+  const localMarketLabel =
+    localMarketCode === 'EU'
+      ? 'Europe'
+      : getEuCountryName(localMarketCode, locale)
+
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f7f8fb] text-[#101828]">
+    <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="px-4 pb-20 pt-7 sm:px-7 sm:pb-24 sm:pt-9 lg:px-10">
-        <div className="relative mx-auto max-w-[1340px]">
-          <div className="relative min-h-[480px] overflow-hidden rounded-[30px] border border-[#dce5f7] bg-white sm:min-h-[570px]">
-            <Image
-              src="/autorell-volvo-hero.jpg"
-              alt={t.heroAlt}
-              fill
-              preload
-              className="object-cover object-[72%_center]"
-              sizes="(max-width: 1400px) 100vw, 1340px"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(252,253,255,.99)_0%,rgba(238,245,255,.97)_34%,rgba(230,240,255,.7)_58%,rgba(255,255,255,0)_82%)]" />
-            <div className="market-blob absolute -left-32 -top-40 h-[460px] w-[460px] bg-[#dfeaff]/55" />
+      <section className="bg-white pt-0 sm:pt-6">
+        <div className="relative mx-auto max-w-[var(--autorell-page-max)]">
+          <div className="px-0 sm:px-8">
+            <div className="relative min-h-[285px] overflow-hidden rounded-none bg-white sm:min-h-[390px] sm:rounded-[22px] lg:min-h-[400px]">
+              <Image
+                src="/autorell-home-hero-banner.jpg"
+                alt={t.heroAlt}
+                fill
+                preload
+                className="object-cover object-center sm:scale-[1.03] sm:object-[44%_center]"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.32)_0%,rgba(3,10,26,.21)_31%,rgba(3,10,26,.06)_58%,rgba(3,10,26,.01)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.26)_0%,rgba(3,10,26,.18)_34%,rgba(3,10,26,.05)_60%,rgba(3,10,26,0)_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,0)_42%)]" />
 
-            <div className="relative flex min-h-[480px] max-w-[720px] flex-col justify-center px-7 pb-28 pt-12 text-[#101828] sm:min-h-[570px] sm:px-14 sm:pb-32 lg:px-20">
-              <span className="inline-flex w-fit items-center gap-2 rounded-[13px] border border-[#c9d9ff] bg-white/75 px-4 py-2 text-xs font-semibold text-[#0866ff] backdrop-blur-md">
-                <Sparkles className="h-4 w-4" />
-                {t.eyebrow}
-              </span>
-              <h1 className="mt-7 max-w-[300px] text-[38px] leading-[.98] tracking-[-0.055em] sm:max-w-[610px] sm:text-6xl sm:leading-[.97] sm:tracking-[-0.06em] lg:text-[74px]">
-                {t.heroTitle}
-              </h1>
-              <p className="mt-6 max-w-[300px] text-base leading-7 text-[#526179] sm:max-w-[580px] sm:text-lg sm:leading-8">
-                {t.heroText}
-              </p>
-              <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3">
-                {t.assurances.map((item) => (
-                  <span key={item} className="inline-flex items-center gap-2 text-xs font-semibold text-[#475467]">
-                    <Check className="h-4 w-4 text-[#0866ff]" />
-                    {item}
-                  </span>
-                ))}
+              <div className="relative mx-auto flex min-h-[285px] max-w-[390px] flex-col justify-center px-5 pb-14 pt-7 min-[430px]:max-w-[430px] sm:min-h-[390px] sm:max-w-[var(--autorell-page-max)] sm:justify-start sm:px-8 sm:pb-12 sm:pt-12 lg:min-h-[400px] lg:pt-14">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
+                  {t.heroEyebrow}
+                </p>
+                <h1 className="mt-5 max-w-[330px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[66px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[72px]">
+                  {t.heroTitle}
+                </h1>
+                <HeroTypingText prefix={t.heroTypingPrefix} items={heroTypingItems} />
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 -mt-[78px] min-w-0 px-3 sm:-mt-[52px] sm:px-8 lg:px-16">
-            <MarketplaceSearch locale={locale} />
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold text-[#475467]">
-              <Link href="/salj-fordon" className="inline-flex items-center gap-2 transition hover:text-[#0866ff]">
-                {t.sellVehicle}
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-              <Link href="/foretag" className="inline-flex items-center gap-2 transition hover:text-[#0866ff]">
-                {t.businessSolutions}
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+          <div className={`relative z-10 -mt-[42px] sm:-mt-[58px] ${homeContainerClass}`}>
+            <div className="sm:px-10 lg:px-14">
+              <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-[#e4e7ec] bg-white py-16 sm:py-24">
-        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-                {t.mobilityEyebrow}
-              </p>
-              <h2 className="mt-4 max-w-2xl text-4xl leading-[1.02] tracking-[-0.05em] sm:text-5xl">
-                {t.mobilityTitle}
-              </h2>
-            </div>
-            <Link href="/cars" className="inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]">
-              {t.explore}
+      <section className="bg-white py-8 sm:py-12">
+        <div className={homeContainerClass}>
+          <VehicleCategoryShowcase
+            items={categoryCards.map((category) => ({
+              slug: category.slug,
+              label: category.label,
+              href: category.href,
+              count: category.count,
+            }))}
+            listingLabel={t.listing}
+            listingsLabel={t.listings}
+          />
+        </div>
+      </section>
+
+      <section className="bg-white py-14 sm:py-20">
+        <div className={homeContainerClass}>
+          <div className="flex items-end justify-between gap-5">
+            <h2 className="text-3xl leading-tight tracking-[-0.045em] sm:text-[38px]">
+              {t.featuredTitle}
+            </h2>
+            <Link
+              href={localizePublicHref(locale, '/marketplace/cars')}
+              className="hidden items-center gap-2 text-sm font-bold text-[#0866ff] sm:inline-flex"
+            >
+              {t.viewAllListings}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="mt-10 grid grid-cols-2 overflow-hidden rounded-[26px] border border-[#e4e7ec] bg-[#f9fafb] sm:grid-cols-3 lg:grid-cols-5">
-            {categories.map(({ label, href, icon: Icon }, index) => (
+          {featuredListings.length ? (
+            <>
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-9 sm:gap-4 lg:grid-cols-4">
+                {featuredListings.map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} locale={locale} />
+                ))}
+              </div>
+              <div className="mt-9 flex justify-center">
+                <Link
+                  href={localizePublicHref(locale, '/marketplace/cars')}
+                  className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#b8cffd] bg-white px-7 text-sm font-bold text-[#0866ff] shadow-sm transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
+                >
+                  {t.viewAllListings}
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="mt-9 overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-[#f8fbff] p-6 text-center shadow-[0_14px_36px_rgba(16,24,40,.05)] sm:p-10">
+              <span className="mx-auto grid h-12 w-12 place-items-center rounded-[14px] bg-[#0866ff] text-white">
+                <Search className="h-5 w-5" />
+              </span>
+              <h3 className="mt-5 text-2xl tracking-[-0.04em]">{t.noListingsTitle}</h3>
+              <p className="mx-auto mt-3 max-w-2xl break-words text-sm leading-7 text-[#667085]">
+                {t.noListingsText}
+              </p>
               <Link
-                key={label}
-                href={href}
-                className={`group min-h-36 border-[#e4e7ec] bg-white p-5 transition hover:z-10 hover:bg-[#f4f7ff] ${
-                  index % 2 === 0 ? 'border-r' : ''
-                } ${index < 5 ? 'border-b' : ''} sm:border-r`}
+                href={localizePublicHref(locale, '/salj-fordon')}
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_12px_26px_rgba(8,102,255,.22)]"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-[#dce6ff] bg-[#eef4ff] text-[#0866ff] transition group-hover:scale-105 group-hover:bg-[#0866ff] group-hover:text-white">
-                  <Icon className="h-5 w-5" strokeWidth={1.8} />
-                </span>
-                <span className="mt-7 flex items-center justify-between gap-2 font-semibold">
-                  {label}
-                  <ArrowRight className="h-4 w-4 text-[#0866ff] transition group-hover:translate-x-1" />
-                </span>
+                {t.createListing}
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="bg-[#f7f8fb] py-16 sm:py-24">
-        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-              {t.builtFor}
-            </p>
-            <h2 className="mt-4 text-4xl leading-[1.03] tracking-[-0.05em] sm:text-5xl">
-              {t.platformTitle}
-            </h2>
+      <section className="bg-white pb-14 sm:pb-20">
+        <div className={homeContainerClass}>
+          <div className="relative overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-[#e8f1ff]">
+            <div className="absolute inset-y-0 right-0 hidden w-[56%] sm:block">
+              <Image
+                src="/autorell-sell-keys.png"
+                alt=""
+                fill
+                className="object-cover object-left"
+                sizes="720px"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,#dbe8fb_0%,#edf4ff_28%,rgba(246,249,253,.94)_48%,rgba(246,249,253,.54)_63%,rgba(246,249,253,.12)_82%,rgba(246,249,253,0)_100%)]" />
+            <div className="relative px-7 py-10 sm:min-h-[220px] sm:px-12 sm:py-12">
+              <h2 className="max-w-[470px] text-2xl leading-[1.04] tracking-[-0.045em] min-[375px]:text-3xl sm:text-[42px]">
+                {t.sellTitle}
+              </h2>
+              <p className="mt-4 max-w-[430px] text-sm leading-7 text-[#475467]">
+                {t.sellText}
+              </p>
+              <Link
+                href={localizePublicHref(locale, '/salj-fordon')}
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white"
+              >
+                {t.sellCta}
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="relative overflow-hidden rounded-[30px] border border-[#dde3ef] bg-white p-8 shadow-[0_18px_55px_rgba(16,24,40,.06)] sm:p-11">
-              <div className="market-blob absolute -right-20 -top-24 h-64 w-64 bg-[#eaf1ff]" />
-              <div className="relative">
-                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white">
-                  <UserRound className="h-6 w-6" />
-                </span>
-                <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">
-                  {t.privateEyebrow}
-                </p>
-                <h3 className="mt-3 max-w-lg text-3xl leading-[1.08] tracking-[-0.04em]">
-                  {t.privateTitle}
-                </h3>
-                <p className="mt-4 max-w-xl leading-7 text-[#667085]">
-                  {t.privateText}
-                </p>
-                <Link href="/salj-fordon" className="mt-8 inline-flex items-center gap-2 font-bold text-[#0866ff]">
-                  {t.sellYours}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </article>
-
-            <article className="relative overflow-hidden rounded-[30px] border border-[#cad9fb] bg-[#edf4ff] p-8 text-[#101828] shadow-[0_18px_55px_rgba(16,24,40,.06)] sm:p-11">
-              <div className="market-blob absolute -bottom-32 -right-20 h-72 w-72 bg-[#d9e7ff]" />
-              <div className="relative">
-                <span className="grid h-12 w-12 place-items-center rounded-[15px] bg-[#0866ff] text-white">
-                  <BriefcaseBusiness className="h-6 w-6" />
-                </span>
-                <p className="mt-8 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">
-                  {t.businessEyebrow}
-                </p>
-                <h3 className="mt-3 max-w-lg text-3xl leading-[1.08] tracking-[-0.04em]">
-                  {t.businessTitle}
-                </h3>
-                <p className="mt-4 max-w-xl leading-7 text-[#667085]">
-                  {t.businessText}
-                </p>
-                <Link href="/foretag" className="mt-8 inline-flex items-center gap-2 font-bold text-[#0866ff]">
-                  {t.discoverBusiness}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-16 sm:py-24">
-        <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-          <div className="overflow-hidden rounded-[32px] border border-[#cbdafb] bg-[linear-gradient(125deg,#f6f9ff_0%,#eaf2ff_55%,#dce9ff_100%)] text-[#101828]">
-            <div className="grid lg:grid-cols-[1.05fr_.95fr]">
-              <div className="p-8 sm:p-12 lg:p-14">
-                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.17em] text-[#0866ff]">
-                  <Globe2 className="h-4 w-4" />
-                  {t.reachEyebrow}
-                </span>
-                <h2 className="mt-5 max-w-xl text-4xl leading-[1.03] tracking-[-0.05em] sm:text-5xl">
-                  {t.reachTitle}
-                </h2>
-                <p className="mt-5 max-w-xl leading-7 text-[#667085]">
-                  {t.reachText}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 border-t border-[#cbdafb] lg:border-l lg:border-t-0">
+          <div className="mt-10 grid overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-white lg:grid-cols-2">
+            <div className="p-7 sm:p-9">
+              <h2 className="text-2xl tracking-[-0.04em]">{t.whyTitle}</h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-[#667085]">
+                {t.whyText}
+              </p>
+              <div className="mt-8 grid gap-5 sm:grid-cols-3">
                 {[
-                  ['27', t.statMarkets],
-                  ['10', t.statCategories],
-                  ['1', t.statMarket],
-                  ['EU', t.statReach],
-                ].map(([value, label]) => (
-                  <div key={label} className="border-b border-r border-[#cbdafb] p-7 sm:p-9">
-                    <strong className="block text-3xl tracking-[-0.04em] text-[#0866ff]">{value}</strong>
-                    <span className="mt-2 block text-xs leading-5 text-[#667085]">{label}</span>
+                  { title: t.verifiedTitle, text: t.verifiedText, icon: BadgeCheck },
+                  { title: t.secureTitle, text: t.secureText, icon: LockKeyhole },
+                  { title: t.europeTitle, text: t.europeText, icon: Globe2 },
+                ].map(({ title, text, icon: Icon }) => (
+                  <div key={title}>
+                    <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[#edf4ff] text-[#0866ff]">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-3 text-sm font-bold">{title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-[#667085]">{text}</p>
                   </div>
                 ))}
               </div>
             </div>
+
+            <div className="border-t border-[#dfe6f2] p-7 sm:p-9 lg:border-l lg:border-t-0">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl tracking-[-0.04em]">{t.countryTitle}</h2>
+                  <p className="mt-4 inline-flex items-center gap-2 text-sm font-bold">
+                    <CountryFlag code={localMarketCode.toLowerCase()} className="h-[18px] w-[27px]" />
+                    {localMarketLabel}
+                  </p>
+                </div>
+                <Link href="#market-selector" className="text-xs font-bold text-[#0866ff]">
+                  {t.countryChange}
+                </Link>
+              </div>
+              <div className="mt-8 grid grid-cols-3 gap-4">
+                {[t.today, t.priceDrops, t.soldWeek].map((label) => (
+                  <div key={label}>
+                    <strong className="block text-2xl tracking-[-0.04em]">0</strong>
+                    <span className="mt-2 block text-xs leading-5 text-[#667085]">{label}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href={localizePublicHref(locale, '/marketplace/cars')}
+                className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
+              >
+                {t.seeLocal}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            {[
-              {
-                icon: BadgeCheck,
-                title: t.verifiedTitle,
-                text: t.verifiedText,
-              },
-              {
-                icon: ShieldCheck,
-                title: t.safeTitle,
-                text: t.safeText,
-              },
-              {
-                icon: Handshake,
-                title: t.crossTitle,
-                text: t.crossText,
-              },
-            ].map(({ icon: Icon, title, text }) => (
-              <article key={title} className="rounded-[24px] border border-[#e4e7ec] bg-[#f9fafb] p-7">
-                <Icon className="h-6 w-6 text-[#0866ff]" />
-                <h3 className="mt-6 text-xl tracking-[-0.03em]">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-[#667085]">{text}</p>
-              </article>
-            ))}
+          <div className="mt-10">
+            <NewsletterSignup locale={locale} category="home" variant="home" />
           </div>
         </div>
       </section>
 
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+async function getHomeMarketplaceData(
+  locale: PublicLocale,
+  marketCode?: string,
+): Promise<{
+  featuredListings: HomeListing[]
+  categoryCards: CategoryCard[]
+  totalListings: number
+}> {
+  const language = marketplaceLanguage(locale)
+  const displayCurrency = displayCurrencyForMarket(marketCode)
+
+  try {
+    const listings = await getPublishedMarketplaceListings(120)
+    const counts = new Map<string, number>()
+
+    for (const listing of listings) {
+      counts.set(listing.category, (counts.get(listing.category) || 0) + 1)
+    }
+
+    const categoryCards = marketplaceCategories.map((category) => ({
+      slug: category.slug,
+      label:
+        locale === 'sv' || locale === 'de' || locale === 'en'
+          ? category.labels[language]
+          : translatePublic(locale, category.labels.en),
+      href: localizePublicHref(locale, categoryLandingPath(category.slug)),
+      count: counts.get(category.slug) || 0,
+    }))
+
+    const sellerTrust = await getMarketplaceSellerTrustByUserIds(
+      listings.map((listing) => listing.seller_user_id).filter(Boolean),
+    )
+
+    const featuredListings = await Promise.all(listings.slice(0, 16).map(async (listing) => {
+      const category = marketplaceCategories.find(
+        (item) => item.slug === listing.category,
+      )
+      const categoryLabel = category
+        ? locale === 'sv' || locale === 'de' || locale === 'en'
+          ? category.labels[language]
+          : translatePublic(locale, category.labels.en)
+        : String(listing.category)
+      const meta = [
+        listing.model_year,
+        listing.mileage_km
+          ? `${Number(listing.mileage_km).toLocaleString('sv-SE')} km`
+          : null,
+        listing.operating_hours
+          ? `${Number(listing.operating_hours).toLocaleString('sv-SE')} h`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+
+      const price = await formatMarketplacePriceDisplay({
+        amount: Number(listing.price),
+        currency: listing.currency,
+        locale,
+        targetCurrency: displayCurrency,
+      })
+
+      return {
+        id: listing.id,
+        slug: listing.category as MarketplaceCategorySlug,
+        categoryLabel,
+        title: listing.title,
+        meta,
+        location: [listing.city, getEuCountryName(listing.country_code, locale)]
+          .filter(Boolean)
+          .join(', '),
+        countryCode: listing.country_code,
+        price: price.label,
+        imageUrl: listing.images?.[0] || null,
+        fuelType: listing.fuel_type,
+        gearbox: listing.gearbox,
+        mileageKm: listing.mileage_km,
+        modelYear: listing.model_year,
+        sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',
+      }
+    }))
+
+    return {
+      featuredListings,
+      categoryCards,
+      totalListings: listings.length,
+    }
+  } catch {
+    return {
+      featuredListings: [],
+      categoryCards: marketplaceCategories.map((category) => ({
+        slug: category.slug,
+        label:
+          locale === 'sv' || locale === 'de' || locale === 'en'
+            ? category.labels[language]
+            : translatePublic(locale, category.labels.en),
+        href: localizePublicHref(locale, categoryLandingPath(category.slug)),
+        count: 0,
+      })),
+      totalListings: 0,
+    }
+  }
+}
+
+function ListingCard({
+  listing,
+  locale,
+}: {
+  listing: HomeListing
+  locale: PublicLocale
+}) {
+  const specChips = buildListingSpecChips(
+    {
+      fuelType: listing.fuelType,
+      gearbox: listing.gearbox,
+      mileageKm: listing.mileageKm,
+      modelYear: listing.modelYear,
+    },
+    locale,
+  )
+
+  return (
+    <Link
+      href={localizePublicHref(
+        locale,
+        buildListingPath({
+          id: listing.id,
+          title: listing.title,
+          city: listing.location,
+        }),
+      )}
+      className="group overflow-hidden rounded-[12px] border border-[#dfe6f2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.1)]"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#edf4ff]">
+        {listing.imageUrl ? (
+          <Image
+            src={listing.imageUrl}
+            alt={listing.title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="grid h-full place-items-center text-[#0866ff]">
+            <CarFront className="h-10 w-10" />
+          </div>
+        )}
+        <div className="absolute right-2 top-2 scale-[.68] origin-top-right sm:right-3 sm:top-3 sm:scale-[.78]">
+          <SavedListingButton listingId={listing.id} />
+        </div>
+        {listing.sellerTrust === 'verified' ? (
+          <span className="absolute left-2 top-2 rounded-[7px] bg-[#0866ff] px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3">
+            {locale === 'sv' ? 'Verifierad' : locale === 'de' ? 'Geprüft' : 'Verified'}
+          </span>
+        ) : null}
+        <CountryFlag
+          code={listing.countryCode || 'eu'}
+          className="absolute bottom-2 right-2 h-6 w-6 rounded-full sm:bottom-3 sm:right-3 sm:h-7 sm:w-7"
+        />
+      </div>
+      <div className="p-3 sm:p-4">
+        <span className="inline-flex rounded-[5px] bg-[#edf4ff] px-1.5 py-1 text-[9px] font-bold uppercase tracking-[0.06em] text-[#0866ff] sm:px-2 sm:text-[10px] sm:tracking-[0.08em]">
+          {listing.categoryLabel}
+        </span>
+        <h3 className="mt-2 line-clamp-2 min-h-[36px] text-[13px] font-bold leading-[18px] text-[#101828] sm:mt-3 sm:min-h-[40px] sm:text-sm sm:leading-5">
+          {listing.title}
+        </h3>
+        {listing.meta ? (
+          <p className="mt-1.5 line-clamp-1 text-[11px] font-medium text-[#667085] sm:mt-2 sm:text-xs">{listing.meta}</p>
+        ) : null}
+        {specChips.length ? (
+          <div className="mt-3 hidden flex-wrap gap-1.5 sm:flex">
+            {specChips.map((chip) => (
+              <span
+                key={chip.key}
+                className="inline-flex min-h-7 items-center rounded-full bg-[#f3f5f8] px-2.5 text-[11px] font-bold text-[#344054]"
+              >
+                {chip.label}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-[#667085] sm:mt-2 sm:gap-1.5 sm:text-xs">
+          <MapPin className="h-3 w-3 shrink-0 text-[#0866ff] sm:h-3.5 sm:w-3.5" />
+          {listing.location}
+        </p>
+        <p className="mt-3 text-sm font-bold tracking-[-0.02em] text-[#101828] sm:mt-4 sm:text-base sm:tracking-[-0.03em]">
+          {listing.price}
+        </p>
+      </div>
+    </Link>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ReviewWordmark({
+  brand,
+  label,
+  rating,
+}: {
+  brand: 'trustpilot' | 'google' | 'feefo' | 'reviews'
+  label: string
+  rating: string
+}) {
+  const brandClass = {
+    trustpilot: 'text-[#00b67a]',
+    google: 'text-[#5f6368]',
+    feefo: 'text-[#59636f]',
+    reviews: 'text-[#667085]',
+  }[brand]
+
+  return (
+    <div className="flex flex-col items-center justify-center rounded-[12px] px-4 py-3">
+      <div className={`flex items-center gap-2 text-[22px] font-bold leading-none ${brandClass}`}>
+        {brand === 'trustpilot' ? <span className="text-[#00b67a]">★</span> : null}
+        {brand === 'google' ? <GoogleMark /> : null}
+        {brand === 'feefo' ? <FeefoDots /> : null}
+        {brand === 'reviews' ? <ReviewsMark /> : null}
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-[13px] tracking-[0.08em] text-[#101828]">★★★★★</div>
+      <span className="mt-1 text-xs font-semibold text-[#667085]">{rating}</span>
+    </div>
+  )
+}
+
+function GoogleMark() {
+  return (
+    <span className="relative grid h-5 w-5 place-items-center rounded-full border-[3px] border-[#4285f4] text-[0]" aria-hidden="true">
+      <span className="absolute -right-[3px] top-[6px] h-[3px] w-3 bg-[#4285f4]" />
+      <span className="absolute -left-[3px] -top-[3px] h-3 w-3 rounded-tl-full border-l-[3px] border-t-[3px] border-[#ea4335]" />
+      <span className="absolute -bottom-[3px] -left-[3px] h-3 w-3 rounded-bl-full border-b-[3px] border-l-[3px] border-[#fbbc05]" />
+      <span className="absolute -bottom-[3px] right-[1px] h-3 w-3 rounded-br-full border-b-[3px] border-r-[3px] border-[#34a853]" />
+    </span>
+  )
+}
+
+function FeefoDots() {
+  return (
+    <span className="flex items-center gap-0.5" aria-hidden="true">
+      {[0, 1, 2].map((item) => (
+        <span key={item} className="h-2.5 w-2.5 rounded-full bg-[#9aa4b2]" />
+      ))}
+    </span>
+  )
+}
+
+function ReviewsMark() {
+  return (
+    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#667085] text-[11px] font-bold text-white" aria-hidden="true">
+      R
+    </span>
   )
 }

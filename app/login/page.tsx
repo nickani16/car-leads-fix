@@ -1,7 +1,5 @@
-import EmailCodeAuth from '@/app/components/EmailCodeAuth'
-import { getRequestLocale } from '@/lib/request-locale'
+import { redirect } from 'next/navigation'
 
 export default async function LoginPage() {
-  const locale = await getRequestLocale()
-  return <EmailCodeAuth locale={locale} />
+  redirect('/se')
 }

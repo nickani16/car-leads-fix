@@ -26,21 +26,34 @@ export const publicLanguages = [
 export type PublicLanguage = (typeof publicLanguages)[number]
 export type PublicLocale = 'sv' | 'de' | PublicLanguage
 
-const localizedPublicPaths = new Set([
-  '/',
-  '/find-cars',
-  '/vehicles',
-  '/how-it-works',
-  '/benefits',
-  '/about',
-  '/faq',
-  '/contact',
-  '/privacy',
-  '/cookies',
-  '/terms',
-  '/login',
-  '/register',
-])
+const localePathPrefixes: Record<PublicLocale, string> = {
+  sv: '/se',
+  de: '/de',
+  en: '',
+  fr: '/fr',
+  es: '/es',
+  it: '/it',
+  pl: '/pl',
+  nl: '/nl',
+  pt: '/pt',
+  fi: '/fi',
+  da: '/dk',
+  cs: '/cz',
+  ro: '/ro',
+  bg: '/bg',
+  hr: '/hr',
+  el: '/gr',
+  hu: '/hu',
+  sk: '/sk',
+  sl: '/si',
+  et: '/ee',
+  lv: '/lv',
+  lt: '/lt',
+}
+
+const localePrefixes = new Set(
+  Object.values(localePathPrefixes).filter(Boolean).map((value) => value.slice(1)),
+)
 
 const structuralKeys = new Set([
   'href',
@@ -100,18 +113,53 @@ export function translatePublicObject<T>(
 }
 
 export function localizePublicHref(locale: PublicLocale, href: string) {
-  if (locale === 'sv' || locale === 'de' || locale === 'en') return href
   if (/^(https?:|mailto:|tel:)/.test(href)) return href
+  if (href.startsWith('#')) return href
 
-  const [pathname, hash = ''] = href.split('#')
-  const normalizedPath = pathname || '/'
-  if (!localizedPublicPaths.has(normalizedPath)) return href
+  const [beforeHash, hash = ''] = href.split('#')
+  const [rawPathname, query = ''] = beforeHash.split('?')
+  const normalizedPath = rawPathname || '/'
+  if (
+    normalizedPath.startsWith('/api/') ||
+    normalizedPath.startsWith('/_next/') ||
+    normalizedPath.startsWith('/admin')
+  ) {
+    return href
+  }
 
+  const strippedPath = stripLocalePrefix(normalizedPath)
+  const prefix = localePathPrefix(locale)
   const localized =
-    normalizedPath === '/'
-      ? `/${locale}`
-      : `/${locale}${normalizedPath}`
-  return hash ? `${localized}#${hash}` : localized
+    prefix === ''
+      ? strippedPath
+      : strippedPath === '/'
+        ? prefix
+        : `${prefix}${strippedPath}`
+  const withQuery = query ? `${localized}?${query}` : localized
+
+  return hash ? `${withQuery}#${hash}` : withQuery
+}
+
+export function localePathPrefix(locale: PublicLocale) {
+  return localePathPrefixes[locale]
+}
+
+export function stripLocalePrefix(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  const first = segments[0]
+  if (!first) return '/'
+  if (
+    localePrefixes.has(first) ||
+    publicLanguages.includes(first as PublicLanguage)
+  ) {
+    const rest = segments.slice(1).join('/')
+    return rest ? `/${rest}` : '/'
+  }
+  return pathname
+}
+
+export function switchLocaleHref(locale: PublicLocale, currentHref: string) {
+  return localizePublicHref(locale, currentHref || '/')
 }
 
 export const publicPagePaths = [
@@ -122,10 +170,13 @@ export const publicPagePaths = [
   '/benefits',
   '/about',
   '/faq',
+  '/help-center',
   '/contact',
   '/privacy',
   '/cookies',
   '/terms',
+  '/refund-policy',
+  '/report',
   '/login',
   '/register',
 ] as const
@@ -135,13 +186,13 @@ export function getPublicAlternates(pathname: string) {
   const domainAlternates: Array<[string, string]> =
     normalized === ''
       ? [
-          ['sv-SE', 'https://www.autorell.se/'],
-          ['de-DE', 'https://www.autorell.de/'],
+          ['sv-SE', 'https://www.autorell.com/se'],
+          ['de-DE', 'https://www.autorell.com/de'],
         ]
       : normalized === '/find-cars'
         ? [
-            ['sv-SE', 'https://www.autorell.se/hitta-bilar'],
-            ['de-DE', 'https://www.autorell.de/fahrzeuge-finden'],
+            ['sv-SE', 'https://www.autorell.com/se/hitta-bilar'],
+            ['de-DE', 'https://www.autorell.com/de/fahrzeuge-finden'],
           ]
         : []
 

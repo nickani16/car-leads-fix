@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 
 export async function requireSuperAdminRoute() {
   const supabase = await createClient()
@@ -11,6 +12,15 @@ export async function requireSuperAdminRoute() {
   if (!user) {
     return {
       error: NextResponse.json({ error: 'Not authenticated.' }, { status: 401 }),
+    }
+  }
+
+  if (!isAllowedAdminEmail(user.email)) {
+    return {
+      error: NextResponse.json(
+        { error: 'Super admin access required.' },
+        { status: 403 }
+      ),
     }
   }
 

@@ -8,7 +8,7 @@ import {
   PASSWORD_REQUIREMENTS,
 } from '@/lib/password-policy'
 
-const allowedRoles = new Set(['sales', 'operations', 'legal'])
+const allowedRoles = new Set(['sales', 'operations', 'support', 'legal'])
 const usernamePattern = /^[a-z0-9._-]{3,32}$/i
 
 export async function POST(request: Request) {

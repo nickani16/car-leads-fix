@@ -3,16 +3,102 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { euCountryCodes } from '@/lib/eu-countries'
+import {
+  accountConfirmationKeys,
+  businessAccountConfirmationKeys,
+  MARKETPLACE_PRIVACY_VERSION,
+  MARKETPLACE_PURCHASE_TERMS_VERSION,
+  MARKETPLACE_TERMS_VERSION,
+} from '@/lib/marketplace-security'
 
-const TERMS_VERSION = 'marketplace-terms-v1.1-2026-06-22'
-const PRIVACY_VERSION = 'marketplace-privacy-v1.1-2026-06-22'
+const euDialCodes: Record<string, string> = {
+  AT: '+43',
+  BE: '+32',
+  BG: '+359',
+  HR: '+385',
+  CY: '+357',
+  CZ: '+420',
+  DE: '+49',
+  DK: '+45',
+  EE: '+372',
+  ES: '+34',
+  FI: '+358',
+  FR: '+33',
+  GR: '+30',
+  HU: '+36',
+  IE: '+353',
+  IT: '+39',
+  LT: '+370',
+  LU: '+352',
+  LV: '+371',
+  MT: '+356',
+  NL: '+31',
+  PL: '+48',
+  PT: '+351',
+  RO: '+40',
+  SE: '+46',
+  SI: '+386',
+  SK: '+421',
+}
 
 function clean(value: unknown) {
   return String(value || '').trim()
 }
 
+function normalizePhone(value: unknown, countryCode: string) {
+  let compact = clean(value).replace(/[\s()-]/g, '')
+  if (compact.startsWith('00')) compact = `+${compact.slice(2)}`
+  if (compact.startsWith('+')) return compact
+  const dialCode = euDialCodes[countryCode] || ''
+  return dialCode ? `${dialCode}${compact.replace(/^0+/, '')}` : compact
+}
+
 function normalizeIdentifier(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+const freeEmailDomains = new Set([
+  'gmail.com',
+  'googlemail.com',
+  'hotmail.com',
+  'outlook.com',
+  'live.com',
+  'msn.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'yahoo.com',
+  'proton.me',
+  'protonmail.com',
+])
+
+function normalizeWebsite(value: unknown) {
+  const raw = clean(value)
+  if (!raw) return ''
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+    return url.origin.replace(/\/$/, '')
+  } catch {
+    return ''
+  }
+}
+
+function domainFromEmail(email: string) {
+  return email.split('@')[1]?.toLowerCase() || ''
+}
+
+function domainFromWebsite(website: string) {
+  if (!website) return ''
+  try {
+    return new URL(website).hostname.toLowerCase().replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
+function domainsMatch(emailDomain: string, websiteDomain: string) {
+  if (!emailDomain || !websiteDomain || freeEmailDomains.has(emailDomain)) return false
+  return emailDomain === websiteDomain || emailDomain.endsWith(`.${websiteDomain}`)
 }
 
 function isAdult(dateValue: string) {
@@ -93,8 +179,8 @@ export async function POST(request: Request) {
     const lastName = clean(body.lastName)
     const displayName = `${firstName} ${lastName}`.trim()
     const birthDate = clean(body.birthDate)
-    const phone = clean(body.phone).replace(/[\s()-]/g, '')
     const countryCode = clean(body.countryCode).toUpperCase()
+    const phone = normalizePhone(body.phone, countryCode)
     const addressLine1 = clean(body.addressLine1)
     const addressLine2 = clean(body.addressLine2)
     const postalCode = clean(body.postalCode)
@@ -105,24 +191,50 @@ export async function POST(request: Request) {
     const companyName = clean(body.companyName)
     const registrationNumber = clean(body.registrationNumber)
     const vatNumber = clean(body.vatNumber)
+    const websiteUrl = normalizeWebsite(body.websiteUrl)
     const locale = clean(body.locale || 'en').slice(0, 5)
+    const confirmations =
+      accountType === 'business'
+        ? {
+            business_right_to_sell: body.confirmedBusinessRightToSell === true,
+            marketplace_terms: body.acceptedMarketplaceTerms === true,
+            purchase_terms: body.acceptedPurchaseTerms === true,
+            privacy_policy: body.acceptedPrivacyPolicy === true,
+          }
+        : {
+            adult_18: body.adult18 === true,
+            marketplace_terms: body.acceptedMarketplaceTerms === true,
+            purchase_terms: body.acceptedPurchaseTerms === true,
+            privacy_policy: body.acceptedPrivacyPolicy === true,
+            right_to_sell_only: body.confirmedRightToSellOnly === true,
+          }
+    const requiredConfirmations =
+      accountType === 'business'
+        ? businessAccountConfirmationKeys
+        : accountConfirmationKeys
 
     if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       firstName.length < 2 ||
       lastName.length < 2 ||
-      !isAdult(birthDate) ||
+      (accountType === 'private' && !isAdult(birthDate)) ||
+      (accountType === 'business' && birthDate && !isAdult(birthDate)) ||
       !/^\+[1-9]\d{7,14}$/.test(phone) ||
       !euCountryCodes.has(countryCode) ||
       !addressLine1 ||
       !postalCode ||
       !city ||
       (accountType === 'private' && !validateNationalId(countryCode, nationalId)) ||
-      (accountType === 'business' && (!companyName || !registrationNumber)) ||
-      body.acceptedTerms !== true
+      (accountType === 'business' && (!companyName || !(registrationNumber || vatNumber))) ||
+      requiredConfirmations.some((key) => confirmations[key] !== true)
     ) {
       return NextResponse.json(
-        { error: 'Kontrollera namn, ålder, adress, telefonnummer och identitetsuppgifter.' },
+        {
+          error:
+            accountType === 'business'
+              ? 'Kontrollera kontaktperson, företagsnamn, organisationsnummer, adress, telefonnummer och villkor.'
+              : 'Kontrollera namn, ålder, adress, telefonnummer och identitetsuppgifter.',
+        },
         { status: 400 },
       )
     }
@@ -143,13 +255,6 @@ export async function POST(request: Request) {
         ? await validateVat(countryCode, vatNumber)
         : { status: 'pending' as const, reference: null }
 
-    if (vatCheck.status === 'failed') {
-      return NextResponse.json(
-        { error: 'VAT-numret kunde inte valideras mot EU VIES. Kontrollera numret.' },
-        { status: 400 },
-      )
-    }
-
     const admin = createAdminClient()
     const { data: existingProfile } = await admin
       .from('marketplace_profiles')
@@ -168,13 +273,51 @@ export async function POST(request: Request) {
       user_metadata: { display_name: displayName, account_type: accountType },
     })
 
-    const identityStatus = accountType === 'private' ? 'format_validated' : 'pending'
+    const emailDomain = domainFromEmail(email)
+    const websiteDomain = domainFromWebsite(websiteUrl)
+    const domainMatch = domainsMatch(emailDomain, websiteDomain)
+    const identityStatus = accountType === 'private' ? 'verified' : 'pending'
     const businessVerificationStatus =
-      accountType === 'business'
-        ? vatCheck.status === 'passed'
-          ? 'vat_validated'
-          : 'pending'
-        : null
+      accountType === 'business' ? 'pending_review' : null
+
+    let companyId: string | null = null
+    if (accountType === 'business') {
+      const { data: existingCompany } = await admin
+        .from('marketplace_companies')
+        .select('id')
+        .eq('created_by', user.id)
+        .maybeSingle()
+
+      if (existingCompany?.id) {
+        companyId = existingCompany.id
+      } else {
+        const { data: company, error: companyError } = await admin
+          .from('marketplace_companies')
+          .insert({
+            name: companyName,
+            registration_number: registrationNumber || vatNumber,
+            vat_number: vatNumber || null,
+            country_code: countryCode,
+            website_url: websiteUrl || null,
+            phone,
+            address_line_1: addressLine1,
+            address_line_2: addressLine2 || null,
+            postal_code: postalCode,
+            city,
+            region: region || null,
+            contact_name: displayName,
+            contact_email: email,
+            contact_phone: phone,
+            verification_status: businessVerificationStatus,
+            domain_match: domainMatch,
+            created_by: user.id,
+          })
+          .select('id')
+          .single()
+        if (companyError || !company) throw companyError
+        companyId = company.id
+      }
+    }
 
     const { error: profileError } = await admin.from('marketplace_profiles').insert({
       user_id: user.id,
@@ -183,13 +326,16 @@ export async function POST(request: Request) {
       legal_name: displayName,
       first_name: firstName,
       last_name: lastName,
-      birth_date: birthDate,
+      birth_date: birthDate || null,
       email,
       phone,
       country_code: countryCode,
       company_name: accountType === 'business' ? companyName : null,
       registration_number: accountType === 'business' ? registrationNumber : null,
       vat_number: accountType === 'business' ? vatNumber || null : null,
+      website_url: accountType === 'business' ? websiteUrl || null : null,
+      company_id: companyId,
+      company_domain_match: accountType === 'business' ? domainMatch : false,
       address_line_1: addressLine1,
       address_line_2: addressLine2 || null,
       registered_address: [addressLine1, addressLine2].filter(Boolean).join(', '),
@@ -201,13 +347,22 @@ export async function POST(request: Request) {
       identity_status: identityStatus,
       business_verification_status: businessVerificationStatus,
       vat_verified_at: vatCheck.status === 'passed' ? new Date().toISOString() : null,
+      verified_at: user.email_confirmed_at || new Date().toISOString(),
       verification_updated_at: new Date().toISOString(),
       locale,
-      terms_version: TERMS_VERSION,
-      privacy_version: PRIVACY_VERSION,
+      terms_version: MARKETPLACE_TERMS_VERSION,
+      privacy_version: MARKETPLACE_PRIVACY_VERSION,
     })
 
     if (profileError) throw profileError
+
+    if (accountType === 'business' && companyId) {
+      await admin.from('marketplace_company_members').insert({
+        company_id: companyId,
+        user_id: user.id,
+        role: 'contact_person',
+      })
+    }
 
     await admin.from('marketplace_identity_checks').insert({
       user_id: user.id,
@@ -224,6 +379,34 @@ export async function POST(request: Request) {
           : vatCheck.reference,
       metadata: { raw_identifier_stored: false },
     })
+
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      null
+    const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
+    await admin.from('marketplace_legal_acceptances').insert(
+      requiredConfirmations.map((key) => ({
+        user_id: user.id,
+        acceptance_scope:
+          key === 'privacy_policy'
+            ? 'privacy'
+            : key === 'purchase_terms'
+              ? 'purchase'
+              : 'account',
+        acceptance_key: key,
+        accepted: true,
+        terms_version:
+          key === 'privacy_policy'
+            ? MARKETPLACE_PRIVACY_VERSION
+            : key === 'purchase_terms'
+              ? MARKETPLACE_PURCHASE_TERMS_VERSION
+              : MARKETPLACE_TERMS_VERSION,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        metadata: { account_type: accountType, locale },
+      })),
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {

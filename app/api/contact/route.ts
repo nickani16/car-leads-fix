@@ -5,18 +5,19 @@ import {
   isPublicLanguage,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 
 type ContactLocale = PublicLocale
 
 const marketDetails = {
   sv: {
     code: 'SE',
-    domain: 'autorell.se',
+    domain: 'autorell.com/se',
     label: 'Sweden',
   },
   de: {
     code: 'DE',
-    domain: 'autorell.de',
+    domain: 'autorell.com/de',
     label: 'Germany',
   },
   en: {
@@ -91,6 +92,13 @@ function getRecipients() {
 
 export async function POST(request: Request) {
   try {
+    const contactLimit = checkRateLimit({
+      key: `contact:${getClientIp(request)}`,
+      limit: 5,
+      windowMs: 10 * 60 * 1000,
+    })
+    if (contactLimit.limited) return rateLimitJson(contactLimit.retryAfter)
+
     const form = await request.formData()
     const name = singleLine(value(form, 'name'), 120)
     const email = value(form, 'email')

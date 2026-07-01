@@ -103,6 +103,8 @@ const cookieCopy = {
 
 function getCookieLocale(): CookieLocale {
   const marketCode = window.location.pathname.split('/').filter(Boolean)[0]
+  if (marketCode === 'se') return 'sv'
+  if (marketCode === 'de') return 'de'
   if (isPublicLanguage(marketCode)) return marketCode
   const market = euBuyerMarkets.find((item) => item.code === marketCode)
   if (market && market.language in cookieCopy) {

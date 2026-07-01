@@ -21,7 +21,7 @@ export default function SafeMarketplacePage() {
     <main className="bg-[#f7f8fb] text-[#101828]">
       <PublicHeader />
       <section className="border-b border-[#dce3ef] bg-white">
-        <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Tryggare marketplace</p>
           <h1 className="mt-5 max-w-4xl text-5xl leading-[1] tracking-[-.055em] sm:text-7xl">Bättre information före första kontakten.</h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
@@ -31,7 +31,7 @@ export default function SafeMarketplacePage() {
           </p>
         </div>
       </section>
-      <section className="mx-auto grid max-w-[1240px] gap-5 px-5 py-16 sm:px-8 md:grid-cols-2">
+      <section className="mx-auto grid max-w-[var(--autorell-page-max)] gap-5 px-5 py-16 sm:px-8 md:grid-cols-2">
         {items.map(([Icon, title, text]) => <article key={title} className="rounded-[24px] border border-[#e1e5ec] bg-white p-7"><Icon className="h-6 w-6 text-[#0866ff]" /><h2 className="mt-6 text-2xl">{title}</h2><p className="mt-3 leading-7 text-[#667085]">{text}</p></article>)}
       </section>
       <PublicFooter />

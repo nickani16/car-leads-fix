@@ -7,15 +7,20 @@ import MarketplaceCategoryBrowser, {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import {
-  formatMarketplacePrice,
   getMarketplaceCategory,
   marketplaceCategories,
   marketplaceCategoryAliases,
   marketplaceLanguage,
-  marketplacePublicSelect,
   normalizeMarketplaceCategory,
 } from '@/lib/marketplace'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  displayCurrencyForMarket,
+  formatMarketplacePriceDisplay,
+} from '@/lib/currency-rates'
+import {
+  getMarketplaceSellerTrustByUserIds,
+  getPublishedMarketplaceCategoryListings,
+} from '@/lib/marketplace-public-data'
 import {
   isPublicLanguage,
   translatePublic,
@@ -36,30 +41,19 @@ export async function generateMetadata({
   const { category: requestedCategory } = await params
   const category = getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
-  const hostname = (
-    requestHeaders.get('host') ||
-    requestHeaders.get('x-forwarded-host') ||
-    ''
-  ).toLowerCase()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const locale: PublicLocale =
-    requestedLanguage && isPublicLanguage(requestedLanguage)
+    requestedLanguage === 'sv' || requestedLanguage === 'de'
       ? requestedLanguage
-      : hostname.includes('autorell.de')
-        ? 'de'
-        : hostname.includes('autorell.com')
-          ? 'en'
-          : 'sv'
+      : requestedLanguage && isPublicLanguage(requestedLanguage)
+      ? requestedLanguage
+      : 'en'
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
-  const host = hostname.includes('autorell.de')
-    ? 'https://www.autorell.de'
-    : hostname.includes('autorell.com')
-      ? 'https://www.autorell.com'
-      : 'https://www.autorell.se'
+  const host = 'https://www.autorell.com'
   const canonical = `${host}/marketplace/${category.slug}`
   const title =
     locale === 'sv'
@@ -106,64 +100,68 @@ export default async function MarketplaceCategoryPage({
 
   const category = getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
-  const hostname = (
-    requestHeaders.get('host') ||
-    requestHeaders.get('x-forwarded-host') ||
-    ''
-  ).toLowerCase()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const defaultCountry =
     marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
+      : requestedLanguage === 'sv'
+        ? 'SE'
+        : requestedLanguage === 'de'
+          ? 'DE'
       : ''
   const locale: PublicLocale =
-    requestedLanguage && isPublicLanguage(requestedLanguage)
+    requestedLanguage === 'sv' || requestedLanguage === 'de'
       ? requestedLanguage
-      : hostname.includes('autorell.de')
-        ? 'de'
-        : hostname.includes('autorell.com')
-          ? 'en'
-          : 'sv'
+      : requestedLanguage && isPublicLanguage(requestedLanguage)
+      ? requestedLanguage
+      : 'en'
   const language = marketplaceLanguage(locale)
+  const displayCurrency = displayCurrencyForMarket(marketCode)
 
-  const { data } = await createAdminClient()
-    .from('marketplace_listings')
-    .select(marketplacePublicSelect)
-    .eq('status', 'published')
-    .eq('category', normalizeMarketplaceCategory(requestedCategory))
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .order('priority', { ascending: false })
-    .order('published_at', { ascending: false })
-    .limit(120)
+  const data = await getPublishedMarketplaceCategoryListings(
+    normalizeMarketplaceCategory(requestedCategory),
+    120,
+  )
+  const sellerTrust = await getMarketplaceSellerTrustByUserIds(
+    (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
+  )
 
-  const listings: MarketplaceListing[] = (data || []).map((listing) => ({
-    id: listing.id,
-    make: listing.make || '',
-    model: listing.model || '',
-    title: listing.title,
-    year: listing.model_year ? String(listing.model_year) : null,
-    mileageKm: listing.mileage_km,
-    operatingHours: listing.operating_hours,
-    fuelType: listing.fuel_type,
-    gearbox: listing.gearbox,
-    bodyType: listing.body_type,
-    condition: listing.condition,
-    equipment: listing.equipment,
-    country: listing.country_code,
-    city: listing.city,
-    priceLabel: formatMarketplacePrice(
-      Number(listing.price),
-      listing.currency,
-      locale,
-    ),
-    priceValue: Number(listing.price),
-    imageAvailable: Boolean(listing.images?.[0]),
-    imageUrl: listing.images?.[0] || null,
-    sellerName: listing.seller_name,
-    sellerIsTrader: listing.seller_type === 'business',
-    messagingEnabled: true,
-  }))
+  const listings: MarketplaceListing[] = await Promise.all(
+    (data || []).map(async (listing) => {
+      const price = await formatMarketplacePriceDisplay({
+        amount: Number(listing.price),
+        currency: listing.currency,
+        locale,
+        targetCurrency: displayCurrency,
+      })
+      return {
+        id: listing.id,
+        make: listing.make || '',
+        model: listing.model || '',
+        title: listing.title,
+        year: listing.model_year ? String(listing.model_year) : null,
+        mileageKm: listing.mileage_km,
+        operatingHours: listing.operating_hours,
+        fuelType: listing.fuel_type,
+        gearbox: listing.gearbox,
+        bodyType: listing.body_type,
+        color: listing.color,
+        condition: listing.condition,
+        equipment: listing.equipment,
+        country: listing.country_code,
+        city: listing.city,
+        priceLabel: price.label,
+        priceValue: Number(listing.price),
+        imageAvailable: Boolean(listing.images?.[0]),
+        imageUrl: listing.images?.[0] || null,
+        sellerName: listing.seller_name,
+        sellerIsTrader: listing.seller_type === 'business',
+        sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',
+        messagingEnabled: true,
+      }
+    }),
+  )
 
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'

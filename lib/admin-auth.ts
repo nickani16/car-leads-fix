@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 
 export async function requireAdmin() {
   const supabase = await createClient()
@@ -9,7 +10,11 @@ export async function requireAdmin() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login?next=/admin')
+    redirect('/se')
+  }
+
+  if (!isAllowedAdminEmail(user.email)) {
+    redirect('/se')
   }
 
   const { data: adminUser } = await supabase
@@ -20,7 +25,7 @@ export async function requireAdmin() {
     .maybeSingle()
 
   if (!adminUser) {
-    redirect('/login?status=admin-required')
+    redirect('/se')
   }
 
   return {

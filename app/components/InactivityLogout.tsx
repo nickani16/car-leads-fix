@@ -34,7 +34,7 @@ export default function InactivityLogout() {
       window.localStorage.removeItem(LAST_ACTIVITY_KEY)
 
       await supabase.auth.signOut({ scope: 'local' })
-      window.location.replace('/login?status=inactive')
+      window.location.replace('/se')
     }
 
     function scheduleLogout() {
@@ -90,7 +90,7 @@ export default function InactivityLogout() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT' && !signingOutRef.current) {
-        window.location.replace('/login')
+        window.location.replace('/se')
       }
     })
 

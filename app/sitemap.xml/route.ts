@@ -3,8 +3,6 @@ import {
   getPublicMarketConfig,
 } from '@/lib/public-market'
 
-export const dynamic = 'force-dynamic'
-
 function escapeXml(value: string) {
   return value
     .replace(/&/g, '&amp;')
@@ -54,7 +52,7 @@ export function GET(request: Request) {
     {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
         Vary: 'Host, X-Forwarded-Host',
       },
     },

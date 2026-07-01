@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
 
       <section className={styles.layout}>
         <div className={styles.introduction}>
-          <Link href="/" className={styles.logo} aria-label="Autorell home">
+          <Link href="/se" className={styles.logo} aria-label="Autorell home">
             <BrandLogo />
           </Link>
           <div className={styles.badge}>Secure account recovery</div>
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
                   folder if it does not arrive.
                 </span>
               </div>
-              <Link href="/login" className={styles.button}>
+              <Link href="/se" className={styles.button}>
                 Return to sign in
               </Link>
             </div>
@@ -132,7 +132,7 @@ export default function ForgotPasswordPage() {
                 .
               </p>
               <p className={styles.helperText}>
-                <Link href="/login" className={styles.authLink}>
+                <Link href="/se" className={styles.authLink}>
                   Back to sign in
                 </Link>
               </p>

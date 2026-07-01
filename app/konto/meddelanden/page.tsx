@@ -10,8 +10,10 @@ import {
 } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { getRequestLocale } from '@/lib/request-locale'
 import {
   isPublicLanguage,
+  localizePublicHref,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
@@ -70,11 +72,12 @@ export default async function MessagesPage({
 }: {
   searchParams: Promise<{ conversation?: string }>
 }) {
+  const requestLocale = await getRequestLocale()
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login?next=/konto/meddelanden')
+  if (!user) redirect(localizePublicHref(requestLocale, '/'))
 
   const admin = createAdminClient()
   const { data: ownProfile } = await admin
@@ -87,7 +90,7 @@ export default async function MessagesPage({
     ownProfile?.locale === 'de' ||
     isPublicLanguage(ownProfile?.locale || '')
       ? (ownProfile!.locale as PublicLocale)
-      : 'en'
+      : requestLocale
   const text =
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? copy[locale]
@@ -169,16 +172,26 @@ export default async function MessagesPage({
     selected?.buyer_user_id === user.id ? text.seller : text.buyer
 
   return (
-    <main className="mx-auto max-w-[1320px] px-5 py-8 sm:px-8 lg:py-10">
-      <div className="mb-7">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#667085]">
-          Autorell marketplace
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-          {text.title}
-        </h1>
-        <p className="mt-2 text-sm leading-6 text-[#667085]">{text.intro}</p>
-      </div>
+    <main className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-12">
+      <section className="mb-7 overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
+        <div className="flex flex-col gap-5 bg-[#eef6ff] p-7 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+              Autorell marketplace
+            </p>
+            <h1 className="mt-3 text-[40px] font-semibold leading-[1] tracking-[-0.05em] sm:text-5xl">
+              {text.title}
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#667085]">{text.intro}</p>
+          </div>
+          <div className="rounded-[18px] border border-[#cfe0f5] bg-white/72 p-4 text-sm leading-6 text-[#475467] lg:max-w-md">
+            <span className="flex gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+              {text.safety}
+            </span>
+          </div>
+        </div>
+      </section>
 
       {conversations.length ? (
         <div className="grid min-h-[640px] overflow-hidden rounded-[24px] border border-[#dde1e7] bg-white shadow-[0_18px_50px_rgba(16,24,40,.07)] lg:grid-cols-[360px_1fr]">
@@ -206,7 +219,7 @@ export default async function MessagesPage({
                 return (
                   <Link
                     key={conversation.id}
-                    href={`/konto/meddelanden?conversation=${conversation.id}`}
+                    href={`${localizePublicHref(locale, '/account/messages')}?conversation=${conversation.id}`}
                     className={`flex gap-3 rounded-[16px] p-3.5 transition ${
                       selectedId === conversation.id
                         ? 'bg-white shadow-sm ring-1 ring-[#dfe3e8]'
@@ -256,7 +269,7 @@ export default async function MessagesPage({
                   </div>
                   {selectedListing ? (
                     <Link
-                      href={`/marketplace/${selectedListing.category}?q=${encodeURIComponent(selectedListing.title)}`}
+                      href={`${localizePublicHref(locale, `/marketplace/${selectedListing.category}`)}?q=${encodeURIComponent(selectedListing.title)}`}
                       className="hidden items-center gap-2 text-sm font-semibold text-[#475467] hover:text-[#101828] sm:flex"
                     >
                       {selectedListing.title}
@@ -320,7 +333,7 @@ export default async function MessagesPage({
             <h2 className="mt-5 text-xl font-semibold">{text.empty}</h2>
             <p className="mt-2 text-sm leading-6 text-[#667085]">{text.emptyText}</p>
             <Link
-              href="/marketplace/cars"
+              href={localizePublicHref(locale, '/marketplace/cars')}
               className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[13px] bg-[#202124] px-5 text-sm font-semibold text-white"
             >
               {text.browse}

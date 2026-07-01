@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import {
+  localizePublicHref,
   translatePublic,
   translatePublicObject,
   type PublicLocale,
@@ -60,13 +61,17 @@ const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar',
 
 export default function MarketplaceSearch({
   locale = 'sv',
+  defaultCountry,
 }: {
   locale?: PublicLocale
+  defaultCountry?: string
 }) {
   const router = useRouter()
   const [category, setCategory] = useState('cars')
   const [query, setQuery] = useState('')
-  const [country, setCountry] = useState('')
+  const [country, setCountry] = useState(() =>
+    resolveDefaultCountry(defaultCountry, locale),
+  )
   const selectedCategory =
     categoryOptions.find((option) => option.value === category) ||
     categoryOptions[0]
@@ -114,7 +119,7 @@ export default function MarketplaceSearch({
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (country) params.set('country', country)
-    router.push(`${route}${params.size ? `?${params}` : ''}`)
+    router.push(localizePublicHref(locale, `${route}${params.size ? `?${params}` : ''}`))
   }
 
   return (
@@ -172,6 +177,18 @@ export default function MarketplaceSearch({
       </div>
     </form>
   )
+}
+
+function resolveDefaultCountry(
+  defaultCountry: string | undefined,
+  locale: PublicLocale,
+) {
+  const requested = (defaultCountry || '').toUpperCase()
+  const validCountries = new Set(euCountries.map(([code]) => code.toUpperCase()))
+  if (validCountries.has(requested)) return requested
+  if (locale === 'sv') return 'SE'
+  if (locale === 'de') return 'DE'
+  return ''
 }
 
 function SearchField({

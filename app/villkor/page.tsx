@@ -46,7 +46,7 @@ const sections = [
     ],
   },
   {
-    id: 'priser',
+    id: 'purchase-terms',
     title: 'Annonspaket och betalning',
     items: [
       'Sju dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',

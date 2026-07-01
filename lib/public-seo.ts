@@ -3,8 +3,8 @@ import type { Metadata } from 'next'
 type PublicLocale = 'sv' | 'de' | 'en'
 
 const hosts = {
-  sv: 'https://www.autorell.se',
-  de: 'https://www.autorell.de',
+  sv: 'https://www.autorell.com/se',
+  de: 'https://www.autorell.com/de',
   en: 'https://www.autorell.com',
 } as const
 
