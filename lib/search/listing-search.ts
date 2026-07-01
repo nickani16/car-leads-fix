@@ -37,8 +37,24 @@ export type PublicSearchInput = {
   provider?: ListingSearchProvider
 }
 
+type PublicSearchCacheEntry = {
+  expiresAt: number
+  results: PublicSearchEntry[]
+}
+
 const listingSearchSelect =
   'id,category,title,make,model,variant,body_type,fuel_type,model_year,mileage_km,city,country_code,price,currency'
+const PUBLIC_SEARCH_CACHE_TTL_MS = 60_000
+const MIN_DATABASE_QUERY_LENGTH = 3
+const MAX_SEARCH_TERMS = 3
+
+declare global {
+  var __autorellPublicSearchCache: Map<string, PublicSearchCacheEntry> | undefined
+}
+
+const publicSearchCache =
+  globalThis.__autorellPublicSearchCache ||
+  (globalThis.__autorellPublicSearchCache = new Map<string, PublicSearchCacheEntry>())
 
 const pageEntries = {
   sv: [
@@ -80,21 +96,30 @@ export async function searchPublicEntries(input: PublicSearchInput) {
   const query = normalizeQuery(input.query)
   const limit = clampLimit(input.limit)
   const provider = input.provider || 'supabase'
+  const cacheKey = `${provider}:${locale}:${query.toLocaleLowerCase('en-US')}:${limit}`
+  const cached = publicSearchCache.get(cacheKey)
 
-  if (provider !== 'supabase') {
-    return searchWithSupabase({ locale, language, query, limit })
-  }
+  if (cached && cached.expiresAt > Date.now()) return cached.results
 
-  return searchWithSupabase({ locale, language, query, limit })
+  const results = await searchWithSupabase({ locale, language, query, limit })
+  publicSearchCache.set(cacheKey, {
+    expiresAt: Date.now() + PUBLIC_SEARCH_CACHE_TTL_MS,
+    results,
+  })
+
+  return results
 }
 
 function normalizeQuery(value?: string | null) {
-  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 80)
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 60)
 }
 
 function clampLimit(value?: number) {
   if (!Number.isFinite(value)) return 10
-  return Math.min(Math.max(Math.round(Number(value)), 1), 20)
+  return Math.min(Math.max(Math.round(Number(value)), 1), 10)
 }
 
 async function searchWithSupabase({
@@ -110,11 +135,17 @@ async function searchWithSupabase({
 }) {
   const staticEntries = buildStaticEntries(locale, language)
 
-  if (query.length < 2) return staticEntries.slice(0, limit)
+  if (query.length < MIN_DATABASE_QUERY_LENGTH) return staticEntries.slice(0, limit)
 
   const listingLimit = Math.max(1, limit - Math.min(staticEntries.length, 4))
   const escaped = query.replace(/[%_,]/g, '').trim()
-  const terms = escaped.split(/\s+/).filter(Boolean).slice(0, 3)
+  const terms = escaped
+    .split(/\s+/)
+    .filter((term) => term.length >= 2)
+    .slice(0, MAX_SEARCH_TERMS)
+
+  if (!terms.length) return rankEntries(staticEntries, query).slice(0, limit)
+
   const ilike = terms.length
     ? terms
         .flatMap((term) => [
