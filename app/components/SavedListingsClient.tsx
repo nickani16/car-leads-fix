@@ -15,13 +15,15 @@ import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 export default function SavedListingsClient({
-  listings,
   locale = 'sv',
+  marketCode,
 }: {
-  listings: MarketplaceListing[]
   locale?: PublicLocale
+  marketCode?: string
 }) {
   const [savedIds, setSavedIds] = useState<string[]>([])
+  const [listings, setListings] = useState<MarketplaceListing[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const sync = () => setSavedIds(readSavedListingIds())
@@ -34,6 +36,42 @@ export default function SavedListingsClient({
     }
   }, [])
 
+  useEffect(() => {
+    if (!savedIds.length) {
+      return
+    }
+
+    const controller = new AbortController()
+    const params = new URLSearchParams({
+      ids: savedIds.join(','),
+      locale,
+    })
+    if (marketCode) params.set('market', marketCode)
+
+    async function loadSavedListings() {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/saved-listings?${params.toString()}`, {
+          signal: controller.signal,
+          headers: {
+            Accept: 'application/json',
+          },
+        })
+        if (!response.ok) throw new Error('Could not load saved listings')
+        const payload = (await response.json()) as { listings?: MarketplaceListing[] }
+        if (!controller.signal.aborted) setListings(payload.listings || [])
+      } catch {
+        if (!controller.signal.aborted) setListings([])
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false)
+      }
+    }
+
+    void loadSavedListings()
+
+    return () => controller.abort()
+  }, [locale, marketCode, savedIds])
+
   const savedListings = useMemo(
     () =>
       savedIds
@@ -45,7 +83,23 @@ export default function SavedListingsClient({
   return (
     <section className="bg-[#f7f8fb] py-10 sm:py-14">
       <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
-        {savedListings.length ? (
+        {savedIds.length > 0 && isLoading ? (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2].map((item) => (
+              <div
+                key={item}
+                className="h-[430px] animate-pulse rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.04)]"
+              >
+                <div className="h-64 bg-[#edf3ff]" />
+                <div className="space-y-4 p-5">
+                  <div className="h-5 w-2/3 rounded bg-[#eef2f8]" />
+                  <div className="h-4 w-1/2 rounded bg-[#eef2f8]" />
+                  <div className="h-10 rounded bg-[#eef2f8]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : savedListings.length ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {savedListings.map((listing) => {
               const detailHref = localizePublicHref(
