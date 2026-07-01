@@ -1159,7 +1159,13 @@ export default function MarketplaceCategoryBrowser({
                   }`}
                 >
                   <div className={listingLayout === 'grid' ? 'grid min-w-0' : 'grid min-w-0 md:grid-cols-[300px_minmax(0,1fr)]'}>
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]">
+                  <div
+                    className={
+                      listingLayout === 'grid'
+                        ? 'relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]'
+                        : 'relative min-h-[230px] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)] md:h-full'
+                    }
+                  >
                     <Link href={detailHref} className="absolute inset-0 block">
                     {listing.imageUrl ? (
                       <Image

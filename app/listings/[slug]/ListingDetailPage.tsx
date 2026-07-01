@@ -332,7 +332,7 @@ export default async function ListingDetailPage({
             <ListingImageGallery images={listing.images || []} title={listing.title} />
 
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
                   <h1 className="max-w-4xl text-3xl font-black leading-tight tracking-[-0.055em] sm:text-5xl">
                     {listing.title}
@@ -353,7 +353,7 @@ export default async function ListingDetailPage({
                     </span>
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex shrink-0 gap-2 self-end sm:self-start">
                   <SavedListingButton listingId={listing.id} />
                   <ShareListingButton
                     title={listing.title}
@@ -363,15 +363,15 @@ export default async function ListingDetailPage({
                 </div>
               </div>
               {headlineFacts.length ? (
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
                   {headlineFacts.slice(0, 8).map((fact) => {
                     const Icon = fact.icon
                     return (
-                      <div key={fact.label} className="flex min-w-0 items-center gap-3 rounded-[14px] border border-[#edf1f6] bg-[#f8fbff] px-4 py-3">
+                      <div key={fact.label} className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-[#edf1f6] bg-[#f8fbff] px-3 py-3 sm:gap-3 sm:px-4">
                         <Icon className="h-5 w-5 shrink-0 text-[#202124]" />
                         <div className="min-w-0">
-                          <p className="whitespace-nowrap text-xs font-semibold text-[#667085]">{fact.label}</p>
-                          <p title={String(fact.value)} className="mt-0.5 whitespace-nowrap text-sm font-black leading-5 text-[#101828]">{fact.value}</p>
+                          <p className="break-words text-xs font-semibold leading-4 text-[#667085]">{fact.label}</p>
+                          <p title={String(fact.value)} className="mt-0.5 break-words text-sm font-black leading-5 text-[#101828]">{fact.value}</p>
                         </div>
                       </div>
                     )
