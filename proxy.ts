@@ -16,6 +16,13 @@ const CANONICAL_HOSTS: Record<string, string> = {
   'www.autorell.se': 'www.autorell.com',
 }
 
+const CANONICAL_MARKET_PATHS: Record<string, string> = {
+  'autorell.de': '/de',
+  'www.autorell.de': '/de',
+  'autorell.se': '/se',
+  'www.autorell.se': '/se',
+}
+
 const MARKET_HOSTS = {
   sv: 'www.autorell.com',
   de: 'www.autorell.com',
@@ -219,11 +226,15 @@ function redirectToHost(
   request: NextRequest,
   hostname: string,
   status: 307 | 308,
+  pathname?: string,
 ) {
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
   url.hostname = hostname
   url.port = ''
+  if (pathname) {
+    url.pathname = pathname
+  }
 
   return NextResponse.redirect(url, status)
 }
@@ -414,7 +425,14 @@ export function proxy(request: NextRequest) {
   }
 
   if (methodCanRedirect && CANONICAL_HOSTS[hostname]) {
-    return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
+    const marketPath = CANONICAL_MARKET_PATHS[hostname]
+    const shouldUseMarketPath = marketPath && (pathname === '/' || pathname === '')
+    return redirectToHost(
+      request,
+      CANONICAL_HOSTS[hostname],
+      308,
+      shouldUseMarketPath ? marketPath : undefined,
+    )
   }
 
   if (
