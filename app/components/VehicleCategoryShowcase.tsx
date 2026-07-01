@@ -16,6 +16,13 @@ const homepageIconImages: Record<string, string> = {
   cars: '/home-category-icons/cars.png',
   vans: '/home-category-icons/vans.png',
   motorcycles: '/home-category-icons/motorcycles.png',
+  motorhomes: '/home-category-icons/motorhomes.png',
+  caravans: '/home-category-icons/caravans.png',
+  trucks: '/home-category-icons/trucks.png',
+  agriculture: '/home-category-icons/agriculture.png',
+  construction: '/home-category-icons/construction.png',
+  'electric-bikes': '/home-category-icons/electric-bikes.png',
+  'e-scooters': '/home-category-icons/e-scooters.png',
 }
 
 export default function VehicleCategoryShowcase({
