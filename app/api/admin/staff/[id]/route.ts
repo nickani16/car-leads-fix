@@ -11,6 +11,17 @@ import {
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+const staffAuditSelect = `
+  user_id,
+  email,
+  display_name,
+  role,
+  is_active,
+  must_change_password,
+  created_at,
+  updated_at
+`
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -29,7 +40,7 @@ export async function PATCH(
   }
   const { data: before } = await auth.adminClient
     .from('staff_users')
-    .select('*')
+    .select(staffAuditSelect)
     .eq('user_id', id)
     .maybeSingle()
 
@@ -75,7 +86,7 @@ export async function PATCH(
 
   const { data: after } = await auth.adminClient
     .from('staff_users')
-    .select('*')
+    .select(staffAuditSelect)
     .eq('user_id', id)
     .maybeSingle()
 
@@ -115,7 +126,7 @@ export async function DELETE(
 
   const { data: before } = await auth.adminClient
     .from('staff_users')
-    .select('*')
+    .select(staffAuditSelect)
     .eq('user_id', id)
     .maybeSingle()
   if (!before) {

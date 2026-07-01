@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, Search, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { PublicLocale } from '@/lib/public-i18n'
 
@@ -19,20 +19,23 @@ const copy = {
     placeholder: 'Sök annonser, fordon och sidor',
     empty: 'Inga relevanta sidor hittades.',
     hint: 'Sök bland annonser, fordon, kategorier och publika sidor',
+    intro: 'Sök bland annonser, fordon, kategorier och publika sidor',
     title: 'Vad letar du efter?',
   },
   de: {
     label: 'Suche',
     placeholder: 'Autorell durchsuchen',
     empty: 'Keine passenden Seiten gefunden.',
-    hint: 'Anzeigen, Fahrzeuge, Kategorien und Seiten durchsuchen',
+    hint: 'Suche...',
+    intro: 'Anzeigen, Fahrzeuge, Kategorien und Seiten durchsuchen',
     title: 'Wonach suchen Sie?',
   },
   en: {
     label: 'Search',
     placeholder: 'Search listings, vehicles and pages',
     empty: 'No relevant pages found.',
-    hint: 'Search listings, vehicles, categories and public pages',
+    hint: 'Searching...',
+    intro: 'Search listings, vehicles, categories and public pages',
     title: 'What are you looking for?',
   },
 } as const
@@ -56,43 +59,38 @@ export default function SiteSearch({
   const text = copy[language]
   const [open, setOpen] = useState(mobile && !headerMobile)
   const [query, setQuery] = useState('')
-  const [index, setIndex] = useState<SearchResult[] | null>(null)
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [searching, setSearching] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!open || index) return
-    const params = new URLSearchParams({ locale })
-    if (marketCode) params.set('market', marketCode)
-    fetch(`/api/public-search?${params.toString()}`)
-      .then((response) => response.json())
-      .then((data: SearchResult[]) => setIndex(data))
-      .catch(() => setIndex([]))
-  }, [index, locale, marketCode, open])
+    const normalized = query.trim()
+    if (!open || normalized.length < 2) return
 
-  const results = useMemo(() => {
-    if (!index) return []
-    const normalized = query.trim().toLocaleLowerCase(locale)
-    if (normalized.length < 2) return []
-    const terms = normalized.split(/\s+/)
-    return index
-      .map((item) => {
-        const title = item.title.toLocaleLowerCase(locale)
-        const haystack = `${title} ${item.description} ${item.keywords}`.toLocaleLowerCase(locale)
-        const score = terms.reduce(
-          (total, term) =>
-            total +
-            (title.startsWith(term) ? 8 : 0) +
-            (title.includes(term) ? 4 : 0) +
-            (haystack.includes(term) ? 1 : -8),
-          0,
-        )
-        return { item, score }
-      })
-      .filter(({ score }) => score >= 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 7)
-      .map(({ item }) => item)
-  }, [index, locale, query])
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => {
+      const params = new URLSearchParams({ locale, q: normalized, limit: '10' })
+      if (marketCode) params.set('market', marketCode)
+
+      setSearching(true)
+      fetch(`/api/public-search?${params.toString()}`, { signal: controller.signal })
+        .then((response) => (response.ok ? response.json() : []))
+        .then((data: SearchResult[]) => {
+          if (!controller.signal.aborted) setResults(Array.isArray(data) ? data : [])
+        })
+        .catch((error: Error) => {
+          if (error.name !== 'AbortError') setResults([])
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setSearching(false)
+        })
+    }, 350)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [locale, marketCode, open, query])
 
   useEffect(() => {
     if (open && !mobile && !headerMobile) inputRef.current?.focus()
@@ -155,7 +153,9 @@ export default function SiteSearch({
 
       {query.trim().length >= 2 && (
         <div className={`${mobile || headerMobile ? 'mt-3' : 'absolute right-0 top-full z-50 mt-3'} w-full overflow-hidden rounded-[16px] border border-[#dedede] bg-white p-2 shadow-[0_24px_65px_rgba(32,33,36,.16)]`}>
-          {results.length > 0 ? (
+          {searching ? (
+            <p className="px-4 py-5 text-sm text-[#718087]">{text.hint}</p>
+          ) : results.length > 0 ? (
             results.map((result) => (
               <Link
                 key={result.href}

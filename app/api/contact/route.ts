@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { trackConversion } from '@/lib/conversion-tracking'
 import {
   isPublicLanguage,
@@ -90,6 +91,13 @@ function getRecipients() {
 }
 
 export async function POST(request: Request) {
+  const contactLimit = checkRateLimit({
+    key: `contact:${getClientIp(request)}`,
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  })
+  if (contactLimit.limited) return rateLimitJson(contactLimit.retryAfter)
+
   try {
     const form = await request.formData()
     const name = singleLine(value(form, 'name'), 120)

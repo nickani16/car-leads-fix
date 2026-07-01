@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import {
   emailHash,
   isValidEmail,
@@ -10,6 +11,13 @@ import {
 } from '@/lib/email-code-auth'
 
 export async function POST(request: Request) {
+  const verifyLimit = checkRateLimit({
+    key: `email-code-verify:${getClientIp(request)}`,
+    limit: 30,
+    windowMs: 15 * 60 * 1000,
+  })
+  if (verifyLimit.limited) return rateLimitJson(verifyLimit.retryAfter)
+
   try {
     const body = (await request.json()) as {
       email?: string

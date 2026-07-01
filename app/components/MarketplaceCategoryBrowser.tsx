@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
@@ -618,10 +619,13 @@ export default function MarketplaceCategoryBrowser({
                   <div className="grid min-w-0 md:grid-cols-[300px_minmax(0,1fr)]">
                   <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)] md:aspect-auto md:min-h-[218px]">
                     {listing.imageUrl ? (
-                      // Supabase public URLs are user-generated and intentionally
-                      // rendered without Next image-domain coupling.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                      <Image
+                        src={listing.imageUrl}
+                        alt={listing.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 300px"
+                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                      />
                     ) : (
                       <>
                         <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />

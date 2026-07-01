@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getCategoryPricing, listingPackageDetails } from '@/lib/marketplace-pricing'
 import { currencyForCountry, normalizeMarketplaceCategory } from '@/lib/marketplace'
+import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 
 const MAX_IMAGES = 20
 const MAX_IMAGE_SIZE = 12 * 1024 * 1024
@@ -31,8 +32,14 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Sign in to create a listing.' }, { status: 401 })
+    const createLimit = checkRateLimit({
+      key: `create-listing:${user.id}:${getClientIp(request)}`,
+      limit: 8,
+      windowMs: 60 * 60 * 1000,
+    })
+    if (createLimit.limited) return rateLimitJson(createLimit.retryAfter)
     const admin = createAdminClient()
-    const { data: profile } = await admin.from('marketplace_profiles').select('*').eq('user_id', user.id).maybeSingle()
+    const { data: profile } = await admin.from('marketplace_profiles').select('user_id,account_type,first_name,last_name,birth_date,address_line_1,postal_code,city,country_code,phone,company_name,display_name,identity_status,risk_status').eq('user_id', user.id).maybeSingle()
     if (!profile) return NextResponse.json({ error: 'Complete your account profile first.' }, { status: 403 })
     if (
       profile.risk_status === 'blocked' ||

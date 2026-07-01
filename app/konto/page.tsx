@@ -14,9 +14,10 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')
-    .select('*')
+    .select('account_type,first_name,last_name,birth_date,email,phone,country_code,company_name,registration_number,vat_number,address_line_1,address_line_2,city,region,postal_code,identity_status,business_verification_status,risk_status,national_id_last4,display_name')
     .eq('user_id', user.id)
     .single()
+  if (!profile) redirect('/registrera?onboarding=1')
   const admin = createAdminClient()
   const [{ count: listings }, { count: published }, { count: conversations }] =
     await Promise.all([
