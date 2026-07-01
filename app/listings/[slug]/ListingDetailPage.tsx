@@ -353,7 +353,7 @@ export default async function ListingDetailPage({
                     </span>
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-2 self-end sm:self-start">
+                <div className="flex shrink-0 gap-2 self-start">
                   <SavedListingButton listingId={listing.id} />
                   <ShareListingButton
                     title={listing.title}
