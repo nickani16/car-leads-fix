@@ -7,6 +7,7 @@ import {
   Check,
   ChevronDown,
   Globe2,
+  X,
 } from 'lucide-react'
 import BrandLogo from './BrandLogo'
 import {
@@ -288,6 +289,7 @@ const footerCopy = {
 } as const
 
 const popularMarkets = [
+  ['EU', 'Europe', 'English'],
   ['SE', 'Sverige', 'Svenska', true],
   ['DK', 'Danmark', 'Dansk'],
   ['DE', 'Deutschland', 'Deutsch'],
@@ -651,10 +653,10 @@ export function MarketSelectorModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-11 items-center gap-3 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-bold text-[#101828] shadow-sm transition hover:border-[#b7cdfb] hover:text-[#075fff]"
+            aria-label={copy.close}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_10px_28px_rgba(16,24,40,0.12)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2"
           >
-            <span aria-hidden="true">×</span>
-            {copy.close}
+            <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -679,7 +681,7 @@ export function MarketSelectorModal({
 
         <section className="mt-10">
           <h3 className="text-base font-extrabold">{copy.popularMarkets}</h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
             {popularMarkets.map(([code, market, language]) => (
               <MarketCard
                 key={code}
@@ -773,13 +775,14 @@ function MarketCard({
 }
 
 function marketHref(countryCode: string, pathname: string) {
+  const current = stripLocalePrefix(pathname || '/')
+  if (countryCode === 'EU') return current === '/' ? '/' : current
   const targetPrefix =
     countryCode === 'SE'
       ? '/se'
       : countryCode === 'DE'
         ? '/de'
         : `/${countryCode.toLowerCase()}`
-  const current = stripLocalePrefix(pathname || '/')
   return current === '/' ? targetPrefix : `${targetPrefix}${current}`
 }
 
@@ -789,6 +792,7 @@ function isActiveMarket(
   locale: PublicLocale,
 ) {
   const current = pathname.split('/').filter(Boolean)[0]
+  if (countryCode === 'EU') return current === '' || current === 'eu' || locale === 'en'
   if (countryCode === 'SE') return current === 'se' || (!current && locale === 'sv')
   if (countryCode === 'DE') return current === 'de' || (!current && locale === 'de')
   return current === countryCode.toLowerCase()
