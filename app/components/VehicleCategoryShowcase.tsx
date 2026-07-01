@@ -55,7 +55,7 @@ export default function VehicleCategoryShowcase({
                 {iconImage ? (
                   // Homepage category icons are static brand assets in /public.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={iconImage} alt="" className="h-8 w-8 object-contain" />
+                  <img src={iconImage} alt="" className="h-10 w-10 object-contain" />
                 ) : (
                   <Icon className="h-8 w-8" strokeWidth={1.9} />
                 )}
