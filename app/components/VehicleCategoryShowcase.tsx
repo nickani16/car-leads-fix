@@ -35,7 +35,7 @@ export default function VehicleCategoryShowcase({
               href={item.href}
               className="group flex min-h-[112px] min-w-0 flex-col items-center justify-start rounded-[10px] px-2 py-3 text-center outline-none transition hover:bg-[#f8fbff] focus-visible:ring-3 focus-visible:ring-[#0866ff]/20"
             >
-              <span className="grid h-[54px] w-[54px] place-items-center rounded-[16px] border border-[#dce8ff] bg-[linear-gradient(180deg,#ffffff_0%,#f3f7ff_100%)] text-[#0866ff] shadow-[0_10px_24px_rgba(8,102,255,.10),inset_0_1px_0_rgba(255,255,255,.95)] transition group-hover:-translate-y-0.5 group-hover:border-[#b9d1ff] group-hover:shadow-[0_14px_30px_rgba(8,102,255,.14),inset_0_1px_0_rgba(255,255,255,.95)]">
+              <span className="grid h-[54px] w-[54px] place-items-center rounded-[16px] border border-[#e4e9f2] bg-[linear-gradient(180deg,#ffffff_0%,#f7f9fc_100%)] text-[#344054] shadow-[0_10px_24px_rgba(16,24,40,.07),inset_0_1px_0_rgba(255,255,255,.95)] transition group-hover:-translate-y-0.5 group-hover:border-[#cfd8e6] group-hover:bg-[#f6f8fb] group-hover:shadow-[0_14px_30px_rgba(16,24,40,.10),inset_0_1px_0_rgba(255,255,255,.95)]">
                 <Icon className="h-7 w-7" strokeWidth={2.05} />
               </span>
               <span className="mt-2 line-clamp-2 min-h-[34px] max-w-full text-[13px] font-semibold leading-[17px] text-[#101828] [overflow-wrap:anywhere]">
