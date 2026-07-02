@@ -909,7 +909,7 @@ export default function PublicHeader({
                           href={href}
                           aria-current={pathname === href ? 'page' : undefined}
                           onClick={(event) => handleCategoryNavigation(event, href)}
-                          className={`flex h-full min-w-0 shrink items-center border-b-2 px-3 text-[13px] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-4 ${
+                          className={`flex h-full min-w-0 shrink items-center border-b-2 px-3 text-[14px] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-4 ${
                             pathname === href
                               ? 'border-[#0866ff] font-bold text-[#101828]'
                               : 'border-transparent font-semibold text-[#344054]'
@@ -922,7 +922,7 @@ export default function PublicHeader({
                       ))}
                       {overflowCategoryLinks.length ? (
                         <details className="group/category-more relative flex h-full shrink-0">
-                          <summary className="flex h-full cursor-pointer list-none items-center gap-1.5 border-b-2 border-transparent px-3 text-[13px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] [&::-webkit-details-marker]:hidden">
+                          <summary className="flex h-full cursor-pointer list-none items-center gap-1.5 border-b-2 border-transparent px-3 text-[14px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] [&::-webkit-details-marker]:hidden">
                             {t.more}
                             <ChevronDown className="h-3.5 w-3.5 transition group-open/category-more:rotate-180" />
                           </summary>
@@ -1044,7 +1044,7 @@ export default function PublicHeader({
                   aria-label={t.more}
                   aria-expanded={moreOpen}
                   aria-haspopup="menu"
-                  className="flex min-w-[62px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="flex min-w-[44px] flex-col items-center justify-center px-0 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <Menu className="h-[20px] w-[20px]" strokeWidth={1.8} />
                   <span className="text-[10px] font-medium">{t.more}</span>
