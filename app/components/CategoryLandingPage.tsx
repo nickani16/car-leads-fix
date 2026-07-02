@@ -137,7 +137,7 @@ export default async function CategoryLandingPage({
                 <h1 className="mt-5 max-w-[350px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[66px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[72px]">
                   {page.heroTitle}
                 </h1>
-                <HeroTypingText prefix={page.heroTypingPrefix} items={typingWords} />
+                <HeroTypingText prefix={page.heroTypingPrefix} items={typingWords} variant="rotate" />
               </div>
             </div>
           </div>

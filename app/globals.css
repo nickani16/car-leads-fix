@@ -38,6 +38,22 @@ body {
   animation: header-word-enter 2.6s ease both;
 }
 
+@keyframes hero-word-rotate {
+  0% {
+    opacity: 0;
+    transform: translateY(45%);
+  }
+  28%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-word-rotate {
+  animation: hero-word-rotate 1.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  will-change: transform, opacity;
+}
+
 @keyframes hero-typing-caret {
   0%, 48% {
     opacity: 1;
@@ -144,6 +160,8 @@ label {
 
 @media (prefers-reduced-motion: reduce) {
   .header-word-enter,
+  .hero-word-rotate,
+  .hero-typing-caret,
   .testimonial-track {
     animation: none;
   }
