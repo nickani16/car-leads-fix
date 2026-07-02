@@ -653,9 +653,17 @@ export default function PublicHeader({
   const savedHref = `${marketPathPrefix}/sparade`
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
+  const showTopCategoryNav = unprefixedPathname === '/'
   const showMobileCategoryNav =
     Boolean(categoryPrimaryLinks) && !isMarketplaceResults && !isListingDetail
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
+  const headerSpacerClass = showMobileCategoryNav
+    ? showTopCategoryNav
+      ? 'h-[110px] min-[1120px]:h-[80px]'
+      : 'h-[110px] min-[1120px]:h-[50px]'
+    : showTopCategoryNav
+      ? 'h-[56px] min-[1120px]:h-[80px]'
+      : 'h-[56px] min-[1120px]:h-[50px]'
   const mobileMainLinks = [
     ...menus.map(({ href, label, icon }) => ({ href, label, icon })),
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
@@ -727,11 +735,7 @@ export default function PublicHeader({
   return (
     <>
       <div
-        className={
-          showMobileCategoryNav
-            ? 'h-[110px] min-[1120px]:h-[80px]'
-            : 'h-[56px] min-[1120px]:h-[80px]'
-        }
+        className={headerSpacerClass}
         aria-hidden="true"
       />
       <div
@@ -740,59 +744,61 @@ export default function PublicHeader({
         }`}
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
-          <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
-            <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 px-5 sm:px-8">
-              <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
-                {buyItems.map(({ href, label }, index) => {
-                  const category = marketplaceCategories[index]
-                  const isActive =
-                    pathname === href ||
-                    (category && unprefixedPathname === `/marketplace/${category.slug}`)
-                  const topLabel =
-                    category && topCategoryLabels[category.slug]
-                      ? topCategoryLabels[category.slug]![language]
-                      : label
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
-                        isActive
-                          ? 'border-[#0866ff] font-semibold text-[#202124]'
-                          : 'border-transparent'
-                      }`}
-                    >
-                      {topLabel}
-                    </Link>
-                  )
-                })}
-              </nav>
+          {showTopCategoryNav ? (
+            <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
+              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 px-5 sm:px-8">
+                <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
+                  {buyItems.map(({ href, label }, index) => {
+                    const category = marketplaceCategories[index]
+                    const isActive =
+                      pathname === href ||
+                      (category && unprefixedPathname === `/marketplace/${category.slug}`)
+                    const topLabel =
+                      category && topCategoryLabels[category.slug]
+                        ? topCategoryLabels[category.slug]![language]
+                        : label
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
+                          isActive
+                            ? 'border-[#0866ff] font-semibold text-[#202124]'
+                            : 'border-transparent'
+                        }`}
+                      >
+                        {topLabel}
+                      </Link>
+                    )
+                  })}
+                </nav>
 
-              <div className="flex h-full shrink-0 items-center">
-                <Link
-                  href={localizePublicHref(locale, '/contact')}
-                  className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
-                >
-                  <Mail className="h-3.5 w-3.5" />
-                  {t.contact}
-                </Link>
-                <div className="relative flex h-full">
-                  <button
-                    type="button"
-                    onClick={() => setMarketSelectorOpen(true)}
-                    aria-expanded={marketSelectorOpen}
-                    aria-haspopup="dialog"
-                    className="flex h-full items-center gap-2 border-l border-r border-[#e6e7e9] px-4 text-[10px] font-medium hover:bg-white"
+                <div className="flex h-full shrink-0 items-center">
+                  <Link
+                    href={localizePublicHref(locale, '/contact')}
+                    className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
                   >
-                    <FlagIcon code={activeMarket[1]} size="sm" />
-                    <span>{activeMarket[2]}</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
+                    <Mail className="h-3.5 w-3.5" />
+                    {t.contact}
+                  </Link>
+                  <div className="relative flex h-full">
+                    <button
+                      type="button"
+                      onClick={() => setMarketSelectorOpen(true)}
+                      aria-expanded={marketSelectorOpen}
+                      aria-haspopup="dialog"
+                      className="flex h-full items-center gap-2 border-l border-r border-[#e6e7e9] px-4 text-[10px] font-medium hover:bg-white"
+                    >
+                      <FlagIcon code={activeMarket[1]} size="sm" />
+                      <span>{activeMarket[2]}</span>
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : null}
 
           <div className="relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 min-[1120px]:h-[50px]">
             <div className="absolute left-1/2 top-0 h-[56px] w-screen max-w-[100vw] -translate-x-1/2 px-4 min-[1120px]:hidden">
