@@ -956,7 +956,7 @@ export default function PublicHeader({
               {headerAccount.authenticated ? (
                 <Link
                   href={accountMessagesHref}
-                  className="relative flex min-w-[76px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="relative flex min-w-[76px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <span className="relative">
                     <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
@@ -972,7 +972,7 @@ export default function PublicHeader({
                 <button
                   type="button"
                   onClick={() => openAuthModal('login', accountMessagesHref)}
-                  className="relative flex min-w-[76px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="relative flex min-w-[76px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
                   <span className="text-[10px] font-medium">{t.messages}</span>
@@ -981,7 +981,7 @@ export default function PublicHeader({
               {headerAccount.authenticated ? (
                 <Link
                   href={savedHref}
-                  className="relative flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="relative flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <span className="relative">
                     <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
@@ -997,7 +997,7 @@ export default function PublicHeader({
                 <button
                   type="button"
                   onClick={() => openAuthModal('login', savedHref)}
-                  className="relative flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="relative flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
                   <span className="text-[10px] font-medium">{t.saved}</span>
@@ -1007,7 +1007,7 @@ export default function PublicHeader({
               {headerAccount.authenticated ? (
                 <Link
                   href={accountHref}
-                  className="flex min-w-[92px] max-w-[132px] flex-col items-center justify-center border-x border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="flex min-w-[92px] max-w-[132px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
                   <span className="max-w-full truncate text-[10px] font-medium">
@@ -1018,7 +1018,7 @@ export default function PublicHeader({
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
-                  className="flex min-w-[66px] flex-col items-center justify-center border-x border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
                   <span className="text-[10px] font-medium">{t.signIn}</span>
@@ -1031,7 +1031,7 @@ export default function PublicHeader({
                   aria-label={t.more}
                   aria-expanded={moreOpen}
                   aria-haspopup="menu"
-                  className="flex min-w-[62px] flex-col items-center justify-center border-r border-[#ececea] px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="flex min-w-[62px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
                   <Menu className="h-[20px] w-[20px]" strokeWidth={1.8} />
                   <span className="text-[10px] font-medium">{t.more}</span>

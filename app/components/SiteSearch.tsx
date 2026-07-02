@@ -271,7 +271,7 @@ export default function SiteSearch({
           type="button"
           onClick={() => setOpen(true)}
           aria-label={text.label}
-          className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+          className="flex min-w-[66px] flex-col items-center justify-center px-2 text-[#202124] transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
         >
           <Search className="h-[19px] w-[19px]" strokeWidth={1.7} />
           <span className="text-[10px] font-medium">{text.label}</span>
@@ -409,7 +409,7 @@ export default function SiteSearch({
             setQuery('')
           }}
           aria-label="Close search"
-          className="flex min-w-[66px] flex-col items-center justify-center border-l border-[#ececea] bg-[#f7f8f8] px-2 text-[#0866ff]"
+          className="flex min-w-[66px] flex-col items-center justify-center bg-[#f7f8f8] px-2 text-[#0866ff]"
         >
           <X className="h-[19px] w-[19px]" strokeWidth={1.7} />
           <span className="text-[10px] font-medium">{text.label}</span>
