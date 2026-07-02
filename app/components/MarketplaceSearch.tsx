@@ -1,21 +1,24 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
 import {
-  Bike,
   BusFront,
-  CarFront,
   ChevronDown,
   Construction,
   MapPin,
   Search,
-  Scooter,
   Tractor,
-  Truck,
-  Warehouse,
-  type LucideIcon,
 } from 'lucide-react'
+import {
+  AutorellBikeIcon,
+  AutorellCaravanIcon,
+  AutorellCarIcon,
+  AutorellMotorbikeIcon,
+  AutorellScooterIcon,
+  AutorellTruckIcon,
+  AutorellVanIcon,
+} from './AutorellCategoryIcons'
 import {
   localizePublicHref,
   translatePublic,
@@ -42,18 +45,18 @@ const categoryOptions: Array<{
   sv: string
   en: string
   de: string
-  icon: LucideIcon
+  icon: ComponentType<SVGProps<SVGSVGElement>>
 }> = [
-  { value: 'cars', sv: 'Bilar', en: 'Cars', de: 'Autos', icon: CarFront },
-  { value: 'vans', sv: 'Transportbilar', en: 'Vans', de: 'Transporter', icon: BusFront },
-  { value: 'motorcycles', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder', icon: Bike },
+  { value: 'cars', sv: 'Bilar', en: 'Cars', de: 'Autos', icon: AutorellCarIcon },
+  { value: 'vans', sv: 'Transportbilar', en: 'Vans', de: 'Transporter', icon: AutorellVanIcon },
+  { value: 'motorcycles', sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder', icon: AutorellMotorbikeIcon },
   { value: 'motorhomes', sv: 'Husbilar', en: 'Motorhomes', de: 'Wohnmobile', icon: BusFront },
-  { value: 'caravans', sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen', icon: Warehouse },
-  { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw', icon: Truck },
+  { value: 'caravans', sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen', icon: AutorellCaravanIcon },
+  { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw', icon: AutorellTruckIcon },
   { value: 'agriculture', sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen', icon: Tractor },
   { value: 'construction', sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen', icon: Construction },
-  { value: 'electric-bikes', sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder', icon: Bike },
-  { value: 'e-scooters', sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter', icon: Scooter },
+  { value: 'electric-bikes', sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder', icon: AutorellBikeIcon },
+  { value: 'e-scooters', sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter', icon: AutorellScooterIcon },
 ]
 
 const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo']
@@ -196,8 +199,8 @@ function SearchField({
   children,
 }: {
   label: string
-  icon: typeof Search
-  children: React.ReactNode
+  icon: ComponentType<SVGProps<SVGSVGElement>>
+  children: ReactNode
 }) {
   return (
     <label className="relative flex min-w-0 items-center gap-3 overflow-hidden rounded-[17px] border border-[#e6e9ee] bg-[#f8fafc] px-4 py-2.5 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:bg-transparent sm:focus-within:ring-0">

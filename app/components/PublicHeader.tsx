@@ -32,6 +32,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import BrandLogo from './BrandLogo'
+import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
 import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
@@ -1097,17 +1098,23 @@ export default function PublicHeader({
                 {t.shopByCategory}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
-                {buyItems.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={closeMobile}
-                    className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#344054] transition hover:border-[#bcd3ff] hover:bg-white"
-                  >
-                    <Icon className="h-4 w-4 shrink-0 text-[#0866ff]" />
-                    <span className="min-w-0 truncate">{label}</span>
-                  </Link>
-                ))}
+                {buyItems.map(({ href, label, icon: Icon }, index) => {
+                  const categorySlug = marketplaceCategories[index]?.slug
+                  const CategoryIcon =
+                    (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMobile}
+                      className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#344054] transition hover:border-[#bcd3ff] hover:bg-white"
+                    >
+                      <CategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
+                      <span className="min-w-0 truncate">{label}</span>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
 
