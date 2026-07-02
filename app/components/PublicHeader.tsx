@@ -673,10 +673,13 @@ export default function PublicHeader({
   const headerSpacerClass = showMobileCategoryNav
     ? showTopCategoryNav
       ? 'h-[110px] min-[1120px]:h-[80px]'
-      : 'h-[110px] min-[1120px]:h-[50px]'
+      : 'h-[110px] min-[1120px]:h-[58px]'
     : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
-      : 'h-[56px] min-[1120px]:h-[50px]'
+      : 'h-[56px] min-[1120px]:h-[58px]'
+  const desktopMainRowHeightClass = showTopCategoryNav
+    ? 'min-[1120px]:h-[50px]'
+    : 'min-[1120px]:h-[58px]'
   const mobileMainLinks = [
     ...menus.map(({ href, label, icon }) => ({ href, label, icon })),
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
@@ -813,7 +816,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className="relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 min-[1120px]:h-[50px] min-[1120px]:pl-8 min-[1120px]:pr-0">
+          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:pl-8 min-[1120px]:pr-0`}>
             <div className="absolute left-1/2 top-0 h-[56px] w-screen max-w-[100vw] -translate-x-1/2 px-4 min-[1120px]:hidden">
               <Link
                 href={homeHref}
@@ -1285,7 +1288,7 @@ function DesktopMenu({
         onClick={onToggle}
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`flex h-[50px] shrink-0 items-center gap-1.5 border-b-2 px-3 text-[14px] font-semibold transition hover:border-[#0866ff] hover:text-[#111] xl:px-4 ${
+        className={`flex h-full shrink-0 items-center gap-1.5 border-b-2 px-3 text-[14px] font-semibold transition hover:border-[#0866ff] hover:text-[#111] xl:px-4 ${
           open
             ? 'border-[#0866ff] text-[#111]'
             : 'border-transparent text-[#303640]'
