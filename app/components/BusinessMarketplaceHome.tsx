@@ -15,7 +15,7 @@ import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import CountryFlag from './CountryFlag'
 import SavedListingButton from './SavedListingButton'
-import VehicleCategoryShowcase from './VehicleCategoryShowcase'
+import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import {
   marketplaceCategories,
   marketplaceLanguage,
@@ -235,49 +235,46 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="bg-white pt-0 sm:pt-6">
-        <div className="relative mx-auto max-w-[var(--autorell-page-max)]">
-          <div className="px-0 sm:px-8">
-            <div className="relative min-h-[285px] overflow-hidden rounded-none bg-white sm:min-h-[390px] sm:rounded-[22px] lg:min-h-[400px]">
+      <section className="overflow-hidden bg-[#0866ff] pt-0">
+        <div className="relative">
+          <div className="relative min-h-[360px] sm:min-h-[430px] lg:min-h-[470px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(255,255,255,.22),transparent_36%),linear-gradient(180deg,#1174ff_0%,#0866ff_62%,#075ce8_100%)]" />
+            <div className="absolute left-[-68px] top-[74px] hidden w-[39vw] max-w-[560px] min-w-[360px] opacity-95 drop-shadow-[0_24px_28px_rgba(3,10,26,.18)] lg:block">
               <Image
-                src="/autorell-home-hero-banner.jpg"
-                alt={t.heroAlt}
-                fill
+                src="/home-hero-orange-suv.webp"
+                alt=""
+                width={1200}
+                height={675}
                 preload
-                className="object-cover object-center sm:scale-[1.03] sm:object-[44%_center]"
-                sizes="100vw"
+                className="h-auto w-full object-contain"
+                sizes="39vw"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.32)_0%,rgba(3,10,26,.21)_31%,rgba(3,10,26,.06)_58%,rgba(3,10,26,.01)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.26)_0%,rgba(3,10,26,.18)_34%,rgba(3,10,26,.05)_60%,rgba(3,10,26,0)_100%)]" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,0)_42%)]" />
+            </div>
+            <div className="absolute right-[-94px] top-[86px] hidden w-[39vw] max-w-[560px] min-w-[360px] opacity-95 drop-shadow-[0_24px_28px_rgba(3,10,26,.18)] lg:block">
+              <Image
+                src="/home-hero-yellow-van.webp"
+                alt=""
+                width={1200}
+                height={675}
+                preload
+                className="h-auto w-full object-contain"
+                sizes="39vw"
+              />
+            </div>
 
-              <div className="relative mx-auto flex min-h-[285px] max-w-[390px] flex-col items-center justify-center px-5 pb-16 pt-7 text-center min-[430px]:max-w-[430px] sm:min-h-[390px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:pb-24 sm:pt-14 lg:min-h-[400px] lg:pb-28">
-                <h1 className="max-w-[350px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[860px] sm:text-[66px] sm:tracking-[-0.055em] lg:text-[72px]">
+            <div className="relative mx-auto flex min-h-[360px] max-w-[390px] flex-col items-center justify-center px-5 pb-24 pt-8 text-center min-[430px]:max-w-[430px] sm:min-h-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:pb-28 lg:min-h-[470px] lg:pb-32">
+              <h1 className="max-w-[390px] text-[38px] leading-[.92] tracking-[-0.055em] text-white [text-shadow:0_5px_24px_rgba(3,10,26,.22)] sm:max-w-[760px] sm:text-[62px] lg:text-[70px]">
                   {t.heroTitle}
                 </h1>
-              </div>
             </div>
           </div>
 
-          <div className={`relative z-10 -mt-[42px] sm:-mt-[58px] ${homeContainerClass}`}>
-            <div className="sm:px-10 lg:px-14">
+          <div className={`relative z-10 -mt-[82px] pb-7 sm:-mt-[104px] sm:pb-9 ${homeContainerClass}`}>
+            <div className="sm:px-16 lg:px-52">
               <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
             </div>
+            <HomeCategoryChips items={categoryCards} />
           </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-8 sm:py-12">
-        <div className={homeContainerClass}>
-          <VehicleCategoryShowcase
-            items={categoryCards.map((category) => ({
-              slug: category.slug,
-              label: category.label,
-              href: category.href,
-              count: category.count,
-            }))}
-            listingLabel={t.listing}
-            listingsLabel={t.listings}
-          />
         </div>
       </section>
 
@@ -616,6 +613,35 @@ function ListingCard({
         </p>
       </div>
     </Link>
+  )
+}
+
+function HomeCategoryChips({ items }: { items: CategoryCard[] }) {
+  return (
+    <nav
+      aria-label="Vehicle categories"
+      className="-mx-5 mt-4 overflow-x-auto px-5 pb-1 [scrollbar-width:thin] min-[430px]:-mx-0 min-[430px]:px-0 sm:mt-5"
+    >
+      <div className="flex w-max min-w-full items-center gap-2.5 sm:justify-center sm:gap-3">
+        {items.map((item) => {
+          const Icon =
+            autorellCategoryIcons[item.slug] ||
+            marketplaceCategories.find((category) => category.slug === item.slug)?.icon ||
+            CarFront
+
+          return (
+            <Link
+              key={item.slug}
+              href={item.href}
+              className="inline-flex h-12 shrink-0 items-center gap-2 rounded-[13px] bg-white/92 px-4 text-sm font-bold text-[#101828] shadow-[0_10px_24px_rgba(3,10,26,.12)] ring-1 ring-white/70 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_30px_rgba(3,10,26,.16)] sm:h-[52px] sm:px-5 sm:text-[15px]"
+            >
+              <Icon className="h-5 w-5 text-[#0866ff]" strokeWidth={2.1} />
+              <span className="whitespace-nowrap">{item.label}</span>
+            </Link>
+          )
+        })}
+      </div>
+    </nav>
   )
 }
 
