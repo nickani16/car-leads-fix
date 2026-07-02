@@ -653,7 +653,20 @@ export default function PublicHeader({
   const savedHref = `${marketPathPrefix}/sparade`
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
-  const showTopCategoryNav = unprefixedPathname === '/'
+  const isVehicleCategoryLanding = marketplaceCategories.some(
+    (category) => unprefixedPathname === categoryLandingPath(category.slug),
+  )
+  const isListingManagement =
+    unprefixedPathname.startsWith('/account/listings') ||
+    unprefixedPathname.startsWith('/konto/annonser')
+  const isVehicleRelatedPage =
+    isVehicleCategoryLanding ||
+    isMarketplaceResults ||
+    isListingDetail ||
+    isListingManagement ||
+    unprefixedPathname === '/find-cars' ||
+    unprefixedPathname === '/salj-fordon'
+  const showTopCategoryNav = !isVehicleRelatedPage
   const showMobileCategoryNav =
     Boolean(categoryPrimaryLinks) && !isMarketplaceResults && !isListingDetail
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
