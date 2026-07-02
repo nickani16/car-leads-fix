@@ -759,7 +759,7 @@ export default function PublicHeader({
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {showTopCategoryNav ? (
             <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 px-5 sm:px-8">
+              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 px-5 sm:pl-8 sm:pr-0">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
@@ -813,7 +813,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className="relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 min-[1120px]:h-[50px]">
+          <div className="relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 min-[1120px]:h-[50px] min-[1120px]:pl-8 min-[1120px]:pr-0">
             <div className="absolute left-1/2 top-0 h-[56px] w-screen max-w-[100vw] -translate-x-1/2 px-4 min-[1120px]:hidden">
               <Link
                 href={homeHref}
