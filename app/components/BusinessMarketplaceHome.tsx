@@ -15,6 +15,7 @@ import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import CountryFlag from './CountryFlag'
 import SavedListingButton from './SavedListingButton'
+import HeroTypingText from './HeroTypingText'
 import VehicleCategoryShowcase from './VehicleCategoryShowcase'
 import {
   marketplaceCategories,
@@ -224,6 +225,17 @@ export default async function BusinessMarketplaceHome({
           ? homeCopy.en
           : translatePublicObject(locale, homeCopy.en)
   const { featuredListings, categoryCards } = await getHomeMarketplaceData(locale, marketCode)
+  const heroTypingItems = marketplaceCategories.map((category) => {
+    if (locale === 'sv') {
+      if (category.slug === 'agriculture') return 'Lantbruk'
+      if (category.slug === 'construction') return 'Entreprenadmaskiner'
+      return category.labels.sv
+    }
+
+    const language = marketplaceLanguage(locale)
+    const label = category.labels[language]
+    return locale === 'de' || locale === 'en' ? label : translatePublic(locale, category.labels.en)
+  })
   const localMarketCode =
     marketCode || (locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : 'EU')
   const localMarketLabel =
@@ -250,10 +262,14 @@ export default async function BusinessMarketplaceHome({
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.32)_0%,rgba(3,10,26,.21)_31%,rgba(3,10,26,.06)_58%,rgba(3,10,26,.01)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.26)_0%,rgba(3,10,26,.18)_34%,rgba(3,10,26,.05)_60%,rgba(3,10,26,0)_100%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,0)_42%)]" />
 
-              <div className="relative mx-auto flex min-h-[285px] max-w-[390px] flex-col items-center justify-center px-5 pb-16 pt-7 text-center min-[430px]:max-w-[430px] sm:min-h-[390px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:pb-24 sm:pt-14 lg:min-h-[400px] lg:pb-28">
-                <h1 className="max-w-[350px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[860px] sm:text-[66px] sm:tracking-[-0.055em] lg:text-[72px]">
+              <div className="relative mx-auto flex min-h-[285px] max-w-[390px] flex-col justify-center px-5 pb-14 pt-7 min-[430px]:max-w-[430px] sm:min-h-[390px] sm:max-w-[var(--autorell-page-max)] sm:justify-start sm:px-8 sm:pb-12 sm:pt-12 lg:min-h-[400px] lg:pt-14">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
+                  {t.heroEyebrow}
+                </p>
+                <h1 className="mt-5 max-w-[330px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[66px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[72px]">
                   {t.heroTitle}
                 </h1>
+                <HeroTypingText prefix={t.heroTypingPrefix} items={heroTypingItems} />
               </div>
             </div>
           </div>

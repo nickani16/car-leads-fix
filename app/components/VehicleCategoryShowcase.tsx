@@ -15,35 +15,28 @@ const vehicleIcons = Object.fromEntries(
 
 export default function VehicleCategoryShowcase({
   items,
-  listingLabel,
-  listingsLabel,
 }: {
   items: VehicleCategoryShowcaseItem[]
   listingLabel: string
   listingsLabel: string
 }) {
   return (
-    <nav aria-label="Vehicle categories" className="overflow-hidden rounded-[14px] border border-[#e4e9f2] bg-white shadow-[0_14px_42px_rgba(16,24,40,.05)]">
-      <div className="grid auto-cols-[112px] grid-flow-col grid-rows-2 gap-x-3 gap-y-6 overflow-x-auto px-3 py-5 [scrollbar-width:thin] sm:auto-cols-[132px] sm:px-5 md:grid-flow-row md:grid-cols-5 md:grid-rows-none md:overflow-visible lg:px-6">
+    <nav aria-label="Vehicle categories" className="-mx-5 overflow-x-auto bg-[#f6f4fa] px-5 py-5 [scrollbar-width:thin] min-[430px]:-mx-0 min-[430px]:rounded-[16px] min-[430px]:px-4 sm:py-6">
+      <div className="flex w-max min-w-full items-center gap-3 sm:justify-center sm:gap-4">
         {items.map((item) => {
           const Icon = autorellCategoryIcons[item.slug] || vehicleIcons[item.slug] || vehicleIcons.cars
-          const countLabel = item.count === 1 ? listingLabel : listingsLabel
 
           return (
             <Link
               key={item.slug}
               href={item.href}
-              className="group flex min-h-[112px] min-w-0 flex-col items-center justify-start rounded-[10px] px-2 py-3 text-center outline-none transition hover:bg-[#f8fbff] focus-visible:ring-3 focus-visible:ring-[#0866ff]/20"
+              className="group inline-flex h-12 shrink-0 items-center gap-2.5 rounded-[12px] bg-[#e9e9ec] px-4 text-[15px] font-semibold text-[#111827] outline-none transition hover:-translate-y-0.5 hover:bg-[#dedfe3] focus-visible:ring-3 focus-visible:ring-[#101828]/15 sm:h-[52px] sm:px-5 sm:text-base"
+              aria-label={`${item.label}, ${item.count.toLocaleString('sv-SE')}`}
             >
-              <span className="grid h-[54px] w-[54px] place-items-center rounded-[16px] border border-[#e4e9f2] bg-[linear-gradient(180deg,#ffffff_0%,#f7f9fc_100%)] text-[#344054] shadow-[0_10px_24px_rgba(16,24,40,.07),inset_0_1px_0_rgba(255,255,255,.95)] transition group-hover:-translate-y-0.5 group-hover:border-[#cfd8e6] group-hover:bg-[#f6f8fb] group-hover:shadow-[0_14px_30px_rgba(16,24,40,.10),inset_0_1px_0_rgba(255,255,255,.95)]">
-                <Icon className="h-7 w-7" strokeWidth={2.05} />
+              <span className="grid h-6 w-6 shrink-0 place-items-center text-[#101828]">
+                <Icon className="h-5 w-5" strokeWidth={2.25} />
               </span>
-              <span className="mt-2 line-clamp-2 min-h-[34px] max-w-full text-[13px] font-semibold leading-[17px] text-[#101828] [overflow-wrap:anywhere]">
-                {item.label}
-              </span>
-              <span className="mt-1 text-[11px] font-semibold text-[#667085]">
-                {item.count.toLocaleString('sv-SE')} {countLabel}
-              </span>
+              <span className="whitespace-nowrap">{item.label}</span>
             </Link>
           )
         })}
