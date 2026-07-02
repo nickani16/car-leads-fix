@@ -21,7 +21,7 @@ export default function VehicleCategoryShowcase({
   listingsLabel: string
 }) {
   return (
-    <nav aria-label="Vehicle categories" className="-mx-5 overflow-x-auto bg-[#f6f4fa] px-5 py-5 [scrollbar-width:thin] min-[430px]:-mx-0 min-[430px]:rounded-[16px] min-[430px]:px-4 sm:py-6">
+    <nav aria-label="Vehicle categories" className="-mx-5 overflow-x-auto bg-white px-5 py-5 [scrollbar-width:thin] min-[430px]:-mx-0 min-[430px]:px-0 sm:py-6">
       <div className="flex w-max min-w-full items-center gap-3 sm:justify-center sm:gap-4">
         {items.map((item) => {
           const Icon = autorellCategoryIcons[item.slug] || vehicleIcons[item.slug] || vehicleIcons.cars
