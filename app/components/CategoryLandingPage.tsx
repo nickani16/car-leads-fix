@@ -169,7 +169,7 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section className="border-t border-[#edf0f5] bg-white py-10 sm:py-12">
+      <section className="bg-white py-10 sm:py-12">
         <div className="mx-auto w-full px-4 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:max-w-[var(--autorell-page-max)] sm:px-8">
           <SectionHeader title={page.topRatedTitle} cta={page.viewAll} href={localizePublicHref(locale, `/marketplace/${slug}`)} />
           {topListings.length ? (
