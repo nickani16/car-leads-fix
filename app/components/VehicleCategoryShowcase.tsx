@@ -128,7 +128,7 @@ export default function VehicleCategoryShowcase({
               className="group flex min-h-[112px] min-w-0 flex-col items-center justify-start rounded-[10px] px-2 py-3 text-center outline-none transition hover:bg-[#f8fbff] focus-visible:ring-3 focus-visible:ring-[#0866ff]/20"
             >
               <span className="grid h-14 w-14 place-items-center rounded-[14px] text-[#0866ff] transition group-hover:bg-[#eef4ff]">
-                <Icon className="h-8 w-8" strokeWidth={1.9} />
+                <Icon className="h-7 w-7" strokeWidth={1.9} />
               </span>
               <span className="mt-2 line-clamp-2 min-h-[34px] max-w-full text-[13px] font-semibold leading-[17px] text-[#101828] [overflow-wrap:anywhere]">
                 {item.label}
