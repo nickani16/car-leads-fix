@@ -7,23 +7,52 @@ type HeroTypingTextProps = {
   items: string[]
 }
 
-const ROTATE_MS = 1900
+const TYPE_MS = 70
+const DELETE_MS = 38
+const HOLD_MS = 1250
 
 export default function HeroTypingText({ prefix, items }: HeroTypingTextProps) {
   const words = useMemo(() => items.filter(Boolean), [items])
   const [index, setIndex] = useState(0)
+  const [visibleLetters, setVisibleLetters] = useState(0)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!words.length) return
+    const activeWord = words[index % words.length] || ''
 
-    const interval = window.setInterval(() => {
-      setIndex((current) => (current + 1) % words.length)
-    }, ROTATE_MS)
+    const timeout = window.setTimeout(
+      () => {
+        if (!deleting && visibleLetters < activeWord.length) {
+          setVisibleLetters((current) => current + 1)
+          return
+        }
 
-    return () => window.clearInterval(interval)
-  }, [words])
+        if (!deleting && visibleLetters >= activeWord.length) {
+          setDeleting(true)
+          return
+        }
+
+        if (deleting && visibleLetters > 0) {
+          setVisibleLetters((current) => current - 1)
+          return
+        }
+
+        setDeleting(false)
+        setIndex((current) => (current + 1) % words.length)
+      },
+      !deleting && visibleLetters >= activeWord.length
+        ? HOLD_MS
+        : deleting
+          ? DELETE_MS
+          : TYPE_MS,
+    )
+
+    return () => window.clearTimeout(timeout)
+  }, [deleting, index, visibleLetters, words])
 
   const activeWord = words[index % words.length] || ''
+  const typedWord = activeWord.slice(0, visibleLetters)
 
   return (
     <p
@@ -31,10 +60,11 @@ export default function HeroTypingText({ prefix, items }: HeroTypingTextProps) {
       aria-label={`${prefix} ${activeWord}`}
     >
       <span className="shrink-0">{prefix}&nbsp;</span>
-      <span className="inline-flex h-7 items-center overflow-hidden leading-7 sm:h-8 sm:leading-8">
-        <span key={activeWord} className="hero-word-rotate block font-semibold leading-7 text-white sm:leading-8">
-          {activeWord}
+      <span className="inline-flex h-7 min-w-0 items-center leading-7 sm:h-8 sm:leading-8">
+        <span className="block font-semibold leading-7 text-white sm:leading-8">
+          {typedWord}
         </span>
+        <span aria-hidden="true" className="hero-typing-caret ml-0.5 h-5 w-[2px] rounded-full bg-white/90 sm:h-6" />
       </span>
     </p>
   )
