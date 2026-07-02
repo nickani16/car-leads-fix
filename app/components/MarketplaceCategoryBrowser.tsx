@@ -51,6 +51,7 @@ export type MarketplaceListing = {
   priceValue: number | null
   imageAvailable: boolean
   imageUrl: string | null
+  imageUrls?: string[]
   sellerName: string
   sellerIsTrader: boolean
   sellerTrust: 'verified' | 'unverified'
@@ -114,7 +115,10 @@ export default function MarketplaceCategoryBrowser({
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
   const [compareError, setCompareError] = useState('')
+  const [galleryIndices, setGalleryIndices] = useState<Record<string, number>>({})
   const typeCarouselRef = useRef<HTMLDivElement>(null)
+  const imageTouchStartRef = useRef<{ id: string; x: number; y: number } | null>(null)
+  const suppressImageClickRef = useRef<string | null>(null)
   const displayLocale = locale
   const localizedCategory = {
     ...localizeCategory(category, locale),
@@ -1141,6 +1145,20 @@ export default function MarketplaceCategoryBrowser({
                 )
                 const sellerLabel = listing.sellerIsTrader ? listing.sellerName : copy.privateSeller
                 const compared = compareIds.includes(listing.id)
+                const imageUrls = listing.imageUrls?.length
+                  ? listing.imageUrls
+                  : listing.imageUrl
+                    ? [listing.imageUrl]
+                    : []
+                const imageIndex = imageUrls.length
+                  ? Math.min(galleryIndices[listing.id] || 0, imageUrls.length - 1)
+                  : 0
+                const activeImageUrl = imageUrls[imageIndex] || null
+                const imageDotCount = Math.min(imageUrls.length, 5)
+                const activeImageDot =
+                  imageUrls.length > imageDotCount && imageDotCount > 1
+                    ? Math.round((imageIndex / (imageUrls.length - 1)) * (imageDotCount - 1))
+                    : imageIndex
                 const specChips = buildListingSpecChips(
                   {
                     fuelType: listing.fuelType,
@@ -1160,16 +1178,53 @@ export default function MarketplaceCategoryBrowser({
                 >
                   <div className={listingLayout === 'grid' ? 'grid min-w-0' : 'grid min-w-0 md:grid-cols-[300px_minmax(0,1fr)]'}>
                   <div
+                    onTouchStart={(event) => {
+                      if (imageUrls.length < 2) return
+                      const touch = event.touches[0]
+                      imageTouchStartRef.current = { id: listing.id, x: touch.clientX, y: touch.clientY }
+                    }}
+                    onTouchEnd={(event) => {
+                      const start = imageTouchStartRef.current
+                      if (!start || start.id !== listing.id || imageUrls.length < 2) return
+                      imageTouchStartRef.current = null
+                      const touch = event.changedTouches[0]
+                      const deltaX = touch.clientX - start.x
+                      const deltaY = touch.clientY - start.y
+                      if (Math.abs(deltaX) < 36 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return
+                      suppressImageClickRef.current = listing.id
+                      setGalleryIndices((current) => ({
+                        ...current,
+                        [listing.id]:
+                          deltaX < 0
+                            ? imageIndex >= imageUrls.length - 1
+                              ? 0
+                              : imageIndex + 1
+                            : imageIndex <= 0
+                              ? imageUrls.length - 1
+                              : imageIndex - 1,
+                      }))
+                      window.setTimeout(() => {
+                        if (suppressImageClickRef.current === listing.id) suppressImageClickRef.current = null
+                      }, 0)
+                    }}
                     className={
                       listingLayout === 'grid'
                         ? 'relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]'
                         : 'relative min-h-[230px] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)] md:h-full'
                     }
                   >
-                    <Link href={detailHref} className="absolute inset-0 block">
-                    {listing.imageUrl ? (
+                    <Link
+                      href={detailHref}
+                      onClick={(event) => {
+                        if (suppressImageClickRef.current !== listing.id) return
+                        event.preventDefault()
+                        suppressImageClickRef.current = null
+                      }}
+                      className="absolute inset-0 block"
+                    >
+                    {activeImageUrl ? (
                       <Image
-                        src={listing.imageUrl}
+                        src={activeImageUrl}
                         alt={listing.title}
                         fill
                         sizes={listingLayout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw' : '(max-width: 768px) 100vw, 300px'}
@@ -1186,6 +1241,52 @@ export default function MarketplaceCategoryBrowser({
                       </>
                     )}
                     </Link>
+                    {imageUrls.length > 1 ? (
+                      <>
+                        <button
+                          type="button"
+                          aria-label={copy.previousPhoto}
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            setGalleryIndices((current) => ({
+                              ...current,
+                              [listing.id]: imageIndex <= 0 ? imageUrls.length - 1 : imageIndex - 1,
+                            }))
+                          }}
+                          className="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={copy.nextPhoto}
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            setGalleryIndices((current) => ({
+                              ...current,
+                              [listing.id]: imageIndex >= imageUrls.length - 1 ? 0 : imageIndex + 1,
+                            }))
+                          }}
+                          className="absolute right-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                      </>
+                    ) : null}
+                    {imageDotCount > 1 ? (
+                      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.18)] md:hidden">
+                        {Array.from({ length: imageDotCount }).map((_, dotIndex) => (
+                          <span
+                            key={`${listing.id}-image-dot-${dotIndex}`}
+                            className={`h-1.5 rounded-full transition ${
+                              dotIndex === activeImageDot ? 'w-3 bg-[#0866ff]' : 'w-1.5 bg-[#d2d8e3]'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
                     <div className="absolute right-4 top-4">
                       <SavedListingButton listingId={listing.id} />
                     </div>
@@ -1924,6 +2025,8 @@ const marketplaceCopy = {
     fixedPrice: 'Fast pris',
     listing: 'Annons',
     viewListing: 'Visa annons',
+    previousPhoto: 'Föregående bild',
+    nextPhoto: 'Nästa bild',
     privateSeller: 'Privat säljare',
     businessSeller: 'Företagssäljare',
     filtersTitle: 'Filter',
@@ -2036,6 +2139,8 @@ const marketplaceCopy = {
     fixedPrice: 'Fixed price',
     listing: 'Listing',
     viewListing: 'View listing',
+    previousPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
     privateSeller: 'Private seller',
     businessSeller: 'Business seller',
     filtersTitle: 'Filter',
@@ -2148,6 +2253,8 @@ const marketplaceCopy = {
     fixedPrice: 'Festpreis',
     listing: 'Anzeige',
     viewListing: 'Anzeige ansehen',
+    previousPhoto: 'Vorheriges Foto',
+    nextPhoto: 'Nächstes Foto',
     privateSeller: 'Privater Verkäufer',
     businessSeller: 'Gewerblicher Verkäufer',
     filtersTitle: 'Filter',

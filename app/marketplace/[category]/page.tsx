@@ -155,6 +155,7 @@ export default async function MarketplaceCategoryPage({
         priceValue: Number(listing.price),
         imageAvailable: Boolean(listing.images?.[0]),
         imageUrl: listing.images?.[0] || null,
+        imageUrls: Array.isArray(listing.images) ? listing.images.filter(Boolean) : [],
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',
         sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',
