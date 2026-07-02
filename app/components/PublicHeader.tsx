@@ -889,7 +889,7 @@ export default function PublicHeader({
             <Link
               href={homeHref}
               aria-label="Autorell"
-              className="hidden h-full shrink-0 flex-col items-center justify-center border-b-2 border-transparent transition hover:border-[#0866ff] min-[1120px]:inline-flex"
+              className="hidden h-full shrink-0 flex-col items-center justify-center border-b-2 border-transparent pt-1 transition hover:border-[#0866ff] min-[1120px]:inline-flex"
             >
               <BrandLogo underline={false} />
               {activeMarketplaceChannel?.label ? (
