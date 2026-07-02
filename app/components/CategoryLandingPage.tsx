@@ -709,7 +709,7 @@ function getCategoryHeroTypingWords(
     'electric-bikes': {
       sv: ['City', 'Lastcykel', 'Mountainbike', 'Trekking', 'Hopfällbar', 'Speedbike'],
       en: ['city e-bikes', 'cargo bikes', 'e-MTBs', 'trekking bikes', 'folding bikes', 'speed bikes'],
-      de: ['City E-Bikes', 'Lastenräder', 'E-MTBs', 'Trekkingräder', 'Falträder', 'Speedbikes'],
+      de: ['Cityräder', 'Lastenräder', 'Mountainbikes', 'Trekkingräder', 'Falträder', 'Speedbikes'],
     },
     'e-scooters': {
       sv: ['Pendling', 'Offroad', 'Lång räckvidd', 'Lättvikt', 'Premium', 'Delbar'],
@@ -732,8 +732,8 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     trucks: t3('Köp lastbilar i hela Europa', 'Buy trucks across Europe', 'Lkw in ganz Europa kaufen'),
     agriculture: t3('Köp lantbruksmaskiner i hela Europa', 'Buy agricultural machinery across Europe', 'Landmaschinen in ganz Europa kaufen'),
     construction: t3('Köp entreprenadmaskiner i hela Europa', 'Buy construction machinery across Europe', 'Baumaschinen in ganz Europa kaufen'),
-    'electric-bikes': t3('Köp elcyklar i hela Europa', 'Buy electric bikes across Europe', 'E-Bikes in ganz Europa kaufen'),
-    'e-scooters': t3('Köp elsparkcyklar i hela Europa', 'Buy e-scooters across Europe', 'E-Scooter in ganz Europa kaufen'),
+    'electric-bikes': t3('Köp cyklar i hela Europa', 'Buy bikes across Europe', 'Fahrräder in ganz Europa kaufen'),
+    'e-scooters': t3('Köp sparkcyklar i hela Europa', 'Buy scooters across Europe', 'Scooter in ganz Europa kaufen'),
   }
   const heroEyebrows: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
     cars: t3('Europas bilmarknad', "Europe's car marketplace", 'Europas Automarkt'),
@@ -744,8 +744,8 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     trucks: t3('Europas lastbilsmarknad', "Europe's truck marketplace", 'Europas Lkw-Markt'),
     agriculture: t3('Europas lantbruksmarknad', "Europe's agricultural marketplace", 'Europas Landmaschinenmarkt'),
     construction: t3('Europas entreprenadmarknad', "Europe's construction machinery marketplace", 'Europas Baumaschinenmarkt'),
-    'electric-bikes': t3('Europas elcykelmarknad', "Europe's electric bike marketplace", 'Europas E-Bike-Markt'),
-    'e-scooters': t3('Europas elsparkcykelmarknad', "Europe's e-scooter marketplace", 'Europas E-Scooter-Markt'),
+    'electric-bikes': t3('Europas cykelmarknad', "Europe's bike marketplace", 'Europas Fahrradmarkt'),
+    'e-scooters': t3('Europas sparkcykelmarknad', "Europe's scooter marketplace", 'Europas Scooter-Markt'),
   }
   const base = {
     sv: {

@@ -8,13 +8,12 @@ import {
   CarFront,
   ChevronDown,
   Construction,
-  Leaf,
   MapPin,
   Search,
+  Scooter,
   Tractor,
   Truck,
   Warehouse,
-  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -53,8 +52,8 @@ const categoryOptions: Array<{
   { value: 'trucks', sv: 'Lastbilar', en: 'Trucks', de: 'Lkw', icon: Truck },
   { value: 'agriculture', sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen', icon: Tractor },
   { value: 'construction', sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen', icon: Construction },
-  { value: 'electric-bikes', sv: 'Elcyklar', en: 'Electric bikes', de: 'E-Bikes', icon: Leaf },
-  { value: 'e-scooters', sv: 'Elsparkcyklar', en: 'E-scooters', de: 'E-Scooter', icon: Zap },
+  { value: 'electric-bikes', sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder', icon: Bike },
+  { value: 'e-scooters', sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter', icon: Scooter },
 ]
 
 const popularMakes = ['Audi', 'BMW', 'Ford', 'Kia', 'Mercedes-Benz', 'Polestar', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo']

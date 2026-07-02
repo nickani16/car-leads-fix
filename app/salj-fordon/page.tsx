@@ -8,7 +8,7 @@ import {
   CarFront,
   Check,
   Construction,
-  Zap,
+  Scooter,
   Tractor,
   Truck,
   Warehouse,
@@ -53,8 +53,8 @@ const categories = [
   { slug: 'trucks', label: 'Lastbilar', icon: Truck },
   { slug: 'farm', label: 'Lantbruk', icon: Tractor },
   { slug: 'plant', label: 'Entreprenad', icon: Construction },
-  { slug: 'electric-bikes', label: 'Elcyklar', icon: Bike },
-  { slug: 'e-scooters', label: 'Elsparkcyklar', icon: Zap },
+  { slug: 'electric-bikes', label: 'Cyklar', icon: Bike },
+  { slug: 'e-scooters', label: 'Sparkcyklar', icon: Scooter },
 ] as const
 
 export default async function SellVehiclePage({

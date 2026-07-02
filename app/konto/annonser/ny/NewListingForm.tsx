@@ -1519,8 +1519,8 @@ const categoryLabelOverrides: Partial<
     trucks: 'Lastbiler',
     agriculture: 'Landbrugsmaskiner',
     construction: 'Entreprenørmaskiner',
-    'electric-bikes': 'Elcykler',
-    'e-scooters': 'Elscootere',
+    'electric-bikes': 'Cykler',
+    'e-scooters': 'Scootere',
   },
 }
 

@@ -18,8 +18,8 @@ export const metadata = createPublicMetadata({
     'Wohnmobile',
     'Landmaschinen',
     'Baumaschinen',
-    'E-Bikes',
-    'E-Scooter',
+    'Fahrräder',
+    'Scooter',
   ],
 })
 

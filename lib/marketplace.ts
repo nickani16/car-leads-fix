@@ -3,11 +3,10 @@ import {
   BusFront,
   CarFront,
   Construction,
-  Leaf,
+  Scooter,
   Tractor,
   Truck,
   Warehouse,
-  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import type { PublicLocale } from './public-i18n'
@@ -41,8 +40,8 @@ export const marketplaceCategories: MarketplaceCategory[] = [
   { slug: 'trucks', icon: Truck, labels: { sv: 'Lastbilar', en: 'Trucks', de: 'Lkw' }, singular: { sv: 'lastbil', en: 'truck', de: 'Lkw' }, keywords: ['truck', 'lastbil', 'lorry', 'lkw'] },
   { slug: 'agriculture', icon: Tractor, labels: { sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen' }, singular: { sv: 'lantbruksmaskin', en: 'agricultural machine', de: 'Landmaschine' }, keywords: ['tractor', 'traktor', 'agriculture', 'farm', 'lantbruk', 'landmaschine'] },
   { slug: 'construction', icon: Construction, labels: { sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen' }, singular: { sv: 'entreprenadmaskin', en: 'construction machine', de: 'Baumaschine' }, keywords: ['construction', 'entreprenad', 'excavator', 'grävmaskin', 'loader', 'baumaschine'] },
-  { slug: 'electric-bikes', icon: Leaf, labels: { sv: 'Elcyklar', en: 'Electric bikes', de: 'E-Bikes' }, singular: { sv: 'elcykel', en: 'electric bike', de: 'E-Bike' }, keywords: ['electric bike', 'e-bike', 'elcykel'] },
-  { slug: 'e-scooters', icon: Zap, labels: { sv: 'Elsparkcyklar', en: 'E-scooters', de: 'E-Scooter' }, singular: { sv: 'elsparkcykel', en: 'e-scooter', de: 'E-Scooter' }, keywords: ['e-scooter', 'elsparkcykel', 'scooter'] },
+  { slug: 'electric-bikes', icon: Bike, labels: { sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder' }, singular: { sv: 'cykel', en: 'bike', de: 'Fahrrad' }, keywords: ['bike', 'bicycle', 'cykel', 'e-bike', 'elcykel'] },
+  { slug: 'e-scooters', icon: Scooter, labels: { sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter' }, singular: { sv: 'sparkcykel', en: 'scooter', de: 'Scooter' }, keywords: ['scooter', 'kick scooter', 'e-scooter', 'elsparkcykel'] },
 ]
 
 export const marketplaceCategoryAliases: Record<string, MarketplaceCategorySlug> = {

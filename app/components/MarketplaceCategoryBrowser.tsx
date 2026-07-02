@@ -2290,14 +2290,14 @@ function categorySearchPlaceholder(slug: string, locale: PublicLocale) {
       de: 'Maschinen suchen',
     },
     'electric-bikes': {
-      sv: 'Sök i elcykel',
-      en: 'Search electric bikes',
-      de: 'E-Bikes suchen',
+      sv: 'Sök i cykel',
+      en: 'Search bikes',
+      de: 'Fahrräder suchen',
     },
     'e-scooters': {
-      sv: 'Sök i elsparkcykel',
-      en: 'Search e-scooters',
-      de: 'E-Scooter suchen',
+      sv: 'Sök i sparkcykel',
+      en: 'Search scooters',
+      de: 'Scooter suchen',
     },
   }
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
@@ -2449,8 +2449,8 @@ function localizeCategory(category: CategoryConfig, locale: PublicLocale) {
     trucks: { en: ['Trucks', 'a truck'], de: ['Lkw', 'einen Lkw'] },
     agriculture: { en: ['Agricultural machinery', 'agricultural machinery'], de: ['Landmaschinen', 'eine Landmaschine'] },
     construction: { en: ['Construction machinery', 'construction machinery'], de: ['Baumaschinen', 'eine Baumaschine'] },
-    'electric-bikes': { en: ['Electric bikes', 'an electric bike'], de: ['E-Bikes', 'ein E-Bike'] },
-    'e-scooters': { en: ['E-scooters', 'an e-scooter'], de: ['E-Scooter', 'einen E-Scooter'] },
+    'electric-bikes': { en: ['Bikes', 'a bike'], de: ['Fahrräder', 'ein Fahrrad'] },
+    'e-scooters': { en: ['Scooters', 'a scooter'], de: ['Scooter', 'einen Scooter'] },
   }
   const translated = labels[category.slug]?.[locale] || [category.label, category.singular]
   return {

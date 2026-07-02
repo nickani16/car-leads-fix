@@ -7,8 +7,8 @@ export const marketplaceCategories = [
   { slug: 'trucks', label: 'Lastbilar', free: 0, standard: 299, premium: 790 },
   { slug: 'agriculture', label: 'Lantbruksmaskiner', free: 0, standard: 299, premium: 790 },
   { slug: 'construction', label: 'Entreprenadmaskiner', free: 0, standard: 399, premium: 1190 },
-  { slug: 'electric-bikes', label: 'Elcyklar', free: 0, standard: 79, premium: 179 },
-  { slug: 'e-scooters', label: 'Elsparkcyklar', free: 0, standard: 49, premium: 129 },
+  { slug: 'electric-bikes', label: 'Cyklar', free: 0, standard: 79, premium: 179 },
+  { slug: 'e-scooters', label: 'Sparkcyklar', free: 0, standard: 49, premium: 129 },
 ] as const
 
 export type MarketplaceCategory = (typeof marketplaceCategories)[number]['slug']
