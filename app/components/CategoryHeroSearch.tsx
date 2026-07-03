@@ -170,43 +170,15 @@ function AnimatedSearchInput({
   placeholders: string[]
 }) {
   const [index, setIndex] = useState(0)
-  const [visibleLetters, setVisibleLetters] = useState(0)
-  const [deleting, setDeleting] = useState(false)
   const activePlaceholder = placeholders[index % placeholders.length] || ''
-  const typedPlaceholder = activePlaceholder.slice(0, visibleLetters)
 
   useEffect(() => {
-    if (!activePlaceholder) return
-
-    const timeout = window.setTimeout(
-      () => {
-        if (!deleting && visibleLetters < activePlaceholder.length) {
-          setVisibleLetters((current) => current + 1)
-          return
-        }
-
-        if (!deleting && visibleLetters >= activePlaceholder.length) {
-          setDeleting(true)
-          return
-        }
-
-        if (deleting && visibleLetters > 0) {
-          setVisibleLetters((current) => current - 1)
-          return
-        }
-
-        setDeleting(false)
-        setIndex((current) => (current + 1) % placeholders.length)
-      },
-      !deleting && visibleLetters >= activePlaceholder.length
-        ? 1250
-        : deleting
-          ? 34
-          : 56,
-    )
-
-    return () => window.clearTimeout(timeout)
-  }, [activePlaceholder, deleting, placeholders.length, visibleLetters])
+    if (placeholders.length < 2) return
+    const interval = window.setInterval(() => {
+      setIndex((current) => (current + 1) % placeholders.length)
+    }, 1900)
+    return () => window.clearInterval(interval)
+  }, [placeholders.length])
 
   return (
     <span className="relative block">
@@ -214,16 +186,15 @@ function AnimatedSearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={activePlaceholder}
-        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:text-transparent"
+        className="relative z-20 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:text-transparent"
       />
       {!value ? (
         <span
           key={activePlaceholder}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-0 flex h-6 min-w-0 items-center truncate text-sm font-normal leading-6 text-[#98a2b3]"
+          className="hero-word-rotate pointer-events-none absolute inset-x-0 top-0 z-10 block h-6 truncate text-sm font-normal leading-6 text-[#98a2b3]"
         >
-          <span className="truncate">{typedPlaceholder}</span>
-          <span className="ml-0.5 h-4 w-px shrink-0 rounded-full bg-[#98a2b3]/75" />
+          {activePlaceholder}
         </span>
       ) : null}
     </span>

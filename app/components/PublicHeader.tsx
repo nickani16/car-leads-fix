@@ -1552,7 +1552,7 @@ export default function PublicHeader({
           visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
-        <div className="grid h-[52px] w-full grid-cols-5 px-1">
+        <div className="grid h-[54px] w-full grid-cols-5 px-1 pt-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
