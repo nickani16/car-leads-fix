@@ -1215,7 +1215,7 @@ export default function PublicHeader({
         </div>
       </div>
       <div
-        className={`fixed inset-x-0 top-0 z-[130] grid h-[56px] w-full transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center bg-white px-3 transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed inset-x-0 top-0 z-[130] grid h-[56px] w-full transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center bg-white pl-4 pr-3 transition-transform duration-300 min-[1120px]:hidden ${
           visible || mobileCategoryOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
