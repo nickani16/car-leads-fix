@@ -575,6 +575,23 @@ export default function PublicHeader({
   const activeCategoryCopy = activeCategoryConfig
     ? localizeCategoryLanding(activeCategoryConfig, locale)
     : null
+  const mobileMenuCategoryConfig =
+    activeCategoryConfig || getCategoryLanding('cars')
+  const mobileMenuCategoryCopy = localizeCategoryLanding(
+    mobileMenuCategoryConfig,
+    locale,
+  )
+  const mobileMenuActiveSlug = mobileMenuCategoryConfig.slug
+  const mobileMenuCategoryActions = mobileMenuCategoryCopy.menu.map(
+    (label) =>
+      [
+        localizePublicHref(
+          locale,
+          categoryLandingMenuHref(mobileMenuCategoryConfig, label),
+        ),
+        label,
+      ] as const,
+  )
   const menus: Array<{
     label: string
     href: string
@@ -1346,16 +1363,21 @@ export default function PublicHeader({
             onClick={() => setMobileMoreOpen(false)}
             className="fixed inset-0 z-[84] bg-transparent min-[1120px]:hidden"
           />
-          <div className="fixed inset-0 z-[95] overflow-y-auto bg-white px-4 pb-[calc(22px+env(safe-area-inset-bottom))] pt-5 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#667085]">
-                  {t.menu}
-                </p>
-                <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-[#101828]">
-                  Autorell
-                </h2>
-              </div>
+          <div className="fixed inset-0 z-[95] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-4 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
+            <div className="mb-4 flex items-center justify-between">
+              <Link
+                href={homeHref}
+                onClick={closeMobile}
+                aria-label="Autorell"
+                className="flex h-11 w-[122px] flex-col items-start justify-center overflow-hidden"
+              >
+                <BrandLogo underline={false} />
+                {activeMarketplaceChannel?.label ? (
+                  <span className="mt-0.5 w-full max-w-28 truncate text-center text-[9px] font-semibold leading-none text-[#101828]">
+                    {activeMarketplaceChannel.label}
+                  </span>
+                ) : null}
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileMoreOpen(false)}
@@ -1366,48 +1388,104 @@ export default function PublicHeader({
               </button>
             </div>
 
-            <section className="mb-6">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#667085]">
-                  {t.shopByCategory}
-                </p>
+            <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
+              {headerAccount.authenticated ? (
                 <Link
-                  href={localizePublicHref(locale, '/marketplace/cars')}
+                  href={accountHref}
                   onClick={closeMobile}
-                  className="text-xs font-bold text-[#0866ff]"
+                  className="flex items-center gap-3 text-[#101828]"
                 >
-                  {t.allCategoriesLabel}
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-sm font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                    {mobileAccountInitials}
+                  </span>
+                  <span className="min-w-0">
+                    <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
+                      {mobileAccountName}
+                    </strong>
+                    <span className="mt-0.5 block text-sm font-medium text-[#667085]">
+                      {t.myAutorell}
+                    </span>
+                  </span>
                 </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {buyItems.map(({ href, label, icon: Icon }, index) => {
-                  const categorySlug = marketplaceCategories[index]?.slug
-                  const CategoryIcon =
-                    (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+              ) : (
+                <div>
+                  <div className="flex items-start gap-3">
+                    <UserRound className="mt-0.5 h-7 w-7 shrink-0 text-[#202124]" strokeWidth={1.7} />
+                    <div>
+                      <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-[#202124]">
+                        {t.signIn}
+                      </h2>
+                      <p className="mt-1 max-w-[28rem] text-[15px] font-medium leading-6 text-[#344054]">
+                        {locale === 'sv'
+                          ? 'Spara fordon, s\u00f6kningar och f\u00e5 enklare kontakt med s\u00e4ljare.'
+                          : locale === 'de'
+                            ? 'Fahrzeuge und Suchen speichern und Verk\u00e4ufer einfacher kontaktieren.'
+                            : 'Save vehicles, searches and contact sellers faster.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login', accountHref)}
+                    className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#0866ff] bg-white px-5 text-[15px] font-semibold text-[#0866ff]"
+                  >
+                    {locale === 'sv'
+                      ? 'Logga in eller skapa konto'
+                      : locale === 'de'
+                        ? 'Anmelden oder Konto erstellen'
+                        : 'Sign in or create an account'}
+                  </button>
+                </div>
+              )}
+            </section>
 
+            <section className="mb-7">
+              <div className="-mx-1 flex flex-wrap gap-2">
+                {buyItems.map(({ href, label }, index) => {
+                  const categorySlug = marketplaceCategories[index]?.slug
+                  const isActive = categorySlug === mobileMenuActiveSlug
                   return (
                     <Link
                       key={href}
                       href={href}
                       onClick={closeMobile}
-                      className="flex min-h-[54px] items-center gap-3 rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] px-3 text-sm font-bold text-[#101828] shadow-[0_8px_22px_rgba(16,24,40,.05)] transition active:scale-[.99]"
+                      className={`min-h-10 rounded-full px-4 py-2 text-[15px] font-semibold shadow-[0_5px_18px_rgba(16,24,40,.10)] ring-1 transition active:scale-[.99] ${
+                        isActive
+                          ? 'bg-[#f3f7ff] text-[#101828] ring-[#edf2ff]'
+                          : 'bg-white text-[#62686c] ring-[#eef0f3]'
+                      }`}
                     >
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#d9e7ff]">
-                        <CategoryIcon className="h-[18px] w-[18px]" />
-                      </span>
-                      <span className="min-w-0 truncate">{label}</span>
+                      {label}
                     </Link>
                   )
                 })}
               </div>
             </section>
 
-            <section>
+            <section className="mb-7">
+              <div className="grid gap-1">
+                {mobileMenuCategoryActions.map(([href, label]) => (
+                  <Link
+                    key={`${href}-${label}`}
+                    href={href}
+                    onClick={closeMobile}
+                    className="flex min-h-[58px] items-center justify-between rounded-[16px] px-1 text-[20px] font-semibold tracking-[-0.02em] text-[#202938] transition active:bg-[#f7f9fc]"
+                  >
+                    <span>{label}</span>
+                    <ArrowRight className="h-4 w-4 text-[#98a2b3]" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="mb-7">
               <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#667085]">
                 Autorell
               </p>
               <div className="grid gap-2">
-              {mobileMainLinks.map(({ href, label, icon: Icon }) => (
+              {mobileMainLinks
+                .filter(({ href }) => !mobileMenuCategoryActions.some(([actionHref]) => actionHref === href))
+                .map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
@@ -1441,6 +1519,32 @@ export default function PublicHeader({
               ))}
               </div>
             </section>
+
+            <div className="mt-auto border-t border-[#e2e8f0] pt-5">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMoreOpen(false)
+                  setMarketSelectorOpen(true)
+                }}
+                className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[18px] border border-[#bcd3ff] bg-[#edf5ff] px-4 text-left text-sm"
+              >
+                <FlagIcon code={activeMarket[1]} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
+                    {t.chooseLanguage}
+                  </span>
+                  <strong className="mt-0.5 block font-medium">
+                    {activeMarket[2]}
+                  </strong>
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="mt-5 flex items-center justify-between border-t border-[#e2e8f0] pt-5">
+                <SocialIcons />
+                <span className="text-sm font-medium text-[#62686c]">Autorell AB</span>
+              </div>
+            </div>
           </div>
         </>
       ) : null}
