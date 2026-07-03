@@ -200,6 +200,7 @@ const copy = {
     saved: 'Sparade',
     search: 'Sök',
     messages: 'Meddelanden',
+    notificationsShort: 'Notis',
     hello: 'Hej',
     myAutorell: 'Mitt Konto',
     menu: 'Meny',
@@ -245,6 +246,7 @@ const copy = {
     saved: 'Saved',
     search: 'Search',
     messages: 'Messages',
+    notificationsShort: 'Alerts',
     hello: 'Hi',
     myAutorell: 'My Account',
     menu: 'Menu',
@@ -290,6 +292,7 @@ const copy = {
     saved: 'Gespeichert',
     search: 'Suche',
     messages: 'Nachrichten',
+    notificationsShort: 'Notiz',
     hello: 'Hallo',
     myAutorell: 'Mein Konto',
     menu: 'Menü',
@@ -1231,53 +1234,62 @@ export default function PublicHeader({
             ) : null}
           </Link>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-0.5">
-          {headerAccount.authenticated ? (
-            <Link
-              href={savedHref}
-              onClick={closeMobile}
-              aria-label={t.saved}
-              className="relative grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
-            >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
-              {savedListingCount ? (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
-                  {savedListingCount > 99 ? '99+' : savedListingCount}
-                </span>
-              ) : null}
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedHref)}
-              aria-label={t.saved}
-              className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
-            >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
-            </button>
-          )}
+        <div className="flex shrink-0 items-center justify-end gap-1">
           {headerAccount.authenticated ? (
             <Link
               href={accountMessagesHref}
               onClick={closeMobile}
               aria-label={t.messages}
-              className="relative grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="relative flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
-              {headerAccount.unreadMessages ? (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
-                  {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
-                </span>
-              ) : null}
+              <span className="relative">
+                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
+                {headerAccount.unreadMessages ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                    {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-[9px] font-semibold leading-none">{t.notificationsShort}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
               aria-label={t.messages}
-              className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
             >
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
+              <span className="text-[9px] font-semibold leading-none">{t.notificationsShort}</span>
+            </button>
+          )}
+          <SiteSearch locale={locale} marketCode={marketCode} headerMobile />
+          {headerAccount.authenticated ? (
+            <Link
+              href={savedHref}
+              onClick={closeMobile}
+              aria-label={t.saved}
+              className="relative flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+            >
+              <span className="relative">
+                <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
+                {savedListingCount ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                    {savedListingCount > 99 ? '99+' : savedListingCount}
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-[9px] font-semibold leading-none">{t.saved}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', savedHref)}
+              aria-label={t.saved}
+              className="flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+            >
+              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
+              <span className="text-[9px] font-semibold leading-none">{t.saved}</span>
             </button>
           )}
         </div>
@@ -1334,21 +1346,67 @@ export default function PublicHeader({
             onClick={() => setMobileMoreOpen(false)}
             className="fixed inset-0 z-[84] bg-transparent min-[1120px]:hidden"
           />
-          <div className="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-[95] max-h-[min(70dvh,560px)] overflow-y-auto rounded-[22px] border border-[#dfe8f3] bg-white p-3 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#667085]">
-                {t.menu}
-              </p>
+          <div className="fixed inset-0 z-[95] overflow-y-auto bg-white px-4 pb-[calc(22px+env(safe-area-inset-bottom))] pt-5 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#667085]">
+                  {t.menu}
+                </p>
+                <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-[#101828]">
+                  Autorell
+                </h2>
+              </div>
               <button
                 type="button"
                 onClick={() => setMobileMoreOpen(false)}
                 aria-label={t.closeMenu}
-                className="grid h-8 w-8 place-items-center rounded-full bg-[#f4f7fb] text-[#101828]"
+                className="grid h-10 w-10 place-items-center rounded-full bg-[#f4f7fb] text-[#101828] ring-1 ring-[#e4eaf3]"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="grid gap-2">
+
+            <section className="mb-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#667085]">
+                  {t.shopByCategory}
+                </p>
+                <Link
+                  href={localizePublicHref(locale, '/marketplace/cars')}
+                  onClick={closeMobile}
+                  className="text-xs font-bold text-[#0866ff]"
+                >
+                  {t.allCategoriesLabel}
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {buyItems.map(({ href, label, icon: Icon }, index) => {
+                  const categorySlug = marketplaceCategories[index]?.slug
+                  const CategoryIcon =
+                    (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMobile}
+                      className="flex min-h-[54px] items-center gap-3 rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] px-3 text-sm font-bold text-[#101828] shadow-[0_8px_22px_rgba(16,24,40,.05)] transition active:scale-[.99]"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#d9e7ff]">
+                        <CategoryIcon className="h-[18px] w-[18px]" />
+                      </span>
+                      <span className="min-w-0 truncate">{label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </section>
+
+            <section>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#667085]">
+                Autorell
+              </p>
+              <div className="grid gap-2">
               {mobileMainLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
@@ -1381,7 +1439,8 @@ export default function PublicHeader({
                   <span className="min-w-0 truncate">{label}</span>
                 </Link>
               ))}
-            </div>
+              </div>
+            </section>
           </div>
         </>
       ) : null}
