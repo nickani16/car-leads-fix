@@ -373,7 +373,7 @@ export default function SiteSearch({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close search"
-          className="flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] min-[1120px]:hidden"
+          className="flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#0866ff] min-[1120px]:hidden"
         >
           <X className="h-[22px] w-[22px]" strokeWidth={1.7} />
           <span className="text-[10px] font-medium leading-none">{text.label}</span>

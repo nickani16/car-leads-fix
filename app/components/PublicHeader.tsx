@@ -34,7 +34,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import BrandLogo from './BrandLogo'
-import { autorellCategoryIcons } from './AutorellCategoryIcons'
+import { AutorellCarIcon, autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
 import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
@@ -1461,7 +1461,7 @@ export default function PublicHeader({
             onClick={closeMobile}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
-            <Search className="h-[22px] w-[22px]" strokeWidth={2.1} />
+            <AutorellCarIcon className="h-[22px] w-[22px]" strokeWidth={1.7} />
             <span className="max-w-full truncate text-[10px] font-semibold">{t.buy}</span>
           </Link>
           {headerAccount.authenticated ? (
