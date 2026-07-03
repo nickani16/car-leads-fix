@@ -148,25 +148,6 @@ function cacheHeaderAccount(account: HeaderAccount) {
   }
 }
 
-function CategoryListIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M3 19h18" />
-      <path d="M15 12H3" />
-      <path d="M9 5H3" />
-    </svg>
-  )
-}
-
 function localeFromPathname(pathname: string): PublicLocale {
   const first = pathname.split('/').filter(Boolean)[0]
   if (first === 'se') return 'sv'
@@ -1250,7 +1231,7 @@ export default function PublicHeader({
             ) : null}
           </Link>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-1">
+        <div className="flex shrink-0 items-center justify-end gap-0.5">
           {headerAccount.authenticated ? (
             <Link
               href={savedHref}
@@ -1299,19 +1280,6 @@ export default function PublicHeader({
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              setMobileCategoryOpen((current) => !current)
-              setMobileMoreOpen(false)
-              setOpen(false)
-            }}
-            aria-label={t.shopByCategory}
-            aria-expanded={mobileCategoryOpen}
-            className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
-          >
-            <CategoryListIcon className="h-[22px] w-[22px]" />
-          </button>
         </div>
       </div>
       {mobileCategoryOpen ? (
