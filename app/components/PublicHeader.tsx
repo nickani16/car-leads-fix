@@ -897,7 +897,7 @@ export default function PublicHeader({
             >
               <BrandLogo underline={false} />
               {activeMarketplaceChannel?.label ? (
-                <span className="mt-0.5 max-w-[120px] truncate text-[10px] font-semibold leading-none text-[#101828]">
+                <span className="mt-0.5 max-w-[130px] truncate text-[11px] font-semibold leading-none text-[#101828]">
                   {activeMarketplaceChannel.label}
                 </span>
               ) : null}
@@ -1259,7 +1259,7 @@ export default function PublicHeader({
           >
             <BrandLogo underline={false} />
             {activeMarketplaceChannel?.label ? (
-              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[10px] font-medium leading-none text-[#101828]">
+              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[10px] font-semibold leading-none text-[#101828]">
                 {activeMarketplaceChannel.label}
               </span>
             ) : null}
@@ -1548,11 +1548,11 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
-        className={`fixed inset-x-0 bottom-0 z-[90] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[max(env(safe-area-inset-bottom),0px)] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-[90] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
           visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
-        <div className="grid h-[56px] w-full grid-cols-5 px-1">
+        <div className="grid h-[52px] w-full grid-cols-5 px-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
