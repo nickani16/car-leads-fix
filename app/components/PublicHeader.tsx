@@ -748,8 +748,8 @@ export default function PublicHeader({
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {showTopCategoryNav ? (
-            <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 pl-5 pr-[22px] sm:pl-8">
+            <div className="hidden border-b border-[#e8e9eb] bg-white min-[1120px]:block">
+              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center pl-5 pr-5 sm:px-8">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
@@ -776,29 +776,6 @@ export default function PublicHeader({
                     )
                   })}
                 </nav>
-
-                <div className="flex h-full shrink-0 items-center">
-                  <Link
-                    href={localizePublicHref(locale, '/contact')}
-                    className="flex h-full items-center gap-1.5 border-l border-[#e6e7e9] px-3 text-[10px] font-medium hover:bg-white"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    {t.contact}
-                  </Link>
-                  <div className="relative flex h-full">
-                    <button
-                      type="button"
-                      onClick={() => setMarketSelectorOpen(true)}
-                      aria-expanded={marketSelectorOpen}
-                      aria-haspopup="dialog"
-                      className="flex h-full items-center gap-2 border-l border-r border-[#e6e7e9] px-4 text-[10px] font-medium hover:bg-white"
-                    >
-                      <FlagIcon code={activeMarket[1]} size="sm" />
-                      <span>{activeMarket[2]}</span>
-                      <ChevronDown className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           ) : null}
