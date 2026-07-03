@@ -10,10 +10,12 @@ import {
   FileText,
   FilePlus2,
   Heart,
+  Home,
   LogIn,
   Mail,
   Menu,
   MessageSquareText,
+  Plus,
   Search,
   ShieldAlert,
   ShieldCheck,
@@ -135,6 +137,7 @@ function localeFromPathname(pathname: string): PublicLocale {
 
 const copy = {
   sv: {
+    home: 'Start',
     buy: 'Köp',
     sell: 'Sälj',
     business: 'Företag',
@@ -179,6 +182,7 @@ const copy = {
     mobileCta: 'Lägg upp ett fordon',
   },
   en: {
+    home: 'Home',
     buy: 'Buy',
     sell: 'Sell vehicle',
     business: 'Business account',
@@ -223,6 +227,7 @@ const copy = {
     mobileCta: 'List a vehicle',
   },
   de: {
+    home: 'Start',
     buy: 'Kaufen',
     sell: 'Fahrzeug verkaufen',
     business: 'Unternehmenskonto',
@@ -666,6 +671,18 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
     { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
   ]
+  const createListingHref = localizePublicHref(locale, '/account/listings/new')
+  const mobileAccountName =
+    headerAccount.displayName?.trim().split(/\s+/)[0] ||
+    (headerAccount.authenticated ? t.myAutorell : t.signIn)
+  const mobileAccountInitials =
+    headerAccount.displayName
+      ?.trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || 'A'
 
   function closeMobile() {
     setOpen(false)
@@ -775,78 +792,6 @@ export default function PublicHeader({
           ) : null}
 
           <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:pl-8 min-[1120px]:pr-0`}>
-            <div className="absolute left-1/2 top-0 h-[56px] w-screen max-w-[100vw] -translate-x-1/2 px-4 min-[1120px]:hidden">
-              <Link
-                href={homeHref}
-                aria-label="Autorell"
-                className="absolute left-4 top-0 flex h-full min-w-0 max-w-[124px] flex-col items-center justify-center overflow-hidden"
-                onClick={closeMobile}
-              >
-                <BrandLogo underline={false} />
-                {activeMarketplaceChannel?.label ? (
-                  <span className="mt-0.5 w-full max-w-28 truncate text-center text-[9px] font-semibold leading-none text-[#101828]">
-                    {activeMarketplaceChannel.label}
-                  </span>
-                ) : null}
-              </Link>
-
-              <div className="absolute right-1 top-0 flex h-full w-36 items-center justify-end">
-                {headerAccount.authenticated ? (
-                  <Link href={savedHref} onClick={closeMobile} className="relative flex w-10 shrink-0 flex-col items-center justify-center">
-                    <span className="relative">
-                      <Heart className="h-[20px] w-[20px]" strokeWidth={1.7} />
-                      {savedListingCount ? (
-                        <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
-                          {savedListingCount > 99 ? '99+' : savedListingCount}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="mt-0.5 text-[9px] font-normal leading-none">{t.saved}</span>
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('login', savedHref)}
-                    className="flex w-10 shrink-0 flex-col items-center justify-center"
-                  >
-                    <Heart className="h-[20px] w-[20px]" strokeWidth={1.7} />
-                    <span className="mt-0.5 text-[9px] font-normal leading-none">{t.saved}</span>
-                  </button>
-                )}
-
-                {headerAccount.authenticated ? (
-                  <Link
-                    href={accountHref}
-                    onClick={closeMobile}
-                    className="flex w-10 shrink-0 flex-col items-center justify-center"
-                  >
-                    <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
-                    <span className="mt-0.5 text-[9px] font-normal leading-none">{t.myAutorell.split(' ')[0]}</span>
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('login', accountHref)}
-                    className="flex w-10 shrink-0 flex-col items-center justify-center"
-                  >
-                    <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
-                    <span className="mt-0.5 text-[9px] font-normal leading-none">{t.signIn}</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setOpen((current) => !current)}
-                  aria-label={open ? t.closeMenu : t.openMenu}
-                  aria-expanded={open}
-                  className="flex w-10 shrink-0 flex-col items-center justify-center"
-                >
-                  {open ? <X className="h-[21px] w-[21px]" strokeWidth={1.8} /> : <Menu className="h-[22px] w-[22px]" strokeWidth={1.8} />}
-                  <span className="mt-0.5 text-[9px] font-normal leading-none">{t.menu}</span>
-                </button>
-              </div>
-            </div>
-
             <Link
               href={homeHref}
               aria-label="Autorell"
@@ -1200,6 +1145,156 @@ export default function PublicHeader({
           </div>
         </div>
       </div>
+      <div className="fixed inset-x-0 top-0 z-[130] flex h-[56px] w-full items-center justify-between bg-white px-3 min-[1120px]:hidden">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            aria-label={open ? t.closeMenu : t.openMenu}
+            aria-expanded={open}
+            className="grid h-10 w-8 shrink-0 place-items-center text-[#101828]"
+          >
+            {open ? (
+              <X className="h-[23px] w-[23px]" strokeWidth={1.9} />
+            ) : (
+              <Menu className="h-[24px] w-[24px]" strokeWidth={1.9} />
+            )}
+          </button>
+          <Link
+            href={homeHref}
+            aria-label="Autorell"
+            className="flex h-full min-w-0 max-w-[128px] flex-col items-start justify-center overflow-hidden"
+            onClick={closeMobile}
+          >
+            <BrandLogo underline={false} />
+            {activeMarketplaceChannel?.label ? (
+              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[9px] font-semibold leading-none text-[#101828]">
+                {activeMarketplaceChannel.label}
+              </span>
+            ) : null}
+          </Link>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {headerAccount.authenticated ? (
+            <Link
+              href={createListingHref}
+              onClick={closeMobile}
+              aria-label={t.mobileCta}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+            >
+              <Plus className="h-[22px] w-[22px]" strokeWidth={2.2} />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', createListingHref)}
+              aria-label={t.mobileCta}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+            >
+              <Plus className="h-[22px] w-[22px]" strokeWidth={2.2} />
+            </button>
+          )}
+          <SiteSearch locale={locale} headerMobile />
+          {headerAccount.authenticated ? (
+            <Link
+              href={accountMessagesHref}
+              onClick={closeMobile}
+              aria-label={t.messages}
+              className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+            >
+              <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.9} />
+              {headerAccount.unreadMessages ? (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                  {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
+                </span>
+              ) : null}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', accountMessagesHref)}
+              aria-label={t.messages}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+            >
+              <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.9} />
+            </button>
+          )}
+        </div>
+      </div>
+      <nav className="fixed inset-x-0 bottom-0 z-[90] w-full overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[max(env(safe-area-inset-bottom),0px)] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur min-[1120px]:hidden">
+        <div className="grid h-[62px] w-full grid-cols-5 px-1">
+          <Link
+            href={homeHref}
+            onClick={closeMobile}
+            className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#0866ff]"
+          >
+            <Home className="h-[22px] w-[22px]" strokeWidth={2.2} />
+            <span className="max-w-full truncate text-[10px] font-semibold">{t.home}</span>
+          </Link>
+          <Link
+            href={localizePublicHref(locale, '/marketplace/cars')}
+            onClick={closeMobile}
+            className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+          >
+            <Search className="h-[22px] w-[22px]" strokeWidth={2.1} />
+            <span className="max-w-full truncate text-[10px] font-semibold">{t.buy}</span>
+          </Link>
+          {headerAccount.authenticated ? (
+            <Link
+              href={createListingHref}
+              onClick={closeMobile}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <Plus className="h-[23px] w-[23px]" strokeWidth={2.3} />
+              <span className="max-w-full truncate text-[10px] font-semibold">{t.sell}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', createListingHref)}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <Plus className="h-[23px] w-[23px]" strokeWidth={2.3} />
+              <span className="max-w-full truncate text-[10px] font-semibold">{t.sell}</span>
+            </button>
+          )}
+          {headerAccount.authenticated ? (
+            <Link
+              href={accountHref}
+              onClick={closeMobile}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                {mobileAccountInitials}
+              </span>
+              <span className="max-w-full truncate text-[10px] font-semibold">{mobileAccountName}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', accountHref)}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <UserRound className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <span className="max-w-full truncate text-[10px] font-semibold">{t.signIn}</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            aria-label={open ? t.closeMenu : t.openMenu}
+            aria-expanded={open}
+            className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+          >
+            {open ? (
+              <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
+            ) : (
+              <Menu className="h-[23px] w-[23px]" strokeWidth={2.1} />
+            )}
+            <span className="max-w-full truncate text-[10px] font-semibold">{t.menu}</span>
+          </button>
+        </div>
+      </nav>
       <MarketSelectorModal
         isOpen={marketSelectorOpen}
         onClose={() => setMarketSelectorOpen(false)}

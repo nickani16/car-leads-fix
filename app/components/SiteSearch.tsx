@@ -286,14 +286,11 @@ export default function SiteSearch({
         aria-label={text.label}
         className={`transition ${
           headerMobile
-            ? 'flex w-11 flex-col items-center justify-center text-[#202124] min-[1120px]:hidden'
+            ? 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828] min-[1120px]:hidden'
             : 'grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-white text-[#202124]'
         }`}
       >
         <Search className={headerMobile ? 'h-[21px] w-[21px]' : 'h-[18px] w-[18px]'} strokeWidth={1.7} />
-        {headerMobile ? (
-          <span className="mt-0.5 text-[10px] font-normal leading-none">{text.label}</span>
-        ) : null}
       </button>
     )
   }
@@ -373,10 +370,9 @@ export default function SiteSearch({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close search"
-          className="flex w-11 flex-col items-center justify-center text-[#202124] min-[1120px]:hidden"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828] min-[1120px]:hidden"
         >
           <X className="h-[21px] w-[21px]" strokeWidth={1.7} />
-          <span className="mt-0.5 text-[10px] font-normal leading-none">{text.label}</span>
         </button>
         {createPortal(
           <div
