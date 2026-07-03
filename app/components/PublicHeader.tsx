@@ -863,7 +863,7 @@ export default function PublicHeader({
                 <button
                   type="button"
                   onClick={() => setMarketSelectorOpen(true)}
-                  className="ml-5 flex h-[30px] shrink-0 items-center gap-2 border-l border-[#deddd8] pl-5 text-[11px] font-semibold text-[#202124] transition hover:text-[#0866ff]"
+                  className="ml-5 flex h-[30px] shrink-0 items-center gap-2 text-[11px] font-semibold text-[#202124] transition hover:text-[#0866ff]"
                   aria-label={t.chooseLanguage}
                 >
                   <FlagIcon code={activeMarket[1]} size="sm" />
@@ -1011,7 +1011,9 @@ export default function PublicHeader({
                   href={accountHref}
                   className="flex min-w-[92px] max-w-[132px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
-                  <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                    {mobileAccountInitials}
+                  </span>
                   <span className="max-w-full truncate text-[10px] font-medium">
                     {t.myAutorell}
                   </span>
@@ -1249,27 +1251,14 @@ export default function PublicHeader({
           </Link>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              setMobileCategoryOpen((current) => !current)
-              setMobileMoreOpen(false)
-              setOpen(false)
-            }}
-            aria-label={t.shopByCategory}
-            aria-expanded={mobileCategoryOpen}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
-          >
-            <CategoryListIcon className="h-[18px] w-[18px]" />
-          </button>
           {headerAccount.authenticated ? (
             <Link
               href={savedHref}
               onClick={closeMobile}
               aria-label={t.saved}
-              className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="relative grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[18px] w-[18px]" strokeWidth={1.9} />
+              <Heart className="h-[20px] w-[20px]" strokeWidth={2} />
               {savedListingCount ? (
                 <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                   {savedListingCount > 99 ? '99+' : savedListingCount}
@@ -1281,9 +1270,9 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
               aria-label={t.saved}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[18px] w-[18px]" strokeWidth={1.9} />
+              <Heart className="h-[20px] w-[20px]" strokeWidth={2} />
             </button>
           )}
           {headerAccount.authenticated ? (
@@ -1291,9 +1280,9 @@ export default function PublicHeader({
               href={accountMessagesHref}
               onClick={closeMobile}
               aria-label={t.messages}
-              className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="relative grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[18px] w-[18px]" strokeWidth={1.9} />
+              <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={2} />
               {headerAccount.unreadMessages ? (
                 <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                   {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
@@ -1305,11 +1294,24 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
               aria-label={t.messages}
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[18px] w-[18px]" strokeWidth={1.9} />
+              <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={2} />
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileCategoryOpen((current) => !current)
+              setMobileMoreOpen(false)
+              setOpen(false)
+            }}
+            aria-label={t.shopByCategory}
+            aria-expanded={mobileCategoryOpen}
+            className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+          >
+            <CategoryListIcon className="h-[20px] w-[20px]" />
+          </button>
         </div>
       </div>
       {mobileCategoryOpen ? (

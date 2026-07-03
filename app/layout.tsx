@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
-const dmSans = DM_Sans({
-  variable: '--font-dm-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
   display: 'swap',
 })
 
@@ -70,7 +69,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
