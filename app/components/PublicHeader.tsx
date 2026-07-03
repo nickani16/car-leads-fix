@@ -576,12 +576,7 @@ export default function PublicHeader({
 
   const categoryPrimaryLinks =
     activeCategoryConfig && activeCategoryCopy
-      ? [
-          [
-            localizePublicHref(locale, activeCategoryConfig.path),
-            activeCategoryCopy.label,
-          ] as const,
-          ...activeCategoryCopy.menu.map(
+      ? activeCategoryCopy.menu.map(
             (label) =>
               [
                 localizePublicHref(
@@ -590,8 +585,7 @@ export default function PublicHeader({
                 ),
                 label,
               ] as const,
-          ),
-        ]
+          )
       : null
   const categoryLinkTextLength =
     categoryPrimaryLinks?.reduce((total, [, label]) => total + label.length, 0) ?? 0
@@ -748,7 +742,7 @@ export default function PublicHeader({
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {showTopCategoryNav ? (
-            <div className="hidden border-b border-[#e8e9eb] bg-white min-[1120px]:block">
+            <div className="hidden bg-white min-[1120px]:block">
               <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center pl-5 pr-5 sm:px-8">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {

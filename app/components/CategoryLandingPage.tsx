@@ -118,7 +118,7 @@ export default async function CategoryLandingPage({
       <section className="bg-white pt-0 sm:pt-6">
         <div className="relative mx-auto max-w-[var(--autorell-page-max)]">
           <div className="px-0 sm:px-8">
-            <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] sm:rounded-[22px] lg:min-h-[345px]">
+            <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] sm:rounded-[22px] lg:min-h-[290px]">
               <Image
                 src={config.heroImage}
                 alt={localized.label}
@@ -130,7 +130,7 @@ export default async function CategoryLandingPage({
               />
               <div className={`absolute inset-0 ${slug === 'cars' ? 'bg-[linear-gradient(90deg,rgba(3,10,26,.34)_0%,rgba(3,10,26,.2)_38%,rgba(3,10,26,.05)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.075)_28%,rgba(3,10,26,.016)_56%,rgba(3,10,26,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.065)_31%,rgba(3,10,26,.015)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,.045)_34%,rgba(3,10,26,.01)_60%,rgba(3,10,26,0)_100%)]'}`} />
 
-              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[345px] lg:py-11">
+              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
                   {page.eyebrow}
                 </p>
