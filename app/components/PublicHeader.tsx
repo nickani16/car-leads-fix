@@ -1250,15 +1250,15 @@ export default function PublicHeader({
             ) : null}
           </Link>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-1.5">
+        <div className="flex shrink-0 items-center justify-end gap-1">
           {headerAccount.authenticated ? (
             <Link
               href={savedHref}
               onClick={closeMobile}
               aria-label={t.saved}
-              className="relative grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="relative grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[20px] w-[20px]" strokeWidth={2} />
+              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
               {savedListingCount ? (
                 <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                   {savedListingCount > 99 ? '99+' : savedListingCount}
@@ -1270,9 +1270,9 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
               aria-label={t.saved}
-              className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[20px] w-[20px]" strokeWidth={2} />
+              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
             </button>
           )}
           {headerAccount.authenticated ? (
@@ -1280,9 +1280,9 @@ export default function PublicHeader({
               href={accountMessagesHref}
               onClick={closeMobile}
               aria-label={t.messages}
-              className="relative grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="relative grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={2} />
+              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
               {headerAccount.unreadMessages ? (
                 <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                   {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
@@ -1294,9 +1294,9 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
               aria-label={t.messages}
-              className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+              className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={2} />
+              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
             </button>
           )}
           <button
@@ -1308,9 +1308,9 @@ export default function PublicHeader({
             }}
             aria-label={t.shopByCategory}
             aria-expanded={mobileCategoryOpen}
-            className="grid h-9 w-9 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
+            className="grid h-10 w-10 shrink-0 place-items-center text-[#202124] transition hover:text-[#0866ff]"
           >
-            <CategoryListIcon className="h-[20px] w-[20px]" />
+            <CategoryListIcon className="h-[22px] w-[22px]" />
           </button>
         </div>
       </div>
@@ -1537,7 +1537,7 @@ function DesktopMenu({
   const isMegaMenu = menu.variant === 'mega'
 
   return (
-    <div className="relative" data-desktop-menu-root="true">
+    <div className="relative flex h-full" data-desktop-menu-root="true">
       <button
         type="button"
         onClick={onToggle}
