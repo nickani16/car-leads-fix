@@ -100,6 +100,73 @@ type HeaderAccount = {
   conversationCount: number
 }
 
+const HEADER_ACCOUNT_CACHE_KEY = 'autorell-header-account'
+
+const emptyHeaderAccount: HeaderAccount = {
+  authenticated: false,
+  unreadMessages: 0,
+  conversationCount: 0,
+}
+
+function readCachedHeaderAccount(): HeaderAccount {
+  if (typeof window === 'undefined') return emptyHeaderAccount
+  const globalAccount = window.__autorellHeaderAccount
+  if (globalAccount) {
+    return {
+      ...emptyHeaderAccount,
+      ...globalAccount,
+      accountType:
+        globalAccount.accountType === 'private' || globalAccount.accountType === 'business'
+          ? globalAccount.accountType
+          : null,
+    }
+  }
+  try {
+    const cached = window.sessionStorage.getItem(HEADER_ACCOUNT_CACHE_KEY)
+    if (!cached) return emptyHeaderAccount
+    const parsed = JSON.parse(cached) as Partial<HeaderAccount>
+    return {
+      ...emptyHeaderAccount,
+      ...parsed,
+      accountType:
+        parsed.accountType === 'private' || parsed.accountType === 'business'
+          ? parsed.accountType
+          : null,
+    }
+  } catch {
+    return emptyHeaderAccount
+  }
+}
+
+function cacheHeaderAccount(account: HeaderAccount) {
+  if (typeof window === 'undefined') return
+  window.__autorellHeaderAccount = account
+  try {
+    window.sessionStorage.setItem(HEADER_ACCOUNT_CACHE_KEY, JSON.stringify(account))
+  } catch {
+    // Session storage can be blocked in strict browser modes; the in-memory cache still works.
+  }
+}
+
+function CategoryListIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 19h18" />
+      <path d="M15 12H3" />
+      <path d="M9 5H3" />
+    </svg>
+  )
+}
+
 function localeFromPathname(pathname: string): PublicLocale {
   const first = pathname.split('/').filter(Boolean)[0]
   if (first === 'se') return 'sv'
@@ -336,13 +403,11 @@ export default function PublicHeader({
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
-  const [headerAccount, setHeaderAccount] = useState<HeaderAccount>({
-    authenticated: false,
-    unreadMessages: 0,
-    conversationCount: 0,
-  })
+  const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(() => readCachedHeaderAccount())
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
@@ -361,6 +426,8 @@ export default function PublicHeader({
         setOpen(false)
         setMarketSelectorOpen(false)
         setMoreOpen(false)
+        setMobileCategoryOpen(false)
+        setMobileMoreOpen(false)
         setDesktopMenuOpen(null)
       } else if (difference < -4) setVisible(true)
 
@@ -381,18 +448,16 @@ export default function PublicHeader({
       if (!response.ok) return
       const data = (await response.json()) as HeaderAccount
       setHeaderAccount(data)
-      window.__autorellHeaderAccount = data
+      cacheHeaderAccount(data)
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: data }),
       )
     } catch {
-      const fallback = {
-        authenticated: false,
-        unreadMessages: 0,
-        conversationCount: 0,
+      const fallback = emptyHeaderAccount
+      setHeaderAccount((current) => (current.authenticated ? current : fallback))
+      if (!window.__autorellHeaderAccount?.authenticated) {
+        cacheHeaderAccount(fallback)
       }
-      setHeaderAccount(fallback)
-      window.__autorellHeaderAccount = fallback
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: fallback }),
       )
@@ -652,6 +717,7 @@ export default function PublicHeader({
   const accountHref = `${marketPathPrefix}/account`
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/sparade`
+  const isHomePage = unprefixedPathname === '/'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
   const showTopCategoryNav = true
@@ -689,6 +755,8 @@ export default function PublicHeader({
 
   function closeMobile() {
     setOpen(false)
+    setMobileCategoryOpen(false)
+    setMobileMoreOpen(false)
   }
 
   function openAuthModal(mode: 'login' | 'register', destination?: string) {
@@ -696,6 +764,8 @@ export default function PublicHeader({
     setAuthDestination(destination)
     setAuthModalOpen(true)
     setOpen(false)
+    setMobileCategoryOpen(false)
+    setMobileMoreOpen(false)
     setMoreOpen(false)
     setDesktopMenuOpen(null)
   }
@@ -1158,25 +1228,16 @@ export default function PublicHeader({
           </div>
         </div>
       </div>
-      <div className="fixed inset-x-0 top-0 z-[130] flex h-[56px] w-full items-center justify-between bg-white px-3 min-[1120px]:hidden">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setOpen((current) => !current)}
-            aria-label={open ? t.closeMenu : t.openMenu}
-            aria-expanded={open}
-            className="grid h-10 w-8 shrink-0 place-items-center text-[#101828]"
-          >
-            {open ? (
-              <X className="h-[23px] w-[23px]" strokeWidth={1.9} />
-            ) : (
-              <Menu className="h-[24px] w-[24px]" strokeWidth={1.9} />
-            )}
-          </button>
+      <div
+        className={`fixed inset-x-0 top-0 z-[130] grid h-[56px] w-full transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center bg-white px-3 transition-transform duration-300 min-[1120px]:hidden ${
+          visible || mobileCategoryOpen ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <div className="min-w-0">
           <Link
             href={homeHref}
             aria-label="Autorell"
-            className="flex h-full min-w-0 max-w-[128px] flex-col items-start justify-center overflow-hidden"
+            className="flex h-[56px] w-[116px] min-w-0 flex-col items-start justify-center overflow-hidden"
             onClick={closeMobile}
           >
             <BrandLogo underline={false} />
@@ -1187,35 +1248,52 @@ export default function PublicHeader({
             ) : null}
           </Link>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setMobileCategoryOpen((current) => !current)
+              setMobileMoreOpen(false)
+              setOpen(false)
+            }}
+            aria-label={t.shopByCategory}
+            aria-expanded={mobileCategoryOpen}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+          >
+            <CategoryListIcon className="h-[18px] w-[18px]" />
+          </button>
           {headerAccount.authenticated ? (
             <Link
-              href={createListingHref}
+              href={savedHref}
               onClick={closeMobile}
-              aria-label={t.mobileCta}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              aria-label={t.saved}
+              className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
             >
-              <Plus className="h-[22px] w-[22px]" strokeWidth={2.2} />
+              <Heart className="h-[18px] w-[18px]" strokeWidth={1.9} />
+              {savedListingCount ? (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                  {savedListingCount > 99 ? '99+' : savedListingCount}
+                </span>
+              ) : null}
             </Link>
           ) : (
             <button
               type="button"
-              onClick={() => openAuthModal('login', createListingHref)}
-              aria-label={t.mobileCta}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              onClick={() => openAuthModal('login', savedHref)}
+              aria-label={t.saved}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
             >
-              <Plus className="h-[22px] w-[22px]" strokeWidth={2.2} />
+              <Heart className="h-[18px] w-[18px]" strokeWidth={1.9} />
             </button>
           )}
-          <SiteSearch locale={locale} headerMobile />
           {headerAccount.authenticated ? (
             <Link
               href={accountMessagesHref}
               onClick={closeMobile}
               aria-label={t.messages}
-              className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
             >
-              <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.9} />
+              <MessageSquareText className="h-[18px] w-[18px]" strokeWidth={1.9} />
               {headerAccount.unreadMessages ? (
                 <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                   {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
@@ -1227,19 +1305,124 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
               aria-label={t.messages}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#101828]"
             >
-              <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.9} />
+              <MessageSquareText className="h-[18px] w-[18px]" strokeWidth={1.9} />
             </button>
           )}
         </div>
       </div>
+      {mobileCategoryOpen ? (
+        <>
+          <button
+            type="button"
+            aria-label={t.closeMenu}
+            onClick={() => setMobileCategoryOpen(false)}
+            className="fixed inset-0 z-[125] bg-transparent min-[1120px]:hidden"
+          />
+          <div className="fixed inset-x-3 top-[64px] z-[131] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[22px] border border-[#dfe8f3] bg-white p-3 shadow-[0_24px_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#667085]">
+                {t.shopByCategory}
+              </p>
+              <button
+                type="button"
+                onClick={() => setMobileCategoryOpen(false)}
+                aria-label={t.closeMenu}
+                className="grid h-8 w-8 place-items-center rounded-full bg-[#f4f7fb] text-[#101828]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {buyItems.map(({ href, label, icon: Icon }, index) => {
+                const categorySlug = marketplaceCategories[index]?.slug
+                const CategoryIcon =
+                  (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={closeMobile}
+                    className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828] transition active:scale-[.99]"
+                  >
+                    <CategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
+                    <span className="min-w-0 truncate">{label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      ) : null}
+      {mobileMoreOpen ? (
+        <>
+          <button
+            type="button"
+            aria-label={t.closeMenu}
+            onClick={() => setMobileMoreOpen(false)}
+            className="fixed inset-0 z-[84] bg-transparent min-[1120px]:hidden"
+          />
+          <div className="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-[95] max-h-[min(70dvh,560px)] overflow-y-auto rounded-[22px] border border-[#dfe8f3] bg-white p-3 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#667085]">
+                {t.menu}
+              </p>
+              <button
+                type="button"
+                onClick={() => setMobileMoreOpen(false)}
+                aria-label={t.closeMenu}
+                className="grid h-8 w-8 place-items-center rounded-full bg-[#f4f7fb] text-[#101828]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid gap-2">
+              {mobileMainLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={(event) => {
+                    setMobileMoreOpen(false)
+                    handleInternalNavigation(event, href)
+                  }}
+                  className="flex min-h-12 items-center gap-3 rounded-[14px] border border-[#e0e7ef] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828]"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#0866ff]">
+                    <Icon className="h-[17px] w-[17px]" />
+                  </span>
+                  <span className="min-w-0 truncate">{label}</span>
+                </Link>
+              ))}
+              {moreLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={(event) => {
+                    setMobileMoreOpen(false)
+                    handleInternalNavigation(event, href)
+                  }}
+                  className="flex min-h-12 items-center gap-3 rounded-[14px] border border-[#e0e7ef] bg-white px-3 text-sm font-semibold text-[#344054]"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#f2f6ff] text-[#0866ff]">
+                    <Icon className="h-[17px] w-[17px]" />
+                  </span>
+                  <span className="min-w-0 truncate">{label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : null}
       <nav className="fixed inset-x-0 bottom-0 z-[90] w-full overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[max(env(safe-area-inset-bottom),0px)] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur min-[1120px]:hidden">
         <div className="grid h-[62px] w-full grid-cols-5 px-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
-            className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#0866ff]"
+            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+              isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
+            }`}
           >
             <Home className="h-[22px] w-[22px]" strokeWidth={2.2} />
             <span className="max-w-full truncate text-[10px] font-semibold">{t.home}</span>
@@ -1294,12 +1477,16 @@ export default function PublicHeader({
           )}
           <button
             type="button"
-            onClick={() => setOpen((current) => !current)}
-            aria-label={open ? t.closeMenu : t.openMenu}
-            aria-expanded={open}
+            onClick={() => {
+              setMobileMoreOpen((current) => !current)
+              setMobileCategoryOpen(false)
+              setOpen(false)
+            }}
+            aria-label={mobileMoreOpen ? t.closeMenu : t.openMenu}
+            aria-expanded={mobileMoreOpen}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
-            {open ? (
+            {mobileMoreOpen ? (
               <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
             ) : (
               <Menu className="h-[23px] w-[23px]" strokeWidth={2.1} />

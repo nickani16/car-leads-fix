@@ -19,6 +19,11 @@ export default function AccountLogoutButton({
     }
     ;(window as Window & { __autorellHeaderAccount?: typeof signedOutHeaderState }).__autorellHeaderAccount =
       signedOutHeaderState
+    try {
+      window.sessionStorage.setItem('autorell-header-account', JSON.stringify(signedOutHeaderState))
+    } catch {
+      // Ignore blocked session storage; the in-memory header event still updates the UI.
+    }
     window.dispatchEvent(
       new CustomEvent('autorell:header-account', {
         detail: signedOutHeaderState,
