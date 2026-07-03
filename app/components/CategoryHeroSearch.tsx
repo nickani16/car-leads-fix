@@ -170,15 +170,43 @@ function AnimatedSearchInput({
   placeholders: string[]
 }) {
   const [index, setIndex] = useState(0)
+  const [visibleLetters, setVisibleLetters] = useState(0)
+  const [deleting, setDeleting] = useState(false)
   const activePlaceholder = placeholders[index % placeholders.length] || ''
+  const typedPlaceholder = activePlaceholder.slice(0, visibleLetters)
 
   useEffect(() => {
-    if (placeholders.length < 2) return
-    const interval = window.setInterval(() => {
+    if (!activePlaceholder) return
+
+    const delay =
+      !deleting && visibleLetters >= activePlaceholder.length
+        ? 1150
+        : deleting
+          ? 32
+          : 52
+
+    const timeout = window.setTimeout(() => {
+      if (!deleting && visibleLetters < activePlaceholder.length) {
+        setVisibleLetters((current) => current + 1)
+        return
+      }
+
+      if (!deleting && visibleLetters >= activePlaceholder.length) {
+        setDeleting(true)
+        return
+      }
+
+      if (deleting && visibleLetters > 0) {
+        setVisibleLetters((current) => current - 1)
+        return
+      }
+
+      setDeleting(false)
       setIndex((current) => (current + 1) % placeholders.length)
-    }, 1900)
-    return () => window.clearInterval(interval)
-  }, [placeholders.length])
+    }, delay)
+
+    return () => window.clearTimeout(timeout)
+  }, [activePlaceholder, deleting, placeholders.length, visibleLetters])
 
   return (
     <span className="relative block">
@@ -190,11 +218,11 @@ function AnimatedSearchInput({
       />
       {!value ? (
         <span
-          key={activePlaceholder}
           aria-hidden="true"
-          className="hero-word-rotate pointer-events-none absolute inset-x-0 top-0 z-30 block h-6 truncate text-sm font-normal leading-6 text-[#98a2b3]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-6 min-w-0 items-center text-sm font-normal leading-6 text-[#98a2b3]"
         >
-          {activePlaceholder}
+          <span className="truncate">{typedPlaceholder}</span>
+          <span className="hero-typing-caret ml-0.5 h-4 w-px shrink-0 rounded-full bg-[#98a2b3]/75" />
         </span>
       ) : null}
     </span>
