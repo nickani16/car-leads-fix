@@ -131,10 +131,7 @@ export default async function CategoryLandingPage({
               <div className={`absolute inset-0 ${slug === 'cars' ? 'bg-[linear-gradient(90deg,rgba(3,10,26,.34)_0%,rgba(3,10,26,.2)_38%,rgba(3,10,26,.05)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.075)_28%,rgba(3,10,26,.016)_56%,rgba(3,10,26,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.065)_31%,rgba(3,10,26,.015)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,.045)_34%,rgba(3,10,26,.01)_60%,rgba(3,10,26,0)_100%)]'}`} />
 
               <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
-                  {page.eyebrow}
-                </p>
-                <h1 className="mt-4 max-w-[350px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[60px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[66px]">
+                <h1 className="max-w-[350px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[60px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[66px]">
                   {page.heroTitle}
                 </h1>
                 <HeroTypingText prefix={page.heroTypingPrefix} items={typingWords} variant="rotate" />
@@ -747,6 +744,18 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     'electric-bikes': t3('Europas cykelmarknad', "Europe's bike marketplace", 'Europas Fahrradmarkt'),
     'e-scooters': t3('Europas sparkcykelmarknad', "Europe's scooter marketplace", 'Europas Scooter-Markt'),
   }
+  const searchCtas: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
+    cars: t3('Sök bil', 'Search cars', 'Autos suchen'),
+    vans: t3('Sök transportbil', 'Search vans', 'Transporter suchen'),
+    motorcycles: t3('Sök motorcykel', 'Search motorcycles', 'Motorräder suchen'),
+    motorhomes: t3('Sök husbil', 'Search motorhomes', 'Wohnmobile suchen'),
+    caravans: t3('Sök husvagn', 'Search caravans', 'Wohnwagen suchen'),
+    trucks: t3('Sök lastbil', 'Search trucks', 'Lkw suchen'),
+    agriculture: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
+    construction: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
+    'electric-bikes': t3('Sök cykel', 'Search bikes', 'Fahrräder suchen'),
+    'e-scooters': t3('Sök sparkcykel', 'Search scooters', 'Scooter suchen'),
+  }
   const base = {
     sv: {
       eyebrow: heroEyebrows[slug].sv,
@@ -765,7 +774,7 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       clearFilter: 'Rensa',
       applyFilter: 'Använd',
       location: 'Plats',
-      searchCta: 'Sök fordon',
+      searchCta: searchCtas[slug].sv,
       moreFilters: 'Fler filter',
       topRatedTitle: 'Topprankade annonser',
       viewAll: `Visa alla ${label.toLowerCase()}`,
@@ -817,7 +826,7 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       clearFilter: 'Clear',
       applyFilter: 'Apply',
       location: 'Location',
-      searchCta: 'Search vehicles',
+      searchCta: searchCtas[slug].en,
       moreFilters: 'More filters',
       topRatedTitle: 'Top rated listings',
       viewAll: `View all ${label.toLowerCase()}`,
@@ -869,7 +878,7 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       clearFilter: 'Zurücksetzen',
       applyFilter: 'Anwenden',
       location: 'Standort',
-      searchCta: 'Fahrzeuge suchen',
+      searchCta: searchCtas[slug].de,
       moreFilters: 'Mehr Filter',
       topRatedTitle: 'Top bewertete Anzeigen',
       viewAll: `Alle ${label} ansehen`,
