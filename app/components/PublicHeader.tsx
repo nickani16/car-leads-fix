@@ -7,6 +7,7 @@ import {
   Building2,
   ChevronDown,
   CircleHelp,
+  Euro,
   FileText,
   FilePlus2,
   Heart,
@@ -34,7 +35,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import BrandLogo from './BrandLogo'
-import { AutorellCarIcon, autorellCategoryIcons } from './AutorellCategoryIcons'
+import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
 import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
@@ -1258,7 +1259,7 @@ export default function PublicHeader({
           >
             <BrandLogo underline={false} />
             {activeMarketplaceChannel?.label ? (
-              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[9px] font-semibold leading-none text-[#101828]">
+              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[10px] font-medium leading-none text-[#101828]">
                 {activeMarketplaceChannel.label}
               </span>
             ) : null}
@@ -1546,8 +1547,12 @@ export default function PublicHeader({
           </div>
         </>
       ) : null}
-      <nav className="fixed inset-x-0 bottom-0 z-[90] w-full overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[max(env(safe-area-inset-bottom),0px)] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur min-[1120px]:hidden">
-        <div className="grid h-[62px] w-full grid-cols-5 px-1">
+      <nav
+        className={`fixed inset-x-0 bottom-0 z-[90] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[max(env(safe-area-inset-bottom),0px)] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
+          visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="grid h-[56px] w-full grid-cols-5 px-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
@@ -1563,7 +1568,7 @@ export default function PublicHeader({
             onClick={closeMobile}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
-            <AutorellCarIcon className="h-[22px] w-[22px]" strokeWidth={1.7} />
+            <Euro className="h-[22px] w-[22px]" strokeWidth={1.9} />
             <span className="max-w-full truncate text-[10px] font-semibold">{t.buy}</span>
           </Link>
           {headerAccount.authenticated ? (
