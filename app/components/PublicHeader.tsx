@@ -345,6 +345,7 @@ export default function PublicHeader({
   const [moreOpen, setMoreOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null)
   const [visible, setVisible] = useState(true)
+  const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
   const moreRef = useRef<HTMLDivElement>(null)
 
@@ -352,6 +353,7 @@ export default function PublicHeader({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const difference = currentScrollY - lastScrollY.current
+      setAtPageTop(currentScrollY < 8)
 
       if (currentScrollY < 80) setVisible(true)
       else if (difference > 7) {
@@ -653,6 +655,7 @@ export default function PublicHeader({
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
   const showTopCategoryNav = true
+  const renderTopCategoryNav = showTopCategoryNav && atPageTop
   const showMobileCategoryNav =
     Boolean(categoryPrimaryLinks) && !isMarketplaceResults && !isListingDetail
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
@@ -758,9 +761,9 @@ export default function PublicHeader({
         }`}
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
-          {showTopCategoryNav ? (
-            <div className="hidden bg-white min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center pl-5 pr-5 sm:px-8">
+          {renderTopCategoryNav ? (
+            <div className="hidden border-b border-[#deddd8] bg-white min-[1120px]:block">
+              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between pl-5 pr-5 sm:px-8">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
@@ -787,6 +790,16 @@ export default function PublicHeader({
                     )
                   })}
                 </nav>
+                <button
+                  type="button"
+                  onClick={() => setMarketSelectorOpen(true)}
+                  className="ml-5 flex h-[30px] shrink-0 items-center gap-2 border-l border-[#deddd8] pl-5 text-[11px] font-semibold text-[#202124] transition hover:text-[#0866ff]"
+                  aria-label={t.chooseLanguage}
+                >
+                  <FlagIcon code={activeMarket[1]} size="sm" />
+                  <span>{activeMarket[2]}</span>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           ) : null}
