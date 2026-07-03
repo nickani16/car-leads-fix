@@ -203,6 +203,7 @@ const copy = {
     notificationsShort: 'Notis',
     hello: 'Hej',
     myAutorell: 'Mitt Konto',
+    profileNav: 'Min profil',
     menu: 'Meny',
     register: 'Registrera',
     signIn: 'Logga in',
@@ -249,6 +250,7 @@ const copy = {
     notificationsShort: 'Alerts',
     hello: 'Hi',
     myAutorell: 'My Account',
+    profileNav: 'My profile',
     menu: 'Menu',
     register: 'Register',
     signIn: 'Log in',
@@ -295,6 +297,7 @@ const copy = {
     notificationsShort: 'Notiz',
     hello: 'Hallo',
     myAutorell: 'Mein Konto',
+    profileNav: 'Mein Profil',
     menu: 'Menü',
     register: 'Registrieren',
     signIn: 'Anmelden',
@@ -752,6 +755,7 @@ export default function PublicHeader({
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
+  const mobileProfileLabel = locale === 'sv' ? 'Min profil' : locale === 'en' ? 'My profile' : t.profileNav
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()
@@ -1590,7 +1594,7 @@ export default function PublicHeader({
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                 {mobileAccountInitials}
               </span>
-              <span className="max-w-full truncate text-[10px] font-semibold">{mobileAccountName}</span>
+              <span className="max-w-full truncate text-[10px] font-semibold">{mobileProfileLabel}</span>
             </Link>
           ) : (
             <button

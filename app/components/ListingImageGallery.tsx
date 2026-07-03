@@ -8,7 +8,13 @@ import {
   ImageIcon,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type TouchEvent,
+} from 'react'
 
 export default function ListingImageGallery({
   images,
@@ -21,6 +27,9 @@ export default function ListingImageGallery({
   const [active, setActive] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
   const [showGrid, setShowGrid] = useState(false)
+  const touchStartX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
+  const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
 
@@ -30,6 +39,49 @@ export default function ListingImageGallery({
       current === 0 ? imageCount - 1 : current - 1,
     )
   }, [imageCount])
+
+  const openFullscreen = useCallback(() => {
+    if (suppressNextClick.current) {
+      suppressNextClick.current = false
+      return
+    }
+    setFullscreen(true)
+  }, [])
+
+  function handleMainTouchStart(event: TouchEvent<HTMLButtonElement>) {
+    if (imageCount < 2) return
+    const touch = event.touches[0]
+    touchStartX.current = touch.clientX
+    touchStartY.current = touch.clientY
+  }
+
+  function handleMainTouchEnd(event: TouchEvent<HTMLButtonElement>) {
+    if (
+      imageCount < 2 ||
+      touchStartX.current === null ||
+      touchStartY.current === null
+    ) {
+      return
+    }
+
+    const touch = event.changedTouches[0]
+    const deltaX = touch.clientX - touchStartX.current
+    const deltaY = touch.clientY - touchStartY.current
+    touchStartX.current = null
+    touchStartY.current = null
+
+    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) < Math.abs(deltaY) * 1.15) {
+      return
+    }
+
+    suppressNextClick.current = true
+    window.setTimeout(() => {
+      suppressNextClick.current = false
+    }, 0)
+
+    if (deltaX > 0) showPrevious()
+    else showNext()
+  }
 
   const showNext = useCallback(() => {
     if (!imageCount) return
@@ -62,8 +114,14 @@ export default function ListingImageGallery({
         {activeImage ? (
           <button
             type="button"
-            onClick={() => setFullscreen(true)}
-            className="block h-full w-full"
+            onClick={openFullscreen}
+            onTouchStart={handleMainTouchStart}
+            onTouchEnd={handleMainTouchEnd}
+            onTouchCancel={() => {
+              touchStartX.current = null
+              touchStartY.current = null
+            }}
+            className="block h-full w-full touch-pan-y"
             aria-label="Open photos"
           >
             {/* Public listing images can come from storage/CDN URLs outside Next image config. */}
@@ -102,7 +160,7 @@ export default function ListingImageGallery({
             </button>
             <button
               type="button"
-              onClick={() => setFullscreen(true)}
+              onClick={openFullscreen}
               className="absolute bottom-3 left-1/2 inline-flex min-h-9 -translate-x-1/2 items-center gap-2 rounded-full bg-[#101828]/82 px-3 text-sm font-black text-white shadow-lg backdrop-blur"
               aria-label="Open photos"
             >

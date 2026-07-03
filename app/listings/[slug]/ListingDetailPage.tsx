@@ -427,7 +427,7 @@ export default async function ListingDetailPage({
                 </p>
                 {originalPriceDisplay ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="text-lg font-black text-[#98a2b3] line-through">
+                    <span className="text-lg font-bold text-[#98a2b3] line-through">
                       {originalPriceDisplay.original}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-xs font-black text-[#027a48]">
@@ -436,7 +436,7 @@ export default async function ListingDetailPage({
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-2 text-4xl font-black tracking-[-0.055em]">
+                <div className="mt-2 text-4xl font-extrabold tracking-[-0.055em]">
                   {price.original}
                 </div>
                 {price.approximate ? (

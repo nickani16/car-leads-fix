@@ -67,7 +67,7 @@ export default function HeroTypingText({ prefix, items, variant = 'typing' }: He
 
   return (
     <p
-      className="mt-5 flex max-w-[340px] items-center text-[15px] font-normal leading-7 text-white/90 [text-shadow:0_2px_18px_rgba(0,0,0,.32)] sm:max-w-[560px] sm:text-[17px] sm:leading-8"
+      className={`mt-5 flex max-w-[340px] items-center text-[15px] font-normal leading-7 text-white/90 [text-shadow:0_2px_18px_rgba(0,0,0,.32)] sm:max-w-[560px] sm:leading-8 ${variant === 'rotate' ? 'sm:text-[18px]' : 'sm:text-[17px]'}`}
       aria-label={`${prefix} ${activeWord}`}
     >
       <span className="shrink-0">{prefix}&nbsp;</span>
