@@ -1240,27 +1240,27 @@ export default function PublicHeader({
               href={accountMessagesHref}
               onClick={closeMobile}
               aria-label={t.messages}
-              className="relative flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+              className="relative flex h-12 min-w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
-                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
+                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2.1} />
                 {headerAccount.unreadMessages ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                     {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                   </span>
                 ) : null}
               </span>
-              <span className="text-[9px] font-semibold leading-none">{t.notificationsShort}</span>
+              <span className="text-[10px] font-semibold leading-none">{t.messages}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
               aria-label={t.messages}
-              className="flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+              className="flex h-12 min-w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2} />
-              <span className="text-[9px] font-semibold leading-none">{t.notificationsShort}</span>
+              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <span className="text-[10px] font-semibold leading-none">{t.messages}</span>
             </button>
           )}
           <SiteSearch locale={locale} marketCode={marketCode} headerMobile />
@@ -1269,27 +1269,27 @@ export default function PublicHeader({
               href={savedHref}
               onClick={closeMobile}
               aria-label={t.saved}
-              className="relative flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+              className="relative flex h-12 min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
+                <Heart className="h-[22px] w-[22px]" strokeWidth={2.1} />
                 {savedListingCount ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                     {savedListingCount > 99 ? '99+' : savedListingCount}
                   </span>
                 ) : null}
               </span>
-              <span className="text-[9px] font-semibold leading-none">{t.saved}</span>
+              <span className="text-[10px] font-semibold leading-none">{t.saved}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
               aria-label={t.saved}
-              className="flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] transition hover:text-[#0866ff]"
+              className="flex h-12 min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={2} />
-              <span className="text-[9px] font-semibold leading-none">{t.saved}</span>
+              <Heart className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <span className="text-[10px] font-semibold leading-none">{t.saved}</span>
             </button>
           )}
         </div>

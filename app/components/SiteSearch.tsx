@@ -286,13 +286,13 @@ export default function SiteSearch({
         aria-label={text.label}
         className={`transition ${
           headerMobile
-            ? 'flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] hover:text-[#0866ff] min-[1120px]:hidden'
+            ? 'flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] hover:text-[#0866ff] min-[1120px]:hidden'
             : 'grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-white text-[#202124]'
         }`}
       >
-        <Search className={headerMobile ? 'h-[22px] w-[22px]' : 'h-[18px] w-[18px]'} strokeWidth={headerMobile ? 2 : 1.7} />
+        <Search className={headerMobile ? 'h-[22px] w-[22px]' : 'h-[18px] w-[18px]'} strokeWidth={headerMobile ? 2.1 : 1.7} />
         {headerMobile ? (
-          <span className="text-[9px] font-semibold leading-none">{text.label}</span>
+          <span className="text-[10px] font-semibold leading-none">{text.label}</span>
         ) : null}
       </button>
     )
@@ -373,10 +373,10 @@ export default function SiteSearch({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close search"
-          className="flex h-12 min-w-[42px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#202124] min-[1120px]:hidden"
+          className="flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] min-[1120px]:hidden"
         >
-          <X className="h-[22px] w-[22px]" strokeWidth={2} />
-          <span className="text-[9px] font-semibold leading-none">{text.label}</span>
+          <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
+          <span className="text-[10px] font-semibold leading-none">{text.label}</span>
         </button>
         {createPortal(
           <div
