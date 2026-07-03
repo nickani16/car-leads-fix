@@ -292,7 +292,7 @@ export default function SiteSearch({
       >
         <Search className={headerMobile ? 'h-[22px] w-[22px]' : 'h-[18px] w-[18px]'} strokeWidth={headerMobile ? 2.1 : 1.7} />
         {headerMobile ? (
-          <span className="text-[10px] font-semibold leading-none">{text.label}</span>
+          <span className="text-[10px] font-medium leading-none">{text.label}</span>
         ) : null}
       </button>
     )
@@ -376,7 +376,7 @@ export default function SiteSearch({
           className="flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] min-[1120px]:hidden"
         >
           <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
-          <span className="text-[10px] font-semibold leading-none">{text.label}</span>
+          <span className="text-[10px] font-medium leading-none">{text.label}</span>
         </button>
         {createPortal(
           <div

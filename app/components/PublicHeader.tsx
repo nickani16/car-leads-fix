@@ -1250,7 +1250,7 @@ export default function PublicHeader({
                   </span>
                 ) : null}
               </span>
-              <span className="text-[10px] font-semibold leading-none">{t.messages}</span>
+              <span className="text-[10px] font-medium leading-none">{t.messages}</span>
             </Link>
           ) : (
             <button
@@ -1260,7 +1260,7 @@ export default function PublicHeader({
               className="flex h-12 min-w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2.1} />
-              <span className="text-[10px] font-semibold leading-none">{t.messages}</span>
+              <span className="text-[10px] font-medium leading-none">{t.messages}</span>
             </button>
           )}
           <SiteSearch locale={locale} marketCode={marketCode} headerMobile />
@@ -1279,7 +1279,7 @@ export default function PublicHeader({
                   </span>
                 ) : null}
               </span>
-              <span className="text-[10px] font-semibold leading-none">{t.saved}</span>
+              <span className="text-[10px] font-medium leading-none">{t.saved}</span>
             </Link>
           ) : (
             <button
@@ -1289,7 +1289,7 @@ export default function PublicHeader({
               className="flex h-12 min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <Heart className="h-[22px] w-[22px]" strokeWidth={2.1} />
-              <span className="text-[10px] font-semibold leading-none">{t.saved}</span>
+              <span className="text-[10px] font-medium leading-none">{t.saved}</span>
             </button>
           )}
         </div>
