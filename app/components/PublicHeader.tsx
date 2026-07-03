@@ -1243,7 +1243,7 @@ export default function PublicHeader({
               className="relative flex h-12 min-w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
-                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2.1} />
+                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.85} />
                 {headerAccount.unreadMessages ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                     {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
@@ -1259,7 +1259,7 @@ export default function PublicHeader({
               aria-label={t.messages}
               className="flex h-12 min-w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
-              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.85} />
               <span className="text-[10px] font-medium leading-none">{t.messages}</span>
             </button>
           )}
@@ -1272,7 +1272,7 @@ export default function PublicHeader({
               className="relative flex h-12 min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={2.1} />
+                <Heart className="h-[22px] w-[22px]" strokeWidth={1.85} />
                 {savedListingCount ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                     {savedListingCount > 99 ? '99+' : savedListingCount}
@@ -1288,7 +1288,7 @@ export default function PublicHeader({
               aria-label={t.saved}
               className="flex h-12 min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] transition hover:text-[#0866ff]"
             >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <Heart className="h-[22px] w-[22px]" strokeWidth={1.85} />
               <span className="text-[10px] font-medium leading-none">{t.saved}</span>
             </button>
           )}

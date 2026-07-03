@@ -290,7 +290,7 @@ export default function SiteSearch({
             : 'grid h-11 w-11 place-items-center rounded-full border border-[#deddd8] bg-white text-[#202124]'
         }`}
       >
-        <Search className={headerMobile ? 'h-[22px] w-[22px]' : 'h-[18px] w-[18px]'} strokeWidth={headerMobile ? 2.1 : 1.7} />
+        <Search className={headerMobile ? 'h-[22px] w-[22px]' : 'h-[18px] w-[18px]'} strokeWidth={headerMobile ? 1.85 : 1.7} />
         {headerMobile ? (
           <span className="text-[10px] font-medium leading-none">{text.label}</span>
         ) : null}
@@ -375,7 +375,7 @@ export default function SiteSearch({
           aria-label="Close search"
           className="flex h-12 min-w-[46px] shrink-0 flex-col items-center justify-center gap-0.5 text-[#101828] min-[1120px]:hidden"
         >
-          <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
+          <X className="h-[22px] w-[22px]" strokeWidth={1.85} />
           <span className="text-[10px] font-medium leading-none">{text.label}</span>
         </button>
         {createPortal(
