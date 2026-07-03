@@ -741,6 +741,13 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
     { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
   ]
+  const mobileDrawerLinks = [
+    { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
+    { href: localizePublicHref(locale, '/foretag'), label: t.business, icon: Building2 },
+    { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
+    { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
+    { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
+  ]
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
@@ -1363,7 +1370,7 @@ export default function PublicHeader({
             onClick={() => setMobileMoreOpen(false)}
             className="fixed inset-0 z-[84] bg-transparent min-[1120px]:hidden"
           />
-          <div className="fixed inset-0 z-[95] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-4 shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
+          <div className="fixed inset-0 z-[160] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))] shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
             <div className="mb-4 flex items-center justify-between">
               <Link
                 href={homeHref}
@@ -1382,7 +1389,7 @@ export default function PublicHeader({
                 type="button"
                 onClick={() => setMobileMoreOpen(false)}
                 aria-label={t.closeMenu}
-                className="grid h-10 w-10 place-items-center rounded-full bg-[#f4f7fb] text-[#101828] ring-1 ring-[#e4eaf3]"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.12)] ring-1 ring-[#dfe6f0]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1398,13 +1405,16 @@ export default function PublicHeader({
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-sm font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                     {mobileAccountInitials}
                   </span>
-                  <span className="min-w-0">
+                  <span className="min-w-0 flex-1">
                     <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
                       {mobileAccountName}
                     </strong>
                     <span className="mt-0.5 block text-sm font-medium text-[#667085]">
                       {t.myAutorell}
                     </span>
+                  </span>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-[#0866ff]">
+                    <ArrowRight className="h-4 w-4" />
                   </span>
                 </Link>
               ) : (
@@ -1449,7 +1459,7 @@ export default function PublicHeader({
                       key={href}
                       href={href}
                       onClick={closeMobile}
-                      className={`min-h-10 rounded-full px-4 py-2 text-[15px] font-semibold shadow-[0_5px_18px_rgba(16,24,40,.10)] ring-1 transition active:scale-[.99] ${
+                      className={`min-h-8 rounded-full px-3 py-1.5 text-[13px] font-semibold shadow-[0_4px_14px_rgba(16,24,40,.09)] ring-1 transition active:scale-[.99] ${
                         isActive
                           ? 'bg-[#f3f7ff] text-[#101828] ring-[#edf2ff]'
                           : 'bg-white text-[#62686c] ring-[#eef0f3]'
@@ -1483,9 +1493,7 @@ export default function PublicHeader({
                 Autorell
               </p>
               <div className="grid gap-2">
-              {mobileMainLinks
-                .filter(({ href }) => !mobileMenuCategoryActions.some(([actionHref]) => actionHref === href))
-                .map(({ href, label, icon: Icon }) => (
+              {mobileDrawerLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
@@ -1496,22 +1504,6 @@ export default function PublicHeader({
                   className="flex min-h-12 items-center gap-3 rounded-[14px] border border-[#e0e7ef] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828]"
                 >
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#0866ff]">
-                    <Icon className="h-[17px] w-[17px]" />
-                  </span>
-                  <span className="min-w-0 truncate">{label}</span>
-                </Link>
-              ))}
-              {moreLinks.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={(event) => {
-                    setMobileMoreOpen(false)
-                    handleInternalNavigation(event, href)
-                  }}
-                  className="flex min-h-12 items-center gap-3 rounded-[14px] border border-[#e0e7ef] bg-white px-3 text-sm font-semibold text-[#344054]"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#f2f6ff] text-[#0866ff]">
                     <Icon className="h-[17px] w-[17px]" />
                   </span>
                   <span className="min-w-0 truncate">{label}</span>
