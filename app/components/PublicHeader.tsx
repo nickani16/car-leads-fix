@@ -868,21 +868,7 @@ export default function PublicHeader({
                     )
                   })}
                 </nav>
-                <div className="ml-5 flex h-[30px] shrink-0 items-center gap-5 text-[11px] font-semibold text-[#202124]">
-                  <Link
-                    href={localizePublicHref(locale, '/vanliga-fragor')}
-                    className="inline-flex h-full items-center gap-1.5 transition hover:text-[#0866ff]"
-                  >
-                    <CircleHelp className="h-3.5 w-3.5" strokeWidth={1.9} />
-                    <span>{t.faq}</span>
-                  </Link>
-                  <Link
-                    href={localizePublicHref(locale, '/contact')}
-                    className="inline-flex h-full items-center gap-1.5 transition hover:text-[#0866ff]"
-                  >
-                    <Mail className="h-3.5 w-3.5" strokeWidth={1.9} />
-                    <span>{t.contact}</span>
-                  </Link>
+                <div className="ml-5 flex h-[30px] shrink-0 items-center text-[11px] font-semibold text-[#202124]">
                   <button
                     type="button"
                     onClick={() => setMarketSelectorOpen(true)}
