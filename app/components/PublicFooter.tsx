@@ -803,12 +803,12 @@ export function FlagIcon({
   size = 'md',
 }: {
   code: string
-  size?: 'sm' | 'md'
+  size?: 'xs' | 'sm' | 'md'
 }) {
   return (
     <span
       className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-[#d7e2f2] ${
-        size === 'sm' ? 'h-5 w-5' : 'h-10 w-10'
+        size === 'xs' ? 'h-4 w-4' : size === 'sm' ? 'h-5 w-5' : 'h-10 w-10'
       }`}
       aria-label={`${code} flagga`}
       title={code}

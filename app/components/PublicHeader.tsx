@@ -868,16 +868,32 @@ export default function PublicHeader({
                     )
                   })}
                 </nav>
-                <button
-                  type="button"
-                  onClick={() => setMarketSelectorOpen(true)}
-                  className="ml-5 flex h-[30px] shrink-0 items-center gap-2 text-[11px] font-semibold text-[#202124] transition hover:text-[#0866ff]"
-                  aria-label={t.chooseLanguage}
-                >
-                  <FlagIcon code={activeMarket[1]} size="sm" />
-                  <span>{activeMarket[2]}</span>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
+                <div className="ml-5 flex h-[30px] shrink-0 items-center gap-3 text-[11px] font-semibold text-[#202124]">
+                  <Link
+                    href={localizePublicHref(locale, '/vanliga-fragor')}
+                    className="inline-flex h-full items-center gap-1.5 transition hover:text-[#0866ff]"
+                  >
+                    <CircleHelp className="h-3.5 w-3.5" strokeWidth={1.9} />
+                    <span>{t.faq}</span>
+                  </Link>
+                  <Link
+                    href={localizePublicHref(locale, '/contact')}
+                    className="inline-flex h-full items-center gap-1.5 transition hover:text-[#0866ff]"
+                  >
+                    <Mail className="h-3.5 w-3.5" strokeWidth={1.9} />
+                    <span>{t.contact}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setMarketSelectorOpen(true)}
+                    className="flex h-full shrink-0 items-center gap-1.5 transition hover:text-[#0866ff]"
+                    aria-label={t.chooseLanguage}
+                  >
+                    <FlagIcon code={activeMarket[1]} size="xs" />
+                    <span>{activeMarket[2]}</span>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           ) : null}
