@@ -653,20 +653,7 @@ export default function PublicHeader({
   const savedHref = `${marketPathPrefix}/sparade`
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
-  const isVehicleCategoryLanding = marketplaceCategories.some(
-    (category) => unprefixedPathname === categoryLandingPath(category.slug),
-  )
-  const isListingManagement =
-    unprefixedPathname.startsWith('/account/listings') ||
-    unprefixedPathname.startsWith('/konto/annonser')
-  const isVehicleRelatedPage =
-    isVehicleCategoryLanding ||
-    isMarketplaceResults ||
-    isListingDetail ||
-    isListingManagement ||
-    unprefixedPathname === '/find-cars' ||
-    unprefixedPathname === '/salj-fordon'
-  const showTopCategoryNav = !isVehicleRelatedPage
+  const showTopCategoryNav = true
   const showMobileCategoryNav =
     Boolean(categoryPrimaryLinks) && !isMarketplaceResults && !isListingDetail
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
@@ -762,7 +749,7 @@ export default function PublicHeader({
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {showTopCategoryNav ? (
             <div className="hidden border-b border-[#e8e9eb] bg-[#fbfbfc] min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 px-5 sm:pl-8 sm:pr-0">
+              <div className="mx-auto flex h-[30px] max-w-[var(--autorell-page-max)] items-center justify-between gap-5 pl-5 pr-[22px] sm:pl-8">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
