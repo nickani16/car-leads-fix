@@ -728,14 +728,14 @@ export default function PublicHeader({
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
   const headerSpacerClass = showMobileCategoryNav
     ? showTopCategoryNav
-      ? 'h-[110px] min-[1120px]:h-[80px]'
-      : 'h-[110px] min-[1120px]:h-[58px]'
+      ? 'h-[110px] min-[1120px]:h-[86px]'
+      : 'h-[110px] min-[1120px]:h-[64px]'
     : showTopCategoryNav
-      ? 'h-[56px] min-[1120px]:h-[80px]'
-      : 'h-[56px] min-[1120px]:h-[58px]'
+      ? 'h-[56px] min-[1120px]:h-[86px]'
+      : 'h-[56px] min-[1120px]:h-[64px]'
   const desktopMainRowHeightClass = showTopCategoryNav
-    ? 'min-[1120px]:h-[50px]'
-    : 'min-[1120px]:h-[58px]'
+    ? 'min-[1120px]:h-[56px]'
+    : 'min-[1120px]:h-[64px]'
   const mobileMainLinks = [
     ...menus.map(({ href, label, icon }) => ({ href, label, icon })),
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
@@ -868,7 +868,7 @@ export default function PublicHeader({
                     )
                   })}
                 </nav>
-                <div className="ml-5 flex h-[30px] shrink-0 items-center gap-3 text-[11px] font-semibold text-[#202124]">
+                <div className="ml-5 flex h-[30px] shrink-0 items-center gap-5 text-[11px] font-semibold text-[#202124]">
                   <Link
                     href={localizePublicHref(locale, '/vanliga-fragor')}
                     className="inline-flex h-full items-center gap-1.5 transition hover:text-[#0866ff]"
@@ -906,7 +906,7 @@ export default function PublicHeader({
             >
               <BrandLogo underline={false} />
               {activeMarketplaceChannel?.label ? (
-                <span className="mt-0.5 max-w-[120px] truncate text-[9px] font-semibold leading-none text-[#101828]">
+                <span className="mt-0.5 max-w-[120px] truncate text-[10px] font-semibold leading-none text-[#101828]">
                   {activeMarketplaceChannel.label}
                 </span>
               ) : null}
@@ -987,7 +987,7 @@ export default function PublicHeader({
                   <span className="relative">
                     <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
                     {headerAccount.unreadMessages ? (
-                      <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                         {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                       </span>
                     ) : null}
@@ -1012,7 +1012,7 @@ export default function PublicHeader({
                   <span className="relative">
                     <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
                     {savedListingCount ? (
-                      <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
                         {savedListingCount > 99 ? '99+' : savedListingCount}
                       </span>
                     ) : null}
