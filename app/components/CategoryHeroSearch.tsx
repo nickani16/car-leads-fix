@@ -186,13 +186,13 @@ function AnimatedSearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={activePlaceholder}
-        className="relative z-20 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:text-transparent"
+        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:text-transparent"
       />
       {!value ? (
         <span
           key={activePlaceholder}
           aria-hidden="true"
-          className="hero-word-rotate pointer-events-none absolute inset-x-0 top-0 z-10 block h-6 truncate text-sm font-normal leading-6 text-[#98a2b3]"
+          className="hero-word-rotate pointer-events-none absolute inset-x-0 top-0 z-30 block h-6 truncate text-sm font-normal leading-6 text-[#98a2b3]"
         >
           {activePlaceholder}
         </span>

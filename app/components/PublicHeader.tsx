@@ -408,8 +408,8 @@ export default function PublicHeader({
       const difference = currentScrollY - lastScrollY.current
       setAtPageTop(currentScrollY < 8)
 
-      if (currentScrollY < 80) setVisible(true)
-      else if (difference > 7) {
+      if (currentScrollY < 10) setVisible(true)
+      else if (difference > 1) {
         setVisible(false)
         setOpen(false)
         setMarketSelectorOpen(false)
@@ -417,7 +417,7 @@ export default function PublicHeader({
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
         setDesktopMenuOpen(null)
-      } else if (difference < -4) setVisible(true)
+      } else if (difference < -1) setVisible(true)
 
       lastScrollY.current = currentScrollY
     }
