@@ -246,8 +246,8 @@ export default async function BusinessMarketplaceHome({
                 className="object-cover object-[42%_center] sm:scale-[1.03] sm:object-[43%_34%]"
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.24)_0%,rgba(3,10,26,.15)_31%,rgba(3,10,26,.04)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.12)_34%,rgba(3,10,26,.035)_60%,rgba(3,10,26,0)_100%)]" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.04)_0%,rgba(3,10,26,0)_42%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.02)_0%,rgba(3,10,26,0)_42%)]" />
 
               <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
