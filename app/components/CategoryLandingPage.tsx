@@ -133,7 +133,7 @@ export default async function CategoryLandingPage({
                 <h1 className="max-w-[350px] text-[28px] leading-[.99] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[40px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[45px]">
                   {page.heroTitle}
                 </h1>
-                <p className="mt-4 max-w-[700px] text-[16px] font-[350] leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[18px] lg:text-[19px]">
+                <p className="mt-4 max-w-[700px] text-[14px] font-[350] leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[16px] lg:text-[17px]">
                   {page.heroTypingPrefix}
                 </p>
               </div>

@@ -896,11 +896,6 @@ export default function PublicHeader({
               className="hidden h-full shrink-0 flex-col items-center justify-center border-b-2 border-transparent pt-1 transition hover:border-[#0866ff] min-[1120px]:inline-flex"
             >
               <BrandLogo underline={false} />
-              {activeMarketplaceChannel?.label ? (
-                <span className="mt-0.5 max-w-[130px] truncate text-[11px] font-semibold leading-none text-[#101828]">
-                  {activeMarketplaceChannel.label}
-                </span>
-              ) : null}
             </Link>
 
             <nav className="ml-7 hidden h-full min-w-0 flex-1 items-center overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-9">
@@ -1258,11 +1253,6 @@ export default function PublicHeader({
             onClick={closeMobile}
           >
             <BrandLogo underline={false} />
-            {activeMarketplaceChannel?.label ? (
-              <span className="mt-0.5 w-full max-w-28 truncate text-center text-[10px] font-semibold leading-none text-[#101828]">
-                {activeMarketplaceChannel.label}
-              </span>
-            ) : null}
           </Link>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-1">
@@ -1386,11 +1376,6 @@ export default function PublicHeader({
                 className="flex h-11 w-[122px] flex-col items-start justify-center overflow-hidden"
               >
                 <BrandLogo underline={false} />
-                {activeMarketplaceChannel?.label ? (
-                  <span className="mt-0.5 w-full max-w-28 truncate text-center text-[9px] font-semibold leading-none text-[#101828]">
-                    {activeMarketplaceChannel.label}
-                  </span>
-                ) : null}
               </Link>
               <button
                 type="button"
