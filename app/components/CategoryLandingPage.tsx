@@ -130,10 +130,10 @@ export default async function CategoryLandingPage({
               <div className={`absolute inset-0 ${slug === 'cars' ? 'bg-[linear-gradient(90deg,rgba(3,10,26,.34)_0%,rgba(3,10,26,.2)_38%,rgba(3,10,26,.05)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.075)_28%,rgba(3,10,26,.016)_56%,rgba(3,10,26,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.065)_31%,rgba(3,10,26,.015)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,.045)_34%,rgba(3,10,26,.01)_60%,rgba(3,10,26,0)_100%)]'}`} />
 
               <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
-                <h1 className="max-w-[350px] text-[29px] leading-[.98] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[42px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[48px]">
+                <h1 className="max-w-[350px] text-[28px] leading-[.99] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[40px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[45px]">
                   {page.heroTitle}
                 </h1>
-                <p className="mt-5 text-[19px] font-semibold leading-tight text-white [text-shadow:0_3px_18px_rgba(0,0,0,.32)] sm:text-[21px] lg:text-[22px]">
+                <p className="mt-4 max-w-[700px] text-[16px] font-normal leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[18px] lg:text-[19px]">
                   {page.heroTypingPrefix}
                 </p>
               </div>
@@ -878,49 +878,49 @@ function getCategoryHeroContent(
       de: { title: 'Finden Sie Ihr nächstes Auto', body: 'Entdecken Sie neue und gebrauchte Autos von privaten und gewerblichen Verkäufern.' },
     },
     vans: {
-      sv: { title: 'Hitta din nästa transportbil', body: 'Jämför nya och begagnade transportbilar för arbete och vardag.' },
-      en: { title: 'Find your next van', body: 'Compare new and used vans for work, delivery and everyday use.' },
-      de: { title: 'Finden Sie Ihren nächsten Transporter', body: 'Vergleichen Sie neue und gebrauchte Transporter für Arbeit und Alltag.' },
+      sv: { title: 'Transportbilar för jobb och vardag', body: 'Hitta flexibla transportbilar för leverans, service och företag i hela Europa.' },
+      en: { title: 'Vans for work and everyday use', body: 'Find practical vans for delivery, service and business across Europe.' },
+      de: { title: 'Transporter für Arbeit und Alltag', body: 'Finden Sie praktische Transporter für Lieferung, Service und Gewerbe in Europa.' },
     },
     motorcycles: {
-      sv: { title: 'Hitta din nästa motorcykel', body: 'Utforska nya och begagnade motorcyklar för pendling, touring och fritid.' },
-      en: { title: 'Find your next motorcycle', body: 'Explore new and used motorcycles for commuting, touring and leisure.' },
-      de: { title: 'Finden Sie Ihr nächstes Motorrad', body: 'Entdecken Sie neue und gebrauchte Motorräder für Pendeln, Touren und Freizeit.' },
+      sv: { title: 'Motorcyklar för varje körstil', body: 'Utforska motorcyklar för pendling, touring och fritid från privata och företag.' },
+      en: { title: 'Motorcycles for every ride', body: 'Explore motorcycles for commuting, touring and leisure from private and business sellers.' },
+      de: { title: 'Motorräder für jede Fahrt', body: 'Entdecken Sie Motorräder für Pendeln, Touren und Freizeit von privaten und Händlern.' },
     },
     motorhomes: {
-      sv: { title: 'Hitta din nästa husbil', body: 'Jämför nya och begagnade husbilar för semester och resor i Europa.' },
-      en: { title: 'Find your next motorhome', body: 'Compare new and used motorhomes for holidays and travel across Europe.' },
-      de: { title: 'Finden Sie Ihr nächstes Wohnmobil', body: 'Vergleichen Sie neue und gebrauchte Wohnmobile für Urlaub und Reisen.' },
+      sv: { title: 'Husbilar för nästa resa', body: 'Jämför husbilar för semester, långresor och frihet på vägarna i Europa.' },
+      en: { title: 'Motorhomes for your next trip', body: 'Compare motorhomes for holidays, long journeys and freedom on European roads.' },
+      de: { title: 'Wohnmobile für die nächste Reise', body: 'Vergleichen Sie Wohnmobile für Urlaub, lange Reisen und Freiheit auf Europas Straßen.' },
     },
     caravans: {
-      sv: { title: 'Hitta din nästa husvagn', body: 'Utforska nya och begagnade husvagnar för familj, säsong och frihet.' },
-      en: { title: 'Find your next caravan', body: 'Explore new and used caravans for family trips, seasons and freedom.' },
-      de: { title: 'Finden Sie Ihren nächsten Wohnwagen', body: 'Entdecken Sie neue und gebrauchte Wohnwagen für Familie, Saison und Freiheit.' },
+      sv: { title: 'Husvagnar för säsong och äventyr', body: 'Hitta husvagnar för familj, camping och längre vistelser från säljare i Europa.' },
+      en: { title: 'Caravans for seasons and escapes', body: 'Find caravans for families, camping and longer stays from sellers across Europe.' },
+      de: { title: 'Wohnwagen für Saison und Abenteuer', body: 'Finden Sie Wohnwagen für Familie, Camping und längere Aufenthalte in Europa.' },
     },
     trucks: {
-      sv: { title: 'Hitta din nästa lastbil', body: 'Jämför nya och begagnade lastbilar för transport, logistik och uppdrag.' },
-      en: { title: 'Find your next truck', body: 'Compare new and used trucks for transport, logistics and specialist work.' },
-      de: { title: 'Finden Sie Ihren nächsten Lkw', body: 'Vergleichen Sie neue und gebrauchte Lkw für Transport, Logistik und Einsätze.' },
+      sv: { title: 'Lastbilar för transport och logistik', body: 'Sök lastbilar för åkeri, distribution och tunga uppdrag från europeiska säljare.' },
+      en: { title: 'Trucks for transport and logistics', body: 'Search trucks for haulage, distribution and heavy-duty work from European sellers.' },
+      de: { title: 'Lkw für Transport und Logistik', body: 'Suchen Sie Lkw für Spedition, Verteilung und schwere Einsätze in Europa.' },
     },
     agriculture: {
-      sv: { title: 'Hitta din nästa lantbruksmaskin', body: 'Utforska traktorer, redskap och maskiner för modernt lantbruk.' },
-      en: { title: 'Find your next farm machine', body: 'Explore tractors, implements and machinery for modern farming.' },
-      de: { title: 'Finden Sie Ihre nächste Landmaschine', body: 'Entdecken Sie Traktoren, Geräte und Maschinen für moderne Landwirtschaft.' },
+      sv: { title: 'Maskiner för lantbruket', body: 'Utforska traktorer, redskap och lantbruksmaskiner för modern drift och produktion.' },
+      en: { title: 'Machinery for modern farming', body: 'Explore tractors, implements and farm machinery for efficient agricultural work.' },
+      de: { title: 'Maschinen für moderne Landwirtschaft', body: 'Entdecken Sie Traktoren, Geräte und Landmaschinen für effiziente Arbeit.' },
     },
     construction: {
-      sv: { title: 'Hitta din nästa entreprenadmaskin', body: 'Jämför maskiner för markarbete, bygg, material och infrastruktur.' },
-      en: { title: 'Find your next construction machine', body: 'Compare machines for earthmoving, building, materials and infrastructure.' },
-      de: { title: 'Finden Sie Ihre nächste Baumaschine', body: 'Vergleichen Sie Maschinen für Erdarbeiten, Bau und Infrastruktur.' },
+      sv: { title: 'Entreprenadmaskiner för jobbet', body: 'Hitta grävmaskiner, lastare och maskiner för bygg, markarbete och infrastruktur.' },
+      en: { title: 'Construction machines for the job', body: 'Find excavators, loaders and machines for building, earthmoving and infrastructure.' },
+      de: { title: 'Baumaschinen für den Einsatz', body: 'Finden Sie Bagger, Lader und Maschinen für Bau, Erdarbeiten und Infrastruktur.' },
     },
     'electric-bikes': {
-      sv: { title: 'Hitta din nästa cykel', body: 'Utforska cyklar för stad, pendling, last och längre vardagsresor.' },
-      en: { title: 'Find your next bike', body: 'Explore bikes for cities, commuting, cargo and everyday journeys.' },
-      de: { title: 'Finden Sie Ihr nächstes Fahrrad', body: 'Entdecken Sie Fahrräder für Stadt, Pendeln, Lasten und Alltag.' },
+      sv: { title: 'Cyklar för stad och pendling', body: 'Jämför cyklar för vardag, last och längre turer från privata och företag.' },
+      en: { title: 'Bikes for city and commuting', body: 'Compare bikes for everyday travel, cargo and longer rides from trusted sellers.' },
+      de: { title: 'Fahrräder für Stadt und Pendeln', body: 'Vergleichen Sie Fahrräder für Alltag, Lasten und längere Fahrten.' },
     },
     'e-scooters': {
-      sv: { title: 'Hitta din nästa sparkcykel', body: 'Jämför sparkcyklar för smidig pendling och korta resor.' },
-      en: { title: 'Find your next scooter', body: 'Compare scooters for convenient commuting and short everyday trips.' },
-      de: { title: 'Finden Sie Ihren nächsten Scooter', body: 'Vergleichen Sie Scooter für Pendeln und kurze Alltagswege.' },
+      sv: { title: 'Sparkcyklar för smidig vardag', body: 'Sök sparkcyklar för korta resor, pendling och enkel mobilitet i staden.' },
+      en: { title: 'Scooters for easy mobility', body: 'Search scooters for short trips, commuting and simple city transport.' },
+      de: { title: 'Scooter für flexible Mobilität', body: 'Suchen Sie Scooter für kurze Wege, Pendeln und einfache Stadtmobilität.' },
     },
   }
 
