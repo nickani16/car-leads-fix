@@ -140,7 +140,7 @@ export default async function CategoryLandingPage({
           </div>
 
           <div className="relative z-10 mx-auto -mt-[34px] max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:-mt-[43px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-            <div className="sm:px-12 lg:px-20">
+            <div className="sm:px-16 lg:px-28 xl:px-32">
               <CategoryHeroSearch
                 locale={locale}
                 slug={slug}

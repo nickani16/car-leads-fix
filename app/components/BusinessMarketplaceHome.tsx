@@ -274,7 +274,7 @@ export default async function BusinessMarketplaceHome({
           </div>
 
           <div className={`relative z-10 -mt-[34px] sm:-mt-[43px] ${homeContainerClass}`}>
-            <div className="sm:px-12 lg:px-20">
+            <div className="sm:px-16 lg:px-28 xl:px-32">
               <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
             </div>
           </div>

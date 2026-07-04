@@ -83,7 +83,7 @@ export default function CategoryHeroSearch({
             value={make}
             onChange={(event) => setMake(event.target.value)}
             placeholder={labels.makePlaceholder}
-            className="h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+            className="h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
           />
         </SearchField>
 
@@ -92,7 +92,7 @@ export default function CategoryHeroSearch({
             value={model}
             onChange={(event) => setModel(event.target.value)}
             placeholder={labels.modelPlaceholder}
-            className="h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+            className="h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
           />
         </SearchField>
 
