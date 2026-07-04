@@ -36,8 +36,8 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
     slug: 'cars',
     path: '/cars',
     aliases: ['/car'],
-    heroImage: '/category-cars-hero-family.webp',
-    heroPosition: '61% 34%',
+    heroImage: '/autorell-home-hero-banner.jpg',
+    heroPosition: '58% center',
     eyebrow: sharedEyebrow,
     intro: {
       sv: 'Hitta rätt bil bland annonser från privatpersoner och företag i hela Europa.',
