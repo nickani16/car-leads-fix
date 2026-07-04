@@ -239,11 +239,11 @@ export default async function BusinessMarketplaceHome({
           <div className="px-0 sm:px-8">
             <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] sm:rounded-[22px] lg:min-h-[290px]">
               <Image
-                src="/autorell-home-hero-banner.jpg"
+                src="/autorell-home-hero-man-phone.jpg"
                 alt={t.heroAlt}
                 fill
                 preload
-                className="object-cover object-center sm:scale-[1.03] sm:object-[44%_center]"
+                className="object-cover object-[58%_center] sm:scale-[1.03] sm:object-[61%_38%]"
                 sizes="100vw"
               />
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.32)_0%,rgba(3,10,26,.21)_31%,rgba(3,10,26,.06)_58%,rgba(3,10,26,.01)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.26)_0%,rgba(3,10,26,.18)_34%,rgba(3,10,26,.05)_60%,rgba(3,10,26,0)_100%)]" />
