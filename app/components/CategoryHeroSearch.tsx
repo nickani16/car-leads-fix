@@ -66,7 +66,7 @@ export default function CategoryHeroSearch({
   return (
     <form
       onSubmit={submit}
-      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] sm:rounded-[24px]"
+      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] sm:rounded-full"
       role="search"
     >
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.2fr_1fr_1fr_1fr_auto] sm:items-center">
@@ -214,7 +214,7 @@ function AnimatedSearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={activePlaceholder}
-        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold outline-none placeholder:text-transparent"
+        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none placeholder:text-transparent"
       />
       {!value ? (
         <span

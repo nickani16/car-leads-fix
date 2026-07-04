@@ -32,7 +32,6 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
 import { getPublishedMarketplaceCategoryListings } from '@/lib/marketplace-public-data'
-import HeroTypingText from './HeroTypingText'
 import CategoryHeroSearch from './CategoryHeroSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -99,7 +98,6 @@ export default async function CategoryLandingPage({
   const copy = categoryLandingCopy(locale)
   const page = pageCopy(locale, slug, localized.label, localized.singular)
   const typeCards = getTypeCards(slug)
-  const typingWords = getCategoryHeroTypingWords(slug, language)
   const { topListings, typeCounts, totalListings } = await getLandingListings(
     slug,
     locale,
@@ -131,10 +129,12 @@ export default async function CategoryLandingPage({
               <div className={`absolute inset-0 ${slug === 'cars' ? 'bg-[linear-gradient(90deg,rgba(3,10,26,.34)_0%,rgba(3,10,26,.2)_38%,rgba(3,10,26,.05)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.075)_28%,rgba(3,10,26,.016)_56%,rgba(3,10,26,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.065)_31%,rgba(3,10,26,.015)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,.045)_34%,rgba(3,10,26,.01)_60%,rgba(3,10,26,0)_100%)]'}`} />
 
               <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
-                <h1 className="max-w-[350px] text-[33px] leading-[.98] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[52px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[58px]">
+                <h1 className="max-w-[350px] text-[31px] leading-[.98] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[48px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[54px]">
                   {page.heroTitle}
                 </h1>
-                <HeroTypingText prefix={page.heroTypingPrefix} items={typingWords} variant="rotate" />
+                <p className="mt-5 text-[19px] font-semibold leading-tight text-white [text-shadow:0_3px_18px_rgba(0,0,0,.32)] sm:text-[21px] lg:text-[22px]">
+                  {page.heroTypingPrefix}
+                </p>
               </div>
             </div>
           </div>
@@ -656,66 +656,6 @@ function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
     ],
   }
   return cards[slug]
-}
-
-function getCategoryHeroTypingWords(
-  slug: MarketplaceCategorySlug,
-  language: 'sv' | 'en' | 'de',
-): string[] {
-  const words: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string[]>> = {
-    cars: {
-      sv: ['SUV', 'Kombi', 'Sedan', 'Halvkombi', 'Coupé', 'Cabriolet', 'Elbil', 'Hybrid'],
-      en: ['SUVs', 'estates', 'sedans', 'hatchbacks', 'coupes', 'convertibles', 'electric cars', 'hybrids'],
-      de: ['SUVs', 'Kombis', 'Limousinen', 'Kompaktwagen', 'Coupes', 'Cabrios', 'Elektroautos', 'Hybride'],
-    },
-    vans: {
-      sv: ['Skåpbil', 'Crew van', 'Box van', 'Kylbil', 'Minibuss', 'Pickup', 'Eltransport', 'Camper'],
-      en: ['panel vans', 'crew vans', 'box vans', 'refrigerated vans', 'minibuses', 'pickups', 'electric vans', 'campers'],
-      de: ['Kastenwagen', 'Doppelkabinen', 'Kofferwagen', 'Kühlfahrzeuge', 'Minibusse', 'Pickups', 'Elektrotransporter', 'Camper'],
-    },
-    motorcycles: {
-      sv: ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross', 'Enduro'],
-      en: ['sport bikes', 'touring bikes', 'custom bikes', 'scooters', 'cross bikes', 'enduro bikes'],
-      de: ['Sportmotorräder', 'Touring', 'Custom Bikes', 'Scooter', 'Cross', 'Enduro'],
-    },
-    motorhomes: {
-      sv: ['Integrerad', 'Halvintegrerad', 'Alkoven', 'Plåtis', 'Familjebil', 'Lyxmodell'],
-      en: ['integrated motorhomes', 'semi-integrated motorhomes', 'alcove models', 'camper vans', 'family layouts', 'premium models'],
-      de: ['Integrierte', 'Teilintegrierte', 'Alkoven', 'Kastenwagen', 'Familienmodelle', 'Premiummodelle'],
-    },
-    caravans: {
-      sv: ['Enkelaxel', 'Boggi', 'Familjevagn', 'Vintervagn', 'Lättvikt', 'Premium'],
-      en: ['single-axle caravans', 'twin-axle caravans', 'family caravans', 'winter caravans', 'lightweight caravans', 'premium caravans'],
-      de: ['Einachser', 'Doppelachser', 'Familienwohnwagen', 'Winterwohnwagen', 'Leichtbau', 'Premium'],
-    },
-    trucks: {
-      sv: ['Dragbil', 'Tippbil', 'Skåpbil', 'Kranbil', 'Flakbil'],
-      en: ['tractor units', 'tippers', 'box trucks', 'crane trucks', 'flatbeds'],
-      de: ['Sattelzugmaschinen', 'Kipper', 'Koffer-Lkw', 'Kranfahrzeuge', 'Pritschen'],
-    },
-    agriculture: {
-      sv: ['Traktor', 'Skördare', 'Såmaskin', 'Balpress', 'Redskap', 'Vagn'],
-      en: ['tractors', 'harvesters', 'seed drills', 'balers', 'implements', 'trailers'],
-      de: ['Traktoren', 'Erntemaschinen', 'Sämaschinen', 'Ballenpressen', 'Anbaugeräte', 'Anhänger'],
-    },
-    construction: {
-      sv: ['Grävmaskin', 'Hjullastare', 'Dumper', 'Minigrävare', 'Kran', 'Kompaktlastare'],
-      en: ['excavators', 'wheel loaders', 'dumpers', 'mini excavators', 'cranes', 'compact loaders'],
-      de: ['Bagger', 'Radlader', 'Dumper', 'Minibagger', 'Krane', 'Kompaktlader'],
-    },
-    'electric-bikes': {
-      sv: ['City', 'Lastcykel', 'Mountainbike', 'Trekking', 'Hopfällbar', 'Speedbike'],
-      en: ['city e-bikes', 'cargo bikes', 'e-MTBs', 'trekking bikes', 'folding bikes', 'speed bikes'],
-      de: ['Cityräder', 'Lastenräder', 'Mountainbikes', 'Trekkingräder', 'Falträder', 'Speedbikes'],
-    },
-    'e-scooters': {
-      sv: ['Pendling', 'Offroad', 'Lång räckvidd', 'Lättvikt', 'Premium', 'Delbar'],
-      en: ['commuting', 'offroad', 'long range', 'lightweight', 'premium', 'shared fleets'],
-      de: ['Pendeln', 'Offroad', 'große Reichweite', 'Leichtgewicht', 'Premium', 'Sharing'],
-    },
-  }
-
-  return words[slug][language]
 }
 
 function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: string, singular: string) {
