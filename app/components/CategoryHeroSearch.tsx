@@ -52,7 +52,6 @@ export default function CategoryHeroSearch({
     () => getSearchPlaceholders(slug, locale),
     [locale, slug],
   )
-
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
@@ -79,20 +78,18 @@ export default function CategoryHeroSearch({
         </SearchField>
 
         <SearchField label={labels.make} icon={Tag} className="col-span-2 sm:col-span-1">
-          <input
+          <TextFilterInput
             value={make}
-            onChange={(event) => setMake(event.target.value)}
+            onChange={setMake}
             placeholder={labels.makePlaceholder}
-            className={`h-6 min-w-0 max-w-full w-full bg-transparent text-sm outline-none placeholder:font-normal placeholder:text-[#98a2b3] placeholder:opacity-100 ${make ? 'font-semibold text-[#101828]' : 'font-normal text-[#98a2b3]'}`}
           />
         </SearchField>
 
         <SearchField label={labels.model} icon={Search}>
-          <input
+          <TextFilterInput
             value={model}
-            onChange={(event) => setModel(event.target.value)}
+            onChange={setModel}
             placeholder={labels.modelPlaceholder}
-            className={`h-6 min-w-0 max-w-full w-full bg-transparent text-sm outline-none placeholder:font-normal placeholder:text-[#98a2b3] placeholder:opacity-100 ${model ? 'font-semibold text-[#101828]' : 'font-normal text-[#98a2b3]'}`}
           />
         </SearchField>
 
@@ -157,6 +154,34 @@ function SearchField({
         {children}
       </span>
     </label>
+  )
+}
+
+function TextFilterInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+}) {
+  return (
+    <span className="relative block h-6 min-w-0">
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none"
+      />
+      {!value ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-6 min-w-0 items-center text-sm font-normal leading-6 text-[#98a2b3]"
+        >
+          <span className="truncate">{placeholder}</span>
+        </span>
+      ) : null}
+    </span>
   )
 }
 

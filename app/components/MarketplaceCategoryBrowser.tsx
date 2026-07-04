@@ -552,12 +552,12 @@ export default function MarketplaceCategoryBrowser({
 
         <FilterGroup title={copy.makeAndModel}>
           <div className="grid gap-2">
-            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} />
+            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} mutedPlaceholder />
             <input
               value={modelQuery}
               onChange={(event) => setModelQuery(event.target.value)}
               placeholder={secondarySearchLabel(category.slug, locale)}
-              className="marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              className={`marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
             />
           </div>
         </FilterGroup>
@@ -784,7 +784,7 @@ export default function MarketplaceCategoryBrowser({
               </select>
               <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
-            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} />
+            <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} mutedPlaceholder />
             <label className="relative">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
               <input
@@ -799,7 +799,7 @@ export default function MarketplaceCategoryBrowser({
                 value={modelQuery}
                 onChange={(event) => setModelQuery(event.target.value)}
                 placeholder={secondarySearchLabel(category.slug, locale)}
-                className="marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                className={`marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
               />
             </label>
             {filterProfile.basic.includes('fuel') ? (
@@ -1614,22 +1614,27 @@ function FilterSelect({
   label,
   options,
   variant = 'boxed',
+  mutedPlaceholder = false,
 }: {
   value: string
   onChange: (value: string) => void
   label: string
   options: string[]
   variant?: 'boxed' | 'plain'
+  mutedPlaceholder?: boolean
 }) {
+  const valueColorClass = mutedPlaceholder && !value ? 'text-[#98a2b3]' : 'text-[#202124]'
+
   return (
     <label className="relative">
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        style={{ color: mutedPlaceholder && !value ? '#98a2b3' : '#202124' }}
         className={
           variant === 'plain'
-            ? 'h-8 w-full appearance-none bg-transparent pr-8 text-sm font-bold text-[#202124] outline-none'
-            : 'h-12 w-full appearance-none rounded-[12px] border border-[#d8dde6] bg-white px-3.5 pr-9 text-[14px] font-medium text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10'
+            ? `h-8 w-full appearance-none bg-transparent pr-8 text-sm font-bold outline-none ${valueColorClass}`
+            : `h-12 w-full appearance-none rounded-[12px] border border-[#d8dde6] bg-white px-3.5 pr-9 text-[14px] font-medium outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${valueColorClass}`
         }
       >
         <option value="">{label}</option>
