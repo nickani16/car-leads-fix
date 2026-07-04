@@ -196,12 +196,12 @@ export default function ListingImageGallery({
 
       {fullscreen && activeImage ? (
         <div
-          className="fixed inset-0 z-[100] bg-[#101214]/96 text-white"
+          className="fixed inset-0 z-[180] bg-[#101214]/96 text-white"
           role="dialog"
           aria-modal="true"
           aria-label="Photo gallery"
         >
-          <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 sm:px-6">
+          <div className="flex min-h-16 items-center justify-between border-b border-white/10 px-4 pt-[env(safe-area-inset-top)] sm:px-6">
             <button
               type="button"
               onClick={() => setShowGrid((current) => !current)}
@@ -217,7 +217,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={() => setFullscreen(false)}
-              className="grid h-11 w-11 place-items-center rounded-full bg-white/8 text-white transition hover:bg-white/14"
+              className="grid h-11 w-11 place-items-center rounded-full bg-white/12 text-white shadow-[0_12px_32px_rgba(0,0,0,.28)] transition hover:bg-white/18"
               aria-label="Close gallery"
             >
               <X className="h-6 w-6" />

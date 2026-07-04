@@ -116,7 +116,6 @@ export default function MarketplaceCategoryBrowser({
   const [compareOpen, setCompareOpen] = useState(false)
   const [compareError, setCompareError] = useState('')
   const [galleryIndices, setGalleryIndices] = useState<Record<string, number>>({})
-  const typeCarouselRef = useRef<HTMLDivElement>(null)
   const imageTouchStartRef = useRef<{ id: string; x: number; y: number } | null>(null)
   const suppressImageClickRef = useRef<string | null>(null)
   const displayLocale = locale
@@ -358,16 +357,6 @@ export default function MarketplaceCategoryBrowser({
     if (['miltal', 'mileage', 'kilometer'].includes(normalized)) setSort('mileage')
   }
 
-  function scrollTypeCarousel(direction: 'left' | 'right') {
-    const carousel = typeCarouselRef.current
-    if (!carousel) return
-
-    carousel.scrollBy({
-      left: direction === 'left' ? -carousel.clientWidth : carousel.clientWidth,
-      behavior: 'smooth',
-    })
-  }
-
   function toggleCompare(listing: MarketplaceListing) {
     if (!compareEnabled) return
     setCompareError('')
@@ -505,7 +494,7 @@ export default function MarketplaceCategoryBrowser({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={categorySearchPlaceholder(category.slug, locale)}
-            className="marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#9aa3b2] bg-white pl-10 pr-3.5 text-[14px] font-semibold outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+            className="marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#9aa3b2] bg-white pl-10 pr-3.5 text-[16px] sm:text-[14px] font-semibold outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
           />
         </label>
       </div>
@@ -537,7 +526,7 @@ export default function MarketplaceCategoryBrowser({
             <select
               value={country}
               onChange={(event) => setCountry(event.target.value)}
-              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[16px] sm:text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
             >
               <option value="">{copy.allEurope}</option>
               {countries.map((code) => (
@@ -557,7 +546,7 @@ export default function MarketplaceCategoryBrowser({
               value={modelQuery}
               onChange={(event) => setModelQuery(event.target.value)}
               placeholder={secondarySearchLabel(category.slug, locale)}
-              className={`marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
+              className={`marketplace-search-control h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
             />
           </div>
         </FilterGroup>
@@ -654,7 +643,7 @@ export default function MarketplaceCategoryBrowser({
             <select
               value={sellerType}
               onChange={(event) => setSellerType(event.target.value)}
-              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 pr-9 text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 pr-9 text-[16px] sm:text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
             >
               <option value="all">{copy.sellerTypeAll}</option>
               <option value="business">{copy.sellerTypeBusiness}</option>
@@ -694,7 +683,7 @@ export default function MarketplaceCategoryBrowser({
                 value={equipmentQuery}
                 onChange={(event) => setEquipmentQuery(event.target.value)}
                 placeholder={equipmentLabel(category.slug, locale)}
-                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                className="h-12 w-full rounded-[8px] border border-[#cfd7e6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               />
             ) : null}
           </div>
@@ -773,7 +762,7 @@ export default function MarketplaceCategoryBrowser({
               <select
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-9 text-[14px] font-medium text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-9 text-[16px] sm:text-[14px] font-medium text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               >
                 <option value="">{copy.allEurope}</option>
                 {countries.map((code) => (
@@ -791,7 +780,7 @@ export default function MarketplaceCategoryBrowser({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={copy.keyword}
-                className="marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                className="marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white pl-10 pr-3.5 text-[16px] sm:text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
               />
             </label>
             <label>
@@ -799,7 +788,7 @@ export default function MarketplaceCategoryBrowser({
                 value={modelQuery}
                 onChange={(event) => setModelQuery(event.target.value)}
                 placeholder={secondarySearchLabel(category.slug, locale)}
-                className={`marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
+                className={`marketplace-search-control h-12 w-full min-w-0 rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${modelQuery ? 'text-[#202124]' : 'text-[#98a2b3]'}`}
               />
             </label>
             {filterProfile.basic.includes('fuel') ? (
@@ -847,7 +836,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setYearFrom(event.target.value.replace(/\D/g, '').slice(0, 4))}
                       inputMode="numeric"
                       placeholder={copy.yearFrom}
-                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -858,7 +847,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setMaxMileage(event.target.value.replace(/\D/g, '').slice(0, 7))}
                       inputMode="numeric"
                       placeholder={copy.maxMileage}
-                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -869,7 +858,7 @@ export default function MarketplaceCategoryBrowser({
                       onChange={(event) => setMaxHours(event.target.value.replace(/\D/g, '').slice(0, 7))}
                       inputMode="numeric"
                       placeholder={copy.maxHours}
-                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -879,7 +868,7 @@ export default function MarketplaceCategoryBrowser({
                       value={equipmentQuery}
                       onChange={(event) => setEquipmentQuery(event.target.value)}
                       placeholder={equipmentLabel(category.slug, locale)}
-                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                      className="h-12 w-full rounded-[12px] border border-[#d8dde6] bg-white px-3.5 text-[16px] sm:text-[14px] font-medium outline-none focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                     />
                   </label>
                 ) : null}
@@ -928,59 +917,6 @@ export default function MarketplaceCategoryBrowser({
               <div className="sticky top-24">{filterPanel}</div>
             </aside>
             <div className="min-w-0">
-          <div className="mb-7">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold tracking-[-0.04em]">{copy.browseByCategory}</h2>
-              {typeCards.length > 5 ? (
-                <div className="hidden items-center gap-2 lg:flex">
-                  <button
-                    type="button"
-                    onClick={() => scrollTypeCarousel('left')}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d7dfeb] bg-white text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-                    aria-label="Previous categories"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollTypeCarousel('right')}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d7dfeb] bg-white text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-                    aria-label="Next categories"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </div>
-              ) : null}
-            </div>
-            <div
-              ref={typeCarouselRef}
-              className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2 scroll-smooth [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
-            >
-              {typeCards.map((card) => (
-                <button
-                  key={card.query}
-                  type="button"
-                  onClick={() => selectFilter(card.query)}
-                  className={`group relative min-h-[118px] w-[228px] shrink-0 snap-start overflow-hidden rounded-[12px] border bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(16,24,40,.09)] sm:min-h-[128px] sm:p-4 lg:w-[calc((100%_-_4rem)/5)] ${
-                    activeFilter === card.query ? 'border-[#0866ff]' : 'border-[#dfe6f2]'
-                  }`}
-                >
-                  <strong className="relative z-10 block text-sm text-[#101828]">{card.label}</strong>
-                  <span className="relative z-10 mt-1 block text-xs font-semibold text-[#344054]">
-                    {(typeCounts[card.query] || 0).toLocaleString('sv-SE')}
-                  </span>
-                  <Image
-                    src={card.image}
-                    alt=""
-                    width={180}
-                    height={120}
-                    className="absolute bottom-0 right-0 h-[74px] w-[106px] object-contain transition group-hover:scale-105 sm:h-[92px] sm:w-[132px]"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className="mb-5 rounded-[12px] border border-[#d9e1ec] bg-white p-3 shadow-[0_14px_40px_rgba(16,24,40,.06)] sm:p-4">
           <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div className="min-w-0">
@@ -1634,7 +1570,7 @@ function FilterSelect({
         className={
           variant === 'plain'
             ? `h-8 w-full appearance-none bg-transparent pr-8 text-sm font-bold outline-none ${valueColorClass}`
-            : `h-12 w-full appearance-none rounded-[12px] border border-[#d8dde6] bg-white px-3.5 pr-9 text-[14px] font-medium outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${valueColorClass}`
+            : `h-12 w-full appearance-none rounded-[12px] border border-[#d8dde6] bg-white px-3.5 pr-9 text-[16px] sm:text-[14px] font-medium outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${valueColorClass}`
         }
       >
         <option value="">{label}</option>
@@ -1761,7 +1697,7 @@ function RangeFilter({
               onChange={(event) => onMinChange(event.target.value.replace(/\D/g, '').slice(0, 9))}
               inputMode="numeric"
               placeholder={minPlaceholder}
-              className={`h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white pl-3.5 ${unit ? 'pr-11' : 'pr-3.5'} text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10`}
+              className={`h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white pl-3.5 ${unit ? 'pr-11' : 'pr-3.5'} text-[16px] sm:text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10`}
             />
             {unit ? <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#202124]">{unit}</span> : null}
           </label>
@@ -1771,7 +1707,7 @@ function RangeFilter({
               onChange={(event) => onMaxChange(event.target.value.replace(/\D/g, '').slice(0, 9))}
               inputMode="numeric"
               placeholder={maxPlaceholder}
-              className={`h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white pl-3.5 ${unit ? 'pr-11' : 'pr-3.5'} text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10`}
+              className={`h-12 w-full min-w-0 rounded-[8px] border border-[#cfd7e6] bg-white pl-3.5 ${unit ? 'pr-11' : 'pr-3.5'} text-[16px] sm:text-[14px] font-medium outline-none transition placeholder:text-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10`}
             />
             {unit ? <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#202124]">{unit}</span> : null}
           </label>

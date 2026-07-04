@@ -1078,26 +1078,36 @@ export default function PublicHeader({
           </div>
 
           {mobileCategoryLinks ? (
-            <nav
-              aria-label={`${activeCategoryCopy?.label || ''} navigation`}
-              className="flex h-[54px] items-stretch gap-7 overflow-x-auto border-t border-[#e7e9ee] bg-white px-6 text-[13px] font-semibold text-[#344054] [scrollbar-width:none] min-[1120px]:hidden [&::-webkit-scrollbar]:hidden"
-            >
-              {mobileCategoryLinks.map(([href, label]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={pathname === href ? 'page' : undefined}
-                  onClick={(event) => handleCategoryNavigation(event, href)}
-                  className={`flex shrink-0 items-center border-b-[3px] pt-px ${
-                    pathname === href
-                      ? 'border-[#0866ff] font-bold text-[#101828]'
-                      : 'border-transparent'
-                  }`}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
+            <div className="relative border-t border-[#e7e9ee] bg-white min-[1120px]:hidden">
+              <nav
+                aria-label={`${activeCategoryCopy?.label || ''} navigation`}
+                className="flex h-[54px] items-stretch gap-7 overflow-x-auto px-6 pr-12 text-[13px] font-semibold text-[#344054] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {mobileCategoryLinks.map(([href, label]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={pathname === href ? 'page' : undefined}
+                    onClick={(event) => handleCategoryNavigation(event, href)}
+                    className={`flex shrink-0 items-center border-b-[3px] pt-px ${
+                      pathname === href
+                        ? 'border-[#0866ff] font-bold text-[#101828]'
+                        : 'border-transparent'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-white via-white/95 to-white/0"
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#0866ff]/55 shadow-[8px_0_0_rgba(8,102,255,.28),16px_0_0_rgba(8,102,255,.14)]"
+              />
+            </div>
           ) : null}
         </header>
 

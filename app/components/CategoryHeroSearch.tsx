@@ -97,7 +97,7 @@ export default function CategoryHeroSearch({
           <select
             value={country}
             onChange={(event) => setCountry(event.target.value)}
-            className="h-6 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none"
+            className="h-6 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-[16px] font-semibold outline-none sm:text-sm"
           >
             <option value="">{labels.allEurope}</option>
             {countries.map((code) => (
@@ -171,12 +171,12 @@ function TextFilterInput({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none"
+        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-[16px] font-semibold text-[#101828] outline-none sm:text-sm"
       />
       {!value ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-6 min-w-0 items-center text-sm font-normal leading-6 text-[#98a2b3]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-6 min-w-0 items-center text-[16px] font-normal leading-6 text-[#98a2b3] sm:text-sm"
         >
           <span className="truncate">{placeholder}</span>
         </span>
@@ -239,12 +239,12 @@ function AnimatedSearchInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={activePlaceholder}
-        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-sm font-semibold text-[#101828] outline-none placeholder:text-transparent"
+        className="relative z-10 h-6 min-w-0 max-w-full w-full bg-transparent text-[16px] font-semibold text-[#101828] outline-none placeholder:text-transparent sm:text-sm"
       />
       {!value ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-6 min-w-0 items-center text-sm font-normal leading-6 text-[#98a2b3]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-6 min-w-0 items-center text-[16px] font-normal leading-6 text-[#98a2b3] sm:text-sm"
         >
           <span className="truncate">{typedPlaceholder}</span>
           <span className="hero-typing-caret ml-0.5 h-4 w-px shrink-0 rounded-full bg-[#98a2b3]/75" />
