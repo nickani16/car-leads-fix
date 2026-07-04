@@ -239,7 +239,7 @@ export default async function BusinessMarketplaceHome({
           <div className="px-0">
             <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] lg:min-h-[340px] lg:shadow-[0_22px_52px_rgba(16,24,40,.20)]">
               <Image
-                src="/autorell-home-hero-family-dealer.webp"
+                src="/autorell-home-hero-happy-woman-car.jpg"
                 alt={t.heroAlt}
                 fill
                 preload
