@@ -15,7 +15,6 @@ import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import CountryFlag from './CountryFlag'
 import SavedListingButton from './SavedListingButton'
-import HeroTypingText from './HeroTypingText'
 import {
   marketplaceCategories,
   marketplaceLanguage,
@@ -72,7 +71,7 @@ const homeCopy = {
     heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
     heroEyebrow: 'Europas fordonsmarknad',
     heroTitle: 'Köp och sälj fordon över hela Europa.',
-    heroTypingPrefix: 'Europas marknadsplats för',
+    heroTypingPrefix: 'Europas marknadsplats för fordon.',
     heroText:
       'Europas marknadsplats för bilar, transportbilar, motorcyklar, lastbilar och mer. Riktiga annonser. En plattform.',
     statIntroTitle: 'En marknadsplats. Hela Europa.',
@@ -118,7 +117,7 @@ const homeCopy = {
     heroAlt: 'European vehicle marketplace for private and business sellers',
     heroEyebrow: "Europe's vehicle marketplace",
     heroTitle: 'Buy and sell vehicles across Europe.',
-    heroTypingPrefix: "Europe's marketplace for",
+    heroTypingPrefix: "Europe's marketplace for vehicles.",
     heroText:
       "Europe's marketplace for cars, vans, motorcycles, trucks and more. Real listings. One platform.",
     statIntroTitle: 'One marketplace. All of Europe.',
@@ -164,7 +163,7 @@ const homeCopy = {
     heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
     heroEyebrow: 'Europas Fahrzeugmarkt',
     heroTitle: 'Fahrzeuge in ganz Europa kaufen und verkaufen.',
-    heroTypingPrefix: 'Europas Marktplatz für',
+    heroTypingPrefix: 'Europas Marktplatz für Fahrzeuge.',
     heroText:
       'Europas Marktplatz für Autos, Transporter, Motorräder, Lkw und mehr. Echte Anzeigen. Eine Plattform.',
     statIntroTitle: 'Ein Marktplatz. Ganz Europa.',
@@ -224,17 +223,6 @@ export default async function BusinessMarketplaceHome({
           ? homeCopy.en
           : translatePublicObject(locale, homeCopy.en)
   const { featuredListings } = await getHomeMarketplaceData(locale, marketCode)
-  const heroTypingItems = marketplaceCategories.map((category) => {
-    if (locale === 'sv') {
-      if (category.slug === 'agriculture') return 'Lantbruk'
-      if (category.slug === 'construction') return 'Entreprenadmaskiner'
-      return category.labels.sv
-    }
-
-    const language = marketplaceLanguage(locale)
-    const label = category.labels[language]
-    return locale === 'de' || locale === 'en' ? label : translatePublic(locale, category.labels.en)
-  })
   const localMarketCode =
     marketCode || (locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : 'EU')
   const localMarketLabel =
@@ -265,10 +253,12 @@ export default async function BusinessMarketplaceHome({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
                   {t.heroEyebrow}
                 </p>
-                <h1 className="mt-5 max-w-[330px] text-[37px] leading-[.96] tracking-[-0.04em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[760px] sm:text-[66px] sm:tracking-[-0.055em] lg:max-w-[840px] lg:text-[72px]">
+                <h1 className="mt-5 max-w-[330px] text-[28px] leading-[.99] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[40px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[45px]">
                   {t.heroTitle}
                 </h1>
-                <HeroTypingText prefix={t.heroTypingPrefix} items={heroTypingItems} />
+                <p className="mt-4 max-w-[700px] text-[16px] font-normal leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[18px] lg:text-[19px]">
+                  {t.heroTypingPrefix}
+                </p>
               </div>
             </div>
           </div>

@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
   Building2,
+  CarFront,
   ChevronDown,
   CircleHelp,
-  Euro,
   FileText,
   FilePlus2,
   Heart,
@@ -1568,7 +1568,7 @@ export default function PublicHeader({
             onClick={closeMobile}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
-            <Euro className="h-[22px] w-[22px]" strokeWidth={1.9} />
+            <CarFront className="h-[22px] w-[22px]" strokeWidth={1.9} />
             <span className="max-w-full truncate text-[10px] font-semibold">{t.buy}</span>
           </Link>
           {headerAccount.authenticated ? (
