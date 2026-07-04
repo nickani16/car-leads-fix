@@ -35,10 +35,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }): Promise<Metadata> {
   const { category: requestedCategory } = await params
+  const resolvedSearchParams = await searchParams
   const category = getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
@@ -54,22 +57,13 @@ export async function generateMetadata({
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const host = 'https://www.autorell.com'
-  const canonical = `${host}/marketplace/${category.slug}`
-  const title =
-    locale === 'sv'
-      ? `${label} till salu i Europa | Autorell`
-      : locale === 'de'
-        ? `${label} in Europa kaufen | Autorell`
-        : `${label} · ${translatePublic(locale, "Europe's vehicle marketplace")} | Autorell`
-  const description =
-    locale === 'sv'
-      ? `Sök och jämför ${label.toLowerCase()} från privatpersoner och företag i hela EU. Filtrera på plats, märke, modell, skick och relevanta fordonsdata.`
-      : locale === 'de'
-        ? `${label} von privaten und gewerblichen Verkäufern in der EU suchen und vergleichen. Nach Standort, Marke, Modell, Zustand und relevanten Fahrzeugdaten filtern.`
-        : translatePublic(
-            locale,
-            'One connected marketplace for private sellers and businesses. Find the right vehicle, reach more buyers and trade with greater confidence across borders.',
-          )
+  const rawFilter = resolvedSearchParams.filter
+  const filter = Array.isArray(rawFilter) ? rawFilter[0] : rawFilter
+  const seo = getMarketplaceSeoCopy(category.slug, label, locale, filter)
+  const canonical = filter
+    ? `${host}/marketplace/${category.slug}?filter=${encodeURIComponent(filter)}`
+    : `${host}/marketplace/${category.slug}`
+  const { title, description } = seo
 
   return {
     title: { absolute: title },
@@ -208,4 +202,90 @@ export default async function MarketplaceCategoryPage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function getMarketplaceSeoCopy(
+  slug: string,
+  label: string,
+  locale: PublicLocale,
+  filter?: string,
+) {
+  void slug
+  const normalizedFilter = normalizeFilterLabel(filter)
+  const lowerLabel = label.toLowerCase()
+
+  if (locale === 'sv') {
+    if (normalizedFilter === 'used') {
+      return {
+        title: `Begagnade och nya ${lowerLabel} till salu | Autorell`,
+        description: trimMeta(`Jämför begagnade och nya ${lowerLabel} från privatpersoner och företag i Europa. Filtrera snabbt på land, märke och modell.`),
+      }
+    }
+    if (normalizedFilter === 'new') {
+      return {
+        title: `Nya ${lowerLabel} till salu | Autorell`,
+        description: trimMeta(`Hitta nya ${lowerLabel} till salu i Europa. Sök bland företag och privata säljare med tydliga filter.`),
+      }
+    }
+
+    return {
+      title: `${label} till salu | Köp begagnat och nytt | Autorell`,
+      description: trimMeta(`Sök ${lowerLabel} till salu i Europa. Jämför nya och begagnade annonser från privatpersoner och företag.`),
+    }
+  }
+
+  if (locale === 'de') {
+    if (normalizedFilter === 'used') {
+      return {
+        title: `Gebrauchte und neue ${lowerLabel} kaufen | Autorell`,
+        description: trimMeta(`Gebrauchte und neue ${lowerLabel} in Europa vergleichen. Filtern nach Land, Marke und Modell.`),
+      }
+    }
+    if (normalizedFilter === 'new') {
+      return {
+        title: `Neue ${lowerLabel} kaufen | Autorell`,
+        description: trimMeta(`Neue ${lowerLabel} in Europa finden. Angebote von privaten und gewerblichen Verkäufern vergleichen.`),
+      }
+    }
+
+    return {
+      title: `${label} kaufen | Neu und gebraucht | Autorell`,
+      description: trimMeta(`${label} in Europa suchen und vergleichen. Angebote von privaten und gewerblichen Verkäufern finden.`),
+    }
+  }
+
+  if (normalizedFilter === 'used') {
+    return {
+      title: `Used and new ${lowerLabel} for sale | Autorell`,
+      description: trimMeta(`Compare used and new ${lowerLabel} across Europe from private and business sellers. Filter by country, make and model.`),
+    }
+  }
+  if (normalizedFilter === 'new') {
+    return {
+      title: `New ${lowerLabel} for sale | Autorell`,
+      description: trimMeta(`Find new ${lowerLabel} for sale across Europe from private and business sellers with fast filters.`),
+    }
+  }
+
+  return {
+    title: `${label} for sale | Used and new | Autorell`,
+    description: trimMeta(`Search ${lowerLabel} for sale across Europe. Compare used and new listings from private and business sellers.`),
+  }
+}
+
+function normalizeFilterLabel(filter?: string) {
+  const value = (filter || '').toLowerCase()
+  if (value.includes('begagn') || value.includes('used') || value.includes('gebraucht')) {
+    return 'used'
+  }
+  if (value.includes('nya') || value.includes('new') || value.includes('neu')) {
+    return 'new'
+  }
+  return ''
+}
+
+function trimMeta(description: string) {
+  return description.length > 150
+    ? `${description.slice(0, 147).trimEnd()}...`
+    : description
 }

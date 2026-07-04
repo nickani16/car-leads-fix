@@ -63,18 +63,19 @@ export async function generateCategoryLandingMetadata(
 ): Promise<Metadata> {
   const locale = await getRequestLocale()
   const config = getCategoryLanding(slug)
-  const localized = localizeCategoryLanding(config, locale)
   const origin = 'https://www.autorell.com'
   const canonical = `${origin}${config.path}`
-  const title = `${localized.label} | Autorell`
+  const seo = getCategorySeoContent(slug, locale)
+  const title = seo.title
+  const description = seo.description
 
   return {
     title: { absolute: title },
-    description: localized.intro,
+    description,
     alternates: { canonical },
     openGraph: {
       title,
-      description: localized.intro,
+      description,
       url: canonical,
       siteName: 'Autorell',
       type: 'website',
@@ -129,7 +130,7 @@ export default async function CategoryLandingPage({
               <div className={`absolute inset-0 ${slug === 'cars' ? 'bg-[linear-gradient(90deg,rgba(3,10,26,.34)_0%,rgba(3,10,26,.2)_38%,rgba(3,10,26,.05)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.075)_28%,rgba(3,10,26,.016)_56%,rgba(3,10,26,0)_100%)]' : 'bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.065)_31%,rgba(3,10,26,.015)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,.045)_34%,rgba(3,10,26,.01)_60%,rgba(3,10,26,0)_100%)]'}`} />
 
               <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
-                <h1 className="max-w-[350px] text-[31px] leading-[.98] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[48px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[54px]">
+                <h1 className="max-w-[350px] text-[29px] leading-[.98] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[42px] sm:tracking-[-0.045em] lg:max-w-[790px] lg:text-[48px]">
                   {page.heroTitle}
                 </h1>
                 <p className="mt-5 text-[19px] font-semibold leading-tight text-white [text-shadow:0_3px_18px_rgba(0,0,0,.32)] sm:text-[21px] lg:text-[22px]">
@@ -660,6 +661,7 @@ function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
 
 function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: string, singular: string) {
   const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
+  const heroContent = getCategoryHeroContent(slug, locale)
   const heroTitles: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
     cars: t3('Köp bilar i hela Europa', 'Buy cars across Europe', 'Autos in ganz Europa kaufen'),
     vans: t3('Köp transportbilar i hela Europa', 'Buy vans across Europe', 'Transporter in ganz Europa kaufen'),
@@ -855,8 +857,133 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     },
   }[language]
 
+  void heroTitles
+
   return {
     ...base,
-    heroTitle: heroTitles[slug][language],
+    heroTitle: heroContent.title,
+    heroTypingPrefix: heroContent.body,
   }
+}
+
+function getCategoryHeroContent(
+  slug: MarketplaceCategorySlug,
+  locale: PublicLocale,
+) {
+  const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
+  const content: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', { title: string; body: string }>> = {
+    cars: {
+      sv: { title: 'Hitta din nästa bil', body: 'Utforska nya och begagnade bilar från privatpersoner och företag.' },
+      en: { title: 'Find your next car', body: 'Explore new and used cars from private and business sellers.' },
+      de: { title: 'Finden Sie Ihr nächstes Auto', body: 'Entdecken Sie neue und gebrauchte Autos von privaten und gewerblichen Verkäufern.' },
+    },
+    vans: {
+      sv: { title: 'Hitta din nästa transportbil', body: 'Jämför nya och begagnade transportbilar för arbete och vardag.' },
+      en: { title: 'Find your next van', body: 'Compare new and used vans for work, delivery and everyday use.' },
+      de: { title: 'Finden Sie Ihren nächsten Transporter', body: 'Vergleichen Sie neue und gebrauchte Transporter für Arbeit und Alltag.' },
+    },
+    motorcycles: {
+      sv: { title: 'Hitta din nästa motorcykel', body: 'Utforska nya och begagnade motorcyklar för pendling, touring och fritid.' },
+      en: { title: 'Find your next motorcycle', body: 'Explore new and used motorcycles for commuting, touring and leisure.' },
+      de: { title: 'Finden Sie Ihr nächstes Motorrad', body: 'Entdecken Sie neue und gebrauchte Motorräder für Pendeln, Touren und Freizeit.' },
+    },
+    motorhomes: {
+      sv: { title: 'Hitta din nästa husbil', body: 'Jämför nya och begagnade husbilar för semester och resor i Europa.' },
+      en: { title: 'Find your next motorhome', body: 'Compare new and used motorhomes for holidays and travel across Europe.' },
+      de: { title: 'Finden Sie Ihr nächstes Wohnmobil', body: 'Vergleichen Sie neue und gebrauchte Wohnmobile für Urlaub und Reisen.' },
+    },
+    caravans: {
+      sv: { title: 'Hitta din nästa husvagn', body: 'Utforska nya och begagnade husvagnar för familj, säsong och frihet.' },
+      en: { title: 'Find your next caravan', body: 'Explore new and used caravans for family trips, seasons and freedom.' },
+      de: { title: 'Finden Sie Ihren nächsten Wohnwagen', body: 'Entdecken Sie neue und gebrauchte Wohnwagen für Familie, Saison und Freiheit.' },
+    },
+    trucks: {
+      sv: { title: 'Hitta din nästa lastbil', body: 'Jämför nya och begagnade lastbilar för transport, logistik och uppdrag.' },
+      en: { title: 'Find your next truck', body: 'Compare new and used trucks for transport, logistics and specialist work.' },
+      de: { title: 'Finden Sie Ihren nächsten Lkw', body: 'Vergleichen Sie neue und gebrauchte Lkw für Transport, Logistik und Einsätze.' },
+    },
+    agriculture: {
+      sv: { title: 'Hitta din nästa lantbruksmaskin', body: 'Utforska traktorer, redskap och maskiner för modernt lantbruk.' },
+      en: { title: 'Find your next farm machine', body: 'Explore tractors, implements and machinery for modern farming.' },
+      de: { title: 'Finden Sie Ihre nächste Landmaschine', body: 'Entdecken Sie Traktoren, Geräte und Maschinen für moderne Landwirtschaft.' },
+    },
+    construction: {
+      sv: { title: 'Hitta din nästa entreprenadmaskin', body: 'Jämför maskiner för markarbete, bygg, material och infrastruktur.' },
+      en: { title: 'Find your next construction machine', body: 'Compare machines for earthmoving, building, materials and infrastructure.' },
+      de: { title: 'Finden Sie Ihre nächste Baumaschine', body: 'Vergleichen Sie Maschinen für Erdarbeiten, Bau und Infrastruktur.' },
+    },
+    'electric-bikes': {
+      sv: { title: 'Hitta din nästa cykel', body: 'Utforska cyklar för stad, pendling, last och längre vardagsresor.' },
+      en: { title: 'Find your next bike', body: 'Explore bikes for cities, commuting, cargo and everyday journeys.' },
+      de: { title: 'Finden Sie Ihr nächstes Fahrrad', body: 'Entdecken Sie Fahrräder für Stadt, Pendeln, Lasten und Alltag.' },
+    },
+    'e-scooters': {
+      sv: { title: 'Hitta din nästa sparkcykel', body: 'Jämför sparkcyklar för smidig pendling och korta resor.' },
+      en: { title: 'Find your next scooter', body: 'Compare scooters for convenient commuting and short everyday trips.' },
+      de: { title: 'Finden Sie Ihren nächsten Scooter', body: 'Vergleichen Sie Scooter für Pendeln und kurze Alltagswege.' },
+    },
+  }
+
+  return content[slug][language]
+}
+
+function getCategorySeoContent(
+  slug: MarketplaceCategorySlug,
+  locale: PublicLocale,
+) {
+  const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
+  const seo: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', { title: string; description: string }>> = {
+    cars: {
+      sv: { title: 'Bilar till salu | Köp en begagnad eller ny bil | Autorell', description: 'Hitta bilar till salu, begagnade bilar och nya bilar från privatpersoner och företag i Europa.' },
+      en: { title: 'Cars for sale | Buy a used or new car | Autorell', description: 'Find cars for sale, used cars and new cars from private and business sellers across Europe.' },
+      de: { title: 'Autos kaufen | Gebrauchte und neue Autos | Autorell', description: 'Finden Sie Autos, Gebrauchtwagen und Neuwagen von privaten und gewerblichen Verkäufern in Europa.' },
+    },
+    vans: {
+      sv: { title: 'Transportbilar till salu | Begagnade och nya transportbilar | Autorell', description: 'Sök transportbilar till salu från privatpersoner och företag. Jämför nya och begagnade transportbilar.' },
+      en: { title: 'Vans for sale | Used and new vans | Autorell', description: 'Search vans for sale from private and business sellers. Compare used and new vans across Europe.' },
+      de: { title: 'Transporter kaufen | Gebrauchte und neue Transporter | Autorell', description: 'Suchen Sie Transporter von privaten und gewerblichen Verkäufern. Vergleichen Sie neue und gebrauchte Transporter.' },
+    },
+    motorcycles: {
+      sv: { title: 'Motorcyklar till salu | Köp begagnad eller ny MC | Autorell', description: 'Hitta motorcyklar till salu i Europa. Jämför begagnade och nya motorcyklar från privata och företag.' },
+      en: { title: 'Motorcycles for sale | Used and new bikes | Autorell', description: 'Find motorcycles for sale in Europe. Compare used and new bikes from private and business sellers.' },
+      de: { title: 'Motorräder kaufen | Gebrauchte und neue Motorräder | Autorell', description: 'Finden Sie Motorräder in Europa. Vergleichen Sie gebrauchte und neue Motorräder von privaten und Händlern.' },
+    },
+    motorhomes: {
+      sv: { title: 'Husbilar till salu | Köp begagnad eller ny husbil | Autorell', description: 'Sök husbilar till salu i Europa. Jämför begagnade och nya husbilar från privatpersoner och företag.' },
+      en: { title: 'Motorhomes for sale | Used and new motorhomes | Autorell', description: 'Search motorhomes for sale in Europe. Compare used and new motorhomes from private and business sellers.' },
+      de: { title: 'Wohnmobile kaufen | Gebrauchte und neue Wohnmobile | Autorell', description: 'Suchen Sie Wohnmobile in Europa. Vergleichen Sie gebrauchte und neue Wohnmobile von privaten und Händlern.' },
+    },
+    caravans: {
+      sv: { title: 'Husvagnar till salu | Köp begagnad eller ny husvagn | Autorell', description: 'Hitta husvagnar till salu i Europa. Jämför begagnade och nya husvagnar från privatpersoner och företag.' },
+      en: { title: 'Caravans for sale | Used and new caravans | Autorell', description: 'Find caravans for sale in Europe. Compare used and new caravans from private and business sellers.' },
+      de: { title: 'Wohnwagen kaufen | Gebrauchte und neue Wohnwagen | Autorell', description: 'Finden Sie Wohnwagen in Europa. Vergleichen Sie gebrauchte und neue Wohnwagen von privaten und Händlern.' },
+    },
+    trucks: {
+      sv: { title: 'Lastbilar till salu | Köp begagnad eller ny lastbil | Autorell', description: 'Sök lastbilar till salu i Europa. Jämför begagnade och nya lastbilar för transport och logistik.' },
+      en: { title: 'Trucks for sale | Used and new trucks | Autorell', description: 'Search trucks for sale in Europe. Compare used and new trucks for transport and logistics.' },
+      de: { title: 'Lkw kaufen | Gebrauchte und neue Lkw | Autorell', description: 'Suchen Sie Lkw in Europa. Vergleichen Sie gebrauchte und neue Lkw für Transport und Logistik.' },
+    },
+    agriculture: {
+      sv: { title: 'Lantbruksmaskiner till salu | Begagnat och nytt | Autorell', description: 'Hitta lantbruksmaskiner till salu i Europa. Jämför traktorer, redskap och maskiner från företag och privata.' },
+      en: { title: 'Farm machinery for sale | Used and new machines | Autorell', description: 'Find farm machinery for sale in Europe. Compare tractors, implements and machines from trusted sellers.' },
+      de: { title: 'Landmaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Finden Sie Landmaschinen in Europa. Vergleichen Sie Traktoren, Geräte und Maschinen von Verkäufern.' },
+    },
+    construction: {
+      sv: { title: 'Entreprenadmaskiner till salu | Begagnat och nytt | Autorell', description: 'Sök entreprenadmaskiner till salu i Europa. Jämför grävmaskiner, lastare och maskiner för bygg.' },
+      en: { title: 'Construction machinery for sale | Used and new | Autorell', description: 'Search construction machinery for sale in Europe. Compare excavators, loaders and machines for building.' },
+      de: { title: 'Baumaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Suchen Sie Baumaschinen in Europa. Vergleichen Sie Bagger, Lader und Maschinen für Bau und Infrastruktur.' },
+    },
+    'electric-bikes': {
+      sv: { title: 'Cyklar till salu | Köp begagnad eller ny cykel | Autorell', description: 'Hitta cyklar till salu i Europa. Jämför begagnade och nya cyklar för stad, pendling och vardag.' },
+      en: { title: 'Bikes for sale | Used and new bikes | Autorell', description: 'Find bikes for sale in Europe. Compare used and new bikes for city, commuting and everyday travel.' },
+      de: { title: 'Fahrräder kaufen | Gebrauchte und neue Fahrräder | Autorell', description: 'Finden Sie Fahrräder in Europa. Vergleichen Sie gebrauchte und neue Fahrräder für Stadt und Alltag.' },
+    },
+    'e-scooters': {
+      sv: { title: 'Sparkcyklar till salu | Köp begagnad eller ny sparkcykel | Autorell', description: 'Sök sparkcyklar till salu i Europa. Jämför begagnade och nya sparkcyklar för pendling och korta resor.' },
+      en: { title: 'Scooters for sale | Used and new scooters | Autorell', description: 'Search scooters for sale in Europe. Compare used and new scooters for commuting and short trips.' },
+      de: { title: 'Scooter kaufen | Gebrauchte und neue Scooter | Autorell', description: 'Suchen Sie Scooter in Europa. Vergleichen Sie gebrauchte und neue Scooter für Pendeln und kurze Wege.' },
+    },
+  }
+
+  return seo[slug][language]
 }

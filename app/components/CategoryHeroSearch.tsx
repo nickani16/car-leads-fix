@@ -66,7 +66,7 @@ export default function CategoryHeroSearch({
   return (
     <form
       onSubmit={submit}
-      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] sm:rounded-full"
+      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] sm:rounded-[26px]"
       role="search"
     >
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.2fr_1fr_1fr_1fr_auto] sm:items-center">
@@ -114,7 +114,7 @@ export default function CategoryHeroSearch({
 
         <button
           type="submit"
-          className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.25)] transition hover:-translate-y-0.5 hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto"
+          className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]"
         >
           <Search className="h-5 w-5" />
           {labels.search}
