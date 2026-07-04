@@ -16,7 +16,6 @@ import PublicHeader from './PublicHeader'
 import CountryFlag from './CountryFlag'
 import SavedListingButton from './SavedListingButton'
 import HeroTypingText from './HeroTypingText'
-import VehicleCategoryShowcase from './VehicleCategoryShowcase'
 import {
   marketplaceCategories,
   marketplaceLanguage,
@@ -224,7 +223,7 @@ export default async function BusinessMarketplaceHome({
         : locale === 'en'
           ? homeCopy.en
           : translatePublicObject(locale, homeCopy.en)
-  const { featuredListings, categoryCards } = await getHomeMarketplaceData(locale, marketCode)
+  const { featuredListings } = await getHomeMarketplaceData(locale, marketCode)
   const heroTypingItems = marketplaceCategories.map((category) => {
     if (locale === 'sv') {
       if (category.slug === 'agriculture') return 'Lantbruk'
@@ -250,7 +249,7 @@ export default async function BusinessMarketplaceHome({
       <section className="bg-white pt-0 sm:pt-6">
         <div className="relative mx-auto max-w-[var(--autorell-page-max)]">
           <div className="px-0 sm:px-8">
-            <div className="relative min-h-[285px] overflow-hidden rounded-none bg-white sm:min-h-[390px] sm:rounded-[22px] lg:min-h-[400px]">
+            <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] sm:rounded-[22px] lg:min-h-[290px]">
               <Image
                 src="/autorell-home-hero-banner.jpg"
                 alt={t.heroAlt}
@@ -262,7 +261,7 @@ export default async function BusinessMarketplaceHome({
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.32)_0%,rgba(3,10,26,.21)_31%,rgba(3,10,26,.06)_58%,rgba(3,10,26,.01)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.26)_0%,rgba(3,10,26,.18)_34%,rgba(3,10,26,.05)_60%,rgba(3,10,26,0)_100%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.08)_0%,rgba(3,10,26,0)_42%)]" />
 
-              <div className="relative mx-auto flex min-h-[285px] max-w-[390px] flex-col justify-center px-5 pb-14 pt-7 min-[430px]:max-w-[430px] sm:min-h-[390px] sm:max-w-[var(--autorell-page-max)] sm:justify-start sm:px-8 sm:pb-12 sm:pt-12 lg:min-h-[400px] lg:pt-14">
+              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:justify-start sm:px-8 sm:py-10 lg:min-h-[290px] lg:py-8">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
                   {t.heroEyebrow}
                 </p>
@@ -274,26 +273,11 @@ export default async function BusinessMarketplaceHome({
             </div>
           </div>
 
-          <div className={`relative z-10 -mt-[42px] sm:-mt-[58px] ${homeContainerClass}`}>
-            <div className="sm:px-10 lg:px-14">
+          <div className={`relative z-10 -mt-[34px] sm:-mt-[43px] ${homeContainerClass}`}>
+            <div className="sm:px-12 lg:px-20">
               <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-8 sm:py-12">
-        <div className={homeContainerClass}>
-          <VehicleCategoryShowcase
-            items={categoryCards.map((category) => ({
-              slug: category.slug,
-              label: category.label,
-              href: category.href,
-              count: category.count,
-            }))}
-            listingLabel={t.listing}
-            listingsLabel={t.listings}
-          />
         </div>
       </section>
 
