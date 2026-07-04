@@ -436,7 +436,7 @@ export default async function ListingDetailPage({
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-2 text-4xl font-extrabold tracking-[-0.055em]">
+                <div className="mt-2 text-4xl font-bold tracking-[-0.045em]">
                   {price.original}
                 </div>
                 {price.approximate ? (

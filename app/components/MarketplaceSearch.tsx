@@ -125,7 +125,15 @@ export default function MarketplaceSearch({
       className="w-full min-w-0 max-w-full overflow-hidden rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
       role="search"
     >
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[1.05fr_1.55fr_1fr_auto] sm:items-center">
+      <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.55fr_1.05fr_1fr_auto] sm:items-center">
+        <SearchField label={copy.query} icon={Search} className="col-span-2 sm:col-span-1">
+          <AnimatedSearchInput
+            value={query}
+            onChange={setQuery}
+            placeholders={searchPlaceholders}
+          />
+        </SearchField>
+
         <SearchField label={copy.category} icon={selectedCategory.icon}>
           <select value={category} onChange={(event) => setCategory(event.target.value as MarketplaceCategorySlug)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
             {categoryOptions.map((option) => (
@@ -137,14 +145,6 @@ export default function MarketplaceSearch({
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
-        </SearchField>
-
-        <SearchField label={copy.query} icon={Search}>
-          <AnimatedSearchInput
-            value={query}
-            onChange={setQuery}
-            placeholders={searchPlaceholders}
-          />
         </SearchField>
 
         <SearchField label={copy.place} icon={MapPin}>
@@ -162,7 +162,7 @@ export default function MarketplaceSearch({
           <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
         </SearchField>
 
-        <button type="submit" className="inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
+        <button type="submit" className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
           <Search className="h-5 w-5" />
           {getSearchCta(category, locale)}
         </button>
@@ -345,13 +345,15 @@ function SearchField({
   label,
   icon: Icon,
   children,
+  className = '',
 }: {
   label: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
   children: ReactNode
+  className?: string
 }) {
   return (
-    <label className="relative flex min-w-0 items-center gap-3 overflow-hidden rounded-[15px] border border-[#e6e9ee] bg-white px-4 py-2 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:focus-within:ring-0">
+    <label className={`relative flex min-w-0 items-center gap-3 overflow-hidden rounded-[15px] border border-[#e6e9ee] bg-white px-4 py-2 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:focus-within:ring-0 ${className}`}>
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-[#eaf1ff] text-[#0866ff]">
         <Icon className="h-[18px] w-[18px]" />
       </span>
