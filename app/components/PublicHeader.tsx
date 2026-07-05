@@ -1081,12 +1081,16 @@ export default function PublicHeader({
               <button
                 type="button"
                 onClick={() => setMarketSelectorOpen(true)}
-                className="flex min-w-[98px] items-center justify-center gap-1.5 px-2 text-[11px] font-semibold transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                className="flex min-w-[68px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 aria-label={t.chooseLanguage}
               >
-                <FlagIcon code={activeMarket[1]} size="xs" />
-                <span>{activeMarket[2]}</span>
-                <ChevronDown className="h-3.5 w-3.5" />
+                <span className="relative inline-flex items-center justify-center">
+                  <FlagIcon code={activeMarket[1]} size="xs" />
+                  <ChevronDown className="absolute -right-4 top-1/2 h-3 w-3 -translate-y-1/2" />
+                </span>
+                <span className="mt-0.5 max-w-[62px] truncate text-[10px] font-medium">
+                  {activeMarket[2]}
+                </span>
               </button>
             </div>
           </div>
