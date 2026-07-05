@@ -248,7 +248,7 @@ export default async function BusinessMarketplaceHome({
               <video
                 aria-hidden="true"
                 autoPlay
-                className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
+                className="absolute inset-0 hidden h-full w-full translate-x-[2.5%] translate-y-[5%] scale-[1.08] object-cover object-center lg:block"
                 loop
                 muted
                 playsInline
