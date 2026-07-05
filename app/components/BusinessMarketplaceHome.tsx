@@ -242,8 +242,14 @@ export default async function BusinessMarketplaceHome({
                 src="/autorell-home-hero-happy-woman-car.jpg"
                 alt={t.heroAlt}
                 fill
-                preload
-                className="object-cover object-[42%_center] sm:scale-[1.03] sm:object-[52%_42%]"
+                className="object-cover object-[42%_center] sm:scale-[1.03] sm:object-[52%_42%] lg:hidden"
+                sizes="100vw"
+              />
+              <Image
+                src="/autorell-home-hero-showroom-mother-daughter.webp"
+                alt={t.heroAlt}
+                fill
+                className="hidden object-cover object-[54%_46%] lg:block"
                 sizes="100vw"
               />
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
