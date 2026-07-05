@@ -1573,16 +1573,16 @@ export default function PublicHeader({
               isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
             }`}
           >
-            <Home className="h-[22px] w-[22px]" strokeWidth={2.2} />
-            <span className="max-w-full truncate text-[10px] font-semibold">{t.home}</span>
+            <Home className="h-[22px] w-[22px]" strokeWidth={1.7} />
+            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
           </Link>
           <Link
             href={localizePublicHref(locale, '/marketplace/cars')}
             onClick={closeMobile}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
-            <CarFront className="h-[22px] w-[22px]" strokeWidth={1.9} />
-            <span className="max-w-full truncate text-[10px] font-semibold">{t.buy}</span>
+            <CarFront className="h-[22px] w-[22px]" strokeWidth={1.7} />
+            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.buy}</span>
           </Link>
           {headerAccount.authenticated ? (
             <Link
@@ -1590,8 +1590,8 @@ export default function PublicHeader({
               onClick={closeMobile}
               className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
-              <Plus className="h-[23px] w-[23px]" strokeWidth={2.3} />
-              <span className="max-w-full truncate text-[10px] font-semibold">{t.sell}</span>
+              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
             </Link>
           ) : (
             <button
@@ -1599,8 +1599,8 @@ export default function PublicHeader({
               onClick={() => openAuthModal('login', createListingHref)}
               className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
-              <Plus className="h-[23px] w-[23px]" strokeWidth={2.3} />
-              <span className="max-w-full truncate text-[10px] font-semibold">{t.sell}</span>
+              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
             </button>
           )}
           {headerAccount.authenticated ? (
@@ -1612,7 +1612,7 @@ export default function PublicHeader({
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                 {mobileAccountInitials}
               </span>
-              <span className="max-w-full truncate text-[10px] font-semibold">{mobileProfileLabel}</span>
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{mobileProfileLabel}</span>
             </Link>
           ) : (
             <button
@@ -1620,8 +1620,8 @@ export default function PublicHeader({
               onClick={() => openAuthModal('login', accountHref)}
               className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
-              <UserRound className="h-[22px] w-[22px]" strokeWidth={2.1} />
-              <span className="max-w-full truncate text-[10px] font-semibold">{t.signIn}</span>
+              <UserRound className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.signIn}</span>
             </button>
           )}
           <button
@@ -1636,11 +1636,11 @@ export default function PublicHeader({
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >
             {mobileMoreOpen ? (
-              <X className="h-[22px] w-[22px]" strokeWidth={2.1} />
+              <X className="h-[22px] w-[22px]" strokeWidth={1.8} />
             ) : (
-              <Menu className="h-[23px] w-[23px]" strokeWidth={2.1} />
+              <Menu className="h-[22px] w-[22px]" strokeWidth={1.8} />
             )}
-            <span className="max-w-full truncate text-[10px] font-semibold">{t.menu}</span>
+            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.menu}</span>
           </button>
         </div>
       </nav>
