@@ -850,7 +850,7 @@ export default function PublicHeader({
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {renderTopCategoryNav ? (
             <div className="hidden border-b border-[#deddd8] bg-white min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[1920px] items-center justify-between px-4 sm:px-8 min-[1120px]:px-5 2xl:px-6">
+              <div className="mx-auto flex h-[30px] max-w-[1920px] items-center justify-between px-4 sm:px-8 min-[1120px]:px-4 2xl:px-4">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
@@ -893,7 +893,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:px-5 2xl:px-6`}>
+          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:px-4 2xl:px-4`}>
             <Link
               href={homeHref}
               aria-label="Autorell"
