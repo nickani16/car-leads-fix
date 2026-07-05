@@ -381,6 +381,12 @@ export default function SiteSearch({
         {createPortal(
           <div
             className="fixed inset-x-0 bottom-0 top-[56px] z-[200] overflow-y-auto bg-black/20 backdrop-blur-[2px] min-[1120px]:hidden"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setOpen(false)
+                setQuery('')
+              }
+            }}
           >
             <div className="border-t border-[#deddd8] bg-[#f7f7f5] px-5 py-5 shadow-[0_24px_60px_rgba(32,33,36,.16)] sm:px-8">
               <div className="mx-auto max-w-2xl">
@@ -415,7 +421,15 @@ export default function SiteSearch({
           <span className="text-[10px] font-medium">{text.label}</span>
         </button>
         {createPortal(
-          <div className="fixed inset-0 z-[190] hidden overflow-y-auto bg-[#0b1220]/52 px-6 py-10 backdrop-blur-[2px] min-[1120px]:block">
+          <div
+            className="fixed inset-0 z-[190] hidden overflow-y-auto bg-[#0b1220]/52 px-6 py-10 backdrop-blur-[2px] min-[1120px]:block"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setOpen(false)
+                setQuery('')
+              }
+            }}
+          >
             <div className="mx-auto flex min-h-full w-full max-w-[var(--autorell-page-max)] items-start justify-center pt-10">
               <div className="max-h-[calc(100dvh-80px)] w-[min(820px,calc(100vw-96px))] overflow-y-auto rounded-[26px] border border-white/70 bg-white shadow-[0_34px_100px_rgba(4,12,28,.35)]">
                 <div className="flex h-[76px] items-center gap-4 border-b border-[#edf0f5] px-7">

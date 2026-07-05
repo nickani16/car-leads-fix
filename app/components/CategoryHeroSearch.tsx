@@ -150,7 +150,7 @@ function SearchField({
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#667085]">{label}</span>
+        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#98a2b3]">{label}</span>
         {children}
       </span>
     </label>
