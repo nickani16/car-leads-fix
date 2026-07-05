@@ -173,6 +173,8 @@ export default function SiteSearch({
   const [searching, setSearching] = useState(false)
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readSearchHistory())
   const inputRef = useRef<HTMLInputElement>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
 
   function saveRecentSearch(value: string) {
@@ -264,10 +266,33 @@ export default function SiteSearch({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [headerDesktop])
 
+  useEffect(() => {
+    if (!open || mobile) return
+
+    function handleOutsidePointerDown(event: MouseEvent | TouchEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (panelRef.current?.contains(target)) return
+      if (triggerRef.current?.contains(target)) return
+
+      setOpen(false)
+      setQuery('')
+    }
+
+    document.addEventListener('mousedown', handleOutsidePointerDown, true)
+    document.addEventListener('touchstart', handleOutsidePointerDown, true)
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsidePointerDown, true)
+      document.removeEventListener('touchstart', handleOutsidePointerDown, true)
+    }
+  }, [mobile, open])
+
   if (!open && (!mobile || headerMobile)) {
     if (headerDesktop) {
       return (
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setOpen(true)}
           aria-label={text.label}
@@ -281,6 +306,7 @@ export default function SiteSearch({
 
     return (
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label={text.label}
@@ -316,7 +342,7 @@ export default function SiteSearch({
           }}
           placeholder={text.placeholder}
           aria-label={text.placeholder}
-          className="min-w-0 flex-1 bg-transparent text-base text-[#202124] outline-none placeholder:text-[#8b9195]"
+          className="min-w-0 flex-1 bg-transparent text-base text-[#202124] outline-none placeholder:text-[#98a2b3]"
         />
         {query && (
           <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
@@ -388,7 +414,7 @@ export default function SiteSearch({
               }
             }}
           >
-            <div className="border-t border-[#deddd8] bg-[#f7f7f5] px-5 py-5 shadow-[0_24px_60px_rgba(32,33,36,.16)] sm:px-8">
+            <div ref={panelRef} className="border-t border-[#deddd8] bg-[#f7f7f5] px-5 py-5 shadow-[0_24px_60px_rgba(32,33,36,.16)] sm:px-8">
               <div className="mx-auto max-w-2xl">
                 <div className="mb-4">
                   <p className="text-lg font-semibold tracking-[-0.02em] text-[#202124]">
@@ -431,7 +457,7 @@ export default function SiteSearch({
             }}
           >
             <div className="mx-auto flex min-h-full w-full max-w-[var(--autorell-page-max)] items-start justify-center pt-10">
-              <div className="max-h-[calc(100dvh-80px)] w-[min(820px,calc(100vw-96px))] overflow-y-auto rounded-[26px] border border-white/70 bg-white shadow-[0_34px_100px_rgba(4,12,28,.35)]">
+              <div ref={panelRef} className="max-h-[calc(100dvh-80px)] w-[min(820px,calc(100vw-96px))] overflow-y-auto rounded-[26px] border border-white/70 bg-white shadow-[0_34px_100px_rgba(4,12,28,.35)]">
                 <div className="flex h-[76px] items-center gap-4 border-b border-[#edf0f5] px-7">
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#eaf1ff] text-[#0866ff]">
                     <Search className="h-5 w-5" />
@@ -448,7 +474,7 @@ export default function SiteSearch({
                     }}
                     placeholder={text.placeholder}
                     aria-label={text.placeholder}
-                    className="min-w-0 flex-1 bg-transparent text-[18px] font-medium text-[#1f2937] outline-none placeholder:text-[#667085]"
+                    className="min-w-0 flex-1 bg-transparent text-[18px] font-medium text-[#1f2937] outline-none placeholder:text-[#98a2b3]"
                   />
                   <span className="hidden">
                     ⌘ K
@@ -628,7 +654,7 @@ export default function SiteSearch({
 
   return (
     <div className="absolute right-0 top-full z-40 pt-3">
-      <div className="w-[min(540px,calc(100vw-32px))] rounded-[24px] border border-[#d8e2e5] bg-[linear-gradient(145deg,#f9fbfb,#edf5f7)] p-4 shadow-[0_30px_85px_rgba(28,42,49,.2)]">
+      <div ref={panelRef} className="w-[min(540px,calc(100vw-32px))] rounded-[24px] border border-[#d8e2e5] bg-[linear-gradient(145deg,#f9fbfb,#edf5f7)] p-4 shadow-[0_30px_85px_rgba(28,42,49,.2)]">
         <div className="mb-4 flex items-start justify-between gap-5 px-1">
           <div>
             <p className="text-lg font-semibold tracking-[-0.025em] text-[#202124]">

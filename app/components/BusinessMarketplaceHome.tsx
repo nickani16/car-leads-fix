@@ -234,7 +234,7 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="bg-white pt-0">
+      <section className="-mt-px bg-white pt-0">
         <div className="relative w-full">
           <div className="px-0">
             <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] lg:min-h-[340px] lg:shadow-[0_22px_52px_rgba(16,24,40,.20)]">
