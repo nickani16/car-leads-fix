@@ -37,30 +37,30 @@ const footerCopy = {
       {
         title: 'Sälj',
         links: [
-          ['Sälj ditt fordon', '/salj-fordon'],
-          ['Så fungerar det', '/salj-fordon#sa-fungerar-det'],
-          ['Priser', '/salj-fordon#priser'],
-          ['För företag', '/foretag'],
-          ['Dealer solutions', '/foretag'],
+          ['Sälj ditt fordon', '/sell-vehicle'],
+          ['Så fungerar det', '/how-selling-works'],
+          ['Priser', '/pricing'],
+          ['För företag', '/business'],
+          ['Dealer solutions', '/dealer-solutions'],
         ],
       },
       {
         title: 'Köp',
         links: [
           ['Sök fordon', '/marketplace/cars'],
-          ['Sparade sökningar', '/sparade'],
-          ['Jämför fordon', '/marketplace/cars'],
-          ['Fordonshistorik', '/help-center'],
-          ['Köpguide', '/trygg-affar'],
+          ['Sparade sökningar', '/saved-searches'],
+          ['Jämför fordon', '/compare-vehicles'],
+          ['Fordonshistorik', '/vehicle-history'],
+          ['Köpguide', '/buying-guide'],
         ],
       },
       {
         title: 'Företag',
         links: [
-          ['Om Autorell', '/om-oss'],
-          ['Karriär', '/om-oss'],
-          ['Press', '/om-oss'],
-          ['Partners', '/foretag'],
+          ['Om Autorell', '/about'],
+          ['Karriär', '/careers'],
+          ['Press', '/press'],
+          ['Partners', '/partners'],
           ['Kontakta oss', '/contact'],
         ],
       },
@@ -68,9 +68,9 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hjälpcenter', '/help-center'],
-          ['Säkerhetstips', '/trygg-affar'],
-          ['Betalningar', '/trygg-affar'],
-          ['Frakt & leverans', '/help-center'],
+          ['Säkerhetstips', '/safety-tips'],
+          ['Betalningar', '/payments'],
+          ['Frakt & leverans', '/shipping-delivery'],
           ['Rapportera problem', '/report'],
         ],
       },
@@ -126,30 +126,30 @@ const footerCopy = {
       {
         title: 'Verkaufen',
         links: [
-          ['Fahrzeug verkaufen', '/salj-fordon'],
-          ['So funktioniert es', '/salj-fordon#sa-fungerar-det'],
-          ['Preise', '/salj-fordon#priser'],
-          ['Für Unternehmen', '/foretag'],
-          ['Dealer solutions', '/foretag'],
+          ['Fahrzeug verkaufen', '/sell-vehicle'],
+          ['So funktioniert es', '/how-selling-works'],
+          ['Preise', '/pricing'],
+          ['Für Unternehmen', '/business'],
+          ['Dealer solutions', '/dealer-solutions'],
         ],
       },
       {
         title: 'Kaufen',
         links: [
           ['Fahrzeuge suchen', '/marketplace/cars'],
-          ['Gespeicherte Suchen', '/sparade'],
-          ['Fahrzeuge vergleichen', '/marketplace/cars'],
-          ['Fahrzeughistorie', '/help-center'],
-          ['Kaufberatung', '/trygg-affar'],
+          ['Gespeicherte Suchen', '/saved-searches'],
+          ['Fahrzeuge vergleichen', '/compare-vehicles'],
+          ['Fahrzeughistorie', '/vehicle-history'],
+          ['Kaufberatung', '/buying-guide'],
         ],
       },
       {
         title: 'Unternehmen',
         links: [
-          ['Über Autorell', '/om-oss'],
-          ['Karriere', '/om-oss'],
-          ['Presse', '/om-oss'],
-          ['Partner', '/foretag'],
+          ['Über Autorell', '/about'],
+          ['Karriere', '/careers'],
+          ['Presse', '/press'],
+          ['Partner', '/partners'],
           ['Kontakt', '/contact'],
         ],
       },
@@ -157,9 +157,9 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hilfe', '/help-center'],
-          ['Sicherheitstipps', '/trygg-affar'],
-          ['Zahlungen', '/trygg-affar'],
-          ['Versand & Lieferung', '/help-center'],
+          ['Sicherheitstipps', '/safety-tips'],
+          ['Zahlungen', '/payments'],
+          ['Versand & Lieferung', '/shipping-delivery'],
           ['Problem melden', '/report'],
         ],
       },
@@ -215,30 +215,30 @@ const footerCopy = {
       {
         title: 'Sell',
         links: [
-          ['Sell your vehicle', '/salj-fordon'],
-          ['How it works', '/salj-fordon#sa-fungerar-det'],
-          ['Pricing', '/salj-fordon#priser'],
-          ['For businesses', '/foretag'],
-          ['Dealer solutions', '/foretag'],
+          ['Sell your vehicle', '/sell-vehicle'],
+          ['How it works', '/how-selling-works'],
+          ['Pricing', '/pricing'],
+          ['For businesses', '/business'],
+          ['Dealer solutions', '/dealer-solutions'],
         ],
       },
       {
         title: 'Buy',
         links: [
           ['Search vehicles', '/marketplace/cars'],
-          ['Saved searches', '/sparade'],
-          ['Compare vehicles', '/marketplace/cars'],
-          ['Vehicle history', '/help-center'],
-          ['Buying guide', '/trygg-affar'],
+          ['Saved searches', '/saved-searches'],
+          ['Compare vehicles', '/compare-vehicles'],
+          ['Vehicle history', '/vehicle-history'],
+          ['Buying guide', '/buying-guide'],
         ],
       },
       {
         title: 'Company',
         links: [
-          ['About Autorell', '/om-oss'],
-          ['Careers', '/om-oss'],
-          ['Press', '/om-oss'],
-          ['Partners', '/foretag'],
+          ['About Autorell', '/about'],
+          ['Careers', '/careers'],
+          ['Press', '/press'],
+          ['Partners', '/partners'],
           ['Contact us', '/contact'],
         ],
       },
@@ -246,9 +246,9 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Help center', '/help-center'],
-          ['Safety tips', '/trygg-affar'],
-          ['Payments', '/trygg-affar'],
-          ['Shipping & delivery', '/help-center'],
+          ['Safety tips', '/safety-tips'],
+          ['Payments', '/payments'],
+          ['Shipping & delivery', '/shipping-delivery'],
           ['Report a problem', '/report'],
         ],
       },
@@ -346,7 +346,7 @@ export default function PublicFooter({
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-0 lg:pt-10">
-      <div className="mx-auto max-w-[1840px] bg-white lg:px-10 2xl:px-12">
+      <div className="mx-auto max-w-[1888px] bg-white lg:px-6 2xl:px-8">
         <div className="grid grid-cols-2 gap-x-7 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 xl:gap-x-9">
           {t.columns.map((column) => (
             <FooterColumn
@@ -372,7 +372,7 @@ export default function PublicFooter({
 
         <div className="my-6 h-px bg-[#dfe5ee]" />
 
-        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(2.5rem,calc((100vw-1840px)/2+2.5rem))] 2xl:px-[max(3rem,calc((100vw-1840px)/2+3rem))]">
+        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(1.5rem,calc((100vw-1888px)/2+1.5rem))] 2xl:px-[max(2rem,calc((100vw-1888px)/2+2rem))]">
           <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-semibold">

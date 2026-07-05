@@ -51,7 +51,7 @@ export default function SavedListingButton({
           : ''
       window.dispatchEvent(
         new CustomEvent('autorell:open-auth', {
-          detail: { mode: 'login', destination: `${prefix}/sparade` },
+          detail: { mode: 'login', destination: `${prefix}/saved` },
         }),
       )
       return

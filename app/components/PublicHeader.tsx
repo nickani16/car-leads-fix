@@ -332,40 +332,40 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
     { href: '/konto/annonser/ny', label: 'Lägg upp annons', description: 'Publicera ett fordon med bilder, pris och fordonsdata.', icon: FilePlus2 },
     { href: '/register', label: 'Skapa konto', description: 'Välj privatkonto eller företagskonto.', icon: UserPlus },
-    { href: '/salj-fordon#priser', label: 'Annonspriser', description: 'Jämför annonspaket och synlighet.', icon: Store },
-    { href: '/salj-fordon#sa-fungerar-det', label: 'Så fungerar försäljning', description: 'Från annons till kontakt med köpare.', icon: CircleHelp },
+    { href: '/pricing', label: 'Annonspriser', description: 'Jämför annonspaket och synlighet.', icon: Store },
+    { href: '/how-selling-works', label: 'Så fungerar försäljning', description: 'Från annons till kontakt med köpare.', icon: CircleHelp },
   ],
   en: [
     { href: '/account/listings/new', label: 'Create listing', description: 'Publish a vehicle with images, price and structured data.', icon: FilePlus2 },
     { href: '/register', label: 'Create account', description: 'Choose a private or business account.', icon: UserPlus },
-    { href: '/salj-fordon#priser', label: 'Listing prices', description: 'Compare packages and visibility.', icon: Store },
-    { href: '/salj-fordon#sa-fungerar-det', label: 'How selling works', description: 'From listing to buyer enquiry.', icon: CircleHelp },
+    { href: '/pricing', label: 'Listing prices', description: 'Compare packages and visibility.', icon: Store },
+    { href: '/how-selling-works', label: 'How selling works', description: 'From listing to buyer enquiry.', icon: CircleHelp },
   ],
   de: [
     { href: '/account/listings/new', label: 'Anzeige erstellen', description: 'Fahrzeug mit Bildern, Preis und Daten veröffentlichen.', icon: FilePlus2 },
     { href: '/register', label: 'Konto erstellen', description: 'Privat- oder Unternehmenskonto wählen.', icon: UserPlus },
-    { href: '/salj-fordon#priser', label: 'Anzeigenpreise', description: 'Pakete und Sichtbarkeit vergleichen.', icon: Store },
-    { href: '/salj-fordon#sa-fungerar-det', label: 'So funktioniert der Verkauf', description: 'Von der Anzeige bis zur Käuferanfrage.', icon: CircleHelp },
+    { href: '/pricing', label: 'Anzeigenpreise', description: 'Pakete und Sichtbarkeit vergleichen.', icon: Store },
+    { href: '/how-selling-works', label: 'So funktioniert der Verkauf', description: 'Von der Anzeige bis zur Käuferanfrage.', icon: CircleHelp },
   ],
 }
 
 const businessItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/foretag', label: 'För företag', description: 'Översikt över Autorells företagslösningar.', icon: Building2 },
+    { href: '/business', label: 'För företag', description: 'Översikt över Autorells företagslösningar.', icon: Building2 },
     { href: '/register?account=business', label: 'Företagskonto', description: 'Skapa ett konto för organisationen.', icon: UserRound },
     { href: '/konto/annonser/ny', label: 'Annonsera fordon', description: 'Publicera enstaka fordon eller hela lagret.', icon: FilePlus2 },
     { href: '/konto/annonser', label: 'Hantera lager', description: 'Se och uppdatera företagets annonser.', icon: Warehouse },
     { href: '/contact', label: 'Kontakta oss', description: 'Prata med oss om större volymer.', icon: CircleHelp },
   ],
   en: [
-    { href: '/foretag', label: 'For business', description: "Explore Autorell's business solutions.", icon: Building2 },
+    { href: '/business', label: 'For business', description: "Explore Autorell's business solutions.", icon: Building2 },
     { href: '/register?account=business', label: 'Business account', description: 'Create an account for your organisation.', icon: UserRound },
     { href: '/account/listings/new', label: 'Advertise vehicles', description: 'Publish one vehicle or your whole inventory.', icon: FilePlus2 },
     { href: '/account/listings', label: 'Manage inventory', description: 'Review and update company listings.', icon: Warehouse },
     { href: '/contact', label: 'Contact us', description: 'Talk to us about larger volumes.', icon: CircleHelp },
   ],
   de: [
-    { href: '/foretag', label: 'Für Unternehmen', description: 'Autorells Unternehmenslösungen entdecken.', icon: Building2 },
+    { href: '/business', label: 'Für Unternehmen', description: 'Autorells Unternehmenslösungen entdecken.', icon: Building2 },
     { href: '/register?account=business', label: 'Unternehmenskonto', description: 'Ein Konto für Ihr Unternehmen erstellen.', icon: UserRound },
     { href: '/account/listings/new', label: 'Fahrzeuge inserieren', description: 'Ein Fahrzeug oder den gesamten Bestand veröffentlichen.', icon: FilePlus2 },
     { href: '/account/listings', label: 'Bestand verwalten', description: 'Unternehmensanzeigen prüfen und aktualisieren.', icon: Warehouse },
@@ -625,7 +625,7 @@ export default function PublicHeader({
     },
     {
       label: t.sell,
-      href: localizePublicHref(locale, '/salj-fordon'),
+      href: localizePublicHref(locale, '/sell-vehicle'),
       icon: FilePlus2,
       data: {
         eyebrow: t.sell,
@@ -638,14 +638,14 @@ export default function PublicHeader({
     },
     {
       label: t.business,
-      href: localizePublicHref(locale, '/foretag'),
+      href: localizePublicHref(locale, '/business'),
       icon: Building2,
       data: {
         eyebrow: t.business,
         title: t.businessTitle,
         text: t.businessText,
         cta: t.businessCta,
-        ctaHref: localizePublicHref(locale, '/foretag'),
+        ctaHref: localizePublicHref(locale, '/business'),
         items: localizedBusinessItems,
       },
     },
@@ -680,7 +680,7 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/terms'), label: t.terms, icon: FileText },
     { href: localizePublicHref(locale, '/privacy'), label: t.privacy, icon: ShieldCheck },
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
-    { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
+    { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
   ]
 
   const highlightedMarketCodes = new Set(['se', 'de'])
@@ -725,7 +725,7 @@ export default function PublicHeader({
   const marketPathPrefix = activeMarketCode === 'eu' ? '' : `/${activeMarketCode}`
   const accountHref = `${marketPathPrefix}/account`
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
-  const savedHref = `${marketPathPrefix}/sparade`
+  const savedHref = `${marketPathPrefix}/saved`
   const isHomePage = unprefixedPathname === '/'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
@@ -751,9 +751,9 @@ export default function PublicHeader({
   ]
   const mobileDrawerLinks = [
     { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
-    { href: localizePublicHref(locale, '/foretag'), label: t.business, icon: Building2 },
+    { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
     { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
-    { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
+    { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
@@ -828,7 +828,7 @@ export default function PublicHeader({
     href: string,
   ) {
     const targetPath = stripLocalePrefix(new URL(href, window.location.origin).pathname)
-    if (targetPath === '/salj-fordon') {
+    if (targetPath === '/sell-vehicle') {
       event.preventDefault()
       openAuthModal('login', href)
       return
@@ -850,7 +850,7 @@ export default function PublicHeader({
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {renderTopCategoryNav ? (
             <div className="hidden border-b border-[#deddd8] bg-white min-[1120px]:block">
-              <div className="mx-auto flex h-[30px] max-w-[1840px] items-center justify-between px-4 sm:px-8 min-[1120px]:px-10 2xl:px-12">
+              <div className="mx-auto flex h-[30px] max-w-[1888px] items-center justify-between px-4 sm:px-8 min-[1120px]:px-6 2xl:px-8">
                 <nav className="flex min-w-0 items-center gap-4 overflow-hidden text-[10px] text-[#41474b] xl:gap-5 xl:text-[11px]">
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
@@ -893,7 +893,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:max-w-[1840px] min-[1120px]:px-10 2xl:px-12`}>
+          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:max-w-[1888px] min-[1120px]:px-6 2xl:px-8`}>
             <Link
               href={homeHref}
               aria-label="Autorell"
@@ -1172,7 +1172,7 @@ export default function PublicHeader({
             </nav>
 
             <Link
-              href={localizePublicHref(locale, '/salj-fordon')}
+              href={localizePublicHref(locale, '/sell-vehicle')}
               onClick={closeMobile}
               className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-extrabold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
             >
@@ -1696,11 +1696,11 @@ function DesktopMenu({
       />
 
       <div
-        className={`fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 transition duration-200 ${
+        className={`fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 transition duration-200 min-[1120px]:w-[calc(100vw-48px)] 2xl:w-[calc(100vw-64px)] ${
           open
             ? 'pointer-events-auto translate-y-0 opacity-100'
             : 'pointer-events-none -translate-y-2 opacity-0'
-        } ${isMegaMenu ? 'max-w-[1040px]' : 'max-w-[720px]'}`}
+        } ${isMegaMenu ? 'max-w-[1888px]' : 'max-w-[920px]'}`}
       >
         {isMegaMenu ? (
           <BuyDesktopMenuPanel

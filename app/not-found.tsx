@@ -33,8 +33,8 @@ const popularRoutes = [
   { key: 'cars', href: '/cars', icon: CarFront },
   { key: 'vans', href: '/vans', icon: Truck },
   { key: 'motorcycles', href: '/motorcycles', icon: CarFront },
-  { key: 'companies', href: '/foretag', icon: Building2 },
-  { key: 'sell', href: '/salj-fordon', icon: ArrowRight },
+  { key: 'companies', href: '/business', icon: Building2 },
+  { key: 'sell', href: '/sell-vehicle', icon: ArrowRight },
 ] as const
 
 const localeByPathPrefix: Record<string, PublicLocale> = {

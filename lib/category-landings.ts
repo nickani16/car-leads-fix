@@ -320,7 +320,7 @@ export function categoryLandingMenuHref(
     normalized.includes('sälj') ||
     normalized.includes('verkaufen')
   ) {
-    return `/salj-fordon?category=${config.slug}`
+    return `/sell-vehicle?category=${config.slug}`
   }
   return `/marketplace/${config.slug}?filter=${encodeURIComponent(item)}`
 }

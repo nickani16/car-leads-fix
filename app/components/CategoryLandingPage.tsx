@@ -241,7 +241,7 @@ export default async function CategoryLandingPage({
               </h2>
               <p className="mt-3 text-sm text-white/82">{page.sellText}</p>
               <Link
-                href={localizePublicHref(locale, `/salj-fordon?category=${slug}`)}
+                href={localizePublicHref(locale, `/sell-vehicle?category=${slug}`)}
                 className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-white px-5 text-sm font-bold text-[#0866ff]"
               >
                 {page.sellCta}
@@ -490,7 +490,7 @@ function EmptyListings({
       <h3 className="mt-4 text-2xl tracking-[-0.04em]">{copy.noListingsTitle}</h3>
       <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#667085]">{copy.noListingsText}</p>
       <Link
-        href={localizePublicHref(locale, `/salj-fordon?category=${slug}`)}
+        href={localizePublicHref(locale, `/sell-vehicle?category=${slug}`)}
         className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[#0866ff] px-6 text-sm font-bold text-white"
       >
         {copy.sellCta}

@@ -234,7 +234,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: copy.metaTitle },
     description: copy.metaDescription,
-    alternates: { canonical: 'https://www.autorell.com/foretag' },
+    alternates: { canonical: 'https://www.autorell.com/business' },
   }
 }
 

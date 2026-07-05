@@ -9,6 +9,7 @@ const files = [
   'app/components/MarketplaceSearch.tsx',
   'app/components/PublicHeader.tsx',
   'app/components/PublicFooter.tsx',
+  'app/components/PublicInfoPage.tsx',
   'app/dealer-market/[locale]/[page]/page.tsx',
   'app/components/PublicContactPage.tsx',
   'app/components/ContactForm.tsx',

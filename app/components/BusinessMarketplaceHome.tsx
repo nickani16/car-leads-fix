@@ -67,7 +67,10 @@ const homeContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
 const homeContentContainerClass =
-  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1120px] sm:px-8 xl:max-w-[1180px]'
+  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]'
+
+const homeWideBandContainerClass =
+  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:max-w-[1888px] lg:px-6 2xl:px-8'
 
 const homeCopy = {
   sv: {
@@ -262,7 +265,7 @@ export default async function BusinessMarketplaceHome({
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.02)_0%,rgba(3,10,26,0)_42%)]" />
 
-              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1840px] lg:px-10 lg:py-8 2xl:px-12">
+              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1888px] lg:px-6 lg:py-8 2xl:px-8">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
                   {t.heroEyebrow}
                 </p>
@@ -325,7 +328,7 @@ export default async function BusinessMarketplaceHome({
                 {t.noListingsText}
               </p>
               <Link
-                href={localizePublicHref(locale, '/salj-fordon')}
+                href={localizePublicHref(locale, '/sell-vehicle')}
                 className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_12px_26px_rgba(8,102,255,.22)]"
               >
                 {t.createListing}
@@ -336,7 +339,7 @@ export default async function BusinessMarketplaceHome({
       </section>
 
       <section className="bg-white pb-14 sm:pb-20">
-        <div className={homeContentContainerClass}>
+        <div className={homeWideBandContainerClass}>
           <div className="relative overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-[#e8f1ff]">
             <div className="absolute inset-y-0 right-0 hidden w-[56%] sm:block">
               <Image
@@ -356,14 +359,16 @@ export default async function BusinessMarketplaceHome({
                 {t.sellText}
               </p>
               <Link
-                href={localizePublicHref(locale, '/salj-fordon')}
+                href={localizePublicHref(locale, '/sell-vehicle')}
                 className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white"
               >
                 {t.sellCta}
               </Link>
             </div>
           </div>
+        </div>
 
+        <div className={homeContentContainerClass}>
           <div className="mt-10 grid overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-white lg:grid-cols-2">
             <div className="p-7 sm:p-9">
               <h2 className="text-2xl tracking-[-0.04em]">{t.whyTitle}</h2>
