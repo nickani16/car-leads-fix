@@ -66,6 +66,9 @@ type CategoryCard = {
 const homeContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
+const homeContentContainerClass =
+  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1120px] sm:px-8 xl:max-w-[1180px]'
+
 const homeCopy = {
   sv: {
     heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
@@ -259,7 +262,7 @@ export default async function BusinessMarketplaceHome({
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.02)_0%,rgba(3,10,26,0)_42%)]" />
 
-              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1760px] lg:py-8">
+              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1840px] lg:px-10 lg:py-8 2xl:px-12">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
                   {t.heroEyebrow}
                 </p>
@@ -282,7 +285,7 @@ export default async function BusinessMarketplaceHome({
       </section>
 
       <section className="bg-white py-14 sm:py-20">
-        <div className={homeContainerClass}>
+        <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
             <h2 className="text-3xl leading-tight tracking-[-0.045em] sm:text-[38px]">
               {t.featuredTitle}
@@ -333,7 +336,7 @@ export default async function BusinessMarketplaceHome({
       </section>
 
       <section className="bg-white pb-14 sm:pb-20">
-        <div className={homeContainerClass}>
+        <div className={homeContentContainerClass}>
           <div className="relative overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-[#e8f1ff]">
             <div className="absolute inset-y-0 right-0 hidden w-[56%] sm:block">
               <Image

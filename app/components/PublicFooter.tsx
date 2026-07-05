@@ -345,8 +345,8 @@ export default function PublicFooter({
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-8 lg:pt-10">
-      <div className="mx-auto max-w-[var(--autorell-page-max)] bg-white">
+    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-0 lg:pt-10">
+      <div className="mx-auto max-w-[1840px] bg-white lg:px-10 2xl:px-12">
         <div className="grid grid-cols-2 gap-x-7 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 xl:gap-x-9">
           {t.columns.map((column) => (
             <FooterColumn
@@ -372,7 +372,7 @@ export default function PublicFooter({
 
         <div className="my-6 h-px bg-[#dfe5ee]" />
 
-        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(2rem,calc((100vw-1280px)/2+2rem))]">
+        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(2.5rem,calc((100vw-1840px)/2+2.5rem))] 2xl:px-[max(3rem,calc((100vw-1840px)/2+3rem))]">
           <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-semibold">
@@ -652,7 +652,7 @@ export function MarketSelectorModal({
         <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       </button>
 
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-[72px]">
+      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 pb-16 pt-20 sm:px-8 sm:py-16 lg:py-[72px]">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
           <div>
             <h2 className="max-w-[560px] text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
