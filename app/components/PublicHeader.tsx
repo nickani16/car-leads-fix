@@ -683,19 +683,23 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/om-oss'), label: t.about, icon: Building2 },
   ]
 
+  const highlightedMarketCodes = new Set(['se', 'de'])
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
     ...([
-    ['se', 'SE', 'Sverige', 'https://www.autorell.com/se'] as const,
-    ['de', 'DE', 'Deutschland', 'https://www.autorell.com/de'] as const,
-    ...euBuyerMarkets.map((market) =>
-      [
-        market.code,
-        market.code.toUpperCase(),
-        market.countryLocal,
-        `https://www.autorell.com/${market.code}`,
-      ] as const,
-    ),
+      ['se', 'SE', 'Sverige', 'https://www.autorell.com/se'] as const,
+      ['de', 'DE', 'Deutschland', 'https://www.autorell.com/de'] as const,
+      ...euBuyerMarkets
+        .filter((market) => !highlightedMarketCodes.has(market.code))
+        .map(
+          (market) =>
+            [
+              market.code,
+              market.code.toUpperCase(),
+              market.countryLocal,
+              `https://www.autorell.com/${market.code}`,
+            ] as const,
+        ),
     ] as Array<readonly [string, string, string, string]>).sort(
       (left, right) => left[2].localeCompare(right[2], locale),
     ),

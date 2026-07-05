@@ -1,3 +1,5 @@
+import { isActiveMarketCountryCode } from './eu-countries'
+
 export type EuBuyerLanguage =
   | 'bg'
   | 'cs'
@@ -744,7 +746,7 @@ const copies: Record<EuBuyerLanguage, EuBuyerCopy> = {
   },
 }
 
-export const euBuyerMarkets: EuBuyerMarket[] = [
+const ALL_EU_BUYER_MARKETS: EuBuyerMarket[] = [
   { code: 'at', country: 'Austria', countryLocal: 'Österreich', flag: '🇦🇹', language: 'de', cities: [['wien','Wien','Wien'],['graz','Graz','Steiermark'],['linz','Linz','Oberösterreich'],['salzburg','Salzburg','Salzburg']].map(([slug,name,region])=>({slug,name,region})), demand: ['Premium & Kombi','Elektro & Hybrid','SUV & Allrad'] },
   { code: 'be', country: 'Belgium', countryLocal: 'België', flag: '🇧🇪', language: 'nl', cities: [['brussel','Brussel','Brussels Hoofdstedelijk Gewest'],['antwerpen','Antwerpen','Vlaanderen'],['gent','Gent','Oost-Vlaanderen'],['luik','Luik','Wallonië']].map(([slug,name,region])=>({slug,name,region})), demand: ['Bedrijfswagens','Plug-in hybride','Premium estates'] },
   { code: 'bg', country: 'Bulgaria', countryLocal: 'България', flag: '🇧🇬', language: 'bg', cities: [['sofia','София','София-град'],['plovdiv','Пловдив','Пловдив'],['varna','Варна','Варна']].map(([slug,name,region])=>({slug,name,region})), demand: ['Млади автомобили','SUV','Икономични двигатели'] },
@@ -771,6 +773,12 @@ export const euBuyerMarkets: EuBuyerMarket[] = [
   { code: 'si', country: 'Slovenia', countryLocal: 'Slovenija', homeTitle: 'Evropska nabava vozil za trgovce v Sloveniji', flag: '🇸🇮', language: 'sl', cities: [['ljubljana','Ljubljana','Osrednjeslovenska'],['maribor','Maribor','Podravska'],['koper','Koper','Obalno-kraška']].map(([slug,name,region])=>({slug,name,region})), demand: ['Kombi & SUV','Hibridi','Mlajša vozila'] },
   { code: 'es', country: 'Spain', countryLocal: 'España', flag: '🇪🇸', language: 'es', cities: [['madrid','Madrid','Comunidad de Madrid'],['barcelona','Barcelona','Cataluña'],['valencia','Valencia','Comunidad Valenciana'],['bilbao','Bilbao','País Vasco'],['sevilla','Sevilla','Andalucía']].map(([slug,name,region])=>({slug,name,region})), demand: ['Gasolina eficiente','Híbridos','SUV & crossover'] },
 ]
+
+export const allEuBuyerMarkets = ALL_EU_BUYER_MARKETS
+
+export const euBuyerMarkets: EuBuyerMarket[] = ALL_EU_BUYER_MARKETS.filter((market) =>
+  isActiveMarketCountryCode(market.code),
+)
 
 export function getEuBuyerMarket(code: string) {
   return euBuyerMarkets.find((market) => market.code === code)

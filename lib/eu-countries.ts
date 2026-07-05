@@ -1,4 +1,4 @@
-export const EU_COUNTRIES = [
+export const ALL_EU_COUNTRIES = [
   ['AT', 'Austria'],
   ['BE', 'Belgium'],
   ['BG', 'Bulgaria'],
@@ -28,11 +28,41 @@ export const EU_COUNTRIES = [
   ['SK', 'Slovakia'],
 ] as const
 
+export const ACTIVE_MARKET_COUNTRIES = [
+  ['DE', 'Germany'],
+  ['FR', 'France'],
+  ['IT', 'Italy'],
+  ['ES', 'Spain'],
+  ['NL', 'Netherlands'],
+  ['BE', 'Belgium'],
+  ['SE', 'Sweden'],
+  ['PL', 'Poland'],
+  ['AT', 'Austria'],
+  ['DK', 'Denmark'],
+  ['FI', 'Finland'],
+] as const
+
+export const activeMarketCountries = ACTIVE_MARKET_COUNTRIES
+
+export type ActiveMarketCountryCode = (typeof ACTIVE_MARKET_COUNTRIES)[number][0]
+
+export const activeMarketCountryCodes = new Set<string>(
+  ACTIVE_MARKET_COUNTRIES.map(([code]) => code),
+)
+
+export function isActiveMarketCountryCode(
+  value: string | null | undefined,
+): value is ActiveMarketCountryCode {
+  return Boolean(value && activeMarketCountryCodes.has(value.toUpperCase()))
+}
+
+export const EU_COUNTRIES = ACTIVE_MARKET_COUNTRIES
+
 export const euCountries = EU_COUNTRIES
 
-export type EuCountryCode = (typeof EU_COUNTRIES)[number][0]
+export type EuCountryCode = ActiveMarketCountryCode
 
-export const euCountryCodes = new Set<string>(EU_COUNTRIES.map(([code]) => code))
+export const euCountryCodes = activeMarketCountryCodes
 
 export function getEuCountryName(code: string, locale = 'sv') {
   const normalizedCode = code.toUpperCase()
@@ -44,7 +74,7 @@ export function getEuCountryName(code: string, locale = 'sv') {
     )
   } catch {
     return (
-      EU_COUNTRIES.find(([countryCode]) => countryCode === normalizedCode)?.[1] ||
+      ALL_EU_COUNTRIES.find(([countryCode]) => countryCode === normalizedCode)?.[1] ||
       normalizedCode
     )
   }

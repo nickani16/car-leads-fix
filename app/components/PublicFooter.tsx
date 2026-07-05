@@ -16,6 +16,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 
 const footerCopy = {
@@ -699,17 +700,19 @@ export function MarketSelectorModal({
         <section className="mt-8">
           <h3 className="text-base font-extrabold">{copy.allMarkets}</h3>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {allMarkets.map(([code, market, language], index) => (
-              <MarketCard
-                key={`${code}-${market}-${index}`}
-                countryCode={code}
-                market={market}
-                language={language}
-                href={marketHref(code, pathname)}
-                selected={isActiveMarket(code, pathname, locale)}
-                onNavigate={onClose}
-              />
-            ))}
+            {allMarkets
+              .filter(([code]) => activeMarketCountryCodes.has(code))
+              .map(([code, market, language], index) => (
+                <MarketCard
+                  key={`${code}-${market}-${index}`}
+                  countryCode={code}
+                  market={market}
+                  language={language}
+                  href={marketHref(code, pathname)}
+                  selected={isActiveMarket(code, pathname, locale)}
+                  onNavigate={onClose}
+                />
+              ))}
           </div>
         </section>
 
