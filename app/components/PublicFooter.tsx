@@ -287,15 +287,6 @@ const footerCopy = {
   },
 } as const
 
-const popularMarkets = [
-  ['EU', 'Europe', 'English'],
-  ['SE', 'Sverige', 'Svenska', true],
-  ['DK', 'Danmark', 'Dansk'],
-  ['DE', 'Deutschland', 'Deutsch'],
-  ['FR', 'France', 'Français'],
-  ['NL', 'Nederland', 'Nederlands'],
-] as const
-
 const allMarkets = [
   ['AT', 'Austria', 'Deutsch'],
   ['BE', 'Belgique', 'Français'],
@@ -664,11 +655,7 @@ export function MarketSelectorModal({
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-[72px]">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
           <div>
-            <p className="inline-flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#075fff]">
-              <Globe2 className="h-5 w-5" />
-              {copy.marketEyebrow}
-            </p>
-            <h2 className="mt-6 max-w-[560px] text-[40px] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
+            <h2 className="max-w-[560px] text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
               {copy.marketTitle}
             </h2>
             <p className="mt-6 max-w-[430px] text-[16px] leading-8 text-[#344054]">
@@ -680,23 +667,6 @@ export function MarketSelectorModal({
         </div>
 
         <section className="mt-10">
-          <h3 className="text-base font-extrabold">{copy.popularMarkets}</h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-            {popularMarkets.map(([code, market, language]) => (
-              <MarketCard
-                key={code}
-                countryCode={code}
-                market={market}
-                language={language}
-                href={marketHref(code)}
-                selected={isActiveMarket(code, pathname, locale)}
-                onNavigate={handleMarketNavigate}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-8">
           <h3 className="text-base font-extrabold">{copy.allMarkets}</h3>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {allMarkets
@@ -1017,22 +987,22 @@ function WorldMapGraphic() {
   ] as const
 
   return (
-    <div className="relative min-h-[220px] lg:min-h-[330px]">
+    <div className="relative min-h-[230px] rounded-[28px] bg-white/45 lg:min-h-[330px]">
       <svg
         viewBox="0 0 900 360"
         role="img"
         aria-label="Världskarta med europeiska marknader"
-        className="h-full min-h-[220px] w-full lg:min-h-[330px]"
+        className="h-full min-h-[230px] w-full lg:min-h-[330px]"
       >
         <defs>
-          <pattern id="footer-map-dots" width="8" height="8" patternUnits="userSpaceOnUse">
-            <circle cx="1.5" cy="1.5" r="1.45" fill="#9fc7ff" />
+          <pattern id="footer-map-dots" width="7" height="7" patternUnits="userSpaceOnUse">
+            <circle cx="1.6" cy="1.6" r="1.65" fill="#7db3ff" />
           </pattern>
           <filter id="footer-map-marker-shadow" x="-80%" y="-80%" width="260%" height="260%">
-            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#075fff" floodOpacity="0.25" />
+            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#075fff" floodOpacity="0.38" />
           </filter>
         </defs>
-        <g fill="url(#footer-map-dots)" opacity="0.72">
+        <g fill="url(#footer-map-dots)" opacity="0.95">
           <path d="M95 78 128 46l64-16 68 15 37 34-13 45-47 24-28 47 18 45-29 31-48-19-39-56-56-27-23-51 33-40Z" />
           <path d="m257 203 37 23 28 56-19 53-37 4-25-37-19-58 35-41Z" />
           <path d="m441 86 69-31 73 14 41 35-22 41-55 13-54-9-52 23-39-36 39-50Z" />
@@ -1045,7 +1015,7 @@ function WorldMapGraphic() {
             key={`${cx}-${cy}`}
             cx={cx}
             cy={cy}
-            r="6"
+            r="7"
             fill="#075fff"
             filter="url(#footer-map-marker-shadow)"
           />
