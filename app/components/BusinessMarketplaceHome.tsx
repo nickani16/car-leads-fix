@@ -234,7 +234,7 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="-mt-px bg-white pt-0">
+      <section className="-mt-[2px] bg-white pt-0">
         <div className="relative w-full">
           <div className="px-0">
             <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] lg:min-h-[340px] lg:shadow-[0_22px_52px_rgba(16,24,40,.20)]">
@@ -242,7 +242,7 @@ export default async function BusinessMarketplaceHome({
                 src="/autorell-home-hero-happy-woman-car.jpg"
                 alt={t.heroAlt}
                 fill
-                className="object-cover object-[42%_center] sm:scale-[1.03] sm:object-[52%_42%] lg:hidden"
+                className="object-cover object-[42%_38%] brightness-[1.08] sm:scale-[1.03] sm:object-[52%_36%] lg:hidden"
                 sizes="100vw"
               />
               <video
