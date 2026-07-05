@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useMemo, useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
 import {
   BusFront,
   ChevronDown,
@@ -19,6 +19,7 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
+import CountryFlag from './CountryFlag'
 import {
   localizePublicHref,
   translatePublic,
@@ -73,14 +74,32 @@ export default function MarketplaceSearch({
   const [country, setCountry] = useState(() =>
     resolveDefaultCountry(defaultCountry, locale),
   )
+  const [openPicker, setOpenPicker] = useState<'category' | 'country' | null>(null)
+  const pickerRef = useRef<HTMLFormElement>(null)
+  const countryLocale = locale
   const selectedCategory =
     categoryOptions.find((option) => option.value === category) ||
     categoryOptions[0]
+  const selectedCategoryLabel = getCategoryOptionLabel(selectedCategory, locale)
+  const countryOptions = useMemo(
+    () =>
+      euCountries
+        .map(([code]) => code.toUpperCase())
+        .sort((a, b) =>
+          getEuCountryName(a, countryLocale).localeCompare(
+            getEuCountryName(b, countryLocale),
+            countryLocale,
+          ),
+        ),
+    [countryLocale],
+  )
+  const selectedCountryLabel = country
+    ? getEuCountryName(country, countryLocale)
+    : copyAllEurope(locale)
   const searchPlaceholders = useMemo(
     () => getSearchPlaceholders(category, locale),
     [category, locale],
   )
-  const countryLocale = locale
   const copy =
     locale === 'sv'
       ? {
@@ -107,11 +126,23 @@ export default function MarketplaceSearch({
               category: 'Category',
               query: 'Search',
               place: 'Location',
-              allEurope: 'All of Europe',
-            })
+            allEurope: 'All of Europe',
+          })
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!pickerRef.current?.contains(event.target as Node)) {
+        setOpenPicker(null)
+      }
+    }
+
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick)
+  }, [])
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setOpenPicker(null)
     const route = categoryRoutes[category] || '/marketplace/cars'
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
@@ -121,8 +152,9 @@ export default function MarketplaceSearch({
 
   return (
     <form
+      ref={pickerRef}
       onSubmit={submit}
-      className="w-full min-w-0 max-w-full overflow-hidden rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
+      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
       role="search"
     >
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.55fr_1.05fr_1fr_auto] sm:items-center">
@@ -134,32 +166,114 @@ export default function MarketplaceSearch({
           />
         </SearchField>
 
-        <SearchField label={copy.category} icon={selectedCategory.icon}>
-          <select value={category} onChange={(event) => setCategory(event.target.value as MarketplaceCategorySlug)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
-            {categoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {locale === 'sv' || locale === 'de' || locale === 'en'
-                  ? option[locale]
-                  : translatePublic(locale, option.en)}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
+        <SearchField
+          label={copy.category}
+          icon={selectedCategory.icon}
+          active={openPicker === 'category'}
+        >
+          <button
+            type="button"
+            aria-expanded={openPicker === 'category'}
+            onClick={() => setOpenPicker((current) => (current === 'category' ? null : 'category'))}
+            className="marketplace-search-control flex h-7 w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm font-semibold text-[#101828] outline-none"
+          >
+            <span className="truncate">{selectedCategoryLabel}</span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${openPicker === 'category' ? 'rotate-180 text-[#0866ff]' : ''}`} />
+          </button>
+          {openPicker === 'category' ? (
+            <div className="absolute left-0 top-[calc(100%+12px)] z-50 w-[min(92vw,560px)] overflow-hidden rounded-[22px] border border-[#d9e4f2] bg-white p-2 shadow-[0_24px_70px_rgba(15,23,42,.22)] ring-1 ring-white/70">
+              <div className="px-3 pb-2 pt-2">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0866ff]">
+                  {copy.category}
+                </p>
+              </div>
+              <div className="grid max-h-[360px] gap-1 overflow-y-auto pr-1 sm:grid-cols-2">
+                {categoryOptions.map((option) => {
+                  const Icon = option.icon
+                  const label = getCategoryOptionLabel(option, locale)
+                  const selected = option.value === category
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setCategory(option.value)
+                        setOpenPicker(null)
+                      }}
+                      className={`flex min-h-[58px] items-center gap-3 rounded-[16px] px-3 text-left transition hover:bg-[#f5f9ff] ${
+                        selected ? 'bg-[#eef5ff] ring-1 ring-[#bcd5ff]' : 'bg-white'
+                      }`}
+                    >
+                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-[13px] ${
+                        selected ? 'bg-[#0866ff] text-white' : 'bg-[#eef4ff] text-[#0866ff]'
+                      }`}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-extrabold text-[#101828]">
+                          {label}
+                        </span>
+                        <span className="mt-0.5 block text-[12px] font-semibold text-[#667085]">
+                          {getCategoryHint(option.value, locale)}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
         </SearchField>
 
-        <SearchField label={copy.place} icon={MapPin}>
-          <select value={country} onChange={(event) => setCountry(event.target.value)} className="marketplace-search-control h-7 min-w-0 max-w-full w-full appearance-none bg-transparent pr-7 text-sm font-semibold outline-none">
-            <option value="">{copy.allEurope}</option>
-            {euCountries
-              .map(([code]) => code)
-              .sort((a, b) => getEuCountryName(a, countryLocale).localeCompare(getEuCountryName(b, countryLocale), countryLocale))
-              .map((code) => (
-                <option key={code} value={code.toUpperCase()}>
-                  {getEuCountryName(code, countryLocale)}
-                </option>
-              ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute bottom-2 right-4 h-4 w-4 text-[#667085]" />
+        <SearchField
+          label={copy.place}
+          icon={MapPin}
+          active={openPicker === 'country'}
+        >
+          <button
+            type="button"
+            aria-expanded={openPicker === 'country'}
+            onClick={() => setOpenPicker((current) => (current === 'country' ? null : 'country'))}
+            className="marketplace-search-control flex h-7 w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm font-semibold text-[#101828] outline-none"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <CountryFlag code={country || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
+              <span className="truncate">{selectedCountryLabel}</span>
+            </span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${openPicker === 'country' ? 'rotate-180 text-[#0866ff]' : ''}`} />
+          </button>
+          {openPicker === 'country' ? (
+            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,500px)] overflow-hidden rounded-[22px] border border-[#d9e4f2] bg-white p-2 shadow-[0_24px_70px_rgba(15,23,42,.22)] ring-1 ring-white/70">
+              <div className="px-3 pb-2 pt-2">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0866ff]">
+                  {copy.place}
+                </p>
+              </div>
+              <div className="grid max-h-[360px] gap-1 overflow-y-auto pr-1 sm:grid-cols-2">
+                <CountryOptionButton
+                  code=""
+                  label={copy.allEurope}
+                  selected={!country}
+                  onSelect={() => {
+                    setCountry('')
+                    setOpenPicker(null)
+                  }}
+                />
+                {countryOptions.map((code) => (
+                  <CountryOptionButton
+                    key={code}
+                    code={code}
+                    label={getEuCountryName(code, countryLocale)}
+                    selected={country === code}
+                    onSelect={() => {
+                      setCountry(code)
+                      setOpenPicker(null)
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </SearchField>
 
         <button type="submit" className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
@@ -283,6 +397,96 @@ function getSearchCta(category: MarketplaceCategorySlug, locale: PublicLocale) {
   return en[category]
 }
 
+function getCategoryOptionLabel(
+  option: (typeof categoryOptions)[number],
+  locale: PublicLocale,
+) {
+  if (locale === 'sv' || locale === 'de' || locale === 'en') {
+    return option[locale]
+  }
+  return translatePublic(locale, option.en)
+}
+
+function copyAllEurope(locale: PublicLocale) {
+  if (locale === 'sv') return 'Hela Europa'
+  if (locale === 'de') return 'Ganz Europa'
+  if (locale === 'en') return 'All of Europe'
+  return translatePublic(locale, 'All of Europe')
+}
+
+function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale) {
+  const sv: Record<MarketplaceCategorySlug, string> = {
+    cars: 'Personbilar och elbilar',
+    vans: 'Skåp, pickup och transport',
+    motorcycles: 'MC och touring',
+    motorhomes: 'Resefordon och camper',
+    caravans: 'Husvagnar för semester',
+    trucks: 'Tunga fordon',
+    agriculture: 'Traktorer och redskap',
+    construction: 'Maskiner och entreprenad',
+    'electric-bikes': 'Elcyklar och cyklar',
+    'e-scooters': 'Elsparkcyklar',
+  }
+  const en: Record<MarketplaceCategorySlug, string> = {
+    cars: 'Passenger cars and EVs',
+    vans: 'Vans, pickups and transport',
+    motorcycles: 'Motorcycles and touring',
+    motorhomes: 'Travel vehicles and campers',
+    caravans: 'Caravans for holidays',
+    trucks: 'Heavy vehicles',
+    agriculture: 'Tractors and equipment',
+    construction: 'Machines and construction',
+    'electric-bikes': 'E-bikes and bicycles',
+    'e-scooters': 'Electric scooters',
+  }
+  const de: Record<MarketplaceCategorySlug, string> = {
+    cars: 'Pkw und Elektroautos',
+    vans: 'Transporter und Pickups',
+    motorcycles: 'Motorräder und Touring',
+    motorhomes: 'Reisefahrzeuge und Camper',
+    caravans: 'Wohnwagen für Reisen',
+    trucks: 'Schwere Fahrzeuge',
+    agriculture: 'Traktoren und Geräte',
+    construction: 'Maschinen und Bau',
+    'electric-bikes': 'E-Bikes und Fahrräder',
+    'e-scooters': 'E-Scooter',
+  }
+
+  if (locale === 'sv') return sv[category]
+  if (locale === 'de') return de[category]
+  return en[category]
+}
+
+function CountryOptionButton({
+  code,
+  label,
+  selected,
+  onSelect,
+}: {
+  code: string
+  label: string
+  selected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`flex min-h-[48px] items-center gap-3 rounded-[15px] px-3 text-left transition hover:bg-[#f5f9ff] ${
+        selected ? 'bg-[#eef5ff] ring-1 ring-[#bcd5ff]' : 'bg-white'
+      }`}
+    >
+      <CountryFlag code={code || 'eu'} className="h-6 w-8 shrink-0 rounded-[6px]" />
+      <span className="min-w-0 flex-1 truncate text-sm font-extrabold text-[#101828]">
+        {label}
+      </span>
+      {selected ? (
+        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#0866ff]" />
+      ) : null}
+    </button>
+  )
+}
+
 function getSearchPlaceholders(
   category: MarketplaceCategorySlug,
   locale: PublicLocale,
@@ -346,14 +550,16 @@ function SearchField({
   icon: Icon,
   children,
   className = '',
+  active = false,
 }: {
   label: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
   children: ReactNode
   className?: string
+  active?: boolean
 }) {
   return (
-    <label className={`relative flex min-w-0 items-center gap-3 overflow-hidden rounded-[15px] border border-[#e6e9ee] bg-white px-4 py-2 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:focus-within:ring-0 ${className}`}>
+    <div className={`relative flex min-w-0 items-center gap-3 overflow-visible rounded-[15px] border border-[#e6e9ee] bg-white px-4 py-2 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:focus-within:ring-0 ${active ? 'z-40' : 'z-0'} ${className}`}>
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-[#eaf1ff] text-[#0866ff]">
         <Icon className="h-[18px] w-[18px]" />
       </span>
@@ -361,6 +567,6 @@ function SearchField({
         <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#98a2b3]">{label}</span>
         {children}
       </span>
-    </label>
+    </div>
   )
 }
