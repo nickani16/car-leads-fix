@@ -26,7 +26,7 @@ export default function BrandLogo({
             ? 'w-[92px]'
             : compact
               ? 'w-[88px]'
-              : 'w-[108px] sm:w-[112px] lg:w-[126px]'
+              : 'w-[108px] sm:w-[112px] lg:w-[122px]'
         } ${inverted ? 'brightness-0 invert' : ''}`}
       />
       {underline ? (

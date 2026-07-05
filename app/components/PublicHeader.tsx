@@ -729,7 +729,7 @@ export default function PublicHeader({
   const isHomePage = unprefixedPathname === '/'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
-  const showTopCategoryNav = true
+  const showTopCategoryNav = false
   const renderTopCategoryNav = showTopCategoryNav && atPageTop
   const showMobileCategoryNav =
     Boolean(categoryPrimaryLinks) && !isMarketplaceResults && !isListingDetail
@@ -1078,6 +1078,16 @@ export default function PublicHeader({
                   </div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setMarketSelectorOpen(true)}
+                className="flex min-w-[98px] items-center justify-center gap-1.5 px-2 text-[11px] font-semibold transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                aria-label={t.chooseLanguage}
+              >
+                <FlagIcon code={activeMarket[1]} size="xs" />
+                <span>{activeMarket[2]}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
