@@ -1,18 +1,16 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   Check,
   ChevronDown,
   Globe2,
   X,
 } from 'lucide-react'
-import BrandLogo from './BrandLogo'
 import {
   localizePublicHref,
-  stripLocalePrefix,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
@@ -638,6 +636,7 @@ export function MarketSelectorModal({
   locale?: PublicLocale
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   if (!isOpen) return null
   const copy =
     locale === 'sv'
@@ -646,23 +645,23 @@ export function MarketSelectorModal({
         ? footerCopy.de
         : translatePublicObject(locale, footerCopy.en)
 
+  function handleMarketNavigate(href: string) {
+    onClose()
+    router.push(href)
+  }
+
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#f8fbff] text-[#101828]">
-      <div className="sticky top-0 z-10 border-b border-[#dfe5ee] bg-white/95 py-4 backdrop-blur">
-        <div className="mx-auto flex max-w-[var(--autorell-page-max)] items-center justify-between px-5 sm:px-8">
-          <BrandLogo />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={copy.close}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_10px_28px_rgba(16,24,40,0.12)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2"
-          >
-            <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={copy.close}
+        className="fixed right-4 top-4 z-20 inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6 sm:top-6"
+      >
+        <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
+      </button>
 
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 lg:py-14">
+      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-[72px]">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
           <div>
             <p className="inline-flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#075fff]">
@@ -689,9 +688,9 @@ export function MarketSelectorModal({
                 countryCode={code}
                 market={market}
                 language={language}
-                href={marketHref(code, pathname)}
+                href={marketHref(code)}
                 selected={isActiveMarket(code, pathname, locale)}
-                onNavigate={onClose}
+                onNavigate={handleMarketNavigate}
               />
             ))}
           </div>
@@ -708,9 +707,9 @@ export function MarketSelectorModal({
                   countryCode={code}
                   market={market}
                   language={language}
-                  href={marketHref(code, pathname)}
+                  href={marketHref(code)}
                   selected={isActiveMarket(code, pathname, locale)}
-                  onNavigate={onClose}
+                  onNavigate={handleMarketNavigate}
                 />
               ))}
           </div>
@@ -746,13 +745,19 @@ function MarketCard({
   market: string
   language: string
   href: string
-  onNavigate?: () => void
+  onNavigate?: (href: string) => void
   selected?: boolean
 }) {
+  function handleClick(event: ReactMouseEvent<HTMLAnchorElement>) {
+    if (!onNavigate) return
+    event.preventDefault()
+    onNavigate(href)
+  }
+
   return (
     <Link
       href={href}
-      onClick={onNavigate}
+      onClick={handleClick}
       className={`flex min-h-[78px] items-center gap-4 rounded-[14px] border bg-white px-5 text-left shadow-[0_12px_34px_rgba(16,24,40,0.045)] transition hover:-translate-y-0.5 hover:border-[#075fff] ${
         selected ? 'border-[#075fff] ring-2 ring-[#075fff]/10' : 'border-[#dfe5ee]'
       }`}
@@ -777,16 +782,10 @@ function MarketCard({
   )
 }
 
-function marketHref(countryCode: string, pathname: string) {
-  const current = stripLocalePrefix(pathname || '/')
-  if (countryCode === 'EU') return current === '/' ? '/' : current
-  const targetPrefix =
-    countryCode === 'SE'
-      ? '/se'
-      : countryCode === 'DE'
-        ? '/de'
-        : `/${countryCode.toLowerCase()}`
-  return current === '/' ? targetPrefix : `${targetPrefix}${current}`
+function marketHref(countryCode: string) {
+  const normalizedCode = countryCode.toUpperCase()
+  if (normalizedCode === 'EU') return '/'
+  return `/${normalizedCode.toLowerCase()}`
 }
 
 function isActiveMarket(
