@@ -108,8 +108,9 @@ export default function ListingLocationMap({
         </div>
       </div>
       <div className="relative h-[320px] w-full overflow-hidden bg-[#eef3f8] sm:h-[380px]">
+        <div ref={containerRef} className="absolute inset-0 z-0" />
         {fallbackTiles.length ? (
-          <div aria-hidden="true" className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-95">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 grid grid-cols-3 grid-rows-3 opacity-100">
             {fallbackTiles.map((tile) => (
               <span
                 key={tile}
@@ -119,7 +120,9 @@ export default function ListingLocationMap({
             ))}
           </div>
         ) : null}
-        <div ref={containerRef} className="absolute inset-0" />
+        <span className="pointer-events-none absolute left-1/2 top-1/2 z-20 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#0866ff] shadow-[0_8px_22px_rgba(16,24,40,.26)]">
+          <MapPin className="h-7 w-7 fill-[#0866ff]/15" />
+        </span>
       </div>
     </div>
   )
