@@ -9,7 +9,7 @@ import {
   MapPin,
   Search,
 } from 'lucide-react'
-import MarketplaceSearch from './MarketplaceSearch'
+import HomeHeroSearch from './HomeHeroSearch'
 import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -62,9 +62,6 @@ type CategoryCard = {
   href: string
   count: number
 }
-
-const homeContainerClass =
-  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]'
@@ -240,48 +237,54 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="-mt-[2px] bg-white pt-0">
-        <div className="relative w-full">
-          <div className="px-0">
-            <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] lg:min-h-[340px] lg:shadow-[0_22px_52px_rgba(16,24,40,.20)]">
-              <Image
-                src="/autorell-home-hero-happy-woman-car.jpg"
-                alt={t.heroAlt}
-                fill
-                className="object-cover object-[42%_38%] brightness-[1.08] sm:scale-[1.03] sm:object-[52%_36%] lg:hidden"
-                sizes="100vw"
-              />
-              <video
-                aria-hidden="true"
-                autoPlay
-                className="absolute inset-0 hidden h-full w-full translate-x-[2.5%] translate-y-[5%] scale-[1.08] object-cover object-center lg:block"
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              >
-                <source src="/autorell-home-hero-desktop-video.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.02)_0%,rgba(3,10,26,0)_42%)]" />
+      <section className="relative isolate overflow-hidden bg-[#101828]">
+        <Image
+          src="/category-cars-hero-family.webp"
+          alt={t.heroAlt}
+          fill
+          priority
+          className="object-cover object-[42%_50%] sm:object-[44%_50%] lg:object-center"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,.72)_0%,rgba(6,16,36,.46)_42%,rgba(6,16,36,.22)_70%,rgba(6,16,36,.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,16,36,.42)_0%,rgba(6,16,36,.12)_38%,rgba(6,16,36,.08)_100%)]" />
 
-              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1888px] lg:px-6 lg:py-8 2xl:px-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
-                  {t.heroEyebrow}
-                </p>
-                <h1 className="mt-5 max-w-[330px] text-[28px] leading-[.99] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[40px] sm:tracking-[-0.045em] lg:max-w-[820px] lg:text-[49px]">
-                  {t.heroTitle}
-                </h1>
-                <p className="mt-4 max-w-[700px] text-[16px] font-normal leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[18px] lg:text-[19px]">
-                  {t.heroTypingPrefix}
-                </p>
-              </div>
-            </div>
+        <div className="relative grid min-h-[calc(100svh-86px)] w-full max-w-[390px] min-w-0 items-center gap-6 px-4 py-7 min-[430px]:max-w-[430px] sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-12 lg:min-h-[650px] lg:max-w-[1888px] lg:grid-cols-[minmax(0,660px)_minmax(360px,520px)] lg:gap-12 lg:px-6 xl:gap-16 2xl:px-8">
+          <div className="order-1 min-w-0">
+            <HomeHeroSearch locale={locale} defaultCountry={localMarketCode} />
           </div>
 
-          <div className={`relative z-10 -mt-[34px] sm:-mt-[43px] ${homeContainerClass}`}>
-            <div className="sm:px-16 lg:px-28 xl:px-32">
-              <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
+          <div className="order-2 hidden w-full min-w-0 max-w-[590px] overflow-hidden rounded-[12px] bg-white/94 p-7 shadow-[0_28px_80px_rgba(15,23,42,.24)] backdrop-blur-md lg:block lg:justify-self-end">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
+              {t.heroEyebrow}
+            </p>
+            <h1 className="mt-3 break-words text-[29px] leading-[1.04] tracking-[-0.045em] text-[#101828] sm:text-[43px] lg:text-[50px]">
+              {locale === 'de'
+                ? 'Europas groesste Auswahl fuer Kauf, Leasing und Miete.'
+                : locale === 'en'
+                  ? 'Europe’s largest selection for buying, leasing and renting vehicles.'
+                  : 'Europas största utbud av fordon till salu, leasing och uthyrning.'}
+            </h1>
+            <p className="mt-4 text-[15px] leading-7 text-[#475467] sm:text-base">
+              {locale === 'de'
+                ? 'Suchen Sie Autos, Transporter, Lkw, Wohnmobile und Maschinen von Unternehmen und privaten Verkaeufern in ganz Europa.'
+                : locale === 'en'
+                  ? 'Search cars, vans, trucks, motorhomes and machinery from dealers and private sellers across Europe.'
+                  : 'Sök bilar, transportbilar, lastbilar, husbilar och maskiner från företag och privatpersoner i hela Europa.'}
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-2 text-center min-[360px]:grid-cols-3">
+              {[
+                locale === 'sv' ? 'EU-marknad' : locale === 'de' ? 'EU-Markt' : 'EU market',
+                locale === 'sv' ? 'Alla fordon' : locale === 'de' ? 'Alle Fahrzeuge' : 'All vehicles',
+                locale === 'sv' ? 'Trygg kontakt' : locale === 'de' ? 'Sicherer Kontakt' : 'Trusted contact',
+              ].map((item) => (
+                <span
+                  key={item}
+                  className="min-w-0 rounded-[8px] border border-[#dbe5f2] bg-[#f8fbff] px-2 py-3 text-[11px] font-semibold text-[#344054] sm:text-xs"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
         </div>
