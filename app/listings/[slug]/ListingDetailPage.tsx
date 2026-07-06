@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
+import ListingBackLink from '@/app/components/ListingBackLink'
 import ListingReportButton from '@/app/components/ListingReportButton'
 import ListingLocationMap from '@/app/components/ListingLocationMap'
 import MessageSellerButton from '@/app/components/MessageSellerButton'
@@ -327,22 +328,10 @@ export default async function ListingDetailPage({
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
-        <nav aria-label={copy.breadcrumbLabel} className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#667085]">
-          <Link href={localizePublicHref(locale, '/')} className="transition hover:text-[#0866ff]">
-            {copy.home}
-          </Link>
-          <span className="text-[#98a2b3]">/</span>
-          <Link
-            href={localizePublicHref(locale, `/marketplace/${listing.category}`)}
-            className="transition hover:text-[#0866ff]"
-          >
-            {categoryLabel}
-          </Link>
-          <span className="text-[#98a2b3]">/</span>
-          <span className="text-[#101828]" aria-current="page">
-            {listing.title}
-          </span>
-        </nav>
+        <ListingBackLink
+          fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
+          label={copy.backToListings}
+        />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
           <div className="min-w-0 space-y-6">
@@ -351,15 +340,15 @@ export default async function ListingDetailPage({
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
               <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
-                  <h1 className="max-w-4xl text-3xl font-black leading-tight tracking-[-0.055em] sm:text-5xl">
+                  <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
                     {listing.title}
                   </h1>
                   {headlineSubtitle ? (
-                    <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-[#475467] sm:text-lg">
+                    <p className="mt-3 max-w-3xl text-base font-medium leading-7 text-[#475467] sm:text-lg">
                       {headlineSubtitle}
                     </p>
                   ) : null}
-                  <p className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-[#667085]">
+                  <p className="mt-4 flex flex-wrap items-center gap-3 text-sm font-medium text-[#667085]">
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="h-4 w-4 text-[#0866ff]" />
                       {location}
@@ -387,8 +376,8 @@ export default async function ListingDetailPage({
                       <div key={fact.label} className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-[#edf1f6] bg-[#f8fbff] px-3 py-3 sm:gap-3 sm:px-4">
                         <Icon className="h-5 w-5 shrink-0 text-[#202124]" />
                         <div className="min-w-0">
-                          <p className="break-words text-xs font-semibold leading-4 text-[#667085]">{fact.label}</p>
-                          <p title={String(fact.value)} className="mt-0.5 break-words text-sm font-black leading-5 text-[#101828]">{fact.value}</p>
+                          <p className="break-words text-xs font-medium leading-4 text-[#667085]">{fact.label}</p>
+                          <p title={String(fact.value)} className="mt-0.5 break-words text-sm font-semibold leading-5 text-[#101828]">{fact.value}</p>
                         </div>
                       </div>
                     )
@@ -398,16 +387,16 @@ export default async function ListingDetailPage({
             </section>
 
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-              <h2 className="text-2xl font-black tracking-[-0.04em]">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em]">
                 {localizedLabel(locale, 'Specifikationer', 'Specifications', 'Spezifikationen')}
               </h2>
               <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                 {specs.map((spec) => (
                   <div key={spec.label} className="rounded-[10px] border border-[#e4eaf3] bg-[#f8fbff] px-3.5 py-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#667085]">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.13em] text-[#667085]">
                       {spec.label}
                     </p>
-                    <p className="mt-1.5 break-words text-[14px] font-bold leading-5 text-[#101828]">
+                    <p className="mt-1.5 break-words text-[14px] font-semibold leading-5 text-[#101828]">
                       {spec.value}
                     </p>
                   </div>
@@ -425,10 +414,10 @@ export default async function ListingDetailPage({
 
             {listing.description ? (
               <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-                <h2 className="text-2xl font-black tracking-[-0.04em]">
+                <h2 className="text-2xl font-semibold tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
-                <p className="mt-2 text-sm font-semibold text-[#667085]">{copy.originalLanguage}</p>
+                <p className="mt-2 text-sm font-medium text-[#667085]">{copy.originalLanguage}</p>
                 <p className="mt-4 whitespace-pre-line text-base leading-8 text-[#475467]">
                   {listing.description}
                 </p>
@@ -449,27 +438,27 @@ export default async function ListingDetailPage({
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_22px_60px_rgba(16,24,40,.12)]">
               <div className="border-b border-[#edf1f6] p-6">
-                <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#667085]">
+                <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#667085]">
                   {localizedLabel(locale, 'Pris', 'Price', 'Preis')}
                 </p>
                 {originalPriceDisplay ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="text-lg font-bold text-[#98a2b3] line-through">
+                    <span className="text-lg font-semibold text-[#98a2b3] line-through">
                       {originalPriceDisplay.original}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-xs font-black text-[#027a48]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-xs font-semibold text-[#027a48]">
                       <TrendingDown className="h-3.5 w-3.5" />
                       {localizedLabel(locale, 'Sänkt', 'Reduced', 'Reduziert')} {priceDropPercent}%
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-2 text-4xl font-bold tracking-[-0.045em]">
+                <div className="mt-2 text-4xl font-semibold tracking-[-0.035em]">
                   {price.original}
                 </div>
                 {price.approximate ? (
-                  <p className="mt-2 text-sm font-semibold text-[#667085]">{price.approximate}</p>
+                  <p className="mt-2 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
-                <p className="mt-3 rounded-[12px] bg-[#f3f7ff] px-3 py-2 text-xs font-semibold leading-5 text-[#475467]">
+                <p className="mt-3 rounded-[12px] bg-[#f3f7ff] px-3 py-2 text-xs font-medium leading-5 text-[#475467]">
                   {localizedLabel(locale, 'Moms visas enligt säljarens uppgifter och landets regler.', "VAT is shown according to the seller's information and local rules.", 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.')}
                 </p>
               </div>
@@ -478,7 +467,7 @@ export default async function ListingDetailPage({
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
-                    className="inline-flex min-h-12 items-center justify-center rounded-[14px] border border-[#c9d7ec] bg-white px-4 text-sm font-black text-[#0866ff] transition hover:bg-[#f5f9ff]"
+                    className="inline-flex min-h-12 items-center justify-center rounded-[14px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
                   >
                     {localizedLabel(locale, 'Redigera annons', 'Edit listing', 'Anzeige bearbeiten')}
                   </Link>
@@ -510,15 +499,15 @@ export default async function ListingDetailPage({
                     </span>
                   )}
                   <div>
-                    <p className={`text-lg font-black tracking-[-0.03em] ${hidePrivateSellerIdentity ? 'select-none blur-[4px]' : ''}`}>
+                    <p className={`text-lg font-semibold tracking-[-0.02em] ${hidePrivateSellerIdentity ? 'select-none blur-[4px]' : ''}`}>
                       {sellerDisplayLabel}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-[#667085]">{sellerTypeLabel}</p>
-                    <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-black ${sellerBadgeClass(sellerVerification.tone)}`}>
+                    <p className="mt-1 text-sm font-medium text-[#667085]">{sellerTypeLabel}</p>
+                    <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
                       {sellerVerification.label}
                     </span>
                     {listing.seller_type === 'business' ? (
-                      <div className="mt-4 grid gap-3 text-sm font-semibold text-[#475467]">
+                      <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
                         {sellerDetails.address ? (
                           <p className="inline-flex min-w-0 items-start gap-2">
                             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0866ff]" />
@@ -530,7 +519,7 @@ export default async function ListingDetailPage({
                             href={sellerDetails.websiteUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-black text-[#0866ff] transition hover:bg-[#f5f9ff]"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
                           >
                             {localizedLabel(locale, 'Till handlarens webbsida', 'Dealer website', 'Zur Händlerwebsite')}
                             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
@@ -539,7 +528,7 @@ export default async function ListingDetailPage({
                       </div>
                     ) : null}
                     {hidePrivateSellerIdentity ? (
-                      <p className="mt-2 text-xs font-bold text-[#0866ff]">
+                      <p className="mt-2 text-xs font-semibold text-[#0866ff]">
                         {localizedLabel(locale, 'Logga in för att visa säljaruppgifter.', 'Log in to view seller details.', 'Anmelden, um Verkäuferdetails zu sehen.')}
                       </p>
                     ) : null}
@@ -561,10 +550,10 @@ export default async function ListingDetailPage({
         <section className="mt-6 rounded-[16px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:p-5">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#0866ff]">
                 {copy.noticeEyebrow}
               </p>
-              <h2 className="mt-1.5 text-xl font-black tracking-[-0.03em] sm:text-2xl">
+              <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] sm:text-2xl">
                 {copy.noticeTitle}
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-5 text-[#667085]">
@@ -589,7 +578,7 @@ export default async function ListingDetailPage({
           </dl>
 
           {listing.edited_at ? (
-            <div className="mt-3 rounded-[12px] border border-[#d8e6ff] bg-[#f3f7ff] px-4 py-3 text-sm font-bold text-[#475467]">
+            <div className="mt-3 rounded-[12px] border border-[#d8e6ff] bg-[#f3f7ff] px-4 py-3 text-sm font-medium text-[#475467]">
               {localizedLabel(locale, 'Annonsen har redigerats av säljaren.', 'The listing has been edited by the seller.', 'Die Anzeige wurde vom Verkäufer bearbeitet.')}
             </div>
           ) : null}
@@ -795,10 +784,10 @@ function buildSpecs(
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[12px] border border-[#edf1f6] bg-white px-4 py-3">
-      <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#667085]">
+      <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-[#667085]">
         {label}
       </dt>
-      <dd className="mt-1.5 break-words text-[15px] font-black text-[#101828]">{value}</dd>
+      <dd className="mt-1.5 break-words text-[15px] font-semibold text-[#101828]">{value}</dd>
     </div>
   )
 }
@@ -906,6 +895,7 @@ const listingDetailCopy = {
     country: 'Land',
     shareListing: 'Dela annons',
     breadcrumbLabel: 'Brödsmulor',
+    backToListings: 'Tillbaka till annonser',
     home: 'Hem',
     euDisclaimer:
       'Annonsen kan vara ofullständig eller inaktuell. Säljaren ansvarar för att lämna korrekta och fullständiga uppgifter enligt tillämplig upplysningsplikt i EU och nationell lag. Autorell kontrollerar inte varje uppgift och ansvarar inte för informationen i annonsen.',
@@ -923,6 +913,7 @@ const listingDetailCopy = {
     country: 'Country',
     shareListing: 'Share listing',
     breadcrumbLabel: 'Breadcrumb',
+    backToListings: 'Back to listings',
     home: 'Home',
     euDisclaimer:
       'The listing may be incomplete or out of date. The seller is responsible for providing correct and complete information under applicable EU and national disclosure obligations. Autorell does not verify every statement and is not responsible for the accuracy of the information in the listing.',
@@ -940,6 +931,7 @@ const listingDetailCopy = {
     country: 'Land',
     shareListing: 'Anzeige teilen',
     breadcrumbLabel: 'Breadcrumb',
+    backToListings: 'Zurück zu den Anzeigen',
     home: 'Startseite',
     euDisclaimer:
       'Die Anzeige kann unvollständig oder veraltet sein. Der Verkäufer ist dafür verantwortlich, korrekte und vollständige Informationen gemäß der geltenden EU- und nationalen Aufklärungspflichten bereitzustellen. Autorell prüft nicht alle Angaben und übernimmt keine Verantwortung für die Richtigkeit der Informationen in der Anzeige.',
