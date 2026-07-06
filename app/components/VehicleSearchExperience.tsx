@@ -83,13 +83,34 @@ const categories = [
 ]
 
 const countryCenters: Record<string, [number, number]> = {
+  AT: [14.55, 47.52],
+  BE: [4.47, 50.5],
   SE: [14.5, 57.8],
   FR: [2.21, 46.23],
   DE: [10.45, 51.16],
   DK: [10.0, 56.0],
+  FI: [25.75, 61.92],
+  IT: [12.57, 41.87],
   NL: [5.29, 52.13],
+  PL: [19.14, 51.92],
+  ES: [-3.75, 40.46],
   EU: [14.5, 52.0],
 }
+
+const marketOptions = [
+  { value: '', label: 'Alla marknader' },
+  { value: 'AT', label: 'Austria' },
+  { value: 'BE', label: 'Belgique / Belgie' },
+  { value: 'DK', label: 'Danmark' },
+  { value: 'FI', label: 'Suomi' },
+  { value: 'FR', label: 'France' },
+  { value: 'DE', label: 'Deutschland' },
+  { value: 'IT', label: 'Italia' },
+  { value: 'NL', label: 'Nederland' },
+  { value: 'PL', label: 'Polska' },
+  { value: 'ES', label: 'España' },
+  { value: 'SE', label: 'Sverige' },
+]
 
 export default function VehicleSearchExperience({
   listings,
@@ -112,6 +133,8 @@ export default function VehicleSearchExperience({
   const [minYear, setMinYear] = useState('')
   const [maxYear, setMaxYear] = useState('')
   const [maxMileage, setMaxMileage] = useState('')
+  const [make, setMake] = useState('')
+  const [model, setModel] = useState('')
   const [fuel, setFuel] = useState('')
   const [gearbox, setGearbox] = useState('')
   const [bodyType, setBodyType] = useState('')
@@ -119,17 +142,43 @@ export default function VehicleSearchExperience({
   const [equipmentQuery, setEquipmentQuery] = useState('')
   const [compareIds, setCompareIds] = useState<string[]>([])
 
+  const optionListings = useMemo(
+    () => listings.filter((listing) => (category === 'all' || listing.category === category) && (!country || listing.country === country)),
+    [category, country, listings],
+  )
   const fuels = useMemo(
-    () => [...new Set(listings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
-    [listings],
+    () => [...new Set(optionListings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
+  )
+  const makes = useMemo(
+    () =>
+      [
+        ...new Set(
+          optionListings.map((listing) => listing.make)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
+  )
+  const models = useMemo(
+    () =>
+      [
+        ...new Set(
+          optionListings
+            .filter((listing) => !make || listing.make === make)
+            .map((listing) => listing.model)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [make, optionListings],
   )
   const gearboxes = useMemo(
-    () => [...new Set(listings.map((listing) => listing.gearbox).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
-    [listings],
+    () => [...new Set(optionListings.map((listing) => listing.gearbox).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
   )
   const bodyTypes = useMemo(
-    () => [...new Set(listings.map((listing) => listing.bodyType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
-    [listings],
+    () => [...new Set(optionListings.map((listing) => listing.bodyType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
   )
   const priceBounds = useMemo(() => {
     const prices = listings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
@@ -153,6 +202,8 @@ export default function VehicleSearchExperience({
     const matches = listings.filter((listing) => {
       if (category !== 'all' && listing.category !== category) return false
       if (country && listing.country !== country) return false
+      if (make && listing.make !== make) return false
+      if (model && listing.model !== model) return false
       if (fuel && listing.fuelType !== fuel) return false
       if (gearbox && listing.gearbox !== gearbox) return false
       if (bodyType && listing.bodyType !== bodyType) return false
@@ -184,7 +235,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       return 0
     })
-  }, [bodyType, category, country, equipmentQuery, fuel, gearbox, listings, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, query, sellerType, sortBy])
+  }, [bodyType, category, country, equipmentQuery, fuel, gearbox, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, sellerType, sortBy])
 
   const resetFilters = () => {
     setQuery('')
@@ -194,6 +245,8 @@ export default function VehicleSearchExperience({
     setMinYear('')
     setMaxYear('')
     setMaxMileage('')
+    setMake('')
+    setModel('')
     setFuel('')
     setGearbox('')
     setBodyType('')
@@ -212,11 +265,11 @@ export default function VehicleSearchExperience({
 
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
   const visibleCount = filteredListings.length
-  const countryName = getEuCountryName(country || 'SE', locale)
+  const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
 
   return (
-    <main className="min-h-screen bg-white text-[#101828]">
-      <div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
+    <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
+      <div className="flex min-h-screen min-w-0 flex-col lg:h-screen lg:overflow-hidden">
         <header className="flex min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -246,8 +299,8 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 flex-1 lg:grid-cols-[minmax(640px,clamp(680px,42vw,820px))_minmax(520px,1fr)]">
-          <div className="min-h-0 overflow-y-auto border-r border-[#eceff4] bg-white">
+        <section className="grid min-h-0 min-w-0 flex-1 lg:grid-cols-[minmax(640px,clamp(680px,42vw,820px))_minmax(520px,1fr)]">
+          <div className="min-h-0 min-w-0 overflow-y-auto border-r border-[#eceff4] bg-white">
             <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6">
               <div className="flex overflow-x-auto border-b border-[#dfe4ec] sm:grid sm:grid-cols-3 sm:overflow-visible">
                 {tabs.map((tab) => (
@@ -281,10 +334,12 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
-                    className="inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] border border-[#d0d5dd] bg-white px-5 text-[15px] font-medium shadow-sm transition hover:border-[#0866ff]"
+                    className={`inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] border px-5 text-[15px] font-medium shadow-sm transition ${
+                      filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
+                    }`}
                   >
                     <Filter className="h-5 w-5" />
-                    Sökfilter
+                    {filtersOpen ? 'Filter öppna' : 'Sökfilter'}
                   </button>
                   <button
                     type="button"
@@ -300,7 +355,11 @@ export default function VehicleSearchExperience({
                     <span className="sr-only">Kategori</span>
                     <select
                       value={category}
-                      onChange={(event) => setCategory(event.target.value)}
+                      onChange={(event) => {
+                        setCategory(event.target.value)
+                        setMake('')
+                        setModel('')
+                      }}
                       className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
                       {categories.map((option) => (
@@ -313,20 +372,45 @@ export default function VehicleSearchExperience({
                     <span className="sr-only">Land</span>
                     <select
                       value={country}
-                      onChange={(event) => setCountry(event.target.value)}
+                      onChange={(event) => {
+                        setCountry(event.target.value)
+                        setMake('')
+                        setModel('')
+                      }}
                       className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
-                      <option value="SE">Sverige</option>
-                      <option value="FR">Frankrike</option>
-                      <option value="DE">Tyskland</option>
-                      <option value="DK">Danmark</option>
-                      <option value="NL">Nederländerna</option>
+                      {marketOptions.map((option) => (
+                        <option key={option.value || 'all'} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" />
                   </label>
                 </div>
                 {filtersOpen ? (
-                  <div className="mt-3 grid gap-4 rounded-[6px] border border-[#d9e1ec] bg-white p-4 shadow-sm">
+                  <div className="mt-4 grid gap-4 rounded-[6px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
+                    <div className="flex items-center justify-between border-b border-[#e1e9f5] pb-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#101828]">Sökfilter</p>
+                        <p className="mt-0.5 text-xs font-medium text-[#667085]">Avgränsa på fordon, marknad och utrustning.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFiltersOpen(false)}
+                        className="grid h-9 w-9 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                        aria-label="Stäng filter"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <FilterSelect label="Märke" value={make} onChange={(value) => {
+                        setMake(value)
+                        setModel('')
+                      }} options={makes} />
+                      <FilterSelect label="Modell" value={model} onChange={setModel} options={models} />
+                    </div>
                     <RangeFilter
                       title="Pris"
                       minValue={minPrice}
@@ -654,16 +738,17 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="mx-3 overflow-hidden border-b border-[#e5ebf3] bg-white py-5 sm:mx-6">
-      <div className="grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
-        <Link href={href} className="group relative h-[246px] overflow-hidden rounded-[6px] bg-[#eef3f8] sm:h-[174px]">
+    <article className="group relative mx-3 overflow-hidden border-b border-[#e5ebf3] bg-white py-5 transition hover:bg-[#fbfdff] sm:mx-6">
+      <Link href={href} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
+      <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
+        <div className="relative h-[246px] overflow-hidden rounded-[6px] bg-[#eef3f8] sm:h-[174px]">
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
               sizes="(max-width: 640px) 100vw, 260px"
-              className="object-contain transition duration-500 group-hover:scale-[1.02]"
+              className="object-cover transition duration-500 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -675,7 +760,15 @@ function VehicleResultCard({
               Verifierad
             </span>
           ) : null}
-          <button type="button" aria-label="Spara annons" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md transition hover:text-[#0866ff]">
+          <button
+            type="button"
+            aria-label="Spara annons"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+            }}
+            className="pointer-events-auto absolute right-3 top-3 z-30 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md transition hover:text-[#0866ff]"
+          >
             <Heart className="h-5 w-5" />
           </button>
           <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full max-[420px]:h-6 max-[420px]:w-6" />
@@ -687,20 +780,20 @@ function VehicleResultCard({
               event.stopPropagation()
               onCompare()
             }}
-            className={`absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition max-[420px]:h-8 max-[420px]:px-2 ${
+            className={`pointer-events-auto absolute bottom-3 right-3 z-30 hidden h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition sm:inline-flex ${
               compareActive ? 'bg-[#0866ff] text-white' : 'bg-white text-[#101828] hover:text-[#0866ff]'
             }`}
           >
             <Scale className="h-4 w-4" />
-            <span className="max-[420px]:sr-only">Jämför</span>
+            <span>Jämför</span>
           </button>
-        </Link>
+        </div>
 
         <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
-            <Link href={href} className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 hover:text-[#0866ff] hover:underline">
+            <span className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline">
               {listing.title}
-            </Link>
+            </span>
             <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#667085]">
               {meta.join(' · ')}
             </p>
@@ -724,15 +817,6 @@ function VehicleResultCard({
                 </span>
               ) : null}
             </div>
-          </div>
-          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-            <span className="text-xs font-semibold text-[#667085]">Fast pris</span>
-            <Link
-              href={href}
-              className="inline-flex h-10 w-full items-center justify-center rounded-[5px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0052d6] sm:h-9 sm:w-auto"
-            >
-              Visa annons
-            </Link>
           </div>
         </div>
       </div>
