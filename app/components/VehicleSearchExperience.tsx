@@ -10,10 +10,12 @@ import {
   Expand,
   Filter,
   Heart,
+  Layers,
   MapPin,
   Search,
   Scale,
   SlidersHorizontal,
+  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
@@ -27,7 +29,7 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
-import { getMapStyle } from '@/lib/map-style'
+import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
@@ -460,7 +462,17 @@ export default function VehicleSearchExperience({
                 Lista
               </button>
             ) : null}
-            <VehicleSearchMap listings={filteredListings} country={country} locale={locale} />
+            <VehicleSearchMap
+              listings={filteredListings}
+              country={country}
+              locale={locale}
+              query={query}
+              onQueryChange={setQuery}
+              onOpenFilters={() => {
+                setFiltersOpen(true)
+                setMobileMapOpen(false)
+              }}
+            />
           </div>
 
           <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2 lg:hidden">
@@ -637,16 +649,16 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="mx-5 my-5 overflow-hidden rounded-[6px] border border-[#d9e1ec] bg-white shadow-[0_8px_24px_rgba(16,24,40,.045)] transition hover:border-[#c8d4e5] sm:mx-6">
-      <div className="grid sm:grid-cols-[270px_minmax(0,1fr)]">
-        <Link href={href} className="group relative h-[194px] overflow-hidden bg-[#eef3f8] sm:h-[212px]">
+    <article className="mx-3 my-4 overflow-hidden rounded-[6px] border border-[#d9e1ec] bg-white shadow-[0_8px_24px_rgba(16,24,40,.045)] transition hover:border-[#c8d4e5] sm:mx-6 sm:my-5">
+      <div className="grid sm:grid-cols-[285px_minmax(0,1fr)]">
+        <Link href={href} className="group relative h-[246px] overflow-hidden bg-[#eef3f8] sm:h-full sm:min-h-[230px]">
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
-              sizes="(max-width: 768px) 100vw, 270px"
-              className="object-contain transition duration-500 group-hover:scale-[1.02]"
+              sizes="(max-width: 640px) 100vw, 285px"
+              className="object-cover transition duration-500 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -661,7 +673,7 @@ function VehicleResultCard({
           <button type="button" aria-label="Spara annons" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md transition hover:text-[#0866ff]">
             <Heart className="h-5 w-5" />
           </button>
-          <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
+          <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full max-[420px]:h-6 max-[420px]:w-6" />
           <button
             type="button"
             aria-pressed={compareActive}
@@ -670,60 +682,60 @@ function VehicleResultCard({
               event.stopPropagation()
               onCompare()
             }}
-            className={`absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition ${
+            className={`absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition max-[420px]:h-8 max-[420px]:px-2 ${
               compareActive ? 'bg-[#0866ff] text-white' : 'bg-white text-[#101828] hover:text-[#0866ff]'
             }`}
           >
             <Scale className="h-4 w-4" />
-            Jämför
+            <span className="max-[420px]:sr-only">Jämför</span>
           </button>
         </Link>
 
-        <div className="min-w-0 px-5 py-5">
+        <div className="min-w-0 px-4 py-4 sm:px-5 sm:py-5">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_176px]">
             <div className="min-w-0">
-              <Link href={href} className="line-clamp-2 text-[20px] font-semibold leading-tight tracking-[-0.01em] text-[#101828] hover:text-[#0866ff]">
+              <Link href={href} className="line-clamp-2 text-[17px] font-semibold leading-tight text-[#101828] hover:text-[#0866ff] sm:text-[20px] sm:tracking-[-0.01em]">
                 {listing.title}
               </Link>
-              <p className="mt-1.5 text-sm font-medium text-[#667085]">{meta.join(' · ')}</p>
-              <div className="mt-4 flex max-w-[330px] flex-wrap gap-2">
+              <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-5 text-[#667085] sm:text-sm">{meta.join(' · ')}</p>
+              <div className="mt-3 hidden max-w-[330px] flex-wrap gap-2 sm:flex">
                 {meta.slice(1, 4).map((item) => (
                   <span key={String(item)} className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-medium text-[#101828]">
                     {item}
                   </span>
                 ))}
               </div>
-              <p className="mt-4 line-clamp-2 text-sm font-medium text-[#475467]">
+              <p className="mt-3 line-clamp-2 text-[13px] font-medium leading-5 text-[#475467] sm:mt-4 sm:text-sm">
                 {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
               </p>
             </div>
             <div className="min-w-0 text-left xl:text-right">
-              <p className="text-xs font-semibold text-[#667085]">Fast pris</p>
-              <p className="mt-1 text-[25px] font-semibold leading-tight tracking-[-0.02em] text-[#101828]">{listing.priceLabel}</p>
+              <p className="text-[11px] font-semibold text-[#667085] sm:text-xs">Fast pris</p>
+              <p className="mt-1 text-[20px] font-semibold leading-tight text-[#101828] sm:text-[25px] sm:tracking-[-0.02em]">{listing.priceLabel}</p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                <div className="mt-3 flex justify-start xl:justify-end">
+                <div className="mt-2 hidden justify-start sm:flex xl:justify-end">
                   <span className="relative block h-10 w-32 overflow-hidden rounded-[5px] bg-white">
                     <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                   </span>
                 </div>
               ) : (
-                <p className="mt-2 text-sm font-medium text-[#475467]">
+                <p className="mt-2 hidden text-sm font-medium text-[#475467] sm:block">
                   {listing.sellerIsTrader ? listing.sellerName : 'Privatperson'}
                 </p>
               )}
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-[#edf1f6] pt-4">
-            <div>
+          <div className="mt-3 flex flex-col gap-3 border-t border-[#edf1f6] pt-3 sm:mt-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:pt-4">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]">Plats</p>
-              <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#101828]">
+              <p className="mt-1 flex min-w-0 items-center gap-2 text-[13px] font-semibold text-[#101828] sm:text-sm">
                 <MapPin className="h-4 w-4 text-[#0866ff]" />
-                {location}
+                <span className="truncate">{location}</span>
               </p>
             </div>
             <Link
               href={href}
-              className="inline-flex h-11 items-center justify-center rounded-[7px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0052d6]"
+              className="inline-flex h-10 items-center justify-center rounded-[7px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0052d6] sm:h-11 sm:px-5"
             >
               Visa annons
             </Link>
@@ -738,16 +750,24 @@ function VehicleSearchMap({
   listings,
   country,
   locale,
+  query,
+  onQueryChange,
+  onOpenFilters,
 }: {
   listings: VehicleSearchListing[]
   country: string
   locale: PublicLocale
+  query: string
+  onQueryChange: (value: string) => void
+  onOpenFilters: () => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<MapLibreMarker[]>([])
   const [mapReady, setMapReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
+  const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
+  const [fullscreen, setFullscreen] = useState(false)
   const mapListings = useMemo(
     () =>
       listings.slice(0, 150).map((listing, index) => ({
@@ -757,7 +777,7 @@ function VehicleSearchMap({
     [country, listings],
   )
   const fallbackCenter = mapListings[0]?.coordinates || countryCenters[country] || countryCenters.SE
-  const fallbackTiles = getFallbackTileUrls(fallbackCenter[1], fallbackCenter[0], mapListings.length ? 11 : 5)
+  const fallbackTiles = getFallbackTileUrls(fallbackCenter[1], fallbackCenter[0], mapListings.length ? 11 : 5, mapLayer)
 
   useEffect(() => {
     let cancelled = false
@@ -770,7 +790,7 @@ function VehicleSearchMap({
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: getMapStyle(),
+          style: getMapStyle(mapLayer),
           center,
           zoom: country === 'SE' ? 4.6 : 4.2,
           attributionControl: { compact: true },
@@ -798,7 +818,23 @@ function VehicleSearchMap({
       setMapReady(false)
       setMapFailed(false)
     }
-  }, [country])
+  }, [country, mapLayer])
+
+  useEffect(() => {
+    if (!fullscreen) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [fullscreen])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      mapRef.current?.resize()
+    }, 80)
+    return () => window.clearTimeout(timer)
+  }, [fullscreen])
 
   useEffect(() => {
     let cancelled = false
@@ -849,8 +885,8 @@ function VehicleSearchMap({
   }, [country, locale, mapListings, mapReady])
 
   return (
-    <div className="relative h-[calc(100vh-62px)] min-h-[520px] bg-[#dce7ed] lg:h-full lg:min-h-[calc(100vh-62px)]">
-      <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300`}>
+    <div className={`${fullscreen ? 'fixed inset-0 z-[80] h-screen min-h-screen' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
+      <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
             key={tile}
@@ -868,16 +904,56 @@ function VehicleSearchMap({
         </button>
       ) : null}
       <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      <div className="absolute right-4 top-4 flex gap-2">
-        <button className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg">
-          <Expand className="h-5 w-5" />
-          Fullskärm
-        </button>
-      </div>
-      <div className="absolute left-4 top-4 rounded-[5px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur">
+      {fullscreen ? (
+        <div className="absolute inset-x-0 top-0 z-20 flex min-h-[58px] items-center gap-3 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:px-4">
+          <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="hidden shrink-0 sm:block">
+            <BrandLogo compact underline={false} />
+          </Link>
+          <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[5px] bg-[#f1f2f4] px-3 text-[#667085]">
+            <span className="sr-only">Sök</span>
+            <input
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="Sök på fordon, ort eller kommun"
+              className="vehicle-search-control min-w-0 flex-1 bg-transparent text-sm font-medium text-[#101828] outline-none placeholder:text-[#667085]"
+            />
+            <Search className="h-5 w-5 shrink-0 text-[#101828]" />
+          </label>
+          <button
+            type="button"
+            onClick={onOpenFilters}
+            className="inline-flex h-10 items-center gap-2 rounded-[5px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
+          >
+            <Filter className="h-4 w-4" />
+            <span className="hidden sm:inline">Sökfilter</span>
+          </button>
+          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+          <button
+            type="button"
+            onClick={() => setFullscreen(false)}
+            className="grid h-10 w-10 place-items-center rounded-[5px] bg-[#101828] text-white shadow-sm"
+            aria-label="Stäng fullskärm"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      ) : (
+        <div className="absolute right-4 top-4 z-20 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFullscreen(true)}
+            className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg"
+          >
+            <Expand className="h-5 w-5" />
+            Fullskärm
+          </button>
+          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+        </div>
+      )}
+      <div className={`${fullscreen ? 'top-[74px]' : 'top-4'} absolute left-4 z-20 rounded-[5px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
       </div>
-      <button className="absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
+      <button className="absolute bottom-5 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
         <SlidersHorizontal className="h-4 w-4" />
         Sök i detta område
       </button>
@@ -885,13 +961,49 @@ function VehicleSearchMap({
   )
 }
 
-function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11) {
+function MapLayerPicker({
+  mapLayer,
+  onMapLayerChange,
+}: {
+  mapLayer: AutorellMapLayer
+  onMapLayerChange: (layer: AutorellMapLayer) => void
+}) {
+  return (
+    <div className="inline-flex h-12 overflow-hidden rounded-[5px] bg-[#101828] p-1 shadow-lg">
+      <button
+        type="button"
+        onClick={() => onMapLayerChange('standard')}
+        className={`inline-flex items-center gap-2 rounded-[4px] px-3 text-sm font-semibold transition ${
+          mapLayer === 'standard' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
+        }`}
+      >
+        <Layers className="h-4 w-4" />
+        <span className="hidden sm:inline">Karta</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onMapLayerChange('satellite')}
+        className={`inline-flex items-center rounded-[4px] px-3 text-sm font-semibold transition ${
+          mapLayer === 'satellite' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
+        }`}
+      >
+        Satellit
+      </button>
+    </div>
+  )
+}
+
+function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, layer: AutorellMapLayer = 'standard') {
   const tile = getTileCoordinate(latitude, longitude, zoom)
   const tiles: string[] = []
 
   for (let y = tile.y - 1; y <= tile.y + 1; y += 1) {
     for (let x = tile.x - 1; x <= tile.x + 1; x += 1) {
-      tiles.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`)
+      tiles.push(
+        layer === 'satellite'
+          ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
+          : `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`,
+      )
     }
   }
 
