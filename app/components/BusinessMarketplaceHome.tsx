@@ -295,7 +295,7 @@ export default async function BusinessMarketplaceHome({
             </h2>
             <Link
               href={localizePublicHref(locale, '/marketplace/cars')}
-              className="hidden items-center gap-2 text-sm font-bold text-[#0866ff] sm:inline-flex"
+              className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
             >
               {t.viewAllListings}
               <ArrowRight className="h-4 w-4" />
@@ -312,7 +312,7 @@ export default async function BusinessMarketplaceHome({
               <div className="mt-9 flex justify-center">
                 <Link
                   href={localizePublicHref(locale, '/marketplace/cars')}
-                  className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#b8cffd] bg-white px-7 text-sm font-bold text-[#0866ff] shadow-sm transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
+                  className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#b8cffd] bg-white px-7 text-sm font-semibold text-[#0866ff] shadow-sm transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
                 >
                   {t.viewAllListings}
                 </Link>
@@ -329,7 +329,7 @@ export default async function BusinessMarketplaceHome({
               </p>
               <Link
                 href={localizePublicHref(locale, '/sell-vehicle')}
-                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_12px_26px_rgba(8,102,255,.22)]"
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(8,102,255,.22)]"
               >
                 {t.createListing}
               </Link>
@@ -360,7 +360,7 @@ export default async function BusinessMarketplaceHome({
               </p>
               <Link
                 href={localizePublicHref(locale, '/sell-vehicle')}
-                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-bold text-white"
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-semibold text-white"
               >
                 {t.sellCta}
               </Link>
@@ -385,7 +385,7 @@ export default async function BusinessMarketplaceHome({
                     <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[#edf4ff] text-[#0866ff]">
                       <Icon className="h-5 w-5" />
                     </span>
-                    <h3 className="mt-3 text-sm font-bold">{title}</h3>
+                    <h3 className="mt-3 text-sm font-semibold">{title}</h3>
                     <p className="mt-2 text-xs leading-5 text-[#667085]">{text}</p>
                   </div>
                 ))}
@@ -396,12 +396,12 @@ export default async function BusinessMarketplaceHome({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl tracking-[-0.04em]">{t.countryTitle}</h2>
-                  <p className="mt-4 inline-flex items-center gap-2 text-sm font-bold">
+                  <p className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
                     <CountryFlag code={localMarketCode.toLowerCase()} className="h-[18px] w-[27px]" />
                     {localMarketLabel}
                   </p>
                 </div>
-                <Link href="#market-selector" className="text-xs font-bold text-[#0866ff]">
+                <Link href="#market-selector" className="text-xs font-semibold text-[#0866ff]">
                   {t.countryChange}
                 </Link>
               </div>
@@ -415,7 +415,7 @@ export default async function BusinessMarketplaceHome({
               </div>
               <Link
                 href={localizePublicHref(locale, '/marketplace/cars')}
-                className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#0866ff]"
+                className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff]"
               >
                 {t.seeLocal}
                 <ArrowRight className="h-4 w-4" />
@@ -584,7 +584,7 @@ function ListingCard({
           <SavedListingButton listingId={listing.id} />
         </div>
         {listing.sellerTrust === 'verified' ? (
-          <span className="absolute left-2 top-2 rounded-[7px] bg-[#0866ff] px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3">
+          <span className="absolute left-2 top-2 rounded-[7px] bg-[#0866ff] px-2 py-1 text-[10px] font-semibold text-white shadow-sm sm:left-3 sm:top-3">
             {locale === 'sv' ? 'Verifierad' : locale === 'de' ? 'Geprüft' : 'Verified'}
           </span>
         ) : null}
@@ -594,10 +594,10 @@ function ListingCard({
         />
       </div>
       <div className="p-3 sm:p-4">
-        <span className="inline-flex rounded-[5px] bg-[#edf4ff] px-1.5 py-1 text-[9px] font-bold uppercase tracking-[0.06em] text-[#0866ff] sm:px-2 sm:text-[10px] sm:tracking-[0.08em]">
+        <span className="inline-flex rounded-[5px] bg-[#edf4ff] px-1.5 py-1 text-[9px] font-semibold uppercase tracking-[0.06em] text-[#0866ff] sm:px-2 sm:text-[10px] sm:tracking-[0.08em]">
           {listing.categoryLabel}
         </span>
-        <h3 className="mt-2 line-clamp-2 min-h-[36px] text-[13px] font-bold leading-[18px] text-[#101828] sm:mt-3 sm:min-h-[40px] sm:text-sm sm:leading-5">
+        <h3 className="mt-2 line-clamp-2 min-h-[36px] text-[13px] font-semibold leading-[18px] text-[#101828] sm:mt-3 sm:min-h-[40px] sm:text-sm sm:leading-5">
           {listing.title}
         </h3>
         {listing.meta ? (
@@ -608,7 +608,7 @@ function ListingCard({
             {specChips.map((chip) => (
               <span
                 key={chip.key}
-                className="inline-flex min-h-7 items-center rounded-full bg-[#f3f5f8] px-2.5 text-[11px] font-bold text-[#344054]"
+                className="inline-flex min-h-7 items-center rounded-full bg-[#f3f5f8] px-2.5 text-[11px] font-semibold text-[#344054]"
               >
                 {chip.label}
               </span>
@@ -619,7 +619,7 @@ function ListingCard({
           <MapPin className="h-3 w-3 shrink-0 text-[#0866ff] sm:h-3.5 sm:w-3.5" />
           {listing.location}
         </p>
-        <p className="mt-3 text-sm font-bold tracking-[-0.02em] text-[#101828] sm:mt-4 sm:text-base sm:tracking-[-0.03em]">
+        <p className="mt-3 text-sm font-semibold tracking-[-0.02em] text-[#101828] sm:mt-4 sm:text-base sm:tracking-[-0.03em]">
           {listing.price}
         </p>
       </div>
@@ -646,7 +646,7 @@ function ReviewWordmark({
 
   return (
     <div className="flex flex-col items-center justify-center rounded-[12px] px-4 py-3">
-      <div className={`flex items-center gap-2 text-[22px] font-bold leading-none ${brandClass}`}>
+      <div className={`flex items-center gap-2 text-[22px] font-semibold leading-none ${brandClass}`}>
         {brand === 'trustpilot' ? <span className="text-[#00b67a]">★</span> : null}
         {brand === 'google' ? <GoogleMark /> : null}
         {brand === 'feefo' ? <FeefoDots /> : null}
@@ -682,7 +682,7 @@ function FeefoDots() {
 
 function ReviewsMark() {
   return (
-    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#667085] text-[11px] font-bold text-white" aria-hidden="true">
+    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#667085] text-[11px] font-semibold text-white" aria-hidden="true">
       R
     </span>
   )

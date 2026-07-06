@@ -88,7 +88,7 @@ export default function NewsletterSignup({
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[34%] bg-[#0866ff] [clip-path:polygon(21%_0,100%_0,100%_100%,0_100%)] lg:block" />
         <div className="grid min-h-[292px] gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-center lg:p-10">
           <div className="relative z-10 max-w-[650px]">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">
               {copy.eyebrow}
             </p>
             <h2 className="mt-3 max-w-[590px] text-[30px] leading-[1.05] tracking-[-0.045em] text-[#101828] sm:text-[38px]">
@@ -127,7 +127,7 @@ export default function NewsletterSignup({
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_12px_24px_rgba(8,102,255,.18)] transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.18)] transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65"
                 >
                   {copy.button}
                   <ArrowRight className="h-4 w-4" />
@@ -176,7 +176,7 @@ export default function NewsletterSignup({
       <div className="pointer-events-none absolute -right-20 -top-24 hidden h-64 w-64 rounded-full border-[46px] border-white/65 lg:block" aria-hidden="true" />
       <div className="relative grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
             {copy.eyebrow}
           </p>
           <h2 className="mt-4 max-w-2xl text-[34px] leading-[1.02] tracking-[-0.05em] text-[#101828] sm:text-[44px]">
@@ -205,7 +205,7 @@ export default function NewsletterSignup({
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-bold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65"
+              className="inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65"
             >
               {copy.button}
               <ArrowRight className="h-4 w-4" />

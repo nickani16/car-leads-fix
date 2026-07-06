@@ -707,14 +707,14 @@ export default function PublicHeader({
   const mobileCategoryLinks = showMobileCategoryNav ? categoryPrimaryLinks : null
   const headerSpacerClass = showMobileCategoryNav
     ? showTopCategoryNav
-      ? 'h-[110px] min-[1120px]:h-[86px]'
-      : 'h-[110px] min-[1120px]:h-[64px]'
+      ? 'h-[110px] min-[1120px]:h-[80px]'
+      : 'h-[110px] min-[1120px]:h-[58px]'
     : showTopCategoryNav
-      ? 'h-[56px] min-[1120px]:h-[86px]'
-      : 'h-[56px] min-[1120px]:h-[64px]'
+      ? 'h-[56px] min-[1120px]:h-[80px]'
+      : 'h-[56px] min-[1120px]:h-[58px]'
   const desktopMainRowHeightClass = showTopCategoryNav
-    ? 'min-[1120px]:h-[56px]'
-    : 'min-[1120px]:h-[64px]'
+    ? 'min-[1120px]:h-[52px]'
+    : 'min-[1120px]:h-[58px]'
   const mobileMainLinks = [
     ...menus.map(({ href, label, icon }) => ({ href, label, icon })),
     { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
@@ -856,7 +856,6 @@ export default function PublicHeader({
                   >
                     <FlagIcon code={activeMarket[1]} size="xs" />
                     <span>{activeMarket[2]}</span>
-                    <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
@@ -884,7 +883,7 @@ export default function PublicHeader({
                           onClick={(event) => handleCategoryNavigation(event, href)}
                           className={`flex h-full min-w-0 shrink items-center border-b-2 px-3 text-[14px] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-4 ${
                             pathname === href
-                              ? 'border-[#0866ff] font-bold text-[#101828]'
+                              ? 'border-[#0866ff] font-semibold text-[#101828]'
                               : 'border-transparent font-semibold text-[#344054]'
                           }`}
                         >
@@ -947,7 +946,7 @@ export default function PublicHeader({
                   <span className="relative">
                     <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
                     {headerAccount.unreadMessages ? (
-                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                         {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                       </span>
                     ) : null}
@@ -972,7 +971,7 @@ export default function PublicHeader({
                   <span className="relative">
                     <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
                     {savedListingCount ? (
-                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                         {savedListingCount > 99 ? '99+' : savedListingCount}
                       </span>
                     ) : null}
@@ -995,7 +994,7 @@ export default function PublicHeader({
                   href={accountHref}
                   className="flex min-w-[92px] max-w-[132px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 >
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                     {mobileAccountInitials}
                   </span>
                   <span className="max-w-full truncate text-[10px] font-medium">
@@ -1015,14 +1014,13 @@ export default function PublicHeader({
               <button
                 type="button"
                 onClick={() => setMarketSelectorOpen(true)}
-                className="flex min-w-[68px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                className="flex min-w-[66px] flex-col items-center justify-center gap-0.5 px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
                 aria-label={t.chooseLanguage}
               >
-                <span className="relative inline-flex items-center justify-center">
+                <span className="grid h-[20px] place-items-center">
                   <FlagIcon code={activeMarket[1]} size="xs" />
-                  <ChevronDown className="absolute -right-4 top-1/2 h-3 w-3 -translate-y-1/2" />
                 </span>
-                <span className="mt-0.5 max-w-[62px] truncate text-[10px] font-medium">
+                <span className="max-w-[62px] truncate text-[10px] font-medium leading-none">
                   {activeMarket[2]}
                 </span>
               </button>
@@ -1043,7 +1041,7 @@ export default function PublicHeader({
                     onClick={(event) => handleCategoryNavigation(event, href)}
                     className={`flex shrink-0 items-center border-b-[3px] pt-px ${
                       pathname === href
-                        ? 'border-[#0866ff] font-bold text-[#101828]'
+                        ? 'border-[#0866ff] font-semibold text-[#101828]'
                         : 'border-transparent'
                     }`}
                   >
@@ -1106,7 +1104,7 @@ export default function PublicHeader({
                   key={href}
                   href={href}
                   onClick={(event) => handleInternalNavigation(event, href)}
-                  className="group flex min-h-[58px] items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-[16px] font-extrabold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
+                  className="group flex min-h-[58px] items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-[16px] font-semibold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
@@ -1122,7 +1120,7 @@ export default function PublicHeader({
             <Link
               href={localizePublicHref(locale, '/sell-vehicle')}
               onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-extrabold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
             >
               {t.mobileCta}
               <ArrowRight className="h-5 w-5" />
@@ -1154,7 +1152,7 @@ export default function PublicHeader({
                     <MessageSquareText size={17} />
                     {t.messages}
                     {headerAccount.unreadMessages ? (
-                      <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[10px] font-bold">
+                      <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[10px] font-semibold">
                         {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                       </span>
                     ) : null}
@@ -1228,7 +1226,7 @@ export default function PublicHeader({
               <span className="relative">
                 <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
                 {headerAccount.unreadMessages ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                     {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                   </span>
                 ) : null}
@@ -1257,7 +1255,7 @@ export default function PublicHeader({
               <span className="relative">
                 <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
                 {savedListingCount ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-bold leading-none text-white">
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                     {savedListingCount > 99 ? '99+' : savedListingCount}
                   </span>
                 ) : null}
@@ -1356,7 +1354,7 @@ export default function PublicHeader({
                   onClick={closeMobile}
                   className="flex items-center gap-3 text-[#101828]"
                 >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-sm font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-sm font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                     {mobileAccountInitials}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -1443,7 +1441,7 @@ export default function PublicHeader({
             </section>
 
             <section className="mb-7">
-              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#667085]">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085]">
                 Autorell
               </p>
               <div className="grid gap-2">
@@ -1543,7 +1541,7 @@ export default function PublicHeader({
               onClick={closeMobile}
               className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-extrabold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                 {mobileAccountInitials}
               </span>
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{mobileProfileLabel}</span>
@@ -1674,13 +1672,13 @@ function DesktopMenu({
               <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
                 {menu.eyebrow}
               </p>
-              <h3 className="mt-2 whitespace-normal text-[22px] font-extrabold leading-[1.12] tracking-[-0.035em] text-[#101828]">
+              <h3 className="mt-2 whitespace-normal text-[22px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#101828]">
                 {menu.title}
               </h3>
               <p className="mt-3 whitespace-normal text-sm leading-6 text-[#5c707b]">
                 {menu.text}
               </p>
-              <a href={menu.ctaHref} onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }} className="mt-6 inline-flex items-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-4 py-3 text-sm font-extrabold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]">
+              <a href={menu.ctaHref} onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }} className="mt-6 inline-flex items-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-4 py-3 text-sm font-semibold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]">
                 {menu.cta}
                 <ArrowRight className="h-4 w-4" />
               </a>
@@ -1737,10 +1735,10 @@ function BuyDesktopMenuPanel({
         <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#e8f1ff] text-[#075fff]">
           <MenuIcon className="h-6 w-6" />
         </span>
-        <p className="mt-7 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#075fff]">
+        <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#075fff]">
           {menu.eyebrow}
         </p>
-        <h3 className="mt-3 max-w-[240px] whitespace-normal text-[26px] font-extrabold leading-[1.12] tracking-[-0.035em] text-[#101828]">
+        <h3 className="mt-3 max-w-[240px] whitespace-normal text-[26px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#101828]">
           {menu.title}
         </h3>
         <p className="mt-5 max-w-[250px] whitespace-normal text-sm leading-7 text-[#475467]">
@@ -1754,7 +1752,7 @@ function BuyDesktopMenuPanel({
                 <Icon className="h-4 w-4" />
               </span>
               <span>
-                <strong className="block text-[13px] font-extrabold text-[#101828]">
+                <strong className="block text-[13px] font-semibold text-[#101828]">
                   {title}
                 </strong>
                 <span className="mt-1 block text-xs leading-5 text-[#667085]">
@@ -1768,7 +1766,7 @@ function BuyDesktopMenuPanel({
         <a
           href={menu.ctaHref}
           onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }}
-          className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-5 text-sm font-extrabold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]"
+          className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-5 text-sm font-semibold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]"
         >
           {menu.cta}
           <ArrowRight className="h-4 w-4" />
@@ -1789,7 +1787,7 @@ function BuyDesktopMenuPanel({
               </span>
               <span className="mt-5 flex items-start justify-between gap-3">
                 <span>
-                  <strong className="block whitespace-normal text-[15px] font-extrabold leading-5 text-[#101828]">
+                  <strong className="block whitespace-normal text-[15px] font-semibold leading-5 text-[#101828]">
                     {itemLabel}
                   </strong>
                   <span className="mt-2 block whitespace-normal text-[13px] leading-6 text-[#475467]">
@@ -1812,7 +1810,7 @@ function BuyDesktopMenuPanel({
               </span>
               <span className="mt-4 flex items-start justify-between gap-3">
                 <span>
-                  <strong className="block text-[15px] font-extrabold text-[#101828]">
+                  <strong className="block text-[15px] font-semibold text-[#101828]">
                     {menu.allCategoriesLabel}
                   </strong>
                   <span className="mt-1 block text-[13px] leading-6 text-[#475467]">

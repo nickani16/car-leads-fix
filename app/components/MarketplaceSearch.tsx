@@ -183,7 +183,7 @@ export default function MarketplaceSearch({
           {openPicker === 'category' ? (
             <div className="absolute left-0 top-[calc(100%+12px)] z-50 w-[min(92vw,560px)] overflow-hidden rounded-[22px] border border-[#d9e4f2] bg-white p-2 shadow-[0_24px_70px_rgba(15,23,42,.22)] ring-1 ring-white/70">
               <div className="px-3 pb-2 pt-2">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0866ff]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
                   {copy.category}
                 </p>
               </div>
@@ -210,7 +210,7 @@ export default function MarketplaceSearch({
                         <Icon className="h-5 w-5" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-extrabold text-[#101828]">
+                        <span className="block truncate text-sm font-semibold text-[#101828]">
                           {label}
                         </span>
                         <span className="mt-0.5 block text-[12px] font-semibold text-[#667085]">
@@ -245,7 +245,7 @@ export default function MarketplaceSearch({
           {openPicker === 'country' ? (
             <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,500px)] overflow-hidden rounded-[22px] border border-[#d9e4f2] bg-white p-2 shadow-[0_24px_70px_rgba(15,23,42,.22)] ring-1 ring-white/70">
               <div className="px-3 pb-2 pt-2">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0866ff]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
                   {copy.place}
                 </p>
               </div>
@@ -276,7 +276,7 @@ export default function MarketplaceSearch({
           ) : null}
         </SearchField>
 
-        <button type="submit" className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-bold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
+        <button type="submit" className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
           <Search className="h-5 w-5" />
           {getSearchCta(category, locale)}
         </button>
@@ -477,7 +477,7 @@ function CountryOptionButton({
       }`}
     >
       <CountryFlag code={code || 'eu'} className="h-6 w-8 shrink-0 rounded-[6px]" />
-      <span className="min-w-0 flex-1 truncate text-sm font-extrabold text-[#101828]">
+      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#101828]">
         {label}
       </span>
       {selected ? (
@@ -564,7 +564,7 @@ function SearchField({
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#98a2b3]">{label}</span>
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#98a2b3]">{label}</span>
         {children}
       </span>
     </div>

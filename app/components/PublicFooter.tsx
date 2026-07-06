@@ -532,7 +532,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-[15px] font-extrabold text-[#101828]">{title}</h3>
+      <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
       <nav className="mt-4 flex flex-col items-start gap-2.5 text-[13px] leading-5 text-[#344054]">
         {links.map(([label, href]) => (
           <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
@@ -655,7 +655,7 @@ export function MarketSelectorModal({
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 pb-16 pt-20 sm:px-8 sm:py-16 lg:py-[72px]">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
           <div>
-            <h2 className="max-w-[560px] text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
+            <h2 className="max-w-[560px] text-[34px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
               {copy.marketTitle}
             </h2>
             <p className="mt-6 max-w-[430px] text-[16px] leading-8 text-[#344054]">
@@ -667,7 +667,7 @@ export function MarketSelectorModal({
         </div>
 
         <section className="mt-10">
-          <h3 className="text-base font-extrabold">{copy.allMarkets}</h3>
+          <h3 className="text-base font-semibold">{copy.allMarkets}</h3>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {allMarkets
               .filter(([code]) => activeMarketCountryCodes.has(code))
@@ -690,7 +690,7 @@ export function MarketSelectorModal({
             <Globe2 className="h-5 w-5" />
           </span>
           <span>
-            <strong className="block text-sm font-extrabold">
+            <strong className="block text-sm font-semibold">
               {copy.missingMarketTitle}
             </strong>
             <span className="mt-1 block text-sm leading-6">
@@ -734,7 +734,7 @@ function MarketCard({
     >
       <FlagIcon code={countryCode} />
       <span className="min-w-0 flex-1">
-        <strong className="block truncate text-[15px] font-extrabold text-[#101828]">
+        <strong className="block truncate text-[15px] font-semibold text-[#101828]">
           {market}
         </strong>
         <span className="mt-0.5 block truncate text-[13px] text-[#667085]">
