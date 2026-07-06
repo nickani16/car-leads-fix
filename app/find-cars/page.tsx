@@ -58,6 +58,7 @@ export default async function FindCarsPage() {
         latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
         longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
         priceLabel: price.label,
+        priceValue: Number(listing.price),
         imageUrl: listing.images?.[0] || null,
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',

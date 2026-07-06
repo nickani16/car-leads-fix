@@ -51,6 +51,7 @@ export type VehicleSearchListing = {
   latitude: number | null
   longitude: number | null
   priceLabel: string
+  priceValue: number
   imageUrl: string | null
   sellerName: string
   sellerIsTrader: boolean
@@ -96,14 +97,32 @@ export default function VehicleSearchExperience({
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [country, setCountry] = useState(defaultCountry || 'SE')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
+  const [sortBy, setSortBy] = useState('latest')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [minYear, setMinYear] = useState('')
+  const [maxYear, setMaxYear] = useState('')
+  const [maxMileage, setMaxMileage] = useState('')
 
   const filteredListings = useMemo(() => {
     if (mode !== 'sale') return []
     const normalizedQuery = query.trim().toLowerCase()
-    return listings.filter((listing) => {
+    const minPriceValue = parseOptionalNumber(minPrice)
+    const maxPriceValue = parseOptionalNumber(maxPrice)
+    const minYearValue = parseOptionalNumber(minYear)
+    const maxYearValue = parseOptionalNumber(maxYear)
+    const maxMileageValue = parseOptionalNumber(maxMileage)
+    const matches = listings.filter((listing) => {
       if (category !== 'all' && listing.category !== category) return false
       if (country && listing.country !== country) return false
+      if (minPriceValue !== null && listing.priceValue < minPriceValue) return false
+      if (maxPriceValue !== null && listing.priceValue > maxPriceValue) return false
+      const listingYear = parseOptionalNumber(listing.year)
+      if (minYearValue !== null && (listingYear === null || listingYear < minYearValue)) return false
+      if (maxYearValue !== null && (listingYear === null || listingYear > maxYearValue)) return false
+      if (maxMileageValue !== null && (listing.mileageKm === null || listing.mileageKm > maxMileageValue)) return false
       if (!normalizedQuery) return true
       return [
         listing.title,
@@ -117,7 +136,24 @@ export default function VehicleSearchExperience({
         .toLowerCase()
         .includes(normalizedQuery)
     })
-  }, [category, country, listings, mode, query])
+    return matches.sort((a, b) => {
+      if (sortBy === 'price-asc') return a.priceValue - b.priceValue
+      if (sortBy === 'price-desc') return b.priceValue - a.priceValue
+      if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
+      return 0
+    })
+  }, [category, country, listings, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, query, sortBy])
+
+  const resetFilters = () => {
+    setQuery('')
+    setCategory('all')
+    setMinPrice('')
+    setMaxPrice('')
+    setMinYear('')
+    setMaxYear('')
+    setMaxMileage('')
+    setSortBy('latest')
+  }
 
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
   const visibleCount = filteredListings.length
@@ -126,11 +162,11 @@ export default function VehicleSearchExperience({
   return (
     <main className="min-h-screen bg-white text-[#101828]">
       <div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
-        <header className="flex min-h-[72px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-8">
+        <header className="flex min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
-            <BrandLogo underline={false} />
+            <BrandLogo compact underline={false} />
           </Link>
-          <nav className="hidden items-center gap-8 text-[15px] font-medium text-[#101828] md:flex">
+          <nav className="hidden items-center gap-7 text-[14px] font-medium text-[#101828] md:flex">
             <span className="text-[#0866ff]">Sök fordon</span>
             <Link href={localizePublicHref(locale, '/sell-vehicle')} className="transition hover:text-[#0866ff]">
               Sälj fordon
@@ -139,7 +175,7 @@ export default function VehicleSearchExperience({
               Företag
             </Link>
           </nav>
-          <div className="flex items-center gap-5 text-sm font-medium text-[#101828]">
+          <div className="flex items-center gap-4 text-sm font-medium text-[#101828]">
             <span className="hidden items-center gap-2 md:inline-flex">
               <Heart className="h-5 w-5" />
               Sparade
@@ -155,16 +191,16 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 flex-1 lg:grid-cols-[minmax(520px,54vw)_minmax(420px,1fr)]">
+        <section className="grid min-h-0 flex-1 lg:grid-cols-[minmax(520px,clamp(560px,38vw,720px))_minmax(560px,1fr)]">
           <div className="min-h-0 overflow-y-auto border-r border-[#eceff4] bg-white">
-            <div className="border-b border-[#eceff4] px-5 pt-4 sm:px-8">
+            <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6">
               <div className="flex overflow-x-auto border-b border-[#dfe4ec] sm:grid sm:grid-cols-3 sm:overflow-visible">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[64px] min-w-[165px] px-2 text-center text-base font-medium transition sm:min-h-[72px] sm:min-w-0 sm:text-lg ${
+                    className={`relative min-h-[58px] min-w-[155px] px-2 text-center text-[15px] font-medium transition sm:min-w-0 ${
                       mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
                     }`}
                   >
@@ -176,41 +212,42 @@ export default function VehicleSearchExperience({
               </div>
 
               <div className="py-5">
-                <label className="flex h-14 items-center gap-3 rounded-[6px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[74px] sm:gap-4 sm:px-6">
+                <label className="flex h-12 items-center gap-3 rounded-[5px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
-                    className="min-w-0 flex-1 bg-transparent text-base font-medium outline-none placeholder:text-[#7b828d] sm:text-xl"
+                    className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
                   />
-                  <Search className="h-6 w-6 shrink-0 text-[#101828] sm:h-8 sm:w-8" />
+                  <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
-                    className="inline-flex min-h-[60px] items-center justify-center gap-3 rounded-[6px] border border-[#d0d5dd] bg-white px-5 text-lg font-medium shadow-sm transition hover:border-[#0866ff]"
+                    onClick={() => setFiltersOpen((open) => !open)}
+                    className="inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] border border-[#d0d5dd] bg-white px-5 text-[15px] font-medium shadow-sm transition hover:border-[#0866ff]"
                   >
                     <Filter className="h-5 w-5" />
                     Sökfilter
                   </button>
                   <button
                     type="button"
-                    className="inline-flex min-h-[60px] items-center justify-center gap-3 rounded-[6px] bg-[#d1d3d8] px-5 text-lg font-medium text-white"
+                    className="inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white"
                   >
                     <Bookmark className="h-6 w-6" />
                     Spara sökning
                   </button>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_180px]">
+                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px]">
                   <label className="relative">
                     <span className="sr-only">Kategori</span>
                     <select
                       value={category}
                       onChange={(event) => setCategory(event.target.value)}
-                      className="h-12 w-full appearance-none rounded-[6px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
+                      className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
                       {categories.map((option) => (
                         <option key={option.key} value={option.key}>{option.label}</option>
@@ -223,7 +260,7 @@ export default function VehicleSearchExperience({
                     <select
                       value={country}
                       onChange={(event) => setCountry(event.target.value)}
-                      className="h-12 w-full appearance-none rounded-[6px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
+                      className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
                       <option value="SE">Sverige</option>
                       <option value="FR">Frankrike</option>
@@ -234,12 +271,30 @@ export default function VehicleSearchExperience({
                     <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" />
                   </label>
                 </div>
+                {filtersOpen ? (
+                  <div className="mt-3 grid gap-3 rounded-[6px] border border-[#d9e1ec] bg-white p-4 shadow-sm">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <FilterInput label="Pris min" value={minPrice} onChange={setMinPrice} suffix="SEK" />
+                      <FilterInput label="Pris max" value={maxPrice} onChange={setMaxPrice} suffix="SEK" />
+                      <FilterInput label="Årsmodell från" value={minYear} onChange={setMinYear} />
+                      <FilterInput label="Årsmodell till" value={maxYear} onChange={setMaxYear} />
+                      <FilterInput label="Max miltal" value={maxMileage} onChange={setMaxMileage} suffix="km" />
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="h-11 rounded-[5px] border border-[#d0d5dd] bg-[#f8fafc] px-4 text-sm font-medium text-[#0866ff] transition hover:border-[#0866ff]"
+                      >
+                        Rensa filter
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            <div className="px-5 py-5 sm:px-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="text-lg font-medium leading-8">
+            <div className="px-5 py-4 sm:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-base font-medium leading-7">
                   {mode === 'sale' ? (
                     <>
                       Fordon till salu i <strong className="font-semibold">{countryName}</strong>.{' '}
@@ -251,10 +306,20 @@ export default function VehicleSearchExperience({
                     </>
                   )}
                 </p>
-                <button className="inline-flex h-12 items-center gap-3 rounded-[6px] border border-[#d0d5dd] bg-white px-5 text-base font-medium shadow-sm">
-                  Nyast
-                  <ChevronDown className="h-5 w-5" />
-                </button>
+                <label className="relative">
+                  <span className="sr-only">Sortering</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value)}
+                    className="h-11 appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium shadow-sm outline-none focus:border-[#0866ff]"
+                  >
+                    <option value="latest">Nyast</option>
+                    <option value="price-asc">Pris lägst</option>
+                    <option value="price-desc">Pris högst</option>
+                    <option value="year-desc">Nyast årsmodell</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                </label>
               </div>
             </div>
 
@@ -306,6 +371,33 @@ export default function VehicleSearchExperience({
   )
 }
 
+function FilterInput({
+  label,
+  value,
+  onChange,
+  suffix,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  suffix?: string
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-semibold text-[#475467]">{label}</span>
+      <span className="flex h-11 items-center rounded-[5px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          inputMode="numeric"
+          className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
+        />
+        {suffix ? <span className="ml-2 text-xs font-semibold text-[#667085]">{suffix}</span> : null}
+      </span>
+    </label>
+  )
+}
+
 function VehicleResultCard({
   listing,
   locale,
@@ -337,14 +429,14 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="grid gap-5 border-b border-[#eceff4] px-5 py-6 sm:grid-cols-[280px_minmax(0,1fr)] sm:px-8">
+    <article className="grid gap-4 border-b border-[#eceff4] px-5 py-5 sm:grid-cols-[220px_minmax(0,1fr)] sm:px-6">
       <Link href={href} className="group relative aspect-[16/9] overflow-hidden rounded-[6px] bg-[#eef3f8]">
         {listing.imageUrl ? (
           <Image
             src={listing.imageUrl}
             alt={listing.title}
             fill
-            sizes="(max-width: 768px) 100vw, 280px"
+            sizes="(max-width: 768px) 100vw, 220px"
             className="object-cover transition duration-500 group-hover:scale-[1.03]"
           />
         ) : (
@@ -352,27 +444,27 @@ function VehicleResultCard({
             <AutorellCarIcon className="h-12 w-12" />
           </div>
         )}
-        <button className="absolute bottom-4 right-4 grid h-12 w-12 place-items-center rounded-full bg-white text-[#101828] shadow-md">
-          <Heart className="h-6 w-6" />
+        <button className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md">
+          <Heart className="h-5 w-5" />
         </button>
       </Link>
 
       <div className="min-w-0">
-        <Link href={href} className="text-2xl font-medium tracking-[-0.02em] text-[#101828] hover:text-[#0866ff]">
+        <Link href={href} className="text-xl font-medium tracking-[-0.01em] text-[#101828] hover:text-[#0866ff]">
           {listing.title}
         </Link>
-        <p className="mt-2 text-lg font-medium text-[#667085]">{location}</p>
-        <p className="mt-5 text-2xl font-semibold text-[#101828]">
+        <p className="mt-1.5 text-base font-medium text-[#667085]">{location}</p>
+        <p className="mt-4 text-xl font-semibold text-[#101828]">
           {mode === 'leasing' ? 'från ' : ''}
           {listing.priceLabel}
           {mode === 'leasing' ? '/mån' : mode === 'rental' ? '/dag' : ''}
         </p>
-        <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-base font-medium text-[#101828]">
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-[#101828]">
           {meta.map((item) => (
             <span key={String(item)}>{item}</span>
           ))}
         </div>
-        <p className="mt-6 text-base font-medium text-[#475467]">
+        <p className="mt-5 text-sm font-medium text-[#475467]">
           {listing.sellerIsTrader ? listing.sellerName : 'Privat säljare'}
         </p>
       </div>
@@ -484,7 +576,7 @@ function VehicleSearchMap({
   }, [country, locale, mapListings, mapReady])
 
   return (
-    <div className="relative h-[calc(100vh-72px)] min-h-[520px] bg-[#dce7ed] lg:h-full lg:min-h-[calc(100vh-72px)]">
+    <div className="relative h-[calc(100vh-62px)] min-h-[520px] bg-[#dce7ed] lg:h-full lg:min-h-[calc(100vh-62px)]">
       <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300`}>
         {fallbackTiles.map((tile) => (
           <span
@@ -503,20 +595,20 @@ function VehicleSearchMap({
         </button>
       ) : null}
       <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      <div className="absolute right-5 top-5 flex gap-3">
-        <button className="inline-flex h-16 items-center gap-3 rounded-[6px] bg-[#101828] px-5 text-lg font-semibold text-white shadow-lg">
-          <Expand className="h-6 w-6" />
+      <div className="absolute right-4 top-4 flex gap-2">
+        <button className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg">
+          <Expand className="h-5 w-5" />
           Fullskärm
         </button>
-        <button className="inline-flex h-16 items-center gap-3 rounded-[6px] bg-[#101828] px-5 text-lg font-semibold text-white shadow-lg">
-          <Layers className="h-6 w-6" />
+        <button className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg">
+          <Layers className="h-5 w-5" />
           Kartval
         </button>
       </div>
-      <div className="absolute left-5 top-5 rounded-[6px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur">
+      <div className="absolute left-4 top-4 rounded-[5px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur">
         {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
       </div>
-      <button className="absolute bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
+      <button className="absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
         <SlidersHorizontal className="h-4 w-4" />
         Sök i detta område
       </button>
@@ -559,6 +651,14 @@ function listingCoordinates(listing: VehicleSearchListing, country: string, inde
     base[0] + Math.cos(ring * Math.PI * 2) * radius,
     base[1] + Math.sin(ring * Math.PI * 2) * radius * 0.55,
   ]
+}
+
+function parseOptionalNumber(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === '') return null
+  const normalized = String(value).replace(/[^\d.-]/g, '')
+  if (!normalized) return null
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function escapeHtml(value: string) {
