@@ -36,6 +36,9 @@ export default function ListingLocationMap({
   const locationText = [address, [city, country].filter(Boolean).join(', ')]
     .filter(Boolean)
     .join(' · ')
+  const fallbackTiles = hasCoordinates
+    ? getFallbackTileUrls(latitude as number, longitude as number)
+    : []
 
   useEffect(() => {
     if (
@@ -104,7 +107,20 @@ export default function ListingLocationMap({
           ) : null}
         </div>
       </div>
-      <div ref={containerRef} className="h-[320px] w-full bg-[#eef3f8] sm:h-[380px]" />
+      <div className="relative h-[320px] w-full overflow-hidden bg-[#eef3f8] sm:h-[380px]">
+        {fallbackTiles.length ? (
+          <div aria-hidden="true" className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-95">
+            {fallbackTiles.map((tile) => (
+              <span
+                key={tile}
+                className="block bg-cover bg-center"
+                style={{ backgroundImage: `url(${tile})` }}
+              />
+            ))}
+          </div>
+        ) : null}
+        <div ref={containerRef} className="absolute inset-0" />
+      </div>
     </div>
   )
 }
@@ -131,4 +147,28 @@ function LocationFallback({
       </div>
     </div>
   )
+}
+
+function getFallbackTileUrls(latitude: number, longitude: number, zoom = 12) {
+  const tile = getTileCoordinate(latitude, longitude, zoom)
+  const tiles: string[] = []
+
+  for (let y = tile.y - 1; y <= tile.y + 1; y += 1) {
+    for (let x = tile.x - 1; x <= tile.x + 1; x += 1) {
+      tiles.push(`https://a.basemaps.cartocdn.com/light_all/${zoom}/${x}/${y}.png`)
+    }
+  }
+
+  return tiles
+}
+
+function getTileCoordinate(latitude: number, longitude: number, zoom: number) {
+  const latRad = (latitude * Math.PI) / 180
+  const scale = 2 ** zoom
+  const x = Math.floor(((longitude + 180) / 360) * scale)
+  const y = Math.floor(
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * scale,
+  )
+
+  return { x, y }
 }
