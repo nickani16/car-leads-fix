@@ -1441,6 +1441,7 @@ function MarketplaceMapPanel({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<MapLibreMarker[]>([])
+  const [mapReady, setMapReady] = useState(false)
 
   const mapListings = useMemo(
     () =>
@@ -1456,6 +1457,7 @@ function MarketplaceMapPanel({
 
     async function loadMap() {
       if (!containerRef.current || mapRef.current) return
+      setMapReady(false)
       const maplibregl = await import('maplibre-gl')
       if (cancelled || !containerRef.current) return
       const first = mapListings[0]?.coordinates || [14.5, 57.8]
@@ -1467,6 +1469,7 @@ function MarketplaceMapPanel({
         attributionControl: { compact: true },
       })
       mapRef.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+      setMapReady(true)
     }
 
     loadMap()
@@ -1477,6 +1480,7 @@ function MarketplaceMapPanel({
       markersRef.current = []
       mapRef.current?.remove()
       mapRef.current = null
+      setMapReady(false)
     }
   }, [mapListings])
 
@@ -1485,7 +1489,7 @@ function MarketplaceMapPanel({
 
     async function syncMarkers() {
       const map = mapRef.current
-      if (!map) return
+      if (!mapReady || !map) return
       const maplibregl = await import('maplibre-gl')
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
@@ -1511,7 +1515,7 @@ function MarketplaceMapPanel({
     return () => {
       cancelled = true
     }
-  }, [locale, mapListings])
+  }, [locale, mapListings, mapReady])
 
   return (
     <div className="mb-5 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white">
