@@ -3,18 +3,18 @@ import type { StyleSpecification } from 'maplibre-gl'
 export const fallbackMapStyle: StyleSpecification = {
   version: 8,
   sources: {
-    osm: {
+    carto: {
       type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
       tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
+      attribution: 'OpenStreetMap contributors, CARTO',
     },
   },
   layers: [
     {
-      id: 'osm',
+      id: 'carto',
       type: 'raster',
-      source: 'osm',
+      source: 'carto',
     },
   ],
 }
