@@ -8,7 +8,6 @@ import {
   CarFront,
   ChevronDown,
   CircleHelp,
-  FileText,
   FilePlus2,
   Heart,
   Home,
@@ -393,14 +392,12 @@ export default function PublicHeader({
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(() => readCachedHeaderAccount())
   const [savedListingCount, setSavedListingCount] = useState(0)
-  const [moreOpen, setMoreOpen] = useState(false)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
-  const moreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -413,7 +410,6 @@ export default function PublicHeader({
         setVisible(false)
         setOpen(false)
         setMarketSelectorOpen(false)
-        setMoreOpen(false)
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
         setDesktopMenuOpen(null)
@@ -498,22 +494,6 @@ export default function PublicHeader({
       document.body.style.overflow = ''
     }
   }, [open])
-
-  useEffect(() => {
-    if (!moreOpen) return
-    const close = (event: PointerEvent) => {
-      if (!moreRef.current?.contains(event.target as Node)) setMoreOpen(false)
-    }
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMoreOpen(false)
-    }
-    document.addEventListener('pointerdown', close)
-    document.addEventListener('keydown', closeOnEscape)
-    return () => {
-      document.removeEventListener('pointerdown', close)
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [moreOpen])
 
   useEffect(() => {
     if (!desktopMenuOpen) return
@@ -674,15 +654,6 @@ export default function PublicHeader({
   const overflowCategoryLinks = shouldCollapseCategoryLinks
     ? categoryPrimaryLinks?.slice(3) ?? []
     : []
-  const moreLinks = [
-    { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
-    { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: UserRound },
-    { href: localizePublicHref(locale, '/terms'), label: t.terms, icon: FileText },
-    { href: localizePublicHref(locale, '/privacy'), label: t.privacy, icon: ShieldCheck },
-    { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
-    { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
-  ]
-
   const highlightedMarketCodes = new Set(['se', 'de'])
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
@@ -783,7 +754,6 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
-    setMoreOpen(false)
     setDesktopMenuOpen(null)
   }
 
@@ -1042,42 +1012,6 @@ export default function PublicHeader({
                   <span className="text-[10px] font-medium">{t.signIn}</span>
                 </button>
               )}
-              <div ref={moreRef} className="relative flex h-full">
-                <button
-                  type="button"
-                  onClick={() => setMoreOpen((current) => !current)}
-                  aria-label={t.more}
-                  aria-expanded={moreOpen}
-                  aria-haspopup="menu"
-                  className="flex min-w-[44px] flex-col items-center justify-center px-0 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                >
-                  <Menu className="h-[20px] w-[20px]" strokeWidth={1.8} />
-                  <span className="text-[10px] font-medium">{t.more}</span>
-                </button>
-                <div
-                  className={`absolute right-0 top-full z-50 w-[280px] pt-2 transition duration-150 ${
-                    moreOpen
-                      ? 'pointer-events-auto translate-y-0 opacity-100'
-                      : 'pointer-events-none -translate-y-1 opacity-0'
-                  }`}
-                >
-                  <div role="menu" className="rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]">
-                    {moreLinks.map(({ href, label, icon: Icon }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        onClick={() => setMoreOpen(false)}
-                        className="flex items-center gap-3 rounded-[11px] px-3 py-3 text-sm font-medium transition hover:bg-[#f2f6f7]"
-                      >
-                        <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#f2f6ff] text-[#0866ff]">
-                          <Icon className="h-[17px] w-[17px]" />
-                        </span>
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
               <button
                 type="button"
                 onClick={() => setMarketSelectorOpen(true)}
