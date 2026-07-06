@@ -3,6 +3,7 @@
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { MapPin } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { getMapStyle } from '@/lib/map-style'
 
 type ListingLocationMapProps = {
   latitude?: number | null
@@ -13,8 +14,6 @@ type ListingLocationMapProps = {
   country?: string | null
   approximate?: boolean
 }
-
-const fallbackStyleUrl = 'https://tiles.openfreemap.org/styles/liberty'
 
 export default function ListingLocationMap({
   latitude,
@@ -28,7 +27,7 @@ export default function ListingLocationMap({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markerRef = useRef<MapLibreMarker | null>(null)
-  const styleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || fallbackStyleUrl
+  const mapStyle = getMapStyle()
   const hasCoordinates =
     typeof latitude === 'number' &&
     typeof longitude === 'number' &&
@@ -58,7 +57,7 @@ export default function ListingLocationMap({
 
       const map = new maplibregl.Map({
         container: containerRef.current,
-        style: styleUrl,
+        style: mapStyle,
         center: coordinates,
         zoom: 12,
         attributionControl: { compact: true },
@@ -81,7 +80,7 @@ export default function ListingLocationMap({
       mapRef.current?.remove()
       mapRef.current = null
     }
-  }, [latitude, longitude, styleUrl])
+  }, [latitude, longitude, mapStyle])
 
   if (!hasCoordinates) {
     return (

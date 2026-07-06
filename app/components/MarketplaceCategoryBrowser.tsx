@@ -31,6 +31,7 @@ import CountryFlag from './CountryFlag'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips, translateListingVehicleValue } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
+import { getMapStyle } from '@/lib/map-style'
 import { normalizeSwedishLocationName, swedishCounties } from '@/lib/swedish-locations'
 
 export type MarketplaceListing = {
@@ -1460,7 +1461,7 @@ function MarketplaceMapPanel({
       const first = mapListings[0]?.coordinates || [14.5, 57.8]
       mapRef.current = new maplibregl.Map({
         container: containerRef.current,
-        style: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty',
+        style: getMapStyle(),
         center: first,
         zoom: mapListings.length > 1 ? 4 : 8,
         attributionControl: { compact: true },
