@@ -592,7 +592,7 @@ export default function PublicHeader({
         title: t.buyTitle,
         text: t.buyText,
         cta: t.buyCta,
-        ctaHref: localizePublicHref(locale, '/marketplace/cars'),
+        ctaHref: localizePublicHref(locale, '/marketplace/vehicles'),
         items: buyItems,
         features: [
           { title: t.verifiedSellers, text: t.verifiedSellersText, icon: ShieldCheck },
@@ -1509,7 +1509,7 @@ export default function PublicHeader({
             <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
           </Link>
           <Link
-            href={localizePublicHref(locale, '/marketplace/cars')}
+            href={localizePublicHref(locale, '/marketplace/vehicles')}
             onClick={closeMobile}
             className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
           >

@@ -29,16 +29,21 @@ export const getPublishedMarketplaceListings = unstable_cache(
 )
 
 export const getPublishedMarketplaceCategoryListings = unstable_cache(
-  async (category: MarketplaceCategorySlug, limit = 120) => {
-    const { data } = await createAdminClient()
+  async (category: MarketplaceCategorySlug | 'vehicles', limit = 120) => {
+    let query = createAdminClient()
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
       .eq('status', 'published')
-      .eq('category', category)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })
       .limit(limit)
+
+    if (category !== 'vehicles') {
+      query = query.eq('category', category)
+    }
+
+    const { data } = await query
 
     return data || []
   },

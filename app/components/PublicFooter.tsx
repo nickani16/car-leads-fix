@@ -25,7 +25,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alla fordon', '/marketplace/cars'],
+          ['Alla fordon', '/marketplace/vehicles'],
           ['Bilar', '/cars'],
           ['Transportbilar', '/vans'],
           ['Lastbilar', '/trucks'],
@@ -47,7 +47,7 @@ const footerCopy = {
       {
         title: 'Köp',
         links: [
-          ['Sök fordon', '/marketplace/cars'],
+          ['Sök fordon', '/marketplace/vehicles'],
           ['Sparade sökningar', '/saved-searches'],
           ['Jämför fordon', '/compare-vehicles'],
           ['Fordonshistorik', '/vehicle-history'],
@@ -114,7 +114,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alle Fahrzeuge', '/marketplace/cars'],
+          ['Alle Fahrzeuge', '/marketplace/vehicles'],
           ['Autos', '/cars'],
           ['Transporter', '/vans'],
           ['Lkw', '/trucks'],
@@ -136,7 +136,7 @@ const footerCopy = {
       {
         title: 'Kaufen',
         links: [
-          ['Fahrzeuge suchen', '/marketplace/cars'],
+          ['Fahrzeuge suchen', '/marketplace/vehicles'],
           ['Gespeicherte Suchen', '/saved-searches'],
           ['Fahrzeuge vergleichen', '/compare-vehicles'],
           ['Fahrzeughistorie', '/vehicle-history'],
@@ -203,7 +203,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['All vehicles', '/marketplace/cars'],
+          ['All vehicles', '/marketplace/vehicles'],
           ['Cars', '/cars'],
           ['Vans', '/vans'],
           ['Trucks', '/trucks'],
@@ -225,7 +225,7 @@ const footerCopy = {
       {
         title: 'Buy',
         links: [
-          ['Search vehicles', '/marketplace/cars'],
+          ['Search vehicles', '/marketplace/vehicles'],
           ['Saved searches', '/saved-searches'],
           ['Compare vehicles', '/compare-vehicles'],
           ['Vehicle history', '/vehicle-history'],

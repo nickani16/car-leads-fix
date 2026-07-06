@@ -30,7 +30,7 @@ import {
 import { euCountryCodes } from '@/lib/eu-countries'
 
 export function generateStaticParams() {
-  return marketplaceCategories.map(({ slug }) => ({ category: slug }))
+  return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
 }
 
 export async function generateMetadata({
@@ -42,7 +42,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
-  const category = getMarketplaceCategory(requestedCategory)
+  const category = requestedCategory === 'vehicles'
+    ? getAggregateMarketplaceCategory()
+    : getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const locale: PublicLocale =
@@ -85,14 +87,19 @@ export default async function MarketplaceCategoryPage({
   params: Promise<{ category: string }>
 }) {
   const { category: requestedCategory } = await params
+  if (requestedCategory === 'all' || requestedCategory === 'all-vehicles' || requestedCategory === 'alla-fordon') {
+    permanentRedirect('/marketplace/vehicles')
+  }
   if (marketplaceCategoryAliases[requestedCategory]) {
     permanentRedirect(`/marketplace/${marketplaceCategoryAliases[requestedCategory]}`)
   }
-  if (!marketplaceCategories.some(({ slug }) => slug === requestedCategory)) {
+  if (requestedCategory !== 'vehicles' && !marketplaceCategories.some(({ slug }) => slug === requestedCategory)) {
     notFound()
   }
 
-  const category = getMarketplaceCategory(requestedCategory)
+  const category = requestedCategory === 'vehicles'
+    ? getAggregateMarketplaceCategory()
+    : getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
@@ -114,7 +121,7 @@ export default async function MarketplaceCategoryPage({
   const displayCurrency = displayCurrencyForMarket(marketCode)
 
   const data = await getPublishedMarketplaceCategoryListings(
-    normalizeMarketplaceCategory(requestedCategory),
+    requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
     120,
   )
   const sellerTrust = await getMarketplaceSellerTrustByUserIds(
@@ -131,6 +138,7 @@ export default async function MarketplaceCategoryPage({
       })
       return {
         id: listing.id,
+        category: listing.category,
         make: listing.make || '',
         model: listing.model || '',
         title: listing.title,
@@ -145,6 +153,7 @@ export default async function MarketplaceCategoryPage({
         equipment: listing.equipment,
         country: listing.country_code,
         city: listing.city,
+        municipality: listing.municipality,
         priceLabel: price.label,
         priceValue: Number(listing.price),
         imageAvailable: Boolean(listing.images?.[0]),
@@ -271,6 +280,22 @@ function getMarketplaceSeoCopy(
     title: `${label} for sale | Used and new | Autorell`,
     description: trimMeta(`Search ${lowerLabel} for sale across Europe. Compare used and new listings from private and business sellers.`),
   }
+}
+
+function getAggregateMarketplaceCategory() {
+  return {
+    slug: 'vehicles',
+    labels: {
+      sv: 'Alla fordon',
+      en: 'All vehicles',
+      de: 'Alle Fahrzeuge',
+    },
+    singular: {
+      sv: 'fordon',
+      en: 'vehicle',
+      de: 'Fahrzeug',
+    },
+  } as const
 }
 
 function normalizeFilterLabel(filter?: string) {
