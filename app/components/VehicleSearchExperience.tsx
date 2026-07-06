@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
@@ -34,7 +35,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
-type SearchMode = 'sale' | 'leasing' | 'rental'
+type SearchMode = 'sale' | 'leasing'
 
 export type VehicleSearchListing = {
   id: string
@@ -67,7 +68,6 @@ export type VehicleSearchListing = {
 const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
   { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Till salu', hint: 'Privata och företag' },
   { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
-  { key: 'rental', label: 'Uthyrning', mobileLabel: 'Hyra', hint: 'Hyresfordon' },
 ]
 
 const categories = [
@@ -100,7 +100,7 @@ const countryCenters: Record<string, [number, number]> = {
 }
 
 const marketOptions = [
-  { value: '', label: 'Alla marknader' },
+  { value: '', label: 'Hela Europa' },
   { value: 'AT', label: 'Austria' },
   { value: 'BE', label: 'Belgique / Belgie' },
   { value: 'DK', label: 'Danmark' },
@@ -113,6 +113,11 @@ const marketOptions = [
   { value: 'ES', label: 'España' },
   { value: 'SE', label: 'Sverige' },
 ]
+
+const countryFilterOptions = marketOptions.map((option) => ({
+  ...option,
+  label: option.value ? option.label : 'Hela Europa',
+}))
 
 export default function VehicleSearchExperience({
   listings,
@@ -154,9 +159,16 @@ export default function VehicleSearchExperience({
   const [fuel, setFuel] = useState('')
   const [gearbox, setGearbox] = useState('')
   const [bodyType, setBodyType] = useState('')
+  const [condition, setCondition] = useState('')
+  const [color, setColor] = useState('')
   const [sellerType, setSellerType] = useState('all')
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [fourWheelDrive, setFourWheelDrive] = useState(false)
+  const [leasingPossible, setLeasingPossible] = useState(false)
   const [equipmentQuery, setEquipmentQuery] = useState('')
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const currentCategory = categories.find((item) => item.key === category) || categories[0]
+  const filterProfile = categoryFilterProfile(category)
 
   const optionListings = useMemo(
     () => listings.filter((listing) => (category === 'all' || listing.category === category) && (!country || listing.country === country)),
@@ -196,6 +208,14 @@ export default function VehicleSearchExperience({
     () => [...new Set(optionListings.map((listing) => listing.bodyType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
     [optionListings],
   )
+  const conditions = useMemo(
+    () => [...new Set(optionListings.map((listing) => listing.condition).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
+  )
+  const colors = useMemo(
+    () => [...new Set(optionListings.map((listing) => listing.color).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [optionListings],
+  )
   const priceBounds = useMemo(() => {
     const prices = listings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
     const max = prices.length ? Math.max(...prices) : 700000
@@ -223,8 +243,13 @@ export default function VehicleSearchExperience({
       if (fuel && listing.fuelType !== fuel) return false
       if (gearbox && listing.gearbox !== gearbox) return false
       if (bodyType && listing.bodyType !== bodyType) return false
+      if (condition && listing.condition !== condition) return false
+      if (color && listing.color !== color) return false
       if (sellerType === 'business' && !listing.sellerIsTrader) return false
       if (sellerType === 'private' && listing.sellerIsTrader) return false
+      if (verifiedOnly && listing.sellerTrust !== 'verified') return false
+      if (fourWheelDrive && !(listing.equipment || '').toLowerCase().includes('fyrhjuls')) return false
+      if (leasingPossible && !(listing.equipment || '').toLowerCase().includes('leasing')) return false
       if (equipmentQuery.trim() && !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())) return false
       if (minPriceValue !== null && listing.priceValue < minPriceValue) return false
       if (maxPriceValue !== null && listing.priceValue > maxPriceValue) return false
@@ -256,7 +281,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       return 0
     })
-  }, [bodyType, category, country, equipmentQuery, fuel, gearbox, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, sellerType, sortBy])
+  }, [bodyType, category, color, condition, country, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     setQuery(initialQuery)
@@ -272,7 +297,12 @@ export default function VehicleSearchExperience({
     setFuel('')
     setGearbox('')
     setBodyType('')
+    setCondition('')
+    setColor('')
     setSellerType('all')
+    setVerifiedOnly(false)
+    setFourWheelDrive(false)
+    setLeasingPossible(false)
     setEquipmentQuery('')
     setSortBy('latest')
   }
@@ -286,6 +316,7 @@ export default function VehicleSearchExperience({
   }
 
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
+  const CurrentCategoryIcon = currentCategory.icon
   const visibleCount = filteredListings.length
   const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
 
@@ -316,7 +347,7 @@ export default function VehicleSearchExperience({
             </span>
             <span className="inline-flex items-center gap-2">
               <CountryFlag code={country || 'SE'} className="h-5 w-5" />
-              <span>{country}</span>
+              <span>{country || 'EU'}</span>
             </span>
           </div>
         </header>
@@ -324,7 +355,7 @@ export default function VehicleSearchExperience({
         <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white">
             <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
-              <div className="grid grid-cols-3 border-b border-[#dfe4ec]">
+              <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
@@ -354,8 +385,8 @@ export default function VehicleSearchExperience({
               />
 
               <div className="min-w-0 max-w-full overflow-hidden">
-                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 py-5 sm:px-6">
-                <label className="flex h-12 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
+                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-4 sm:px-6 sm:py-5">
+                <label className="flex h-11 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-12">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
@@ -366,7 +397,7 @@ export default function VehicleSearchExperience({
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
@@ -395,46 +426,17 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px] lg:grid-cols-1">
-                  <label className="relative lg:hidden">
-                    <span className="sr-only">Kategori</span>
-                    <select
-                      value={category}
-                      onChange={(event) => {
-                        setCategory(event.target.value)
-                        setMake('')
-                        setModel('')
-                      }}
-                      className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
-                    >
-                      {categories.map((option) => (
-                        <option key={option.key} value={option.key}>{option.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" />
-                  </label>
-                  <label className="relative">
-                    <span className="sr-only">Land</span>
-                    <select
-                      value={country}
-                      onChange={(event) => {
-                        setCountry(event.target.value)
-                        setMake('')
-                        setModel('')
-                      }}
-                      className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
-                    >
-                      {marketOptions.map((option) => (
-                        <option key={option.value || 'all'} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" />
-                  </label>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[#475467]">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef5ff] px-3 py-1.5 text-[#0866ff]">
+                    <CurrentCategoryIcon className="h-4 w-4" />
+                    {currentCategory.label}
+                  </span>
+                  <span className="inline-flex items-center rounded-full bg-[#f2f4f7] px-3 py-1.5">
+                    {country ? getEuCountryName(country, locale) : 'Hela Europa'}
+                  </span>
                 </div>
                 {filtersOpen ? (
-                  <div className="mt-4 grid gap-4 rounded-[6px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
+                  <div data-filter-profile={filterProfile.join(' ')} className="mt-4 grid gap-4 rounded-[6px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
                     <div className="flex items-center justify-between border-b border-[#e1e9f5] pb-3">
                       <div>
                         <p className="text-sm font-semibold text-[#101828]">Sökfilter</p>
@@ -449,6 +451,59 @@ export default function VehicleSearchExperience({
                         <X className="h-4 w-4" />
                       </button>
                     </div>
+                    <FilterSection title="Marknad">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {countryFilterOptions.map((option) => (
+                          <button
+                            key={option.value || 'eu'}
+                            type="button"
+                            onClick={() => {
+                              setCountry(option.value)
+                              setMake('')
+                              setModel('')
+                            }}
+                            className={`flex h-11 items-center gap-2 rounded-[8px] border px-3 text-left text-sm font-medium transition ${
+                              country === option.value
+                                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
+                            }`}
+                          >
+                            <CountryFlag code={option.value || 'eu'} className="h-5 w-5 rounded-full" />
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </FilterSection>
+                    <FilterSection title="Fordonstyp">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {categories.map((item) => {
+                          const Icon = item.icon
+                          const active = category === item.key
+                          return (
+                            <button
+                              key={item.key}
+                              type="button"
+                              onClick={() => {
+                                setCategory(item.key)
+                                setMake('')
+                                setModel('')
+                              }}
+                              className={`flex min-h-14 items-center gap-3 rounded-[8px] border px-3 text-left transition ${
+                                active
+                                  ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                                  : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
+                              }`}
+                            >
+                              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[8px] ${active ? 'bg-white' : 'bg-[#f3f6fb]'}`}>
+                                <Icon className="h-5 w-5" />
+                              </span>
+                              <span className="block text-sm font-semibold">{item.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </FilterSection>
+                    <FilterSection title="Fordon">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <FilterSelect label="Märke" value={make} onChange={(value) => {
                         setMake(value)
@@ -456,6 +511,7 @@ export default function VehicleSearchExperience({
                       }} options={makes} />
                       <FilterSelect label="Modell" value={model} onChange={setModel} options={models} />
                     </div>
+                    </FilterSection>
                     <RangeFilter
                       title="Pris"
                       minValue={minPrice}
@@ -493,6 +549,8 @@ export default function VehicleSearchExperience({
                       <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
                       <FilterSelect label="Växellåda" value={gearbox} onChange={setGearbox} options={gearboxes} />
                       <FilterSelect label="Kaross / typ" value={bodyType} onChange={setBodyType} options={bodyTypes} />
+                      <FilterSelect label="Skick" value={condition} onChange={setCondition} options={conditions} />
+                      <FilterSelect label="Färg" value={color} onChange={setColor} options={colors} />
                       <FilterSelect
                         label="Säljartyp"
                         value={sellerType}
@@ -503,6 +561,9 @@ export default function VehicleSearchExperience({
                           { value: 'private', label: 'Privatperson' },
                         ]}
                       />
+                      <ToggleFilter label="Verifierade annonser" checked={verifiedOnly} onChange={setVerifiedOnly} />
+                      <ToggleFilter label="Fyrhjulsdrift" checked={fourWheelDrive} onChange={setFourWheelDrive} />
+                      <ToggleFilter label="Leasing möjlig" checked={leasingPossible} onChange={setLeasingPossible} />
                       <label className="block sm:col-span-2">
                         <span className="mb-1.5 block text-xs font-semibold text-[#475467]">Utrustning, drag m.m.</span>
                         <input
@@ -645,6 +706,47 @@ function CategoryRail({
         })}
       </div>
     </aside>
+  )
+}
+
+function FilterSection({
+  title,
+  children,
+}: {
+  title: string
+  children: ReactNode
+}) {
+  return (
+    <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
+      <h3 className="mb-3 text-sm font-semibold text-[#101828]">{title}</h3>
+      {children}
+    </section>
+  )
+}
+
+function ToggleFilter({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`flex h-11 items-center justify-between rounded-[8px] border px-3 text-left text-sm font-medium transition ${
+        checked
+          ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+          : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
+      }`}
+      aria-pressed={checked}
+    >
+      {label}
+      <span className={`h-4 w-4 rounded-[4px] border ${checked ? 'border-[#0866ff] bg-[#0866ff]' : 'border-[#98a2b3]'}`} />
+    </button>
   )
 }
 
@@ -1183,6 +1285,22 @@ function listingCoordinates(listing: VehicleSearchListing, country: string, inde
     base[0] + Math.cos(ring * Math.PI * 2) * radius,
     base[1] + Math.sin(ring * Math.PI * 2) * radius * 0.55,
   ]
+}
+
+type VehicleFilterKey = 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'year' | 'mileage'
+
+function categoryFilterProfile(category: string): VehicleFilterKey[] {
+  if (category === 'caravans') return ['condition', 'bodyType', 'year']
+  if (category === 'agriculture' || category === 'construction') {
+    return ['bodyType', 'condition', 'fuel', 'gearbox', 'year']
+  }
+  if (category === 'electric-bikes' || category === 'e-scooters') {
+    return ['condition', 'bodyType', 'year', 'mileage']
+  }
+  if (category === 'motorcycles') {
+    return ['condition', 'fuel', 'gearbox', 'bodyType', 'year', 'mileage']
+  }
+  return ['fuel', 'gearbox', 'bodyType', 'condition', 'year', 'mileage']
 }
 
 function parseOptionalNumber(value: string | number | null | undefined) {
