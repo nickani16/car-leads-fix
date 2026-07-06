@@ -14,7 +14,7 @@ type ListingLocationMapProps = {
   approximate?: boolean
 }
 
-const fallbackStyleUrl = 'https://demotiles.maplibre.org/style.json'
+const fallbackStyleUrl = 'https://tiles.openfreemap.org/styles/liberty'
 
 export default function ListingLocationMap({
   latitude,

@@ -1460,7 +1460,7 @@ function MarketplaceMapPanel({
       const first = mapListings[0]?.coordinates || [14.5, 57.8]
       mapRef.current = new maplibregl.Map({
         container: containerRef.current,
-        style: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://demotiles.maplibre.org/style.json',
+        style: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty',
         center: first,
         zoom: mapListings.length > 1 ? 4 : 8,
         attributionControl: { compact: true },
