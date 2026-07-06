@@ -16,6 +16,7 @@ import {
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingReportButton from '@/app/components/ListingReportButton'
+import ListingLocationMap from '@/app/components/ListingLocationMap'
 import MessageSellerButton from '@/app/components/MessageSellerButton'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
@@ -64,8 +65,12 @@ type ListingRow = {
   equipment: string | null
   equipment_keys: string[] | null
   country_code: string
+  country: string | null
   city: string
   municipality: string | null
+  address: string | null
+  latitude: number | null
+  longitude: number | null
   price: number | string
   currency: string
   original_price: number | string | null
@@ -210,7 +215,10 @@ export default async function ListingDetailPage({
   const priceDropPercent = hasPriceDrop
     ? Math.max(1, Math.round((priceDropAmount / (originalPrice ?? currentPrice)) * 100))
     : null
-  const countryName = getEuCountryName(listing.country_code, locale)
+  const countryName =
+    listing.country && listing.country.length > 2
+      ? listing.country
+      : getEuCountryName(listing.country || listing.country_code, locale)
   const location = [listing.city, listing.municipality, countryName].filter(Boolean).join(', ')
   const sellerDetails = await getSellerDetails(listing.id, listing.seller_type, locale)
   const sellerVerification: SellerVerification = {
@@ -417,6 +425,15 @@ export default async function ListingDetailPage({
                 </p>
               </section>
             ) : null}
+
+            <ListingLocationMap
+              title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
+              address={listing.address}
+              city={listing.city}
+              country={countryName || listing.country_code}
+              latitude={listing.latitude}
+              longitude={listing.longitude}
+            />
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">

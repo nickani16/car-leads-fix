@@ -51,6 +51,7 @@ export type MarketplaceListing = {
   country: string
   city?: string | null
   municipality?: string | null
+  address?: string | null
   latitude?: number | null
   longitude?: number | null
   priceLabel: string
@@ -1459,7 +1460,7 @@ function MarketplaceMapPanel({
       const first = mapListings[0]?.coordinates || [14.5, 57.8]
       mapRef.current = new maplibregl.Map({
         container: containerRef.current,
-        style: 'https://demotiles.maplibre.org/style.json',
+        style: process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://demotiles.maplibre.org/style.json',
         center: first,
         zoom: mapListings.length > 1 ? 4 : 8,
         attributionControl: { compact: true },

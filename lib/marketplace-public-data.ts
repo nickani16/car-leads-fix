@@ -9,7 +9,7 @@ import { createAdminClient } from './supabase/admin'
 const publicListingTtl = 300
 
 export const publicSearchListingSelect =
-  'id,category,title,make,model,variant,body_type,fuel_type,model_year,mileage_km,city,country_code,price,currency'
+  'id,category,title,make,model,variant,body_type,fuel_type,model_year,mileage_km,city,country_code,country,address,latitude,longitude,price,currency'
 
 export const getPublishedMarketplaceListings = unstable_cache(
   async (limit = 24) => {

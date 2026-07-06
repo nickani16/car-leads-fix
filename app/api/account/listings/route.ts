@@ -21,6 +21,7 @@ import {
   normalizeEquipmentKeys,
 } from '@/lib/listing-equipment'
 import { validatePostalCode } from '@/lib/postal-code-validation'
+import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -311,6 +312,7 @@ export async function POST(request: Request) {
       `Strukturerad Autorell-annons: ${make} ${model}.`
     const city = text(form, 'city')
     const municipality = text(form, 'municipality')
+    const address = text(form, 'addressLine1')
     const postalCode = text(form, 'postalCode')
     if (postalCode && !validatePostalCode(postalCode, profile.country_code)) {
       return NextResponse.json(
@@ -476,6 +478,13 @@ export async function POST(request: Request) {
       }, 0),
     )
     const reviewStatus = riskScore >= 50 ? 'flagged' : 'approved'
+    const geocoded = await geocodeListingLocation({
+      address,
+      city,
+      country: profile.country_code,
+    })
+    const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
+    const longitude = geocoded?.longitude ?? parseCoordinate(text(form, 'longitude'))
 
     const images = await Promise.all(
       files.map((file, index) => uploadImage(admin, file, user.id, index)),
@@ -517,8 +526,12 @@ export async function POST(request: Request) {
         equipment: equipmentText || null,
         service_history: text(form, 'serviceHistory') || null,
         country_code: profile.country_code,
+        country: profile.country_code,
         city,
         municipality: municipality || null,
+        address: address || null,
+        latitude,
+        longitude,
         postal_code: postalCode || null,
         price,
         currency,
@@ -574,7 +587,16 @@ export async function POST(request: Request) {
         machine_type: identifiers.machineType || null,
         metadata: {
           agriculture_object_type: identifiers.agricultureObjectType,
-          address_line_1: text(form, 'addressLine1') || null,
+          address_line_1: address || null,
+          location: {
+            address: address || null,
+            city,
+            municipality: municipality || null,
+            country: profile.country_code,
+            latitude,
+            longitude,
+            geocoding_provider: process.env.GEOCODING_PROVIDER || process.env.MAP_GEOCODING_PROVIDER || null,
+          },
           color_choice: colorChoice,
           seller_note_original: sellerNote || null,
           technical_data: technicalData,

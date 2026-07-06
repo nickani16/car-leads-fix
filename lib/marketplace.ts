@@ -127,4 +127,4 @@ export function formatMarketplacePrice(
 }
 
 export const marketplacePublicSelect =
-  'id,seller_user_id,listing_number,reference_number,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,country_code,city,municipality,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,created_at,published_at,expires_at'
+  'id,seller_user_id,listing_number,reference_number,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,country_code,country,city,municipality,address,latitude,longitude,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,created_at,published_at,expires_at'

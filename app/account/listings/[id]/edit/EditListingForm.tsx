@@ -17,6 +17,10 @@ type EditableListing = {
   price: number
   currency: string
   city: string
+  country: string
+  address: string
+  latitude: number | null
+  longitude: number | null
   description: string
   equipmentKeys: string[]
   sellerType: 'private' | 'business'
@@ -33,6 +37,7 @@ export default function EditListingForm({
   const router = useRouter()
   const [price, setPrice] = useState(String(listing.price))
   const [city, setCity] = useState(listing.city)
+  const [address, setAddress] = useState(listing.address)
   const [description, setDescription] = useState(listing.description)
   const [equipmentKeys, setEquipmentKeys] = useState(listing.equipmentKeys)
   const [phoneVisibility, setPhoneVisibility] = useState(listing.phoneVisibility || 'public')
@@ -51,6 +56,10 @@ export default function EditListingForm({
         action: 'update_listing',
         price,
         city,
+        country: listing.country,
+        address,
+        latitude: listing.latitude,
+        longitude: listing.longitude,
         description,
         equipmentKeys,
         phoneVisibility,
@@ -92,6 +101,15 @@ export default function EditListingForm({
             onChange={(event) => setCity(event.target.value)}
             className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
             required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold">Gatuadress</span>
+          <input
+            value={address}
+            onChange={(event) => setAddress(event.target.value)}
+            className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            autoComplete="street-address"
           />
         </label>
       </div>

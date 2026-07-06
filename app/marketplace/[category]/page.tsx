@@ -154,6 +154,8 @@ export default async function MarketplaceCategoryPage({
         country: listing.country_code,
         city: listing.city,
         municipality: listing.municipality,
+        latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
+        longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
         priceLabel: price.label,
         priceValue: Number(listing.price),
         imageAvailable: Boolean(listing.images?.[0]),

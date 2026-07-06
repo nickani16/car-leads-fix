@@ -26,7 +26,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,title,category,price,currency,city,description,equipment,status,seller_user_id,seller_type,phone_visibility')
+    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,status,seller_user_id,seller_type,phone_visibility')
     .eq('id', id)
     .maybeSingle()
 
@@ -65,6 +65,10 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             price: Number(listing.price),
             currency: listing.currency,
             city: listing.city,
+            country: listing.country || listing.country_code,
+            address: listing.address || '',
+            latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
+            longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
             description: listing.description || '',
             equipmentKeys: parseEquipmentText(listing.equipment),
             sellerType: listing.seller_type,
