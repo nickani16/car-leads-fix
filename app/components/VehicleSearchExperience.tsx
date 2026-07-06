@@ -13,6 +13,7 @@ import {
   Layers,
   MapPin,
   Search,
+  Scale,
   SlidersHorizontal,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -53,8 +54,13 @@ export type VehicleSearchListing = {
   priceLabel: string
   priceValue: number
   imageUrl: string | null
+  sellerLogoUrl: string | null
+  sellerTrust: 'verified' | 'unverified'
   sellerName: string
   sellerIsTrader: boolean
+  condition: string | null
+  color: string | null
+  equipment: string | null
 }
 
 const tabs: Array<{ key: SearchMode; label: string; hint: string }> = [
@@ -105,6 +111,34 @@ export default function VehicleSearchExperience({
   const [minYear, setMinYear] = useState('')
   const [maxYear, setMaxYear] = useState('')
   const [maxMileage, setMaxMileage] = useState('')
+  const [fuel, setFuel] = useState('')
+  const [gearbox, setGearbox] = useState('')
+  const [bodyType, setBodyType] = useState('')
+  const [sellerType, setSellerType] = useState('all')
+  const [equipmentQuery, setEquipmentQuery] = useState('')
+
+  const fuels = useMemo(
+    () => [...new Set(listings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [listings],
+  )
+  const gearboxes = useMemo(
+    () => [...new Set(listings.map((listing) => listing.gearbox).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [listings],
+  )
+  const bodyTypes = useMemo(
+    () => [...new Set(listings.map((listing) => listing.bodyType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
+    [listings],
+  )
+  const priceBounds = useMemo(() => {
+    const prices = listings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
+    const max = prices.length ? Math.max(...prices) : 700000
+    return { min: 0, max: Math.max(700000, Math.ceil(max / 10000) * 10000) }
+  }, [listings])
+  const mileageBounds = useMemo(() => {
+    const mileages = listings.map((listing) => listing.mileageKm).filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
+    const max = mileages.length ? Math.max(...mileages) : 200000
+    return { min: 0, max: Math.max(200000, Math.ceil(max / 10000) * 10000) }
+  }, [listings])
 
   const filteredListings = useMemo(() => {
     if (mode !== 'sale') return []
@@ -117,6 +151,12 @@ export default function VehicleSearchExperience({
     const matches = listings.filter((listing) => {
       if (category !== 'all' && listing.category !== category) return false
       if (country && listing.country !== country) return false
+      if (fuel && listing.fuelType !== fuel) return false
+      if (gearbox && listing.gearbox !== gearbox) return false
+      if (bodyType && listing.bodyType !== bodyType) return false
+      if (sellerType === 'business' && !listing.sellerIsTrader) return false
+      if (sellerType === 'private' && listing.sellerIsTrader) return false
+      if (equipmentQuery.trim() && !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())) return false
       if (minPriceValue !== null && listing.priceValue < minPriceValue) return false
       if (maxPriceValue !== null && listing.priceValue > maxPriceValue) return false
       const listingYear = parseOptionalNumber(listing.year)
@@ -142,7 +182,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       return 0
     })
-  }, [category, country, listings, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, query, sortBy])
+  }, [bodyType, category, country, equipmentQuery, fuel, gearbox, listings, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, query, sellerType, sortBy])
 
   const resetFilters = () => {
     setQuery('')
@@ -152,6 +192,11 @@ export default function VehicleSearchExperience({
     setMinYear('')
     setMaxYear('')
     setMaxMileage('')
+    setFuel('')
+    setGearbox('')
+    setBodyType('')
+    setSellerType('all')
+    setEquipmentQuery('')
     setSortBy('latest')
   }
 
@@ -191,7 +236,7 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 flex-1 lg:grid-cols-[minmax(520px,clamp(560px,38vw,720px))_minmax(560px,1fr)]">
+        <section className="grid min-h-0 flex-1 lg:grid-cols-[minmax(640px,clamp(680px,42vw,820px))_minmax(520px,1fr)]">
           <div className="min-h-0 overflow-y-auto border-r border-[#eceff4] bg-white">
             <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6">
               <div className="flex overflow-x-auto border-b border-[#dfe4ec] sm:grid sm:grid-cols-3 sm:overflow-visible">
@@ -205,7 +250,6 @@ export default function VehicleSearchExperience({
                     }`}
                   >
                     <span className="block">{tab.label}</span>
-                    <span className="mt-1 hidden text-xs font-medium text-[#667085] sm:block">{tab.hint}</span>
                     {mode === tab.key ? <span className="absolute inset-x-0 -bottom-px h-[3px] bg-[#0866ff]" /> : null}
                   </button>
                 ))}
@@ -218,7 +262,8 @@ export default function VehicleSearchExperience({
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
-                    className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
+                    style={{ backgroundColor: 'transparent', boxShadow: 'none' }}
+                    className="min-w-0 flex-1 bg-[#f1f2f4] text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
                   />
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
@@ -272,13 +317,63 @@ export default function VehicleSearchExperience({
                   </label>
                 </div>
                 {filtersOpen ? (
-                  <div className="mt-3 grid gap-3 rounded-[6px] border border-[#d9e1ec] bg-white p-4 shadow-sm">
+                  <div className="mt-3 grid gap-4 rounded-[6px] border border-[#d9e1ec] bg-white p-4 shadow-sm">
+                    <RangeFilter
+                      title="Pris"
+                      minValue={minPrice}
+                      maxValue={maxPrice}
+                      onMinChange={setMinPrice}
+                      onMaxChange={setMaxPrice}
+                      minLimit={priceBounds.min}
+                      maxLimit={priceBounds.max}
+                      unit="SEK"
+                      step={1000}
+                    />
+                    <RangeFilter
+                      title="Modellår"
+                      minValue={minYear}
+                      maxValue={maxYear}
+                      onMinChange={setMinYear}
+                      onMaxChange={setMaxYear}
+                      minLimit={1950}
+                      maxLimit={new Date().getFullYear() + 1}
+                      step={1}
+                      startLabel="Före 1950"
+                    />
+                    <RangeFilter
+                      title="Miltal"
+                      minValue=""
+                      maxValue={maxMileage}
+                      onMinChange={() => undefined}
+                      onMaxChange={setMaxMileage}
+                      minLimit={mileageBounds.min}
+                      maxLimit={mileageBounds.max}
+                      unit="km"
+                      step={1000}
+                    />
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <FilterInput label="Pris min" value={minPrice} onChange={setMinPrice} suffix="SEK" />
-                      <FilterInput label="Pris max" value={maxPrice} onChange={setMaxPrice} suffix="SEK" />
-                      <FilterInput label="Årsmodell från" value={minYear} onChange={setMinYear} />
-                      <FilterInput label="Årsmodell till" value={maxYear} onChange={setMaxYear} />
-                      <FilterInput label="Max miltal" value={maxMileage} onChange={setMaxMileage} suffix="km" />
+                      <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
+                      <FilterSelect label="Växellåda" value={gearbox} onChange={setGearbox} options={gearboxes} />
+                      <FilterSelect label="Kaross / typ" value={bodyType} onChange={setBodyType} options={bodyTypes} />
+                      <FilterSelect
+                        label="Säljartyp"
+                        value={sellerType}
+                        onChange={setSellerType}
+                        options={[
+                          { value: 'all', label: 'Alla säljare' },
+                          { value: 'business', label: 'Företag' },
+                          { value: 'private', label: 'Privatperson' },
+                        ]}
+                      />
+                      <label className="block sm:col-span-2">
+                        <span className="mb-1.5 block text-xs font-semibold text-[#475467]">Utrustning, drag m.m.</span>
+                        <input
+                          value={equipmentQuery}
+                          onChange={(event) => setEquipmentQuery(event.target.value)}
+                          placeholder="Ex. Dragkrok, navigation, fyrhjulsdrift"
+                          className="h-11 w-full rounded-[5px] border border-[#d0d5dd] bg-white px-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
+                        />
+                      </label>
                       <button
                         type="button"
                         onClick={resetFilters}
@@ -326,7 +421,7 @@ export default function VehicleSearchExperience({
             <div className="border-t border-[#eceff4]">
               {filteredListings.length ? (
                 filteredListings.map((listing) => (
-                  <VehicleResultCard key={listing.id} listing={listing} locale={locale} mode={mode} />
+                  <VehicleResultCard key={listing.id} listing={listing} locale={locale} />
                 ))
               ) : (
                 <div className="px-8 py-14">
@@ -398,14 +493,110 @@ function FilterInput({
   )
 }
 
+function RangeFilter({
+  title,
+  minValue,
+  maxValue,
+  onMinChange,
+  onMaxChange,
+  minLimit,
+  maxLimit,
+  unit = '',
+  step,
+  startLabel,
+}: {
+  title: string
+  minValue: string
+  maxValue: string
+  onMinChange: (value: string) => void
+  onMaxChange: (value: string) => void
+  minLimit: number
+  maxLimit: number
+  unit?: string
+  step: number
+  startLabel?: string
+}) {
+  const rangeValue = Number(maxValue || maxLimit)
+
+  return (
+    <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#101828]">{title}</h3>
+        {maxValue || minValue ? (
+          <button
+            type="button"
+            onClick={() => {
+              onMinChange('')
+              onMaxChange('')
+            }}
+            className="text-xs font-semibold text-[#0866ff]"
+          >
+            Rensa
+          </button>
+        ) : null}
+      </div>
+      <input
+        type="range"
+        min={minLimit}
+        max={maxLimit}
+        step={step}
+        value={rangeValue}
+        onChange={(event) => onMaxChange(event.target.value)}
+        className="autorell-range h-7 w-full accent-[#0866ff]"
+      />
+      <div className="mt-1 flex items-center justify-between text-xs font-semibold text-[#667085]">
+        <span>{startLabel || formatFilterNumber(Number(minValue || minLimit))}</span>
+        <span>{formatFilterNumber(Number(maxValue || maxLimit))}{unit ? ` ${unit}` : ''}+</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <FilterInput label="Min" value={minValue} onChange={onMinChange} suffix={unit} />
+        <FilterInput label="Max" value={maxValue} onChange={onMaxChange} suffix={unit} />
+      </div>
+    </section>
+  )
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: Array<string | { value: string; label: string }>
+}) {
+  return (
+    <label className="relative block">
+      <span className="mb-1.5 block text-xs font-semibold text-[#475467]">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-3 pr-9 text-sm font-medium outline-none transition focus:border-[#0866ff]"
+      >
+        <option value="">Alla</option>
+        {options.map((option) => {
+          const optionValue = typeof option === 'string' ? option : option.value
+          const optionLabel = typeof option === 'string' ? option : option.label
+          return (
+            <option key={optionValue} value={optionValue}>
+              {optionLabel}
+            </option>
+          )
+        })}
+      </select>
+      <ChevronDown className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-[#667085]" />
+    </label>
+  )
+}
+
 function VehicleResultCard({
   listing,
   locale,
-  mode,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
-  mode: SearchMode
 }) {
   const href = localizePublicHref(
     locale,
@@ -429,44 +620,87 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="grid gap-4 border-b border-[#eceff4] px-5 py-5 sm:grid-cols-[220px_minmax(0,1fr)] sm:px-6">
-      <Link href={href} className="group relative aspect-[16/9] overflow-hidden rounded-[6px] bg-[#eef3f8]">
-        {listing.imageUrl ? (
-          <Image
-            src={listing.imageUrl}
-            alt={listing.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 220px"
-            className="object-cover transition duration-500 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="grid h-full place-items-center text-[#0866ff]">
-            <AutorellCarIcon className="h-12 w-12" />
-          </div>
-        )}
-        <button className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md">
-          <Heart className="h-5 w-5" />
-        </button>
-      </Link>
-
-      <div className="min-w-0">
-        <Link href={href} className="text-xl font-medium tracking-[-0.01em] text-[#101828] hover:text-[#0866ff]">
-          {listing.title}
+    <article className="mx-5 my-5 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white shadow-[0_10px_28px_rgba(16,24,40,.05)] sm:mx-6">
+      <div className="grid sm:grid-cols-[230px_minmax(0,1fr)]">
+        <Link href={href} className="group relative h-[190px] overflow-hidden bg-[#eef3f8] sm:h-[205px]">
+          {listing.imageUrl ? (
+            <Image
+              src={listing.imageUrl}
+              alt={listing.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 230px"
+              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-[#0866ff]">
+              <AutorellCarIcon className="h-12 w-12" />
+            </div>
+          )}
+          {listing.sellerTrust === 'verified' ? (
+            <span className="absolute left-3 top-3 rounded-[5px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white">
+              Verifierad
+            </span>
+          ) : null}
+          <button className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md">
+            <Heart className="h-5 w-5" />
+          </button>
+          <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
+          <button className="absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-[#101828] shadow-md">
+            <Scale className="h-4 w-4" />
+            Jämför
+          </button>
         </Link>
-        <p className="mt-1.5 text-base font-medium text-[#667085]">{location}</p>
-        <p className="mt-4 text-xl font-semibold text-[#101828]">
-          {mode === 'leasing' ? 'från ' : ''}
-          {listing.priceLabel}
-          {mode === 'leasing' ? '/mån' : mode === 'rental' ? '/dag' : ''}
-        </p>
-        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-[#101828]">
-          {meta.map((item) => (
-            <span key={String(item)}>{item}</span>
-          ))}
+
+        <div className="min-w-0 px-5 py-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_160px]">
+            <div className="min-w-0">
+              <Link href={href} className="text-xl font-semibold tracking-[-0.02em] text-[#101828] hover:text-[#0866ff]">
+                {listing.title}
+              </Link>
+              <p className="mt-1.5 text-sm font-medium text-[#667085]">{meta.join(' · ')}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {meta.slice(1, 4).map((item) => (
+                  <span key={String(item)} className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-semibold text-[#101828]">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-4 text-sm font-semibold text-[#475467]">
+                {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
+              </p>
+            </div>
+            <div className="text-left xl:text-right">
+              <p className="text-xs font-semibold text-[#667085]">Fast pris</p>
+              <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#101828]">{listing.priceLabel}</p>
+              {listing.sellerIsTrader && listing.sellerLogoUrl ? (
+                <div className="mt-3 flex justify-start xl:justify-end">
+                  <span className="relative block h-9 w-32 overflow-hidden rounded-[5px] bg-white">
+                    <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
+                  </span>
+                </div>
+              ) : (
+                <p className="mt-2 text-sm font-semibold text-[#475467]">
+                  {listing.sellerIsTrader ? listing.sellerName : 'Privatperson'}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-[#edf1f6] pt-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">Land</p>
+              <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#101828]">
+                <MapPin className="h-4 w-4 text-[#0866ff]" />
+                {location}
+              </p>
+            </div>
+            <Link
+              href={href}
+              className="inline-flex h-11 items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0052d6]"
+            >
+              Visa annons
+            </Link>
+          </div>
         </div>
-        <p className="mt-5 text-sm font-medium text-[#475467]">
-          {listing.sellerIsTrader ? listing.sellerName : 'Privat säljare'}
-        </p>
       </div>
     </article>
   )
@@ -659,6 +893,13 @@ function parseOptionalNumber(value: string | number | null | undefined) {
   if (!normalized) return null
   const parsed = Number(normalized)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+function formatFilterNumber(value: number) {
+  return new Intl.NumberFormat('sv-SE', {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(Math.round(value))
 }
 
 function escapeHtml(value: string) {

@@ -102,3 +102,27 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
   }
   return trust
 }
+
+export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
+  const ids = [...new Set(userIds.filter(Boolean))]
+  if (!ids.length) {
+    return new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified' }>()
+  }
+
+  const { data } = await createAdminClient()
+    .from('marketplace_profiles')
+    .select('user_id,account_type,identity_status,business_verification_status,logo_url')
+    .in('user_id', ids)
+
+  const profiles = new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified' }>()
+  for (const profile of data || []) {
+    const businessVerified =
+      profile.account_type === 'business' &&
+      ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
+    profiles.set(profile.user_id, {
+      logoUrl: typeof profile.logo_url === 'string' && profile.logo_url ? profile.logo_url : null,
+      trust: businessVerified ? 'verified' : 'unverified',
+    })
+  }
+  return profiles
+}

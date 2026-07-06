@@ -8,7 +8,10 @@ import {
   formatMarketplacePriceDisplay,
 } from '@/lib/currency-rates'
 import { euCountryCodes } from '@/lib/eu-countries'
-import { getPublishedMarketplaceCategoryListings } from '@/lib/marketplace-public-data'
+import {
+  getMarketplaceSellerPublicProfiles,
+  getPublishedMarketplaceCategoryListings,
+} from '@/lib/marketplace-public-data'
 import { getRequestLocale } from '@/lib/request-locale'
 
 export const metadata: Metadata = {
@@ -31,9 +34,13 @@ export default async function FindCarsPage() {
           : 'SE'
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
   const data = await getPublishedMarketplaceCategoryListings('vehicles', 240)
+  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
+    (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
+  )
 
   const listings: VehicleSearchListing[] = await Promise.all(
     (data || []).map(async (listing) => {
+      const sellerProfile = sellerProfiles.get(listing.seller_user_id || '')
       const price = await formatMarketplacePriceDisplay({
         amount: Number(listing.price),
         currency: listing.currency,
@@ -60,8 +67,13 @@ export default async function FindCarsPage() {
         priceLabel: price.label,
         priceValue: Number(listing.price),
         imageUrl: listing.images?.[0] || null,
+        sellerLogoUrl: sellerProfile?.logoUrl || null,
+        sellerTrust: sellerProfile?.trust || 'unverified',
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',
+        condition: listing.condition,
+        color: listing.color,
+        equipment: listing.equipment,
       }
     }),
   )
