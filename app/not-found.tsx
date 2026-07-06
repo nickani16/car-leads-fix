@@ -159,7 +159,7 @@ export default async function NotFound() {
 
           <div className="mt-8 grid gap-3 sm:flex">
             <Link
-              href={localizePublicHref(locale, '/marketplace/cars')}
+              href={localizePublicHref(locale, '/marketplace/vehicles')}
               className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[16px] bg-[#0866ff] px-6 text-sm font-black text-white shadow-[0_16px_35px_rgba(8,102,255,.25)]"
             >
               <Search className="h-5 w-5" />

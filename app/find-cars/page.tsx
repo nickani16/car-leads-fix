@@ -20,18 +20,24 @@ export const metadata: Metadata = {
     'Sök bilar, transportbilar, lastbilar, motorcyklar, husbilar och andra fordon i Europa med karta och snabba filter.',
 }
 
-export default async function FindCarsPage() {
+export default async function FindCarsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const locale = await getRequestLocale()
+  const resolvedSearchParams = searchParams ? await searchParams : {}
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const defaultCountry =
-    marketCode && euCountryCodes.has(marketCode.toUpperCase())
+    getSearchParam(resolvedSearchParams, 'country') ||
+    (marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
       : locale === 'sv'
         ? 'SE'
         : locale === 'de'
           ? 'DE'
-          : 'SE'
+          : 'SE')
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
   const data = await getPublishedMarketplaceCategoryListings('vehicles', 240)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
@@ -83,6 +89,20 @@ export default async function FindCarsPage() {
       listings={listings}
       locale={locale}
       defaultCountry={defaultCountry}
+      initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
+      initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
+      initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
+      initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
+      initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
+      initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
     />
   )
+}
+
+function getSearchParam(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  return Array.isArray(value) ? value[0] || '' : value || ''
 }

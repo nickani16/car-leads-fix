@@ -333,7 +333,7 @@ export default async function MessagesPage({
             <h2 className="mt-5 text-xl font-semibold">{text.empty}</h2>
             <p className="mt-2 text-sm leading-6 text-[#667085]">{text.emptyText}</p>
             <Link
-              href={localizePublicHref(locale, '/marketplace/cars')}
+              href={localizePublicHref(locale, '/marketplace/vehicles')}
               className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[13px] bg-[#202124] px-5 text-sm font-semibold text-white"
             >
               {text.browse}

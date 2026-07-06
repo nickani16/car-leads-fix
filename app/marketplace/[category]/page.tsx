@@ -1,11 +1,14 @@
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
-import MarketplaceCategoryBrowser, {
-  type MarketplaceListing,
-} from '@/app/components/MarketplaceCategoryBrowser'
-import PublicFooter from '@/app/components/PublicFooter'
-import PublicHeader from '@/app/components/PublicHeader'
+import VehicleSearchExperience, {
+  type VehicleSearchListing,
+} from '@/app/components/VehicleSearchExperience'
+import {
+  displayCurrencyForMarket,
+  formatMarketplacePriceDisplay,
+} from '@/lib/currency-rates'
+import { euCountryCodes } from '@/lib/eu-countries'
 import {
   getMarketplaceCategory,
   marketplaceCategories,
@@ -14,20 +17,14 @@ import {
   normalizeMarketplaceCategory,
 } from '@/lib/marketplace'
 import {
-  displayCurrencyForMarket,
-  formatMarketplacePriceDisplay,
-} from '@/lib/currency-rates'
-import {
-  getMarketplaceSellerTrustByUserIds,
+  getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
 import {
   isPublicLanguage,
   translatePublic,
-  translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { euCountryCodes } from '@/lib/eu-countries'
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -59,8 +56,7 @@ export async function generateMetadata({
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const host = 'https://www.autorell.com'
-  const rawFilter = resolvedSearchParams.filter
-  const filter = Array.isArray(rawFilter) ? rawFilter[0] : rawFilter
+  const filter = getSearchParam(resolvedSearchParams, 'filter')
   const seo = getMarketplaceSeoCopy(category.slug, label, locale, filter)
   const canonical = filter
     ? `${host}/marketplace/${category.slug}?filter=${encodeURIComponent(filter)}`
@@ -83,10 +79,13 @@ export async function generateMetadata({
 
 export default async function MarketplaceCategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { category: requestedCategory } = await params
+  const resolvedSearchParams = await searchParams
   if (requestedCategory === 'all' || requestedCategory === 'all-vehicles' || requestedCategory === 'alla-fordon') {
     permanentRedirect('/marketplace/vehicles')
   }
@@ -103,54 +102,53 @@ export default async function MarketplaceCategoryPage({
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
+  const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
   const defaultCountry =
-    marketCode && euCountryCodes.has(marketCode.toUpperCase())
+    requestedCountry ||
+    (marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
       : requestedLanguage === 'sv'
         ? 'SE'
         : requestedLanguage === 'de'
           ? 'DE'
-      : ''
+          : '')
   const locale: PublicLocale =
     requestedLanguage === 'sv' || requestedLanguage === 'de'
       ? requestedLanguage
       : requestedLanguage && isPublicLanguage(requestedLanguage)
       ? requestedLanguage
       : 'en'
-  const language = marketplaceLanguage(locale)
-  const displayCurrency = displayCurrencyForMarket(marketCode)
+  const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
 
   const data = await getPublishedMarketplaceCategoryListings(
     requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
-    120,
+    requestedCategory === 'vehicles' ? 360 : 240,
   )
-  const sellerTrust = await getMarketplaceSellerTrustByUserIds(
+  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
 
-  const listings: MarketplaceListing[] = await Promise.all(
+  const listings: VehicleSearchListing[] = await Promise.all(
     (data || []).map(async (listing) => {
+      const sellerProfile = sellerProfiles.get(listing.seller_user_id || '')
       const price = await formatMarketplacePriceDisplay({
         amount: Number(listing.price),
         currency: listing.currency,
         locale,
         targetCurrency: displayCurrency,
       })
+
       return {
         id: listing.id,
         category: listing.category,
+        title: listing.title,
         make: listing.make || '',
         model: listing.model || '',
-        title: listing.title,
         year: listing.model_year ? String(listing.model_year) : null,
         mileageKm: listing.mileage_km,
-        operatingHours: listing.operating_hours,
         fuelType: listing.fuel_type,
         gearbox: listing.gearbox,
         bodyType: listing.body_type,
-        color: listing.color,
-        condition: listing.condition,
-        equipment: listing.equipment,
         country: listing.country_code,
         city: listing.city,
         municipality: listing.municipality,
@@ -158,61 +156,39 @@ export default async function MarketplaceCategoryPage({
         longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
         priceLabel: price.label,
         priceValue: Number(listing.price),
-        imageAvailable: Boolean(listing.images?.[0]),
         imageUrl: listing.images?.[0] || null,
-        imageUrls: Array.isArray(listing.images) ? listing.images.filter(Boolean) : [],
+        sellerLogoUrl: sellerProfile?.logoUrl || null,
+        sellerTrust: sellerProfile?.trust || 'unverified',
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',
-        sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',
-        messagingEnabled: true,
+        condition: listing.condition,
+        color: listing.color,
+        equipment: listing.equipment,
       }
     }),
   )
 
-  const label =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? category.labels[language]
-      : translatePublic(locale, category.labels.en)
-  const singular =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? category.singular[language]
-      : translatePublic(locale, category.singular.en)
-  const description =
-    language === 'sv'
-      ? `${label} från privatpersoner och företag i hela Europeiska unionen.`
-      : language === 'de'
-        ? `${label} von privaten und gewerblichen Verkäufern in der gesamten Europäischen Union.`
-        : `${label} from private and business sellers across the European Union.`
-
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f7f8fb] text-[#101828]">
-      <PublicHeader
-        locale={locale}
-        marketCode={marketCode}
-        marketplaceChannel={{ label, slug: category.slug }}
-      />
-      <MarketplaceCategoryBrowser
-        category={{
-          slug: category.slug,
-          label,
-          singular,
-          description,
-          filters:
-            language === 'sv'
-              ? ['Nya', 'Begagnade', 'El', 'Hybrid', 'Pris', 'Miltal']
-              : language === 'de'
-                ? ['Neu', 'Gebraucht', 'Elektro', 'Hybrid', 'Preis', 'Kilometer']
-                : locale === 'en'
-                  ? ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage']
-                  : translatePublicObject(locale, ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage']),
-        }}
-        listings={listings}
-        locale={locale}
-        defaultCountry={defaultCountry}
-      />
-      <PublicFooter locale={locale} />
-    </main>
+    <VehicleSearchExperience
+      listings={listings}
+      locale={locale}
+      defaultCountry={defaultCountry}
+      initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
+      initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
+      initialMake={getSearchParam(resolvedSearchParams, 'make')}
+      initialModel={getSearchParam(resolvedSearchParams, 'model')}
+      initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
+      initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
+    />
   )
+}
+
+function getSearchParam(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  return Array.isArray(value) ? value[0] || '' : value || ''
 }
 
 function getMarketplaceSeoCopy(

@@ -80,6 +80,8 @@ const categories = [
   { key: 'trucks', label: 'Lastbilar', shortLabel: 'Lastbilar', icon: AutorellTruckIcon },
   { key: 'agriculture', label: 'Lantbruk', shortLabel: 'Lantbruk', icon: AutorellBikeIcon },
   { key: 'construction', label: 'Entreprenad', shortLabel: 'Entreprenad', icon: AutorellScooterIcon },
+  { key: 'electric-bikes', label: 'Cyklar', shortLabel: 'Cyklar', icon: AutorellBikeIcon },
+  { key: 'e-scooters', label: 'Sparkcyklar', shortLabel: 'Spark', icon: AutorellScooterIcon },
 ]
 
 const countryCenters: Record<string, [number, number]> = {
@@ -116,25 +118,39 @@ export default function VehicleSearchExperience({
   listings,
   locale = 'sv',
   defaultCountry = 'SE',
+  initialCategory = 'all',
+  initialQuery = '',
+  initialMake = '',
+  initialModel = '',
+  initialMinPrice = '',
+  initialMaxPrice = '',
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
   defaultCountry?: string
+  initialCategory?: string
+  initialQuery?: string
+  initialMake?: string
+  initialModel?: string
+  initialMinPrice?: string
+  initialMaxPrice?: string
 }) {
+  const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
+  const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const [mode, setMode] = useState<SearchMode>('sale')
-  const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('all')
-  const [country, setCountry] = useState(defaultCountry || 'SE')
+  const [query, setQuery] = useState(initialQuery)
+  const [category, setCategory] = useState(safeInitialCategory)
+  const [country, setCountry] = useState(safeInitialCountry)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [sortBy, setSortBy] = useState('latest')
-  const [minPrice, setMinPrice] = useState('')
-  const [maxPrice, setMaxPrice] = useState('')
+  const [minPrice, setMinPrice] = useState(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState('')
   const [maxYear, setMaxYear] = useState('')
   const [maxMileage, setMaxMileage] = useState('')
-  const [make, setMake] = useState('')
-  const [model, setModel] = useState('')
+  const [make, setMake] = useState(initialMake)
+  const [model, setModel] = useState(initialModel)
   const [fuel, setFuel] = useState('')
   const [gearbox, setGearbox] = useState('')
   const [bodyType, setBodyType] = useState('')
@@ -221,6 +237,11 @@ export default function VehicleSearchExperience({
         listing.title,
         listing.make,
         listing.model,
+        listing.bodyType,
+        listing.fuelType,
+        listing.gearbox,
+        listing.condition,
+        listing.equipment,
         listing.city,
         listing.municipality,
       ]
@@ -238,15 +259,16 @@ export default function VehicleSearchExperience({
   }, [bodyType, category, country, equipmentQuery, fuel, gearbox, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, sellerType, sortBy])
 
   const resetFilters = () => {
-    setQuery('')
-    setCategory('all')
-    setMinPrice('')
-    setMaxPrice('')
+    setQuery(initialQuery)
+    setCategory(safeInitialCategory)
+    setCountry(safeInitialCountry)
+    setMinPrice(initialMinPrice)
+    setMaxPrice(initialMaxPrice)
     setMinYear('')
     setMaxYear('')
     setMaxMileage('')
-    setMake('')
-    setModel('')
+    setMake(initialMake)
+    setModel(initialModel)
     setFuel('')
     setGearbox('')
     setBodyType('')

@@ -294,7 +294,7 @@ export default async function BusinessMarketplaceHome({
               {t.featuredTitle}
             </h2>
             <Link
-              href={localizePublicHref(locale, '/marketplace/cars')}
+              href={localizePublicHref(locale, '/marketplace/vehicles')}
               className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
             >
               {t.viewAllListings}
@@ -311,7 +311,7 @@ export default async function BusinessMarketplaceHome({
               </div>
               <div className="mt-9 flex justify-center">
                 <Link
-                  href={localizePublicHref(locale, '/marketplace/cars')}
+                  href={localizePublicHref(locale, '/marketplace/vehicles')}
                   className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#b8cffd] bg-white px-7 text-sm font-semibold text-[#0866ff] shadow-sm transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
                 >
                   {t.viewAllListings}
@@ -414,7 +414,7 @@ export default async function BusinessMarketplaceHome({
                 ))}
               </div>
               <Link
-                href={localizePublicHref(locale, '/marketplace/cars')}
+                href={localizePublicHref(locale, '/marketplace/vehicles')}
                 className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff]"
               >
                 {t.seeLocal}
