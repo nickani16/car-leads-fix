@@ -436,7 +436,7 @@ export default function VehicleSearchExperience({
                   </span>
                 </div>
                 {filtersOpen ? (
-                  <div data-filter-profile={filterProfile.join(' ')} className="mt-4 grid gap-4 rounded-[6px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
+                  <div data-filter-profile={filterProfile.join(' ')} className="mt-4 grid gap-4 rounded-[8px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
                     <div className="flex items-center justify-between border-b border-[#e1e9f5] pb-3">
                       <div>
                         <p className="text-sm font-semibold text-[#101828]">Sökfilter</p>
@@ -570,13 +570,13 @@ export default function VehicleSearchExperience({
                           value={equipmentQuery}
                           onChange={(event) => setEquipmentQuery(event.target.value)}
                           placeholder="Ex. Dragkrok, navigation, fyrhjulsdrift"
-                          className="h-11 w-full rounded-[5px] border border-[#d0d5dd] bg-white px-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
+                          className="h-11 w-full rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
                         />
                       </label>
                       <button
                         type="button"
                         onClick={resetFilters}
-                        className="h-11 rounded-[5px] border border-[#d0d5dd] bg-[#f8fafc] px-4 text-sm font-medium text-[#0866ff] transition hover:border-[#0866ff]"
+                        className="h-11 rounded-[8px] border border-[#d0d5dd] bg-[#f8fafc] px-4 text-sm font-medium text-[#0866ff] transition hover:border-[#0866ff]"
                       >
                         Rensa filter
                       </button>
@@ -642,28 +642,122 @@ export default function VehicleSearchExperience({
             </div>
           </div>
 
+          {!mobileMapOpen ? (
+            <button
+              type="button"
+              onClick={() => setMobileMapOpen(true)}
+              className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
+            >
+              <MapPin className="h-4 w-4" />
+              Karta
+            </button>
+          ) : null}
+
           <div className={`${mobileMapOpen ? 'fixed inset-0 z-50 block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
-            {mobileMapOpen ? (
-              <button
-                type="button"
-                onClick={() => setMobileMapOpen(false)}
-                className="absolute left-4 top-4 z-20 inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#101828] shadow-lg lg:hidden"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Lista
-              </button>
-            ) : null}
             <VehicleSearchMap
               listings={filteredListings}
               country={country}
               locale={locale}
               query={query}
               onQueryChange={setQuery}
+              mobileOverlay={mobileMapOpen}
+              onCloseMobileMap={() => setMobileMapOpen(false)}
               onOpenFilters={() => {
                 setFiltersOpen(true)
-                setMobileMapOpen(false)
               }}
             />
+            {mobileMapOpen && filtersOpen ? (
+              <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
+                <div className="flex items-center justify-between border-b border-[#edf1f6] px-4 py-3">
+                  <div>
+                    <p className="text-[15px] font-semibold text-[#101828]">SÃ¶kfilter</p>
+                    <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(false)}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-[#f8fafc] text-[#101828] ring-1 ring-[#d0d5dd]"
+                    aria-label="StÃ¤ng filter"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="h-[calc(100%-116px)] overflow-y-auto px-4 py-4">
+                  <FilterSection title="Marknad">
+                    <FilterSelect
+                      label="Plats"
+                      value={country}
+                      onChange={(value) => {
+                        setCountry(value)
+                        setMake('')
+                        setModel('')
+                      }}
+                      options={countryFilterOptions}
+                    />
+                  </FilterSection>
+                  <FilterSection title="Fordonstyp">
+                    <div className="grid gap-2">
+                      {categories.map((item) => {
+                        const Icon = item.icon
+                        const active = category === item.key
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => {
+                              setCategory(item.key)
+                              setMake('')
+                              setModel('')
+                            }}
+                            className={`flex min-h-12 items-center gap-3 rounded-[8px] border px-3 text-left transition ${
+                              active
+                                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                                : 'border-[#d0d5dd] bg-white text-[#101828]'
+                            }`}
+                          >
+                            <Icon className="h-5 w-5 shrink-0" />
+                            <span className="text-sm font-semibold">{item.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </FilterSection>
+                  <FilterSection title="Fordon">
+                    <div className="grid gap-3">
+                      <FilterSelect label="MÃ¤rke" value={make} onChange={(value) => {
+                        setMake(value)
+                        setModel('')
+                      }} options={makes} />
+                      <FilterSelect label="Modell" value={model} onChange={setModel} options={models} />
+                      <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
+                      <FilterSelect label="VÃ¤xellÃ¥da" value={gearbox} onChange={setGearbox} options={gearboxes} />
+                      <FilterSelect label="Miltal" value={maxMileage} onChange={setMaxMileage} options={[
+                        { value: '', label: 'Alla' },
+                        { value: '5000', label: 'Upp till 5 000 km' },
+                        { value: '20000', label: 'Upp till 20 000 km' },
+                        { value: '100000', label: 'Upp till 100 000 km' },
+                      ]} />
+                    </div>
+                  </FilterSection>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="h-11 rounded-[8px] bg-[#f2f4f7] text-sm font-semibold text-[#0866ff]"
+                  >
+                    Rensa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(false)}
+                    className="h-11 rounded-[8px] bg-[#0866ff] text-sm font-semibold text-white"
+                  >
+                    Visa karta
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
 
         </section>
@@ -764,7 +858,7 @@ function FilterInput({
   return (
     <label className="block">
       <span className="mb-1.5 block text-xs font-semibold text-[#475467]">{label}</span>
-      <span className="flex h-11 items-center rounded-[5px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
+      <span className="flex h-11 items-center rounded-[8px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -857,7 +951,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-3 pr-9 text-sm font-medium outline-none transition focus:border-[#0866ff]"
+        className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-sm font-medium outline-none transition focus:border-[#0866ff]"
       >
         <option value="">Alla</option>
         {options.map((option) => {
@@ -1005,6 +1099,8 @@ function VehicleSearchMap({
   locale,
   query,
   onQueryChange,
+  mobileOverlay = false,
+  onCloseMobileMap,
   onOpenFilters,
 }: {
   listings: VehicleSearchListing[]
@@ -1012,6 +1108,8 @@ function VehicleSearchMap({
   locale: PublicLocale
   query: string
   onQueryChange: (value: string) => void
+  mobileOverlay?: boolean
+  onCloseMobileMap?: () => void
   onOpenFilters: () => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -1138,7 +1236,7 @@ function VehicleSearchMap({
   }, [country, locale, mapListings, mapReady])
 
   return (
-    <div className={`${fullscreen ? 'fixed inset-0 z-[80] h-screen min-h-screen' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
+    <div className={`${fullscreen ? 'fixed inset-0 z-[80] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
       <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
@@ -1157,7 +1255,50 @@ function VehicleSearchMap({
         </button>
       ) : null}
       <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      {fullscreen ? (
+      {mobileOverlay && !fullscreen ? (
+        <>
+          <div className="absolute inset-x-0 top-0 z-20 bg-white/96 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] shadow-[0_1px_12px_rgba(16,24,40,.14)] backdrop-blur">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onCloseMobileMap}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm"
+                aria-label="Visa lista"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
+                <span className="sr-only">SÃ¶k</span>
+                <input
+                  value={query}
+                  onChange={(event) => onQueryChange(event.target.value)}
+                  placeholder="SÃ¶k fordon, ort eller kommun"
+                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-sm font-medium text-[#101828] outline-none placeholder:text-[#667085]"
+                />
+                <Search className="h-5 w-5 shrink-0 text-[#101828]" />
+              </label>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={onOpenFilters}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
+              >
+                <Filter className="h-4 w-4" />
+                SÃ¶kfilter
+              </button>
+              <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} compact />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onCloseMobileMap}
+            className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)]"
+          >
+            Visa lista
+          </button>
+        </>
+      ) : fullscreen ? (
         <div className="absolute inset-x-0 top-0 z-20 flex min-h-[58px] items-center gap-3 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:px-4">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="hidden shrink-0 sm:block">
             <BrandLogo compact underline={false} />
@@ -1203,10 +1344,10 @@ function VehicleSearchMap({
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
         </div>
       )}
-      <div className={`${fullscreen ? 'top-[74px]' : 'top-4'} absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
+      <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
       </div>
-      <button className="absolute bottom-5 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
+      <button className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} absolute left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}>
         <SlidersHorizontal className="h-4 w-4" />
         Sök i detta område
       </button>
@@ -1217,27 +1358,33 @@ function VehicleSearchMap({
 function MapLayerPicker({
   mapLayer,
   onMapLayerChange,
+  compact = false,
 }: {
   mapLayer: AutorellMapLayer
   onMapLayerChange: (layer: AutorellMapLayer) => void
+  compact?: boolean
 }) {
   return (
-    <div className="inline-flex h-12 overflow-hidden rounded-[8px] bg-[#101828] p-1 shadow-lg">
+    <div className={`${compact ? 'h-10 border border-[#d0d5dd] bg-white shadow-sm' : 'h-12 bg-[#101828] shadow-lg'} inline-flex overflow-hidden rounded-[8px] p-1`}>
       <button
         type="button"
         onClick={() => onMapLayerChange('standard')}
-        className={`inline-flex items-center gap-2 rounded-[7px] px-3 text-sm font-semibold transition ${
-          mapLayer === 'standard' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
+        className={`inline-flex items-center gap-2 rounded-[8px] px-3 text-sm font-semibold transition ${
+          mapLayer === 'standard'
+            ? compact ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-white text-[#101828]'
+            : compact ? 'text-[#475467] hover:bg-[#f8fafc]' : 'text-white hover:bg-white/10'
         }`}
       >
         <Layers className="h-4 w-4" />
-        <span className="hidden sm:inline">Karta</span>
+        <span>{compact ? 'Karta' : <span className="hidden sm:inline">Karta</span>}</span>
       </button>
       <button
         type="button"
         onClick={() => onMapLayerChange('satellite')}
-        className={`inline-flex items-center rounded-[7px] px-3 text-sm font-semibold transition ${
-          mapLayer === 'satellite' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
+        className={`inline-flex items-center rounded-[8px] px-3 text-sm font-semibold transition ${
+          mapLayer === 'satellite'
+            ? compact ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-white text-[#101828]'
+            : compact ? 'text-[#475467] hover:bg-[#f8fafc]' : 'text-white hover:bg-white/10'
         }`}
       >
         Satellit
