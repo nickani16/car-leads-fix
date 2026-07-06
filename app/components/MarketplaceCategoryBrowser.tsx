@@ -79,8 +79,6 @@ type TypeCard = {
   aliases: readonly string[]
 }
 
-const SAVED_SEARCHES_STORAGE_KEY = 'autorell-saved-searches'
-
 export default function MarketplaceCategoryBrowser({
   category,
   listings,
@@ -118,7 +116,6 @@ export default function MarketplaceCategoryBrowser({
   const [municipality, setMunicipality] = useState(searchParams.get('municipality') || searchParams.get('location') || '')
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
-  const [savedSearchKey, setSavedSearchKey] = useState('')
   const [listingLayout, setListingLayout] = useState<'list' | 'grid'>('list')
   const [mapOpen, setMapOpen] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
@@ -138,7 +135,9 @@ export default function MarketplaceCategoryBrowser({
   )
   const filterProfile = categoryFilterProfile(category.slug)
   const copy =
-    locale === 'sv' || locale === 'de' || locale === 'en'
+    locale === 'sv'
+      ? { ...marketplaceCopy.sv, ...svMarketplaceCopyFixes }
+      : locale === 'de' || locale === 'en'
       ? marketplaceCopy[locale]
       : translatePublicObject(locale, marketplaceCopy.en)
   const allCategoryLabel = getAllCategoryLabel(localizedCategory.label, locale)
@@ -146,6 +145,15 @@ export default function MarketplaceCategoryBrowser({
   const isMachineCategory = category.slug === 'agriculture' || category.slug === 'construction'
   const compareEnabled = category.slug === 'cars'
   const currentYear = new Date().getFullYear()
+  const selectedAreaLabel = municipality || county
+  const resultTitle =
+    category.slug === 'vehicles'
+      ? selectedAreaLabel
+        ? `${copy.usedAndNewPrefix} ${copy.vehiclePlural.toLowerCase()} ${copy.forSaleInArea}`
+        : `${copy.usedAndNewPrefix} ${copy.vehiclePlural.toLowerCase()} ${copy.forSale}`
+      : selectedAreaLabel
+        ? `${copy.usedAndNewPrefix} ${localizedCategory.label.toLowerCase()} ${copy.forSaleInArea}`
+        : `${copy.usedAndNewPrefix} ${localizedCategory.label.toLowerCase()} ${copy.forSale}`
 
   const countries = useMemo(
     () =>
@@ -328,83 +336,9 @@ export default function MarketplaceCategoryBrowser({
     return counts
   }, [listings, typeCards])
 
-  const currentSearchKey = [
-    'autorell-search',
-    category.slug,
-    query,
-    country,
-    county,
-    municipality,
-    activeFilter,
-    make,
-    modelQuery,
-    minPrice,
-    maxPrice,
-    yearFrom,
-    yearTo,
-    minMileage,
-    maxMileage,
-    minHours,
-    maxHours,
-    fuel,
-    gearbox,
-    bodyType,
-    color,
-    condition,
-    sellerType,
-  ].join('-')
-  const saved = savedSearchKey === currentSearchKey
   const compareListings = compareIds
     .map((id) => listings.find((listing) => listing.id === id))
     .filter(Boolean) as MarketplaceListing[]
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const savedSearches = readSavedSearches()
-      setSavedSearchKey(savedSearches[currentSearchKey] ? currentSearchKey : '')
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [currentSearchKey])
-
-  function toggleSavedSearch() {
-    const savedSearches = readSavedSearches()
-    if (saved) {
-      delete savedSearches[currentSearchKey]
-      window.localStorage.setItem(SAVED_SEARCHES_STORAGE_KEY, JSON.stringify(savedSearches))
-      setSavedSearchKey('')
-    } else {
-      savedSearches[currentSearchKey] = {
-        title: getSavedSearchTitle(selectedTypeCard?.label || query || localizedCategory.label),
-        category: category.slug,
-        categoryLabel: localizedCategory.label,
-        query,
-        make,
-        modelQuery,
-        country,
-        county,
-        municipality,
-        activeFilter,
-        minPrice,
-        maxPrice,
-        yearFrom,
-        yearTo,
-        minMileage,
-        maxMileage,
-        minHours,
-        maxHours,
-        fuel,
-        gearbox,
-        bodyType,
-        color,
-        condition,
-        sellerType,
-        resultCount: visibleListings.length,
-        savedAt: new Date().toISOString(),
-      }
-      window.localStorage.setItem(SAVED_SEARCHES_STORAGE_KEY, JSON.stringify(savedSearches))
-      setSavedSearchKey(currentSearchKey)
-    }
-  }
 
   function selectFilter(filter: string) {
     const normalized = filter.toLowerCase()
@@ -566,109 +500,31 @@ export default function MarketplaceCategoryBrowser({
           />
         </label>
       </div>
-      <div className="border-b border-[#e4e9f2] px-4 py-4">
-        <FilterGroup title={copy.categoryLabel}>
-          <div className="space-y-3">
-            <FilterCategoryButton
-              label={allCategoryLabel}
-              count={listings.length}
-              active={!activeFilter}
-              onClick={() => setActiveFilter('')}
-            />
-            {typeCards.map((card) => (
+      {category.slug === 'vehicles' ? (
+        <div className="border-b border-[#e4e9f2] px-4 py-4">
+          <FilterGroup title={copy.categoryLabel}>
+            <div className="space-y-3">
               <FilterCategoryButton
-                key={card.query}
-                label={card.label}
-                count={typeCounts[card.query] || 0}
-                active={activeFilter === card.query}
-                onClick={() => selectFilter(card.query)}
+                label={allCategoryLabel}
+                count={listings.length}
+                active={!activeFilter}
+                onClick={() => setActiveFilter('')}
               />
-            ))}
-          </div>
-        </FilterGroup>
-      </div>
-      <div className="space-y-5 p-4">
-        <FilterGroup title={copy.countryLabel}>
-          <label className="relative block">
-            <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
-            <select
-              value={country}
-              onChange={(event) => {
-                const nextCountry = event.target.value
-                setCountry(nextCountry)
-                if (nextCountry !== 'SE') {
-                  setCounty('')
-                  setMunicipality('')
-                }
-              }}
-              className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[16px] sm:text-[14px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
-            >
-              <option value="">{copy.allEurope}</option>
-              {countries.map((code) => (
-                <option key={code} value={code}>
-                  {getEuCountryName(code, displayLocale)}
-                </option>
+              {typeCards.map((card) => (
+                <FilterCategoryButton
+                  key={card.query}
+                  label={card.label}
+                  count={typeCounts[card.query] || 0}
+                  active={activeFilter === card.query}
+                  onClick={() => selectFilter(card.query)}
+                />
               ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-          </label>
-        </FilterGroup>
-
-        {country === 'SE' ? (
-          <FilterGroup title={copy.locationLabel}>
-            <div className="grid gap-2">
-              <LocationCheckboxRow
-                label={copy.allSweden}
-                count={listings.filter((listing) => listing.country.toUpperCase() === 'SE').length}
-                checked={!county && !municipality}
-                onClick={() => {
-                  setCounty('')
-                  setMunicipality('')
-                }}
-              />
-              <div className="max-h-[360px] overflow-auto pr-1">
-                {swedishCounties.map((countyItem) => {
-                  const countySelected = county === countyItem.name
-                  const countyCount = swedishLocationCounts.countyCounts.get(countyItem.name) || 0
-                  return (
-                    <div key={countyItem.name}>
-                      <LocationCheckboxRow
-                        label={countyItem.name}
-                        count={countyCount}
-                        checked={countySelected && !municipality}
-                        disabled={countyCount === 0}
-                        onClick={() => {
-                          setCounty(countySelected ? '' : countyItem.name)
-                          setMunicipality('')
-                        }}
-                      />
-                      {countySelected ? (
-                        <div className="ml-5 border-l border-[#eef2f7] pl-3">
-                          {countyItem.municipalities.map((name) => {
-                            const count = swedishLocationCounts.municipalityCounts.get(name) || 0
-                            return (
-                              <LocationCheckboxRow
-                                key={name}
-                                label={name}
-                                count={count}
-                                checked={municipality === name}
-                                disabled={count === 0}
-                                compact
-                                onClick={() => setMunicipality(municipality === name ? '' : name)}
-                              />
-                            )
-                          })}
-                        </div>
-                      ) : null}
-                    </div>
-                  )
-                })}
-              </div>
             </div>
           </FilterGroup>
-        ) : null}
-
-        <FilterGroup title={copy.makeAndModel}>
+        </div>
+      ) : null}
+      <div className="space-y-5 p-4">
+        <FilterGroup title={copy.makeAndModel} defaultOpen={false}>
           <div className="grid gap-2">
             <FilterSelect value={make} onChange={setMake} label={copy.makeLabel} options={makes} mutedPlaceholder />
             <input
@@ -741,6 +597,85 @@ export default function MarketplaceCategoryBrowser({
             step={1000}
           />
         )}
+
+        <FilterGroup title={copy.locationLabel}>
+          <div className="grid gap-3">
+            <label className="relative block">
+              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+              <select
+                value={country}
+                onChange={(event) => {
+                  const nextCountry = event.target.value
+                  setCountry(nextCountry)
+                  if (nextCountry !== 'SE') {
+                    setCounty('')
+                    setMunicipality('')
+                  }
+                }}
+                className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[16px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[14px]"
+              >
+                <option value="">{copy.allEurope}</option>
+                {countries.map((code) => (
+                  <option key={code} value={code}>
+                    {getEuCountryName(code, displayLocale)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+            </label>
+            {country === 'SE' ? (
+              <div className="grid gap-2">
+                <LocationCheckboxRow
+                  label={copy.allSweden}
+                  count={listings.filter((listing) => listing.country.toUpperCase() === 'SE').length}
+                  checked={!county && !municipality}
+                  onClick={() => {
+                    setCounty('')
+                    setMunicipality('')
+                  }}
+                />
+                <div className="max-h-[360px] overflow-auto pr-1">
+                  {swedishCounties.map((countyItem) => {
+                    const countySelected = county === countyItem.name
+                    const countyCount = swedishLocationCounts.countyCounts.get(countyItem.name) || 0
+                    return (
+                      <div key={countyItem.name}>
+                        <LocationCheckboxRow
+                          label={countyItem.name}
+                          count={countyCount}
+                          checked={countySelected && !municipality}
+                          disabled={countyCount === 0}
+                          onClick={() => {
+                            setCounty(countySelected ? '' : countyItem.name)
+                            setMunicipality('')
+                          }}
+                        />
+                        {countySelected ? (
+                          <div className="ml-5 border-l border-[#eef2f7] pl-3">
+                            {countyItem.municipalities.map((name) => {
+                              const count = swedishLocationCounts.municipalityCounts.get(name) || 0
+                              return (
+                                <LocationCheckboxRow
+                                  key={name}
+                                  label={name}
+                                  count={count}
+                                  checked={municipality === name}
+                                  disabled={count === 0}
+                                  compact
+                                  onClick={() => setMunicipality(municipality === name ? '' : name)}
+                                />
+                              )
+                            })}
+                          </div>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </FilterGroup>
 
         {filterProfile.basic.includes('fuel') ? (
           <FilterGroup title={copy.fuelTitle}>
@@ -1019,6 +954,8 @@ export default function MarketplaceCategoryBrowser({
           <nav aria-label={copy.breadcrumbLabel} className="mb-5 flex flex-wrap items-center gap-2 text-sm font-medium text-[#0866ff]">
             <Link href={localizePublicHref(locale, '/')} className="transition hover:text-[#0866ff]">{copy.breadcrumbHome}</Link>
             <span className="text-[#101828]">/</span>
+            <Link href={localizePublicHref(locale, '/marketplace/vehicles')} className="transition hover:text-[#0866ff]">{copy.breadcrumbVehicles}</Link>
+            <span className="text-[#101828]">/</span>
             {selectedTypeCard ? (
               <>
                 <Link href={localizePublicHref(locale, `/marketplace/${category.slug}`)} className="transition hover:text-[#0866ff]">
@@ -1031,33 +968,46 @@ export default function MarketplaceCategoryBrowser({
               <span className="text-[#101828]" aria-current="page">{localizedCategory.label}</span>
             )}
           </nav>
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4 lg:ml-[342px]">
-            <div>
-              <h1 className="text-[22px] font-semibold leading-tight text-[#101828]">
-                {category.slug === 'vehicles'
-                  ? copy.allVehicles
-                  : `${copy.usedAndNewPrefix} ${localizedCategory.label.toLowerCase()} ${copy.forSale}`}
-              </h1>
-              <p className="mt-2 text-xl font-medium text-[#101828]">
-                {visibleListings.length.toLocaleString('sv-SE')} {copy.results}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={toggleSavedSearch}
-              aria-pressed={saved}
-              className={`hidden min-h-12 items-center justify-center rounded-[9px] px-5 text-sm font-semibold transition lg:inline-flex ${
-                saved ? 'bg-[#0866ff] text-white' : 'bg-[#d5d5dd] text-white hover:bg-[#c7c7d0]'
-              }`}
-            >
-              {saved ? copy.saved : copy.saveSearch}
-            </button>
-          </div>
           <div className="grid gap-6 lg:grid-cols-[404px_minmax(0,1fr)]">
             <aside className="hidden lg:block">
               <div className="sticky top-20 max-h-[calc(100vh-96px)] overflow-auto pr-5 [scrollbar-color:#9a9a9a_transparent] [scrollbar-width:thin]">{filterPanel}</div>
             </aside>
             <div className="min-w-0">
+          <div className="mb-5">
+            <h1 className="max-w-2xl text-[20px] font-semibold leading-snug text-[#101828]">
+              {resultTitle}
+            </h1>
+            {selectedAreaLabel ? (
+              <p className="mt-0.5 text-[20px] font-semibold leading-snug text-[#101828]">
+                {selectedAreaLabel}
+              </p>
+            ) : null}
+            <p className="mt-3 text-lg font-medium text-[#101828]">
+              {visibleListings.length.toLocaleString('sv-SE')} {copy.results}
+            </p>
+          </div>
+          {activeChips.length ? (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="inline-flex min-h-9 items-center rounded-full bg-[#0866ff] px-4 text-xs font-semibold text-white transition hover:bg-[#075be5]"
+              >
+                {copy.clearAllFilters}
+              </button>
+              {activeChips.map((chip, index) => (
+                <button
+                  key={`${chip.label}-${index}`}
+                  type="button"
+                  onClick={chip.onClear}
+                  className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-[#e6e8ee] px-3 text-xs font-semibold text-[#202124] transition hover:bg-[#d9dde6]"
+                >
+                  <span className="truncate">{chip.label}</span>
+                  <X className="h-4 w-4 shrink-0" />
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="mb-5 border-b border-[#edf1f6] pb-5">
             <div className="mb-4 grid gap-3 lg:hidden">
               <div className="min-w-0">
@@ -1131,33 +1081,14 @@ export default function MarketplaceCategoryBrowser({
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
               </label>
             </div>
+            <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#0866ff]">
+              <span className="grid h-5 w-5 place-items-center rounded-full border border-[#0866ff] text-xs">i</span>
+              {copy.sortingInfo}
+            </p>
           </div>
 
           {mapOpen ? (
             <MarketplaceMapPanel listings={visibleListings} locale={locale} copy={copy} />
-          ) : null}
-
-          {activeChips.length ? (
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="inline-flex min-h-9 items-center rounded-full bg-[#0866ff] px-4 text-xs font-bold text-white transition hover:bg-[#075be5]"
-              >
-                {copy.clearAllFilters}
-              </button>
-              {activeChips.map((chip, index) => (
-                <button
-                  key={`${chip.label}-${index}`}
-                  type="button"
-                  onClick={chip.onClear}
-                  className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full bg-[#e6e8ee] px-3 text-xs font-bold text-[#202124] transition hover:bg-[#d9dde6]"
-                >
-                  <span className="truncate">{chip.label}</span>
-                  <X className="h-4 w-4 shrink-0" />
-                </button>
-              ))}
-            </div>
           ) : null}
 
           {compareEnabled && compareIds.length ? (
@@ -2032,7 +1963,7 @@ function RangeFilter({
           step={step}
           value={rangeValue}
           onChange={(event) => onMaxChange(event.target.value)}
-          className="h-2 w-full accent-[#0866ff]"
+          className="autorell-range h-7 w-full accent-[#0866ff]"
           aria-label={title}
         />
         <div className="flex items-center justify-between text-xs font-semibold text-[#667085]">
@@ -2064,53 +1995,6 @@ function RangeFilter({
       </div>
     </FilterGroup>
   )
-}
-
-type SavedSearchRecord = Record<
-  string,
-  {
-    title: string
-    category: string
-    categoryLabel: string
-    query: string
-    make: string
-    modelQuery: string
-    country: string
-    county: string
-    municipality: string
-    activeFilter: string
-    minPrice: string
-    maxPrice: string
-    yearFrom: string
-    yearTo: string
-    minMileage: string
-    maxMileage: string
-    minHours: string
-    maxHours: string
-    fuel: string
-    gearbox: string
-    bodyType: string
-    color: string
-    condition: string
-    sellerType: string
-    resultCount: number
-    savedAt: string
-  }
->
-
-function readSavedSearches(): SavedSearchRecord {
-  if (typeof window === 'undefined') return {}
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(SAVED_SEARCHES_STORAGE_KEY) || '{}')
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
-  } catch {
-    return {}
-  }
-}
-
-function getSavedSearchTitle(value: string) {
-  const trimmed = value.trim()
-  return trimmed || 'Autorell search'
 }
 
 function normalizeTypeMatch(value: string | null | undefined) {
@@ -2269,7 +2153,8 @@ function getMarketplaceTypeCards(slug: string, locale: PublicLocale): TypeCard[]
 const marketplaceCopy = {
   sv: {
     breadcrumbLabel: 'Brödsmulor',
-    breadcrumbHome: 'Hem',
+    breadcrumbHome: 'Autorell',
+    breadcrumbVehicles: 'Fordon',
     marketplaceEyebrow: 'Sök annonser',
     sell: 'Sälj',
     all: 'Alla',
@@ -2311,6 +2196,7 @@ const marketplaceCopy = {
     fewerFilters: 'Färre filter',
     allEurope: 'Hela Europa',
     sort: 'Sortering',
+    sortingInfo: 'Så här sorteras sökträffarna',
     recommended: 'Rekommenderat',
     newest: 'Nyaste årsmodell',
     mileage: 'Lägst kilometer',
@@ -2348,6 +2234,8 @@ const marketplaceCopy = {
     hideMap: 'DÃ¶lj karta',
     mapTitle: 'Annonser pÃ¥ karta',
     mapListings: 'annonser visas',
+    vehiclePlural: 'Fordon',
+    forSaleInArea: 'till salu i området:',
     makeAndModel: 'Märke och modell',
     keywordLabel: 'Sökord',
     fuelTitle: 'Bränsle',
@@ -2392,7 +2280,8 @@ const marketplaceCopy = {
   },
   en: {
     breadcrumbLabel: 'Breadcrumbs',
-    breadcrumbHome: 'Home',
+    breadcrumbHome: 'Autorell',
+    breadcrumbVehicles: 'Vehicles',
     marketplaceEyebrow: 'Search listings',
     sell: 'Sell',
     all: 'All',
@@ -2434,6 +2323,7 @@ const marketplaceCopy = {
     fewerFilters: 'Fewer filters',
     allEurope: 'All of Europe',
     sort: 'Sort',
+    sortingInfo: 'How search results are sorted',
     recommended: 'Recommended',
     newest: 'Newest model year',
     mileage: 'Lowest mileage',
@@ -2471,6 +2361,8 @@ const marketplaceCopy = {
     hideMap: 'Hide map',
     mapTitle: 'Listings on map',
     mapListings: 'listings shown',
+    vehiclePlural: 'Vehicles',
+    forSaleInArea: 'for sale in the area:',
     makeAndModel: 'Make and model',
     keywordLabel: 'Keyword',
     fuelTitle: 'Fuel',
@@ -2515,7 +2407,8 @@ const marketplaceCopy = {
   },
   de: {
     breadcrumbLabel: 'Breadcrumbs',
-    breadcrumbHome: 'Startseite',
+    breadcrumbHome: 'Autorell',
+    breadcrumbVehicles: 'Fahrzeuge',
     marketplaceEyebrow: 'Anzeigen suchen',
     sell: 'Verkaufen:',
     all: 'Alle',
@@ -2557,6 +2450,7 @@ const marketplaceCopy = {
     fewerFilters: 'Weniger Filter',
     allEurope: 'Ganz Europa',
     sort: 'Sortierung',
+    sortingInfo: 'So werden die Suchergebnisse sortiert',
     recommended: 'Empfohlen',
     newest: 'Neuestes Baujahr',
     mileage: 'Niedrigster Kilometerstand',
@@ -2594,6 +2488,8 @@ const marketplaceCopy = {
     hideMap: 'Karte ausblenden',
     mapTitle: 'Anzeigen auf der Karte',
     mapListings: 'Anzeigen sichtbar',
+    vehiclePlural: 'Fahrzeuge',
+    forSaleInArea: 'zum Verkauf in der Region:',
     makeAndModel: 'Marke und Modell',
     keywordLabel: 'Suchwort',
     fuelTitle: 'Kraftstoff',
@@ -2638,7 +2534,69 @@ const marketplaceCopy = {
   },
 } as const
 
-type MarketplaceCopy = (typeof marketplaceCopy)[keyof typeof marketplaceCopy]
+const svMarketplaceCopyFixes = {
+  breadcrumbLabel: 'Brödsmulor',
+  marketplaceEyebrow: 'Sök annonser',
+  sell: 'Sälj',
+  sellBusiness: 'Sälj som företag',
+  search: 'Sök',
+  makeTitle: 'Märke',
+  modelYearTitle: 'Modellår',
+  kilometerTitle: 'Miltal',
+  beforePrefix: 'Före',
+  allModels: 'Alla modeller',
+  sortBy: 'Sortera efter',
+  browseByCategory: 'Bläddra efter kategori',
+  clearAll: 'Rensa alla',
+  clearAllFilters: 'Rensa alla filter',
+  makeLabel: 'Alla märken',
+  fuel: 'Alla bränslen',
+  gearbox: 'Alla växellådor',
+  color: 'Alla färger',
+  yearFrom: 'Årsmodell från',
+  fewerFilters: 'Färre filter',
+  newest: 'Nyaste årsmodell',
+  sortingInfo: 'Så här sorteras sökträffarna',
+  mileage: 'Lägst miltal',
+  lowestPrice: 'Lägst pris',
+  viewMode: 'Visningsläge',
+  previousPhoto: 'Föregående bild',
+  nextPhoto: 'Nästa bild',
+  privateSeller: 'Privat säljare',
+  businessSeller: 'Företagssäljare',
+  euReady: 'Land, sökning och fordonsdata',
+  showMap: 'Visa på karta',
+  hideMap: 'Dölj karta',
+  mapTitle: 'Annonser på karta',
+  vehiclePlural: 'Fordon',
+  forSaleInArea: 'till salu i området:',
+  makeAndModel: 'Märke och modell',
+  keywordLabel: 'Sökord',
+  fuelTitle: 'Bränsle',
+  gearboxTitle: 'Växellåda',
+  colorTitle: 'Färg',
+  sellerTypeTitle: 'Säljartyp',
+  buyGuideTitle: 'Trygg EU-affär med Autorell',
+  findOutMore: 'Läs mer',
+  showingCountry: 'Visar annonser från',
+  newsletterTitle: 'Få de senaste annonserna direkt till inboxen',
+  newsletterText: 'Var först med att se nya fordon som matchar dina behov.',
+  localFirst: 'Din marknad visas först:',
+  compare: 'Jämför',
+  compareAction: 'Jämför',
+  compareTitle: 'Jämför bilar',
+  compareClose: 'Stäng jämförelse',
+  compareClear: 'Rensa jämförelse',
+  compareRemove: 'Ta bort från jämförelse',
+  compareLimit: 'Du kan jämföra max 3 bilar.',
+  compareHelper: 'Välj upp till 3 bilar och jämför nyckeldata sida vid sida.',
+  compareNoStrengths: 'Inga tydliga fördelar hittades i annonsdatan.',
+  compareBestPrice: 'Lägst pris',
+  compareNewest: 'Nyast årsmodell',
+  compareLowestMileage: 'Lägst miltal',
+} as const
+
+type MarketplaceCopy = { [Key in keyof typeof marketplaceCopy.en]: string }
 
 function getAllCategoryLabel(label: string, locale: PublicLocale) {
   if (normalizeTypeMatch(label).includes('all') || normalizeTypeMatch(label).includes('alla') || normalizeTypeMatch(label).includes('alle')) {
