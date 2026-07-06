@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Construction,
   Search,
+  Tag,
   Tractor,
 } from 'lucide-react'
 import {
@@ -65,7 +66,6 @@ const categoryOptions: Array<{
 
 export default function MarketplaceSearch({
   locale = 'sv',
-  defaultCountry,
 }: {
   locale?: PublicLocale
   defaultCountry?: string
@@ -75,9 +75,9 @@ export default function MarketplaceSearch({
   const [listingIntent, setListingIntent] = useState<ListingIntent>('sale')
   const [query, setQuery] = useState('')
   const [country, setCountry] = useState(() =>
-    resolveDefaultCountry(defaultCountry, locale),
+    resolveDefaultCountry(undefined, locale),
   )
-  const [openPicker, setOpenPicker] = useState<'category' | 'country' | null>(null)
+  const [openPicker, setOpenPicker] = useState<'category' | 'intent' | null>(null)
   const pickerRef = useRef<HTMLFormElement>(null)
   const countryLocale = locale
   const selectedCategory =
@@ -96,9 +96,6 @@ export default function MarketplaceSearch({
         ),
     [countryLocale],
   )
-  const selectedCountryLabel = country
-    ? getEuCountryName(country, countryLocale)
-    : copyAllEurope(locale)
   const searchPlaceholders = useMemo(
     () => getSearchPlaceholders(category, locale),
     [category, locale],
@@ -108,28 +105,28 @@ export default function MarketplaceSearch({
       ? {
           category: 'Kategori',
           query: 'Sök',
-          place: 'Plats',
+          intent: 'Typ',
           allEurope: 'Hela Europa',
         }
       : locale === 'de'
         ? {
             category: 'Kategorie',
             query: 'Suche',
-            place: 'Standort',
+            intent: 'Typ',
             allEurope: 'Ganz Europa',
           }
         : locale === 'en'
           ? {
             category: 'Category',
             query: 'Search',
-            place: 'Location',
+            intent: 'Type',
             allEurope: 'All of Europe',
           }
           : translatePublicObject(locale, {
               category: 'Category',
               query: 'Search',
-              place: 'Location',
-            allEurope: 'All of Europe',
+              intent: 'Type',
+              allEurope: 'All of Europe',
           })
   const intentLabels = getIntentLabels(locale)
 
@@ -150,7 +147,6 @@ export default function MarketplaceSearch({
     const route = categoryRoutes[category] || '/marketplace/vehicles'
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
-    if (country) params.set('country', country)
     if (listingIntent !== 'sale') params.set('intent', listingIntent)
     router.push(localizePublicHref(locale, `${route}${params.size ? `?${params}` : ''}`))
   }
@@ -162,25 +158,6 @@ export default function MarketplaceSearch({
       className="relative w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
       role="search"
     >
-      <div className="absolute left-8 top-[-46px] z-30 hidden items-end gap-2 sm:flex">
-        {(['sale', 'leasing', 'rent'] as const).map((intent) => {
-          const selected = listingIntent === intent
-          return (
-            <button
-              key={intent}
-              type="button"
-              onClick={() => setListingIntent(intent)}
-              className={`min-h-[48px] min-w-[118px] rounded-t-[13px] border px-5 text-sm font-semibold transition ${
-                selected
-                  ? 'translate-y-[1px] border-white bg-white text-[#0866ff] shadow-[0_-8px_24px_rgba(15,23,42,.12)]'
-                  : 'border-white/70 bg-white/86 text-[#344054] shadow-[0_-6px_18px_rgba(15,23,42,.10)] backdrop-blur-xl hover:bg-white hover:text-[#0866ff]'
-              }`}
-            >
-              {intentLabels[intent]}
-            </button>
-          )
-        })}
-      </div>
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.55fr_1.05fr_1fr_auto] sm:items-center">
         <SearchField label={copy.query} icon={Search} className="col-span-2 sm:col-span-1">
           <AnimatedSearchInput
@@ -250,31 +227,26 @@ export default function MarketplaceSearch({
         </SearchField>
 
         <SearchField
-          label={copy.place}
-          leading={
-            <CountryFlag
-              code={country || 'eu'}
-              className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/5"
-            />
-          }
-          active={openPicker === 'country'}
+          label={copy.intent}
+          icon={Tag}
+          active={openPicker === 'intent'}
         >
           <button
             type="button"
-            aria-expanded={openPicker === 'country'}
-            onClick={() => setOpenPicker((current) => (current === 'country' ? null : 'country'))}
+            aria-expanded={openPicker === 'intent'}
+            onClick={() => setOpenPicker((current) => (current === 'intent' ? null : 'intent'))}
             className="marketplace-search-control flex h-7 w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm font-semibold text-[#101828] outline-none"
           >
-            <span className="truncate">{selectedCountryLabel}</span>
-            <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${openPicker === 'country' ? 'rotate-180 text-[#0866ff]' : ''}`} />
+            <span className="truncate">{intentLabels[listingIntent]}</span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${openPicker === 'intent' ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
-          {openPicker === 'country' ? (
-            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,500px)] overflow-hidden rounded-[18px] border border-[#d8e2f1] bg-white p-3 shadow-[0_22px_62px_rgba(15,23,42,.18)] ring-1 ring-white/80">
-              <div className="px-2 pb-3 pt-1">
+          {openPicker === 'intent' ? (
+            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,380px)] overflow-hidden rounded-[18px] border border-[#d8e2f1] bg-white p-2 shadow-[0_22px_62px_rgba(15,23,42,.18)] ring-1 ring-white/80">
+              <div className="px-3 pb-2 pt-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
-                  {copy.place}
+                  {copy.intent}
                 </p>
-                <p className="mt-1 text-xs font-medium text-[#667085]">
+                <p className="hidden text-xs font-medium text-[#667085]">
                   {locale === 'sv'
                     ? 'Välj marknad för annonser och valuta.'
                     : locale === 'de'
@@ -282,7 +254,37 @@ export default function MarketplaceSearch({
                       : 'Choose market for listings and currency.'}
                 </p>
               </div>
-              <div className="grid max-h-[360px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
+              <div className="grid gap-1">
+                {(['sale', 'leasing', 'rent'] as const).map((intent) => {
+                  const selected = listingIntent === intent
+                  return (
+                    <button
+                      key={intent}
+                      type="button"
+                      onClick={() => {
+                        setListingIntent(intent)
+                        setOpenPicker(null)
+                      }}
+                      className={`flex min-h-[54px] items-center justify-between gap-3 rounded-[14px] px-3 text-left transition hover:bg-[#f7faff] ${
+                        selected ? 'bg-[#eef5ff] ring-1 ring-[#bcd5ff]' : 'bg-white'
+                      }`}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-[#101828]">
+                          {intentLabels[intent]}
+                        </span>
+                        <span className="mt-0.5 block text-[12px] font-semibold text-[#667085]">
+                          {getIntentDescription(intent, locale)}
+                        </span>
+                      </span>
+                      {selected ? (
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#0866ff]" />
+                      ) : null}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="hidden max-h-[360px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
                 <CountryOptionButton
                   code=""
                   label={copy.allEurope}
@@ -409,6 +411,28 @@ function getIntentLabels(locale: PublicLocale): Record<ListingIntent, string> {
   }
 }
 
+function getIntentDescription(intent: ListingIntent, locale: PublicLocale) {
+  const sv: Record<ListingIntent, string> = {
+    sale: 'Fordon frÃ¥n privata och fÃ¶retag',
+    leasing: 'Leasingfordon frÃ¥n fÃ¶retag',
+    rent: 'Fordon som kan hyras',
+  }
+  const en: Record<ListingIntent, string> = {
+    sale: 'Vehicles from private sellers and dealers',
+    leasing: 'Leasing vehicles from companies',
+    rent: 'Vehicles available to rent',
+  }
+  const de: Record<ListingIntent, string> = {
+    sale: 'Fahrzeuge von Privat und HÃ¤ndlern',
+    leasing: 'Leasingfahrzeuge von Unternehmen',
+    rent: 'Mietfahrzeuge',
+  }
+
+  if (locale === 'sv') return sv[intent]
+  if (locale === 'de') return de[intent]
+  return en[intent]
+}
+
 function getSearchCta(
   category: MarketplaceCategorySlug,
   locale: PublicLocale,
@@ -475,13 +499,6 @@ function getCategoryOptionLabel(
     return option[locale]
   }
   return translatePublic(locale, option.en)
-}
-
-function copyAllEurope(locale: PublicLocale) {
-  if (locale === 'sv') return 'Hela Europa'
-  if (locale === 'de') return 'Ganz Europa'
-  if (locale === 'en') return 'All of Europe'
-  return translatePublic(locale, 'All of Europe')
 }
 
 function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale) {
