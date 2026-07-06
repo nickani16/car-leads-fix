@@ -430,6 +430,11 @@ input, textarea, select {
   box-shadow: none !important;
 }
 
+.vehicle-search-control {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .market-blob {
   border-radius: 38% 62% 54% 46% / 42% 35% 65% 58%;
 }

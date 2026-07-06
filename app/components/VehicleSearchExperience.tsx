@@ -10,7 +10,6 @@ import {
   Expand,
   Filter,
   Heart,
-  Layers,
   MapPin,
   Search,
   Scale,
@@ -116,6 +115,7 @@ export default function VehicleSearchExperience({
   const [bodyType, setBodyType] = useState('')
   const [sellerType, setSellerType] = useState('all')
   const [equipmentQuery, setEquipmentQuery] = useState('')
+  const [compareIds, setCompareIds] = useState<string[]>([])
 
   const fuels = useMemo(
     () => [...new Set(listings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
@@ -200,6 +200,14 @@ export default function VehicleSearchExperience({
     setSortBy('latest')
   }
 
+  const toggleCompare = (listingId: string) => {
+    setCompareIds((current) =>
+      current.includes(listingId)
+        ? current.filter((id) => id !== listingId)
+        : [...current, listingId].slice(-4),
+    )
+  }
+
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
   const visibleCount = filteredListings.length
   const countryName = getEuCountryName(country || 'SE', locale)
@@ -262,8 +270,7 @@ export default function VehicleSearchExperience({
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
-                    style={{ backgroundColor: 'transparent', boxShadow: 'none' }}
-                    className="min-w-0 flex-1 bg-[#f1f2f4] text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
+                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
                   />
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
@@ -421,7 +428,13 @@ export default function VehicleSearchExperience({
             <div className="border-t border-[#eceff4]">
               {filteredListings.length ? (
                 filteredListings.map((listing) => (
-                  <VehicleResultCard key={listing.id} listing={listing} locale={locale} />
+                  <VehicleResultCard
+                    key={listing.id}
+                    listing={listing}
+                    locale={locale}
+                    compareActive={compareIds.includes(listing.id)}
+                    onCompare={() => toggleCompare(listing.id)}
+                  />
                 ))
               ) : (
                 <div className="px-8 py-14">
@@ -594,9 +607,13 @@ function FilterSelect({
 function VehicleResultCard({
   listing,
   locale,
+  compareActive,
+  onCompare,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
+  compareActive: boolean
+  onCompare: () => void
 }) {
   const href = localizePublicHref(
     locale,
@@ -620,16 +637,16 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="mx-5 my-5 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white shadow-[0_10px_28px_rgba(16,24,40,.05)] sm:mx-6">
-      <div className="grid sm:grid-cols-[230px_minmax(0,1fr)]">
-        <Link href={href} className="group relative h-[190px] overflow-hidden bg-[#eef3f8] sm:h-[205px]">
+    <article className="mx-5 my-5 overflow-hidden rounded-[6px] border border-[#d9e1ec] bg-white shadow-[0_8px_24px_rgba(16,24,40,.045)] transition hover:border-[#c8d4e5] sm:mx-6">
+      <div className="grid sm:grid-cols-[270px_minmax(0,1fr)]">
+        <Link href={href} className="group relative h-[194px] overflow-hidden bg-[#eef3f8] sm:h-[212px]">
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
-              sizes="(max-width: 768px) 100vw, 230px"
-              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+              sizes="(max-width: 768px) 100vw, 270px"
+              className="object-contain transition duration-500 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -641,45 +658,56 @@ function VehicleResultCard({
               Verifierad
             </span>
           ) : null}
-          <button className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md">
+          <button type="button" aria-label="Spara annons" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md transition hover:text-[#0866ff]">
             <Heart className="h-5 w-5" />
           </button>
           <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
-          <button className="absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-[#101828] shadow-md">
+          <button
+            type="button"
+            aria-pressed={compareActive}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onCompare()
+            }}
+            className={`absolute bottom-3 right-3 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition ${
+              compareActive ? 'bg-[#0866ff] text-white' : 'bg-white text-[#101828] hover:text-[#0866ff]'
+            }`}
+          >
             <Scale className="h-4 w-4" />
             Jämför
           </button>
         </Link>
 
         <div className="min-w-0 px-5 py-5">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_160px]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_176px]">
             <div className="min-w-0">
-              <Link href={href} className="text-xl font-semibold tracking-[-0.02em] text-[#101828] hover:text-[#0866ff]">
+              <Link href={href} className="line-clamp-2 text-[20px] font-semibold leading-tight tracking-[-0.01em] text-[#101828] hover:text-[#0866ff]">
                 {listing.title}
               </Link>
               <p className="mt-1.5 text-sm font-medium text-[#667085]">{meta.join(' · ')}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex max-w-[330px] flex-wrap gap-2">
                 {meta.slice(1, 4).map((item) => (
-                  <span key={String(item)} className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-semibold text-[#101828]">
+                  <span key={String(item)} className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-medium text-[#101828]">
                     {item}
                   </span>
                 ))}
               </div>
-              <p className="mt-4 text-sm font-semibold text-[#475467]">
+              <p className="mt-4 line-clamp-2 text-sm font-medium text-[#475467]">
                 {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
               </p>
             </div>
-            <div className="text-left xl:text-right">
+            <div className="min-w-0 text-left xl:text-right">
               <p className="text-xs font-semibold text-[#667085]">Fast pris</p>
-              <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#101828]">{listing.priceLabel}</p>
+              <p className="mt-1 text-[25px] font-semibold leading-tight tracking-[-0.02em] text-[#101828]">{listing.priceLabel}</p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
                 <div className="mt-3 flex justify-start xl:justify-end">
-                  <span className="relative block h-9 w-32 overflow-hidden rounded-[5px] bg-white">
+                  <span className="relative block h-10 w-32 overflow-hidden rounded-[5px] bg-white">
                     <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                   </span>
                 </div>
               ) : (
-                <p className="mt-2 text-sm font-semibold text-[#475467]">
+                <p className="mt-2 text-sm font-medium text-[#475467]">
                   {listing.sellerIsTrader ? listing.sellerName : 'Privatperson'}
                 </p>
               )}
@@ -687,7 +715,7 @@ function VehicleResultCard({
           </div>
           <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-[#edf1f6] pt-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">Land</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]">Plats</p>
               <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#101828]">
                 <MapPin className="h-4 w-4 text-[#0866ff]" />
                 {location}
@@ -695,7 +723,7 @@ function VehicleResultCard({
             </div>
             <Link
               href={href}
-              className="inline-flex h-11 items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0052d6]"
+              className="inline-flex h-11 items-center justify-center rounded-[7px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0052d6]"
             >
               Visa annons
             </Link>
@@ -786,8 +814,19 @@ function VehicleSearchMap({
         markerElement.type = 'button'
         markerElement.className = 'h-3.5 w-3.5 rounded-full border border-white bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.38)]'
         markerElement.setAttribute('aria-label', listing.title)
+        const detailHref = localizePublicHref(
+          locale,
+          buildListingPath({
+            id: listing.id,
+            title: listing.title,
+            make: listing.make,
+            model: listing.model,
+            year: listing.year,
+            city: listing.city,
+          }),
+        )
         const popup = new maplibregl.Popup({ offset: 10 }).setHTML(
-          `<div class="autorell-map-popup"><strong>${escapeHtml(listing.title)}</strong><span>${escapeHtml([listing.city || listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean).join(', '))}</span><b>${escapeHtml(listing.priceLabel)}</b></div>`,
+          `<div class="autorell-map-popup"><strong>${escapeHtml(listing.title)}</strong><span>${escapeHtml([listing.city || listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean).join(', '))}</span><b>${escapeHtml(listing.priceLabel)}</b><a href="${escapeHtml(detailHref)}">Gå till annons</a></div>`,
         )
         return new maplibregl.Marker({ element: markerElement })
           .setLngLat(coordinates)
@@ -834,10 +873,6 @@ function VehicleSearchMap({
           <Expand className="h-5 w-5" />
           Fullskärm
         </button>
-        <button className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg">
-          <Layers className="h-5 w-5" />
-          Kartval
-        </button>
       </div>
       <div className="absolute left-4 top-4 rounded-[5px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur">
         {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
@@ -856,7 +891,7 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11) {
 
   for (let y = tile.y - 1; y <= tile.y + 1; y += 1) {
     for (let x = tile.x - 1; x <= tile.x + 1; x += 1) {
-      tiles.push(`https://a.basemaps.cartocdn.com/light_all/${zoom}/${x}/${y}.png`)
+      tiles.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`)
     }
   }
 
