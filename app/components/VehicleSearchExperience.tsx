@@ -64,10 +64,10 @@ export type VehicleSearchListing = {
   equipment: string | null
 }
 
-const tabs: Array<{ key: SearchMode; label: string; hint: string }> = [
-  { key: 'sale', label: 'Fordon till salu', hint: 'Privata och företag' },
-  { key: 'leasing', label: 'Leasing', hint: 'Företagsannonser' },
-  { key: 'rental', label: 'Uthyrning', hint: 'Hyresfordon' },
+const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
+  { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Till salu', hint: 'Privata och företag' },
+  { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
+  { key: 'rental', label: 'Uthyrning', mobileLabel: 'Hyra', hint: 'Hyresfordon' },
 ]
 
 const categories = [
@@ -269,7 +269,7 @@ export default function VehicleSearchExperience({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
-      <div className="flex min-h-screen min-w-0 flex-col lg:h-screen lg:overflow-hidden">
+      <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-hidden lg:h-screen lg:overflow-hidden">
         <header className="flex min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -299,20 +299,21 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 min-w-0 flex-1 lg:grid-cols-[minmax(760px,clamp(820px,46vw,940px))_minmax(460px,1fr)]">
-          <div className="min-h-0 min-w-0 overflow-y-auto border-r border-[#eceff4] bg-white">
-            <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
-              <div className="flex overflow-x-auto border-b border-[#dfe4ec] sm:grid sm:grid-cols-3 sm:overflow-visible">
+        <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+          <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white">
+            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
+              <div className="grid grid-cols-3 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[58px] min-w-[155px] px-2 text-center text-[15px] font-medium transition sm:min-w-0 ${
+                    className={`relative min-h-[58px] min-w-0 px-1 text-center text-[14px] font-medium transition sm:px-2 sm:text-[15px] ${
                       mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
                     }`}
                   >
-                    <span className="block">{tab.label}</span>
+                    <span className="block sm:hidden">{tab.mobileLabel}</span>
+                    <span className="hidden sm:block">{tab.label}</span>
                     {mode === tab.key ? <span className="absolute inset-x-0 -bottom-px h-[3px] bg-[#0866ff]" /> : null}
                   </button>
                 ))}
@@ -320,7 +321,7 @@ export default function VehicleSearchExperience({
 
             </div>
 
-            <div className="lg:grid lg:grid-cols-[96px_minmax(0,1fr)]">
+            <div className="lg:grid lg:grid-cols-[74px_minmax(0,1fr)]">
               <CategoryRail
                 activeCategory={category}
                 onSelect={(nextCategory) => {
@@ -330,9 +331,9 @@ export default function VehicleSearchExperience({
                 }}
               />
 
-              <div className="min-w-0">
-                <div className="border-b border-[#eceff4] px-5 py-5 sm:px-6">
-                <label className="flex h-12 items-center gap-3 rounded-[5px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
+              <div className="min-w-0 max-w-full overflow-hidden">
+                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 py-5 sm:px-6">
+                <label className="flex h-12 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
@@ -343,11 +344,11 @@ export default function VehicleSearchExperience({
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
-                    className={`inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] border px-5 text-[15px] font-medium shadow-sm transition ${
+                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:gap-3 sm:px-4 sm:text-[15px] ${
                       filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}
                   >
@@ -356,7 +357,16 @@ export default function VehicleSearchExperience({
                   </button>
                   <button
                     type="button"
-                    className="inline-flex min-h-11 items-center justify-center gap-3 rounded-[5px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white"
+                    onClick={() => setMobileMapOpen(true)}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:gap-3 sm:px-4 sm:text-[15px] lg:hidden"
+                  >
+                    <MapPin className="h-5 w-5" />
+                    <span className="sm:hidden">Karta</span>
+                    <span className="hidden sm:inline">Visa karta</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="col-span-2 inline-flex min-h-11 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white lg:col-span-1"
                   >
                     <Bookmark className="h-6 w-6" />
                     Spara sökning
@@ -373,7 +383,7 @@ export default function VehicleSearchExperience({
                         setMake('')
                         setModel('')
                       }}
-                      className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
+                      className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
                       {categories.map((option) => (
                         <option key={option.key} value={option.key}>{option.label}</option>
@@ -390,7 +400,7 @@ export default function VehicleSearchExperience({
                         setMake('')
                         setModel('')
                       }}
-                      className="h-11 w-full appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
+                      className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium outline-none focus:border-[#0866ff]"
                     >
                       {marketOptions.map((option) => (
                         <option key={option.value || 'all'} value={option.value}>
@@ -511,7 +521,7 @@ export default function VehicleSearchExperience({
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-11 appearance-none rounded-[5px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium shadow-sm outline-none focus:border-[#0866ff]"
+                    className="h-11 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium shadow-sm outline-none focus:border-[#0866ff]"
                   >
                     <option value="latest">Nyast</option>
                     <option value="price-asc">Pris lägst</option>
@@ -573,16 +583,6 @@ export default function VehicleSearchExperience({
             />
           </div>
 
-          <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMapOpen((open) => !open)}
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(8,102,255,.32)]"
-            >
-              <MapPin className="h-4 w-4" />
-              {mobileMapOpen ? 'Visa lista' : 'Visa karta'}
-            </button>
-          </div>
         </section>
       </div>
     </main>
@@ -598,7 +598,7 @@ function CategoryRail({
 }) {
   return (
     <aside className="hidden border-r border-[#eceff4] bg-white lg:block">
-      <div className="sticky top-0 flex min-h-[calc(100vh-121px)] flex-col py-4">
+      <div className="sticky top-0 flex min-h-[calc(100vh-121px)] flex-col py-2">
         {categories.map((item) => {
           const Icon = item.icon
           const active = activeCategory === item.key
@@ -607,7 +607,7 @@ function CategoryRail({
               key={item.key}
               type="button"
               onClick={() => onSelect(item.key)}
-              className={`relative flex min-h-[76px] flex-col items-center justify-center gap-1.5 px-2 text-center text-[11px] font-medium leading-tight transition ${
+              className={`relative flex min-h-[64px] flex-col items-center justify-center gap-1 px-1.5 text-center text-[10.5px] font-medium leading-tight transition ${
                 active
                   ? 'bg-[#eef5ff] text-[#0866ff]'
                   : 'text-[#101828] hover:bg-[#f8fafc] hover:text-[#0866ff]'
@@ -616,8 +616,8 @@ function CategoryRail({
               title={item.label}
             >
               {active ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0866ff]" /> : null}
-              <Icon className="h-6 w-6" />
-              <span className="max-w-[76px] truncate">{item.shortLabel}</span>
+              <Icon className="h-5 w-5" />
+              <span className="max-w-[64px] truncate">{item.shortLabel}</span>
             </button>
           )
         })}
@@ -789,10 +789,10 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="group relative mx-3 overflow-hidden border-b border-[#e5ebf3] bg-white py-5 transition hover:bg-[#fbfdff] sm:mx-6">
+    <article className="group relative mx-0 overflow-hidden border-b border-[#e5ebf3] bg-white px-4 py-5 transition hover:bg-[#fbfdff] sm:mx-6 sm:px-0">
       <Link href={href} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
       <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
-        <div className="relative h-[246px] overflow-hidden rounded-[6px] bg-[#eef3f8] sm:h-[174px]">
+        <div className="relative h-[246px] overflow-hidden rounded-[8px] bg-[#eef3f8] sm:h-[174px]">
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
@@ -807,7 +807,7 @@ function VehicleResultCard({
             </div>
           )}
           {listing.sellerTrust === 'verified' ? (
-            <span className="absolute left-3 top-3 rounded-[5px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white">
+            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white">
               Verifierad
             </span>
           ) : null}
@@ -863,7 +863,7 @@ function VehicleResultCard({
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                <span className="relative hidden h-7 w-28 overflow-hidden rounded-[4px] bg-[#eef3f8] sm:block">
+                  <span className="relative hidden h-7 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
                   <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />
                 </span>
               ) : null}
@@ -1038,7 +1038,7 @@ function VehicleSearchMap({
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="hidden shrink-0 sm:block">
             <BrandLogo compact underline={false} />
           </Link>
-          <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[5px] bg-[#f1f2f4] px-3 text-[#667085]">
+          <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
             <span className="sr-only">Sök</span>
             <input
               value={query}
@@ -1051,7 +1051,7 @@ function VehicleSearchMap({
           <button
             type="button"
             onClick={onOpenFilters}
-            className="inline-flex h-10 items-center gap-2 rounded-[5px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
+            className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
           >
             <Filter className="h-4 w-4" />
             <span className="hidden sm:inline">Sökfilter</span>
@@ -1060,7 +1060,7 @@ function VehicleSearchMap({
           <button
             type="button"
             onClick={() => setFullscreen(false)}
-            className="grid h-10 w-10 place-items-center rounded-[5px] bg-[#101828] text-white shadow-sm"
+            className="grid h-10 w-10 place-items-center rounded-[8px] bg-[#101828] text-white shadow-sm"
             aria-label="Stäng fullskärm"
           >
             <X className="h-5 w-5" />
@@ -1071,7 +1071,7 @@ function VehicleSearchMap({
           <button
             type="button"
             onClick={() => setFullscreen(true)}
-            className="inline-flex h-12 items-center gap-2 rounded-[5px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg"
+            className="inline-flex h-12 items-center gap-2 rounded-[8px] bg-[#101828] px-4 text-sm font-semibold text-white shadow-lg"
           >
             <Expand className="h-5 w-5" />
             Fullskärm
@@ -1079,7 +1079,7 @@ function VehicleSearchMap({
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
         </div>
       )}
-      <div className={`${fullscreen ? 'top-[74px]' : 'top-4'} absolute left-4 z-20 rounded-[5px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
+      <div className={`${fullscreen ? 'top-[74px]' : 'top-4'} absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
       </div>
       <button className="absolute bottom-5 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
@@ -1098,11 +1098,11 @@ function MapLayerPicker({
   onMapLayerChange: (layer: AutorellMapLayer) => void
 }) {
   return (
-    <div className="inline-flex h-12 overflow-hidden rounded-[5px] bg-[#101828] p-1 shadow-lg">
+    <div className="inline-flex h-12 overflow-hidden rounded-[8px] bg-[#101828] p-1 shadow-lg">
       <button
         type="button"
         onClick={() => onMapLayerChange('standard')}
-        className={`inline-flex items-center gap-2 rounded-[4px] px-3 text-sm font-semibold transition ${
+        className={`inline-flex items-center gap-2 rounded-[7px] px-3 text-sm font-semibold transition ${
           mapLayer === 'standard' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
         }`}
       >
@@ -1112,7 +1112,7 @@ function MapLayerPicker({
       <button
         type="button"
         onClick={() => onMapLayerChange('satellite')}
-        className={`inline-flex items-center rounded-[4px] px-3 text-sm font-semibold transition ${
+        className={`inline-flex items-center rounded-[7px] px-3 text-sm font-semibold transition ${
           mapLayer === 'satellite' ? 'bg-white text-[#101828]' : 'text-white hover:bg-white/10'
         }`}
       >
