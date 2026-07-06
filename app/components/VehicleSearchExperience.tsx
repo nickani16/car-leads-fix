@@ -36,6 +36,7 @@ import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type SearchMode = 'sale' | 'leasing'
+type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 
 export type VehicleSearchListing = {
   id: string
@@ -147,6 +148,7 @@ export default function VehicleSearchExperience({
   const [category, setCategory] = useState(safeInitialCategory)
   const [country, setCountry] = useState(safeInitialCountry)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [sortBy, setSortBy] = useState('latest')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -319,6 +321,64 @@ export default function VehicleSearchExperience({
   const CurrentCategoryIcon = currentCategory.icon
   const visibleCount = filteredListings.length
   const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
+  const resultLocationName = getResultLocationName(query, filteredListings, countryName)
+  const activeFilterCandidates: Array<ActiveFilterChip | null> = [
+    category !== 'all'
+      ? {
+          key: 'category',
+          label: currentCategory.label,
+          icon: <CurrentCategoryIcon className="h-4 w-4" />,
+          onRemove: () => {
+            setCategory('all')
+            setMake('')
+            setModel('')
+          },
+        }
+      : null,
+    country
+      ? {
+          key: 'country',
+          label: getEuCountryName(country, locale),
+          icon: <CountryFlag code={country} className="h-4 w-4 rounded-full" />,
+          onRemove: () => {
+            setCountry('')
+            setMake('')
+            setModel('')
+          },
+        }
+      : null,
+    make ? { key: 'make', label: make, onRemove: () => {
+      setMake('')
+      setModel('')
+    } } : null,
+    model ? { key: 'model', label: model, onRemove: () => setModel('') } : null,
+    fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
+    gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
+    bodyType ? { key: 'bodyType', label: bodyType, onRemove: () => setBodyType('') } : null,
+    condition ? { key: 'condition', label: condition, onRemove: () => setCondition('') } : null,
+    color ? { key: 'color', label: color, onRemove: () => setColor('') } : null,
+    sellerType !== 'all'
+      ? { key: 'sellerType', label: sellerType === 'business' ? 'Företag' : 'Privatperson', onRemove: () => setSellerType('all') }
+      : null,
+    minPrice || maxPrice
+      ? { key: 'price', label: `Pris ${minPrice || '0'}-${maxPrice || 'max'} SEK`, onRemove: () => {
+        setMinPrice('')
+        setMaxPrice('')
+      } }
+      : null,
+    minYear || maxYear
+      ? { key: 'year', label: `Årsmodell ${minYear || '1950'}-${maxYear || 'nyast'}`, onRemove: () => {
+        setMinYear('')
+        setMaxYear('')
+      } }
+      : null,
+    maxMileage ? { key: 'mileage', label: `Max ${Number(maxMileage).toLocaleString('sv-SE')} km`, onRemove: () => setMaxMileage('') } : null,
+    verifiedOnly ? { key: 'verified', label: 'Verifierade', onRemove: () => setVerifiedOnly(false) } : null,
+    fourWheelDrive ? { key: 'fourWheelDrive', label: 'Fyrhjulsdrift', onRemove: () => setFourWheelDrive(false) } : null,
+    leasingPossible ? { key: 'leasingPossible', label: 'Leasing möjlig', onRemove: () => setLeasingPossible(false) } : null,
+    equipmentQuery.trim() ? { key: 'equipment', label: equipmentQuery.trim(), onRemove: () => setEquipmentQuery('') } : null,
+  ]
+  const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
@@ -426,15 +486,7 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[#475467]">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef5ff] px-3 py-1.5 text-[#0866ff]">
-                    <CurrentCategoryIcon className="h-4 w-4" />
-                    {currentCategory.label}
-                  </span>
-                  <span className="inline-flex items-center rounded-full bg-[#f2f4f7] px-3 py-1.5">
-                    {country ? getEuCountryName(country, locale) : 'Hela Europa'}
-                  </span>
-                </div>
+                <ActiveFilterChips filters={activeFilters} />
                 {filtersOpen ? (
                   <div data-filter-profile={filterProfile.join(' ')} className="mt-4 grid gap-4 rounded-[8px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
                     <div className="flex items-center justify-between border-b border-[#e1e9f5] pb-3">
@@ -451,29 +503,22 @@ export default function VehicleSearchExperience({
                         <X className="h-4 w-4" />
                       </button>
                     </div>
-                    <FilterSection title="Marknad">
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {countryFilterOptions.map((option) => (
-                          <button
-                            key={option.value || 'eu'}
-                            type="button"
-                            onClick={() => {
-                              setCountry(option.value)
-                              setMake('')
-                              setModel('')
-                            }}
-                            className={`flex h-11 items-center gap-2 rounded-[8px] border px-3 text-left text-sm font-medium transition ${
-                              country === option.value
-                                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
-                            }`}
-                          >
-                            <CountryFlag code={option.value || 'eu'} className="h-5 w-5 rounded-full" />
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </FilterSection>
+                    <CollapsibleFilterSection
+                      title="Marknad"
+                      summary={country ? getEuCountryName(country, locale) : 'Hela Europa'}
+                      open={marketOpen}
+                      onToggle={() => setMarketOpen((open) => !open)}
+                    >
+                      <MarketOptionGrid
+                        country={country}
+                        locale={locale}
+                        onSelect={(value) => {
+                          setCountry(value)
+                          setMake('')
+                          setModel('')
+                        }}
+                      />
+                    </CollapsibleFilterSection>
                     <FilterSection title="Fordonstyp">
                       <div className="grid gap-2 sm:grid-cols-2">
                         {categories.map((item) => {
@@ -590,7 +635,7 @@ export default function VehicleSearchExperience({
                 <p className="text-base font-medium leading-7">
                   {mode === 'sale' ? (
                     <>
-                      Fordon till salu i <strong className="font-semibold">{countryName}</strong>.{' '}
+                      Fordon till salu i <strong className="font-semibold">{resultLocationName}</strong>.{' '}
                       <strong className="font-semibold">{visibleCount.toLocaleString('sv-SE')}</strong> annonser visas.
                     </>
                   ) : (
@@ -683,18 +728,22 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
                 <div className="h-[calc(100%-116px)] overflow-y-auto px-4 py-4">
-                  <FilterSection title="Marknad">
-                    <FilterSelect
-                      label="Plats"
-                      value={country}
-                      onChange={(value) => {
+                  <CollapsibleFilterSection
+                    title="Marknad"
+                    summary={country ? getEuCountryName(country, locale) : 'Hela Europa'}
+                    open={marketOpen}
+                    onToggle={() => setMarketOpen((open) => !open)}
+                  >
+                    <MarketOptionGrid
+                      country={country}
+                      locale={locale}
+                      onSelect={(value) => {
                         setCountry(value)
                         setMake('')
                         setModel('')
                       }}
-                      options={countryFilterOptions}
                     />
-                  </FilterSection>
+                  </CollapsibleFilterSection>
                   <FilterSection title="Fordonstyp">
                     <div className="grid gap-2">
                       {categories.map((item) => {
@@ -815,6 +864,99 @@ function FilterSection({
       <h3 className="mb-3 text-sm font-semibold text-[#101828]">{title}</h3>
       {children}
     </section>
+  )
+}
+
+function CollapsibleFilterSection({
+  title,
+  summary,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string
+  summary: string
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
+  return (
+    <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 rounded-[8px] bg-white px-0 py-1 text-left"
+        aria-expanded={open}
+      >
+        <span>
+          <span className="block text-sm font-semibold text-[#101828]">{title}</span>
+          <span className="mt-1 block text-xs font-medium text-[#667085]">{summary}</span>
+        </span>
+        <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[#f3f6fb] text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
+          <ChevronDown className="h-4 w-4" />
+        </span>
+      </button>
+      {open ? <div className="mt-3">{children}</div> : null}
+    </section>
+  )
+}
+
+function MarketOptionGrid({
+  country,
+  locale,
+  onSelect,
+}: {
+  country: string
+  locale: PublicLocale
+  onSelect: (value: string) => void
+}) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {countryFilterOptions.map((option) => {
+        const selected = country === option.value
+        return (
+          <button
+            key={option.value || 'eu'}
+            type="button"
+            onClick={() => onSelect(option.value)}
+            className={`flex h-11 items-center gap-2 rounded-[8px] border px-3 text-left text-sm font-medium transition ${
+              selected
+                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
+            }`}
+          >
+            <CountryFlag code={option.value || 'eu'} className="h-5 w-5 rounded-full" />
+            {option.value ? getEuCountryName(option.value, locale) : option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function ActiveFilterChips({
+  filters,
+}: {
+  filters: ActiveFilterChip[]
+}) {
+  if (!filters.length) return null
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {filters.map((filter) => (
+        <button
+          key={filter.key}
+          type="button"
+          onClick={filter.onRemove}
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#eef5ff] px-3 text-xs font-semibold text-[#0866ff] transition hover:bg-[#dceaff]"
+          aria-label={`Ta bort filter ${filter.label}`}
+        >
+          {filter.icon}
+          <span>{filter.label}</span>
+          <X className="h-3.5 w-3.5" />
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -1463,6 +1605,49 @@ function formatFilterNumber(value: number) {
     maximumFractionDigits: 0,
     minimumFractionDigits: 0,
   }).format(Math.round(value))
+}
+
+function getResultLocationName(query: string, listings: VehicleSearchListing[], fallback: string) {
+  const normalizedQuery = normalizeSearchText(query)
+  if (!normalizedQuery) return fallback
+
+  const municipalityMatch = listings.find((listing) => {
+    const municipality = normalizeSearchText(listing.municipality)
+    return municipality && (municipality === normalizedQuery || municipality.includes(normalizedQuery))
+  })?.municipality
+
+  if (municipalityMatch) return `${titleCaseLocation(municipalityMatch)} kommun`
+
+  const cityMatch = listings.find((listing) => {
+    const city = normalizeSearchText(listing.city)
+    return city && (city === normalizedQuery || city.includes(normalizedQuery))
+  })?.city
+
+  if (cityMatch) return titleCaseLocation(cityMatch)
+
+  if (normalizedQuery.endsWith(' kommun')) return titleCaseLocation(query.trim())
+
+  return fallback
+}
+
+function normalizeSearchText(value: string | null | undefined) {
+  return (value || '')
+    .trim()
+    .toLocaleLowerCase('sv-SE')
+    .replace(/\s+/g, ' ')
+}
+
+function titleCaseLocation(value: string) {
+  return value
+    .trim()
+    .split(/\s+/)
+    .map((part) =>
+      part
+        .split('-')
+        .map((piece) => (piece ? piece.charAt(0).toLocaleUpperCase('sv-SE') + piece.slice(1).toLocaleLowerCase('sv-SE') : piece))
+        .join('-'),
+    )
+    .join(' ')
 }
 
 function escapeHtml(value: string) {
