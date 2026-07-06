@@ -1494,12 +1494,26 @@ function MarketplaceMapPanel({
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
+        const detailHref = localizePublicHref(
+          locale,
+          buildListingPath({
+            id: listing.id,
+            title: listing.title,
+            make: listing.make,
+            model: listing.model,
+            year: listing.year,
+            city: listing.city,
+          }),
+        )
+        const locationLabel = [listing.address, listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
+          .filter(Boolean)
+          .join(', ')
         const element = document.createElement('button')
         element.type = 'button'
         element.className = 'grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#0866ff] text-xs font-semibold text-white shadow-[0_8px_22px_rgba(16,24,40,.28)]'
-        element.textContent = listing.priceValue ? compactPrice(listing.priceValue) : 'A'
+        element.textContent = compactPriceLabel(listing.priceLabel)
         const popup = new maplibregl.Popup({ offset: 14 }).setHTML(
-          `<strong>${escapeHtml(listing.title)}</strong><br/><span>${escapeHtml([listing.city || listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean).join(', '))}</span><br/><b>${escapeHtml(listing.priceLabel)}</b>`,
+          `<div class="autorell-map-popup"><strong>${escapeHtml(listing.title)}</strong><span>${escapeHtml(locationLabel)}</span><b>${escapeHtml(listing.priceLabel)}</b><a href="${escapeHtml(detailHref)}">${escapeHtml(copy.viewListing)}</a></div>`,
         )
         return new maplibregl.Marker({ element }).setLngLat(coordinates).setPopup(popup).addTo(map)
       })
@@ -1515,7 +1529,7 @@ function MarketplaceMapPanel({
     return () => {
       cancelled = true
     }
-  }, [locale, mapListings, mapReady])
+  }, [copy.viewListing, locale, mapListings, mapReady])
 
   return (
     <div className="mb-5 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white">
@@ -1579,6 +1593,12 @@ function compactPrice(value: number) {
   if (value >= 1000000) return `${Math.round(value / 100000) / 10}m`
   if (value >= 1000) return `${Math.round(value / 1000)}k`
   return String(value)
+}
+
+function compactPriceLabel(label: string) {
+  const normalized = label.replace(/\s/g, '')
+  const amount = Number(normalized.match(/\d+/)?.[0])
+  return Number.isFinite(amount) ? compactPrice(amount) : 'A'
 }
 
 function escapeHtml(value: string) {
