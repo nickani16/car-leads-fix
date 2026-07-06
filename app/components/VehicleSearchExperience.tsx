@@ -647,18 +647,23 @@ function VehicleResultCard({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
+  const importantInfo = [
+    listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null,
+    listing.fuelType,
+    listing.gearbox,
+  ].filter(Boolean)
 
   return (
-    <article className="mx-3 my-4 overflow-hidden rounded-[6px] border border-[#d9e1ec] bg-white shadow-[0_8px_24px_rgba(16,24,40,.045)] transition hover:border-[#c8d4e5] sm:mx-6 sm:my-5">
-      <div className="grid sm:grid-cols-[285px_minmax(0,1fr)]">
-        <Link href={href} className="group relative h-[246px] overflow-hidden bg-[#eef3f8] sm:h-full sm:min-h-[230px]">
+    <article className="mx-3 overflow-hidden border-b border-[#e5ebf3] bg-white py-5 sm:mx-6">
+      <div className="grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
+        <Link href={href} className="group relative h-[246px] overflow-hidden rounded-[6px] bg-[#eef3f8] sm:h-[174px]">
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
-              sizes="(max-width: 640px) 100vw, 285px"
-              className="object-cover transition duration-500 group-hover:scale-[1.02]"
+              sizes="(max-width: 640px) 100vw, 260px"
+              className="object-contain transition duration-500 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -691,51 +696,40 @@ function VehicleResultCard({
           </button>
         </Link>
 
-        <div className="min-w-0 px-4 py-4 sm:px-5 sm:py-5">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_176px]">
-            <div className="min-w-0">
-              <Link href={href} className="line-clamp-2 text-[17px] font-semibold leading-tight text-[#101828] hover:text-[#0866ff] sm:text-[20px] sm:tracking-[-0.01em]">
-                {listing.title}
-              </Link>
-              <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-5 text-[#667085] sm:text-sm">{meta.join(' · ')}</p>
-              <div className="mt-3 hidden max-w-[330px] flex-wrap gap-2 sm:flex">
-                {meta.slice(1, 4).map((item) => (
-                  <span key={String(item)} className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-xs font-medium text-[#101828]">
-                    {item}
-                  </span>
-                ))}
-              </div>
-              <p className="mt-3 line-clamp-2 text-[13px] font-medium leading-5 text-[#475467] sm:mt-4 sm:text-sm">
-                {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
-              </p>
-            </div>
-            <div className="min-w-0 text-left xl:text-right">
-              <p className="text-[11px] font-semibold text-[#667085] sm:text-xs">Fast pris</p>
-              <p className="mt-1 text-[20px] font-semibold leading-tight text-[#101828] sm:text-[25px] sm:tracking-[-0.02em]">{listing.priceLabel}</p>
-              {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                <div className="mt-2 hidden justify-start sm:flex xl:justify-end">
-                  <span className="relative block h-10 w-32 overflow-hidden rounded-[5px] bg-white">
-                    <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
-                  </span>
-                </div>
-              ) : (
-                <p className="mt-2 hidden text-sm font-medium text-[#475467] sm:block">
-                  {listing.sellerIsTrader ? listing.sellerName : 'Privatperson'}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="mt-3 flex flex-col gap-3 border-t border-[#edf1f6] pt-3 sm:mt-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:pt-4">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#667085]">Plats</p>
-              <p className="mt-1 flex min-w-0 items-center gap-2 text-[13px] font-semibold text-[#101828] sm:text-sm">
-                <MapPin className="h-4 w-4 text-[#0866ff]" />
+        <div className="min-w-0">
+          <div className="grid min-w-0 gap-1.5">
+            <Link href={href} className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 hover:text-[#0866ff] hover:underline">
+              {listing.title}
+            </Link>
+            <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#667085]">
+              {meta.join(' · ')}
+            </p>
+            <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+              {listing.priceLabel}
+            </p>
+            <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#101828]">
+              {importantInfo.join('   ')}
+            </p>
+            <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#475467]">
+              {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
+            </p>
+            <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
+              <p className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-[#101828]">
+                <MapPin className="h-4 w-4 shrink-0 text-[#0866ff]" />
                 <span className="truncate">{location}</span>
               </p>
+              {listing.sellerIsTrader && listing.sellerLogoUrl ? (
+                <span className="relative hidden h-7 w-28 overflow-hidden rounded-[4px] bg-[#eef3f8] sm:block">
+                  <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />
+                </span>
+              ) : null}
             </div>
+          </div>
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+            <span className="text-xs font-semibold text-[#667085]">Fast pris</span>
             <Link
               href={href}
-              className="inline-flex h-10 items-center justify-center rounded-[7px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0052d6] sm:h-11 sm:px-5"
+              className="inline-flex h-10 w-full items-center justify-center rounded-[5px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0052d6] sm:h-9 sm:w-auto"
             >
               Visa annons
             </Link>
