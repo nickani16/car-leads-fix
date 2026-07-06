@@ -29,6 +29,8 @@ import {
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 
+type ListingIntent = 'sale' | 'leasing' | 'rent'
+
 const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
   cars: '/marketplace/cars',
   vans: '/marketplace/vans',
@@ -70,6 +72,7 @@ export default function MarketplaceSearch({
 }) {
   const router = useRouter()
   const [category, setCategory] = useState<MarketplaceCategorySlug>('cars')
+  const [listingIntent, setListingIntent] = useState<ListingIntent>('sale')
   const [query, setQuery] = useState('')
   const [country, setCountry] = useState(() =>
     resolveDefaultCountry(defaultCountry, locale),
@@ -128,6 +131,7 @@ export default function MarketplaceSearch({
               place: 'Location',
             allEurope: 'All of Europe',
           })
+  const intentLabels = getIntentLabels(locale)
 
   useEffect(() => {
     function closeOnOutsideClick(event: MouseEvent) {
@@ -147,6 +151,7 @@ export default function MarketplaceSearch({
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (country) params.set('country', country)
+    if (listingIntent !== 'sale') params.set('intent', listingIntent)
     router.push(localizePublicHref(locale, `${route}${params.size ? `?${params}` : ''}`))
   }
 
@@ -154,9 +159,28 @@ export default function MarketplaceSearch({
     <form
       ref={pickerRef}
       onSubmit={submit}
-      className="w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
+      className="relative w-full min-w-0 max-w-full overflow-visible rounded-[22px] border border-white bg-white p-2 shadow-[0_20px_54px_rgba(15,23,42,.16)] backdrop-blur-xl sm:rounded-[26px]"
       role="search"
     >
+      <div className="absolute left-8 top-[-46px] z-30 hidden items-end gap-2 sm:flex">
+        {(['sale', 'leasing', 'rent'] as const).map((intent) => {
+          const selected = listingIntent === intent
+          return (
+            <button
+              key={intent}
+              type="button"
+              onClick={() => setListingIntent(intent)}
+              className={`min-h-[48px] min-w-[118px] rounded-t-[13px] border px-5 text-sm font-semibold transition ${
+                selected
+                  ? 'translate-y-[1px] border-white bg-white text-[#0866ff] shadow-[0_-8px_24px_rgba(15,23,42,.12)]'
+                  : 'border-white/70 bg-white/86 text-[#344054] shadow-[0_-6px_18px_rgba(15,23,42,.10)] backdrop-blur-xl hover:bg-white hover:text-[#0866ff]'
+              }`}
+            >
+              {intentLabels[intent]}
+            </button>
+          )
+        })}
+      </div>
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[1.55fr_1.05fr_1fr_auto] sm:items-center">
         <SearchField label={copy.query} icon={Search} className="col-span-2 sm:col-span-1">
           <AnimatedSearchInput
@@ -287,7 +311,7 @@ export default function MarketplaceSearch({
 
         <button type="submit" className="col-span-2 inline-flex min-h-[54px] w-full min-w-0 items-center justify-center gap-2 rounded-[17px] bg-[#0866ff] px-7 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(8,102,255,.22)] ring-1 ring-[#005ee8]/10 transition hover:bg-[#0057e6] sm:col-span-1 sm:min-h-[58px] sm:w-auto sm:min-w-[148px] sm:rounded-[20px] lg:rounded-[22px]">
           <Search className="h-5 w-5" />
-          {getSearchCta(category, locale)}
+          {getSearchCta(category, locale, listingIntent)}
         </button>
       </div>
     </form>
@@ -363,7 +387,44 @@ function AnimatedSearchInput({
   )
 }
 
-function getSearchCta(category: MarketplaceCategorySlug, locale: PublicLocale) {
+function getIntentLabels(locale: PublicLocale): Record<ListingIntent, string> {
+  if (locale === 'sv') {
+    return {
+      sale: 'Till salu',
+      leasing: 'Leasing',
+      rent: 'Uthyrning',
+    }
+  }
+  if (locale === 'de') {
+    return {
+      sale: 'Kaufen',
+      leasing: 'Leasing',
+      rent: 'Mieten',
+    }
+  }
+  return {
+    sale: 'For sale',
+    leasing: 'Leasing',
+    rent: 'Rental',
+  }
+}
+
+function getSearchCta(
+  category: MarketplaceCategorySlug,
+  locale: PublicLocale,
+  intent: ListingIntent,
+) {
+  if (intent === 'leasing') {
+    if (locale === 'sv') return 'SÃ¶k leasing'
+    if (locale === 'de') return 'Leasing suchen'
+    return 'Search leasing'
+  }
+  if (intent === 'rent') {
+    if (locale === 'sv') return 'SÃ¶k uthyrning'
+    if (locale === 'de') return 'Miete suchen'
+    return 'Search rentals'
+  }
+
   const sv: Record<MarketplaceCategorySlug, string> = {
     cars: 'Sök bil',
     vans: 'Sök transportbil',
