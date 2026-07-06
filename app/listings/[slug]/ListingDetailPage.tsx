@@ -34,6 +34,7 @@ import {
 import { localizePublicHref, translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
 import { getPublishedMarketplaceListingById } from '@/lib/marketplace-public-data'
+import { resolveListingCoordinates } from '@/lib/location-coordinates'
 import { selectedEquipmentGroups } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -309,6 +310,14 @@ export default async function ListingDetailPage({
     location,
     sellerLabel,
   })
+  const mapCoordinates = resolveListingCoordinates({
+    latitude: listing.latitude,
+    longitude: listing.longitude,
+    city: listing.city,
+    municipality: listing.municipality,
+    country: listing.country,
+    countryCode: listing.country_code,
+  })
 
   return (
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
@@ -431,8 +440,9 @@ export default async function ListingDetailPage({
               address={listing.address}
               city={listing.city}
               country={countryName || listing.country_code}
-              latitude={listing.latitude}
-              longitude={listing.longitude}
+              latitude={mapCoordinates?.latitude}
+              longitude={mapCoordinates?.longitude}
+              approximate={mapCoordinates?.approximate}
             />
           </div>
 

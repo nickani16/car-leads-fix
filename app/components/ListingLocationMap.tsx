@@ -11,6 +11,7 @@ type ListingLocationMapProps = {
   address?: string | null
   city?: string | null
   country?: string | null
+  approximate?: boolean
 }
 
 const fallbackStyleUrl = 'https://demotiles.maplibre.org/style.json'
@@ -22,6 +23,7 @@ export default function ListingLocationMap({
   address,
   city,
   country,
+  approximate = false,
 }: ListingLocationMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -97,6 +99,9 @@ export default function ListingLocationMap({
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
           {locationText ? (
             <p className="mt-1 text-sm font-medium leading-5 text-[#667085]">{locationText}</p>
+          ) : null}
+          {approximate ? (
+            <p className="mt-1 text-xs font-semibold text-[#0866ff]">Ungefärlig position baserad på ort.</p>
           ) : null}
         </div>
       </div>

@@ -1,6 +1,9 @@
+import { resolveListingCoordinates } from './location-coordinates'
+
 export type ListingGeocodeInput = {
   address?: string | null
   city?: string | null
+  municipality?: string | null
   country?: string | null
 }
 
@@ -20,8 +23,22 @@ export async function geocodeListingLocation(
   const provider = process.env.GEOCODING_PROVIDER || process.env.MAP_GEOCODING_PROVIDER
   const endpoint = process.env.GEOCODING_API_URL || process.env.MAP_GEOCODING_API_URL
 
-  if (!provider || !endpoint) return null
+  const fallback = resolveListingCoordinates({
+    city: input.city,
+    municipality: input.municipality,
+    country: input.country,
+    countryCode: input.country,
+  })
 
-  void input
-  return null
+  if (!provider || !endpoint) {
+    return fallback
+      ? { latitude: fallback.latitude, longitude: fallback.longitude }
+      : null
+  }
+
+  void provider
+  void endpoint
+  return fallback
+    ? { latitude: fallback.latitude, longitude: fallback.longitude }
+    : null
 }

@@ -481,6 +481,7 @@ export async function POST(request: Request) {
     const geocoded = await geocodeListingLocation({
       address,
       city,
+      municipality,
       country: profile.country_code,
     })
     const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
