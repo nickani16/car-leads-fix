@@ -71,15 +71,15 @@ const tabs: Array<{ key: SearchMode; label: string; hint: string }> = [
 ]
 
 const categories = [
-  { key: 'all', label: 'Alla kategorier', icon: AutorellCarIcon },
-  { key: 'cars', label: 'Bilar', icon: AutorellCarIcon },
-  { key: 'vans', label: 'Transportbilar', icon: AutorellVanIcon },
-  { key: 'motorcycles', label: 'Motorcyklar', icon: AutorellMotorbikeIcon },
-  { key: 'motorhomes', label: 'Husbilar', icon: AutorellVanIcon },
-  { key: 'caravans', label: 'Husvagnar', icon: AutorellCaravanIcon },
-  { key: 'trucks', label: 'Lastbilar', icon: AutorellTruckIcon },
-  { key: 'agriculture', label: 'Lantbruk', icon: AutorellBikeIcon },
-  { key: 'construction', label: 'Entreprenad', icon: AutorellScooterIcon },
+  { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellCarIcon },
+  { key: 'cars', label: 'Bilar', shortLabel: 'Bilar', icon: AutorellCarIcon },
+  { key: 'vans', label: 'Transportbilar', shortLabel: 'Transport', icon: AutorellVanIcon },
+  { key: 'motorcycles', label: 'Motorcyklar', shortLabel: 'MC', icon: AutorellMotorbikeIcon },
+  { key: 'motorhomes', label: 'Husbilar', shortLabel: 'Husbilar', icon: AutorellVanIcon },
+  { key: 'caravans', label: 'Husvagnar', shortLabel: 'Husvagnar', icon: AutorellCaravanIcon },
+  { key: 'trucks', label: 'Lastbilar', shortLabel: 'Lastbilar', icon: AutorellTruckIcon },
+  { key: 'agriculture', label: 'Lantbruk', shortLabel: 'Lantbruk', icon: AutorellBikeIcon },
+  { key: 'construction', label: 'Entreprenad', shortLabel: 'Entreprenad', icon: AutorellScooterIcon },
 ]
 
 const countryCenters: Record<string, [number, number]> = {
@@ -299,9 +299,9 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 min-w-0 flex-1 lg:grid-cols-[minmax(640px,clamp(680px,42vw,820px))_minmax(520px,1fr)]">
+        <section className="grid min-h-0 min-w-0 flex-1 lg:grid-cols-[minmax(760px,clamp(820px,46vw,940px))_minmax(460px,1fr)]">
           <div className="min-h-0 min-w-0 overflow-y-auto border-r border-[#eceff4] bg-white">
-            <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6">
+            <div className="border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
               <div className="flex overflow-x-auto border-b border-[#dfe4ec] sm:grid sm:grid-cols-3 sm:overflow-visible">
                 {tabs.map((tab) => (
                   <button
@@ -318,7 +318,20 @@ export default function VehicleSearchExperience({
                 ))}
               </div>
 
-              <div className="py-5">
+            </div>
+
+            <div className="lg:grid lg:grid-cols-[96px_minmax(0,1fr)]">
+              <CategoryRail
+                activeCategory={category}
+                onSelect={(nextCategory) => {
+                  setCategory(nextCategory)
+                  setMake('')
+                  setModel('')
+                }}
+              />
+
+              <div className="min-w-0">
+                <div className="border-b border-[#eceff4] px-5 py-5 sm:px-6">
                 <label className="flex h-12 items-center gap-3 rounded-[5px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
                   <span className="sr-only">Sök</span>
                   <input
@@ -350,8 +363,8 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px]">
-                  <label className="relative">
+                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px] lg:grid-cols-1">
+                  <label className="relative lg:hidden">
                     <span className="sr-only">Kategori</span>
                     <select
                       value={category}
@@ -478,7 +491,6 @@ export default function VehicleSearchExperience({
                   </div>
                 ) : null}
               </div>
-            </div>
 
             <div className="px-5 py-4 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -533,6 +545,8 @@ export default function VehicleSearchExperience({
                 </div>
               )}
             </div>
+              </div>
+            </div>
           </div>
 
           <div className={`${mobileMapOpen ? 'fixed inset-0 z-50 block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
@@ -572,6 +586,43 @@ export default function VehicleSearchExperience({
         </section>
       </div>
     </main>
+  )
+}
+
+function CategoryRail({
+  activeCategory,
+  onSelect,
+}: {
+  activeCategory: string
+  onSelect: (category: string) => void
+}) {
+  return (
+    <aside className="hidden border-r border-[#eceff4] bg-white lg:block">
+      <div className="sticky top-0 flex min-h-[calc(100vh-121px)] flex-col py-4">
+        {categories.map((item) => {
+          const Icon = item.icon
+          const active = activeCategory === item.key
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => onSelect(item.key)}
+              className={`relative flex min-h-[76px] flex-col items-center justify-center gap-1.5 px-2 text-center text-[11px] font-medium leading-tight transition ${
+                active
+                  ? 'bg-[#eef5ff] text-[#0866ff]'
+                  : 'text-[#101828] hover:bg-[#f8fafc] hover:text-[#0866ff]'
+              }`}
+              aria-pressed={active}
+              title={item.label}
+            >
+              {active ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0866ff]" /> : null}
+              <Icon className="h-6 w-6" />
+              <span className="max-w-[76px] truncate">{item.shortLabel}</span>
+            </button>
+          )
+        })}
+      </div>
+    </aside>
   )
 }
 
