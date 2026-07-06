@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react'
 import {
   BusFront,
+  Check,
   ChevronDown,
   Construction,
-  MapPin,
   Search,
   Tractor,
 } from 'lucide-react'
@@ -227,7 +227,12 @@ export default function MarketplaceSearch({
 
         <SearchField
           label={copy.place}
-          icon={MapPin}
+          leading={
+            <CountryFlag
+              code={country || 'eu'}
+              className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/5"
+            />
+          }
           active={openPicker === 'country'}
         >
           <button
@@ -236,20 +241,24 @@ export default function MarketplaceSearch({
             onClick={() => setOpenPicker((current) => (current === 'country' ? null : 'country'))}
             className="marketplace-search-control flex h-7 w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm font-semibold text-[#101828] outline-none"
           >
-            <span className="flex min-w-0 items-center gap-2">
-              <CountryFlag code={country || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
-              <span className="truncate">{selectedCountryLabel}</span>
-            </span>
+            <span className="truncate">{selectedCountryLabel}</span>
             <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${openPicker === 'country' ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {openPicker === 'country' ? (
-            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,500px)] overflow-hidden rounded-[22px] border border-[#d9e4f2] bg-white p-2 shadow-[0_24px_70px_rgba(15,23,42,.22)] ring-1 ring-white/70">
-              <div className="px-3 pb-2 pt-2">
+            <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,500px)] overflow-hidden rounded-[18px] border border-[#d8e2f1] bg-white p-3 shadow-[0_22px_62px_rgba(15,23,42,.18)] ring-1 ring-white/80">
+              <div className="px-2 pb-3 pt-1">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
                   {copy.place}
                 </p>
+                <p className="mt-1 text-xs font-medium text-[#667085]">
+                  {locale === 'sv'
+                    ? 'Välj marknad för annonser och valuta.'
+                    : locale === 'de'
+                      ? 'Markt fuer Anzeigen und Waehrung waehlen.'
+                      : 'Choose market for listings and currency.'}
+                </p>
               </div>
-              <div className="grid max-h-[360px] gap-1 overflow-y-auto pr-1 sm:grid-cols-2">
+              <div className="grid max-h-[360px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
                 <CountryOptionButton
                   code=""
                   label={copy.allEurope}
@@ -472,16 +481,18 @@ function CountryOptionButton({
     <button
       type="button"
       onClick={onSelect}
-      className={`flex min-h-[48px] items-center gap-3 rounded-[15px] px-3 text-left transition hover:bg-[#f5f9ff] ${
-        selected ? 'bg-[#eef5ff] ring-1 ring-[#bcd5ff]' : 'bg-white'
+      className={`flex min-h-[46px] items-center gap-3 rounded-[12px] px-3 text-left transition hover:bg-[#f7faff] ${
+        selected ? 'bg-[#f0f6ff] ring-1 ring-[#acd0ff]' : 'bg-white'
       }`}
     >
-      <CountryFlag code={code || 'eu'} className="h-6 w-8 shrink-0 rounded-[6px]" />
+      <CountryFlag code={code || 'eu'} className="h-5 w-7 shrink-0 rounded-[5px] shadow-sm ring-1 ring-black/5" />
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#101828]">
         {label}
       </span>
       {selected ? (
-        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#0866ff]" />
+        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#0866ff] text-white">
+          <Check className="h-3.5 w-3.5" />
+        </span>
       ) : null}
     </button>
   )
@@ -548,12 +559,14 @@ function resolveDefaultCountry(
 function SearchField({
   label,
   icon: Icon,
+  leading,
   children,
   className = '',
   active = false,
 }: {
   label: string
-  icon: ComponentType<SVGProps<SVGSVGElement>>
+  icon?: ComponentType<SVGProps<SVGSVGElement>>
+  leading?: ReactNode
   children: ReactNode
   className?: string
   active?: boolean
@@ -561,7 +574,7 @@ function SearchField({
   return (
     <div className={`relative flex min-w-0 items-center gap-3 overflow-visible rounded-[15px] border border-[#e6e9ee] bg-white px-4 py-2 transition focus-within:border-[#0866ff]/45 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0866ff]/8 sm:border-0 sm:focus-within:ring-0 ${active ? 'z-40' : 'z-0'} ${className}`}>
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-[#eaf1ff] text-[#0866ff]">
-        <Icon className="h-[18px] w-[18px]" />
+        {leading || (Icon ? <Icon className="h-[18px] w-[18px]" /> : null)}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#98a2b3]">{label}</span>
