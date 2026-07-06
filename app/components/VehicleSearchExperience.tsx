@@ -142,6 +142,7 @@ export default function VehicleSearchExperience({
   const [category, setCategory] = useState(safeInitialCategory)
   const [country, setCountry] = useState(safeInitialCountry)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [quickFilter, setQuickFilter] = useState<string | null>(null)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [sortBy, setSortBy] = useState('latest')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -275,6 +276,7 @@ export default function VehicleSearchExperience({
     setSellerType('all')
     setEquipmentQuery('')
     setSortBy('latest')
+    setQuickFilter(null)
   }
 
   const toggleCompare = (listingId: string) => {
@@ -286,6 +288,7 @@ export default function VehicleSearchExperience({
   }
 
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
+  const currentCategory = categories.find((item) => item.key === category) || categories[0]
   const visibleCount = filteredListings.length
   const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
 
@@ -321,9 +324,145 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+        <section className="relative z-30 border-b border-[#d7dde7] bg-white">
+          <div className="flex min-w-0 items-center gap-2 overflow-x-auto px-3 py-2 scrollbar-none sm:px-4">
+            <label className="flex h-10 min-w-[300px] items-center gap-2 rounded-full border border-[#d0d5dd] bg-white px-4 text-[#667085] shadow-sm">
+              <Search className="h-4 w-4 shrink-0 text-[#101828]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Sök fordon, ort eller kommun"
+                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-sm font-medium text-[#101828] outline-none placeholder:text-[#667085]"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#d0d5dd] bg-white px-3 text-sm font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter
+            </button>
+            <SegmentedMode mode={mode} onModeChange={setMode} />
+            <FilterChip label={currentCategory.shortLabel} active={category !== 'all'} open={quickFilter === 'category'} onClick={() => setQuickFilter((current) => (current === 'category' ? null : 'category'))} />
+            <FilterChip label={make || 'Märke'} active={Boolean(make)} open={quickFilter === 'make'} onClick={() => setQuickFilter((current) => (current === 'make' ? null : 'make'))} />
+            <FilterChip label={formatPriceChip(minPrice, maxPrice)} active={Boolean(minPrice || maxPrice)} open={quickFilter === 'price'} onClick={() => setQuickFilter((current) => (current === 'price' ? null : 'price'))} />
+            <FilterChip label={formatYearChip(minYear, maxYear)} active={Boolean(minYear || maxYear)} open={quickFilter === 'year'} onClick={() => setQuickFilter((current) => (current === 'year' ? null : 'year'))} />
+            <FilterChip label={maxMileage ? `Max ${formatFilterNumber(Number(maxMileage))} km` : 'Miltal'} active={Boolean(maxMileage)} open={quickFilter === 'mileage'} onClick={() => setQuickFilter((current) => (current === 'mileage' ? null : 'mileage'))} />
+            <FilterChip label={fuel || 'Drivmedel'} active={Boolean(fuel)} open={quickFilter === 'fuel'} onClick={() => setQuickFilter((current) => (current === 'fuel' ? null : 'fuel'))} />
+            <FilterChip label={gearbox || 'Växellåda'} active={Boolean(gearbox)} open={quickFilter === 'gearbox'} onClick={() => setQuickFilter((current) => (current === 'gearbox' ? null : 'gearbox'))} />
+            <button
+              type="button"
+              onClick={() => setMobileMapOpen(true)}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#d0d5dd] bg-white px-3 text-sm font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff] lg:hidden"
+            >
+              <MapPin className="h-4 w-4" />
+              Karta
+            </button>
+            <button type="button" className="inline-flex h-9 shrink-0 items-center gap-2 rounded-[7px] bg-[#ffbf00] px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:bg-[#f1b400]">
+              <Bookmark className="h-4 w-4" />
+              Spara sökning
+            </button>
+          </div>
+          {quickFilter ? (
+            <QuickFilterPopover
+              filter={quickFilter}
+              category={category}
+              onCategoryChange={(nextCategory) => {
+                setCategory(nextCategory)
+                setMake('')
+                setModel('')
+              }}
+              make={make}
+              makes={makes}
+              onMakeChange={(value) => {
+                setMake(value)
+                setModel('')
+              }}
+              model={model}
+              models={models}
+              onModelChange={setModel}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              priceBounds={priceBounds}
+              minYear={minYear}
+              maxYear={maxYear}
+              onMinYearChange={setMinYear}
+              onMaxYearChange={setMaxYear}
+              maxMileage={maxMileage}
+              onMaxMileageChange={setMaxMileage}
+              mileageBounds={mileageBounds}
+              fuel={fuel}
+              fuels={fuels}
+              onFuelChange={setFuel}
+              gearbox={gearbox}
+              gearboxes={gearboxes}
+              onGearboxChange={setGearbox}
+              onClose={() => setQuickFilter(null)}
+            />
+          ) : null}
+          {filtersOpen ? (
+            <FullFilterModal
+              mode={mode}
+              onModeChange={setMode}
+              category={category}
+              onCategoryChange={(value) => {
+                setCategory(value)
+                setMake('')
+                setModel('')
+              }}
+              country={country}
+              onCountryChange={(value) => {
+                setCountry(value)
+                setMake('')
+                setModel('')
+              }}
+              make={make}
+              makes={makes}
+              onMakeChange={(value) => {
+                setMake(value)
+                setModel('')
+              }}
+              model={model}
+              models={models}
+              onModelChange={setModel}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              priceBounds={priceBounds}
+              minYear={minYear}
+              maxYear={maxYear}
+              onMinYearChange={setMinYear}
+              onMaxYearChange={setMaxYear}
+              maxMileage={maxMileage}
+              onMaxMileageChange={setMaxMileage}
+              mileageBounds={mileageBounds}
+              fuel={fuel}
+              fuels={fuels}
+              onFuelChange={setFuel}
+              gearbox={gearbox}
+              gearboxes={gearboxes}
+              onGearboxChange={setGearbox}
+              bodyType={bodyType}
+              bodyTypes={bodyTypes}
+              onBodyTypeChange={setBodyType}
+              sellerType={sellerType}
+              onSellerTypeChange={setSellerType}
+              equipmentQuery={equipmentQuery}
+              onEquipmentQueryChange={setEquipmentQuery}
+              onReset={resetFilters}
+              onClose={() => setFiltersOpen(false)}
+              resultCount={visibleCount}
+            />
+          ) : null}
+        </section>
+
+        <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(560px,clamp(600px,37vw,720px))_minmax(620px,1fr)]">
           <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white">
-            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
+            <div className="hidden w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
               <div className="grid grid-cols-3 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
                   <button
@@ -343,18 +482,9 @@ export default function VehicleSearchExperience({
 
             </div>
 
-            <div className="lg:grid lg:grid-cols-[74px_minmax(0,1fr)]">
-              <CategoryRail
-                activeCategory={category}
-                onSelect={(nextCategory) => {
-                  setCategory(nextCategory)
-                  setMake('')
-                  setModel('')
-                }}
-              />
-
+            <div className="min-w-0 max-w-full">
               <div className="min-w-0 max-w-full overflow-hidden">
-                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 py-5 sm:px-6">
+                <div className="hidden w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 py-5 sm:px-6">
                 <label className="flex h-12 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-[50px]">
                   <span className="sr-only">Sök</span>
                   <input
@@ -611,40 +741,298 @@ export default function VehicleSearchExperience({
   )
 }
 
-function CategoryRail({
-  activeCategory,
-  onSelect,
+function SegmentedMode({
+  mode,
+  onModeChange,
 }: {
-  activeCategory: string
-  onSelect: (category: string) => void
+  mode: SearchMode
+  onModeChange: (mode: SearchMode) => void
 }) {
   return (
-    <aside className="hidden border-r border-[#eceff4] bg-white lg:block">
-      <div className="sticky top-0 flex min-h-[calc(100vh-121px)] flex-col py-2">
-        {categories.map((item) => {
-          const Icon = item.icon
-          const active = activeCategory === item.key
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => onSelect(item.key)}
-              className={`relative flex min-h-[64px] flex-col items-center justify-center gap-1 px-1.5 text-center text-[10.5px] font-medium leading-tight transition ${
-                active
-                  ? 'bg-[#eef5ff] text-[#0866ff]'
-                  : 'text-[#101828] hover:bg-[#f8fafc] hover:text-[#0866ff]'
-              }`}
-              aria-pressed={active}
-              title={item.label}
-            >
-              {active ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0866ff]" /> : null}
-              <Icon className="h-5 w-5" />
-              <span className="max-w-[64px] truncate">{item.shortLabel}</span>
-            </button>
-          )
-        })}
+    <div className="inline-flex h-9 shrink-0 overflow-hidden rounded-full border border-[#008b97] bg-white">
+      {tabs.map((tab) => (
+        <button
+          key={tab.key}
+          type="button"
+          onClick={() => onModeChange(tab.key)}
+          className={`min-w-[88px] px-4 text-sm font-medium transition ${
+            mode === tab.key ? 'bg-[#d8fbff] text-[#005b66]' : 'bg-white text-[#101828] hover:bg-[#f7fafc]'
+          }`}
+        >
+          {tab.mobileLabel}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function FilterChip({
+  label,
+  active,
+  open,
+  onClick,
+}: {
+  label: string
+  active?: boolean
+  open?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium shadow-sm transition ${
+        active || open
+          ? 'border-[#008b97] bg-[#d8fbff] text-[#005b66]'
+          : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
+      }`}
+    >
+      <span className="max-w-[150px] truncate">{label}</span>
+      <ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
+    </button>
+  )
+}
+
+function QuickFilterPopover({
+  filter,
+  category,
+  onCategoryChange,
+  make,
+  makes,
+  onMakeChange,
+  model,
+  models,
+  onModelChange,
+  minPrice,
+  maxPrice,
+  onMinPriceChange,
+  onMaxPriceChange,
+  priceBounds,
+  minYear,
+  maxYear,
+  onMinYearChange,
+  onMaxYearChange,
+  maxMileage,
+  onMaxMileageChange,
+  mileageBounds,
+  fuel,
+  fuels,
+  onFuelChange,
+  gearbox,
+  gearboxes,
+  onGearboxChange,
+  onClose,
+}: {
+  filter: string
+  category: string
+  onCategoryChange: (value: string) => void
+  make: string
+  makes: string[]
+  onMakeChange: (value: string) => void
+  model: string
+  models: string[]
+  onModelChange: (value: string) => void
+  minPrice: string
+  maxPrice: string
+  onMinPriceChange: (value: string) => void
+  onMaxPriceChange: (value: string) => void
+  priceBounds: { min: number; max: number }
+  minYear: string
+  maxYear: string
+  onMinYearChange: (value: string) => void
+  onMaxYearChange: (value: string) => void
+  maxMileage: string
+  onMaxMileageChange: (value: string) => void
+  mileageBounds: { min: number; max: number }
+  fuel: string
+  fuels: string[]
+  onFuelChange: (value: string) => void
+  gearbox: string
+  gearboxes: string[]
+  onGearboxChange: (value: string) => void
+  onClose: () => void
+}) {
+  return (
+    <div className="absolute left-3 top-[calc(100%+4px)] z-40 w-[min(520px,calc(100vw-24px))] rounded-[8px] border border-[#d0d5dd] bg-white p-4 shadow-[0_24px_70px_rgba(16,24,40,.22)]">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-sm font-semibold text-[#101828]">
+          {filter === 'price' ? 'Pris' : filter === 'year' ? 'Modellår' : filter === 'mileage' ? 'Miltal' : filter === 'category' ? 'Kategori' : filter === 'make' ? 'Märke och modell' : filter === 'fuel' ? 'Drivmedel' : 'Växellåda'}
+        </p>
+        <button type="button" onClick={onClose} className="text-sm font-semibold text-[#008b97]">Stäng</button>
       </div>
-    </aside>
+      {filter === 'category' ? (
+        <div className="grid max-h-[320px] gap-2 overflow-y-auto sm:grid-cols-2">
+          {categories.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => {
+                  onCategoryChange(item.key)
+                  onClose()
+                }}
+                className={`flex items-center gap-2 rounded-[8px] border px-3 py-2 text-left text-sm font-medium ${
+                  category === item.key ? 'border-[#008b97] bg-[#d8fbff]' : 'border-[#d0d5dd] bg-white'
+                }`}
+              >
+                <Icon className="h-4 w-4 text-[#0866ff]" />
+                {item.label}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+      {filter === 'make' ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FilterSelect label="Märke" value={make} onChange={onMakeChange} options={makes} />
+          <FilterSelect label="Modell" value={model} onChange={onModelChange} options={models} />
+          <button type="button" onClick={onClose} className="h-11 rounded-[7px] bg-[#008b97] px-4 text-sm font-semibold text-white sm:col-span-2">Tillämpa</button>
+        </div>
+      ) : null}
+      {filter === 'price' ? (
+        <RangeFilter title="Pris" minValue={minPrice} maxValue={maxPrice} onMinChange={onMinPriceChange} onMaxChange={onMaxPriceChange} minLimit={priceBounds.min} maxLimit={priceBounds.max} unit="SEK" step={1000} />
+      ) : null}
+      {filter === 'year' ? (
+        <RangeFilter title="Modellår" minValue={minYear} maxValue={maxYear} onMinChange={onMinYearChange} onMaxChange={onMaxYearChange} minLimit={1950} maxLimit={new Date().getFullYear() + 1} step={1} startLabel="Före 1950" />
+      ) : null}
+      {filter === 'mileage' ? (
+        <RangeFilter title="Miltal" minValue="" maxValue={maxMileage} onMinChange={() => undefined} onMaxChange={onMaxMileageChange} minLimit={mileageBounds.min} maxLimit={mileageBounds.max} unit="km" step={1000} />
+      ) : null}
+      {filter === 'fuel' ? (
+        <FilterSelect label="Drivmedel" value={fuel} onChange={onFuelChange} options={fuels} />
+      ) : null}
+      {filter === 'gearbox' ? (
+        <FilterSelect label="Växellåda" value={gearbox} onChange={onGearboxChange} options={gearboxes} />
+      ) : null}
+    </div>
+  )
+}
+
+function FullFilterModal({
+  mode,
+  onModeChange,
+  category,
+  onCategoryChange,
+  country,
+  onCountryChange,
+  make,
+  makes,
+  onMakeChange,
+  model,
+  models,
+  onModelChange,
+  minPrice,
+  maxPrice,
+  onMinPriceChange,
+  onMaxPriceChange,
+  priceBounds,
+  minYear,
+  maxYear,
+  onMinYearChange,
+  onMaxYearChange,
+  maxMileage,
+  onMaxMileageChange,
+  mileageBounds,
+  fuel,
+  fuels,
+  onFuelChange,
+  gearbox,
+  gearboxes,
+  onGearboxChange,
+  bodyType,
+  bodyTypes,
+  onBodyTypeChange,
+  sellerType,
+  onSellerTypeChange,
+  equipmentQuery,
+  onEquipmentQueryChange,
+  onReset,
+  onClose,
+  resultCount,
+}: {
+  mode: SearchMode
+  onModeChange: (mode: SearchMode) => void
+  category: string
+  onCategoryChange: (value: string) => void
+  country: string
+  onCountryChange: (value: string) => void
+  make: string
+  makes: string[]
+  onMakeChange: (value: string) => void
+  model: string
+  models: string[]
+  onModelChange: (value: string) => void
+  minPrice: string
+  maxPrice: string
+  onMinPriceChange: (value: string) => void
+  onMaxPriceChange: (value: string) => void
+  priceBounds: { min: number; max: number }
+  minYear: string
+  maxYear: string
+  onMinYearChange: (value: string) => void
+  onMaxYearChange: (value: string) => void
+  maxMileage: string
+  onMaxMileageChange: (value: string) => void
+  mileageBounds: { min: number; max: number }
+  fuel: string
+  fuels: string[]
+  onFuelChange: (value: string) => void
+  gearbox: string
+  gearboxes: string[]
+  onGearboxChange: (value: string) => void
+  bodyType: string
+  bodyTypes: string[]
+  onBodyTypeChange: (value: string) => void
+  sellerType: string
+  onSellerTypeChange: (value: string) => void
+  equipmentQuery: string
+  onEquipmentQueryChange: (value: string) => void
+  onReset: () => void
+  onClose: () => void
+  resultCount: number
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] bg-black/25 backdrop-blur-[3px]">
+      <div className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-[14px] bg-white shadow-2xl sm:inset-y-4 sm:left-6 sm:right-auto sm:w-[500px] sm:rounded-[8px]">
+        <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-4">
+          <p className="text-lg font-semibold text-[#101828]">Filter</p>
+          <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-[#f2f4f7] text-[#101828]">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="max-h-[calc(88vh-132px)] overflow-y-auto px-4 py-4">
+          <SegmentedMode mode={mode} onModeChange={onModeChange} />
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <FilterSelect label="Kategori" value={category} onChange={onCategoryChange} options={categories.map((item) => ({ value: item.key, label: item.label }))} />
+            <FilterSelect label="Marknad" value={country} onChange={onCountryChange} options={marketOptions} />
+            <FilterSelect label="Märke" value={make} onChange={onMakeChange} options={makes} />
+            <FilterSelect label="Modell" value={model} onChange={onModelChange} options={models} />
+          </div>
+          <div className="mt-5 grid gap-5">
+            <RangeFilter title="Pris" minValue={minPrice} maxValue={maxPrice} onMinChange={onMinPriceChange} onMaxChange={onMaxPriceChange} minLimit={priceBounds.min} maxLimit={priceBounds.max} unit="SEK" step={1000} />
+            <RangeFilter title="Modellår" minValue={minYear} maxValue={maxYear} onMinChange={onMinYearChange} onMaxChange={onMaxYearChange} minLimit={1950} maxLimit={new Date().getFullYear() + 1} step={1} startLabel="Före 1950" />
+            <RangeFilter title="Miltal" minValue="" maxValue={maxMileage} onMinChange={() => undefined} onMaxChange={onMaxMileageChange} minLimit={mileageBounds.min} maxLimit={mileageBounds.max} unit="km" step={1000} />
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <FilterSelect label="Drivmedel" value={fuel} onChange={onFuelChange} options={fuels} />
+            <FilterSelect label="Växellåda" value={gearbox} onChange={onGearboxChange} options={gearboxes} />
+            <FilterSelect label="Kaross / typ" value={bodyType} onChange={onBodyTypeChange} options={bodyTypes} />
+            <FilterSelect label="Säljartyp" value={sellerType} onChange={onSellerTypeChange} options={[{ value: 'all', label: 'Alla säljare' }, { value: 'business', label: 'Företag' }, { value: 'private', label: 'Privatperson' }]} />
+            <label className="block sm:col-span-2">
+              <span className="mb-1.5 block text-xs font-semibold text-[#475467]">Utrustning, drag m.m.</span>
+              <input value={equipmentQuery} onChange={(event) => onEquipmentQueryChange(event.target.value)} placeholder="Ex. Dragkrok, navigation, fyrhjulsdrift" className="h-11 w-full rounded-[5px] border border-[#d0d5dd] bg-white px-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]" />
+            </label>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 border-t border-[#e5e7eb] bg-white px-4 py-3">
+          <button type="button" onClick={onReset} className="h-10 rounded-[7px] bg-[#f2f4f7] px-5 text-sm font-semibold text-[#008b97]">Reset</button>
+          <button type="button" onClick={onClose} className="h-10 flex-1 rounded-[7px] bg-[#008b97] px-5 text-sm font-semibold text-white">
+            Visa {resultCount.toLocaleString('sv-SE')} resultat
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1101,9 +1489,6 @@ function VehicleSearchMap({
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
         </div>
       )}
-      <div className={`${fullscreen ? 'top-[74px]' : 'top-4'} absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
-        {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
-      </div>
       <button className="absolute bottom-5 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg">
         <SlidersHorizontal className="h-4 w-4" />
         Sök i detta område
@@ -1198,6 +1583,20 @@ function formatFilterNumber(value: number) {
     maximumFractionDigits: 0,
     minimumFractionDigits: 0,
   }).format(Math.round(value))
+}
+
+function formatPriceChip(minPrice: string, maxPrice: string) {
+  if (minPrice && maxPrice) return `${formatFilterNumber(Number(minPrice))}-${formatFilterNumber(Number(maxPrice))}`
+  if (minPrice) return `Från ${formatFilterNumber(Number(minPrice))}`
+  if (maxPrice) return `Till ${formatFilterNumber(Number(maxPrice))}`
+  return 'Pris'
+}
+
+function formatYearChip(minYear: string, maxYear: string) {
+  if (minYear && maxYear) return `${minYear}-${maxYear}`
+  if (minYear) return `Från ${minYear}`
+  if (maxYear) return `Till ${maxYear}`
+  return 'Modellår'
 }
 
 function escapeHtml(value: string) {
