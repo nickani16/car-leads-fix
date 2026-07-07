@@ -9,7 +9,7 @@ import {
   MapPin,
   Search,
 } from 'lucide-react'
-import MarketplaceSearch from './MarketplaceSearch'
+import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -62,9 +62,6 @@ type CategoryCard = {
   href: string
   count: number
 }
-
-const homeContainerClass =
-  'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]'
@@ -241,48 +238,18 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-white pt-0">
-        <div className="relative w-full">
-          <div className="px-0">
-            <div className="relative min-h-[250px] overflow-hidden rounded-none bg-white sm:min-h-[330px] lg:min-h-[340px] lg:shadow-[0_22px_52px_rgba(16,24,40,.20)]">
-              <Image
-                src="/autorell-home-hero-happy-woman-car.jpg"
-                alt={t.heroAlt}
-                fill
-                className="object-cover object-[42%_38%] brightness-[1.08] sm:scale-[1.03] sm:object-[52%_36%] lg:hidden"
-                sizes="100vw"
-              />
-              <video
-                aria-hidden="true"
-                autoPlay
-                className="absolute inset-0 hidden h-full w-full translate-x-[2.5%] translate-y-[5%] scale-[1.08] object-cover object-center lg:block"
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              >
-                <source src="/autorell-home-hero-desktop-video.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,10,26,.18)_0%,rgba(3,10,26,.105)_31%,rgba(3,10,26,.025)_58%,rgba(3,10,26,0)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.075)_34%,rgba(3,10,26,.02)_60%,rgba(3,10,26,0)_100%)]" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(3,10,26,.02)_0%,rgba(3,10,26,0)_42%)]" />
-
-              <div className="relative mx-auto flex min-h-[250px] max-w-[390px] flex-col justify-center px-5 py-7 min-[430px]:max-w-[430px] sm:min-h-[330px] sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-10 lg:min-h-[340px] lg:max-w-[1888px] lg:px-6 lg:py-8 2xl:px-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,.34)] sm:text-xs sm:text-white/85">
-                  {t.heroEyebrow}
-                </p>
-                <h1 className="mt-5 max-w-[330px] text-[28px] leading-[.99] tracking-[-0.035em] text-white [text-shadow:0_4px_28px_rgba(0,0,0,.36)] sm:max-w-[720px] sm:text-[40px] sm:tracking-[-0.045em] lg:max-w-[820px] lg:text-[49px]">
-                  {t.heroTitle}
-                </h1>
-                <p className="mt-4 max-w-[700px] text-[16px] font-normal leading-snug text-white [text-shadow:0_3px_18px_rgba(0,0,0,.28)] sm:text-[18px] lg:text-[19px]">
-                  {t.heroTypingPrefix}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className={`relative z-10 -mt-[34px] sm:-mt-[43px] ${homeContainerClass}`}>
-            <div className="sm:px-16 lg:px-28 xl:px-32">
-              <MarketplaceSearch locale={locale} defaultCountry={localMarketCode} />
-            </div>
+        <div className="relative min-h-[665px] overflow-hidden bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
+          <Image
+            src="/autorell-home-hero-couple-car.jpg"
+            alt={t.heroAlt}
+            fill
+            priority
+            className="object-cover object-[55%_50%] lg:object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.2)_0%,rgba(255,255,255,.03)_34%,rgba(255,255,255,.22)_100%)] lg:bg-[linear-gradient(90deg,rgba(0,0,0,.04)_0%,rgba(0,0,0,.02)_52%,rgba(0,0,0,.12)_100%)]" />
+          <div className="relative z-10 mx-auto flex min-h-[665px] w-full max-w-[calc(100vw-80px)] -translate-x-6 items-start pb-8 pt-6 min-[430px]:max-w-[398px] sm:min-h-[610px] sm:max-w-[var(--autorell-page-max)] sm:translate-x-0 sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
+            <HomeHeroVehicleSearch locale={locale} />
           </div>
         </div>
       </section>
