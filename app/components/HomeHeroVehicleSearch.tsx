@@ -264,7 +264,7 @@ export default function HomeHeroVehicleSearch({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.placeholder}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#667085] [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:placeholder:text-[#667085] lg:focus:w-[calc(100%-36px)]"
+            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#767676] [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:placeholder:text-[#767676] lg:focus:w-[calc(100%-36px)]"
           />
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
