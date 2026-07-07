@@ -421,7 +421,7 @@ export default function VehicleSearchExperience({
                     key={tab.key}
                     type="button"
                     onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[48px] min-w-0 px-1 text-center text-[12px] font-medium transition sm:min-h-[58px] sm:px-2 sm:text-[15px] ${
+                    className={`relative min-h-[48px] min-w-0 px-1 text-center text-[12px] font-medium transition sm:min-h-[52px] sm:px-2 sm:text-[14px] ${
                       mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
                     }`}
                   >
@@ -445,8 +445,8 @@ export default function VehicleSearchExperience({
               />
 
               <div className="min-w-0 max-w-full overflow-hidden">
-                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6 sm:py-5">
-                <label className="flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-12">
+                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6">
+                <label className="flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-11">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
@@ -461,7 +461,7 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
-                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:min-h-11 sm:gap-3 sm:px-4 sm:text-[15px] ${
+                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
                       filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}
                   >
@@ -471,7 +471,7 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={() => setMobileMapOpen(true)}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:min-h-11 sm:gap-3 sm:px-4 sm:text-[15px] lg:hidden"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:min-h-10 sm:gap-2 sm:px-4 lg:hidden"
                   >
                     <Map className="h-5 w-5" />
                     <span className="sm:hidden">Karta</span>
@@ -479,7 +479,7 @@ export default function VehicleSearchExperience({
                   </button>
                   <button
                     type="button"
-                    className="col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white sm:min-h-11 lg:col-span-1"
+                    className="col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[14px] font-medium text-white lg:col-span-1"
                   >
                     <Bookmark className="h-5 w-5" strokeWidth={1.8} />
                     Spara sökning
@@ -632,7 +632,7 @@ export default function VehicleSearchExperience({
 
             <div className="px-5 py-4 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-medium leading-6 sm:text-base sm:leading-7">
+                <p className="text-sm font-medium leading-6">
                   {mode === 'sale' ? (
                     <>
                       Fordon till salu i <strong className="font-semibold">{resultLocationName}</strong>.{' '}
@@ -691,7 +691,7 @@ export default function VehicleSearchExperience({
             <button
               type="button"
               onClick={() => setMobileMapOpen(true)}
-              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[95] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
+              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
               Karta

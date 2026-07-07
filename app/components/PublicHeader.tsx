@@ -814,7 +814,7 @@ export default function PublicHeader({
         aria-hidden="true"
       />
       <div
-        className={`fixed inset-x-0 top-0 z-[100] transform-gpu transition-transform duration-300 ${
+        className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -1494,7 +1494,7 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
-        className={`fixed inset-x-0 bottom-0 z-[90] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
           visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
