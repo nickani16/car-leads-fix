@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import VehicleSearchExperience, {
   type VehicleSearchListing,
 } from '@/app/components/VehicleSearchExperience'
+import PublicHeader from '@/app/components/PublicHeader'
 import {
   displayCurrencyForMarket,
   formatMarketplacePriceDisplay,
@@ -85,17 +86,20 @@ export default async function FindCarsPage({
   )
 
   return (
-    <VehicleSearchExperience
-      listings={listings}
-      locale={locale}
-      defaultCountry={defaultCountry}
-      initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
-      initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
-      initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
-      initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
-      initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
-      initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
-    />
+    <>
+      <PublicHeader locale={locale} marketCode={marketCode} />
+      <VehicleSearchExperience
+        listings={listings}
+        locale={locale}
+        defaultCountry={defaultCountry}
+        initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
+        initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
+        initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
+        initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
+        initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
+        initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
+      />
+    </>
   )
 }
 

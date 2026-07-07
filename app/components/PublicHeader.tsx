@@ -592,7 +592,7 @@ export default function PublicHeader({
         title: t.buyTitle,
         text: t.buyText,
         cta: t.buyCta,
-        ctaHref: localizePublicHref(locale, '/marketplace/vehicles'),
+        ctaHref: localizePublicHref(locale, '/find-cars'),
         items: buyItems,
         features: [
           { title: t.verifiedSellers, text: t.verifiedSellersText, icon: ShieldCheck },
@@ -698,6 +698,7 @@ export default function PublicHeader({
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/saved`
   const isHomePage = unprefixedPathname === '/'
+  const isFindCarsPage = unprefixedPathname === '/find-cars'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
   const showTopCategoryNav = false
@@ -1509,9 +1510,11 @@ export default function PublicHeader({
             <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
           </Link>
           <Link
-            href={localizePublicHref(locale, '/marketplace/vehicles')}
+            href={localizePublicHref(locale, '/find-cars')}
             onClick={closeMobile}
-            className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+              isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
+            }`}
           >
             <CarFront className="h-[22px] w-[22px]" strokeWidth={1.7} />
             <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.buy}</span>

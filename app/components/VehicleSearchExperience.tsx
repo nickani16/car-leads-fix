@@ -381,9 +381,9 @@ export default function VehicleSearchExperience({
   const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
-      <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-hidden lg:h-screen lg:overflow-hidden">
-        <header className="flex min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
+    <main className="min-h-[calc(100dvh-56px)] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+      <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-full max-w-full flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:overflow-hidden">
+        <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
           </Link>
@@ -691,14 +691,14 @@ export default function VehicleSearchExperience({
             <button
               type="button"
               onClick={() => setMobileMapOpen(true)}
-              className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
+              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[95] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
               Karta
             </button>
           ) : null}
 
-          <div className={`${mobileMapOpen ? 'fixed inset-0 z-50 block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
+          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
             <VehicleSearchMap
               listings={filteredListings}
               country={country}
