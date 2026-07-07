@@ -9,9 +9,9 @@ import {
   Bookmark,
   ChevronDown,
   Expand,
-  Filter,
   Heart,
   Layers,
+  Map,
   MapPin,
   Search,
   Scale,
@@ -67,7 +67,7 @@ export type VehicleSearchListing = {
 }
 
 const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
-  { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Till salu', hint: 'Privata och företag' },
+  { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Fordon till salu', hint: 'Privata och företag' },
   { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
 ]
 
@@ -414,14 +414,14 @@ export default function VehicleSearchExperience({
 
         <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white">
-            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-3 sm:px-6 lg:px-7">
+            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 sm:pt-3 lg:px-7">
               <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[58px] min-w-0 px-1 text-center text-[14px] font-medium transition sm:px-2 sm:text-[15px] ${
+                    className={`relative min-h-[48px] min-w-0 px-1 text-center text-[12px] font-medium transition sm:min-h-[58px] sm:px-2 sm:text-[15px] ${
                       mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
                     }`}
                   >
@@ -445,8 +445,8 @@ export default function VehicleSearchExperience({
               />
 
               <div className="min-w-0 max-w-full overflow-hidden">
-                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-4 sm:px-6 sm:py-5">
-                <label className="flex h-11 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-12">
+                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6 sm:py-5">
+                <label className="flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-12">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
@@ -457,31 +457,31 @@ export default function VehicleSearchExperience({
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
-                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:gap-3 sm:px-4 sm:text-[15px] ${
+                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:min-h-11 sm:gap-3 sm:px-4 sm:text-[15px] ${
                       filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}
                   >
-                    <Filter className="h-5 w-5" />
+                    <SlidersHorizontal className="h-5 w-5" />
                     {filtersOpen ? 'Filter öppna' : 'Sökfilter'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setMobileMapOpen(true)}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:gap-3 sm:px-4 sm:text-[15px] lg:hidden"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-medium text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:min-h-11 sm:gap-3 sm:px-4 sm:text-[15px] lg:hidden"
                   >
-                    <MapPin className="h-5 w-5" />
+                    <Map className="h-5 w-5" />
                     <span className="sm:hidden">Karta</span>
                     <span className="hidden sm:inline">Visa karta</span>
                   </button>
                   <button
                     type="button"
-                    className="col-span-2 inline-flex min-h-11 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white lg:col-span-1"
+                    className="col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[15px] font-medium text-white sm:min-h-11 lg:col-span-1"
                   >
-                    <Bookmark className="h-6 w-6" />
+                    <Bookmark className="h-5 w-5" strokeWidth={1.8} />
                     Spara sökning
                   </button>
                 </div>
@@ -520,7 +520,7 @@ export default function VehicleSearchExperience({
                       />
                     </CollapsibleFilterSection>
                     <FilterSection title="Fordonstyp">
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="grid grid-cols-2 gap-2">
                         {categories.map((item) => {
                           const Icon = item.icon
                           const active = category === item.key
@@ -533,23 +533,23 @@ export default function VehicleSearchExperience({
                                 setMake('')
                                 setModel('')
                               }}
-                              className={`flex min-h-14 items-center gap-3 rounded-[8px] border px-3 text-left transition ${
+                              className={`flex min-h-12 items-center gap-2 rounded-[8px] border px-2 text-left transition sm:min-h-14 sm:gap-3 sm:px-3 ${
                                 active
                                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                                   : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
                               }`}
                             >
-                              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[8px] ${active ? 'bg-white' : 'bg-[#f3f6fb]'}`}>
-                                <Icon className="h-5 w-5" />
+                              <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[8px] sm:h-9 sm:w-9 ${active ? 'bg-white' : 'bg-[#f3f6fb]'}`}>
+                                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                               </span>
-                              <span className="block text-sm font-semibold">{item.label}</span>
+                              <span className="block min-w-0 text-[12px] font-semibold leading-tight sm:text-sm">{item.label}</span>
                             </button>
                           )
                         })}
                       </div>
                     </FilterSection>
                     <FilterSection title="Fordon">
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <FilterSelect label="Märke" value={make} onChange={(value) => {
                         setMake(value)
                         setModel('')
@@ -590,7 +590,7 @@ export default function VehicleSearchExperience({
                       unit="km"
                       step={1000}
                     />
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
                       <FilterSelect label="Växellåda" value={gearbox} onChange={setGearbox} options={gearboxes} />
                       <FilterSelect label="Kaross / typ" value={bodyType} onChange={setBodyType} options={bodyTypes} />
@@ -609,7 +609,7 @@ export default function VehicleSearchExperience({
                       <ToggleFilter label="Verifierade annonser" checked={verifiedOnly} onChange={setVerifiedOnly} />
                       <ToggleFilter label="Fyrhjulsdrift" checked={fourWheelDrive} onChange={setFourWheelDrive} />
                       <ToggleFilter label="Leasing möjlig" checked={leasingPossible} onChange={setLeasingPossible} />
-                      <label className="block sm:col-span-2">
+                      <label className="col-span-2 block">
                         <span className="mb-1.5 block text-xs font-semibold text-[#475467]">Utrustning, drag m.m.</span>
                         <input
                           value={equipmentQuery}
@@ -632,7 +632,7 @@ export default function VehicleSearchExperience({
 
             <div className="px-5 py-4 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-base font-medium leading-7">
+                <p className="text-sm font-medium leading-6 sm:text-base sm:leading-7">
                   {mode === 'sale' ? (
                     <>
                       Fordon till salu i <strong className="font-semibold">{resultLocationName}</strong>.{' '}
@@ -1426,7 +1426,7 @@ function VehicleSearchMap({
                 onClick={onOpenFilters}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
               >
-                <Filter className="h-4 w-4" />
+                <SlidersHorizontal className="h-4 w-4" />
                 SÃ¶kfilter
               </button>
               <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} compact />
@@ -1460,7 +1460,7 @@ function VehicleSearchMap({
             onClick={onOpenFilters}
             className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
           >
-            <Filter className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
             <span className="hidden sm:inline">Sökfilter</span>
           </button>
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
