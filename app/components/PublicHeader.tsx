@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
+  Bookmark,
   Building2,
   CarFront,
   ChevronDown,
@@ -676,6 +677,7 @@ export default function PublicHeader({
   const accountHref = `${marketPathPrefix}/account`
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/saved`
+  const savedSearchesHref = `${marketPathPrefix}/saved-searches`
   const isHomePage = unprefixedPathname === '/'
   const isFindCarsPage = unprefixedPathname === '/find-cars'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
@@ -707,13 +709,19 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
+  const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const desktopNavLinks = [
     { href: localizePublicHref(locale, '/marketplace/cars'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
     { href: localizePublicHref(locale, '/sell-vehicle'), label: language === 'sv' ? 'Sälja' : t.sell },
     { href: localizePublicHref(locale, '/business'), label: t.business },
     { href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
   ]
-  const createListingHref = localizePublicHref(locale, '/account/listings/new')
+  const desktopAccountLinks = [
+    { href: savedHref, label: language === 'sv' ? 'Sparade annonser' : t.saved, icon: Heart },
+    { href: savedSearchesHref, label: language === 'sv' ? 'Sparade sökningar' : 'Saved searches', icon: Bookmark },
+    { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
+    { href: createListingHref, label: language === 'sv' ? 'Skapa annons' : 'Create listing', icon: FilePlus2 },
+  ]
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
@@ -842,7 +850,7 @@ export default function PublicHeader({
               <BrandLogo underline={false} />
             </Link>
 
-            <nav className="ml-8 hidden h-full min-w-0 flex-1 items-center gap-8 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-10 xl:gap-10">
+            <nav className="ml-36 hidden h-full min-w-0 flex-1 items-center gap-9 overflow-visible whitespace-nowrap min-[1120px]:flex xl:gap-10">
               {desktopNavLinks.map(({ href, label }) => {
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
                 const isActive =
@@ -855,8 +863,8 @@ export default function PublicHeader({
                     href={href}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={(event) => handleInternalNavigation(event, href)}
-                    className={`flex h-full items-center border-b-2 text-[15px] font-semibold transition hover:border-[#0866ff] hover:text-[#0866ff] ${
-                      isActive ? 'border-[#0866ff] text-[#0866ff]' : 'border-transparent text-[#101828]'
+                    className={`flex h-full items-center text-[14px] font-medium transition hover:text-[#0866ff] ${
+                      isActive ? 'text-[#0866ff]' : 'text-[#101828]'
                     }`}
                   >
                     {label}
@@ -865,22 +873,36 @@ export default function PublicHeader({
               })}
             </nav>
 
-            <div className="ml-auto hidden h-full items-center min-[1120px]:flex">
+            <div className="ml-auto hidden h-full items-center gap-6 min-[1120px]:flex xl:gap-7">
               {headerAccount.authenticated ? (
-                <Link
-                  href={accountHref}
-                  className="inline-flex h-full items-center gap-2.5 border-b-2 border-transparent px-2 text-[15px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-                >
-                  <span className="grid h-6 w-6 place-items-center rounded-full border border-[#101828] text-[10px] font-semibold">
-                    {mobileAccountInitials}
-                  </span>
-                  <span>{t.myAutorell}</span>
-                </Link>
+                <>
+                  {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={(event) => handleInternalNavigation(event, href)}
+                      className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                    >
+                      <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                      <span>{label}</span>
+                    </Link>
+                  ))}
+                  <Link
+                    href={accountHref}
+                    onClick={(event) => handleInternalNavigation(event, accountHref)}
+                    className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                  >
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-[#101828] text-[11px] font-semibold text-white">
+                      {mobileAccountInitials}
+                    </span>
+                    <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
+                  </Link>
+                </>
               ) : (
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
-                  className="inline-flex h-full items-center gap-2.5 border-b-2 border-transparent px-2 text-[15px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                  className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                 >
                   <UserRound className="h-[21px] w-[21px]" strokeWidth={2} />
                   <span>{t.signIn}</span>
