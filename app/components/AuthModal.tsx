@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, Mail, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, X } from 'lucide-react'
 import {
   localizePublicHref,
   translatePublicObject,
@@ -218,10 +218,7 @@ export default function AuthModal({
         </div>
 
         <div className="px-7 pb-7 pt-6">
-          <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef4ff] text-[#0866ff]">
-            <Mail className="h-5 w-5" />
-          </span>
-          <h2 id="auth-modal-title" className="mt-5 text-[25px] font-bold leading-tight tracking-[-.04em] text-[#101828]">
+          <h2 id="auth-modal-title" className="text-[25px] font-bold leading-tight tracking-[-.04em] text-[#101828]">
             {step === 'email' ? copy.title : copy.codeTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
@@ -247,9 +244,8 @@ export default function AuthModal({
                     inputMode="email"
                     required
                     placeholder={copy.emailPlaceholder}
-                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#98a2b3]"
+                    className="min-w-0 flex-1 bg-transparent text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
                   />
-                  <Mail className="h-4 w-4 shrink-0 text-[#98a2b3]" />
                 </div>
               </label>
 

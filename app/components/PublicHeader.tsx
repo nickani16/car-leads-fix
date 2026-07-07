@@ -706,7 +706,6 @@ export default function PublicHeader({
   const savedHref = `${marketPathPrefix}/saved`
   const savedSearchesHref = `${marketPathPrefix}/saved-searches`
   const vehicleSearchHref = localizePublicHref(locale, '/marketplace/cars')
-  const findCarsHref = localizePublicHref(locale, '/find-cars')
   const isHomePage = unprefixedPathname === '/'
   const isFindCarsPage = unprefixedPathname === '/find-cars'
   const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
@@ -1470,7 +1469,7 @@ export default function PublicHeader({
           <Link
             href={homeHref}
             onClick={closeMobile}
-            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+            className={`order-1 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
               isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
             }`}
           >
@@ -1478,20 +1477,10 @@ export default function PublicHeader({
             <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
           </Link>
           <Link
-            href={findCarsHref}
-            onClick={closeMobile}
-            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
-            }`}
-          >
-            <CarFront className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.buy}</span>
-          </Link>
-          <Link
             href={vehicleSearchHref}
             onClick={closeMobile}
-            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isMarketplaceResults ? 'text-[#0866ff]' : 'text-[#202124]'
+            className={`order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+              isMarketplaceResults || isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
             }`}
           >
             <Search className="h-[22px] w-[22px]" strokeWidth={1.8} />
@@ -1503,7 +1492,7 @@ export default function PublicHeader({
             <Link
               href={createListingHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
@@ -1512,7 +1501,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', createListingHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
@@ -1520,9 +1509,35 @@ export default function PublicHeader({
           )}
           {headerAccount.authenticated ? (
             <Link
+              href={accountMessagesHref}
+              onClick={closeMobile}
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <span className="relative">
+                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                {headerAccount.unreadMessages ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
+                  </span>
+                ) : null}
+              </span>
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', accountMessagesHref)}
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
+            </button>
+          )}
+          {headerAccount.authenticated ? (
+            <Link
               href={savedHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1538,7 +1553,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
