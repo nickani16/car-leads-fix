@@ -246,8 +246,8 @@ export default function HomeHeroVehicleSearch({
                 onClick={() => setIntent(tab)}
                 className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[50px] ${
                   intent === tab
-                    ? 'font-medium text-[#101828]'
-                    : 'font-normal text-[#344054] hover:text-[#0866ff]'
+                    ? '!font-medium text-[#101828]'
+                    : '!font-normal text-[#344054] hover:text-[#0866ff]'
                 }`}
               >
                 {t.tabs[tab]}
@@ -269,7 +269,7 @@ export default function HomeHeroVehicleSearch({
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
 
-        <label className="mt-5 flex items-center gap-2 text-sm font-normal text-[#101828] lg:mt-7 lg:text-[14px]">
+        <label className="mt-5 flex items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
           <input
             type="checkbox"
             className="h-[18px] w-[18px] rounded-[3px] border border-[#c5ccd8] accent-[#0866ff] lg:h-[18px] lg:w-[18px]"
@@ -323,14 +323,14 @@ export default function HomeHeroVehicleSearch({
                     setCategory(slug)
                     setCategoryOpen(false)
                   }}
-                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm font-semibold transition ${
+                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
                     category === slug
-                      ? 'bg-[#eef5ff] font-normal text-[#0866ff]'
-                      : 'font-normal text-[#101828] hover:bg-[#f6f9ff]'
+                      ? 'bg-[#eef5ff] text-[#0866ff]'
+                      : 'text-[#101828] hover:bg-[#f6f9ff]'
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{label}</span>
+                  <span className="truncate !font-normal">{label}</span>
                 </button>
               ))}
             </div>
@@ -343,14 +343,14 @@ export default function HomeHeroVehicleSearch({
               key={slug}
               type="button"
               onClick={() => setCategory(slug)}
-              className={`flex min-h-[45px] items-center gap-2 rounded-[4px] border px-3 text-left text-[14px] font-normal transition ${
+              className={`flex min-h-[45px] items-center gap-2 rounded-[4px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
                 category === slug
                   ? 'border-[#0866ff] bg-white text-[#101828]'
                   : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
               }`}
             >
               <Icon className={`h-4 w-4 shrink-0 ${category === slug ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-              <span className="truncate">{label}</span>
+              <span className="truncate !font-normal">{label}</span>
             </button>
           ))}
         </div>
