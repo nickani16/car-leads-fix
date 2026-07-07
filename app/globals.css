@@ -435,6 +435,15 @@ input, textarea, select {
   box-shadow: none !important;
 }
 
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select,
+  .vehicle-search-control {
+    font-size: 16px !important;
+  }
+}
+
 .market-blob {
   border-radius: 38% 62% 54% 46% / 42% 35% 65% 58%;
 }

@@ -527,7 +527,7 @@ export default function VehicleSearchExperience({
   }, [])
 
   return (
-    <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+    <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
       <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
@@ -589,7 +589,7 @@ export default function VehicleSearchExperience({
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
-                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[15px] font-normal text-[#667085] outline-none placeholder:text-[#7b828d]"
+                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#667085] outline-none placeholder:text-[#7b828d] sm:text-[15px]"
                   />
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
@@ -913,12 +913,15 @@ export default function VehicleSearchExperience({
               onOpenFilters={() => {
                 setFiltersOpen(true)
               }}
+              onSaveSearch={saveCurrentSearch}
+              saveSearchButtonLabel={saveSearchButtonLabel}
+              saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
                 <div className="flex items-center justify-between border-b border-[#edf1f6] px-4 py-3">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#101828]">SÃ¶kfilter</p>
+                    <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
                     <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
                   </div>
                   <button
@@ -975,13 +978,13 @@ export default function VehicleSearchExperience({
                   </FilterSection>
                   <FilterSection title="Fordon">
                     <div className="grid gap-3">
-                      <FilterSelect label="MÃ¤rke" value={make} onChange={(value) => {
+                      <FilterSelect label="Märke" value={make} onChange={(value) => {
                         setMake(value)
                         setModel('')
                       }} options={makes} />
                       <FilterSelect label="Modell" value={model} onChange={setModel} options={models} />
                       <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
-                      <FilterSelect label="VÃ¤xellÃ¥da" value={gearbox} onChange={setGearbox} options={gearboxes} />
+                      <FilterSelect label="Växellåda" value={gearbox} onChange={setGearbox} options={gearboxes} />
                       <FilterSelect label="Miltal" value={maxMileage} onChange={setMaxMileage} options={[
                         { value: '', label: 'Alla' },
                         { value: '5000', label: 'Upp till 5 000 km' },
@@ -1308,7 +1311,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   ]
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-24 pt-8 text-[#101828] sm:px-6 lg:pb-8">
+    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
       <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
@@ -1480,6 +1483,9 @@ function VehicleSearchMap({
   mobileOverlay = false,
   onCloseMobileMap,
   onOpenFilters,
+  onSaveSearch,
+  saveSearchButtonLabel,
+  saveSearchActive,
 }: {
   listings: VehicleSearchListing[]
   country: string
@@ -1489,6 +1495,9 @@ function VehicleSearchMap({
   mobileOverlay?: boolean
   onCloseMobileMap?: () => void
   onOpenFilters: () => void
+  onSaveSearch: () => void
+  saveSearchButtonLabel: string
+  saveSearchActive: boolean
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -1635,12 +1644,12 @@ function VehicleSearchMap({
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
-                <span className="sr-only">SÃ¶k</span>
+                <span className="sr-only">Sök</span>
                 <input
                   value={query}
                   onChange={(event) => onQueryChange(event.target.value)}
-                  placeholder="SÃ¶k fordon, ort eller kommun"
-                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-sm font-medium text-[#101828] outline-none placeholder:text-[#667085]"
+                  placeholder="Sök fordon, ort eller kommun"
+                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#667085]"
                 />
                 <Search className="h-5 w-5 shrink-0 text-[#101828]" />
               </label>
@@ -1652,7 +1661,7 @@ function VehicleSearchMap({
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                SÃ¶kfilter
+                Sökfilter
               </button>
               <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} compact />
             </div>
@@ -1666,38 +1675,50 @@ function VehicleSearchMap({
           </button>
         </>
       ) : fullscreen ? (
-        <div className="absolute inset-x-0 top-0 z-20 flex min-h-[58px] items-center gap-3 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:px-4">
-          <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="hidden shrink-0 sm:block">
-            <BrandLogo compact underline={false} />
-          </Link>
-          <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
-            <span className="sr-only">Sök</span>
-            <input
-              value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
-              placeholder="Sök på fordon, ort eller kommun"
-              className="vehicle-search-control min-w-0 flex-1 bg-transparent text-sm font-medium text-[#101828] outline-none placeholder:text-[#667085]"
-            />
-            <Search className="h-5 w-5 shrink-0 text-[#101828]" />
-          </label>
-          <button
-            type="button"
-            onClick={onOpenFilters}
-            className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Sökfilter</span>
-          </button>
-          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
-          <button
-            type="button"
-            onClick={() => setFullscreen(false)}
-            className="grid h-10 w-10 place-items-center rounded-[8px] bg-[#101828] text-white shadow-sm"
-            aria-label="Stäng fullskärm"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        <>
+          <div className="absolute inset-x-0 top-0 z-20 flex min-h-[64px] items-center gap-2 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:gap-3 sm:px-4">
+            <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
+              <BrandLogo compact underline={false} />
+              <span className="sr-only">Sök</span>
+              <input
+                value={query}
+                onChange={(event) => onQueryChange(event.target.value)}
+                placeholder="Sök på fordon, ort eller kommun"
+                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#667085] sm:text-sm"
+              />
+              <Search className="h-5 w-5 shrink-0 text-[#101828]" />
+            </label>
+            <button
+              type="button"
+              onClick={onOpenFilters}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff]"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Sökfilter</span>
+            </button>
+            <button
+              type="button"
+              onClick={onSaveSearch}
+              className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-sm font-semibold text-white shadow-sm transition sm:inline-flex ${
+                saveSearchActive ? 'bg-[#0866ff] hover:bg-[#0757da]' : 'bg-[#d1d3d8]'
+              }`}
+            >
+              <Bookmark className="h-4 w-4" />
+              {saveSearchButtonLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFullscreen(false)}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0757da]"
+            >
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">Visa lista</span>
+            </button>
+          </div>
+          <div className="absolute right-4 top-[78px] z-20 flex gap-2">
+            <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+          </div>
+        </>
       ) : (
         <div className="absolute right-4 top-4 z-20 flex gap-2">
           <button
