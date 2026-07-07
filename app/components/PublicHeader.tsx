@@ -1217,7 +1217,7 @@ export default function PublicHeader({
               href={savedSearchesHref}
               onClick={closeMobile}
               aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
-              className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+              className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
             </Link>
@@ -1226,7 +1226,7 @@ export default function PublicHeader({
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
               aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
-              className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+              className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
             </button>
@@ -1240,7 +1240,7 @@ export default function PublicHeader({
               <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0866ff] text-[12px] font-semibold text-white">
                 {mobileAccountInitials}
               </span>
-              <span className="max-[430px]:sr-only">{mobileProfileLabel}</span>
+              <span className="whitespace-nowrap">{mobileProfileLabel}</span>
             </Link>
           ) : (
             <button
@@ -1461,7 +1461,7 @@ export default function PublicHeader({
           <Link
             href={homeHref}
             onClick={closeMobile}
-            className={`order-1 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+            className={`hidden min-w-0 flex-col items-center justify-center gap-0.5 ${
               isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
             }`}
           >
@@ -1471,7 +1471,7 @@ export default function PublicHeader({
           <Link
             href={vehicleSearchHref}
             onClick={closeMobile}
-            className={`order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
+            className={`order-1 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
               isMarketplaceResults || isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
             }`}
           >
@@ -1503,7 +1503,7 @@ export default function PublicHeader({
             <Link
               href={accountMessagesHref}
               onClick={closeMobile}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1519,7 +1519,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
@@ -1529,7 +1529,7 @@ export default function PublicHeader({
             <Link
               href={savedHref}
               onClick={closeMobile}
-              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1545,10 +1545,33 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
-              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
+            </button>
+          )}
+          {headerAccount.authenticated ? (
+            <Link
+              href={savedSearchesHref}
+              onClick={closeMobile}
+              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">
+                {language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', savedSearchesHref)}
+              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            >
+              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">
+                {language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+              </span>
             </button>
           )}
         </div>
