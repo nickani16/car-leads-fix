@@ -589,6 +589,7 @@ export default function VehicleSearchExperience({
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
+                    style={{ color: query ? '#101828' : '#767676' }}
                     className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-[15px]"
                   />
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
@@ -1649,6 +1650,7 @@ function VehicleSearchMap({
                   value={query}
                   onChange={(event) => onQueryChange(event.target.value)}
                   placeholder="Sök fordon, ort eller kommun"
+                  style={{ color: query ? '#101828' : '#767676' }}
                   className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676]"
                 />
                 <Search className="h-5 w-5 shrink-0 text-[#101828]" />
@@ -1684,6 +1686,7 @@ function VehicleSearchMap({
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
                 placeholder="Sök på fordon, ort eller kommun"
+                style={{ color: query ? '#101828' : '#767676' }}
                 className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
               />
               <Search className="h-5 w-5 shrink-0 text-[#101828]" />
