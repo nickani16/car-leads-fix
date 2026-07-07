@@ -244,10 +244,10 @@ export default async function BusinessMarketplaceHome({
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-[63%_50%] lg:object-center"
+            className="object-cover object-[63%_50%] saturate-[1.06] contrast-[1.04] brightness-[.96] lg:object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.12)_0%,rgba(255,255,255,.03)_46%,rgba(255,255,255,.18)_100%)] lg:bg-[linear-gradient(90deg,rgba(3,10,26,.10)_0%,rgba(3,10,26,.02)_50%,rgba(3,10,26,.04)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.30),rgba(255,255,255,0)_42%),linear-gradient(180deg,rgba(255,255,255,.16)_0%,rgba(255,255,255,.03)_46%,rgba(255,255,255,.22)_100%)] shadow-[inset_0_22px_80px_rgba(15,23,42,.12)] lg:bg-[radial-gradient(circle_at_54%_10%,rgba(255,255,255,.22),rgba(255,255,255,0)_38%),linear-gradient(90deg,rgba(3,10,26,.12)_0%,rgba(3,10,26,.02)_50%,rgba(3,10,26,.05)_100%)]" />
           <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
             <HomeHeroVehicleSearch locale={locale} />
           </div>

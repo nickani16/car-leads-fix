@@ -1,6 +1,13 @@
 'use client'
 
-import { FormEvent, useMemo, useState, type ComponentType, type SVGProps } from 'react'
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+  type SVGProps,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Bike,
@@ -9,6 +16,7 @@ import {
   ChevronDown,
   Clock3,
   Search,
+  SlidersHorizontal,
   Tractor,
   Truck,
   Warehouse,
@@ -22,6 +30,14 @@ import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 
 type Intent = 'sale' | 'leasing'
+
+type LastSearch = {
+  label: string
+  subLabel: string
+  href: string
+}
+
+const lastSearchStorageKey = 'autorell:last-home-search'
 
 const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
   cars: '/marketplace/cars',
@@ -68,6 +84,7 @@ const copyByLocale = {
     tabs: { sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
     placeholder: 'Sök fordon, ort eller kommun',
     verified: 'Visa endast verifierade säljare',
+    expandArea: 'Utöka sökområde',
     markets: 'Marknader',
     moreFilters: 'Fler sökfilter',
     submit: 'Hitta fordon',
@@ -80,6 +97,7 @@ const copyByLocale = {
     tabs: { sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
     placeholder: 'Search vehicle, city or area',
     verified: 'Show verified sellers only',
+    expandArea: 'Expand search area',
     markets: 'Markets',
     moreFilters: 'More filters',
     submit: 'Find vehicles',
@@ -92,6 +110,7 @@ const copyByLocale = {
     tabs: { sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
     placeholder: 'Fahrzeug, Ort oder Gemeinde suchen',
     verified: 'Nur geprüfte Verkäufer anzeigen',
+    expandArea: 'Suchgebiet erweitern',
     markets: 'Märkte',
     moreFilters: 'Weitere Filter',
     submit: 'Fahrzeuge finden',
@@ -113,7 +132,12 @@ export default function HomeHeroVehicleSearch({
   locale: PublicLocale
 }) {
   const router = useRouter()
-  const t = locale === 'de' ? copyByLocale.de : locale === 'en' ? copyByLocale.en : copyByLocale.sv
+  const t =
+    locale === 'de'
+      ? copyByLocale.de
+      : locale === 'en'
+        ? copyByLocale.en
+        : copyByLocale.sv
   const [intent, setIntent] = useState<Intent>('sale')
   const [category, setCategory] = useState<MarketplaceCategorySlug>('cars')
   const [query, setQuery] = useState('')
@@ -122,9 +146,31 @@ export default function HomeHeroVehicleSearch({
   ])
   const [marketsOpen, setMarketsOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
-  const selectedRoute = useMemo(() => categoryRoutes[category] || '/marketplace/vehicles', [category])
-  const selectedCategory = categories.find((item) => item.slug === category) || categories[0]
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
+  const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
+
+  const selectedRoute = useMemo(
+    () => categoryRoutes[category] || '/marketplace/vehicles',
+    [category],
+  )
+  const selectedCategory =
+    categories.find((item) => item.slug === category) || categories[0]
   const SelectedCategoryIcon = selectedCategory.icon
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem(lastSearchStorageKey)
+        if (!stored) return
+        const parsed = JSON.parse(stored) as LastSearch
+        if (parsed?.label && parsed?.href) setLastSearch(parsed)
+      } catch {
+        setLastSearch(null)
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [])
 
   function toggleMarket(code: string) {
     setMarkets((current) => {
@@ -139,10 +185,30 @@ export default function HomeHeroVehicleSearch({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
-    if (query.trim()) params.set('q', query.trim())
+    const trimmedQuery = query.trim()
+    if (trimmedQuery) params.set('q', trimmedQuery)
     if (intent === 'leasing') params.set('intent', 'leasing')
     if (markets.length) params.set('markets', markets.join(','))
-    router.push(localizePublicHref(locale, `${selectedRoute}${params.size ? `?${params}` : ''}`))
+
+    const href = localizePublicHref(
+      locale,
+      `${selectedRoute}${params.size ? `?${params}` : ''}`,
+    )
+    const savedSearch = {
+      label: `${locale === 'sv' ? 'Sök igen' : locale === 'de' ? 'Erneut suchen' : 'Search again'}: ${
+        trimmedQuery || selectedCategory.label
+      }`,
+      subLabel: t.tabs[intent],
+      href,
+    }
+
+    try {
+      window.localStorage.setItem(lastSearchStorageKey, JSON.stringify(savedSearch))
+    } catch {
+      // localStorage can be unavailable in private modes. Navigation should still work.
+    }
+    setLastSearch(savedSearch)
+    router.push(href)
   }
 
   const selectedMarketsLabel = marketOptions
@@ -150,11 +216,17 @@ export default function HomeHeroVehicleSearch({
     .map((option) => marketLabel(option, locale))
     .join(', ')
 
+  const searchAgain = lastSearch || {
+    label: t.searchAgain,
+    subLabel: t.searchAgainSub,
+    href: localizePublicHref(locale, '/marketplace/cars'),
+  }
+
   return (
-    <div className="mx-auto grid w-full max-w-[342px] -translate-x-6 gap-0 min-[430px]:max-w-[398px] lg:max-w-none lg:translate-x-0 lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
+    <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white px-5 py-5 text-center shadow-[0_8px_26px_rgba(15,23,42,.17)]">
-          <h1 className="text-[25px] font-semibold leading-[1.16] tracking-[-0.04em] text-[#101828]">
+        <div className="rounded-t-[12px] bg-white/95 px-5 py-5 text-center shadow-none backdrop-blur-md">
+          <h1 className="mx-auto max-w-[320px] text-[25px] font-semibold leading-[1.16] tracking-[-0.04em] text-[#101828]">
             {t.title}
           </h1>
         </div>
@@ -162,27 +234,32 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="rounded-b-[12px] bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,.18)] lg:rounded-[12px] lg:p-6"
+        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[12px] lg:p-6"
         role="search"
       >
-        <div className="grid grid-cols-2 gap-2 rounded-[11px] bg-[#f3f7ff] p-1">
-          {(['sale', 'leasing'] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setIntent(tab)}
-              className={`min-h-11 rounded-[9px] px-2 text-center text-[13px] font-semibold leading-tight transition sm:text-sm ${
-                intent === tab
-                  ? 'bg-[#0866ff] text-white shadow-[0_8px_18px_rgba(8,102,255,.22)]'
-                  : 'text-[#101828] hover:bg-white'
-              }`}
-            >
-              {t.tabs[tab]}
-            </button>
-          ))}
+        <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:-mx-6 lg:-mt-6">
+          <div className="grid grid-cols-2">
+            {(['sale', 'leasing'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setIntent(tab)}
+                className={`relative min-h-[56px] px-2 text-center text-[14px] font-semibold transition ${
+                  intent === tab
+                    ? 'text-[#101828]'
+                    : 'text-[#344054] hover:text-[#0866ff]'
+                }`}
+              >
+                {t.tabs[tab]}
+                {intent === tab ? (
+                  <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-[#0866ff]" />
+                ) : null}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[10px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff]">
+        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[10px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-5">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -200,7 +277,7 @@ export default function HomeHeroVehicleSearch({
           <span>{t.verified}</span>
         </label>
 
-        <div className="mt-7 hidden lg:block">
+        <div className="relative mt-7 hidden lg:block">
           <button
             type="button"
             onClick={() => setMarketsOpen((current) => !current)}
@@ -208,7 +285,7 @@ export default function HomeHeroVehicleSearch({
           >
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-[#101828]">
-                {locale === 'sv' ? 'Utöka sökområde' : locale === 'de' ? 'Suchgebiet erweitern' : 'Expand search area'}
+                {t.expandArea}
               </span>
               <span className="mt-0.5 block truncate text-xs font-medium text-[#667085]">
                 {selectedMarketsLabel}
@@ -217,29 +294,16 @@ export default function HomeHeroVehicleSearch({
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {marketsOpen ? (
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
-              {marketOptions.map((option) => {
-                const selected = markets.includes(option.code)
-                return (
-                  <button
-                    key={option.code}
-                    type="button"
-                    onClick={() => toggleMarket(option.code)}
-                    className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm font-semibold transition ${
-                      selected
-                        ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                        : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
-                    }`}
-                  >
-                    <span className="truncate">{marketLabel(option, locale)}</span>
-                  </button>
-                )
-              })}
-            </div>
+            <MarketPicker
+              locale={locale}
+              markets={markets}
+              onToggle={toggleMarket}
+              className="absolute left-0 right-0 top-[calc(100%+8px)] z-50"
+            />
           ) : null}
         </div>
 
-        <div className="mt-7 lg:hidden">
+        <div className="relative mt-7 lg:hidden">
           <button
             type="button"
             onClick={() => setCategoryOpen((current) => !current)}
@@ -254,7 +318,7 @@ export default function HomeHeroVehicleSearch({
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${categoryOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {categoryOpen ? (
-            <div className="mt-2 grid gap-2 rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_14px_32px_rgba(15,23,42,.10)]">
+            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
               {categories.map(({ slug, label, icon: Icon }) => (
                 <button
                   key={slug}
@@ -295,13 +359,30 @@ export default function HomeHeroVehicleSearch({
           ))}
         </div>
 
-        <button
-          type="button"
-          className="mt-7 inline-flex items-center gap-2 text-[15px] font-semibold text-[#101828]"
-        >
-          {t.moreFilters}
-          <ChevronDown className="h-4 w-4" />
-        </button>
+        <div className="relative mt-7">
+          <button
+            type="button"
+            onClick={() => setMoreFiltersOpen((current) => !current)}
+            className="inline-flex items-center gap-2 text-[15px] font-semibold text-[#101828]"
+          >
+            {t.moreFilters}
+            <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
+          </button>
+          {moreFiltersOpen ? (
+            <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-40 rounded-[12px] border border-[#d8e0ec] bg-white/95 p-4 shadow-[0_22px_46px_rgba(15,23,42,.18)] backdrop-blur-md">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
+                <SlidersHorizontal className="h-4 w-4 text-[#0866ff]" />
+                {t.markets}
+              </div>
+              <MarketPicker
+                locale={locale}
+                markets={markets}
+                onToggle={toggleMarket}
+                className="mt-3"
+              />
+            </div>
+          ) : null}
+        </div>
 
         <button
           type="submit"
@@ -314,7 +395,7 @@ export default function HomeHeroVehicleSearch({
       </form>
 
       <div className="hidden lg:block">
-        <div className="rounded-[12px] bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,.18)]">
+        <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
           <h1 className="text-[40px] font-semibold leading-[1.28] tracking-[-0.045em] text-[#101828]">
             {t.title}
           </h1>
@@ -323,19 +404,55 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="button"
-          onClick={() => router.push(localizePublicHref(locale, '/marketplace/cars'))}
+          onClick={() => router.push(searchAgain.href)}
           className="mt-4 flex min-h-[66px] w-full items-center justify-between rounded-[12px] bg-white px-6 text-left shadow-[0_8px_24px_rgba(15,23,42,.16)] transition hover:translate-x-0.5"
         >
           <span>
             <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
               <Clock3 className="h-4 w-4" />
-              {t.searchAgain}
+              {searchAgain.label}
             </span>
-            <span className="mt-1 block text-sm text-[#667085]">{t.searchAgainSub}</span>
+            <span className="mt-1 block text-sm text-[#667085]">
+              {searchAgain.subLabel}
+            </span>
           </span>
           <ChevronDown className="-rotate-90 h-5 w-5 text-[#101828]" />
         </button>
       </div>
+    </div>
+  )
+}
+
+function MarketPicker({
+  locale,
+  markets,
+  onToggle,
+  className = '',
+}: {
+  locale: PublicLocale
+  markets: string[]
+  onToggle: (code: string) => void
+  className?: string
+}) {
+  return (
+    <div className={`grid grid-cols-2 gap-2 rounded-[12px] bg-white p-2 ${className}`}>
+      {marketOptions.map((option) => {
+        const selected = markets.includes(option.code)
+        return (
+          <button
+            key={option.code}
+            type="button"
+            onClick={() => onToggle(option.code)}
+            className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm font-semibold transition ${
+              selected
+                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
+            }`}
+          >
+            <span className="truncate">{marketLabel(option, locale)}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
