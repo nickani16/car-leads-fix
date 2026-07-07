@@ -394,7 +394,6 @@ export default function PublicHeader({
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
-  const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
@@ -412,7 +411,6 @@ export default function PublicHeader({
         setMarketSelectorOpen(false)
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
-        setDesktopMenuOpen(null)
       } else if (difference < -1) setVisible(true)
 
       lastScrollY.current = currentScrollY
@@ -494,15 +492,6 @@ export default function PublicHeader({
       document.body.style.overflow = ''
     }
   }, [open])
-
-  useEffect(() => {
-    if (!desktopMenuOpen) return
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setDesktopMenuOpen(null)
-    }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [desktopMenuOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -644,16 +633,6 @@ export default function PublicHeader({
               ] as const,
           )
       : null
-  const categoryLinkTextLength =
-    categoryPrimaryLinks?.reduce((total, [, label]) => total + label.length, 0) ?? 0
-  const shouldCollapseCategoryLinks =
-    Boolean(categoryPrimaryLinks && categoryPrimaryLinks.length > 3 && categoryLinkTextLength > 82)
-  const visibleCategoryLinks = shouldCollapseCategoryLinks
-    ? categoryPrimaryLinks?.slice(0, 3) ?? []
-    : categoryPrimaryLinks ?? []
-  const overflowCategoryLinks = shouldCollapseCategoryLinks
-    ? categoryPrimaryLinks?.slice(3) ?? []
-    : []
   const highlightedMarketCodes = new Set(['se', 'de'])
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
@@ -728,6 +707,12 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
+  const desktopNavLinks = [
+    { href: localizePublicHref(locale, '/marketplace/cars'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
+    { href: localizePublicHref(locale, '/sell-vehicle'), label: language === 'sv' ? 'Sälja' : t.sell },
+    { href: localizePublicHref(locale, '/business'), label: t.business },
+    { href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
+  ]
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
@@ -755,22 +740,7 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
-    setDesktopMenuOpen(null)
   }
-
-  useEffect(() => {
-    if (!desktopMenuOpen) return
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target
-      if (!(target instanceof Element)) return
-      if (target.closest('[data-desktop-menu-root="true"]')) return
-      setDesktopMenuOpen(null)
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    return () => document.removeEventListener('pointerdown', handlePointerDown)
-  }, [desktopMenuOpen])
 
   function handleInternalNavigation(
     event: ReactMouseEvent<HTMLAnchorElement>,
@@ -872,159 +842,50 @@ export default function PublicHeader({
               <BrandLogo underline={false} />
             </Link>
 
-            <nav className="ml-7 hidden h-full min-w-0 flex-1 items-center overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-9">
-              {categoryPrimaryLinks
-                ? (
-                    <>
-                      {visibleCategoryLinks.map(([href, label]) => (
-                        <Link
-                          key={href}
-                          href={href}
-                          aria-current={pathname === href ? 'page' : undefined}
-                          onClick={(event) => handleCategoryNavigation(event, href)}
-                          className={`flex h-full min-w-0 shrink items-center border-b-2 px-3 text-[14px] transition hover:border-[#0866ff] hover:text-[#0866ff] xl:px-4 ${
-                            pathname === href
-                              ? 'border-[#0866ff] font-semibold text-[#101828]'
-                              : 'border-transparent font-semibold text-[#344054]'
-                          }`}
-                        >
-                          <span className="max-w-[250px] truncate xl:max-w-[320px]">
-                            {label}
-                          </span>
-                        </Link>
-                      ))}
-                      {overflowCategoryLinks.length ? (
-                        <details className="group/category-more relative flex h-full shrink-0">
-                          <summary className="flex h-full cursor-pointer list-none items-center gap-1.5 border-b-2 border-transparent px-3 text-[14px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] [&::-webkit-details-marker]:hidden">
-                            {t.more}
-                            <ChevronDown className="h-3.5 w-3.5 transition group-open/category-more:rotate-180" />
-                          </summary>
-                          <div className="absolute left-0 top-full z-50 w-[310px] pt-2">
-                            <div role="menu" className="rounded-[16px] border border-[#d9e1e5] bg-white p-2 shadow-[0_22px_60px_rgba(32,33,36,.18)]">
-                              {overflowCategoryLinks.map(([href, label]) => (
-                                <Link
-                                  key={href}
-                                  href={href}
-                                  aria-current={pathname === href ? 'page' : undefined}
-                                  onClick={(event) => handleCategoryNavigation(event, href)}
-                                  className={`block rounded-[11px] px-3 py-3 text-sm font-semibold transition hover:bg-[#f2f6f7] hover:text-[#0866ff] ${
-                                    pathname === href ? 'bg-[#f2f6ff] text-[#0866ff]' : 'text-[#344054]'
-                                  }`}
-                                >
-                                  {label}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        </details>
-                      ) : null}
-                    </>
-                  )
-                : menus.map((menu) => (
-                    <DesktopMenu
-                      key={menu.href}
-                      label={menu.label}
-                      menu={menu.data}
-                      icon={menu.icon}
-                      open={desktopMenuOpen === menu.href}
-                      onToggle={() =>
-                        setDesktopMenuOpen((current) =>
-                          current === menu.href ? null : menu.href,
-                        )
-                      }
-                      onClose={() => setDesktopMenuOpen(null)}
-                      onNavigate={handleInternalNavigation}
-                    />
-                  ))}
+            <nav className="ml-8 hidden h-full min-w-0 flex-1 items-center gap-8 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-10 xl:gap-10">
+              {desktopNavLinks.map(({ href, label }) => {
+                const targetPath = stripLocalePrefix(href.split('?')[0] || href)
+                const isActive =
+                  unprefixedPathname === targetPath ||
+                  (targetPath === '/marketplace/cars' && (isMarketplaceResults || isFindCarsPage))
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={isActive ? 'page' : undefined}
+                    onClick={(event) => handleInternalNavigation(event, href)}
+                    className={`flex h-full items-center border-b-2 text-[15px] font-semibold transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                      isActive ? 'border-[#0866ff] text-[#0866ff]' : 'border-transparent text-[#101828]'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                )
+              })}
             </nav>
 
-            <div className="ml-auto hidden h-full items-stretch min-[1120px]:flex">
-              {headerAccount.authenticated ? (
-                <Link
-                  href={accountMessagesHref}
-                  className="relative flex min-w-[76px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                >
-                  <span className="relative">
-                    <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
-                    {headerAccount.unreadMessages ? (
-                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                        {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="text-[10px] font-medium">{t.messages}</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openAuthModal('login', accountMessagesHref)}
-                  className="relative flex min-w-[76px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                >
-                  <MessageSquareText className="h-[20px] w-[20px]" strokeWidth={1.75} />
-                  <span className="text-[10px] font-medium">{t.messages}</span>
-                </button>
-              )}
-              {headerAccount.authenticated ? (
-                <Link
-                  href={savedHref}
-                  className="relative flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                >
-                  <span className="relative">
-                    <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
-                    {savedListingCount ? (
-                      <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                        {savedListingCount > 99 ? '99+' : savedListingCount}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="text-[10px] font-medium">{t.saved}</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openAuthModal('login', savedHref)}
-                  className="relative flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                >
-                  <Heart className="h-[20px] w-[20px]" strokeWidth={1.75} />
-                  <span className="text-[10px] font-medium">{t.saved}</span>
-                </button>
-              )}
-              <SiteSearch locale={locale} headerDesktop />
+            <div className="ml-auto hidden h-full items-center min-[1120px]:flex">
               {headerAccount.authenticated ? (
                 <Link
                   href={accountHref}
-                  className="flex min-w-[92px] max-w-[132px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="inline-flex h-full items-center gap-2.5 border-b-2 border-transparent px-2 text-[15px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                 >
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eef4ff] text-[10px] font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                  <span className="grid h-6 w-6 place-items-center rounded-full border border-[#101828] text-[10px] font-semibold">
                     {mobileAccountInitials}
                   </span>
-                  <span className="max-w-full truncate text-[10px] font-medium">
-                    {t.myAutorell}
-                  </span>
+                  <span>{t.myAutorell}</span>
                 </Link>
               ) : (
                 <button
                   type="button"
                   onClick={() => openAuthModal('login')}
-                  className="flex min-w-[66px] flex-col items-center justify-center px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
+                  className="inline-flex h-full items-center gap-2.5 border-b-2 border-transparent px-2 text-[15px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                 >
-                  <UserRound className="h-[20px] w-[20px]" strokeWidth={1.7} />
-                  <span className="text-[10px] font-medium">{t.signIn}</span>
+                  <UserRound className="h-[21px] w-[21px]" strokeWidth={2} />
+                  <span>{t.signIn}</span>
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => setMarketSelectorOpen(true)}
-                className="flex min-w-[66px] flex-col items-center justify-center gap-0.5 px-2 transition hover:bg-[#f7f8f8] hover:text-[#0866ff]"
-                aria-label={t.chooseLanguage}
-              >
-                <span className="grid h-[20px] place-items-center">
-                  <FlagIcon code={activeMarket[1]} size="xs" />
-                </span>
-                <span className="max-w-[62px] truncate text-[10px] font-medium leading-none">
-                  {activeMarket[2]}
-                </span>
-              </button>
             </div>
           </div>
 
@@ -1599,233 +1460,3 @@ export default function PublicHeader({
   )
 }
 
-function DesktopMenu({
-  label,
-  menu,
-  onNavigate,
-  open,
-  onToggle,
-  onClose,
-  icon: MenuIcon,
-}: {
-  label: string
-  menu: DesktopMenuData
-  onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
-  open: boolean
-  onToggle: () => void
-  onClose: () => void
-  icon: LucideIcon
-}) {
-  const isMegaMenu = menu.variant === 'mega'
-
-  return (
-    <div className="relative flex h-full" data-desktop-menu-root="true">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={`flex h-full shrink-0 items-center gap-1.5 border-b-2 px-3 text-[14px] font-semibold transition hover:border-[#0866ff] hover:text-[#111] xl:px-4 ${
-          open
-            ? 'border-[#0866ff] text-[#111]'
-            : 'border-transparent text-[#303640]'
-        }`}
-      >
-        {label}
-        <ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      <button
-        type="button"
-        aria-label="Close menu"
-        onClick={onClose}
-        className={`fixed inset-x-0 bottom-0 top-[80px] z-30 bg-[#0b1728]/8 backdrop-blur-[1px] transition ${
-          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-      />
-
-      <div
-        className={`fixed left-1/2 top-[80px] z-40 w-[calc(100vw-32px)] -translate-x-1/2 transition duration-200 min-[1120px]:w-[calc(100vw-48px)] 2xl:w-[calc(100vw-64px)] ${
-          open
-            ? 'pointer-events-auto translate-y-0 opacity-100'
-            : 'pointer-events-none -translate-y-2 opacity-0'
-        } ${isMegaMenu ? 'max-w-[1888px]' : 'max-w-[920px]'}`}
-      >
-        {isMegaMenu ? (
-          <BuyDesktopMenuPanel
-            menu={menu}
-            icon={MenuIcon}
-            onClose={onClose}
-            onNavigate={onNavigate}
-          />
-        ) : (
-          <div role="menu" className="relative grid max-h-[calc(100dvh-96px)] grid-cols-[290px_1fr] overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)]">
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close menu"
-              className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full border border-[#dce3ef] bg-white text-[#344054] shadow-sm transition hover:bg-[#f5f7fa]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="min-w-0 bg-[#f3f7ff] p-6">
-              <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#0866ff] text-white">
-                <MenuIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#68808e]">
-                {menu.eyebrow}
-              </p>
-              <h3 className="mt-2 whitespace-normal text-[22px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#101828]">
-                {menu.title}
-              </h3>
-              <p className="mt-3 whitespace-normal text-sm leading-6 text-[#5c707b]">
-                {menu.text}
-              </p>
-              <a href={menu.ctaHref} onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }} className="mt-6 inline-flex items-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-4 py-3 text-sm font-semibold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]">
-                {menu.cta}
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-
-            <div className="min-w-0 overflow-y-auto p-4 pr-5">
-              {menu.items.map(({ href: itemHref, label: itemLabel, description, icon: Icon }) => (
-                <a
-                  key={`${itemHref}-${itemLabel}`}
-                  href={itemHref}
-                  onClick={(event) => { onClose(); onNavigate(event, itemHref) }}
-                  className="group/item flex items-center gap-4 rounded-[14px] p-3.5 transition hover:bg-[#f5f6f4]"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#dce1e3] text-[#4e626c]">
-                    <Icon className="h-[18px] w-[18px]" />
-                  </span>
-                  <span className="min-w-0">
-                    <strong className="block whitespace-normal text-sm font-medium">{itemLabel}</strong>
-                    <span className="mt-1 block whitespace-normal text-xs leading-5 text-[#78858b]">{description}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function BuyDesktopMenuPanel({
-  menu,
-  icon: MenuIcon,
-  onNavigate,
-  onClose,
-}: {
-  menu: DesktopMenuData
-  icon: LucideIcon
-  onNavigate: (event: ReactMouseEvent<HTMLAnchorElement>, href: string) => void
-  onClose: () => void
-}) {
-  return (
-    <div role="menu" className="relative grid h-[calc(100dvh-96px)] min-h-0 overflow-hidden rounded-[18px] border border-[#dce3ef] bg-white shadow-[0_28px_75px_rgba(16,24,40,.16)] lg:grid-cols-[300px_1fr]">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close menu"
-        className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full border border-[#dce3ef] bg-white text-[#344054] shadow-sm transition hover:bg-[#f5f7fa]"
-      >
-        <X className="h-4 w-4" />
-      </button>
-
-      <aside className="flex min-h-0 min-w-0 flex-col overflow-y-auto overscroll-contain bg-[#f3f7ff] p-7">
-        <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#e8f1ff] text-[#075fff]">
-          <MenuIcon className="h-6 w-6" />
-        </span>
-        <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#075fff]">
-          {menu.eyebrow}
-        </p>
-        <h3 className="mt-3 max-w-[240px] whitespace-normal text-[26px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#101828]">
-          {menu.title}
-        </h3>
-        <p className="mt-5 max-w-[250px] whitespace-normal text-sm leading-7 text-[#475467]">
-          {menu.text}
-        </p>
-
-        <div className="mt-8 space-y-5">
-          {menu.features?.map(({ title, text, icon: Icon }) => (
-            <div key={title} className="flex gap-4">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-[#075fff] ring-1 ring-[#dce8ff]">
-                <Icon className="h-4 w-4" />
-              </span>
-              <span>
-                <strong className="block text-[13px] font-semibold text-[#101828]">
-                  {title}
-                </strong>
-                <span className="mt-1 block text-xs leading-5 text-[#667085]">
-                  {text}
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <a
-          href={menu.ctaHref}
-          onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }}
-          className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#b7cdfb] bg-white px-5 text-sm font-semibold text-[#075fff] transition hover:border-[#075fff] hover:bg-[#f7fbff]"
-        >
-          {menu.cta}
-          <ArrowRight className="h-4 w-4" />
-        </a>
-      </aside>
-
-      <div className="min-h-0 min-w-0 overflow-y-scroll overscroll-contain p-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {menu.items.map(({ href: itemHref, label: itemLabel, description, icon: Icon }) => (
-            <a
-              key={`${itemHref}-${itemLabel}`}
-              href={itemHref}
-              onClick={(event) => { onClose(); onNavigate(event, itemHref) }}
-              className="group/item flex min-h-[138px] flex-col rounded-[14px] border border-[#dfe5ee] bg-white p-5 shadow-[0_12px_32px_rgba(16,24,40,.035)] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:shadow-[0_18px_42px_rgba(16,24,40,.08)]"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#edf5ff] text-[#075fff]">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="mt-5 flex items-start justify-between gap-3">
-                <span>
-                  <strong className="block whitespace-normal text-[15px] font-semibold leading-5 text-[#101828]">
-                    {itemLabel}
-                  </strong>
-                  <span className="mt-2 block whitespace-normal text-[13px] leading-6 text-[#475467]">
-                    {description}
-                  </span>
-                </span>
-                <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#101828] transition group-hover/item:translate-x-0.5 group-hover/item:text-[#075fff]" />
-              </span>
-            </a>
-          ))}
-
-          {menu.allCategoriesLabel && menu.allCategoriesText ? (
-            <a
-              href={menu.ctaHref}
-              onClick={(event) => { onClose(); onNavigate(event, menu.ctaHref) }}
-              className="group/item flex min-h-[110px] flex-col rounded-[14px] border border-[#dfe5ee] bg-white p-5 shadow-[0_12px_32px_rgba(16,24,40,.035)] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:shadow-[0_18px_42px_rgba(16,24,40,.08)] sm:col-span-2"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#edf5ff] text-[#075fff]">
-                <Store className="h-5 w-5" />
-              </span>
-              <span className="mt-4 flex items-start justify-between gap-3">
-                <span>
-                  <strong className="block text-[15px] font-semibold text-[#101828]">
-                    {menu.allCategoriesLabel}
-                  </strong>
-                  <span className="mt-1 block text-[13px] leading-6 text-[#475467]">
-                    {menu.allCategoriesText}
-                  </span>
-                </span>
-                <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#101828] transition group-hover/item:translate-x-0.5 group-hover/item:text-[#075fff]" />
-              </span>
-            </a>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  )
-}
