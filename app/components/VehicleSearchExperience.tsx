@@ -199,6 +199,7 @@ export default function VehicleSearchExperience({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
+  const [mobileDockVisible, setMobileDockVisible] = useState(true)
   const [sortBy, setSortBy] = useState('published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -502,6 +503,28 @@ export default function VehicleSearchExperience({
   const saveSearchButtonLabel = savedSearchMessage || (
     activeFilters.length ? `Spara ${activeFilters.length} filter` : 'Spara sökning'
   )
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const isNearTop = currentScrollY < 24
+      const scrollingUp = currentScrollY < lastScrollY
+      const scrollingDown = currentScrollY > lastScrollY + 6
+
+      if (isNearTop || scrollingUp) {
+        setMobileDockVisible(true)
+      } else if (scrollingDown) {
+        setMobileDockVisible(false)
+      }
+
+      lastScrollY = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
@@ -871,7 +894,7 @@ export default function VehicleSearchExperience({
             <button
               type="button"
               onClick={() => setMobileMapOpen(true)}
-              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition active:scale-[.98] lg:hidden"
+              className={`${mobileDockVisible ? 'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(1rem+env(safe-area-inset-bottom))]'} fixed left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition-[bottom,transform] duration-200 active:scale-[.98] lg:hidden`}
             >
               <MapPin className="h-4 w-4" />
               Karta
@@ -1285,7 +1308,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   ]
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-32 pt-8 text-[#101828] sm:px-6 lg:pb-8">
+    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-24 pt-8 text-[#101828] sm:px-6 lg:pb-8">
       <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
