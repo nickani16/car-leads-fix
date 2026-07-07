@@ -124,6 +124,7 @@ export default function VehicleSearchExperience({
   listings,
   locale = 'sv',
   defaultCountry = 'SE',
+  automaticCountry,
   initialCategory = 'all',
   initialQuery = '',
   initialMake = '',
@@ -134,6 +135,7 @@ export default function VehicleSearchExperience({
   listings: VehicleSearchListing[]
   locale?: PublicLocale
   defaultCountry?: string
+  automaticCountry?: string
   initialCategory?: string
   initialQuery?: string
   initialMake?: string
@@ -143,10 +145,12 @@ export default function VehicleSearchExperience({
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
+  const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
   const [mode, setMode] = useState<SearchMode>('sale')
   const [query, setQuery] = useState(initialQuery)
   const [category, setCategory] = useState(safeInitialCategory)
   const [country, setCountry] = useState(safeInitialCountry)
+  const [countryOverride, setCountryOverride] = useState(safeInitialCountry !== safeAutomaticCountry)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
@@ -288,7 +292,8 @@ export default function VehicleSearchExperience({
   const resetFilters = () => {
     setQuery(initialQuery)
     setCategory(safeInitialCategory)
-    setCountry(safeInitialCountry)
+    setCountry(safeAutomaticCountry)
+    setCountryOverride(false)
     setMinPrice(initialMinPrice)
     setMaxPrice(initialMaxPrice)
     setMinYear('')
@@ -335,13 +340,14 @@ export default function VehicleSearchExperience({
           },
         }
       : null,
-    country
+    countryOverride
       ? {
           key: 'country',
-          label: getEuCountryName(country, locale),
-          icon: <CountryFlag code={country} className="h-4 w-4 rounded-full" />,
+          label: country ? getEuCountryName(country, locale) : 'Hela Europa',
+          icon: <CountryFlag code={country || 'eu'} className="h-4 w-4 rounded-full" />,
           onRemove: () => {
-            setCountry('')
+            setCountry(safeAutomaticCountry)
+            setCountryOverride(false)
             setMake('')
             setModel('')
           },
@@ -414,14 +420,14 @@ export default function VehicleSearchExperience({
 
         <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className="min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full">
-            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 sm:pt-3 lg:px-7">
+            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 lg:px-7">
               <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[48px] min-w-0 px-1 text-center text-[12px] font-medium transition sm:min-h-[52px] sm:px-2 sm:text-[14px] ${
+                    className={`relative min-h-[40px] min-w-0 px-1 text-center text-[12px] font-medium transition sm:min-h-[44px] sm:px-2 sm:text-[14px] ${
                       mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
                     }`}
                   >
@@ -514,6 +520,7 @@ export default function VehicleSearchExperience({
                         locale={locale}
                         onSelect={(value) => {
                           setCountry(value)
+                          setCountryOverride(value !== safeAutomaticCountry)
                           setMake('')
                           setModel('')
                         }}
@@ -739,6 +746,7 @@ export default function VehicleSearchExperience({
                       locale={locale}
                       onSelect={(value) => {
                         setCountry(value)
+                        setCountryOverride(value !== safeAutomaticCountry)
                         setMake('')
                         setModel('')
                       }}

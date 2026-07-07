@@ -30,15 +30,17 @@ export default async function FindCarsPage({
   const resolvedSearchParams = searchParams ? await searchParams : {}
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const defaultCountry =
-    getSearchParam(resolvedSearchParams, 'country') ||
-    (marketCode && euCountryCodes.has(marketCode.toUpperCase())
+  const automaticCountry =
+    marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
       : locale === 'sv'
         ? 'SE'
         : locale === 'de'
           ? 'DE'
-          : 'SE')
+          : 'SE'
+  const defaultCountry =
+    getSearchParam(resolvedSearchParams, 'country') ||
+    automaticCountry
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
   const data = await getPublishedMarketplaceCategoryListings('vehicles', 240)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
@@ -92,6 +94,7 @@ export default async function FindCarsPage({
         listings={listings}
         locale={locale}
         defaultCountry={defaultCountry}
+        automaticCountry={automaticCountry}
         initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}

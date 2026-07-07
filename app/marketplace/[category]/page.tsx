@@ -104,15 +104,17 @@ export default async function MarketplaceCategoryPage({
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
-  const defaultCountry =
-    requestedCountry ||
-    (marketCode && euCountryCodes.has(marketCode.toUpperCase())
+  const automaticCountry =
+    marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
       : requestedLanguage === 'sv'
         ? 'SE'
         : requestedLanguage === 'de'
           ? 'DE'
-          : '')
+          : ''
+  const defaultCountry =
+    requestedCountry ||
+    automaticCountry
   const locale: PublicLocale =
     requestedLanguage === 'sv' || requestedLanguage === 'de'
       ? requestedLanguage
@@ -188,6 +190,7 @@ export default async function MarketplaceCategoryPage({
         listings={listings}
         locale={locale}
         defaultCountry={defaultCountry}
+        automaticCountry={automaticCountry}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
         initialMake={getSearchParam(resolvedSearchParams, 'make')}
