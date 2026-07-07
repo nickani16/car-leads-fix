@@ -1215,21 +1215,8 @@ export default function PublicHeader({
           >
             <BrandLogo underline={false} />
           </Link>
-          {isMarketplaceResults ? (
-            <button
-              type="button"
-              onClick={() => setMarketSelectorOpen(true)}
-              aria-label={t.chooseLanguage}
-              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-[14px] px-1.5 text-[16px] font-medium text-[#101828] transition hover:text-[#0866ff]"
-            >
-              <FlagIcon code={activeMarket[1]} />
-              <span>{activeMarket[1]}</span>
-            </button>
-          ) : null}
         </div>
-        <div className={`${isMarketplaceResults ? 'hidden' : 'flex'} shrink-0 items-center justify-end gap-1`}>
-          {!isMarketplaceResults ? (
-            <>
+        <div className="flex shrink-0 items-center justify-end gap-1">
               {headerAccount.authenticated ? (
                 <Link
                   href={accountMessagesHref}
@@ -1287,8 +1274,6 @@ export default function PublicHeader({
                   <span className="text-[10px] font-medium leading-none">{t.saved}</span>
                 </button>
               )}
-            </>
-          ) : null}
         </div>
       </div>
       {mobileCategoryOpen ? (
