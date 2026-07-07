@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
+import PublicHeader from '@/app/components/PublicHeader'
 import VehicleSearchExperience, {
   type VehicleSearchListing,
 } from '@/app/components/VehicleSearchExperience'
@@ -118,6 +119,11 @@ export default async function MarketplaceCategoryPage({
       : requestedLanguage && isPublicLanguage(requestedLanguage)
       ? requestedLanguage
       : 'en'
+  const language = marketplaceLanguage(locale)
+  const label =
+    locale === 'sv' || locale === 'de' || locale === 'en'
+      ? category.labels[language]
+      : translatePublic(locale, category.labels.en)
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
 
   const data = await getPublishedMarketplaceCategoryListings(
@@ -169,17 +175,27 @@ export default async function MarketplaceCategoryPage({
   )
 
   return (
-    <VehicleSearchExperience
-      listings={listings}
-      locale={locale}
-      defaultCountry={defaultCountry}
-      initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
-      initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
-      initialMake={getSearchParam(resolvedSearchParams, 'make')}
-      initialModel={getSearchParam(resolvedSearchParams, 'model')}
-      initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
-      initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
-    />
+    <>
+      <PublicHeader
+        locale={locale}
+        marketCode={marketCode}
+        marketplaceChannel={{
+          label,
+          slug: requestedCategory === 'vehicles' ? 'vehicles' : category.slug,
+        }}
+      />
+      <VehicleSearchExperience
+        listings={listings}
+        locale={locale}
+        defaultCountry={defaultCountry}
+        initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
+        initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
+        initialMake={getSearchParam(resolvedSearchParams, 'make')}
+        initialModel={getSearchParam(resolvedSearchParams, 'model')}
+        initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
+        initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
+      />
+    </>
   )
 }
 
