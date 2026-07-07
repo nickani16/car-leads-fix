@@ -381,8 +381,8 @@ export default function VehicleSearchExperience({
   const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
 
   return (
-    <main className="min-h-[calc(100dvh-56px)] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:overflow-hidden min-[1120px]:pb-0">
-      <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-full max-w-full flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:overflow-hidden">
+    <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+      <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -412,8 +412,8 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        <section className="grid min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className="min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white">
+        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+          <div className="min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full">
             <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 sm:pt-3 lg:px-7">
               <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
