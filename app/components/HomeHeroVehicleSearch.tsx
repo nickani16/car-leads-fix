@@ -234,17 +234,17 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[12px] lg:p-6"
+        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[6px] lg:bg-white lg:p-6 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
         role="search"
       >
-        <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:-mx-6 lg:-mt-6">
+        <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:mx-0 lg:mt-0 lg:border-[#d8d8d8]">
           <div className="grid grid-cols-2">
             {(['sale', 'leasing'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setIntent(tab)}
-                className={`relative min-h-[56px] px-2 text-center text-[14px] font-semibold transition ${
+                className={`relative min-h-[56px] px-2 text-center text-[14px] font-semibold transition lg:min-h-[50px] lg:font-medium ${
                   intent === tab
                     ? 'text-[#101828]'
                     : 'text-[#344054] hover:text-[#0866ff]'
@@ -252,45 +252,41 @@ export default function HomeHeroVehicleSearch({
               >
                 {t.tabs[tab]}
                 {intent === tab ? (
-                  <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-[#0866ff]" />
+                  <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-[#0866ff] lg:h-[2px]" />
                 ) : null}
               </button>
             ))}
           </div>
         </div>
 
-        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[10px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-5">
+        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[10px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:rounded-[4px] lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:ring-1">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.placeholder}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#667085] [background:transparent]"
+            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#667085] [background:transparent] lg:text-center lg:text-[14px] lg:placeholder:text-[#667085]"
           />
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
 
-        <label className="mt-5 flex items-center gap-2 text-sm font-normal text-[#101828]">
+        <label className="mt-5 flex items-center gap-2 text-sm font-normal text-[#101828] lg:mt-7 lg:text-[14px]">
           <input
             type="checkbox"
-            className="h-[18px] w-[18px] rounded-[4px] border border-[#c5ccd8] accent-[#0866ff]"
+            className="h-[18px] w-[18px] rounded-[3px] border border-[#c5ccd8] accent-[#0866ff] lg:h-[18px] lg:w-[18px]"
           />
           <span>{t.verified}</span>
         </label>
 
         <div className="relative mt-7 hidden lg:block">
+          <div className="mb-2 text-[14px] font-semibold text-[#101828]">
+            {t.expandArea}
+          </div>
           <button
             type="button"
             onClick={() => setMarketsOpen((current) => !current)}
-            className="flex min-h-[48px] w-full items-center justify-between rounded-[10px] border border-[#d8e0ec] bg-white px-3 text-left transition hover:border-[#0866ff]"
+            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[4px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] font-normal text-[#101828] transition hover:border-[#0866ff]"
           >
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-[#101828]">
-                {t.expandArea}
-              </span>
-              <span className="mt-0.5 block truncate text-xs font-medium text-[#667085]">
-                {selectedMarketsLabel}
-              </span>
-            </span>
+            <span className="truncate">{selectedMarketsLabel}</span>
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {marketsOpen ? (
@@ -298,7 +294,7 @@ export default function HomeHeroVehicleSearch({
               locale={locale}
               markets={markets}
               onToggle={toggleMarket}
-              className="absolute left-0 right-0 top-[calc(100%+8px)] z-50"
+              className="absolute left-0 top-[calc(100%+8px)] z-50 w-[247px]"
             />
           ) : null}
         </div>
@@ -347,23 +343,23 @@ export default function HomeHeroVehicleSearch({
               key={slug}
               type="button"
               onClick={() => setCategory(slug)}
-              className={`flex min-h-[46px] items-center gap-2 rounded-[10px] border px-3 text-left text-sm font-semibold transition ${
+              className={`flex min-h-[45px] items-center gap-2 rounded-[4px] border px-3 text-left text-[14px] font-normal transition ${
                 category === slug
-                  ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                  : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
+                  ? 'border-[#0866ff] bg-white text-[#101828]'
+                  : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon className={`h-4 w-4 shrink-0 ${category === slug ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
               <span className="truncate">{label}</span>
             </button>
           ))}
         </div>
 
-        <div className="relative mt-7">
+        <div className="relative mt-7 lg:mt-6">
           <button
             type="button"
             onClick={() => setMoreFiltersOpen((current) => !current)}
-            className="inline-flex items-center gap-2 text-[15px] font-semibold text-[#101828]"
+            className="inline-flex items-center gap-2 text-[15px] font-semibold text-[#101828] lg:text-[16px]"
           >
             {t.moreFilters}
             <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
@@ -386,7 +382,7 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[10px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6]"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[10px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:rounded-[4px] lg:shadow-none"
         >
           {t.submit}
         </button>
