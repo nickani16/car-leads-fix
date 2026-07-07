@@ -8,9 +8,11 @@ import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
+  Columns2,
   Expand,
   Heart,
   Layers,
+  List,
   Map,
   MapPin,
   Search,
@@ -36,6 +38,7 @@ import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type SearchMode = 'sale' | 'leasing'
+type ResultsLayout = 'single' | 'split'
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SavedVehicleSearch = {
   savedAt: string
@@ -148,6 +151,19 @@ const countryFilterOptions = marketOptions.map((option) => ({
 
 const SAVED_SEARCHES_STORAGE_KEY = 'autorell-saved-vehicle-searches'
 
+const sortOptions = [
+  { value: 'relevant', label: 'Mest relevanta' },
+  { value: 'mileage-desc', label: 'Mil högt-lågt' },
+  { value: 'mileage-asc', label: 'Mil lågt-högt' },
+  { value: 'model', label: 'Model' },
+  { value: 'nearest', label: 'Närmaste' },
+  { value: 'price-desc', label: 'Pris högt-lågt' },
+  { value: 'price-asc', label: 'Pris lågt-högt' },
+  { value: 'published', label: 'Publicerad' },
+  { value: 'year-desc', label: 'År nyast-äldst' },
+  { value: 'year-asc', label: 'År äldst-nyast' },
+]
+
 export default function VehicleSearchExperience({
   listings,
   locale = 'sv',
@@ -183,7 +199,8 @@ export default function VehicleSearchExperience({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
-  const [sortBy, setSortBy] = useState('latest')
+  const [sortBy, setSortBy] = useState('published')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState('')
@@ -322,9 +339,13 @@ export default function VehicleSearchExperience({
         .includes(normalizedQuery)
     })
     return matches.sort((a, b) => {
+      if (sortBy === 'mileage-asc') return (a.mileageKm ?? Number.MAX_SAFE_INTEGER) - (b.mileageKm ?? Number.MAX_SAFE_INTEGER)
+      if (sortBy === 'mileage-desc') return (b.mileageKm ?? -1) - (a.mileageKm ?? -1)
+      if (sortBy === 'model') return [a.make, a.model].filter(Boolean).join(' ').localeCompare([b.make, b.model].filter(Boolean).join(' '), 'sv-SE')
       if (sortBy === 'price-asc') return a.priceValue - b.priceValue
       if (sortBy === 'price-desc') return b.priceValue - a.priceValue
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
+      if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
   }, [bodyType, color, condition, country, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, sellerType, sortBy, verifiedOnly])
@@ -783,34 +804,53 @@ export default function VehicleSearchExperience({
                     </>
                   )}
                 </p>
+                <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
+                  className={`grid h-10 w-10 place-items-center rounded-[8px] border text-[#101828] shadow-sm transition ${
+                    resultsLayout === 'split'
+                      ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                      : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
+                  }`}
+                  aria-label={resultsLayout === 'split' ? 'Visa annonser i en kolumn' : 'Visa två annonser per rad'}
+                  title={resultsLayout === 'split' ? 'En annons per rad' : 'Två annonser per rad'}
+                >
+                  {resultsLayout === 'split' ? <List className="h-5 w-5" /> : <Columns2 className="h-5 w-5" />}
+                </button>
                 <label className="relative">
                   <span className="sr-only">Sortering</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-11 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-4 pr-10 text-sm font-medium shadow-sm outline-none focus:border-[#0866ff]"
+                    className="h-10 min-w-[150px] appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-sm font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:min-w-[168px]"
                   >
-                    <option value="latest">Nyast</option>
-                    <option value="price-asc">Pris lägst</option>
-                    <option value="price-desc">Pris högst</option>
-                    <option value="year-desc">Nyast årsmodell</option>
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                 </label>
+                </div>
               </div>
             </div>
 
             <div className="border-t border-[#eceff4]">
               {filteredListings.length ? (
-                filteredListings.map((listing) => (
-                  <VehicleResultCard
-                    key={listing.id}
-                    listing={listing}
-                    locale={locale}
-                    compareActive={compareIds.includes(listing.id)}
-                    onCompare={() => toggleCompare(listing.id)}
-                  />
-                ))
+                <div className={resultsLayout === 'split' ? 'grid grid-cols-1 min-[560px]:grid-cols-2' : ''}>
+                  {filteredListings.map((listing) => (
+                    <VehicleResultCard
+                      key={listing.id}
+                      listing={listing}
+                      locale={locale}
+                      compareActive={compareIds.includes(listing.id)}
+                      onCompare={() => toggleCompare(listing.id)}
+                      layout={resultsLayout}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="px-8 py-14">
                   <div className="rounded-[8px] border border-[#d9e1ec] bg-[#f8fbff] p-7">
@@ -821,6 +861,7 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
               )}
+              <VehicleSearchFooter locale={locale} />
             </div>
               </div>
             </div>
@@ -1212,16 +1253,81 @@ function FilterSelect({
   )
 }
 
+function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
+  const columns = [
+    {
+      title: 'Tjänster',
+      links: [
+        ['Alla fordon', '/marketplace/vehicles'],
+        ['Bilar', '/cars'],
+        ['Transportbilar', '/vans'],
+        ['Jämför fordon', '/compare-vehicles'],
+      ],
+    },
+    {
+      title: 'Sälj fordon',
+      links: [
+        ['Sälj din bil', '/sell-vehicle'],
+        ['Företag', '/business'],
+        ['Priser', '/pricing'],
+        ['Trygg affär', '/safety-tips'],
+      ],
+    },
+    {
+      title: 'Om oss',
+      links: [
+        ['Om Autorell', '/about'],
+        ['Kontakt', '/contact'],
+        ['Hjälpcenter', '/help-center'],
+        ['Villkor', '/terms'],
+      ],
+    },
+  ]
+
+  return (
+    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-32 pt-8 text-[#101828] sm:px-6 lg:pb-8">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
+        {columns.map((column) => (
+          <div key={column.title}>
+            <p className="text-[15px] font-semibold">{column.title}</p>
+            <nav className="mt-3 grid gap-2.5 text-[13px] font-medium text-[#475467]">
+              {column.links.map(([label, href]) => (
+                <Link key={href} href={localizePublicHref(locale, href)} className="transition hover:text-[#0866ff]">
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        ))}
+      </div>
+      <div className="mt-8 border-t border-[#dfe5ee] pt-6">
+        <BrandLogo compact underline={false} />
+        <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
+          Autorell är en europeisk marknadsplats för fordon. Här kan köpare hitta annonser och säljare nå rätt kunder på ett tryggt och tydligt sätt.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
+          <Link href={localizePublicHref(locale, '/privacy')} className="hover:text-[#0866ff]">Integritet</Link>
+          <Link href={localizePublicHref(locale, '/cookies')} className="hover:text-[#0866ff]">Cookies</Link>
+          <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">Återbetalning</Link>
+        </div>
+        <p className="mt-5 text-[12px] text-[#667085]">© 2026 Autorell</p>
+      </div>
+    </footer>
+  )
+}
+
 function VehicleResultCard({
   listing,
   locale,
   compareActive,
   onCompare,
+  layout = 'single',
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
   compareActive: boolean
   onCompare: () => void
+  layout?: ResultsLayout
 }) {
   const href = localizePublicHref(
     locale,
@@ -1250,16 +1356,22 @@ function VehicleResultCard({
   ].filter(Boolean)
 
   return (
-    <article className="group relative mx-0 overflow-hidden border-b border-[#e5ebf3] bg-white px-4 py-5 transition hover:bg-[#fbfdff] sm:mx-6 sm:px-0">
+    <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
+      layout === 'split' ? 'mx-0 px-3 py-4 min-[560px]:border-r sm:px-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
+    }`}>
       <Link href={href} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
-      <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
-        <div className="relative h-[246px] overflow-hidden rounded-[8px] bg-[#eef3f8] sm:h-[174px]">
+      <div className={`pointer-events-none relative z-20 grid gap-4 ${
+        layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
+      }`}>
+        <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
+          layout === 'split' ? 'aspect-[4/3] min-h-[138px]' : 'h-[246px] sm:h-[174px]'
+        }`}>
           {listing.imageUrl ? (
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
-              sizes="(max-width: 640px) 100vw, 260px"
+              sizes={layout === 'split' ? '(max-width: 560px) 100vw, 50vw' : '(max-width: 640px) 100vw, 260px'}
               className="object-cover transition duration-500 group-hover:scale-[1.02]"
             />
           ) : (
@@ -1303,7 +1415,7 @@ function VehicleResultCard({
 
         <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
-            <span className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline">
+            <span className={`${layout === 'split' ? 'text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
             <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#667085]">
@@ -1324,7 +1436,7 @@ function VehicleResultCard({
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                  <span className="relative hidden h-7 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
+                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-7 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
                   <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />
                 </span>
               ) : null}
