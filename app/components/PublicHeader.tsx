@@ -1206,7 +1206,7 @@ export default function PublicHeader({
           visible || mobileCategoryOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <Link
             href={homeHref}
             aria-label="Autorell"
