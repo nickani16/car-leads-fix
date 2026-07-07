@@ -515,7 +515,7 @@ export default function VehicleSearchExperience({
         </header>
 
         <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className="min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full">
+          <div className="relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full">
             <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 lg:px-7">
               <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
@@ -545,7 +545,7 @@ export default function VehicleSearchExperience({
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Sök fordon, ort eller kommun"
-                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none placeholder:text-[#7b828d]"
+                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[15px] font-normal text-[#667085] outline-none placeholder:text-[#7b828d]"
                   />
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
@@ -586,23 +586,45 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
 
-                <ActiveFilterChips filters={activeFilters} />
                 {filtersOpen ? (
-                  <div data-filter-profile={filterProfile.join(' ')} className="mt-4 grid gap-4 rounded-[8px] border border-[#b8d2ff] bg-[#fbfdff] p-4 shadow-[0_16px_36px_rgba(16,24,40,.10)]">
-                    <div className="flex items-center justify-between border-b border-[#e1e9f5] pb-3">
-                      <div>
-                        <p className="text-sm font-semibold text-[#101828]">Sökfilter</p>
-                        <p className="mt-0.5 text-xs font-medium text-[#667085]">Avgränsa på fordon, marknad och utrustning.</p>
+                  <div className="fixed inset-0 z-[180] bg-white lg:absolute lg:inset-0 lg:z-50">
+                    <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
+                    <div className="flex items-center justify-between border-b border-[#e1e9f5] px-4 py-4 sm:px-6">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
+                        <p className="min-w-0 text-xl font-semibold text-[#101828]">Sökfilter</p>
+                        {activeFilters.length ? (
+                          <span className="grid h-7 min-w-7 place-items-center rounded-full bg-[#101828] px-2 text-sm font-semibold text-white">
+                            {activeFilters.length}
+                          </span>
+                        ) : null}
                       </div>
                       <button
                         type="button"
                         onClick={() => setFiltersOpen(false)}
-                        className="grid h-9 w-9 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                        className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
                         aria-label="Stäng filter"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-5 w-5" />
                       </button>
                     </div>
+                    <div className="border-b border-[#edf1f6] px-4 py-3 sm:px-6">
+                      {activeFilters.length ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <ActiveFilterChips filters={activeFilters} />
+                          <button
+                            type="button"
+                            onClick={resetFilters}
+                            className="h-8 rounded-[6px] px-2 text-sm font-medium text-[#101828] underline underline-offset-2 hover:text-[#0866ff]"
+                          >
+                            Rensa filter
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-normal text-[#667085]">Avgränsa på fordon, marknad och utrustning.</p>
+                      )}
+                    </div>
+                    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
                     <CollapsibleFilterSection
                       title="Marknad"
                       summary={country ? getEuCountryName(country, locale) : 'Hela Europa'}
@@ -726,6 +748,24 @@ export default function VehicleSearchExperience({
                       </button>
                     </div>
                   </div>
+                      <div className="grid grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-6">
+                        <button
+                          type="button"
+                          onClick={resetFilters}
+                          className="h-12 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-medium text-[#101828] transition hover:border-[#0866ff]"
+                        >
+                          Rensa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFiltersOpen(false)}
+                          className="h-12 rounded-[8px] bg-[#0866ff] px-4 text-sm font-medium text-white transition hover:bg-[#0757da]"
+                        >
+                          Visa {visibleCount.toLocaleString('sv-SE')} fordon till salu
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ) : null}
               </div>
 
@@ -821,7 +861,7 @@ export default function VehicleSearchExperience({
                     type="button"
                     onClick={() => setFiltersOpen(false)}
                     className="grid h-9 w-9 place-items-center rounded-full bg-[#f8fafc] text-[#101828] ring-1 ring-[#d0d5dd]"
-                    aria-label="StÃ¤ng filter"
+                        aria-label="Stäng filter"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -1003,7 +1043,7 @@ function ActiveFilterChips({
   if (!filters.length) return null
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
       {filters.map((filter) => (
         <button
           key={filter.key}
