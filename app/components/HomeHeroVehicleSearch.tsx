@@ -234,7 +234,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[6px] lg:bg-white lg:p-6 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
+        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[8px] lg:bg-white lg:p-6 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:mx-0 lg:mt-0 lg:border-[#d8d8d8]">
@@ -244,10 +244,10 @@ export default function HomeHeroVehicleSearch({
                 key={tab}
                 type="button"
                 onClick={() => setIntent(tab)}
-                className={`relative min-h-[56px] px-2 text-center text-[14px] font-semibold transition lg:min-h-[50px] lg:font-medium ${
+                className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[50px] ${
                   intent === tab
-                    ? 'text-[#101828]'
-                    : 'text-[#344054] hover:text-[#0866ff]'
+                    ? 'font-medium text-[#101828]'
+                    : 'font-normal text-[#344054] hover:text-[#0866ff]'
                 }`}
               >
                 {t.tabs[tab]}
@@ -259,7 +259,7 @@ export default function HomeHeroVehicleSearch({
           </div>
         </div>
 
-        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[10px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:rounded-[4px] lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:ring-1">
+        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:ring-1">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -325,8 +325,8 @@ export default function HomeHeroVehicleSearch({
                   }}
                   className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm font-semibold transition ${
                     category === slug
-                      ? 'bg-[#eef5ff] text-[#0866ff]'
-                      : 'text-[#101828] hover:bg-[#f6f9ff]'
+                      ? 'bg-[#eef5ff] font-normal text-[#0866ff]'
+                      : 'font-normal text-[#101828] hover:bg-[#f6f9ff]'
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
