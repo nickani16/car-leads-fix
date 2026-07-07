@@ -37,6 +37,32 @@ import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type SearchMode = 'sale' | 'leasing'
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
+type SavedVehicleSearch = {
+  savedAt: string
+  filters: {
+    mode: SearchMode
+    query: string
+    categories: string[]
+    country: string
+    make: string
+    model: string
+    minPrice: string
+    maxPrice: string
+    minYear: string
+    maxYear: string
+    maxMileage: string
+    fuel: string
+    gearbox: string
+    bodyType: string
+    condition: string
+    color: string
+    sellerType: string
+    verifiedOnly: boolean
+    fourWheelDrive: boolean
+    leasingPossible: boolean
+    equipmentQuery: string
+  }
+}
 
 export type VehicleSearchListing = {
   id: string
@@ -120,6 +146,8 @@ const countryFilterOptions = marketOptions.map((option) => ({
   label: option.value ? option.label : 'Hela Europa',
 }))
 
+const SAVED_SEARCHES_STORAGE_KEY = 'autorell-saved-vehicle-searches'
+
 export default function VehicleSearchExperience({
   listings,
   locale = 'sv',
@@ -144,11 +172,12 @@ export default function VehicleSearchExperience({
   initialMaxPrice?: string
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
+  const safeInitialCategories = safeInitialCategory === 'all' ? [] : [safeInitialCategory]
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
   const [mode, setMode] = useState<SearchMode>('sale')
   const [query, setQuery] = useState(initialQuery)
-  const [category, setCategory] = useState(safeInitialCategory)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
   const [country, setCountry] = useState(safeInitialCountry)
   const [countryOverride, setCountryOverride] = useState(safeInitialCountry !== safeAutomaticCountry)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -173,12 +202,23 @@ export default function VehicleSearchExperience({
   const [leasingPossible, setLeasingPossible] = useState(false)
   const [equipmentQuery, setEquipmentQuery] = useState('')
   const [compareIds, setCompareIds] = useState<string[]>([])
-  const currentCategory = categories.find((item) => item.key === category) || categories[0]
-  const filterProfile = categoryFilterProfile(category)
+  const [savedSearchMessage, setSavedSearchMessage] = useState('')
+  const selectedCategoryItems = selectedCategories
+    .map((key) => categories.find((item) => item.key === key))
+    .filter((item): item is (typeof categories)[number] => Boolean(item))
+  const currentCategory = selectedCategoryItems[0] || categories[0]
+  const filterProfile = [
+    ...new Set((selectedCategories.length ? selectedCategories : ['all']).flatMap(categoryFilterProfile)),
+  ]
 
   const optionListings = useMemo(
-    () => listings.filter((listing) => (category === 'all' || listing.category === category) && (!country || listing.country === country)),
-    [category, country, listings],
+    () =>
+      listings.filter(
+        (listing) =>
+          (!selectedCategories.length || selectedCategories.includes(listing.category)) &&
+          (!country || listing.country === country),
+      ),
+    [country, listings, selectedCategories],
   )
   const fuels = useMemo(
     () => [...new Set(optionListings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
@@ -242,7 +282,7 @@ export default function VehicleSearchExperience({
     const maxYearValue = parseOptionalNumber(maxYear)
     const maxMileageValue = parseOptionalNumber(maxMileage)
     const matches = listings.filter((listing) => {
-      if (category !== 'all' && listing.category !== category) return false
+      if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (country && listing.country !== country) return false
       if (make && listing.make !== make) return false
       if (model && listing.model !== model) return false
@@ -287,11 +327,11 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       return 0
     })
-  }, [bodyType, category, color, condition, country, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, color, condition, country, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     setQuery(initialQuery)
-    setCategory(safeInitialCategory)
+    setSelectedCategories(safeInitialCategories)
     setCountry(safeAutomaticCountry)
     setCountryOverride(false)
     setMinPrice(initialMinPrice)
@@ -312,6 +352,59 @@ export default function VehicleSearchExperience({
     setLeasingPossible(false)
     setEquipmentQuery('')
     setSortBy('latest')
+    setSavedSearchMessage('')
+  }
+
+  function toggleCategory(nextCategory: string) {
+    setMake('')
+    setModel('')
+    setSelectedCategories((current) => {
+      if (nextCategory === 'all') return []
+      return current.includes(nextCategory)
+        ? current.filter((item) => item !== nextCategory)
+        : [...current, nextCategory]
+    })
+  }
+
+  function saveCurrentSearch() {
+    const savedSearch: SavedVehicleSearch = {
+      savedAt: new Date().toISOString(),
+      filters: {
+        mode,
+        query: query.trim(),
+        categories: selectedCategories,
+        country,
+        make,
+        model,
+        minPrice,
+        maxPrice,
+        minYear,
+        maxYear,
+        maxMileage,
+        fuel,
+        gearbox,
+        bodyType,
+        condition,
+        color,
+        sellerType,
+        verifiedOnly,
+        fourWheelDrive,
+        leasingPossible,
+        equipmentQuery: equipmentQuery.trim(),
+      },
+    }
+
+    try {
+      const current = window.localStorage.getItem(SAVED_SEARCHES_STORAGE_KEY)
+      const searches = current ? (JSON.parse(current) as SavedVehicleSearch[]) : []
+      window.localStorage.setItem(
+        SAVED_SEARCHES_STORAGE_KEY,
+        JSON.stringify([savedSearch, ...searches].slice(0, 20)),
+      )
+      setSavedSearchMessage('Sökningen är sparad')
+    } catch {
+      setSavedSearchMessage('Kunde inte spara sökningen')
+    }
   }
 
   const toggleCompare = (listingId: string) => {
@@ -328,13 +421,13 @@ export default function VehicleSearchExperience({
   const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
-    category !== 'all'
+    selectedCategoryItems.length
       ? {
           key: 'category',
-          label: currentCategory.label,
+          label: selectedCategoryItems.map((item) => item.shortLabel).join(', '),
           icon: <CurrentCategoryIcon className="h-4 w-4" />,
           onRemove: () => {
-            setCategory('all')
+            setSelectedCategories([])
             setMake('')
             setModel('')
           },
@@ -385,6 +478,9 @@ export default function VehicleSearchExperience({
     equipmentQuery.trim() ? { key: 'equipment', label: equipmentQuery.trim(), onRemove: () => setEquipmentQuery('') } : null,
   ]
   const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
+  const saveSearchButtonLabel = savedSearchMessage || (
+    activeFilters.length ? `Spara ${activeFilters.length} filter` : 'Spara sökning'
+  )
 
   return (
     <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(62px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
@@ -440,16 +536,7 @@ export default function VehicleSearchExperience({
 
             </div>
 
-            <div className="lg:grid lg:grid-cols-[74px_minmax(0,1fr)]">
-              <CategoryRail
-                activeCategory={category}
-                onSelect={(nextCategory) => {
-                  setCategory(nextCategory)
-                  setMake('')
-                  setModel('')
-                }}
-              />
-
+            <div>
               <div className="min-w-0 max-w-full overflow-hidden">
                 <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6">
                 <label className="flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-11">
@@ -485,10 +572,17 @@ export default function VehicleSearchExperience({
                   </button>
                   <button
                     type="button"
-                    className="col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] bg-[#d1d3d8] px-5 text-[14px] font-medium text-white lg:col-span-1"
+                    onClick={saveCurrentSearch}
+                    className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-medium text-white transition lg:col-span-1 ${
+                      savedSearchMessage
+                        ? 'bg-[#079455]'
+                        : activeFilters.length
+                          ? 'bg-[#0866ff] hover:bg-[#0757da]'
+                          : 'bg-[#d1d3d8]'
+                    }`}
                   >
                     <Bookmark className="h-5 w-5" strokeWidth={1.8} />
-                    Spara sökning
+                    {saveSearchButtonLabel}
                   </button>
                 </div>
 
@@ -530,16 +624,14 @@ export default function VehicleSearchExperience({
                       <div className="grid grid-cols-2 gap-2">
                         {categories.map((item) => {
                           const Icon = item.icon
-                          const active = category === item.key
+                          const active = item.key === 'all'
+                            ? selectedCategories.length === 0
+                            : selectedCategories.includes(item.key)
                           return (
                             <button
                               key={item.key}
                               type="button"
-                              onClick={() => {
-                                setCategory(item.key)
-                                setMake('')
-                                setModel('')
-                              }}
+                              onClick={() => toggleCategory(item.key)}
                               className={`flex min-h-12 items-center gap-2 rounded-[8px] border px-2 text-left transition sm:min-h-14 sm:gap-3 sm:px-3 ${
                                 active
                                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
@@ -756,16 +848,14 @@ export default function VehicleSearchExperience({
                     <div className="grid gap-2">
                       {categories.map((item) => {
                         const Icon = item.icon
-                        const active = category === item.key
+                        const active = item.key === 'all'
+                          ? selectedCategories.length === 0
+                          : selectedCategories.includes(item.key)
                         return (
                           <button
                             key={item.key}
                             type="button"
-                            onClick={() => {
-                              setCategory(item.key)
-                              setMake('')
-                              setModel('')
-                            }}
+                            onClick={() => toggleCategory(item.key)}
                             className={`flex min-h-12 items-center gap-3 rounded-[8px] border px-3 text-left transition ${
                               active
                                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
@@ -820,43 +910,6 @@ export default function VehicleSearchExperience({
         </section>
       </div>
     </main>
-  )
-}
-
-function CategoryRail({
-  activeCategory,
-  onSelect,
-}: {
-  activeCategory: string
-  onSelect: (category: string) => void
-}) {
-  return (
-    <aside className="hidden border-r border-[#eceff4] bg-white lg:block">
-      <div className="sticky top-0 flex min-h-[calc(100vh-121px)] flex-col py-2">
-        {categories.map((item) => {
-          const Icon = item.icon
-          const active = activeCategory === item.key
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => onSelect(item.key)}
-              className={`relative flex min-h-[64px] flex-col items-center justify-center gap-1 px-1.5 text-center text-[10.5px] font-medium leading-tight transition ${
-                active
-                  ? 'bg-[#eef5ff] text-[#0866ff]'
-                  : 'text-[#101828] hover:bg-[#f8fafc] hover:text-[#0866ff]'
-              }`}
-              aria-pressed={active}
-              title={item.label}
-            >
-              {active ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[#0866ff]" /> : null}
-              <Icon className="h-5 w-5" />
-              <span className="max-w-[64px] truncate">{item.shortLabel}</span>
-            </button>
-          )
-        })}
-      </div>
-    </aside>
   )
 }
 
