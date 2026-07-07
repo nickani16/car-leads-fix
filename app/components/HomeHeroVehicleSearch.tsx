@@ -259,14 +259,22 @@ export default function HomeHeroVehicleSearch({
           </div>
         </div>
 
-        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
+        <label className="group relative mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={t.placeholder}
-            style={{ color: query ? '#101828' : '#767676' }}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#767676] [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:placeholder:text-[#767676] lg:focus:w-[calc(100%-36px)]"
+            placeholder=""
+            aria-label={t.placeholder}
+            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
           />
+          {query ? null : (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-[calc(50%-150px)] lg:text-[13px] lg:group-focus-within:left-4"
+            >
+              {t.placeholder}
+            </span>
+          )}
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
 

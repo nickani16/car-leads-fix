@@ -583,15 +583,23 @@ export default function VehicleSearchExperience({
             <div>
               <div className="min-w-0 max-w-full overflow-hidden">
                 <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6">
-                <label className="flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-11">
+                <label className="relative flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-11">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Sök fordon, ort eller kommun"
-                    style={{ color: query ? '#101828' : '#767676' }}
-                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-[15px]"
+                    placeholder=""
+                    aria-label="Sök fordon, ort eller kommun"
+                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none sm:text-[15px]"
                   />
+                  {query ? null : (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-normal text-[#767676] sm:text-[15px]"
+                    >
+                      Sök fordon, ort eller kommun
+                    </span>
+                  )}
                   <Search className="h-6 w-6 shrink-0 text-[#101828]" />
                 </label>
 
@@ -1644,15 +1652,23 @@ function VehicleSearchMap({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
+              <label className="relative flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
                 <span className="sr-only">Sök</span>
                 <input
                   value={query}
                   onChange={(event) => onQueryChange(event.target.value)}
-                  placeholder="Sök fordon, ort eller kommun"
-                  style={{ color: query ? '#101828' : '#767676' }}
-                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676]"
+                  placeholder=""
+                  aria-label="Sök fordon, ort eller kommun"
+                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none"
                 />
+                {query ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] font-normal text-[#767676]"
+                  >
+                    Sök fordon, ort eller kommun
+                  </span>
+                )}
                 <Search className="h-5 w-5 shrink-0 text-[#101828]" />
               </label>
             </div>
@@ -1679,16 +1695,24 @@ function VehicleSearchMap({
       ) : fullscreen ? (
         <>
           <div className="absolute inset-x-0 top-0 z-20 flex min-h-[64px] items-center gap-2 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:gap-3 sm:px-4">
-            <label className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
+            <label className="relative flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
               <BrandLogo compact underline={false} />
               <span className="sr-only">Sök</span>
               <input
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
-                placeholder="Sök på fordon, ort eller kommun"
-                style={{ color: query ? '#101828' : '#767676' }}
-                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
+                placeholder=""
+                aria-label="Sök på fordon, ort eller kommun"
+                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none sm:text-sm"
               />
+              {query ? null : (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-[76px] top-1/2 -translate-y-1/2 text-[16px] font-normal text-[#767676] sm:text-sm"
+                >
+                  Sök på fordon, ort eller kommun
+                </span>
+              )}
               <Search className="h-5 w-5 shrink-0 text-[#101828]" />
             </label>
             <button
