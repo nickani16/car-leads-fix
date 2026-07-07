@@ -1184,28 +1184,28 @@ export default function PublicHeader({
             }}
             aria-label={mobileMoreOpen ? t.closeMenu : t.openMenu}
             aria-expanded={mobileMoreOpen}
-            className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828]"
+            className="relative grid h-11 w-9 shrink-0 place-items-center text-[#101828]"
           >
             <span
-              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-transform duration-200 ease-out ${
-                mobileMoreOpen ? 'translate-y-0 rotate-45' : '-translate-y-[7px] rotate-0'
+              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 rotate-45' : '-translate-y-[6.5px] rotate-0'
               }`}
             />
             <span
-              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-opacity duration-150 ease-out ${
+              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-opacity duration-150 ease-out ${
                 mobileMoreOpen ? 'opacity-0' : 'opacity-100'
               }`}
             />
             <span
-              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-transform duration-200 ease-out ${
-                mobileMoreOpen ? 'translate-y-0 -rotate-45' : 'translate-y-[7px] rotate-0'
+              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 -rotate-45' : 'translate-y-[6.5px] rotate-0'
               }`}
             />
           </button>
           <Link
             href={homeHref}
             aria-label="Autorell"
-            className="flex h-11 w-[116px] min-w-0 items-center justify-start overflow-hidden"
+            className="flex h-11 w-[116px] min-w-0 -translate-y-[2px] items-center justify-start overflow-hidden"
             onClick={closeMobile}
           >
             <BrandLogo underline={false} />
@@ -1306,7 +1306,7 @@ export default function PublicHeader({
             onClick={() => setMobileMoreOpen(false)}
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
-          <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[min(86vw,360px)] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
+          <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
               {headerAccount.authenticated ? (
                 <Link
