@@ -234,7 +234,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[8px] lg:bg-white lg:p-6 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
+        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[8px] lg:bg-white lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:mx-0 lg:mt-0 lg:border-[#d8d8d8]">
@@ -244,7 +244,7 @@ export default function HomeHeroVehicleSearch({
                 key={tab}
                 type="button"
                 onClick={() => setIntent(tab)}
-                className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[50px] ${
+                className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[46px] ${
                   intent === tab
                     ? '!font-medium text-[#101828]'
                     : '!font-normal text-[#344054] hover:text-[#0866ff]'
@@ -259,12 +259,12 @@ export default function HomeHeroVehicleSearch({
           </div>
         </div>
 
-        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:ring-1">
+        <label className="mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.placeholder}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#667085] [background:transparent] lg:text-center lg:text-[14px] lg:placeholder:text-[#667085]"
+            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none placeholder:text-[#667085] [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:placeholder:text-[#667085] lg:focus:w-[calc(100%-36px)]"
           />
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
@@ -284,9 +284,9 @@ export default function HomeHeroVehicleSearch({
           <button
             type="button"
             onClick={() => setMarketsOpen((current) => !current)}
-            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[4px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] font-normal text-[#101828] transition hover:border-[#0866ff]"
+            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[4px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
           >
-            <span className="truncate">{selectedMarketsLabel}</span>
+            <span className="truncate !font-normal">{selectedMarketsLabel}</span>
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {marketsOpen ? (
@@ -382,7 +382,7 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[10px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:rounded-[4px] lg:shadow-none"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[10px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:rounded-[4px] lg:shadow-none"
         >
           {t.submit}
         </button>
@@ -439,13 +439,13 @@ function MarketPicker({
             key={option.code}
             type="button"
             onClick={() => onToggle(option.code)}
-            className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm font-semibold transition ${
+            className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm !font-normal transition [&_*]:!font-normal ${
               selected
                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                 : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
             }`}
           >
-            <span className="truncate">{marketLabel(option, locale)}</span>
+            <span className="truncate !font-normal">{marketLabel(option, locale)}</span>
           </button>
         )
       })}
