@@ -76,6 +76,15 @@ body {
   animation: header-word-enter 2.6s ease both;
 }
 
+@keyframes autorell-mobile-menu-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @keyframes hero-word-rotate {
   0% {
     opacity: 0;

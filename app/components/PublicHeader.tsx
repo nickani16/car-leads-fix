@@ -15,7 +15,6 @@ import {
   LogIn,
   LogOut,
   Mail,
-  Menu,
   MessageSquareText,
   Plus,
   Search,
@@ -1175,7 +1174,7 @@ export default function PublicHeader({
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 self-center">
           <button
             type="button"
             onClick={() => {
@@ -1185,41 +1184,53 @@ export default function PublicHeader({
             }}
             aria-label={mobileMoreOpen ? t.closeMenu : t.openMenu}
             aria-expanded={mobileMoreOpen}
-            className="grid h-11 w-9 shrink-0 place-items-center text-[#101828]"
+            className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828]"
           >
-            {mobileMoreOpen ? (
-              <X className="h-[23px] w-[23px]" strokeWidth={1.9} />
-            ) : (
-              <Menu className="h-[23px] w-[23px]" strokeWidth={1.9} />
-            )}
+            <span
+              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 rotate-45' : '-translate-y-[7px] rotate-0'
+              }`}
+            />
+            <span
+              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-opacity duration-150 ease-out ${
+                mobileMoreOpen ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+            <span
+              className={`absolute h-[2px] w-[23px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 -rotate-45' : 'translate-y-[7px] rotate-0'
+              }`}
+            />
           </button>
           <Link
             href={homeHref}
             aria-label="Autorell"
-            className="flex h-[56px] w-[116px] min-w-0 flex-col items-start justify-center overflow-hidden"
+            className="flex h-11 w-[116px] min-w-0 items-center justify-start overflow-hidden"
             onClick={closeMobile}
           >
             <BrandLogo underline={false} />
           </Link>
         </div>
-        <div className="flex shrink-0 items-center justify-end justify-self-end gap-1">
+        <div className="flex shrink-0 items-center justify-end justify-self-end gap-1 self-center">
           {headerAccount.authenticated ? (
             <Link
-              href={accountMessagesHref}
+              href={savedSearchesHref}
               onClick={closeMobile}
-              aria-label={t.messages}
+              aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
               className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
-              <span className="relative">
-                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                {headerAccount.unreadMessages ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
-                  </span>
-                ) : null}
-              </span>
+              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
             </Link>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', savedSearchesHref)}
+              aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+              className="relative grid h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+            >
+              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+            </button>
+          )}
           {headerAccount.authenticated ? (
             <Link
               href={accountHref}
@@ -1293,28 +1304,9 @@ export default function PublicHeader({
             type="button"
             aria-label={t.closeMenu}
             onClick={() => setMobileMoreOpen(false)}
-            className="fixed inset-0 z-[84] bg-transparent min-[1120px]:hidden"
+            className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
-          <div className="fixed inset-0 z-[160] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))] shadow-[0_-20px_70px_rgba(16,24,40,.16)] min-[1120px]:hidden">
-            <div className="mb-4 flex items-center justify-between">
-              <Link
-                href={homeHref}
-                onClick={closeMobile}
-                aria-label="Autorell"
-                className="flex h-11 w-[122px] flex-col items-start justify-center overflow-hidden"
-              >
-                <BrandLogo underline={false} />
-              </Link>
-              <button
-                type="button"
-                onClick={() => setMobileMoreOpen(false)}
-                aria-label={t.closeMenu}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.12)] ring-1 ring-[#dfe6f0]"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
+          <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[min(86vw,360px)] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
               {headerAccount.authenticated ? (
                 <Link
