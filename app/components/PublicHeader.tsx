@@ -850,7 +850,7 @@ export default function PublicHeader({
               <BrandLogo underline={false} />
             </Link>
 
-            <nav className="ml-36 hidden h-full min-w-0 flex-1 items-center gap-9 overflow-visible whitespace-nowrap min-[1120px]:flex xl:gap-10">
+            <nav className="ml-14 hidden h-full shrink-0 items-center gap-7 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-16 xl:gap-8">
               {desktopNavLinks.map(({ href, label }) => {
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
                 const isActive =
@@ -873,7 +873,7 @@ export default function PublicHeader({
               })}
             </nav>
 
-            <div className="ml-auto hidden h-full items-center gap-6 min-[1120px]:flex xl:gap-7">
+            <div className="ml-auto hidden h-full shrink-0 items-center gap-4 min-[1120px]:flex xl:gap-6">
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
