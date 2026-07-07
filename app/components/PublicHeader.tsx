@@ -13,11 +13,13 @@ import {
   Heart,
   Home,
   LogIn,
+  LogOut,
   Mail,
   Menu,
   MessageSquareText,
   Plus,
   Search,
+  Settings,
   ShieldAlert,
   ShieldCheck,
   Store,
@@ -57,6 +59,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
 
 type PublicHeaderProps = {
@@ -395,9 +398,11 @@ export default function PublicHeader({
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
+  const profileMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -493,6 +498,28 @@ export default function PublicHeader({
       document.body.style.overflow = ''
     }
   }, [open])
+
+  useEffect(() => {
+    if (!profileMenuOpen) return
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (profileMenuRef.current?.contains(target)) return
+      setProfileMenuOpen(false)
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setProfileMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [profileMenuOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -710,9 +737,10 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
+  const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
     { href: localizePublicHref(locale, '/marketplace/cars'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
-    { href: localizePublicHref(locale, '/sell-vehicle'), label: language === 'sv' ? 'Sälja' : t.sell },
+    { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell },
     { href: localizePublicHref(locale, '/business'), label: t.business },
     { href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
   ]
@@ -720,7 +748,11 @@ export default function PublicHeader({
     { href: savedHref, label: language === 'sv' ? 'Sparade annonser' : t.saved, icon: Heart },
     { href: savedSearchesHref, label: language === 'sv' ? 'Sparade sökningar' : 'Saved searches', icon: Bookmark },
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
+  ]
+  const profileMenuLinks = [
     { href: createListingHref, label: language === 'sv' ? 'Skapa annons' : 'Create listing', icon: FilePlus2 },
+    { href: accountHref, label: language === 'sv' ? 'Inställningar' : 'Settings', icon: Settings },
+    { href: accountListingsHref, label: language === 'sv' ? 'Mina annonser' : 'My listings', icon: CarFront },
   ]
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
@@ -748,6 +780,27 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
+    setProfileMenuOpen(false)
+  }
+
+  async function signOut() {
+    await createClient().auth.signOut()
+    const signedOutHeaderState = {
+      authenticated: false,
+      unreadMessages: 0,
+      conversationCount: 0,
+    }
+    window.__autorellHeaderAccount = signedOutHeaderState
+    try {
+      window.sessionStorage.setItem(HEADER_ACCOUNT_CACHE_KEY, JSON.stringify(signedOutHeaderState))
+    } catch {
+      // Session storage can be blocked; the in-memory event still updates the header.
+    }
+    setHeaderAccount(signedOutHeaderState)
+    setProfileMenuOpen(false)
+    window.dispatchEvent(new CustomEvent('autorell:header-account', { detail: signedOutHeaderState }))
+    window.dispatchEvent(new CustomEvent('autorell:auth-changed'))
+    window.location.assign(homeHref)
   }
 
   function handleInternalNavigation(
@@ -769,6 +822,7 @@ export default function PublicHeader({
       event.preventDefault()
       document.getElementById(href.split('#')[1])?.scrollIntoView({ behavior: 'smooth' })
     }
+    setProfileMenuOpen(false)
     closeMobile()
   }
 
@@ -887,16 +941,47 @@ export default function PublicHeader({
                       <span>{label}</span>
                     </Link>
                   ))}
-                  <Link
-                    href={accountHref}
-                    onClick={(event) => handleInternalNavigation(event, accountHref)}
-                    className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
-                  >
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-[#101828] text-[11px] font-semibold text-white">
-                      {mobileAccountInitials}
-                    </span>
-                    <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
-                  </Link>
+                  <div ref={profileMenuRef} className="relative flex h-full items-center">
+                    <button
+                      type="button"
+                      onClick={() => setProfileMenuOpen((current) => !current)}
+                      aria-expanded={profileMenuOpen}
+                      className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                    >
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0866ff] text-[11px] font-semibold text-white">
+                        {mobileAccountInitials}
+                      </span>
+                      <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
+                      <ChevronDown className={`h-4 w-4 transition ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div
+                      className={`absolute right-0 top-full z-[150] mt-2 w-56 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                        profileMenuOpen
+                          ? 'pointer-events-auto translate-y-0 opacity-100'
+                          : 'pointer-events-none -translate-y-1 opacity-0'
+                      }`}
+                    >
+                      {profileMenuLinks.map(({ href, label, icon: Icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={(event) => handleInternalNavigation(event, href)}
+                          className="flex min-h-11 items-center gap-3 px-4 text-sm font-medium text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                        >
+                          <Icon className="h-4.5 w-4.5" strokeWidth={1.9} />
+                          {label}
+                        </Link>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => void signOut()}
+                        className="flex min-h-11 w-full items-center gap-3 border-t border-[#edf1f6] px-4 pt-2 text-left text-sm font-medium text-[#b42318] transition hover:bg-[#fff5f5]"
+                      >
+                        <LogOut className="h-4.5 w-4.5" strokeWidth={1.9} />
+                        {language === 'sv' ? 'Logga ut' : 'Sign out'}
+                      </button>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <button
