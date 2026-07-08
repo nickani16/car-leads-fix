@@ -346,7 +346,7 @@ export default function PublicFooter({
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-0 lg:pt-10">
-      <div className="mx-auto max-w-[1888px] bg-white lg:px-6 2xl:px-8">
+      <div className="mx-auto max-w-[1060px] bg-white">
         <div className="grid grid-cols-2 gap-x-7 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 xl:gap-x-9">
           {t.columns.map((column) => (
             <FooterColumn
@@ -372,7 +372,7 @@ export default function PublicFooter({
 
         <div className="my-6 h-px bg-[#dfe5ee]" />
 
-        <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-col gap-3 bg-white px-5 py-4 text-[13px] text-[#475467] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-[max(1.5rem,calc((100vw-1888px)/2+1.5rem))] 2xl:px-[max(2rem,calc((100vw-1888px)/2+2rem))]">
+        <div className="flex flex-col gap-3 bg-white py-4 text-[13px] text-[#475467] lg:flex-row lg:items-center lg:justify-between">
           <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-semibold">
