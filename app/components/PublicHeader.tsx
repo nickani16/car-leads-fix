@@ -825,6 +825,13 @@ export default function PublicHeader({
     closeMobile()
   }
 
+  function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault()
+    setProfileMenuOpen(false)
+    closeMobile()
+    window.location.assign(homeHref)
+  }
+
   function handleCategoryNavigation(
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
@@ -898,6 +905,7 @@ export default function PublicHeader({
             <Link
               href={homeHref}
               aria-label="Autorell"
+              onClick={handleHomeLogoClick}
               className="hidden h-full shrink-0 flex-col items-center justify-center border-b-2 border-transparent pt-1 transition hover:border-[#0866ff] min-[1120px]:inline-flex"
             >
               <BrandLogo underline={false} />
@@ -1205,7 +1213,7 @@ export default function PublicHeader({
             href={homeHref}
             aria-label="Autorell"
             className="flex h-11 w-[116px] min-w-0 -translate-y-[2px] items-center justify-start overflow-hidden"
-            onClick={closeMobile}
+            onClick={handleHomeLogoClick}
           >
             <BrandLogo underline={false} />
           </Link>

@@ -328,6 +328,12 @@ export default function PublicFooter({
   const termsHref = localizePublicHref(locale, '/terms')
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
+  const homeHref = localizePublicHref(locale, '/')
+
+  function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault()
+    window.location.assign(homeHref)
+  }
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-10 text-[#101828] sm:px-6 lg:px-0 lg:pt-16">
@@ -350,7 +356,7 @@ export default function PublicFooter({
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
-              <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
+              <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
                 <BrandLogo underline={false} />
               </Link>
               <span className="-mt-0.5 block self-center text-center text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
