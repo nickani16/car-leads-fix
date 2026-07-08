@@ -244,10 +244,10 @@ export default async function BusinessMarketplaceHome({
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-center saturate-[1.04] contrast-[1.03] brightness-[.88]"
+            className="object-cover object-center saturate-[.82] contrast-[.90] brightness-[1.04] sepia-[.22]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_48%_6%,rgba(255,255,255,.20),rgba(255,255,255,0)_38%),linear-gradient(180deg,rgba(255,255,255,.08)_0%,rgba(7,15,30,.10)_48%,rgba(255,255,255,.18)_100%)] shadow-[inset_0_22px_80px_rgba(15,23,42,.16)] lg:bg-[radial-gradient(circle_at_52%_8%,rgba(255,255,255,.18),rgba(255,255,255,0)_36%),linear-gradient(90deg,rgba(3,10,26,.16)_0%,rgba(3,10,26,.04)_50%,rgba(3,10,26,.12)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_46%_2%,rgba(255,248,235,.34),rgba(255,248,235,0)_40%),linear-gradient(180deg,rgba(255,250,240,.24)_0%,rgba(234,198,135,.22)_48%,rgba(255,255,255,.25)_100%),linear-gradient(90deg,rgba(94,66,38,.12)_0%,rgba(255,238,207,.10)_50%,rgba(94,66,38,.12)_100%)] shadow-[inset_0_22px_80px_rgba(86,61,36,.08)] lg:bg-[radial-gradient(circle_at_52%_8%,rgba(255,248,235,.30),rgba(255,248,235,0)_38%),linear-gradient(90deg,rgba(94,66,38,.14)_0%,rgba(255,236,203,.14)_50%,rgba(94,66,38,.12)_100%)]" />
           <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
             <HomeHeroVehicleSearch locale={locale} />
           </div>
