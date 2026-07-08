@@ -37,7 +37,6 @@ import BrandLogo from './BrandLogo'
 import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
 import SiteSearch from './SiteSearch'
-import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   categorySearchPath,
@@ -1056,31 +1055,6 @@ export default function PublicHeader({
               )}
             </div>
 
-            <div className="mt-auto border-t border-[#e2e8f0] pt-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false)
-                  setMarketSelectorOpen(true)
-                }}
-                className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[15px] border border-[#bcd3ff] bg-[#edf5ff] px-4 text-left text-sm"
-              >
-                  <FlagIcon code={activeMarket[1]} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
-                      {t.chooseLanguage}
-                    </span>
-                    <strong className="mt-0.5 block font-medium">
-                      {activeMarket[2]}
-                    </strong>
-                  </span>
-                  <ChevronDown className="h-4 w-4" />
-              </button>
-              <div className="mt-5 flex items-center justify-between border-t border-[#e2e8f0] pt-5">
-                <SocialIcons />
-                <span className="text-sm font-medium text-[#62686c]">Autorell AB</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -1324,31 +1298,6 @@ export default function PublicHeader({
               </div>
             </section>
 
-            <div className="mt-auto border-t border-[#e2e8f0] pt-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMoreOpen(false)
-                  setMarketSelectorOpen(true)
-                }}
-                className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[18px] border border-[#bcd3ff] bg-[#edf5ff] px-4 text-left text-sm"
-              >
-                <FlagIcon code={activeMarket[1]} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#66808e]">
-                    {t.chooseLanguage}
-                  </span>
-                  <strong className="mt-0.5 block font-medium">
-                    {activeMarket[2]}
-                  </strong>
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              <div className="mt-5 flex items-center justify-between border-t border-[#e2e8f0] pt-5">
-                <SocialIcons />
-                <span className="text-sm font-medium text-[#62686c]">Autorell AB</span>
-              </div>
-            </div>
           </div>
         </>
       ) : null}
