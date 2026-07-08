@@ -109,7 +109,7 @@ export default async function BusinessMarketplaceHome({
             </Link>
           </div>
 
-          <div className="-mx-5 mt-7 flex snap-x gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
+          <div className="mt-7 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
             {newsCards.map((item) => (
               <VehicleNewsCard
                 key={item.title}
@@ -139,7 +139,7 @@ export default async function BusinessMarketplaceHome({
                 <h3 className="text-sm font-semibold text-[#101828]">
                   {section.title}
                 </h3>
-                <div className="-mx-5 mt-3 flex snap-x gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0 sm:pb-0">
+                <div className="mt-3 flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0">
                   {section.items.map((item, index) => (
                     <TopListCard
                       key={`${section.title}-${item.title}`}
