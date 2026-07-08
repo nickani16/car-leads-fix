@@ -855,7 +855,7 @@ export default function VehicleSearchExperience({
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-10 min-w-[150px] appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-sm font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:min-w-[168px]"
+                    className="h-10 min-w-[136px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-8 text-[13px] font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:min-w-[148px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -1701,18 +1701,10 @@ function VehicleSearchMap({
               <input
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
-                placeholder=""
+                placeholder="Sök på fordon, ort eller kommun"
                 aria-label="Sök på fordon, ort eller kommun"
-                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none sm:text-sm"
+                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
               />
-              {query ? null : (
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-[76px] top-1/2 max-w-[calc(100%-128px)] -translate-y-1/2 truncate whitespace-nowrap text-[16px] font-normal text-[#767676] sm:text-sm"
-                >
-                  Sök på fordon, ort eller kommun
-                </span>
-              )}
               <Search className="h-5 w-5 shrink-0 text-[#101828]" />
             </label>
             <button
