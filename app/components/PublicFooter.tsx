@@ -16,11 +16,12 @@ import {
 } from '@/lib/public-i18n'
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import BrandLogo from './BrandLogo'
 
 const footerCopy = {
   sv: {
     description:
-      'Europas betrodda marknadsplats för att köpa och sälja fordon. För privatpersoner och företag i 27 länder.',
+      'Europas betrodda marknadsplats för att köpa och sälja fordon på utvalda europeiska marknader.',
     columns: [
       {
         title: 'Marketplace',
@@ -83,7 +84,7 @@ const footerCopy = {
     trust: [
       ['Verifierade annonser', 'Alla annonser kontrolleras för kvalitet och äkthet.'],
       ['Säkra betalningar', 'Dina betalningar skyddas i varje steg.'],
-      ['Täckning i hela Europa', 'Köp och sälj i 27 länder i Europa.'],
+      ['Europeiska marknader', 'Köp och sälj på utvalda marknader i Europa.'],
       ['Expertsupport', 'Vårt team hjälper dig hela vägen.'],
     ],
     country: 'Sverige (SE)',
@@ -109,7 +110,7 @@ const footerCopy = {
   },
   de: {
     description:
-      'Europas vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen. Für private Verkäufer und Unternehmen in 27 Ländern.',
+      'Europas vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in ausgewählten europäischen Märkten.',
     columns: [
       {
         title: 'Marketplace',
@@ -172,7 +173,7 @@ const footerCopy = {
     trust: [
       ['Verifizierte Anzeigen', 'Alle Anzeigen werden auf Qualität und Echtheit geprüft.'],
       ['Sichere Zahlungen', 'Ihre Zahlungen sind in jedem Schritt geschützt.'],
-      ['Europaweite Abdeckung', 'Kaufen und verkaufen in 27 Ländern Europas.'],
+      ['Europäische Märkte', 'Kaufen und verkaufen in ausgewählten Märkten Europas.'],
       ['Experten-Support', 'Unser Team hilft Ihnen jederzeit weiter.'],
     ],
     country: 'Deutschland (DE)',
@@ -198,7 +199,7 @@ const footerCopy = {
   },
   en: {
     description:
-      "Europe's trusted marketplace for buying and selling vehicles. For private sellers and businesses in 27 countries.",
+      "Europe's trusted marketplace for buying and selling vehicles across selected European markets.",
     columns: [
       {
         title: 'Marketplace',
@@ -261,7 +262,7 @@ const footerCopy = {
     trust: [
       ['Verified listings', 'All listings are checked for quality and authenticity.'],
       ['Secure payments', 'Your payments are protected every step of the way.'],
-      ['Europe-wide coverage', 'Buy and sell in 27 countries across Europe.'],
+      ['European markets', 'Buy and sell across selected markets in Europe.'],
       ['Expert support', 'Our team is here to help you at every step.'],
     ],
     country: 'Sweden (SE)',
@@ -291,29 +292,13 @@ const allMarkets = [
   ['AT', 'Austria', 'Deutsch'],
   ['BE', 'Belgique', 'Français'],
   ['BE', 'Belgie', 'Nederlands'],
-  ['BG', 'България', 'Български'],
-  ['HR', 'Hrvatska', 'Hrvatski'],
-  ['CY', 'Κύπρος', 'Ελληνικά'],
-  ['CZ', 'Česká republika', 'Čeština'],
   ['DK', 'Danmark', 'Dansk'],
-  ['EE', 'Eesti', 'Eesti'],
   ['FI', 'Suomi', 'Suomi'],
   ['FR', 'France', 'Français'],
   ['DE', 'Deutschland', 'Deutsch'],
-  ['GR', 'Ελλάδα', 'Ελληνικά'],
-  ['HU', 'Magyarország', 'Magyar'],
-  ['IE', 'Ireland', 'English'],
   ['IT', 'Italia', 'Italiano'],
-  ['LV', 'Latvija', 'Latviešu'],
-  ['LT', 'Lietuva', 'Lietuvių'],
-  ['LU', 'Luxembourg', 'Français'],
-  ['MT', 'Malta', 'English'],
   ['NL', 'Nederland', 'Nederlands'],
   ['PL', 'Polska', 'Polski'],
-  ['PT', 'Portugal', 'Português'],
-  ['RO', 'România', 'Română'],
-  ['SK', 'Slovensko', 'Slovenčina'],
-  ['SI', 'Slovenija', 'Slovenščina'],
   ['ES', 'España', 'Español'],
   ['SE', 'Sverige', 'Svenska'],
 ] as const
@@ -364,19 +349,14 @@ export default function PublicFooter({
 
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <Link
-              href={localizePublicHref(locale, '/')}
-              className="text-[34px] font-black leading-none tracking-[-0.03em] text-[#075fff] transition hover:text-[#0052df]"
-              aria-label="Autorell"
-            >
-              autorell
+            <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
+              <BrandLogo underline={false} />
             </Link>
             <SocialLinks />
           </div>
           <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
             <p>{t.description}</p>
             <p className="mt-5 text-[13px] text-[#344054]">{t.legalNotice}</p>
-            <p className="mt-5 text-[13px] text-[#344054]">© 2026 Autorell</p>
           </div>
         </div>
 
@@ -612,7 +592,7 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-9 w-9 place-items-center rounded-full bg-[#1b1b1b] text-white ring-1 ring-[#1b1b1b] transition hover:-translate-y-0.5 hover:bg-[#075fff] hover:ring-[#075fff]"
+          className="grid h-9 w-9 place-items-center rounded-full bg-[#075fff] text-white ring-1 ring-[#075fff] transition hover:-translate-y-0.5 hover:bg-[#0052df] hover:ring-[#0052df]"
         >
           <svg
             viewBox="0 0 24 24"
