@@ -619,13 +619,13 @@ export default function PublicHeader({
   const headerSpacerClass = showMobileCategoryNav
     ? showTopCategoryNav
       ? 'h-[110px] min-[1120px]:h-[80px]'
-      : 'h-[110px] min-[1120px]:h-[58px]'
+      : 'h-[110px] min-[1120px]:h-[62px]'
     : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
-      : 'h-[56px] min-[1120px]:h-[58px]'
+      : 'h-[56px] min-[1120px]:h-[62px]'
   const desktopMainRowHeightClass = showTopCategoryNav
     ? 'min-[1120px]:h-[52px]'
-    : 'min-[1120px]:h-[58px]'
+    : 'min-[1120px]:h-[62px]'
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const mobileMainLinks = [
     {
