@@ -131,6 +131,31 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['login', '/login'],
   ['register', '/register'],
 ])
+
+const RETIRED_CATEGORY_ROUTES = new Map([
+  ['/cars', '/marketplace/cars'],
+  ['/car', '/marketplace/cars'],
+  ['/vans', '/marketplace/vans'],
+  ['/van', '/marketplace/vans'],
+  ['/trucks', '/marketplace/trucks'],
+  ['/truck', '/marketplace/trucks'],
+  ['/motorcycles', '/marketplace/motorcycles'],
+  ['/motorcycle', '/marketplace/motorcycles'],
+  ['/bikes', '/marketplace/motorcycles'],
+  ['/motorhomes', '/marketplace/motorhomes'],
+  ['/motorhome', '/marketplace/motorhomes'],
+  ['/caravans', '/marketplace/caravans'],
+  ['/caravan', '/marketplace/caravans'],
+  ['/farm', '/marketplace/agriculture'],
+  ['/agriculture', '/marketplace/agriculture'],
+  ['/plant', '/marketplace/construction'],
+  ['/construction', '/marketplace/construction'],
+  ['/electric-bikes', '/marketplace/electric-bikes'],
+  ['/e-bikes', '/marketplace/electric-bikes'],
+  ['/e-scooters', '/marketplace/e-scooters'],
+  ['/electric-scooters', '/marketplace/e-scooters'],
+])
+
 const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
   SE: 'sv',
   DE: 'de',
@@ -425,6 +450,14 @@ export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   if (methodCanRedirect) {
+    const retiredCategoryTarget = RETIRED_CATEGORY_ROUTES.get(pathname)
+    if (retiredCategoryTarget) {
+      const url = request.nextUrl.clone()
+      url.pathname = retiredCategoryTarget
+      url.search = ''
+      return NextResponse.redirect(url, 308)
+    }
+
     const legacyAccountTarget = getLegacyAccountTarget(pathname)
     if (
       legacyAccountTarget &&
@@ -529,6 +562,16 @@ export function proxy(request: NextRequest) {
       : null
 
     if (localeContext) {
+      const retiredLocalizedCategoryTarget = segments[1]
+        ? RETIRED_CATEGORY_ROUTES.get(`/${segments[1]}`)
+        : null
+      if (methodCanRedirect && retiredLocalizedCategoryTarget) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${pathMarket}${retiredLocalizedCategoryTarget}`
+        url.search = ''
+        return NextResponse.redirect(url, 308)
+      }
+
       const canonicalSlug = segments[1]
         ? CANONICAL_LOCALIZED_SLUGS.get(segments[1])
         : null

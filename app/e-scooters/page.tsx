@@ -1,4 +1,5 @@
-import CategoryLandingPage, { generateCategoryLandingMetadata } from '@/app/components/CategoryLandingPage'
+import { permanentRedirect } from 'next/navigation'
 
-export const generateMetadata = () => generateCategoryLandingMetadata('e-scooters')
-export default function Page() { return <CategoryLandingPage slug="e-scooters" /> }
+export default function Page() {
+  permanentRedirect('/marketplace/e-scooters')
+}

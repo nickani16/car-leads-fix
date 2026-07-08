@@ -50,6 +50,10 @@ export const marketplaceCategoryAliases: Record<string, MarketplaceCategorySlug>
   plant: 'construction',
 }
 
+export function categorySearchPath(value: MarketplaceCategorySlug | string) {
+  return `/marketplace/${normalizeMarketplaceCategory(value)}`
+}
+
 export function normalizeMarketplaceCategory(value: string): MarketplaceCategorySlug {
   const normalized = marketplaceCategoryAliases[value] || value
   return marketplaceCategories.some((category) => category.slug === normalized)

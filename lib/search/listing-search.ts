@@ -1,11 +1,11 @@
 import 'server-only'
 
 import {
+  categorySearchPath,
   formatMarketplacePrice,
   marketplaceCategories,
   marketplaceLanguage,
 } from '@/lib/marketplace'
-import { categoryLandingPath } from '@/lib/category-landings'
 import { buildListingPath } from '@/lib/listing-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -216,7 +216,7 @@ function buildStaticEntries(locale: PublicLocale, language: keyof typeof pageEnt
   )
 
   const categories: PublicSearchEntry[] = marketplaceCategories.map((category) => ({
-    href: localizePublicHref(locale, categoryLandingPath(category.slug)),
+    href: localizePublicHref(locale, categorySearchPath(category.slug)),
     title:
       locale === 'sv' || locale === 'de' || locale === 'en'
         ? category.labels[language]

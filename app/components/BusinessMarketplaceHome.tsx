@@ -5,10 +5,10 @@ import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import {
+  categorySearchPath,
   marketplaceCategories,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
-import { categoryLandingPath } from '@/lib/category-landings'
 import { getEuCountryName } from '@/lib/eu-countries'
 import {
   localizePublicHref,
@@ -261,7 +261,7 @@ function getTopListSections(locale: PublicLocale, marketLabel: string) {
     return category.labels.sv
   }
   const href = (slug: MarketplaceCategorySlug) =>
-    localizePublicHref(locale, categoryLandingPath(slug))
+    localizePublicHref(locale, categorySearchPath(slug))
   const latestTitle =
     locale === 'de'
       ? `Neueste Anzeigen in ${marketLabel}`

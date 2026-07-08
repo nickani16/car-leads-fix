@@ -30,9 +30,9 @@ export const metadata: Metadata = {
 }
 
 const popularRoutes = [
-  { key: 'cars', href: '/cars', icon: CarFront },
-  { key: 'vans', href: '/vans', icon: Truck },
-  { key: 'motorcycles', href: '/motorcycles', icon: CarFront },
+  { key: 'cars', href: '/marketplace/cars', icon: CarFront },
+  { key: 'vans', href: '/marketplace/vans', icon: Truck },
+  { key: 'motorcycles', href: '/marketplace/motorcycles', icon: CarFront },
   { key: 'companies', href: '/business', icon: Building2 },
   { key: 'sell', href: '/sell-vehicle', icon: ArrowRight },
 ] as const

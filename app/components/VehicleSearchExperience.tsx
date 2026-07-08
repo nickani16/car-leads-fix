@@ -1294,8 +1294,8 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
       title: 'Tjänster',
       links: [
         ['Alla fordon', '/marketplace/vehicles'],
-        ['Bilar', '/cars'],
-        ['Transportbilar', '/vans'],
+        ['Bilar', '/marketplace/cars'],
+        ['Transportbilar', '/marketplace/vans'],
         ['Jämför fordon', '/compare-vehicles'],
       ],
     },

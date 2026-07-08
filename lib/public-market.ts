@@ -1,5 +1,4 @@
 import { marketplaceCategories } from '@/lib/marketplace'
-import { categoryLandingConfigs } from '@/lib/category-landings'
 import {
   publicLanguages,
   publicPagePaths,
@@ -10,7 +9,6 @@ export type PublicMarket = 'sv' | 'de' | 'en'
 const categoryPaths = marketplaceCategories.map(
   ({ slug }) => `/marketplace/${slug}`,
 )
-const categoryLandingPaths = categoryLandingConfigs.map(({ path }) => path)
 
 const marketConfig = {
   sv: {
@@ -42,9 +40,8 @@ const marketConfig = {
       '/cookies',
       '/terms',
       ...categoryPaths,
-      ...categoryLandingPaths,
     ],
-    priorityPath: '/cars',
+    priorityPath: '/marketplace/cars',
   },
   de: {
     host: 'https://www.autorell.com/de',
@@ -75,9 +72,8 @@ const marketConfig = {
       '/cookies',
       '/terms',
       ...categoryPaths,
-      ...categoryLandingPaths,
     ],
-    priorityPath: '/cars',
+    priorityPath: '/marketplace/cars',
   },
   en: {
     host: 'https://www.autorell.com',
@@ -86,9 +82,8 @@ const marketConfig = {
         publicPagePaths.map((path) => `/${locale}${path}`),
       ),
       ...categoryPaths,
-      ...categoryLandingPaths,
     ],
-    priorityPath: '/cars',
+    priorityPath: '/marketplace/cars',
   },
 } as const
 

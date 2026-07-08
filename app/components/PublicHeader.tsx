@@ -42,12 +42,12 @@ import SiteSearch from './SiteSearch'
 import SocialIcons from './SocialIcons'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
+  categorySearchPath,
   marketplaceCategories,
   marketplaceLanguage,
 } from '@/lib/marketplace'
 import {
   categoryLandingMenuHref,
-  categoryLandingPath,
   getCategoryLanding,
   localizeCategoryLanding,
 } from '@/lib/category-landings'
@@ -526,7 +526,7 @@ export default function PublicHeader({
         ? category.labels[language]
         : translatePublic(locale, category.labels.en)
     return {
-      href: localizePublicHref(locale, categoryLandingPath(category.slug)),
+      href: localizePublicHref(locale, categorySearchPath(category.slug)),
       label,
       description:
         locale === 'sv'
@@ -554,7 +554,6 @@ export default function PublicHeader({
   const activeCategorySlug =
     marketplaceCategories.find(
       (category) =>
-        unprefixedPathname === categoryLandingPath(category.slug) ||
         unprefixedPathname === `/marketplace/${category.slug}`,
     )?.slug || null
   const activeMarketplaceChannel =
@@ -563,7 +562,7 @@ export default function PublicHeader({
       ? {
           slug: activeCategorySlug,
           label:
-            buyItems.find((item) => item.href === localizePublicHref(locale, categoryLandingPath(activeCategorySlug)))
+            buyItems.find((item) => item.href === localizePublicHref(locale, categorySearchPath(activeCategorySlug)))
               ?.label || '',
         }
       : null)
@@ -600,7 +599,7 @@ export default function PublicHeader({
   }> = [
     {
       label: t.buy,
-      href: localizePublicHref(locale, '/cars'),
+      href: localizePublicHref(locale, '/marketplace/cars'),
       icon: Search,
       data: {
         variant: 'mega',

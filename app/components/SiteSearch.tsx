@@ -99,24 +99,24 @@ const desktopCopy = {
 
 const desktopTabs: Array<{ key: keyof typeof desktopCopy.en; href: string; icon: LucideIcon }> = [
   { key: 'all', href: '/marketplace/vehicles', icon: CarFront },
-  { key: 'cars', href: '/cars', icon: CarFront },
-  { key: 'vans', href: '/vans', icon: BusFront },
-  { key: 'motorcycles', href: '/motorcycles', icon: Bike },
-  { key: 'motorhomes', href: '/motorhomes', icon: BusFront },
-  { key: 'caravans', href: '/caravans', icon: Warehouse },
-  { key: 'trucks', href: '/trucks', icon: Truck },
-  { key: 'more', href: '/cars', icon: Grid2X2 },
+  { key: 'cars', href: '/marketplace/cars', icon: CarFront },
+  { key: 'vans', href: '/marketplace/vans', icon: BusFront },
+  { key: 'motorcycles', href: '/marketplace/motorcycles', icon: Bike },
+  { key: 'motorhomes', href: '/marketplace/motorhomes', icon: BusFront },
+  { key: 'caravans', href: '/marketplace/caravans', icon: Warehouse },
+  { key: 'trucks', href: '/marketplace/trucks', icon: Truck },
+  { key: 'more', href: '/marketplace/cars', icon: Grid2X2 },
 ]
 
 const searchHistoryStorageKey = 'autorell.searchHistory.v1'
 const maxRecentSearches = 6
 
 const quickAccess: Array<{ key: keyof typeof desktopCopy.en; href: string; icon: LucideIcon; desc: string }> = [
-  { key: 'cars', href: '/cars', icon: CarFront, desc: 'Find cars across Europe' },
-  { key: 'vans', href: '/vans', icon: BusFront, desc: 'Find vans for work or business' },
-  { key: 'motorcycles', href: '/motorcycles', icon: Bike, desc: 'Explore motorcycles and scooters' },
-  { key: 'motorhomes', href: '/motorhomes', icon: BusFront, desc: 'Find motorhomes and RVs' },
-  { key: 'trucks', href: '/trucks', icon: Truck, desc: 'Trucks, trailers and more' },
+  { key: 'cars', href: '/marketplace/cars', icon: CarFront, desc: 'Find cars across Europe' },
+  { key: 'vans', href: '/marketplace/vans', icon: BusFront, desc: 'Find vans for work or business' },
+  { key: 'motorcycles', href: '/marketplace/motorcycles', icon: Bike, desc: 'Explore motorcycles and scooters' },
+  { key: 'motorhomes', href: '/marketplace/motorhomes', icon: BusFront, desc: 'Find motorhomes and RVs' },
+  { key: 'trucks', href: '/marketplace/trucks', icon: Truck, desc: 'Trucks, trailers and more' },
 ]
 
 function quickAccessTitle(language: keyof typeof desktopCopy, label: string) {
