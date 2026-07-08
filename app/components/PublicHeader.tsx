@@ -856,8 +856,6 @@ export default function PublicHeader({
                       key={href}
                       ref={sellMenuRef}
                       className="relative flex h-full items-center"
-                      onMouseEnter={() => setSellMenuOpen(true)}
-                      onMouseLeave={() => setSellMenuOpen(false)}
                     >
                       <button
                         type="button"

@@ -1106,6 +1106,171 @@ export default async function PublicInfoPage({
   const marketCode = headerStore.get('x-autorell-market') || undefined
   const copy = getInfoPageCopy(page, locale)
   const Icon = pageIcons[page]
+  const isSellerPage = page === 'sell-vehicle' || page === 'how-selling-works' || page === 'pricing'
+
+  if (isSellerPage) {
+    const isSv = locale === 'sv'
+    const sellerPage = {
+      'sell-vehicle': {
+        eyebrow: isSv ? 'Sälja på Autorell' : copy.eyebrow,
+        title: isSv ? 'Sälj fordon med bättre presentation och rätt köpare.' : copy.title,
+        intro: isSv
+          ? 'En tydlig annons gör bilen, transportbilen eller maskinen enklare att förstå innan första kontakten. Autorell samlar fordonsdata, plats, pris och säljartyp i ett lugnt flöde.'
+          : copy.intro,
+        sideTitle: isSv ? 'Bygg annonsen runt det köparen faktiskt vill se.' : 'Build the listing around what buyers need first.',
+        sideItems: isSv
+          ? ['Bilder, skick och utrustning', 'Pris, valuta och plats', 'Säljartyp och kontaktväg']
+          : ['Photos, condition and equipment', 'Price, currency and location', 'Seller type and contact route'],
+        cards: isSv
+          ? [
+              ['1', 'Förbered material', 'Samla bilder, servicehistorik, utrustning, miltal och eventuella kända fel.'],
+              ['2', 'Publicera tydligt', 'Välj kategori, skriv sakligt och låt köparen se rätt information direkt.'],
+              ['3', 'Följ intresse', 'Spara dialogen, svara med sammanhang och håll affären organiserad.'],
+            ]
+          : [
+              ['1', 'Prepare details', 'Collect photos, service history, equipment, mileage and known issues.'],
+              ['2', 'Publish clearly', 'Choose category, write plainly and show buyers the right context.'],
+              ['3', 'Follow interest', 'Keep conversations organised and respond with listing context.'],
+            ],
+        lowerTitle: isSv ? 'Passar både privata säljare och företag.' : 'Made for private sellers and businesses.',
+      },
+      'how-selling-works': {
+        eyebrow: isSv ? 'Så fungerar det' : copy.eyebrow,
+        title: isSv ? 'Ett lugnt säljflöde från annons till seriös kontakt.' : copy.title,
+        intro: isSv
+          ? 'Processen är byggd för att varje steg ska kännas tydligt: skapa annons, få kontakt, kontrollera köparen och komma överens utanför annonsen.'
+          : copy.intro,
+        sideTitle: isSv ? 'Inga onödiga steg. Bara rätt ordning.' : 'No noisy steps. Just the right order.',
+        sideItems: isSv
+          ? ['Skapa konto', 'Publicera annons', 'Hantera meddelanden', 'Kom överens om betalning och hämtning']
+          : ['Create account', 'Publish listing', 'Manage messages', 'Agree payment and pickup'],
+        cards: isSv
+          ? [
+              ['01', 'Annonsen', 'Fyll i kategori, pris, plats och detaljer så köparen kan jämföra snabbt.'],
+              ['02', 'Kontakten', 'Meddelanden kopplas till annonsen så dialogen behåller sammanhang.'],
+              ['03', 'Affären', 'Köpare och säljare bekräftar dokument, betalning och överlämning direkt.'],
+            ]
+          : [
+              ['01', 'Listing', 'Add category, price, location and details so buyers can compare quickly.'],
+              ['02', 'Contact', 'Messages stay tied to the listing for cleaner context.'],
+              ['03', 'Deal', 'Buyer and seller confirm documents, payment and handover directly.'],
+            ],
+        lowerTitle: isSv ? 'Byggt för tydligare dialog, inte stressade affärer.' : 'Built for clearer dialogue, not rushed deals.',
+      },
+      pricing: {
+        eyebrow: isSv ? 'Pris' : copy.eyebrow,
+        title: isSv ? 'Välj synlighet efter hur fordonet ska säljas.' : copy.title,
+        intro: isSv
+          ? 'Autorell ska vara enkelt att förstå innan du publicerar. Välj en enkel start eller mer synlighet när annonsen behöver lyftas.'
+          : copy.intro,
+        sideTitle: isSv ? 'Tydlig publicering utan överraskningar.' : 'Clear publishing without surprises.',
+        sideItems: isSv
+          ? ['Gratis start', 'Standardperiod', 'Premiumsynlighet']
+          : ['Free start', 'Standard period', 'Premium visibility'],
+        cards: isSv
+          ? [
+              ['Start', '7 dagar', 'Testa annonsen och se att allt ser rätt ut innan du väljer mer synlighet.'],
+              ['Standard', '15 dagar', 'För vanliga annonser där du vill ligga ute längre och få stabil exponering.'],
+              ['Premium', '30 dagar', 'För fordon som ska synas mer i rätt kategori och marknad.'],
+            ]
+          : [
+              ['Start', '7 days', 'Test the listing and make sure everything looks right.'],
+              ['Standard', '15 days', 'For normal listings that need longer steady exposure.'],
+              ['Premium', '30 days', 'For vehicles that need stronger category and market visibility.'],
+            ],
+        lowerTitle: isSv ? 'Priset ska kännas tydligt innan publicering.' : 'Pricing should feel clear before publishing.',
+      },
+    }[page]
+
+    return (
+      <main className="bg-[#f6f8fb] text-[#101828]">
+        <PublicHeader locale={locale} marketCode={marketCode} />
+        <section className="overflow-hidden border-b border-[#dce3ef] bg-white">
+          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">
+                {sellerPage.eyebrow}
+              </p>
+              <h1 className="mt-5 max-w-4xl text-[42px] font-medium leading-[1.04] tracking-[-.045em] sm:text-[64px]">
+                {sellerPage.title}
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg font-normal leading-8 text-[#5f6b7a]">
+                {sellerPage.intro}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={localizePublicHref(locale, ctaLinks.primary[page])}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white shadow-[0_14px_34px_rgba(8,102,255,.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5]"
+                >
+                  {copy.primaryCta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href={localizePublicHref(locale, ctaLinks.secondary[page])}
+                  className="inline-flex min-h-12 items-center rounded-[12px] border border-[#c9d4e5] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:border-[#0866ff] hover:text-[#0866ff]"
+                >
+                  {copy.secondaryCta}
+                </Link>
+              </div>
+            </div>
+
+            <aside className="relative rounded-[18px] border border-[#dce6f4] bg-[#f8fbff] p-6 shadow-[0_24px_70px_rgba(16,24,40,.08)]">
+              <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#e9f0fd] text-[#0866ff]">
+                <Icon className="h-6 w-6" strokeWidth={1.8} />
+              </span>
+              <h2 className="mt-5 text-2xl font-medium tracking-[-.035em]">{sellerPage.sideTitle}</h2>
+              <ul className="mt-5 grid gap-3">
+                {sellerPage.sideItems.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-medium text-[#344054]">
+                    <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-[#0866ff]" strokeWidth={1.9} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+          <div className="grid gap-4 md:grid-cols-3">
+            {sellerPage.cards.map(([kicker, title, text]) => (
+              <article
+                key={title}
+                className="group rounded-[18px] border border-[#dde5ef] bg-white p-6 shadow-[0_14px_36px_rgba(16,24,40,.045)] transition duration-200 hover:-translate-y-1 hover:border-[#bcd3ff] hover:shadow-[0_20px_48px_rgba(16,24,40,.08)]"
+              >
+                <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#e9f0fd] px-3 text-sm font-medium text-[#0866ff]">
+                  {kicker}
+                </span>
+                <h2 className="mt-5 text-2xl font-medium tracking-[-.035em]">{title}</h2>
+                <p className="mt-3 text-[15px] leading-7 text-[#667085]">{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1180px] px-5 pb-16 sm:px-8">
+          <div className="overflow-hidden rounded-[20px] border border-[#dbe5f3] bg-[#101828] text-white shadow-[0_24px_70px_rgba(16,24,40,.10)]">
+            <div className="grid gap-6 p-7 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[.18em] text-[#93c5fd]">Autorell</p>
+                <h2 className="mt-3 max-w-2xl text-3xl font-medium tracking-[-.04em] sm:text-5xl">
+                  {sellerPage.lowerTitle}
+                </h2>
+              </div>
+              <Link
+                href={localizePublicHref(locale, ctaLinks.primary[page])}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:bg-[#edf5ff]"
+              >
+                {copy.primaryCta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+        <PublicFooter locale={locale} />
+      </main>
+    )
+  }
 
   return (
     <main className="bg-[#f7f8fb] text-[#101828]">
