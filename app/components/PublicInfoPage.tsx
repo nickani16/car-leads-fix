@@ -27,6 +27,10 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import {
+  formatListingPrice,
+  marketplaceCategories as listingPriceCategories,
+} from '@/lib/marketplace-pricing'
 
 export type PublicInfoPageKey =
   | 'sell-vehicle'
@@ -1110,6 +1114,227 @@ export default async function PublicInfoPage({
 
   if (isSellerPage) {
     const isSv = locale === 'sv'
+    const primaryHref = localizePublicHref(locale, ctaLinks.primary[page])
+    const secondaryHref = localizePublicHref(locale, ctaLinks.secondary[page])
+
+    if (page === 'sell-vehicle') {
+      const steps = isSv
+        ? [
+            ['01', 'Fordonskortet', 'Visa rätt kategori, utrustning, miltal, skick, plats och valuta redan från första vyn.'],
+            ['02', 'Förtroendet', 'Verifierad säljare, tydliga kontaktvägar och ordnad information gör köparen tryggare.'],
+            ['03', 'Dialogen', 'Meddelanden samlas kring annonsen så att intresse, frågor och nästa steg hänger ihop.'],
+          ]
+        : [
+            ['01', 'Vehicle card', 'Show category, equipment, mileage, condition, location and currency from the first view.'],
+            ['02', 'Trust', 'Verified sellers, clear contact routes and structured details make buyers more confident.'],
+            ['03', 'Dialogue', 'Messages stay connected to the listing so interest and next steps remain organised.'],
+          ]
+      const checklist = isSv
+        ? ['Bilder och dokument', 'Pris och marknad', 'Tekniska uppgifter', 'Kontakt och svar']
+        : ['Photos and documents', 'Price and market', 'Technical details', 'Contact and replies']
+
+      return (
+        <main className="bg-[#f5f7fb] text-[#101828]">
+          <PublicHeader locale={locale} marketCode={marketCode} />
+          <section className="border-b border-[#dce3ef] bg-white">
+            <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:py-20">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">
+                  {isSv ? 'Sälja på Autorell' : copy.eyebrow}
+                </p>
+                <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[62px]">
+                  {isSv ? 'Sälj fordon med rätt information från första klicket.' : copy.title}
+                </h1>
+                <p className="mt-6 max-w-2xl text-lg font-normal leading-8 text-[#5f6b7a]">
+                  {isSv
+                    ? 'Autorell hjälper dig presentera fordonet tydligt, oavsett om det gäller bil, transportbil, husbil eller maskin. Köparen ser det viktigaste direkt och kontakten blir enklare att följa.'
+                    : copy.intro}
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href={primaryHref} className="inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white shadow-[0_14px_34px_rgba(8,102,255,.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5]">
+                    {copy.primaryCta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href={secondaryHref} className="inline-flex min-h-12 items-center rounded-[12px] border border-[#c9d4e5] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:border-[#0866ff] hover:text-[#0866ff]">
+                    {copy.secondaryCta}
+                  </Link>
+                </div>
+              </div>
+              <aside className="rounded-[22px] border border-[#dce6f4] bg-[#f8fbff] p-5 shadow-[0_24px_70px_rgba(16,24,40,.08)]">
+                <div className="rounded-[18px] bg-white p-5 shadow-[0_12px_30px_rgba(16,24,40,.06)]">
+                  <p className="text-xs font-medium uppercase tracking-[.16em] text-[#667085]">Audi A5 E-hybrid</p>
+                  <div className="mt-4 grid gap-3">
+                    {checklist.map((item) => (
+                      <div key={item} className="flex items-center justify-between rounded-[12px] border border-[#dce6f4] px-4 py-3 text-sm font-medium">
+                        {item}
+                        <CheckCircle2 className="h-4.5 w-4.5 text-[#0866ff]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
+          <section className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+            <div className="grid gap-4 md:grid-cols-3">
+              {steps.map(([kicker, title, text]) => (
+                <article key={title} className="rounded-[18px] border border-[#dde5ef] bg-white p-6 shadow-[0_14px_36px_rgba(16,24,40,.045)] transition duration-200 hover:-translate-y-1 hover:border-[#bcd3ff]">
+                  <span className="text-sm font-medium text-[#0866ff]">{kicker}</span>
+                  <h2 className="mt-4 text-2xl font-medium tracking-[-.035em]">{title}</h2>
+                  <p className="mt-3 text-[15px] leading-7 text-[#667085]">{text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+
+    if (page === 'how-selling-works') {
+      const steps = isSv
+        ? [
+            ['01', 'Förbered', 'Samla bilder, servicehistorik, skick, utrustning och det köparen behöver veta innan kontakt.'],
+            ['02', 'Publicera', 'Välj kategori, marknad och pris. Annonsen byggs så att jämförelse blir enkel.'],
+            ['03', 'Följ dialogen', 'Spara svar, frågor och intresse runt samma annons i stället för utspridda trådar.'],
+            ['04', 'Kom överens', 'Köpare och säljare gör upp om dokument, betalning, leverans och hämtning direkt.'],
+          ]
+        : [
+            ['01', 'Prepare', 'Collect photos, service history, condition, equipment and details buyers need.'],
+            ['02', 'Publish', 'Choose category, market and price. The listing is built for easy comparison.'],
+            ['03', 'Follow dialogue', 'Keep replies, questions and interest connected to the listing.'],
+            ['04', 'Agree', 'Buyer and seller agree documents, payment, delivery and pickup directly.'],
+          ]
+
+      return (
+        <main className="bg-white text-[#101828]">
+          <PublicHeader locale={locale} marketCode={marketCode} />
+          <section className="bg-[#101828] text-white">
+            <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 lg:py-20">
+              <p className="text-xs font-medium uppercase tracking-[.18em] text-[#93c5fd]">
+                {isSv ? 'Så fungerar det' : copy.eyebrow}
+              </p>
+              <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[60px]">
+                {isSv ? 'Ett tydligt flöde från annons till seriös kontakt.' : copy.title}
+              </h1>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-[#cbd5e1]">
+                {isSv
+                  ? 'Säljprocessen ska kännas kontrollerad. Autorell delar upp arbetet i logiska steg så att annonsen, kontakten och nästa beslut blir lättare att hantera.'
+                  : copy.intro}
+              </p>
+            </div>
+          </section>
+          <section className="mx-auto max-w-[1080px] px-5 py-14 sm:px-8">
+            <div className="grid gap-5">
+              {steps.map(([number, title, text]) => (
+                <article key={title} className="group grid gap-4 rounded-[18px] border border-[#dce5f2] bg-[#f8fbff] p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_18px_44px_rgba(16,24,40,.08)] sm:grid-cols-[90px_1fr] sm:p-6">
+                  <span className="text-3xl font-medium tracking-[-.04em] text-[#0866ff]">{number}</span>
+                  <div>
+                    <h2 className="text-2xl font-medium tracking-[-.035em]">{title}</h2>
+                    <p className="mt-2 max-w-3xl text-[15px] leading-7 text-[#667085]">{text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="mt-8 rounded-[20px] border border-[#dce5f2] bg-white p-7 shadow-[0_18px_50px_rgba(16,24,40,.06)] sm:flex sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-3xl font-medium tracking-[-.04em]">
+                  {isSv ? 'Börja med rätt kategori och tydliga uppgifter.' : 'Start with the right category and clear details.'}
+                </h2>
+                <p className="mt-3 max-w-2xl text-[#667085]">
+                  {isSv ? 'Då blir sökningen, kartan och kontakten mer relevant från början.' : 'That makes search, map and contact more relevant from the start.'}
+                </p>
+              </div>
+              <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5] sm:mt-0">
+                {copy.primaryCta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+
+    const freeLabel = isSv ? 'Gratis' : 'Free'
+    const packageCards = isSv
+      ? [
+          ['Start', '7 dagar', 'Första publicering utan kostnad.'],
+          ['Standard', '15 dagar', 'Mer tid i marknaden för vanliga annonser.'],
+          ['Premium', '30 dagar', 'Extra synlighet för fordon som ska lyftas.'],
+        ]
+      : [
+          ['Start', '7 days', 'First publishing without cost.'],
+          ['Standard', '15 days', 'More time in market for regular listings.'],
+          ['Premium', '30 days', 'Extra visibility for vehicles that need a lift.'],
+        ]
+
+    return (
+      <main className="bg-[#f6f8fb] text-[#101828]">
+        <PublicHeader locale={locale} marketCode={marketCode} />
+        <section className="border-b border-[#dce3ef] bg-white">
+          <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 lg:py-20">
+            <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">
+              {isSv ? 'Priser' : copy.eyebrow}
+            </p>
+            <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[60px]">
+              {isSv ? 'Annonspriser för varje fordonskategori.' : copy.title}
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
+              {isSv
+                ? 'Här redovisas priserna som gäller per kategori. Start är gratis, Standard ger längre publicering och Premium ger mer synlighet.'
+                : copy.intro}
+            </p>
+          </div>
+        </section>
+        <section className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8">
+          <div className="grid gap-4 md:grid-cols-3">
+            {packageCards.map(([title, period, text]) => (
+              <article key={title} className="rounded-[18px] border border-[#dce5f2] bg-white p-6 shadow-[0_14px_36px_rgba(16,24,40,.045)] transition duration-200 hover:-translate-y-1 hover:border-[#bcd3ff]">
+                <p className="text-sm font-medium text-[#0866ff]">{period}</p>
+                <h2 className="mt-3 text-3xl font-medium tracking-[-.04em]">{title}</h2>
+                <p className="mt-3 text-[15px] leading-7 text-[#667085]">{text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-8 overflow-hidden rounded-[20px] border border-[#dce5f2] bg-white shadow-[0_18px_50px_rgba(16,24,40,.06)]">
+            <div className="grid grid-cols-[1.35fr_.85fr_.85fr_.85fr] gap-3 border-b border-[#e4ebf5] bg-[#f8fbff] px-5 py-4 text-xs font-medium uppercase tracking-[.12em] text-[#667085]">
+              <span>{isSv ? 'Kategori' : 'Category'}</span>
+              <span>Start</span>
+              <span>Standard</span>
+              <span>Premium</span>
+            </div>
+            {listingPriceCategories.map((category) => (
+              <div key={category.slug} className="grid grid-cols-[1.35fr_.85fr_.85fr_.85fr] gap-3 border-b border-[#edf1f7] px-5 py-4 text-sm last:border-b-0">
+                <span className="font-medium">{category.label}</span>
+                <span className="text-[#667085]">{freeLabel}</span>
+                <span>{formatListingPrice(category.standard)}</span>
+                <span>{formatListingPrice(category.premium)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 rounded-[20px] bg-[#101828] p-7 text-white sm:flex sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-medium tracking-[-.04em]">
+                {isSv ? 'Välj paket när annonsen är redo.' : 'Choose a package when the listing is ready.'}
+              </h2>
+              <p className="mt-3 max-w-2xl text-[#cbd5e1]">
+                {isSv ? 'Priser visas innan publicering så att valet är tydligt.' : 'Prices are shown before publishing so the choice is clear.'}
+              </p>
+            </div>
+            <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:bg-[#edf5ff] sm:mt-0">
+              {copy.primaryCta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+        <PublicFooter locale={locale} />
+      </main>
+    )
+  }
+
+  if (false as boolean) {
+    const isSv = locale === 'sv'
     const sellerPage = {
       'sell-vehicle': {
         eyebrow: isSv ? 'Sälja på Autorell' : copy.eyebrow,
@@ -1180,7 +1405,7 @@ export default async function PublicInfoPage({
             ],
         lowerTitle: isSv ? 'Priset ska kännas tydligt innan publicering.' : 'Pricing should feel clear before publishing.',
       },
-    }[page]
+    }[page as 'sell-vehicle' | 'how-selling-works' | 'pricing']
 
     return (
       <main className="bg-[#f6f8fb] text-[#101828]">
