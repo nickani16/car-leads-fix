@@ -349,9 +349,14 @@ export default function PublicFooter({
 
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
-              <BrandLogo underline={false} />
-            </Link>
+            <div className="inline-flex flex-col items-start">
+              <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
+                <BrandLogo underline={false} />
+              </Link>
+              <span className="mt-2 text-[11px] font-semibold uppercase leading-none tracking-[0.18em] text-[#075fff]">
+                Marketplace
+              </span>
+            </div>
             <SocialLinks />
           </div>
           <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
