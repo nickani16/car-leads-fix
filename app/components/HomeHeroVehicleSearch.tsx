@@ -140,7 +140,7 @@ export default function HomeHeroVehicleSearch({
         ? copyByLocale.en
         : copyByLocale.sv
   const [intent, setIntent] = useState<Intent>('sale')
-  const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>(['cars'])
+  const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
   const [query, setQuery] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [markets, setMarkets] = useState<string[]>(() => [
@@ -160,10 +160,16 @@ export default function HomeHeroVehicleSearch({
   const selectedCategory =
     categories.find((item) => item.slug === selectedCategories[0]) || categories[0]
   const SelectedCategoryIcon = selectedCategory.icon
+  const allVehiclesLabel =
+    locale === 'sv' ? 'Alla fordon' : locale === 'de' ? 'Alle Fahrzeuge' : 'All vehicles'
+  const chooseCategoryLabel =
+    locale === 'sv' ? 'Välj kategori' : locale === 'de' ? 'Kategorie wählen' : 'Choose category'
   const selectedCategoryLabel =
     selectedCategories.length === 1
       ? selectedCategory.label
-      : `${selectedCategories.length} kategorier`
+      : selectedCategories.length > 1
+        ? `${selectedCategories.length} kategorier`
+        : chooseCategoryLabel
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -194,7 +200,7 @@ export default function HomeHeroVehicleSearch({
     setSelectedCategories((current) => {
       if (current.includes(slug)) {
         const next = current.filter((item) => item !== slug)
-        return next.length ? next : current
+        return next
       }
       return [...current, slug]
     })
@@ -216,7 +222,7 @@ export default function HomeHeroVehicleSearch({
     )
     const savedSearch = {
       label: `${locale === 'sv' ? 'Sök igen' : locale === 'de' ? 'Erneut suchen' : 'Search again'}: ${
-        trimmedQuery || selectedCategoryLabel
+        trimmedQuery || (selectedCategories.length ? selectedCategoryLabel : allVehiclesLabel)
       }`,
       subLabel: t.tabs[intent],
       href,

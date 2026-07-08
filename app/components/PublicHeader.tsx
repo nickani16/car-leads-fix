@@ -548,7 +548,7 @@ export default function PublicHeader({
   const activeCategoryCopy = activeCategoryConfig
     ? localizeCategoryLanding(activeCategoryConfig, locale)
     : null
-  const mobileMenuActiveSlug = activeCategoryConfig?.slug || 'cars'
+  const mobileMenuActiveSlug = activeCategoryConfig?.slug || null
 
   const categoryPrimaryLinks =
     activeCategoryConfig && activeCategoryCopy
@@ -607,10 +607,11 @@ export default function PublicHeader({
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/saved`
   const savedSearchesHref = `${marketPathPrefix}/saved-searches`
-  const vehicleSearchHref = localizePublicHref(locale, '/marketplace/cars')
+  const vehicleSearchHref = localizePublicHref(locale, '/marketplace')
   const isHomePage = unprefixedPathname === '/'
   const isFindCarsPage = unprefixedPathname === '/find-cars'
-  const isMarketplaceResults = unprefixedPathname.startsWith('/marketplace/')
+  const isMarketplaceResults =
+    unprefixedPathname === '/marketplace' || unprefixedPathname.startsWith('/marketplace/')
   const isListingDetail = unprefixedPathname.startsWith('/listings/')
   const showTopCategoryNav = false
   const renderTopCategoryNav = showTopCategoryNav && atPageTop
@@ -649,7 +650,7 @@ export default function PublicHeader({
   ]
   const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
-    { href: localizePublicHref(locale, '/marketplace/cars'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
+    { href: localizePublicHref(locale, '/marketplace'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
     { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell },
     { href: localizePublicHref(locale, '/business'), label: t.business },
     { href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
@@ -827,7 +828,7 @@ export default function PublicHeader({
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
                 const isActive =
                   unprefixedPathname === targetPath ||
-                  (targetPath === '/marketplace/cars' && (isMarketplaceResults || isFindCarsPage))
+                  (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage))
 
                 return (
                   <Link
@@ -835,8 +836,10 @@ export default function PublicHeader({
                     href={href}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={(event) => handleInternalNavigation(event, href)}
-                    className={`flex h-full items-center text-[14px] font-medium transition hover:text-[#0866ff] ${
-                      isActive ? 'text-[#0866ff]' : 'text-[#101828]'
+                    className={`flex h-full items-center border-b-2 text-[14px] font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                      isActive
+                        ? 'border-[#0866ff] text-[#0866ff]'
+                        : 'border-transparent text-[#101828]'
                     }`}
                   >
                     {label}
