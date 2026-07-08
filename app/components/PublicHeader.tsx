@@ -312,22 +312,19 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/konto/annonser/ny', label: 'Lägg upp annons', description: 'Publicera ett fordon med bilder, pris och fordonsdata.', icon: FilePlus2 },
-    { href: '/register', label: 'Skapa konto', description: 'Välj privatkonto eller företagskonto.', icon: UserPlus },
-    { href: '/pricing', label: 'Annonspriser', description: 'Jämför annonspaket och synlighet.', icon: Store },
-    { href: '/how-selling-works', label: 'Så fungerar försäljning', description: 'Från annons till kontakt med köpare.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Sälja fordon', description: 'Starta en tydlig fordonsannons.', icon: CarFront },
+    { href: '/pricing', label: 'Pris', description: 'Se paket och synlighet.', icon: Store },
+    { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Från annons till kontakt.', icon: CircleHelp },
   ],
   en: [
-    { href: '/account/listings/new', label: 'Create listing', description: 'Publish a vehicle with images, price and structured data.', icon: FilePlus2 },
-    { href: '/register', label: 'Create account', description: 'Choose a private or business account.', icon: UserPlus },
-    { href: '/pricing', label: 'Listing prices', description: 'Compare packages and visibility.', icon: Store },
-    { href: '/how-selling-works', label: 'How selling works', description: 'From listing to buyer enquiry.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Sell vehicle', description: 'Start a clear vehicle listing.', icon: CarFront },
+    { href: '/pricing', label: 'Pricing', description: 'See packages and visibility.', icon: Store },
+    { href: '/how-selling-works', label: 'How it works', description: 'From listing to buyer enquiry.', icon: CircleHelp },
   ],
   de: [
-    { href: '/account/listings/new', label: 'Anzeige erstellen', description: 'Fahrzeug mit Bildern, Preis und Daten veröffentlichen.', icon: FilePlus2 },
-    { href: '/register', label: 'Konto erstellen', description: 'Privat- oder Unternehmenskonto wählen.', icon: UserPlus },
-    { href: '/pricing', label: 'Anzeigenpreise', description: 'Pakete und Sichtbarkeit vergleichen.', icon: Store },
-    { href: '/how-selling-works', label: 'So funktioniert der Verkauf', description: 'Von der Anzeige bis zur Käuferanfrage.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Fahrzeug verkaufen', description: 'Eine klare Fahrzeuganzeige starten.', icon: CarFront },
+    { href: '/pricing', label: 'Preise', description: 'Pakete und Sichtbarkeit ansehen.', icon: Store },
+    { href: '/how-selling-works', label: 'So funktioniert es', description: 'Von der Anzeige bis zur Anfrage.', icon: CircleHelp },
   ],
 }
 
@@ -378,10 +375,13 @@ export default function PublicHeader({
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [sellMenuOpen, setSellMenuOpen] = useState(false)
+  const [mobileSellMenuOpen, setMobileSellMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
+  const sellMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -396,6 +396,8 @@ export default function PublicHeader({
         setMarketSelectorOpen(false)
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
+        setSellMenuOpen(false)
+        setMobileSellMenuOpen(false)
       } else if (difference < -1) setVisible(true)
 
       lastScrollY.current = currentScrollY
@@ -479,17 +481,22 @@ export default function PublicHeader({
   }, [open])
 
   useEffect(() => {
-    if (!profileMenuOpen) return
+    if (!profileMenuOpen && !sellMenuOpen) return
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
       if (profileMenuRef.current?.contains(target)) return
+      if (sellMenuRef.current?.contains(target)) return
       setProfileMenuOpen(false)
+      setSellMenuOpen(false)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setProfileMenuOpen(false)
+      if (event.key === 'Escape') {
+        setProfileMenuOpen(false)
+        setSellMenuOpen(false)
+      }
     }
 
     document.addEventListener('pointerdown', handlePointerDown)
@@ -498,7 +505,7 @@ export default function PublicHeader({
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [profileMenuOpen])
+  }, [profileMenuOpen, sellMenuOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -627,13 +634,22 @@ export default function PublicHeader({
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
+  const sellMenuLinks = sellerItems[language].map((item) => ({
+    ...item,
+    href: localizePublicHref(locale, item.href),
+  }))
   const mobileMainLinks = [
     {
       href: localizePublicHref(locale, '/marketplace'),
       label: language === 'sv' ? 'Sök fordon' : 'Search vehicles',
       icon: Search,
     },
-    { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell, icon: Plus },
+    {
+      href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'),
+      label: language === 'sv' ? 'Sälja' : t.sell,
+      icon: Plus,
+      children: sellMenuLinks,
+    },
     { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
     {
       href: localizePublicHref(locale, '/help-center'),
@@ -643,10 +659,10 @@ export default function PublicHeader({
   ]
   const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
-    { href: localizePublicHref(locale, '/marketplace'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
-    { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell },
-    { href: localizePublicHref(locale, '/business'), label: t.business },
-    { href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
+    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: language === 'sv' ? 'Sälja' : t.sell },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/business'), label: t.business },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
   ]
   const desktopAccountLinks = [
     { href: savedHref, label: language === 'sv' ? 'Sparade annonser' : t.saved, icon: Heart },
@@ -675,6 +691,8 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
+    setMobileSellMenuOpen(false)
+    setSellMenuOpen(false)
   }
 
   function openAuthModal(mode: 'login' | 'register', destination?: string) {
@@ -684,7 +702,9 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
+    setMobileSellMenuOpen(false)
     setProfileMenuOpen(false)
+    setSellMenuOpen(false)
   }
 
   async function signOut() {
@@ -727,12 +747,16 @@ export default function PublicHeader({
       document.getElementById(href.split('#')[1])?.scrollIntoView({ behavior: 'smooth' })
     }
     setProfileMenuOpen(false)
+    setSellMenuOpen(false)
+    setMobileSellMenuOpen(false)
     closeMobile()
   }
 
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
     setProfileMenuOpen(false)
+    setSellMenuOpen(false)
+    setMobileSellMenuOpen(false)
     closeMobile()
     window.location.assign(homeHref)
   }
@@ -817,11 +841,69 @@ export default function PublicHeader({
             </Link>
 
             <nav className="ml-14 hidden h-full shrink-0 items-center gap-7 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-16 xl:gap-8">
-              {desktopNavLinks.map(({ href, label }) => {
+              {desktopNavLinks.map((item) => {
+                const { href, label } = item
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
                 const isActive =
                   unprefixedPathname === targetPath ||
-                  (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage))
+                  (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage)) ||
+                  (item.kind === 'sell' &&
+                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === unprefixedPathname))
+
+                if (item.kind === 'sell') {
+                  return (
+                    <div
+                      key={href}
+                      ref={sellMenuRef}
+                      className="relative flex h-full items-center"
+                      onMouseEnter={() => setSellMenuOpen(true)}
+                      onMouseLeave={() => setSellMenuOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={sellMenuOpen}
+                        onClick={() => setSellMenuOpen((current) => !current)}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        {label}
+                        <ChevronDown className={`h-4 w-4 transition ${sellMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[250px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                          sellMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon }) => (
+                          <Link
+                            key={sellHref}
+                            href={sellHref}
+                            onClick={(event) => {
+                              setSellMenuOpen(false)
+                              handleInternalNavigation(event, sellHref)
+                            }}
+                            className="group flex min-h-[58px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                          >
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
+                              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-[14px] font-semibold">{sellLabel}</span>
+                              <span className="mt-0.5 block truncate text-[12px] font-medium text-[#667085] group-hover:text-[#0866ff]/75">
+                                {description}
+                              </span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
 
                 return (
                   <Link
@@ -982,21 +1064,67 @@ export default function PublicHeader({
             </div>
 
             <nav className="mt-6 grid gap-2">
-              {mobileMainLinks.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={(event) => handleInternalNavigation(event, href)}
-                  className="group flex min-h-[58px] items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-[16px] font-semibold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
-                      <Icon className="h-[18px] w-[18px]" />
-                    </span>
-                    <span className="min-w-0 truncate">{label}</span>
-                  </span>
-                  <ArrowRight className="h-5 w-5 shrink-0 text-[#667085] transition group-hover:translate-x-1 group-hover:text-[#0866ff]" />
-                </Link>
+              {mobileMainLinks.map(({ href, label, icon: Icon, children }) => (
+                <div key={href}>
+                  {children ? (
+                    <>
+                      <button
+                        type="button"
+                        aria-expanded={mobileSellMenuOpen}
+                        onClick={() => setMobileSellMenuOpen((current) => !current)}
+                        className="group flex min-h-[58px] w-full items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-left text-[16px] font-semibold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
+                      >
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
+                            <Icon className="h-[18px] w-[18px]" />
+                          </span>
+                          <span className="min-w-0 truncate">{label}</span>
+                        </span>
+                        <ChevronDown className={`h-5 w-5 shrink-0 text-[#667085] transition ${mobileSellMenuOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
+                      </button>
+                      <div
+                        className={`grid transition-all duration-200 ${
+                          mobileSellMenuOpen ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <div className="grid gap-2 rounded-[15px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
+                            {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
+                              <Link
+                                key={childHref}
+                                href={childHref}
+                                onClick={(event) => handleInternalNavigation(event, childHref)}
+                                className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                              >
+                                <span className="flex min-w-0 items-center gap-3">
+                                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                    <ChildIcon className="h-4 w-4" />
+                                  </span>
+                                  <span className="min-w-0 truncate">{childLabel}</span>
+                                </span>
+                                <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      href={href}
+                      onClick={(event) => handleInternalNavigation(event, href)}
+                      className="group flex min-h-[58px] items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-[16px] font-semibold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
+                          <Icon className="h-[18px] w-[18px]" />
+                        </span>
+                        <span className="min-w-0 truncate">{label}</span>
+                      </span>
+                      <ArrowRight className="h-5 w-5 shrink-0 text-[#667085] transition group-hover:translate-x-1 group-hover:text-[#0866ff]" />
+                    </Link>
+                  )}
+                </div>
               ))}
             </nav>
 
@@ -1279,21 +1407,67 @@ export default function PublicHeader({
 
             <section className="mb-7">
               <div className="grid gap-2">
-                {mobileMainLinks.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={(event) => handleInternalNavigation(event, href)}
-                    className="group flex min-h-[56px] items-center justify-between rounded-[16px] border border-[#e0e7ef] bg-white px-3 text-[17px] font-semibold tracking-[-0.01em] text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.045)] transition active:bg-[#f7fbff]"
-                  >
-                    <span className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
-                        <Icon className="h-[18px] w-[18px]" />
-                      </span>
-                      <span className="min-w-0 truncate">{label}</span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-active:translate-x-0.5" />
-                  </Link>
+                {mobileMainLinks.map(({ href, label, icon: Icon, children }) => (
+                  <div key={href}>
+                    {children ? (
+                      <>
+                        <button
+                          type="button"
+                          aria-expanded={mobileSellMenuOpen}
+                          onClick={() => setMobileSellMenuOpen((current) => !current)}
+                          className="group flex min-h-[56px] w-full items-center justify-between rounded-[16px] border border-[#e0e7ef] bg-white px-3 text-left text-[17px] font-semibold tracking-[-0.01em] text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.045)] transition active:bg-[#f7fbff]"
+                        >
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
+                              <Icon className="h-[18px] w-[18px]" />
+                            </span>
+                            <span className="min-w-0 truncate">{label}</span>
+                          </span>
+                          <ChevronDown className={`h-4 w-4 shrink-0 text-[#98a2b3] transition ${mobileSellMenuOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
+                        </button>
+                        <div
+                          className={`grid transition-all duration-200 ${
+                            mobileSellMenuOpen ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <div className="grid gap-2 rounded-[16px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
+                              {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
+                                <Link
+                                  key={childHref}
+                                  href={childHref}
+                                  onClick={(event) => handleInternalNavigation(event, childHref)}
+                                  className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-3">
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                      <ChildIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="min-w-0 truncate">{childLabel}</span>
+                                  </span>
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <Link
+                        href={href}
+                        onClick={(event) => handleInternalNavigation(event, href)}
+                        className="group flex min-h-[56px] items-center justify-between rounded-[16px] border border-[#e0e7ef] bg-white px-3 text-[17px] font-semibold tracking-[-0.01em] text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.045)] transition active:bg-[#f7fbff]"
+                      >
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
+                            <Icon className="h-[18px] w-[18px]" />
+                          </span>
+                          <span className="min-w-0 truncate">{label}</span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-active:translate-x-0.5" />
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
             </section>
