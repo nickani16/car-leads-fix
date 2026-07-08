@@ -303,17 +303,17 @@ export default function HomeHeroVehicleSearch({
             onChange={(event) => setQuery(event.target.value)}
             placeholder=""
             aria-label={t.placeholder}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[248px] lg:text-left lg:text-[13px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
+            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[190px] lg:text-left lg:text-[14px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
           />
           {query ? null : (
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-[calc(50%-150px)] lg:text-[13px] lg:group-focus-within:left-4"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
             >
               {t.placeholder}
             </span>
           )}
-          <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
+          <Search className="h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4" strokeWidth={2.1} />
         </label>
 
         <label className="group mt-5 flex cursor-pointer items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
