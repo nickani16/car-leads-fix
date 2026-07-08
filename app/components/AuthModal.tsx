@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, X } from 'lucide-react'
 import {
   localizePublicHref,
   translatePublicObject,
@@ -356,14 +356,6 @@ export default function AuthModal({
               {mode === 'login' ? copy.registerTab : copy.loginTab}
             </button>
           </p>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent('autorell:open-market'))}
-            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[11px] border border-[#d9e2f0] bg-[#f8fbff] px-4 text-sm font-bold text-[#0866ff] transition hover:border-[#9dbdff] hover:bg-[#eef5ff]"
-          >
-            <Globe2 className="h-4 w-4" />
-            {copy.chooseMarket}
-          </button>
         </div>
       </section>
       </div>
