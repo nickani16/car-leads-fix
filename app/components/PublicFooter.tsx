@@ -87,7 +87,7 @@ const footerCopy = {
       ['Europeiska marknader', 'Köp och sälj på utvalda marknader i Europa.'],
       ['Expertsupport', 'Vårt team hjälper dig hela vägen.'],
     ],
-    country: 'Sverige (SE)',
+    country: 'Sverige',
     language: 'Svenska',
     marketCta: 'Välj språk och marknad',
     marketEyebrow: 'Välj språk och marknad',
@@ -176,7 +176,7 @@ const footerCopy = {
       ['Europäische Märkte', 'Kaufen und verkaufen in ausgewählten Märkten Europas.'],
       ['Experten-Support', 'Unser Team hilft Ihnen jederzeit weiter.'],
     ],
-    country: 'Deutschland (DE)',
+    country: 'Deutschland',
     language: 'Deutsch',
     marketCta: 'Sprache und Markt wählen',
     marketEyebrow: 'Sprache und Markt wählen',
@@ -265,7 +265,7 @@ const footerCopy = {
       ['European markets', 'Buy and sell across selected markets in Europe.'],
       ['Expert support', 'Our team is here to help you at every step.'],
     ],
-    country: 'Sweden (SE)',
+    country: 'Sweden',
     language: 'English',
     marketCta: 'Choose language and market',
     marketEyebrow: 'Choose language and market',
@@ -476,22 +476,22 @@ function localeFromPathname(pathname: string): PublicLocale {
 
 function getFooterMarket(pathMarket: string, locale: PublicLocale) {
   if (pathMarket === 'se' || (!pathMarket && locale === 'sv')) {
-    return { flagCode: 'SE', label: 'Sverige (SE)', currency: 'sek' }
+    return { flagCode: 'SE', label: 'Sverige', currency: 'sek' }
   }
   if (pathMarket === 'de' || (!pathMarket && locale === 'de')) {
-    return { flagCode: 'DE', label: 'Deutschland (DE)', currency: 'eur' }
+    return { flagCode: 'DE', label: 'Deutschland', currency: 'eur' }
   }
 
   const market = euBuyerMarkets.find((item) => item.code === pathMarket)
   if (market) {
     return {
       flagCode: market.code.toUpperCase(),
-      label: `${market.countryLocal} (${market.code.toUpperCase()})`,
+      label: market.countryLocal,
       currency: currencyByMarketCode(market.code),
     }
   }
 
-  return { flagCode: 'EU', label: 'Europe (EU)', currency: 'eur' }
+  return { flagCode: 'EU', label: 'Europe', currency: 'eur' }
 }
 
 function currencyByMarketCode(code: string) {
