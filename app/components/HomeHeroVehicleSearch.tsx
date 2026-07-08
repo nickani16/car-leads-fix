@@ -153,9 +153,9 @@ export default function HomeHeroVehicleSearch({
 
   const selectedRoute = useMemo(() => {
     if (selectedCategories.length === 1) {
-      return categoryRoutes[selectedCategories[0]] || '/marketplace/vehicles'
+      return categoryRoutes[selectedCategories[0]] || '/marketplace'
     }
-    return '/marketplace/vehicles'
+    return '/marketplace'
   }, [selectedCategories])
   const selectedCategory =
     categories.find((item) => item.slug === selectedCategories[0]) || categories[0]

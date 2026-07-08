@@ -88,7 +88,7 @@ export default async function MarketplaceCategoryPage({
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
   if (requestedCategory === 'all' || requestedCategory === 'all-vehicles' || requestedCategory === 'alla-fordon') {
-    permanentRedirect('/marketplace/vehicles')
+    permanentRedirect('/marketplace')
   }
   if (marketplaceCategoryAliases[requestedCategory]) {
     permanentRedirect(`/marketplace/${marketplaceCategoryAliases[requestedCategory]}`)

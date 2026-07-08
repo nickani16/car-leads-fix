@@ -161,7 +161,7 @@ export default async function AccountPage() {
     {
       title: copy.savedSearches,
       text: copy.savedSearchesText,
-      href: localizePublicHref(locale, '/marketplace/vehicles'),
+      href: localizePublicHref(locale, '/marketplace'),
       icon: Search,
     },
     {

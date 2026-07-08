@@ -583,24 +583,24 @@ export default function VehicleSearchExperience({
             <div>
               <div className="min-w-0 max-w-full overflow-hidden">
                 <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6">
-                <label className="relative flex h-10 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] sm:h-11">
+                <label className="group relative flex h-10 items-center justify-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828] sm:h-11">
                   <span className="sr-only">Sök</span>
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder=""
                     aria-label="Sök fordon, ort eller kommun"
-                    className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none sm:text-[15px]"
+                    className="vehicle-search-control min-w-0 flex-none bg-transparent text-[14px] font-normal text-[#101828] outline-none transition-[width] duration-200 ease-out [background:transparent] w-[190px] focus:w-[calc(100%-36px)]"
                   />
                   {query ? null : (
                     <span
                       aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-normal text-[#767676] sm:text-[15px]"
+                      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[14px] font-normal text-[#767676] transition-all duration-200 group-focus-within:left-4 group-focus-within:translate-x-0"
                     >
                       Sök fordon, ort eller kommun
                     </span>
                   )}
-                  <Search className="h-6 w-6 shrink-0 text-[#101828]" />
+                  <Search className="absolute left-[calc(50%+124px)] top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828] transition-all duration-200 group-focus-within:left-auto group-focus-within:right-4" />
                 </label>
 
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
@@ -1293,7 +1293,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
     {
       title: 'Tjänster',
       links: [
-        ['Alla fordon', '/marketplace/vehicles'],
+        ['Alla fordon', '/marketplace'],
         ['Bilar', '/marketplace/cars'],
         ['Transportbilar', '/marketplace/vans'],
         ['Jämför fordon', '/compare-vehicles'],
@@ -1652,24 +1652,24 @@ function VehicleSearchMap({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <label className="relative flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085]">
+              <label className="group relative flex h-11 min-w-0 flex-1 items-center justify-center gap-3 rounded-[8px] bg-[#f1f2f4] px-3 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
                 <span className="sr-only">Sök</span>
                 <input
                   value={query}
                   onChange={(event) => onQueryChange(event.target.value)}
                   placeholder=""
                   aria-label="Sök fordon, ort eller kommun"
-                  className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none"
+                  className="vehicle-search-control min-w-0 flex-none bg-transparent text-[14px] font-normal text-[#101828] outline-none transition-[width] duration-200 ease-out [background:transparent] w-[190px] focus:w-[calc(100%-36px)]"
                 />
                 {query ? null : (
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[16px] font-normal text-[#767676]"
+                    className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[14px] font-normal text-[#767676] transition-all duration-200 group-focus-within:left-3 group-focus-within:translate-x-0"
                   >
                     Sök fordon, ort eller kommun
                   </span>
                 )}
-                <Search className="h-5 w-5 shrink-0 text-[#101828]" />
+                <Search className="absolute left-[calc(50%+124px)] top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828] transition-all duration-200 group-focus-within:left-auto group-focus-within:right-3" />
               </label>
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">

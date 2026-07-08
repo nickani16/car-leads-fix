@@ -144,7 +144,7 @@ export default function MarketplaceSearch({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setOpenPicker(null)
-    const route = categoryRoutes[category] || '/marketplace/vehicles'
+    const route = categoryRoutes[category] || '/marketplace'
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (listingIntent !== 'sale') params.set('intent', listingIntent)

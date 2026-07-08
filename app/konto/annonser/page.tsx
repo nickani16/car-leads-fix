@@ -135,7 +135,7 @@ export default async function AccountListingsPage() {
           <p className="mt-1 text-sm text-[#667085]">{copy.inventoryText}</p>
         </div>
         <Link
-          href={localizePublicHref(locale, '/marketplace/vehicles')}
+          href={localizePublicHref(locale, '/marketplace')}
           className="hidden items-center gap-2 text-sm font-bold text-[#0866ff] sm:inline-flex"
         >
           {copy.viewMarketplace}

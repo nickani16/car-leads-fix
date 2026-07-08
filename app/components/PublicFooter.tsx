@@ -26,7 +26,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alla fordon', '/marketplace/vehicles'],
+          ['Alla fordon', '/marketplace'],
           ['Bilar', '/marketplace/cars'],
           ['Transportbilar', '/marketplace/vans'],
           ['Lastbilar', '/marketplace/trucks'],
@@ -48,7 +48,7 @@ const footerCopy = {
       {
         title: 'Köp',
         links: [
-          ['Sök fordon', '/marketplace/vehicles'],
+          ['Sök fordon', '/marketplace'],
           ['Sparade sökningar', '/saved-searches'],
           ['Jämför fordon', '/compare-vehicles'],
           ['Fordonshistorik', '/vehicle-history'],
@@ -115,7 +115,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alle Fahrzeuge', '/marketplace/vehicles'],
+          ['Alle Fahrzeuge', '/marketplace'],
           ['Autos', '/marketplace/cars'],
           ['Transporter', '/marketplace/vans'],
           ['Lkw', '/marketplace/trucks'],
@@ -137,7 +137,7 @@ const footerCopy = {
       {
         title: 'Kaufen',
         links: [
-          ['Fahrzeuge suchen', '/marketplace/vehicles'],
+          ['Fahrzeuge suchen', '/marketplace'],
           ['Gespeicherte Suchen', '/saved-searches'],
           ['Fahrzeuge vergleichen', '/compare-vehicles'],
           ['Fahrzeughistorie', '/vehicle-history'],
@@ -204,7 +204,7 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['All vehicles', '/marketplace/vehicles'],
+          ['All vehicles', '/marketplace'],
           ['Cars', '/marketplace/cars'],
           ['Vans', '/marketplace/vans'],
           ['Trucks', '/marketplace/trucks'],
@@ -226,7 +226,7 @@ const footerCopy = {
       {
         title: 'Buy',
         links: [
-          ['Search vehicles', '/marketplace/vehicles'],
+          ['Search vehicles', '/marketplace'],
           ['Saved searches', '/saved-searches'],
           ['Compare vehicles', '/compare-vehicles'],
           ['Vehicle history', '/vehicle-history'],

@@ -192,7 +192,7 @@ export default function SavedListingsClient({
                 Tryck på hjärtat på en annons så samlas dina favoriter här.
               </p>
               <Link
-                href="/marketplace/vehicles"
+                href="/marketplace"
                 className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white"
               >
                 <Search className="h-5 w-5" />

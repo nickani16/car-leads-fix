@@ -956,7 +956,7 @@ export default function MarketplaceCategoryBrowser({
           <nav aria-label={copy.breadcrumbLabel} className="mb-5 flex flex-wrap items-center gap-2 text-sm font-medium text-[#0866ff]">
             <Link href={localizePublicHref(locale, '/')} className="transition hover:text-[#0866ff]">{copy.breadcrumbHome}</Link>
             <span className="text-[#101828]">/</span>
-            <Link href={localizePublicHref(locale, '/marketplace/vehicles')} className="transition hover:text-[#0866ff]">{copy.breadcrumbVehicles}</Link>
+            <Link href={localizePublicHref(locale, '/marketplace')} className="transition hover:text-[#0866ff]">{copy.breadcrumbVehicles}</Link>
             <span className="text-[#101828]">/</span>
             {selectedTypeCard ? (
               <>
@@ -1013,7 +1013,7 @@ export default function MarketplaceCategoryBrowser({
           <div className="mb-5 border-b border-[#edf1f6] pb-5">
             <div className="mb-4 grid gap-3 lg:hidden">
               <div className="min-w-0">
-                <Link href={localizePublicHref(locale, '/marketplace/vehicles')} className="inline-flex items-center gap-1 text-lg font-medium text-[#0866ff]">
+                <Link href={localizePublicHref(locale, '/marketplace')} className="inline-flex items-center gap-1 text-lg font-medium text-[#0866ff]">
                   <ChevronLeft className="h-5 w-5" />
                   <span className="truncate">{copy.allVehicles}</span>
                 </Link>

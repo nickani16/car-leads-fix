@@ -98,7 +98,7 @@ const desktopCopy = {
 } as const
 
 const desktopTabs: Array<{ key: keyof typeof desktopCopy.en; href: string; icon: LucideIcon }> = [
-  { key: 'all', href: '/marketplace/vehicles', icon: CarFront },
+  { key: 'all', href: '/marketplace', icon: CarFront },
   { key: 'cars', href: '/marketplace/cars', icon: CarFront },
   { key: 'vans', href: '/marketplace/vans', icon: BusFront },
   { key: 'motorcycles', href: '/marketplace/motorcycles', icon: Bike },
