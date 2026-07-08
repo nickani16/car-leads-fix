@@ -862,7 +862,7 @@ export default function PublicHeader({
                       aria-expanded={profileMenuOpen}
                       className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0866ff] text-[11px] font-semibold text-white">
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e9f0fd] text-[11px] font-semibold text-[#0866ff]">
                         {mobileAccountInitials}
                       </span>
                       <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
@@ -1130,7 +1130,7 @@ export default function PublicHeader({
               onClick={closeMobile}
               className="flex h-11 shrink-0 items-center gap-2 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0866ff] text-[12px] font-semibold text-white">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e9f0fd] text-[12px] font-semibold text-[#0866ff]">
                 {mobileAccountInitials}
               </span>
               <span className="whitespace-nowrap">{mobileProfileLabel}</span>
@@ -1207,7 +1207,7 @@ export default function PublicHeader({
                   onClick={closeMobile}
                   className="flex items-center gap-3 text-[#101828]"
                 >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-sm font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#e9f0fd] text-sm font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
                     {mobileAccountInitials}
                   </span>
                   <span className="min-w-0 flex-1">
