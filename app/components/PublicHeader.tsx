@@ -19,7 +19,6 @@ import {
   Plus,
   Search,
   Settings,
-  ShieldAlert,
   Store,
   UserPlus,
   UserRound,
@@ -636,17 +635,12 @@ export default function PublicHeader({
       icon: Search,
     },
     { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell, icon: Plus },
+    { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
     {
       href: localizePublicHref(locale, '/help-center'),
       label: language === 'sv' ? 'Hjälpcenter' : t.help,
       icon: CircleHelp,
     },
-  ]
-  const mobileDrawerLinks = [
-    { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
-    { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
-    { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
-    { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
   const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
@@ -1133,8 +1127,8 @@ export default function PublicHeader({
           </Link>
         </div>
         <div
-          className={`flex shrink-0 items-center justify-end justify-self-end gap-1 self-center transition-opacity duration-150 ${
-            mobileMoreOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
+          className={`shrink-0 items-center justify-end justify-self-end gap-1 self-center ${
+            mobileMoreOpen ? 'hidden' : 'flex'
           }`}
         >
           {headerAccount.authenticated ? (
@@ -1327,30 +1321,6 @@ export default function PublicHeader({
                     <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-active:translate-x-0.5" />
                   </Link>
                 ))}
-              </div>
-            </section>
-
-            <section className="mb-7">
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085]">
-                Autorell
-              </p>
-              <div className="grid gap-2">
-              {mobileDrawerLinks.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={(event) => {
-                    setMobileMoreOpen(false)
-                    handleInternalNavigation(event, href)
-                  }}
-                  className="flex min-h-12 items-center gap-3 rounded-[14px] border border-[#e0e7ef] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828]"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#0866ff]">
-                    <Icon className="h-[17px] w-[17px]" />
-                  </span>
-                  <span className="min-w-0 truncate">{label}</span>
-                </Link>
-              ))}
               </div>
             </section>
 
