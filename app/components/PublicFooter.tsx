@@ -345,9 +345,9 @@ export default function PublicFooter({
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-8 text-[#101828] sm:px-6 lg:px-0 lg:pt-10">
+    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-10 text-[#101828] sm:px-6 lg:px-0 lg:pt-16">
       <div className="mx-auto max-w-[1060px] bg-white">
-        <div className="grid grid-cols-2 gap-x-7 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 xl:gap-x-9">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
           {t.columns.map((column) => (
             <FooterColumn
               key={column.title}
@@ -360,26 +360,36 @@ export default function PublicFooter({
           ))}
         </div>
 
-        <div className="my-7 h-px bg-[#dfe5ee]" />
+        <div className="my-9 h-px bg-[#dfe5ee]" />
 
-        <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:gap-12">
-          <SocialLinks />
-          <div className="max-w-[760px] text-[12px] leading-6 text-[#475467]">
-            <p>{t.legalNotice}</p>
-            <p className="mt-4">© 2026 Autorell</p>
+        <div className="flex flex-col gap-7">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <Link
+              href={localizePublicHref(locale, '/')}
+              className="text-[34px] font-black leading-none tracking-[-0.03em] text-[#075fff] transition hover:text-[#0052df]"
+              aria-label="Autorell"
+            >
+              autorell
+            </Link>
+            <SocialLinks />
+          </div>
+          <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
+            <p>{t.description}</p>
+            <p className="mt-5 text-[13px] text-[#344054]">{t.legalNotice}</p>
+            <p className="mt-5 text-[13px] text-[#344054]">© 2026 Autorell</p>
           </div>
         </div>
 
-        <div className="my-6 h-px bg-[#dfe5ee]" />
+        <div className="my-8 h-px bg-[#dfe5ee]" />
 
-        <div className="flex flex-col gap-3 bg-white py-4 text-[13px] text-[#475467] lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 bg-white pb-8 text-[13px] text-[#475467] lg:flex-row lg:items-center lg:justify-between">
           <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-semibold">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium">
             <button
               type="button"
               onClick={() => setIsMarketOpen(true)}
-              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-semibold transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
+              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
             >
               <span className="inline-flex items-center gap-2">
                 <FlagIcon code={footerMarket.flagCode} size="sm" />
@@ -407,7 +417,7 @@ export default function PublicFooter({
             />
           </div>
 
-          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-semibold">
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
             <Link href={termsHref} className="transition hover:text-[#075fff]">
               {t.terms}
             </Link>
@@ -533,7 +543,7 @@ function FooterColumn({
   return (
     <div>
       <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
-      <nav className="mt-4 flex flex-col items-start gap-2.5 text-[13px] leading-5 text-[#344054]">
+      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#101828]">
         {links.map(([label, href]) => (
           <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
             {label}
@@ -561,7 +571,7 @@ function FooterSelect({
       <select
         aria-label={ariaLabel}
         defaultValue={defaultValue}
-        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#eaf4ff] py-1 pl-2 pr-8 font-semibold outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
+        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 font-medium outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
       >
         {options.map(([value, label]) => (
           <option key={value} value={value}>
@@ -602,7 +612,7 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-9 w-9 place-items-center rounded-full bg-[#eaf4ff] text-[#075fff] ring-1 ring-[#cfe0ff] transition hover:-translate-y-0.5 hover:bg-[#ddecff]"
+          className="grid h-9 w-9 place-items-center rounded-full bg-[#1b1b1b] text-white ring-1 ring-[#1b1b1b] transition hover:-translate-y-0.5 hover:bg-[#075fff] hover:ring-[#075fff]"
         >
           <svg
             viewBox="0 0 24 24"
