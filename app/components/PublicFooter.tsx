@@ -349,11 +349,11 @@ export default function PublicFooter({
 
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="inline-flex flex-col items-start">
+            <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
               <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
                 <BrandLogo underline={false} />
               </Link>
-              <span className="mt-1 pl-[1px] text-[10px] font-semibold uppercase leading-none tracking-[0.22em] text-[#101828]">
+              <span className="mt-0.5 block pl-[1px] text-left text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
                 Marketplace
               </span>
             </div>
@@ -551,12 +551,13 @@ function FooterSelect({
   options: readonly (readonly [string, string])[]
 }) {
   return (
-    <label className="relative inline-flex items-center gap-2 text-[13px] text-[#475467]">
+    <label className="relative inline-flex items-center gap-2 text-[13px] !text-[#475467]">
       {icon}
       <select
         aria-label={ariaLabel}
         defaultValue={defaultValue}
-        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium text-[#475467] outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
+        style={{ color: '#475467' }}
+        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium !text-[#475467] outline-none transition hover:!text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
       >
         {options.map(([value, label]) => (
           <option key={value} value={value}>
