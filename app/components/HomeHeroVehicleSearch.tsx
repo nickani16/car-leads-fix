@@ -241,13 +241,31 @@ export default function HomeHeroVehicleSearch({
     subLabel: t.searchAgainSub,
     href: localizePublicHref(locale, '/marketplace/cars'),
   }
+  const titleText =
+    locale === 'sv'
+      ? { before: 'Ett större utbud av fordon till ', highlight: 'salu' }
+      : locale === 'en'
+        ? { before: 'A wider selection of vehicles for ', highlight: 'sale' }
+        : null
+  const noteText = t.note.startsWith('Autorell')
+    ? { brand: 'Autorell', rest: t.note.slice('Autorell'.length) }
+    : null
 
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
         <div className="rounded-t-[12px] bg-white px-5 py-5 text-center">
-          <h1 className="mx-auto max-w-[320px] text-[23px] font-normal leading-[1.17] tracking-[-0.04em] text-[#101828]">
-            {t.title}
+          <h1 className="mx-auto max-w-[320px] text-[23px] !font-normal leading-[1.17] tracking-[-0.04em] text-[#101828]">
+            {titleText ? (
+              <>
+                {titleText.before}
+                <span className="text-[#0866ff] underline decoration-[#0866ff] decoration-2 underline-offset-[3px]">
+                  {titleText.highlight}
+                </span>
+              </>
+            ) : (
+              t.title
+            )}
           </h1>
         </div>
       </div>
@@ -426,12 +444,21 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:shadow-none"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] hover:shadow-[0_18px_34px_rgba(8,102,255,.26)] active:translate-y-0 lg:min-h-[48px] lg:shadow-none lg:hover:shadow-[0_10px_20px_rgba(8,102,255,.18)]"
         >
           {t.submit}
         </button>
 
-        <p className="mt-4 text-sm leading-6 text-[#101828] lg:hidden">{t.note}</p>
+        <p className="mt-4 text-sm leading-6 text-[#101828] lg:hidden">
+          {noteText ? (
+            <>
+              <span className="font-medium text-[#0866ff]">{noteText.brand}</span>
+              {noteText.rest}
+            </>
+          ) : (
+            t.note
+          )}
+        </p>
       </form>
 
       <button
@@ -453,10 +480,28 @@ export default function HomeHeroVehicleSearch({
 
       <div className="hidden lg:block">
         <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
-          <h1 className="text-[40px] font-medium leading-[1.28] tracking-[-0.045em] text-[#101828]">
-            {t.title}
+          <h1 className="text-[40px] !font-medium leading-[1.28] tracking-[-0.045em] text-[#101828]">
+            {titleText ? (
+              <>
+                {titleText.before}
+                <span className="text-[#0866ff] underline decoration-[#0866ff] decoration-2 underline-offset-[4px]">
+                  {titleText.highlight}
+                </span>
+              </>
+            ) : (
+              t.title
+            )}
           </h1>
-          <p className="mt-5 text-[15px] leading-6 text-[#101828]">{t.note}</p>
+          <p className="mt-5 text-[15px] leading-6 text-[#101828]">
+            {noteText ? (
+              <>
+                <span className="font-medium text-[#0866ff]">{noteText.brand}</span>
+                {noteText.rest}
+              </>
+            ) : (
+              t.note
+            )}
+          </p>
         </div>
 
         <button
