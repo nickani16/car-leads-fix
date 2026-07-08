@@ -13,6 +13,7 @@ import {
   Bike,
   BusFront,
   CarFront,
+  Check,
   ChevronDown,
   Clock3,
   Search,
@@ -77,8 +78,8 @@ const marketOptions = [
 
 const copyByLocale = {
   sv: {
-    title: 'Europas största utbud av fordon till salu*',
-    note: '*Det är möjligt eftersom Autorell samlar fordon från flera europeiska marknader.',
+    title: 'Ett större utbud av fordon till salu',
+    note: 'Autorell samlar annonser från flera europeiska marknader på ett ställe.',
     searchAgain: 'Sök igen: Bilar',
     searchAgainSub: 'Fordon till salu',
     tabs: { sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
@@ -90,8 +91,8 @@ const copyByLocale = {
     submit: 'Hitta fordon',
   },
   en: {
-    title: "Europe's largest selection of vehicles for sale*",
-    note: '*Possible because Autorell brings together vehicles from several European markets.',
+    title: 'A wider selection of vehicles for sale',
+    note: 'Autorell gathers listings from several European markets in one place.',
     searchAgain: 'Search again: Cars',
     searchAgainSub: 'Vehicles for sale',
     tabs: { sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
@@ -103,8 +104,8 @@ const copyByLocale = {
     submit: 'Find vehicles',
   },
   de: {
-    title: 'Europas größte Auswahl an Fahrzeugen zum Verkauf*',
-    note: '*Möglich, weil Autorell Fahrzeuge aus mehreren europäischen Märkten bündelt.',
+    title: 'Eine größere Auswahl an Fahrzeugen',
+    note: 'Autorell bündelt Anzeigen aus mehreren europäischen Märkten an einem Ort.',
     searchAgain: 'Erneut suchen: Autos',
     searchAgainSub: 'Fahrzeuge kaufen',
     tabs: { sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
@@ -139,8 +140,9 @@ export default function HomeHeroVehicleSearch({
         ? copyByLocale.en
         : copyByLocale.sv
   const [intent, setIntent] = useState<Intent>('sale')
-  const [category, setCategory] = useState<MarketplaceCategorySlug>('cars')
+  const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>(['cars'])
   const [query, setQuery] = useState('')
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [markets, setMarkets] = useState<string[]>(() => [
     locale === 'de' ? 'DE' : locale === 'sv' ? 'SE' : 'EU',
   ])
@@ -149,13 +151,19 @@ export default function HomeHeroVehicleSearch({
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
 
-  const selectedRoute = useMemo(
-    () => categoryRoutes[category] || '/marketplace/vehicles',
-    [category],
-  )
+  const selectedRoute = useMemo(() => {
+    if (selectedCategories.length === 1) {
+      return categoryRoutes[selectedCategories[0]] || '/marketplace/vehicles'
+    }
+    return '/marketplace/vehicles'
+  }, [selectedCategories])
   const selectedCategory =
-    categories.find((item) => item.slug === category) || categories[0]
+    categories.find((item) => item.slug === selectedCategories[0]) || categories[0]
   const SelectedCategoryIcon = selectedCategory.icon
+  const selectedCategoryLabel =
+    selectedCategories.length === 1
+      ? selectedCategory.label
+      : `${selectedCategories.length} kategorier`
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -182,6 +190,16 @@ export default function HomeHeroVehicleSearch({
     })
   }
 
+  function toggleCategory(slug: MarketplaceCategorySlug) {
+    setSelectedCategories((current) => {
+      if (current.includes(slug)) {
+        const next = current.filter((item) => item !== slug)
+        return next.length ? next : current
+      }
+      return [...current, slug]
+    })
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
@@ -189,6 +207,8 @@ export default function HomeHeroVehicleSearch({
     if (trimmedQuery) params.set('q', trimmedQuery)
     if (intent === 'leasing') params.set('intent', 'leasing')
     if (markets.length) params.set('markets', markets.join(','))
+    if (verifiedOnly) params.set('verified', 'true')
+    if (selectedCategories.length > 1) params.set('categories', selectedCategories.join(','))
 
     const href = localizePublicHref(
       locale,
@@ -196,7 +216,7 @@ export default function HomeHeroVehicleSearch({
     )
     const savedSearch = {
       label: `${locale === 'sv' ? 'Sök igen' : locale === 'de' ? 'Erneut suchen' : 'Search again'}: ${
-        trimmedQuery || selectedCategory.label
+        trimmedQuery || selectedCategoryLabel
       }`,
       subLabel: t.tabs[intent],
       href,
@@ -234,7 +254,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[8px] lg:bg-white lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
+        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[12px] lg:bg-white lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:mx-0 lg:mt-0 lg:border-[#d8d8d8]">
@@ -278,11 +298,27 @@ export default function HomeHeroVehicleSearch({
           <Search className="h-5 w-5 shrink-0 text-[#101828]" strokeWidth={2.1} />
         </label>
 
-        <label className="mt-5 flex items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
+        <label className="group mt-5 flex cursor-pointer items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
           <input
             type="checkbox"
-            className="h-[18px] w-[18px] rounded-[3px] border border-[#c5ccd8] accent-[#0866ff] lg:h-[18px] lg:w-[18px]"
+            checked={verifiedOnly}
+            onChange={(event) => setVerifiedOnly(event.target.checked)}
+            className="peer sr-only"
           />
+          <span
+            className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[4px] border bg-white transition duration-200 ease-out group-hover:border-[#0866ff] peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 lg:h-[18px] lg:w-[18px] ${
+              verifiedOnly
+                ? 'scale-105 border-[#0866ff] bg-[#0866ff]'
+                : 'border-[#8d96a6]'
+            }`}
+          >
+            <Check
+              className={`h-3.5 w-3.5 text-white transition duration-200 ease-out ${
+                verifiedOnly ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
+              }`}
+              strokeWidth={3}
+            />
+          </span>
           <span>{t.verified}</span>
         </label>
 
@@ -293,7 +329,7 @@ export default function HomeHeroVehicleSearch({
           <button
             type="button"
             onClick={() => setMarketsOpen((current) => !current)}
-            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[4px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
+            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[8px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
           >
             <span className="truncate !font-normal">{selectedMarketsLabel}</span>
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
@@ -317,7 +353,7 @@ export default function HomeHeroVehicleSearch({
             <span className="flex min-w-0 items-center gap-2">
               <SelectedCategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
               <span className="truncate text-sm font-semibold text-[#101828]">
-                {selectedCategory.label}
+                {selectedCategoryLabel}
               </span>
             </span>
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${categoryOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
@@ -328,12 +364,9 @@ export default function HomeHeroVehicleSearch({
                 <button
                   key={slug}
                   type="button"
-                  onClick={() => {
-                    setCategory(slug)
-                    setCategoryOpen(false)
-                  }}
+                  onClick={() => toggleCategory(slug)}
                   className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
-                    category === slug
+                    selectedCategories.includes(slug)
                       ? 'bg-[#eef5ff] text-[#0866ff]'
                       : 'text-[#101828] hover:bg-[#f6f9ff]'
                   }`}
@@ -351,14 +384,15 @@ export default function HomeHeroVehicleSearch({
             <button
               key={slug}
               type="button"
-              onClick={() => setCategory(slug)}
-              className={`flex min-h-[45px] items-center gap-2 rounded-[4px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
-                category === slug
+              onClick={() => toggleCategory(slug)}
+              aria-pressed={selectedCategories.includes(slug)}
+              className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
+                selectedCategories.includes(slug)
                   ? 'border-[#0866ff] bg-white text-[#101828]'
                   : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
               }`}
             >
-              <Icon className={`h-4 w-4 shrink-0 ${category === slug ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
+              <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
               <span className="truncate !font-normal">{label}</span>
             </button>
           ))}
@@ -391,7 +425,7 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[10px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:rounded-[4px] lg:shadow-none"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] lg:min-h-[48px] lg:shadow-none"
         >
           {t.submit}
         </button>
@@ -401,7 +435,7 @@ export default function HomeHeroVehicleSearch({
 
       <div className="hidden lg:block">
         <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
-          <h1 className="text-[40px] font-semibold leading-[1.28] tracking-[-0.045em] text-[#101828]">
+          <h1 className="text-[40px] font-medium leading-[1.28] tracking-[-0.045em] text-[#101828]">
             {t.title}
           </h1>
           <p className="mt-5 text-[15px] leading-6 text-[#101828]">{t.note}</p>
