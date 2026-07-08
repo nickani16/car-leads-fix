@@ -20,7 +20,6 @@ import {
   Search,
   Settings,
   ShieldAlert,
-  ShieldCheck,
   Store,
   UserPlus,
   UserRound,
@@ -76,23 +75,6 @@ type MenuItem = {
   label: string
   description: string
   icon: LucideIcon
-}
-
-type DesktopMenuData = {
-  variant?: 'mega'
-  eyebrow: string
-  title: string
-  text: string
-  cta: string
-  ctaHref: string
-  items: MenuItem[]
-  features?: Array<{
-    title: string
-    text: string
-    icon: LucideIcon
-  }>
-  allCategoriesLabel?: string
-  allCategoriesText?: string
 }
 
 type HeaderAccount = {
@@ -543,14 +525,6 @@ export default function PublicHeader({
     agriculture: { sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft' },
     construction: { sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
   }
-  const localizedSellerItems =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? sellerItems[language]
-      : translatePublicObject(locale, sellerItems.en)
-  const localizedBusinessItems =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? businessItems[language]
-      : translatePublicObject(locale, businessItems.en)
   const activeCategorySlug =
     marketplaceCategories.find(
       (category) =>
@@ -574,77 +548,7 @@ export default function PublicHeader({
   const activeCategoryCopy = activeCategoryConfig
     ? localizeCategoryLanding(activeCategoryConfig, locale)
     : null
-  const mobileMenuCategoryConfig =
-    activeCategoryConfig || getCategoryLanding('cars')
-  const mobileMenuCategoryCopy = localizeCategoryLanding(
-    mobileMenuCategoryConfig,
-    locale,
-  )
-  const mobileMenuActiveSlug = mobileMenuCategoryConfig.slug
-  const mobileMenuCategoryActions = mobileMenuCategoryCopy.menu.map(
-    (label) =>
-      [
-        localizePublicHref(
-          locale,
-          categoryLandingMenuHref(mobileMenuCategoryConfig, label),
-        ),
-        label,
-      ] as const,
-  )
-  const menus: Array<{
-    label: string
-    href: string
-    icon: LucideIcon
-    data: DesktopMenuData
-  }> = [
-    {
-      label: t.buy,
-      href: localizePublicHref(locale, '/marketplace/cars'),
-      icon: Search,
-      data: {
-        variant: 'mega',
-        eyebrow: t.buy,
-        title: t.buyTitle,
-        text: t.buyText,
-        cta: t.buyCta,
-        ctaHref: localizePublicHref(locale, '/find-cars'),
-        items: buyItems,
-        features: [
-          { title: t.verifiedSellers, text: t.verifiedSellersText, icon: ShieldCheck },
-          { title: t.securePayments, text: t.securePaymentsText, icon: ShieldCheck },
-          { title: t.support24, text: t.support24Text, icon: CircleHelp },
-        ],
-        allCategoriesLabel: t.allCategoriesLabel,
-        allCategoriesText: t.allCategoriesText,
-      },
-    },
-    {
-      label: t.sell,
-      href: localizePublicHref(locale, '/sell-vehicle'),
-      icon: FilePlus2,
-      data: {
-        eyebrow: t.sell,
-        title: t.sellTitle,
-        text: t.sellText,
-        cta: t.sellCta,
-        ctaHref: localizePublicHref(locale, language === 'sv' ? '/konto/annonser/ny' : '/account/listings/new'),
-        items: localizedSellerItems,
-      },
-    },
-    {
-      label: t.business,
-      href: localizePublicHref(locale, '/business'),
-      icon: Building2,
-      data: {
-        eyebrow: t.business,
-        title: t.businessTitle,
-        text: t.businessText,
-        cta: t.businessCta,
-        ctaHref: localizePublicHref(locale, '/business'),
-        items: localizedBusinessItems,
-      },
-    },
-  ]
+  const mobileMenuActiveSlug = activeCategoryConfig?.slug || 'cars'
 
   const categoryPrimaryLinks =
     activeCategoryConfig && activeCategoryCopy
@@ -723,19 +627,26 @@ export default function PublicHeader({
   const desktopMainRowHeightClass = showTopCategoryNav
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[58px]'
+  const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const mobileMainLinks = [
-    ...menus.map(({ href, label, icon }) => ({ href, label, icon })),
-    { href: localizePublicHref(locale, '/help-center'), label: t.help, icon: CircleHelp },
-    { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
+    {
+      href: localizePublicHref(locale, '/marketplace'),
+      label: language === 'sv' ? 'Sök fordon' : 'Search vehicles',
+      icon: Search,
+    },
+    { href: createListingHref, label: language === 'sv' ? 'Sälja' : t.sell, icon: Plus },
+    {
+      href: localizePublicHref(locale, '/help-center'),
+      label: language === 'sv' ? 'Hjälpcenter' : t.help,
+      icon: CircleHelp,
+    },
   ]
   const mobileDrawerLinks = [
     { href: localizePublicHref(locale, '/vanliga-fragor'), label: t.faq, icon: CircleHelp },
-    { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
     { href: localizePublicHref(locale, '/contact'), label: t.contact, icon: Mail },
     { href: localizePublicHref(locale, '/about'), label: t.about, icon: Building2 },
     { href: localizePublicHref(locale, '/report'), label: t.reportAbuse, icon: ShieldAlert },
   ]
-  const createListingHref = localizePublicHref(locale, '/account/listings/new')
   const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
     { href: localizePublicHref(locale, '/marketplace/cars'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
@@ -1218,7 +1129,11 @@ export default function PublicHeader({
             <BrandLogo underline={false} />
           </Link>
         </div>
-        <div className="flex shrink-0 items-center justify-end justify-self-end gap-1 self-center">
+        <div
+          className={`flex shrink-0 items-center justify-end justify-self-end gap-1 self-center transition-opacity duration-150 ${
+            mobileMoreOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
+          }`}
+        >
           {headerAccount.authenticated ? (
             <Link
               href={savedSearchesHref}
@@ -1380,8 +1295,8 @@ export default function PublicHeader({
                       onClick={closeMobile}
                       className={`min-h-8 rounded-full px-3 py-1.5 text-[13px] font-semibold shadow-[0_4px_14px_rgba(16,24,40,.09)] ring-1 transition active:scale-[.99] ${
                         isActive
-                          ? 'bg-[#f3f7ff] text-[#101828] ring-[#edf2ff]'
-                          : 'bg-white text-[#62686c] ring-[#eef0f3]'
+                          ? 'bg-[#0866ff] text-white ring-[#0866ff] shadow-[0_8px_18px_rgba(8,102,255,.18)]'
+                          : 'bg-white text-[#344054] ring-[#eef0f3]'
                       }`}
                     >
                       {label}
@@ -1392,16 +1307,21 @@ export default function PublicHeader({
             </section>
 
             <section className="mb-7">
-              <div className="grid gap-1">
-                {mobileMenuCategoryActions.map(([href, label]) => (
+              <div className="grid gap-2">
+                {mobileMainLinks.map(({ href, label, icon: Icon }) => (
                   <Link
-                    key={`${href}-${label}`}
+                    key={href}
                     href={href}
-                    onClick={closeMobile}
-                    className="flex min-h-[58px] items-center justify-between rounded-[16px] px-1 text-[20px] font-semibold tracking-[-0.02em] text-[#202938] transition active:bg-[#f7f9fc]"
+                    onClick={(event) => handleInternalNavigation(event, href)}
+                    className="group flex min-h-[56px] items-center justify-between rounded-[16px] border border-[#e0e7ef] bg-white px-3 text-[17px] font-semibold tracking-[-0.01em] text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.045)] transition active:bg-[#f7fbff]"
                   >
-                    <span>{label}</span>
-                    <ArrowRight className="h-4 w-4 text-[#98a2b3]" />
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
+                        <Icon className="h-[18px] w-[18px]" />
+                      </span>
+                      <span className="min-w-0 truncate">{label}</span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-active:translate-x-0.5" />
                   </Link>
                 ))}
               </div>
