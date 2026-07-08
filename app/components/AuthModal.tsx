@@ -234,7 +234,7 @@ export default function AuthModal({
             <form onSubmit={requestCode} className="mt-6">
               <label className="block text-xs font-bold text-[#344054]">
                 {copy.email}
-                <div className="mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
                   <input
                     ref={emailInputRef}
                     type="email"
@@ -243,9 +243,19 @@ export default function AuthModal({
                     autoComplete="email"
                     inputMode="email"
                     required
-                    placeholder={copy.emailPlaceholder}
-                    className="min-w-0 flex-1 bg-transparent text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+                    placeholder=""
+                    aria-label={copy.emailPlaceholder}
+                    style={{ color: email ? '#101828' : '#767676' }}
+                    className="relative z-10 min-w-0 flex-1 bg-transparent text-sm font-normal text-[#101828] outline-none"
                   />
+                  {email ? null : (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-sm font-normal text-[#767676]"
+                    >
+                      {copy.emailPlaceholder}
+                    </span>
+                  )}
                 </div>
               </label>
 
