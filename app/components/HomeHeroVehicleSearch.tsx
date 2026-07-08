@@ -245,8 +245,8 @@ export default function HomeHeroVehicleSearch({
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white/95 px-5 py-5 text-center shadow-none backdrop-blur-md">
-          <h1 className="mx-auto max-w-[320px] text-[25px] font-semibold leading-[1.16] tracking-[-0.04em] text-[#101828]">
+        <div className="rounded-t-[12px] bg-white px-5 py-5 text-center">
+          <h1 className="mx-auto max-w-[320px] text-[23px] font-normal leading-[1.17] tracking-[-0.04em] text-[#101828]">
             {t.title}
           </h1>
         </div>
@@ -254,7 +254,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/95 p-4 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md lg:rounded-[12px] lg:bg-white lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
+        className="relative rounded-b-[12px] bg-white p-4 shadow-none lg:rounded-[12px] lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)]"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-white lg:mx-0 lg:mt-0 lg:border-[#d8d8d8]">
@@ -306,11 +306,12 @@ export default function HomeHeroVehicleSearch({
             className="peer sr-only"
           />
           <span
-            className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[4px] border bg-white transition duration-200 ease-out group-hover:border-[#0866ff] peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 lg:h-[18px] lg:w-[18px] ${
-              verifiedOnly
-                ? 'scale-105 border-[#0866ff] bg-[#0866ff]'
-                : 'border-[#8d96a6]'
-            }`}
+            className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[4px] border transition duration-200 ease-out group-hover:border-[#0866ff] peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 lg:h-[18px] lg:w-[18px]"
+            style={{
+              backgroundColor: verifiedOnly ? '#0866ff' : '#ffffff',
+              borderColor: verifiedOnly ? '#0866ff' : '#8d96a6',
+              transform: verifiedOnly ? 'scale(1.05)' : 'scale(1)',
+            }}
           >
             <Check
               className={`h-3.5 w-3.5 text-white transition duration-200 ease-out ${
@@ -432,6 +433,23 @@ export default function HomeHeroVehicleSearch({
 
         <p className="mt-4 text-sm leading-6 text-[#101828] lg:hidden">{t.note}</p>
       </form>
+
+      <button
+        type="button"
+        onClick={() => router.push(searchAgain.href)}
+        className="mt-3 flex min-h-[62px] w-full items-center justify-between rounded-[12px] bg-white px-5 text-left shadow-none transition active:scale-[.99] lg:hidden"
+      >
+        <span>
+          <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
+            <Clock3 className="h-4 w-4" />
+            {searchAgain.label}
+          </span>
+          <span className="mt-1 block text-sm text-[#667085]">
+            {searchAgain.subLabel}
+          </span>
+        </span>
+        <ChevronDown className="-rotate-90 h-5 w-5 text-[#101828]" />
+      </button>
 
       <div className="hidden lg:block">
         <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
