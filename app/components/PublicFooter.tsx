@@ -353,7 +353,7 @@ export default function PublicFooter({
               <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
                 <BrandLogo underline={false} />
               </Link>
-              <span className="mt-2 text-[11px] font-semibold uppercase leading-none tracking-[0.18em] text-[#075fff]">
+              <span className="mt-1 pl-[1px] text-[10px] font-semibold uppercase leading-none tracking-[0.22em] text-[#101828]">
                 Marketplace
               </span>
             </div>
@@ -551,12 +551,12 @@ function FooterSelect({
   options: readonly (readonly [string, string])[]
 }) {
   return (
-    <label className="relative inline-flex items-center gap-2 text-[#18315f]">
+    <label className="relative inline-flex items-center gap-2 text-[13px] text-[#475467]">
       {icon}
       <select
         aria-label={ariaLabel}
         defaultValue={defaultValue}
-        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 font-medium outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
+        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium text-[#475467] outline-none transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
       >
         {options.map(([value, label]) => (
           <option key={value} value={value}>
@@ -564,7 +564,7 @@ function FooterSelect({
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-[#18315f]" />
+      <ChevronDown className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-current" />
     </label>
   )
 }
