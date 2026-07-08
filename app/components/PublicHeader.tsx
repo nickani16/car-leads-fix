@@ -831,7 +831,7 @@ export default function PublicHeader({
                     onClick={(event) => handleInternalNavigation(event, href)}
                     className={`flex h-full items-center border-b-2 text-[14px] font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
                       isActive
-                        ? 'border-[#0866ff] text-[#0866ff]'
+                        ? 'border-transparent text-[#0866ff]'
                         : 'border-transparent text-[#101828]'
                     }`}
                   >
