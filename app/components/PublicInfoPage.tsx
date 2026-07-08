@@ -1116,6 +1116,230 @@ export default async function PublicInfoPage({
     const isSv = locale === 'sv'
     const primaryHref = localizePublicHref(locale, ctaLinks.primary[page])
     const secondaryHref = localizePublicHref(locale, ctaLinks.secondary[page])
+    const pageShellClass = 'bg-[#f5f8fc] text-[#101828]'
+
+    if (page === 'sell-vehicle') {
+      const pillars = isSv
+        ? [
+            ['01', 'Datadriven presentation', 'Kategori, marknad, valuta, skick och tekniska uppgifter byggs in i annonsen så att köparen kan jämföra utan friktion.'],
+            ['02', 'Förtroende före kontakt', 'Verifierade säljare, tydliga kontaktvägar och konsekvent fordonsdata höjer kvaliteten på varje dialog.'],
+            ['03', 'Synlighet i rätt marknad', 'Annonsen är skapad för en europeisk köpintention, inte bara en lokal listning som råkar ligga online.'],
+          ]
+        : [
+            ['01', 'Data-led presentation', 'Category, market, currency, condition and technical details are structured for fast comparison.'],
+            ['02', 'Trust before contact', 'Verified sellers, clear routes and consistent vehicle data raise the quality of each enquiry.'],
+            ['03', 'Visibility in the right market', 'Listings are built for European buyer intent, not just a local post online.'],
+          ]
+      const signals = isSv
+        ? ['Fordonsdata', 'Marknad', 'Säljarprofil', 'Kontaktflöde']
+        : ['Vehicle data', 'Market', 'Seller profile', 'Contact flow']
+
+      return (
+        <main className={pageShellClass}>
+          <PublicHeader locale={locale} marketCode={marketCode} />
+          <section className="overflow-hidden border-b border-[#dce5f2] bg-[radial-gradient(circle_at_12%_0%,#e9f2ff_0,#ffffff_38%,#f7fbff_100%)]">
+            <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:py-24">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[.2em] text-[#0866ff]">
+                  {isSv ? 'Annonsera fordon' : 'Vehicle advertising'}
+                </p>
+                <h1 className="mt-5 max-w-4xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[70px]">
+                  {isSv ? 'Annonsera fordon på Autorell' : 'Advertise vehicles on Autorell'}
+                </h1>
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-[#526071]">
+                  {isSv
+                    ? 'En annons på Autorell ska kännas som ett professionellt beslutsunderlag: tydlig data, seriös presentation och kontakt från köpare som förstår vad de tittar på.'
+                    : 'An Autorell listing should feel like a professional decision layer: clear data, serious presentation and buyer contact with context.'}
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href={primaryHref} className="inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white shadow-[0_18px_40px_rgba(8,102,255,.24)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5]">
+                    {isSv ? 'Skapa annons' : copy.primaryCta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link href={secondaryHref} className="inline-flex min-h-12 items-center rounded-[12px] border border-[#c6d3e7] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:border-[#0866ff] hover:text-[#0866ff]">
+                    {isSv ? 'Se annonspriser' : copy.secondaryCta}
+                  </Link>
+                </div>
+              </div>
+              <aside className="rounded-[24px] border border-[#d8e4f4] bg-white/90 p-5 shadow-[0_28px_90px_rgba(16,24,40,.10)] backdrop-blur">
+                <div className="rounded-[20px] bg-[#101828] p-5 text-white">
+                  <p className="text-xs font-medium uppercase tracking-[.18em] text-[#93c5fd]">Autorell listing layer</p>
+                  <div className="mt-6 grid gap-3">
+                    {signals.map((signal) => (
+                      <div key={signal} className="flex items-center justify-between rounded-[14px] bg-white/8 px-4 py-3 text-sm font-medium">
+                        {signal}
+                        <CheckCircle2 className="h-4 w-4 text-[#60a5fa]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
+          <section className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+            <div className="grid gap-4 md:grid-cols-3">
+              {pillars.map(([number, title, text]) => (
+                <article key={title} className="rounded-[20px] border border-[#dce5f2] bg-white p-6 shadow-[0_16px_42px_rgba(16,24,40,.05)] transition duration-200 hover:-translate-y-1 hover:border-[#b7ceff] hover:shadow-[0_24px_60px_rgba(16,24,40,.09)]">
+                  <span className="text-sm font-medium text-[#0866ff]">{number}</span>
+                  <h2 className="mt-5 text-2xl font-medium tracking-[-.04em]">{title}</h2>
+                  <p className="mt-3 text-[15px] leading-7 text-[#667085]">{text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+
+    if (page === 'how-selling-works') {
+      const flow = isSv
+        ? [
+            ['01', 'Strukturera', 'Fordonstyp, plats, pris, valuta och skick sätts i ett format som går att söka, filtrera och förstå.'],
+            ['02', 'Publicera', 'Annonsen går live med rätt kategori och blir en del av Autorells marknadsplatsflöde.'],
+            ['03', 'Kvalificera', 'Intresse samlas kring annonsen, så att frågor och svar får sammanhang i stället för att bli lös dialog.'],
+            ['04', 'Avsluta affären', 'Säljare och köpare kommer överens om dokument, betalning, upphämtning och leverans direkt.'],
+          ]
+        : [
+            ['01', 'Structure', 'Vehicle type, location, price, currency and condition are prepared for search and filtering.'],
+            ['02', 'Publish', 'The listing goes live in the right category and joins the Autorell marketplace flow.'],
+            ['03', 'Qualify', 'Interest stays connected to the listing, keeping questions and replies in context.'],
+            ['04', 'Close', 'Seller and buyer agree documents, payment, pickup and delivery directly.'],
+          ]
+
+      return (
+        <main className="bg-white text-[#101828]">
+          <PublicHeader locale={locale} marketCode={marketCode} />
+          <section className="bg-[#0b1220] text-white">
+            <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-24">
+              <p className="text-xs font-medium uppercase tracking-[.2em] text-[#93c5fd]">
+                {isSv ? 'Så fungerar Autorell' : 'How Autorell works'}
+              </p>
+              <h1 className="mt-5 max-w-5xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[68px]">
+                {isSv ? 'Från fordonsdata till kvalificerad köparkontakt.' : 'From vehicle data to qualified buyer contact.'}
+              </h1>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-[#cbd5e1]">
+                {isSv
+                  ? 'Autorell är byggt för att skala förtroende. Varje steg i flödet gör annonsen tydligare, sökningen mer relevant och kontakten mer professionell.'
+                  : 'Autorell is built to scale trust. Every step makes the listing clearer, search more relevant and contact more professional.'}
+              </p>
+            </div>
+          </section>
+          <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-8">
+            <div className="grid gap-4">
+              {flow.map(([number, title, text]) => (
+                <article key={title} className="grid gap-4 rounded-[20px] border border-[#dce5f2] bg-[#f8fbff] p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_18px_48px_rgba(16,24,40,.08)] sm:grid-cols-[96px_1fr_auto] sm:items-center sm:p-6">
+                  <span className="text-4xl font-medium tracking-[-.05em] text-[#0866ff]">{number}</span>
+                  <div>
+                    <h2 className="text-2xl font-medium tracking-[-.04em]">{title}</h2>
+                    <p className="mt-2 max-w-3xl text-[15px] leading-7 text-[#667085]">{text}</p>
+                  </div>
+                  <ArrowRight className="hidden h-5 w-5 text-[#98a2b3] sm:block" />
+                </article>
+              ))}
+            </div>
+            <div className="mt-8 rounded-[24px] border border-[#dce5f2] bg-white p-7 shadow-[0_20px_60px_rgba(16,24,40,.07)] sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">Marketplace operating model</p>
+                <h2 className="mt-3 max-w-2xl text-3xl font-medium tracking-[-.04em]">
+                  {isSv ? 'Ett flöde som kan växa från en annons till en europeisk fordonsmarknad.' : 'A flow that can grow from one listing to a European vehicle market.'}
+                </h2>
+              </div>
+              <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5] sm:mt-0">
+                {isSv ? 'Annonsera fordon' : copy.primaryCta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+
+    const freeLabel = isSv ? 'Gratis' : 'Free'
+    const packageCards = isSv
+      ? [
+          ['Start', '7 dagar', 'Publicera och kontrollera annonsens kvalitet utan startkostnad.'],
+          ['Standard', '15 dagar', 'För fordon som behöver stabil synlighet över flera köpbeslut.'],
+          ['Premium', '30 dagar', 'För annonser där exponering och prioritet ska kännas tydligt.'],
+        ]
+      : [
+          ['Start', '7 days', 'Publish and check listing quality without starting cost.'],
+          ['Standard', '15 days', 'For vehicles that need steady visibility across buyer decisions.'],
+          ['Premium', '30 days', 'For listings where exposure and priority should be clear.'],
+        ]
+
+    return (
+      <main className={pageShellClass}>
+        <PublicHeader locale={locale} marketCode={marketCode} />
+        <section className="border-b border-[#dce3ef] bg-white">
+          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end lg:py-24">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[.2em] text-[#0866ff]">
+                {isSv ? 'Pris och synlighet' : 'Pricing and visibility'}
+              </p>
+              <h1 className="mt-5 max-w-4xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[68px]">
+                {isSv ? 'Pris för att annonsera fordon' : 'Pricing for vehicle advertising'}
+              </h1>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
+                {isSv
+                  ? 'Prissättningen ska vara enkel att granska innan publicering. Varje kategori har en gratis start, en standardperiod och premiumsynlighet för annonser som ska lyftas.'
+                  : 'Pricing should be easy to review before publishing. Each category has a free start, a standard period and premium visibility.'}
+              </p>
+            </div>
+            <aside className="rounded-[24px] bg-[#101828] p-6 text-white shadow-[0_26px_80px_rgba(16,24,40,.18)]">
+              <p className="text-xs font-medium uppercase tracking-[.18em] text-[#93c5fd]">
+                {isSv ? 'Exempel' : 'Example'}
+              </p>
+              <div className="mt-5 grid gap-3">
+                <div className="flex items-center justify-between rounded-[14px] bg-white/8 px-4 py-3">
+                  <span>Bilar</span>
+                  <span className="font-medium">{formatListingPrice(249)}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-[14px] bg-white/8 px-4 py-3">
+                  <span>Entreprenadmaskiner</span>
+                  <span className="font-medium">{formatListingPrice(1190)}</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+        <section className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8">
+          <div className="grid gap-4 md:grid-cols-3">
+            {packageCards.map(([title, period, text]) => (
+              <article key={title} className="rounded-[20px] border border-[#dce5f2] bg-white p-6 shadow-[0_16px_42px_rgba(16,24,40,.05)] transition duration-200 hover:-translate-y-1 hover:border-[#b7ceff]">
+                <p className="text-sm font-medium text-[#0866ff]">{period}</p>
+                <h2 className="mt-3 text-3xl font-medium tracking-[-.04em]">{title}</h2>
+                <p className="mt-3 text-[15px] leading-7 text-[#667085]">{text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-8 overflow-hidden rounded-[22px] border border-[#dce5f2] bg-white shadow-[0_20px_60px_rgba(16,24,40,.07)]">
+            <div className="grid grid-cols-[1.35fr_.85fr_.85fr_.85fr] gap-3 border-b border-[#e4ebf5] bg-[#f8fbff] px-5 py-4 text-xs font-medium uppercase tracking-[.12em] text-[#667085]">
+              <span>{isSv ? 'Kategori' : 'Category'}</span>
+              <span>Start</span>
+              <span>Standard</span>
+              <span>Premium</span>
+            </div>
+            {listingPriceCategories.map((category) => (
+              <div key={category.slug} className="grid grid-cols-[1.35fr_.85fr_.85fr_.85fr] gap-3 border-b border-[#edf1f7] px-5 py-4 text-sm last:border-b-0">
+                <span className="font-medium">{category.label}</span>
+                <span className="text-[#667085]">{freeLabel}</span>
+                <span>{formatListingPrice(category.standard)}</span>
+                <span>{formatListingPrice(category.premium)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+        <PublicFooter locale={locale} />
+      </main>
+    )
+  }
+
+  if ((false as boolean) && isSellerPage) {
+    const isSv = locale === 'sv'
+    const primaryHref = localizePublicHref(locale, ctaLinks.primary[page])
+    const secondaryHref = localizePublicHref(locale, ctaLinks.secondary[page])
 
     if (page === 'sell-vehicle') {
       const steps = isSv

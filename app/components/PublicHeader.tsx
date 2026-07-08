@@ -312,8 +312,8 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/sell-vehicle', label: 'Sälja fordon', description: 'Starta en tydlig fordonsannons.', icon: CarFront },
-    { href: '/pricing', label: 'Pris', description: 'Se paket och synlighet.', icon: Store },
+    { href: '/sell-vehicle', label: 'Annonsera fordon på Autorell', description: 'Bygg en professionell fordonsannons.', icon: CarFront },
+    { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Se priser och synlighet.', icon: Store },
     { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Från annons till kontakt.', icon: CircleHelp },
   ],
   en: [
