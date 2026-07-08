@@ -353,7 +353,7 @@ export default function PublicFooter({
               <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
                 <BrandLogo underline={false} />
               </Link>
-              <span className="mt-0.5 block pl-[1px] text-left text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
+              <span className="-mt-0.5 block self-end pr-[1px] text-right text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
                 Marketplace
               </span>
             </div>
@@ -374,7 +374,7 @@ export default function PublicFooter({
             <button
               type="button"
               onClick={() => setIsMarketOpen(true)}
-              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
+              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
             >
               <span className="inline-flex items-center gap-2">
                 <FlagIcon code={footerMarket.flagCode} size="sm" />
@@ -550,23 +550,53 @@ function FooterSelect({
   icon?: ReactNode
   options: readonly (readonly [string, string])[]
 }) {
+  const [selected, setSelected] = useState(defaultValue)
+  const [open, setOpen] = useState(false)
+  const selectedLabel =
+    options.find(([value]) => value === selected)?.[1] ||
+    options.find(([value]) => value === defaultValue)?.[1] ||
+    defaultValue.toUpperCase()
+
   return (
-    <label className="relative inline-flex items-center gap-2 text-[13px] !text-[#475467]">
-      {icon}
-      <select
+    <div className="relative inline-flex items-center gap-2 text-[13px] text-[#344054]">
+      <button
+        type="button"
         aria-label={ariaLabel}
-        defaultValue={defaultValue}
-        style={{ color: '#475467' }}
-        className="min-h-8 appearance-none rounded-[12px] border border-transparent bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium !text-[#475467] outline-none transition hover:!text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:ring-4 focus:ring-[#075fff]/10"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex min-h-8 items-center gap-2 rounded-[12px] bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium text-[#344054] transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:outline-none focus:ring-4 focus:ring-[#075fff]/10"
       >
-        {options.map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-current" />
-    </label>
+        {icon}
+        <span>{selectedLabel}</span>
+      </button>
+      <ChevronDown className="pointer-events-none absolute right-1 h-3.5 w-3.5 text-[#344054]" />
+      {open ? (
+        <div
+          role="listbox"
+          aria-label={ariaLabel}
+          className="absolute bottom-full left-0 z-20 mb-2 min-w-[104px] overflow-hidden rounded-[12px] border border-[#dfe5ee] bg-white py-1 text-[13px] text-[#344054] shadow-[0_16px_40px_rgba(16,24,40,0.14)]"
+        >
+          {options.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              role="option"
+              aria-selected={value === selected}
+              onClick={() => {
+                setSelected(value)
+                setOpen(false)
+              }}
+              className={`block w-full px-3 py-2 text-left transition hover:bg-[#f4f7fb] hover:text-[#075fff] ${
+                value === selected ? 'font-semibold text-[#075fff]' : 'font-medium'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 
