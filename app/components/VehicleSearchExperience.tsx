@@ -1709,7 +1709,10 @@ function VehicleSearchMap({
             </label>
             <button
               type="button"
-              onClick={onOpenFilters}
+              onClick={() => {
+                setFullscreen(false)
+                window.setTimeout(onOpenFilters, 0)
+              }}
               className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff]"
             >
               <SlidersHorizontal className="h-4 w-4" />
