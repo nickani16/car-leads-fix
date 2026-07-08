@@ -353,7 +353,7 @@ export default function PublicFooter({
               <Link href={localizePublicHref(locale, '/')} aria-label="Autorell">
                 <BrandLogo underline={false} />
               </Link>
-              <span className="-mt-0.5 block self-end pr-[1px] text-right text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
+              <span className="-mt-0.5 block self-center text-center text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
                 Marketplace
               </span>
             </div>
@@ -565,7 +565,7 @@ function FooterSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-8 items-center gap-2 rounded-[12px] bg-[#f4f7fb] py-1 pl-2 pr-8 text-[13px] font-medium text-[#344054] transition hover:text-[#075fff] focus:border-[#9fc7ff] focus:bg-[#eaf4ff] focus:outline-none focus:ring-4 focus:ring-[#075fff]/10"
+        className="inline-flex min-h-8 items-center gap-2 rounded-[12px] bg-white py-1 pl-2 pr-8 text-[13px] font-medium text-[#344054] transition hover:text-[#075fff] focus:outline-none focus:ring-4 focus:ring-[#075fff]/10"
       >
         {icon}
         <span>{selectedLabel}</span>
