@@ -80,14 +80,13 @@ export default async function BusinessMarketplaceHome({
       <section className="-mt-[2px] bg-white pt-0">
         <div className="relative min-h-[665px] overflow-hidden bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
           <Image
-            src="/autorell-home-hero-auction-cars.jpg"
+            src="/autorell-home-hero-clean.avif"
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-center saturate-[.82] contrast-[.90] brightness-[1.04] sepia-[.22]"
+            className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_46%_2%,rgba(255,248,235,.34),rgba(255,248,235,0)_40%),linear-gradient(180deg,rgba(255,250,240,.24)_0%,rgba(234,198,135,.22)_48%,rgba(255,255,255,.25)_100%),linear-gradient(90deg,rgba(94,66,38,.12)_0%,rgba(255,238,207,.10)_50%,rgba(94,66,38,.12)_100%)] shadow-[inset_0_22px_80px_rgba(86,61,36,.08)] lg:bg-[radial-gradient(circle_at_52%_8%,rgba(255,248,235,.30),rgba(255,248,235,0)_38%),linear-gradient(90deg,rgba(94,66,38,.14)_0%,rgba(255,236,203,.14)_50%,rgba(94,66,38,.12)_100%)]" />
           <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
             <HomeHeroVehicleSearch locale={locale} />
           </div>
