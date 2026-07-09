@@ -40,6 +40,33 @@ type LastSearch = {
   href: string
 }
 
+type AdvancedFilters = {
+  make: string
+  model: string
+  priceMax: string
+  yearMin: string
+  mileageMax: string
+  fuel: string
+  gearbox: string
+}
+
+type AdvancedFilterLabels = {
+  make: string
+  model: string
+  priceMax: string
+  yearMin: string
+  mileageMax: string
+  fuel: string
+  gearbox: string
+  all: string
+  petrol: string
+  diesel: string
+  hybrid: string
+  electric: string
+  automatic: string
+  manual: string
+}
+
 const lastSearchStorageKey = 'autorell:last-home-search'
 
 const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
@@ -92,6 +119,22 @@ const copyByLocale = {
     markets: 'Marknader',
     moreCategories: 'Fler fordonskategorier',
     moreFilters: 'Fler sökfilter',
+    advanced: {
+      make: 'Märke',
+      model: 'Modell',
+      priceMax: 'Maxpris',
+      yearMin: 'Årsmodell från',
+      mileageMax: 'Miltal max',
+      fuel: 'Drivmedel',
+      gearbox: 'Växellåda',
+      all: 'Visa allt',
+      petrol: 'Bensin',
+      diesel: 'Diesel',
+      hybrid: 'Hybrid',
+      electric: 'El',
+      automatic: 'Automat',
+      manual: 'Manuell',
+    },
     submit: 'Hitta fordon',
   },
   en: {
@@ -106,6 +149,22 @@ const copyByLocale = {
     markets: 'Markets',
     moreCategories: 'More vehicle categories',
     moreFilters: 'More filters',
+    advanced: {
+      make: 'Make',
+      model: 'Model',
+      priceMax: 'Max price',
+      yearMin: 'Year from',
+      mileageMax: 'Mileage max',
+      fuel: 'Fuel',
+      gearbox: 'Gearbox',
+      all: 'Show all',
+      petrol: 'Petrol',
+      diesel: 'Diesel',
+      hybrid: 'Hybrid',
+      electric: 'Electric',
+      automatic: 'Automatic',
+      manual: 'Manual',
+    },
     submit: 'Find vehicles',
   },
   de: {
@@ -120,6 +179,22 @@ const copyByLocale = {
     markets: 'Märkte',
     moreCategories: 'Weitere Fahrzeugkategorien',
     moreFilters: 'Weitere Filter',
+    advanced: {
+      make: 'Marke',
+      model: 'Modell',
+      priceMax: 'Max. Preis',
+      yearMin: 'Baujahr ab',
+      mileageMax: 'Kilometer max.',
+      fuel: 'Kraftstoff',
+      gearbox: 'Getriebe',
+      all: 'Alle anzeigen',
+      petrol: 'Benzin',
+      diesel: 'Diesel',
+      hybrid: 'Hybrid',
+      electric: 'Elektro',
+      automatic: 'Automatik',
+      manual: 'Manuell',
+    },
     submit: 'Fahrzeuge finden',
   },
 } as const
@@ -149,6 +224,15 @@ export default function HomeHeroVehicleSearch({
   const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
   const [query, setQuery] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+    make: '',
+    model: '',
+    priceMax: '',
+    yearMin: '',
+    mileageMax: '',
+    fuel: '',
+    gearbox: '',
+  })
   const [markets, setMarkets] = useState<string[]>(() => [
     locale === 'de' ? 'DE' : locale === 'sv' ? 'SE' : 'EU',
   ])
@@ -213,6 +297,13 @@ export default function HomeHeroVehicleSearch({
     })
   }
 
+  function updateAdvancedFilter(
+    key: keyof AdvancedFilters,
+    value: string,
+  ) {
+    setAdvancedFilters((current) => ({ ...current, [key]: value }))
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const params = new URLSearchParams()
@@ -222,6 +313,10 @@ export default function HomeHeroVehicleSearch({
     if (markets.length) params.set('markets', markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
     if (selectedCategories.length > 1) params.set('categories', selectedCategories.join(','))
+    Object.entries(advancedFilters).forEach(([key, value]) => {
+      const trimmedValue = value.trim()
+      if (trimmedValue) params.set(key, trimmedValue)
+    })
 
     const href = localizePublicHref(
       locale,
@@ -430,22 +525,22 @@ export default function HomeHeroVehicleSearch({
           ))}
         </div>
 
-        <div className="mt-3 hidden lg:block">
-          <button
-            type="button"
-            onClick={() => setMoreCategoriesOpen((current) => !current)}
-            aria-expanded={moreCategoriesOpen}
-            className="group inline-flex items-center gap-2 text-[14px] !font-medium text-[#0866ff] transition hover:text-[#0057e6]"
-          >
-            {t.moreCategories}
-            <ArrowRight
-              className={`h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-1 ${
-                moreCategoriesOpen ? 'rotate-90' : ''
-              }`}
-              strokeWidth={2.2}
-            />
-          </button>
-        </div>
+        {!moreCategoriesOpen ? (
+          <div className="mt-3 hidden lg:block">
+            <button
+              type="button"
+              onClick={() => setMoreCategoriesOpen(true)}
+              aria-expanded={moreCategoriesOpen}
+              className="group inline-flex items-center gap-2 text-[14px] !font-medium text-[#0866ff] transition hover:text-[#0057e6]"
+            >
+              {t.moreCategories}
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-1"
+                strokeWidth={2.2}
+              />
+            </button>
+          </div>
+        ) : null}
 
         {moreCategoriesOpen ? (
           <div className="mt-3 hidden grid-cols-3 gap-2 lg:grid">
@@ -478,18 +573,11 @@ export default function HomeHeroVehicleSearch({
             <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {moreFiltersOpen ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-40 rounded-[12px] border border-[#d8e0ec] bg-white/95 p-4 shadow-[0_22px_46px_rgba(15,23,42,.18)] backdrop-blur-md">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
-                <SlidersHorizontal className="h-4 w-4 text-[#0866ff]" />
-                {t.markets}
-              </div>
-              <MarketPicker
-                locale={locale}
-                markets={markets}
-                onToggle={toggleMarket}
-                className="mt-3"
-              />
-            </div>
+            <AdvancedFiltersPanel
+              labels={t.advanced}
+              values={advancedFilters}
+              onChange={updateAdvancedFilter}
+            />
           ) : null}
         </div>
 
@@ -607,5 +695,105 @@ function MarketPicker({
         )
       })}
     </div>
+  )
+}
+
+function AdvancedFiltersPanel({
+  labels,
+  values,
+  onChange,
+}: {
+  labels: AdvancedFilterLabels
+  values: AdvancedFilters
+  onChange: (key: keyof AdvancedFilters, value: string) => void
+}) {
+  return (
+    <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-[80] rounded-[12px] border border-[#d8e0ec] bg-white p-4 shadow-[0_22px_46px_rgba(15,23,42,.20)]">
+      <div className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
+        <SlidersHorizontal className="h-4 w-4 text-[#0866ff]" />
+        {labels.make}, {labels.model}, {labels.priceMax}
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <FilterField
+          label={labels.make}
+          value={values.make}
+          onChange={(value) => onChange('make', value)}
+        />
+        <FilterField
+          label={labels.model}
+          value={values.model}
+          onChange={(value) => onChange('model', value)}
+        />
+        <FilterField
+          label={labels.priceMax}
+          value={values.priceMax}
+          inputMode="numeric"
+          onChange={(value) => onChange('priceMax', value)}
+        />
+        <FilterField
+          label={labels.yearMin}
+          value={values.yearMin}
+          inputMode="numeric"
+          onChange={(value) => onChange('yearMin', value)}
+        />
+        <FilterField
+          label={labels.mileageMax}
+          value={values.mileageMax}
+          inputMode="numeric"
+          onChange={(value) => onChange('mileageMax', value)}
+        />
+        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
+          {labels.fuel}
+          <select
+            value={values.fuel}
+            onChange={(event) => onChange('fuel', event.target.value)}
+            className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+          >
+            <option value="">{labels.all}</option>
+            <option value="petrol">{labels.petrol}</option>
+            <option value="diesel">{labels.diesel}</option>
+            <option value="hybrid">{labels.hybrid}</option>
+            <option value="electric">{labels.electric}</option>
+          </select>
+        </label>
+        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054] lg:col-span-2">
+          {labels.gearbox}
+          <select
+            value={values.gearbox}
+            onChange={(event) => onChange('gearbox', event.target.value)}
+            className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+          >
+            <option value="">{labels.all}</option>
+            <option value="automatic">{labels.automatic}</option>
+            <option value="manual">{labels.manual}</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  )
+}
+
+function FilterField({
+  label,
+  value,
+  inputMode,
+  onChange,
+}: {
+  label: string
+  value: string
+  inputMode?: 'numeric'
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
+      {label}
+      <input
+        value={value}
+        inputMode={inputMode}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={label}
+        className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition placeholder:text-[#767676] hover:border-[#0866ff] focus:border-[#0866ff]"
+      />
+    </label>
   )
 }
