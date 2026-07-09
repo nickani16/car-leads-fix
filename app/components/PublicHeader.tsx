@@ -861,13 +861,16 @@ export default function PublicHeader({
                         type="button"
                         aria-expanded={sellMenuOpen}
                         onClick={() => setSellMenuOpen((current) => !current)}
-                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] font-[500] transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
                           isActive
                             ? 'border-transparent text-[#0866ff]'
                             : 'border-transparent text-[#101828]'
                         }`}
                       >
-                        {label}
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
                         <ChevronDown className={`h-4 w-4 transition ${sellMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
