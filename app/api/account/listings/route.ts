@@ -21,7 +21,9 @@ import {
   normalizeEquipmentKeys,
 } from '@/lib/listing-equipment'
 import { validatePostalCode } from '@/lib/postal-code-validation'
+import { euCountryCodes } from '@/lib/eu-countries'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
+import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -35,10 +37,18 @@ import {
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 
 const MAX_IMAGES = 20
-const MAX_IMAGE_SIZE = 12 * 1024 * 1024
-const OPTIMIZED_IMAGE_QUALITY = 78
-const OPTIMIZED_IMAGE_MAX_WIDTH = 1800
-const OPTIMIZED_IMAGE_MAX_HEIGHT = 1350
+const MAX_IMAGE_SIZE = 25 * 1024 * 1024
+type UploadedMarketplaceImage = {
+  avifUrl: string
+  webpUrl: string
+  storageAvifPath: string
+  storageWebpPath: string
+  width: number | null
+  height: number | null
+  avifSizeBytes: number
+  webpSizeBytes: number
+  originalFilename: string
+}
 
 function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
@@ -131,67 +141,86 @@ async function uploadImage(
   file: File,
   userId: string,
   index: number,
+): Promise<UploadedMarketplaceImage> {
+  const processed = await processMarketplaceImage(file)
+  const stem = `${crypto.randomUUID()}-${index}-${processed.baseName}`
+  const storageAvifPath = `${userId}/${stem}.avif`
+  const storageWebpPath = `${userId}/${stem}.webp`
+
+  await uploadProcessedVariant(supabase, storageAvifPath, processed.avif, 'image/avif')
+  await uploadProcessedVariant(supabase, storageWebpPath, processed.webp, 'image/webp')
+
+  const avifUrl = publicStorageUrl(supabase, storageAvifPath)
+  const webpUrl = publicStorageUrl(supabase, storageWebpPath)
+
+  return {
+    avifUrl,
+    webpUrl,
+    storageAvifPath,
+    storageWebpPath,
+    width: processed.width,
+    height: processed.height,
+    avifSizeBytes: processed.avifSizeBytes,
+    webpSizeBytes: processed.webpSizeBytes,
+    originalFilename: processed.originalFilename,
+  }
+}
+
+async function uploadProcessedVariant(
+  supabase: SupabaseClient,
+  path: string,
+  body: ProcessedMarketplaceImage['avif'],
+  contentType: 'image/avif' | 'image/webp',
 ) {
-  const optimized = await optimizeImageForStorage(file)
-  const safeName = optimized.name.replace(/[^a-zA-Z0-9.-]/g, '-')
-  const path = `${userId}/${crypto.randomUUID()}-${index}-${safeName}`
   const { error } = await supabase.storage
     .from('marketplace-listings')
-    .upload(path, optimized.body, {
-      cacheControl: '3600',
-      contentType: optimized.contentType,
+    .upload(path, body, {
+      cacheControl: '31536000',
+      contentType,
       upsert: false,
     })
   if (error) throw error
+}
+
+function publicStorageUrl(supabase: SupabaseClient, path: string) {
   const { data } = supabase.storage.from('marketplace-listings').getPublicUrl(path)
   if (!data.publicUrl) throw new Error('Image URL failed')
   return data.publicUrl
 }
 
-async function optimizeImageForStorage(file: File) {
-  if (!file.type.startsWith('image/')) {
-    return { body: file, contentType: file.type, name: file.name }
-  }
-
+async function insertListingImageRows(
+  supabase: SupabaseClient,
+  listingId: string,
+  sellerUserId: string,
+  images: UploadedMarketplaceImage[],
+  expiresAt: string | null,
+) {
   try {
-    const sharpModule = (await Function(
-      'specifier',
-      'return import(specifier)',
-    )('sharp')) as {
-      default?: (input: Buffer, options?: Record<string, unknown>) => {
-        rotate: () => {
-          resize: (options: Record<string, unknown>) => {
-            jpeg: (options: Record<string, unknown>) => {
-              toBuffer: () => Promise<Buffer>
-            }
-          }
-        }
-      }
+    const { error } = await supabase.from('marketplace_listing_images').insert(
+      images.map((image, index) => ({
+        listing_id: listingId,
+        seller_user_id: sellerUserId,
+        position: index,
+        avif_url: image.avifUrl,
+        webp_url: image.webpUrl,
+        storage_avif_path: image.storageAvifPath,
+        storage_webp_path: image.storageWebpPath,
+        width: image.width,
+        height: image.height,
+        avif_size_bytes: image.avifSizeBytes,
+        webp_size_bytes: image.webpSizeBytes,
+        original_filename: image.originalFilename,
+        expires_at: expiresAt,
+        purge_after: expiresAt
+          ? new Date(new Date(expiresAt).getTime() + 30 * 86400000).toISOString()
+          : null,
+      })),
+    )
+    if (error) {
+      console.warn('Listing image metadata was not stored', error)
     }
-    const sharp = sharpModule.default
-    if (!sharp) throw new Error('Sharp unavailable')
-    const input = Buffer.from(await file.arrayBuffer())
-    const output = await sharp(input, { limitInputPixels: 48_000_000 })
-      .rotate()
-      .resize({
-        width: OPTIMIZED_IMAGE_MAX_WIDTH,
-        height: OPTIMIZED_IMAGE_MAX_HEIGHT,
-        fit: 'inside',
-        withoutEnlargement: true,
-      })
-      .jpeg({
-        quality: OPTIMIZED_IMAGE_QUALITY,
-        mozjpeg: true,
-        progressive: true,
-      })
-      .toBuffer()
-    return {
-      body: output,
-      contentType: 'image/jpeg',
-      name: file.name.replace(/\.[^.]+$/, '') + '.jpg',
-    }
-  } catch {
-    return { body: file, contentType: file.type, name: file.name }
+  } catch (error) {
+    console.warn('Listing image metadata was not stored', error)
   }
 }
 
@@ -314,7 +343,11 @@ export async function POST(request: Request) {
     const municipality = text(form, 'municipality')
     const address = text(form, 'addressLine1')
     const postalCode = text(form, 'postalCode')
-    if (postalCode && !validatePostalCode(postalCode, profile.country_code)) {
+    const requestedListingCountry = text(form, 'sellerCountryCode').toUpperCase()
+    const listingCountryCode = euCountryCodes.has(requestedListingCountry)
+      ? requestedListingCountry
+      : profile.country_code
+    if (postalCode && !validatePostalCode(postalCode, listingCountryCode)) {
       return NextResponse.json(
         { error: 'Postnumret verkar inte vara giltigt för valt land.' },
         { status: 400 },
@@ -336,7 +369,7 @@ export async function POST(request: Request) {
     const requestedCurrency = text(form, 'currency').toUpperCase()
     const currency = isSupportedCurrency(requestedCurrency)
       ? requestedCurrency
-      : currencyForCountry(profile.country_code)
+      : currencyForCountry(listingCountryCode)
     const modelYear = Number(text(form, 'modelYear'))
     const mileage = Number(text(form, 'mileage'))
     const identifiers: ListingIdentifierInput = {
@@ -409,7 +442,7 @@ export async function POST(request: Request) {
       )
     ) {
       return NextResponse.json(
-        { error: 'Upload 1-20 images, maximum 12 MB each.' },
+        { error: 'Upload 1-20 images, maximum 25 MB each.' },
         { status: 400 },
       )
     }
@@ -482,18 +515,19 @@ export async function POST(request: Request) {
       address,
       city,
       municipality,
-      country: profile.country_code,
+      country: listingCountryCode,
     })
     const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
     const longitude = geocoded?.longitude ?? parseCoordinate(text(form, 'longitude'))
 
-    const images = await Promise.all(
+    const uploadedImages = await Promise.all(
       files.map((file, index) => uploadImage(admin, file, user.id, index)),
     )
     const serialPlateImage =
       serialPlateFile instanceof File && serialPlateFile.size > 0
         ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
         : null
+    const images = uploadedImages.map((image) => image.webpUrl)
     const duration =
       listingPackageDetails[packageId as keyof typeof listingPackageDetails]
         .durationDays
@@ -526,8 +560,8 @@ export async function POST(request: Request) {
         known_faults: text(form, 'damageStatus') || null,
         equipment: equipmentText || null,
         service_history: text(form, 'serviceHistory') || null,
-        country_code: profile.country_code,
-        country: profile.country_code,
+        country_code: listingCountryCode,
+        country: listingCountryCode,
         city,
         municipality: municipality || null,
         address: address || null,
@@ -567,6 +601,8 @@ export async function POST(request: Request) {
 
     if (error || !listing) throw error
 
+    await insertListingImageRows(admin, listing.id, user.id, uploadedImages, endsAt?.toISOString() || null)
+
     const ipAddress =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
@@ -593,7 +629,7 @@ export async function POST(request: Request) {
             address: address || null,
             city,
             municipality: municipality || null,
-            country: profile.country_code,
+            country: listingCountryCode,
             latitude,
             longitude,
             geocoding_provider: process.env.GEOCODING_PROVIDER || process.env.MAP_GEOCODING_PROVIDER || null,
@@ -601,6 +637,17 @@ export async function POST(request: Request) {
           color_choice: colorChoice,
           seller_note_original: sellerNote || null,
           technical_data: technicalData,
+          image_variants: uploadedImages.map((image, index) => ({
+            position: index,
+            avifUrl: image.avifUrl,
+            webpUrl: image.webpUrl,
+            storageAvifPath: image.storageAvifPath,
+            storageWebpPath: image.storageWebpPath,
+            width: image.width,
+            height: image.height,
+            avifSizeBytes: image.avifSizeBytes,
+            webpSizeBytes: image.webpSizeBytes,
+          })),
         },
       }),
       admin.from('marketplace_legal_acceptances').insert(
@@ -656,8 +703,13 @@ export async function POST(request: Request) {
             listing_id: listing.id,
             seller_user_id: user.id,
             document_type: 'serial_plate',
-            file_url: serialPlateImage,
-            metadata: { uploaded_from: 'listing_form' },
+            file_url: serialPlateImage.avifUrl,
+            storage_path: serialPlateImage.storageAvifPath,
+            metadata: {
+              uploaded_from: 'listing_form',
+              webp_url: serialPlateImage.webpUrl,
+              storage_webp_path: serialPlateImage.storageWebpPath,
+            },
           })
         : Promise.resolve({ error: null }),
     ])
