@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
-const inter = Inter({
+const geist = Geist({
   variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
@@ -69,7 +69,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${geist.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
