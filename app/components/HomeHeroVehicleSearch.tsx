@@ -260,7 +260,7 @@ export default function HomeHeroVehicleSearch({
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white px-5 py-5 text-center">
+        <div className="rounded-t-[14px] bg-white px-5 py-5 text-center">
           <h1 className="mx-auto max-w-[320px] text-[21px] !font-medium leading-[1.17] tracking-[-0.04em] text-[#101828]">
             {titleText ? (
               <>
@@ -278,7 +278,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white p-4 shadow-none lg:rounded-[12px] lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)]"
+        className="relative rounded-b-[14px] bg-white p-4 shadow-none lg:rounded-[14px] lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)]"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-transparent lg:mx-0 lg:mt-0 lg:bg-white lg:border-[#d8d8d8]">
@@ -303,7 +303,7 @@ export default function HomeHeroVehicleSearch({
           </div>
         </div>
 
-        <label className="group relative mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
+        <label className="group relative mt-4 flex min-h-[50px] items-center gap-3 rounded-[14px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -354,7 +354,7 @@ export default function HomeHeroVehicleSearch({
           <button
             type="button"
             onClick={() => setMarketsOpen((current) => !current)}
-            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[8px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
+            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[14px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
           >
             <span className="truncate !font-normal">{selectedMarketsLabel}</span>
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
@@ -373,7 +373,7 @@ export default function HomeHeroVehicleSearch({
           <button
             type="button"
             onClick={() => setCategoryOpen((current) => !current)}
-            className="flex min-h-[48px] w-full items-center justify-between rounded-[10px] border border-[#d8e0ec] bg-white px-3 text-left transition hover:border-[#0866ff]"
+            className="flex min-h-[48px] w-full items-center justify-between rounded-[14px] border border-[#d8e0ec] bg-white px-3 text-left transition hover:border-[#0866ff]"
           >
             <span className="flex min-w-0 items-center gap-2">
               <SelectedCategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
@@ -384,13 +384,13 @@ export default function HomeHeroVehicleSearch({
             <ChevronDown className={`h-5 w-5 shrink-0 transition ${categoryOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {categoryOpen ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
+            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[14px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
               {categories.map(({ slug, label, icon: Icon }) => (
                 <button
                   key={slug}
                   type="button"
                   onClick={() => toggleCategory(slug)}
-                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
+                  className={`flex min-h-[44px] items-center gap-2 rounded-[12px] px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
                     selectedCategories.includes(slug)
                       ? 'bg-[#eef5ff] text-[#0866ff]'
                       : 'text-[#101828] hover:bg-[#f6f9ff]'
@@ -411,7 +411,7 @@ export default function HomeHeroVehicleSearch({
               type="button"
               onClick={() => toggleCategory(slug)}
               aria-pressed={selectedCategories.includes(slug)}
-              className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
+              className={`flex min-h-[45px] items-center gap-2 rounded-[14px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
                 selectedCategories.includes(slug)
                   ? 'border-[#0866ff] bg-white text-[#101828]'
                   : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
@@ -433,7 +433,7 @@ export default function HomeHeroVehicleSearch({
             <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
           </button>
           {moreFiltersOpen ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-40 rounded-[12px] border border-[#d8e0ec] bg-white/95 p-4 shadow-[0_22px_46px_rgba(15,23,42,.18)] backdrop-blur-md">
+            <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-40 rounded-[14px] border border-[#d8e0ec] bg-white/95 p-4 shadow-[0_22px_46px_rgba(15,23,42,.18)] backdrop-blur-md">
               <div className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
                 <SlidersHorizontal className="h-4 w-4 text-[#0866ff]" />
                 {t.markets}
@@ -450,7 +450,7 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] hover:shadow-[0_18px_34px_rgba(8,102,255,.26)] active:translate-y-0 lg:min-h-[48px] lg:shadow-none lg:hover:shadow-[0_10px_20px_rgba(8,102,255,.18)]"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] hover:shadow-[0_18px_34px_rgba(8,102,255,.26)] active:translate-y-0 lg:min-h-[48px] lg:shadow-none lg:hover:shadow-[0_10px_20px_rgba(8,102,255,.18)]"
         >
           {t.submit}
         </button>
@@ -470,7 +470,7 @@ export default function HomeHeroVehicleSearch({
       <button
         type="button"
         onClick={() => router.push(searchAgain.href)}
-        className="mt-3 flex min-h-[62px] w-full items-center justify-between rounded-[12px] bg-white px-5 text-left shadow-none transition active:scale-[.99] lg:hidden"
+        className="mt-3 flex min-h-[62px] w-full items-center justify-between rounded-[14px] bg-white px-5 text-left shadow-none transition active:scale-[.99] lg:hidden"
       >
         <span>
           <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
@@ -485,7 +485,7 @@ export default function HomeHeroVehicleSearch({
       </button>
 
       <div className="hidden lg:block">
-        <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
+        <div className="rounded-[14px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
           <h1 className="text-[40px] !font-medium leading-[1.28] tracking-[-0.045em] text-[#101828]">
             {titleText ? (
               <>
@@ -513,7 +513,7 @@ export default function HomeHeroVehicleSearch({
         <button
           type="button"
           onClick={() => router.push(searchAgain.href)}
-          className="mt-4 flex min-h-[66px] w-full items-center justify-between rounded-[12px] bg-white px-6 text-left shadow-[0_8px_24px_rgba(15,23,42,.16)] transition hover:translate-x-0.5"
+          className="mt-4 flex min-h-[66px] w-full items-center justify-between rounded-[14px] bg-white px-6 text-left shadow-[0_8px_24px_rgba(15,23,42,.16)] transition hover:translate-x-0.5"
         >
           <span>
             <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
@@ -543,7 +543,7 @@ function MarketPicker({
   className?: string
 }) {
   return (
-    <div className={`grid grid-cols-2 gap-2 rounded-[12px] bg-white p-2 ${className}`}>
+    <div className={`grid grid-cols-2 gap-2 rounded-[14px] bg-white p-2 ${className}`}>
       {marketOptions.map((option) => {
         const selected = markets.includes(option.code)
         return (
@@ -551,7 +551,7 @@ function MarketPicker({
             key={option.code}
             type="button"
             onClick={() => onToggle(option.code)}
-            className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm !font-normal transition [&_*]:!font-normal ${
+            className={`flex min-h-[44px] items-center justify-center rounded-[12px] border px-3 text-center text-sm !font-normal transition [&_*]:!font-normal ${
               selected
                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                 : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
