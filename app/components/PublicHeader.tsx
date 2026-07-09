@@ -861,7 +861,7 @@ export default function PublicHeader({
                         type="button"
                         aria-expanded={sellMenuOpen}
                         onClick={() => setSellMenuOpen((current) => !current)}
-                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] font-[500] transition hover:border-[#0866ff] hover:text-[#0866ff] ${
                           isActive
                             ? 'border-transparent text-[#0866ff]'
                             : 'border-transparent text-[#101828]'
@@ -871,13 +871,13 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${sellMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[250px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[310px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                           sellMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon }) => (
+                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, icon: Icon }) => (
                           <Link
                             key={sellHref}
                             href={sellHref}
@@ -885,16 +885,13 @@ export default function PublicHeader({
                               setSellMenuOpen(false)
                               handleInternalNavigation(event, sellHref)
                             }}
-                            className="group flex min-h-[58px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                            className="group flex min-h-[50px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
                           >
                             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
                               <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                             </span>
-                            <span className="min-w-0">
-                              <span className="block truncate text-[14px] font-semibold">{sellLabel}</span>
-                              <span className="mt-0.5 block truncate text-[12px] font-medium text-[#667085] group-hover:text-[#0866ff]/75">
-                                {description}
-                              </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
                             </span>
                           </Link>
                         ))}
