@@ -1463,7 +1463,11 @@ function VehicleResultCard({
               {importantInfo.join('   ')}
             </p>
             <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#475467]">
-              {listing.sellerIsTrader ? 'Företagssäljare' : 'Privatperson'} · {listing.sellerName || 'Privatperson'}
+              {listing.sellerIsTrader
+                ? listing.sellerName
+                  ? `Företagssäljare · ${listing.sellerName}`
+                  : 'Företagssäljare'
+                : 'Privat'}
             </p>
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-[#101828]">
@@ -1845,7 +1849,7 @@ function MapListingPreview({
           <p className="mt-4 text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
           <p className="mt-3 line-clamp-1 text-sm font-medium text-[#475467]">{facts.join(' · ')}</p>
           <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="line-clamp-1 text-sm font-medium text-[#667085]">{listing.sellerIsTrader ? listing.sellerName : 'Privatperson'}</p>
+            <p className="line-clamp-1 text-sm font-medium text-[#667085]">{listing.sellerIsTrader ? listing.sellerName : 'Privat'}</p>
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
               <span className="relative hidden h-8 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
                 <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />

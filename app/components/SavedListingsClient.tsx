@@ -113,7 +113,7 @@ export default function SavedListingsClient({
                   city: listing.city,
                 }),
               )
-              const sellerLabel = listing.sellerIsTrader ? listing.sellerName : 'Privat säljare'
+              const sellerLabel = listing.sellerIsTrader ? listing.sellerName : 'Privat'
 
               return (
               <article
