@@ -10,21 +10,23 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Bike,
+  ArrowRight,
   BusFront,
-  CarFront,
   Check,
   ChevronDown,
   Clock3,
+  Construction,
   Search,
   SlidersHorizontal,
   Tractor,
-  Truck,
-  Warehouse,
 } from 'lucide-react'
 import {
+  AutorellBikeIcon,
   AutorellCaravanIcon,
+  AutorellCarIcon,
   AutorellMotorbikeIcon,
+  AutorellScooterIcon,
+  AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
@@ -54,15 +56,16 @@ const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
 }
 
 const categories = [
-  { slug: 'cars', label: 'Bilar', icon: CarFront },
+  { slug: 'cars', label: 'Bilar', icon: AutorellCarIcon },
   { slug: 'vans', label: 'Transportbilar', icon: AutorellVanIcon },
   { slug: 'motorcycles', label: 'Motorcyklar', icon: AutorellMotorbikeIcon },
   { slug: 'motorhomes', label: 'Husbilar', icon: BusFront },
   { slug: 'caravans', label: 'Husvagnar', icon: AutorellCaravanIcon },
-  { slug: 'trucks', label: 'Lastbilar', icon: Truck },
-  { slug: 'agriculture', label: 'Lantbruk', icon: Tractor },
-  { slug: 'construction', label: 'Entreprenad', icon: Warehouse },
-  { slug: 'electric-bikes', label: 'Cyklar', icon: Bike },
+  { slug: 'trucks', label: 'Lastbilar', icon: AutorellTruckIcon },
+  { slug: 'agriculture', label: 'Lantbruksmaskiner', icon: Tractor },
+  { slug: 'construction', label: 'Entreprenadmaskiner', icon: Construction },
+  { slug: 'electric-bikes', label: 'Cyklar', icon: AutorellBikeIcon },
+  { slug: 'e-scooters', label: 'Sparkcyklar', icon: AutorellScooterIcon },
 ] satisfies Array<{
   slug: MarketplaceCategorySlug
   label: string
@@ -87,6 +90,7 @@ const copyByLocale = {
     verified: 'Visa endast verifierade säljare',
     expandArea: 'Utöka sökområde',
     markets: 'Marknader',
+    moreCategories: 'Fler fordonskategorier',
     moreFilters: 'Fler sökfilter',
     submit: 'Hitta fordon',
   },
@@ -100,6 +104,7 @@ const copyByLocale = {
     verified: 'Show verified sellers only',
     expandArea: 'Expand search area',
     markets: 'Markets',
+    moreCategories: 'More vehicle categories',
     moreFilters: 'More filters',
     submit: 'Find vehicles',
   },
@@ -113,6 +118,7 @@ const copyByLocale = {
     verified: 'Nur geprüfte Verkäufer anzeigen',
     expandArea: 'Suchgebiet erweitern',
     markets: 'Märkte',
+    moreCategories: 'Weitere Fahrzeugkategorien',
     moreFilters: 'Weitere Filter',
     submit: 'Fahrzeuge finden',
   },
@@ -148,6 +154,7 @@ export default function HomeHeroVehicleSearch({
   ])
   const [marketsOpen, setMarketsOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
+  const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
 
@@ -422,6 +429,44 @@ export default function HomeHeroVehicleSearch({
             </button>
           ))}
         </div>
+
+        <div className="mt-3 hidden lg:block">
+          <button
+            type="button"
+            onClick={() => setMoreCategoriesOpen((current) => !current)}
+            aria-expanded={moreCategoriesOpen}
+            className="group inline-flex items-center gap-2 text-[14px] !font-medium text-[#0866ff] transition hover:text-[#0057e6]"
+          >
+            {t.moreCategories}
+            <ArrowRight
+              className={`h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-1 ${
+                moreCategoriesOpen ? 'rotate-90' : ''
+              }`}
+              strokeWidth={2.2}
+            />
+          </button>
+        </div>
+
+        {moreCategoriesOpen ? (
+          <div className="mt-3 hidden grid-cols-3 gap-2 lg:grid">
+            {categories.slice(6).map(({ slug, label, icon: Icon }) => (
+              <button
+                key={slug}
+                type="button"
+                onClick={() => toggleCategory(slug)}
+                aria-pressed={selectedCategories.includes(slug)}
+                className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
+                  selectedCategories.includes(slug)
+                    ? 'border-[#0866ff] bg-white text-[#101828]'
+                    : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
+                }`}
+              >
+                <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
+                <span className="truncate !font-normal">{label}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         <div className="relative mt-7 lg:mt-6">
           <button
