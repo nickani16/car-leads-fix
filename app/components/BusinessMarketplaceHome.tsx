@@ -78,7 +78,7 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-white pt-0">
-        <div className="relative min-h-[665px] overflow-hidden bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
+        <div className="relative min-h-[665px] overflow-visible bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
           <Image
             src="/autorell-home-hero-clean.avif"
             alt={t.heroAlt}
