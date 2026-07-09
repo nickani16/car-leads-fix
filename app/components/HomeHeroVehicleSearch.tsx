@@ -260,12 +260,12 @@ export default function HomeHeroVehicleSearch({
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white/90 px-5 py-5 text-center backdrop-blur-[2px]">
-          <h1 className="mx-auto max-w-[320px] text-[23px] !font-medium leading-[1.17] tracking-[-0.04em] text-[#101828]">
+        <div className="rounded-t-[12px] bg-white px-5 py-5 text-center">
+          <h1 className="mx-auto max-w-[320px] text-[21px] !font-medium leading-[1.17] tracking-[-0.04em] text-[#101828]">
             {titleText ? (
               <>
                 {titleText.before}
-                <span className="text-[#0866ff] underline decoration-[#0866ff] decoration-2 underline-offset-[3px]">
+                <span className="text-[#0866ff]">
                   {titleText.highlight}
                 </span>
               </>
@@ -278,7 +278,7 @@ export default function HomeHeroVehicleSearch({
 
       <form
         onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white/90 p-4 shadow-none backdrop-blur-[2px] lg:rounded-[12px] lg:bg-white lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)] lg:backdrop-blur-none"
+        className="relative rounded-b-[12px] bg-white p-4 shadow-none lg:rounded-[12px] lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)]"
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-transparent lg:mx-0 lg:mt-0 lg:bg-white lg:border-[#d8d8d8]">

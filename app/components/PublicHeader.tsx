@@ -1199,21 +1199,21 @@ export default function PublicHeader({
             }}
             aria-label={mobileMoreOpen ? t.closeMenu : t.openMenu}
             aria-expanded={mobileMoreOpen}
-            className="relative grid h-11 w-9 shrink-0 place-items-center text-[#101828]"
+            className="relative grid h-11 w-8 shrink-0 place-items-center text-[#101828]"
           >
             <span
-              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-transform duration-200 ease-out ${
-                mobileMoreOpen ? 'translate-y-0 rotate-45' : '-translate-y-[6.5px] rotate-0'
+              className={`absolute h-[1.6px] w-[20px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 rotate-45' : '-translate-y-[6px] rotate-0'
               }`}
             />
             <span
-              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-opacity duration-150 ease-out ${
+              className={`absolute h-[1.6px] w-[20px] rounded-full bg-current transition-opacity duration-150 ease-out ${
                 mobileMoreOpen ? 'opacity-0' : 'opacity-100'
               }`}
             />
             <span
-              className={`absolute h-[1.7px] w-[22px] rounded-full bg-current transition-transform duration-200 ease-out ${
-                mobileMoreOpen ? 'translate-y-0 -rotate-45' : 'translate-y-[6.5px] rotate-0'
+              className={`absolute h-[1.6px] w-[20px] rounded-full bg-current transition-transform duration-200 ease-out ${
+                mobileMoreOpen ? 'translate-y-0 -rotate-45' : 'translate-y-[6px] rotate-0'
               }`}
             />
           </button>
