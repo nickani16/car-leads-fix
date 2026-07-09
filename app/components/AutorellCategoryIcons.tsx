@@ -26,6 +26,33 @@ export function AutorellVanIcon(props: AutorellCategoryIconProps) {
   )
 }
 
+export function AutorellAllCategoriesIcon(props: AutorellCategoryIconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <rect x="4" y="4" width="6" height="6" rx="1.5" />
+      <rect x="14" y="4" width="6" height="6" rx="1.5" />
+      <rect x="4" y="14" width="6" height="6" rx="1.5" />
+      <rect x="14" y="14" width="6" height="6" rx="1.5" />
+    </svg>
+  )
+}
+
+export function AutorellMotorhomeIcon(props: AutorellCategoryIconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <path d="M3 17V8a3 3 0 0 1 3-3h7.5a3 3 0 0 1 2.4 1.2L20 11.7V17" />
+      <path d="M3 12h16.5" />
+      <path d="M7 5v7" />
+      <path d="M11 5v7" />
+      <path d="M15 8h2.25" />
+      <path d="M5 17h2" />
+      <path d="M11 17h4" />
+      <circle cx="9" cy="17" r="2" />
+      <circle cx="17" cy="17" r="2" />
+    </svg>
+  )
+}
+
 export function AutorellCaravanIcon(props: AutorellCategoryIconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
@@ -61,6 +88,32 @@ export function AutorellTruckIcon(props: AutorellCategoryIconProps) {
   )
 }
 
+export function AutorellAgricultureIcon(props: AutorellCategoryIconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <path d="M7 15V9.5A2.5 2.5 0 0 1 9.5 7H13l2 4h2.5a2.5 2.5 0 0 1 2.5 2.5V15" />
+      <path d="M9 7V4h4" />
+      <path d="M5 15h7" />
+      <circle cx="6" cy="17" r="3" />
+      <circle cx="17.5" cy="17.5" r="2.5" />
+      <path d="M15 11h-4" />
+    </svg>
+  )
+}
+
+export function AutorellConstructionIcon(props: AutorellCategoryIconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <path d="M5 17h9" />
+      <path d="M8 17 5 9h5l3 8" />
+      <path d="M10 9 15 5l4 3-5 4" />
+      <path d="m18 8 2 5-3 2" />
+      <circle cx="6.5" cy="18" r="2" />
+      <circle cx="13.5" cy="18" r="2" />
+    </svg>
+  )
+}
+
 export function AutorellBikeIcon(props: AutorellCategoryIconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
@@ -84,11 +137,15 @@ export function AutorellScooterIcon(props: AutorellCategoryIconProps) {
 }
 
 export const autorellCategoryIcons: Record<string, AutorellCategoryIcon> = {
+  all: AutorellAllCategoriesIcon,
   cars: AutorellCarIcon,
   vans: AutorellVanIcon,
   motorcycles: AutorellMotorbikeIcon,
+  motorhomes: AutorellMotorhomeIcon,
   caravans: AutorellCaravanIcon,
   trucks: AutorellTruckIcon,
+  agriculture: AutorellAgricultureIcon,
+  construction: AutorellConstructionIcon,
   'electric-bikes': AutorellBikeIcon,
   'e-scooters': AutorellScooterIcon,
 }

@@ -24,9 +24,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import {
+  AutorellAgricultureIcon,
+  AutorellAllCategoriesIcon,
   AutorellBikeIcon,
   AutorellCaravanIcon,
   AutorellCarIcon,
+  AutorellConstructionIcon,
+  AutorellMotorhomeIcon,
   AutorellMotorbikeIcon,
   AutorellScooterIcon,
   AutorellTruckIcon,
@@ -101,15 +105,15 @@ const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: s
 ]
 
 const categories = [
-  { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellCarIcon },
+  { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellAllCategoriesIcon },
   { key: 'cars', label: 'Bilar', shortLabel: 'Bilar', icon: AutorellCarIcon },
   { key: 'vans', label: 'Transportbilar', shortLabel: 'Transport', icon: AutorellVanIcon },
   { key: 'motorcycles', label: 'Motorcyklar', shortLabel: 'MC', icon: AutorellMotorbikeIcon },
-  { key: 'motorhomes', label: 'Husbilar', shortLabel: 'Husbilar', icon: AutorellVanIcon },
+  { key: 'motorhomes', label: 'Husbilar', shortLabel: 'Husbilar', icon: AutorellMotorhomeIcon },
   { key: 'caravans', label: 'Husvagnar', shortLabel: 'Husvagnar', icon: AutorellCaravanIcon },
   { key: 'trucks', label: 'Lastbilar', shortLabel: 'Lastbilar', icon: AutorellTruckIcon },
-  { key: 'agriculture', label: 'Lantbruk', shortLabel: 'Lantbruk', icon: AutorellBikeIcon },
-  { key: 'construction', label: 'Entreprenad', shortLabel: 'Entreprenad', icon: AutorellScooterIcon },
+  { key: 'agriculture', label: 'Lantbruk', shortLabel: 'Lantbruk', icon: AutorellAgricultureIcon },
+  { key: 'construction', label: 'Entreprenad', shortLabel: 'Entreprenad', icon: AutorellConstructionIcon },
   { key: 'electric-bikes', label: 'Cyklar', shortLabel: 'Cyklar', icon: AutorellBikeIcon },
   { key: 'e-scooters', label: 'Sparkcyklar', shortLabel: 'Spark', icon: AutorellScooterIcon },
 ]
