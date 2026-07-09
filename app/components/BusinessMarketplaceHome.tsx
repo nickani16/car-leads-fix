@@ -80,7 +80,7 @@ export default async function BusinessMarketplaceHome({
       <section className="-mt-[2px] bg-white pt-0">
         <div className="relative min-h-[665px] overflow-hidden bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
           <Image
-            src="/autorell-home-hero-city-parking.jpg"
+            src="/autorell-home-hero-auction-cars.jpg"
             alt={t.heroAlt}
             fill
             priority
