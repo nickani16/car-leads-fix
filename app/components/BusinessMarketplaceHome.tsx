@@ -87,6 +87,10 @@ export default async function BusinessMarketplaceHome({
             className="object-cover object-center"
             sizes="100vw"
           />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 h-[54%] w-[34%] bg-[radial-gradient(ellipse_at_8%_18%,rgba(255,237,198,0.16)_0%,rgba(255,244,224,0.08)_38%,rgba(255,255,255,0)_72%)]"
+          />
           <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
             <HomeHeroVehicleSearch locale={locale} />
           </div>
