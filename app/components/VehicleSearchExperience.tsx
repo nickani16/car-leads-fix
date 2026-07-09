@@ -50,7 +50,7 @@ type SavedVehicleSearch = {
     mode: SearchMode
     query: string
     categories: string[]
-    country: string
+    markets: string[]
     make: string
     model: string
     minPrice: string
@@ -153,6 +153,26 @@ const countryFilterOptions = marketOptions.map((option) => ({
   label: option.value ? option.label : 'Hela Europa',
 }))
 
+const selectableMarketCodes = new Set(marketOptions.map((option) => option.value).filter(Boolean))
+
+function normalizeMarketSelection(values: string[], fallback = '') {
+  const upperValues = values.map((value) => value.toUpperCase())
+  if (upperValues.some((value) => value === 'EU' || value === '')) return []
+  const normalized = upperValues.filter((value) => selectableMarketCodes.has(value))
+
+  return [...new Set(normalized.length ? normalized : fallback ? [fallback.toUpperCase()] : [])]
+}
+
+function sameMarketSelection(left: string[], right: string[]) {
+  const leftNormalized = normalizeMarketSelection(left)
+  const rightNormalized = normalizeMarketSelection(right)
+  return leftNormalized.length === rightNormalized.length && leftNormalized.every((value) => rightNormalized.includes(value))
+}
+
+function matchesSelectedMarkets(country: string, markets: string[]) {
+  return !markets.length || markets.includes(country)
+}
+
 const SAVED_SEARCHES_STORAGE_KEY = 'autorell-saved-vehicle-searches'
 
 const sortOptions = [
@@ -174,6 +194,8 @@ export default function VehicleSearchExperience({
   defaultCountry = 'SE',
   automaticCountry,
   initialCategory = 'all',
+  initialCategories = [],
+  initialMarkets = [],
   initialQuery = '',
   initialMake = '',
   initialModel = '',
@@ -185,6 +207,8 @@ export default function VehicleSearchExperience({
   defaultCountry?: string
   automaticCountry?: string
   initialCategory?: string
+  initialCategories?: string[]
+  initialMarkets?: string[]
   initialQuery?: string
   initialMake?: string
   initialModel?: string
@@ -192,14 +216,27 @@ export default function VehicleSearchExperience({
   initialMaxPrice?: string
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
-  const safeInitialCategories = safeInitialCategory === 'all' ? [] : [safeInitialCategory]
+  const safeInitialCategories =
+    initialCategories.length
+      ? [
+          ...new Set(
+            initialCategories.filter((key) => key !== 'all' && categories.some((item) => item.key === key)),
+          ),
+        ]
+      : safeInitialCategory === 'all'
+        ? []
+        : [safeInitialCategory]
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
+  const safeInitialMarkets = normalizeMarketSelection(
+    initialMarkets.length ? initialMarkets : safeInitialCountry ? [safeInitialCountry] : [],
+    safeAutomaticCountry,
+  )
   const [mode, setMode] = useState<SearchMode>('sale')
   const [query, setQuery] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
-  const [country, setCountry] = useState(safeInitialCountry)
-  const [countryOverride, setCountryOverride] = useState(safeInitialCountry !== safeAutomaticCountry)
+  const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
+  const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
@@ -228,7 +265,6 @@ export default function VehicleSearchExperience({
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
-  const currentCategory = selectedCategoryItems[0] || categories[0]
   const filterProfile = [
     ...new Set((selectedCategories.length ? selectedCategories : ['all']).flatMap(categoryFilterProfile)),
   ]
@@ -238,9 +274,9 @@ export default function VehicleSearchExperience({
       listings.filter(
         (listing) =>
           (!selectedCategories.length || selectedCategories.includes(listing.category)) &&
-          (!country || listing.country === country),
+          matchesSelectedMarkets(listing.country, selectedMarkets),
       ),
-    [country, listings, selectedCategories],
+    [listings, selectedCategories, selectedMarkets],
   )
   const fuels = useMemo(
     () => [...new Set(optionListings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
@@ -305,7 +341,7 @@ export default function VehicleSearchExperience({
     const maxMileageValue = parseOptionalNumber(maxMileage)
     const matches = listings.filter((listing) => {
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
-      if (country && listing.country !== country) return false
+      if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
       if (make && listing.make !== make) return false
       if (model && listing.model !== model) return false
       if (fuel && listing.fuelType !== fuel) return false
@@ -353,13 +389,13 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, color, condition, country, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     setQuery(initialQuery)
     setSelectedCategories(safeInitialCategories)
-    setCountry(safeAutomaticCountry)
-    setCountryOverride(false)
+    setSelectedMarkets(safeAutomaticCountry ? [safeAutomaticCountry] : [])
+    setMarketOverride(false)
     setMinPrice(initialMinPrice)
     setMaxPrice(initialMaxPrice)
     setMinYear('')
@@ -392,6 +428,27 @@ export default function VehicleSearchExperience({
     })
   }
 
+  function toggleMarket(nextMarket: string) {
+    setMake('')
+    setModel('')
+    setMarketOverride(true)
+    setSelectedMarkets((current) => {
+      if (!nextMarket) return []
+      const normalizedMarket = nextMarket.toUpperCase()
+      if (!selectableMarketCodes.has(normalizedMarket)) return current
+      return current.includes(normalizedMarket)
+        ? current.filter((item) => item !== normalizedMarket)
+        : [...current, normalizedMarket]
+    })
+  }
+
+  function removeMarket(market: string) {
+    setMake('')
+    setModel('')
+    setSelectedMarkets((current) => current.filter((item) => item !== market))
+    setMarketOverride(true)
+  }
+
   function saveCurrentSearch() {
     const savedSearch: SavedVehicleSearch = {
       savedAt: new Date().toISOString(),
@@ -399,7 +456,7 @@ export default function VehicleSearchExperience({
         mode,
         query: query.trim(),
         categories: selectedCategories,
-        country,
+        markets: selectedMarkets,
         make,
         model,
         minPrice,
@@ -442,36 +499,51 @@ export default function VehicleSearchExperience({
   }
 
   const currentTab = tabs.find((tab) => tab.key === mode) || tabs[0]
-  const CurrentCategoryIcon = currentCategory.icon
   const visibleCount = filteredListings.length
-  const countryName = country ? getEuCountryName(country, locale) : 'alla marknader'
+  const primaryMapCountry = selectedMarkets.length === 1 ? selectedMarkets[0] : 'EU'
+  const marketSummary = selectedMarkets.length
+    ? selectedMarkets.map((market) => getEuCountryName(market, locale)).join(', ')
+    : 'Hela Europa'
+  const countryName = selectedMarkets.length ? marketSummary : 'alla marknader'
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
+  const categoryFilterChips: ActiveFilterChip[] = selectedCategoryItems.map((item) => {
+    const Icon = item.icon
+    return {
+      key: `category-${item.key}`,
+      label: item.shortLabel,
+      icon: <Icon className="h-4 w-4" />,
+      onRemove: () => {
+        setSelectedCategories((current) => current.filter((key) => key !== item.key))
+        setMake('')
+        setModel('')
+      },
+    }
+  })
+  const marketFilterChips: ActiveFilterChip[] = marketOverride
+    ? selectedMarkets.length
+      ? selectedMarkets.map((market) => ({
+          key: `market-${market}`,
+          label: getEuCountryName(market, locale),
+          icon: <CountryFlag code={market} className="h-4 w-4 rounded-full" />,
+          onRemove: () => removeMarket(market),
+        }))
+      : [
+          {
+            key: 'market-eu',
+            label: 'Hela Europa',
+            icon: <CountryFlag code="eu" className="h-4 w-4 rounded-full" />,
+            onRemove: () => {
+              setSelectedMarkets(safeAutomaticCountry ? [safeAutomaticCountry] : [])
+              setMarketOverride(false)
+              setMake('')
+              setModel('')
+            },
+          },
+        ]
+    : []
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
-    selectedCategoryItems.length
-      ? {
-          key: 'category',
-          label: selectedCategoryItems.map((item) => item.shortLabel).join(', '),
-          icon: <CurrentCategoryIcon className="h-4 w-4" />,
-          onRemove: () => {
-            setSelectedCategories([])
-            setMake('')
-            setModel('')
-          },
-        }
-      : null,
-    countryOverride
-      ? {
-          key: 'country',
-          label: country ? getEuCountryName(country, locale) : 'Hela Europa',
-          icon: <CountryFlag code={country || 'eu'} className="h-4 w-4 rounded-full" />,
-          onRemove: () => {
-            setCountry(safeAutomaticCountry)
-            setCountryOverride(false)
-            setMake('')
-            setModel('')
-          },
-        }
-      : null,
+    ...categoryFilterChips,
+    ...marketFilterChips,
     make ? { key: 'make', label: make, onRemove: () => {
       setMake('')
       setModel('')
@@ -556,8 +628,8 @@ export default function VehicleSearchExperience({
               Sökningar
             </span>
             <span className="inline-flex items-center gap-2">
-              <CountryFlag code={country || 'SE'} className="h-5 w-5" />
-              <span>{country || 'EU'}</span>
+              <CountryFlag code={primaryMapCountry || 'eu'} className="h-5 w-5" />
+              <span>{selectedMarkets.length > 1 ? `${selectedMarkets.length} marknader` : primaryMapCountry}</span>
             </span>
           </div>
         </header>
@@ -684,19 +756,14 @@ export default function VehicleSearchExperience({
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
                     <CollapsibleFilterSection
                       title="Marknad"
-                      summary={country ? getEuCountryName(country, locale) : 'Hela Europa'}
+                      summary={marketSummary}
                       open={marketOpen}
                       onToggle={() => setMarketOpen((open) => !open)}
                     >
                       <MarketOptionGrid
-                        country={country}
+                        selectedMarkets={selectedMarkets}
                         locale={locale}
-                        onSelect={(value) => {
-                          setCountry(value)
-                          setCountryOverride(value !== safeAutomaticCountry)
-                          setMake('')
-                          setModel('')
-                        }}
+                        onToggle={toggleMarket}
                       />
                     </CollapsibleFilterSection>
                     <FilterSection title="Fordonstyp">
@@ -917,7 +984,7 @@ export default function VehicleSearchExperience({
           <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
             <VehicleSearchMap
               listings={filteredListings}
-              country={country}
+              country={primaryMapCountry}
               locale={locale}
               query={query}
               onQueryChange={setQuery}
@@ -949,19 +1016,14 @@ export default function VehicleSearchExperience({
                 <div className="h-[calc(100%-116px)] overflow-y-auto px-4 py-4">
                   <CollapsibleFilterSection
                     title="Marknad"
-                    summary={country ? getEuCountryName(country, locale) : 'Hela Europa'}
+                    summary={marketSummary}
                     open={marketOpen}
                     onToggle={() => setMarketOpen((open) => !open)}
                   >
                     <MarketOptionGrid
-                      country={country}
+                      selectedMarkets={selectedMarkets}
                       locale={locale}
-                      onSelect={(value) => {
-                        setCountry(value)
-                        setCountryOverride(value !== safeAutomaticCountry)
-                        setMake('')
-                        setModel('')
-                      }}
+                      onToggle={toggleMarket}
                     />
                   </CollapsibleFilterSection>
                   <FilterSection title="Fordonstyp">
@@ -1083,23 +1145,23 @@ function CollapsibleFilterSection({
 }
 
 function MarketOptionGrid({
-  country,
+  selectedMarkets,
   locale,
-  onSelect,
+  onToggle,
 }: {
-  country: string
+  selectedMarkets: string[]
   locale: PublicLocale
-  onSelect: (value: string) => void
+  onToggle: (value: string) => void
 }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {countryFilterOptions.map((option) => {
-        const selected = country === option.value
+        const selected = option.value ? selectedMarkets.includes(option.value) : selectedMarkets.length === 0
         return (
           <button
             key={option.value || 'eu'}
             type="button"
-            onClick={() => onSelect(option.value)}
+            onClick={() => onToggle(option.value)}
             className={`flex h-11 items-center gap-2 rounded-[8px] border px-3 text-left text-sm font-medium transition ${
               selected
                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
@@ -1107,7 +1169,8 @@ function MarketOptionGrid({
             }`}
           >
             <CountryFlag code={option.value || 'eu'} className="h-5 w-5 rounded-full" />
-            {option.value ? getEuCountryName(option.value, locale) : option.label}
+            <span className="min-w-0 flex-1 truncate">{option.value ? getEuCountryName(option.value, locale) : option.label}</span>
+            {selected ? <span className="h-2 w-2 shrink-0 rounded-full bg-[#0866ff]" /> : null}
           </button>
         )
       })}
