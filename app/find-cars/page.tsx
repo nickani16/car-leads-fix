@@ -13,10 +13,6 @@ import {
   getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
-import {
-  marketplaceCategories,
-  normalizeMarketplaceCategory,
-} from '@/lib/marketplace'
 import { getRequestLocale } from '@/lib/request-locale'
 
 export const metadata: Metadata = {
@@ -34,13 +30,6 @@ export default async function FindCarsPage({
   const resolvedSearchParams = searchParams ? await searchParams : {}
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
-  const requestedMarketValues = getSearchParamList(resolvedSearchParams, 'markets').map((item) => item.toUpperCase())
-  const requestedAllEurope = requestedMarketValues.includes('EU')
-  const requestedMarkets = requestedMarketValues.filter((item) => euCountryCodes.has(item))
-  const requestedCategories = getSearchParamList(resolvedSearchParams, 'categories')
-    .map((item) => normalizeMarketplaceCategory(item))
-    .filter((item) => marketplaceCategories.some((categoryItem) => categoryItem.slug === item))
   const automaticCountry =
     marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
@@ -50,9 +39,7 @@ export default async function FindCarsPage({
           ? 'DE'
           : 'SE'
   const defaultCountry =
-    requestedAllEurope ? '' :
-    requestedMarkets[0] ||
-    requestedCountry ||
+    getSearchParam(resolvedSearchParams, 'country') ||
     automaticCountry
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
   const data = await getPublishedMarketplaceCategoryListings('vehicles', 240)
@@ -109,8 +96,6 @@ export default async function FindCarsPage({
         defaultCountry={defaultCountry}
         automaticCountry={automaticCountry}
         initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
-        initialCategories={requestedCategories}
-        initialMarkets={requestedAllEurope ? ['EU'] : requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
         initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
@@ -127,13 +112,4 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
-}
-
-function getSearchParamList(
-  params: { [key: string]: string | string[] | undefined },
-  key: string,
-) {
-  const value = params[key]
-  const values = Array.isArray(value) ? value : value ? [value] : []
-  return values.flatMap((item) => item.split(',')).map((item) => item.trim()).filter(Boolean)
 }

@@ -100,14 +100,6 @@ const categories = [
 }>
 
 const marketOptions = [
-  { code: 'AT', sv: 'Österrike', en: 'Austria', de: 'Österreich' },
-  { code: 'BE', sv: 'Belgien', en: 'Belgium', de: 'Belgien' },
-  { code: 'FI', sv: 'Finland', en: 'Finland', de: 'Finnland' },
-  { code: 'FR', sv: 'Frankrike', en: 'France', de: 'Frankreich' },
-  { code: 'IT', sv: 'Italien', en: 'Italy', de: 'Italien' },
-  { code: 'NL', sv: 'Nederländerna', en: 'Netherlands', de: 'Niederlande' },
-  { code: 'PL', sv: 'Polen', en: 'Poland', de: 'Polen' },
-  { code: 'ES', sv: 'Spanien', en: 'Spain', de: 'Spanien' },
   { code: 'SE', sv: 'Sverige', en: 'Sweden', de: 'Schweden' },
   { code: 'DE', sv: 'Tyskland', en: 'Germany', de: 'Deutschland' },
   { code: 'DK', sv: 'Danmark', en: 'Denmark', de: 'Dänemark' },
@@ -287,13 +279,11 @@ export default function HomeHeroVehicleSearch({
 
   function toggleMarket(code: string) {
     setMarkets((current) => {
-      if (code === 'EU') return ['EU']
-      const currentCountries = current.filter((item) => item !== 'EU')
       if (current.includes(code)) {
-        const next = currentCountries.filter((item) => item !== code)
+        const next = current.filter((item) => item !== code)
         return next.length ? next : current
       }
-      return [...currentCountries, code]
+      return [...current, code]
     })
   }
 
