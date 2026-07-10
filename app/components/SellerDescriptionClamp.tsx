@@ -32,7 +32,7 @@ export default function SellerDescriptionClamp({
           {visibleText}
         </p>
         {shouldClamp && !expanded ? (
-          <div className="relative -mt-1 max-h-14 overflow-hidden" aria-hidden="true">
+          <div className="relative -mt-1 max-h-10 overflow-hidden" aria-hidden="true">
             <p className="select-none whitespace-pre-line text-[14px] leading-7 text-[#475467]/45 blur-[1.4px]">
               {continuationHint}
             </p>
@@ -44,7 +44,7 @@ export default function SellerDescriptionClamp({
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="mt-3 inline-flex items-center text-[14px] font-semibold text-[#075fff] transition hover:text-[#004fd6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#075fff]"
+          className="mt-1 inline-flex items-center text-[14px] font-semibold text-[#075fff] transition hover:text-[#004fd6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#075fff]"
           aria-expanded={expanded}
         >
           {expanded ? showLessLabel : readMoreLabel}
