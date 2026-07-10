@@ -1582,7 +1582,7 @@ function CompareOverlay({
             })
 
             return (
-              <article key={listing.id} className="border-r border-[#dfe5ef]">
+              <article key={listing.id} className="relative border-r border-[#dfe5ef]">
                 <div className="p-4 sm:p-6">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#edf4ff]">
                     <ListingCardImageCarousel
@@ -1609,7 +1609,6 @@ function CompareOverlay({
                     <div className="absolute right-3 top-3">
                       <SavedListingButton listingId={listing.id} />
                     </div>
-                    <CountryFlag code={listing.country || 'eu'} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
                   </div>
 
                   <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-[#667085]">
@@ -1641,6 +1640,10 @@ function CompareOverlay({
                     {copy.viewListing}
                   </Link>
                 </div>
+                <CountryFlag
+                  code={listing.country || 'eu'}
+                  className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+                />
 
                 <div className="border-t border-[#dfe5ef] bg-[#f5fbf8] p-4 sm:p-6">
                   <p className="text-xs font-black uppercase tracking-[0.12em] text-[#101828]">

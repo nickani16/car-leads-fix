@@ -127,7 +127,7 @@ export default function SavedListingsClient({
               return (
               <article
                 key={listing.id}
-                className="overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.06)]"
+                className="relative overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.06)]"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]">
                   <ListingCardImageCarousel
@@ -151,10 +151,6 @@ export default function SavedListingsClient({
                   <div className="absolute right-4 top-4">
                     <SavedListingButton listingId={listing.id} />
                   </div>
-                  <CountryFlag
-                    code={listing.country || 'eu'}
-                    className="absolute bottom-4 right-4 h-7 w-7 rounded-full"
-                  />
                 </div>
                 <div className="p-5">
                   <Link href={detailHref} className="block hover:text-[#0866ff]">
@@ -181,6 +177,10 @@ export default function SavedListingsClient({
                     </Link>
                   </div>
                 </div>
+                <CountryFlag
+                  code={listing.country || 'eu'}
+                  className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+                />
               </article>
               )
             })}

@@ -295,7 +295,7 @@ function HomeListingCard({
   locale: PublicLocale
 }) {
   return (
-    <article className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition-colors hover:border-[#344054] sm:w-auto sm:max-w-none">
+    <article className="group relative w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition-colors hover:border-[#344054] sm:w-auto sm:max-w-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
@@ -318,7 +318,6 @@ function HomeListingCard({
             {locale === 'sv' ? 'Verifierad' : translatePublic(locale, 'Verified')}
           </span>
         ) : null}
-        <CountryFlag code={item.countryCode} className="absolute bottom-3 left-3 h-7 w-7 rounded-full shadow-md" />
       </div>
       <div className="p-3">
         <Link href={item.href} className="block">
@@ -329,6 +328,10 @@ function HomeListingCard({
         <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
         <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
       </div>
+      <CountryFlag
+        code={item.countryCode}
+        className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+      />
     </article>
   )
 }

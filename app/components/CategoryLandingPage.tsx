@@ -429,7 +429,7 @@ function ListingCard({
   )
 
   return (
-    <article className="group overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition-colors hover:border-[#344054]">
+    <article className="group relative overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition-colors hover:border-[#344054]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#edf4ff]">
         {listing.imageUrls.length ? (
           <ListingCardImageCarousel
@@ -457,10 +457,6 @@ function ListingCard({
         <div className="absolute bottom-3 right-3 scale-[.78] origin-bottom-right">
           <SavedListingButton listingId={listing.id} />
         </div>
-        <CountryFlag
-          code={listing.countryCode || 'eu'}
-          className="absolute bottom-3 left-3 h-7 w-7 rounded-full"
-        />
       </div>
       <div className="p-3 sm:p-4">
         <Link
@@ -490,6 +486,10 @@ function ListingCard({
         ) : null}
         <p className="mt-3 text-sm font-bold tracking-[-0.03em] sm:mt-4 sm:text-base">{listing.price}</p>
       </div>
+      <CountryFlag
+        code={listing.countryCode || 'eu'}
+        className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+      />
     </article>
   )
 }
