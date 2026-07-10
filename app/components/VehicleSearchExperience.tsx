@@ -114,6 +114,7 @@ const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: s
 
 const MARKETPLACE_RETURN_SEARCH_STATE_KEY = 'autorell:marketplace-return-search'
 const MARKETPLACE_RETURN_SEARCH_ARMED_KEY = 'autorell:marketplace-return-search-armed'
+const MARKETPLACE_PERSISTED_SEARCH_STATE_KEY = 'autorell:marketplace-search-state'
 
 const categories = [
   { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellAllCategoriesIcon },
@@ -217,6 +218,45 @@ function readMarketplaceReturnSearchState(locale: PublicLocale) {
     return parsed.state || null
   } catch {
     return null
+  }
+}
+
+function persistedMarketplaceSearchKey(locale: PublicLocale, defaultCountry: string) {
+  return `${MARKETPLACE_PERSISTED_SEARCH_STATE_KEY}:${locale}:${defaultCountry || 'EU'}`
+}
+
+function readPersistedMarketplaceSearchState(locale: PublicLocale, defaultCountry: string) {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(persistedMarketplaceSearchKey(locale, defaultCountry))
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { locale?: PublicLocale; defaultCountry?: string; state?: MarketplaceReturnSearchState }
+    if (parsed.locale && parsed.locale !== locale) return null
+    if (parsed.defaultCountry && parsed.defaultCountry !== defaultCountry) return null
+    return parsed.state || null
+  } catch {
+    return null
+  }
+}
+
+function writePersistedMarketplaceSearchState(locale: PublicLocale, defaultCountry: string, state: MarketplaceReturnSearchState) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(
+      persistedMarketplaceSearchKey(locale, defaultCountry),
+      JSON.stringify({ locale, defaultCountry, state, savedAt: new Date().toISOString() }),
+    )
+  } catch {
+    // localStorage can be unavailable; searching should still work.
+  }
+}
+
+function clearPersistedMarketplaceSearchState(locale: PublicLocale, defaultCountry: string) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.removeItem(persistedMarketplaceSearchKey(locale, defaultCountry))
+  } catch {
+    // localStorage can be unavailable; reset should still work.
   }
 }
 
@@ -437,11 +477,45 @@ export default function VehicleSearchExperience({
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
+  const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
+
+  const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
+    mode,
+    query: query.trim(),
+    categories: selectedCategories,
+    markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
+    make,
+    model,
+    minPrice,
+    maxPrice,
+    minYear,
+    maxYear,
+    maxMileage,
+    fuel,
+    gearbox,
+    bodyType,
+    condition,
+    color,
+    sellerType,
+    verifiedOnly,
+    fourWheelDrive,
+    leasingPossible,
+    equipmentQuery: equipmentQuery.trim(),
+    sortBy,
+  }), [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   useEffect(() => {
-    if (hasExplicitInitialFilters) return
-    const restored = readMarketplaceReturnSearchState(locale)
-    if (!restored) return
+    if (hasExplicitInitialFilters) {
+      const timer = window.setTimeout(() => setSearchStateReady(true), 0)
+      return () => window.clearTimeout(timer)
+    }
+    const restored =
+      readMarketplaceReturnSearchState(locale) ||
+      readPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
+    if (!restored) {
+      const timer = window.setTimeout(() => setSearchStateReady(true), 0)
+      return () => window.clearTimeout(timer)
+    }
 
     const timer = window.setTimeout(() => {
       setMode(restored.mode === 'leasing' ? 'leasing' : 'sale')
@@ -467,9 +541,15 @@ export default function VehicleSearchExperience({
       setLeasingPossible(Boolean(restored.leasingPossible))
       setEquipmentQuery(restored.equipmentQuery || '')
       setSortBy(restored.sortBy || 'published')
+      setSearchStateReady(true)
     }, 0)
     return () => window.clearTimeout(timer)
   }, [hasExplicitInitialFilters, locale, safeAutomaticCountry])
+
+  useEffect(() => {
+    if (!searchStateReady) return
+    writePersistedMarketplaceSearchState(locale, safeAutomaticCountry, currentSearchState)
+  }, [currentSearchState, locale, safeAutomaticCountry, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -600,6 +680,7 @@ export default function VehicleSearchExperience({
   }, [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
+    clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
     setQuery(initialQuery)
     setSelectedCategories(safeInitialCategories)
     setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
@@ -701,30 +782,7 @@ export default function VehicleSearchExperience({
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
 
     const href = `/marketplace${params.size ? `?${params.toString()}` : ''}`
-    const filterSnapshot = {
-      mode,
-      query: query.trim(),
-      categories: selectedCategories,
-      markets: selectedMarkets,
-      make,
-      model,
-      minPrice,
-      maxPrice,
-      minYear,
-      maxYear,
-      maxMileage,
-      fuel,
-      gearbox,
-      bodyType,
-      condition,
-      color,
-      sellerType,
-      verifiedOnly,
-      fourWheelDrive,
-      leasingPossible,
-      equipmentQuery: equipmentQuery.trim(),
-      sortBy,
-    }
+    const filterSnapshot = currentSearchState
     const name = query.trim() || selectedCategoryItems.map((item) => categoryText(item, locale, true)).join(', ') || marketSummary || uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge')
 
     try {
@@ -809,30 +867,7 @@ export default function VehicleSearchExperience({
   }
 
   function rememberSearchBeforeListingNavigation() {
-    writeMarketplaceReturnSearchState(locale, {
-      mode,
-      query: query.trim(),
-      categories: selectedCategories,
-      markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
-      make,
-      model,
-      minPrice,
-      maxPrice,
-      minYear,
-      maxYear,
-      maxMileage,
-      fuel,
-      gearbox,
-      bodyType,
-      condition,
-      color,
-      sellerType,
-      verifiedOnly,
-      fourWheelDrive,
-      leasingPossible,
-      equipmentQuery: equipmentQuery.trim(),
-      sortBy,
-    })
+    writeMarketplaceReturnSearchState(locale, currentSearchState)
   }
 
   const toggleCompare = (listingId: string) => {
