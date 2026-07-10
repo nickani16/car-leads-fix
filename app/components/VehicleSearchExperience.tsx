@@ -42,6 +42,7 @@ import {
 import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
+import { formatMileageAsMil } from '@/lib/listing-display'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 
@@ -967,7 +968,7 @@ export default function VehicleSearchExperience({
         setMaxYear('')
       } }
       : null,
-    maxMileage ? { key: 'mileage', label: `Max ${Number(maxMileage).toLocaleString('sv-SE')} km`, onRemove: () => setMaxMileage('') } : null,
+    maxMileage ? { key: 'mileage', label: `Max ${formatMileageAsMil(Number(maxMileage), locale)}`, onRemove: () => setMaxMileage('') } : null,
     verifiedOnly ? { key: 'verified', label: uiText(locale, 'Verified', 'Verifierade', 'Verifiziert'), onRemove: () => setVerifiedOnly(false) } : null,
     fourWheelDrive ? { key: 'fourWheelDrive', label: uiText(locale, 'Four-wheel drive', 'Fyrhjulsdrift', 'Allrad'), onRemove: () => setFourWheelDrive(false) } : null,
     leasingPossible ? { key: 'leasingPossible', label: uiText(locale, 'Leasing possible', 'Leasing möjlig', 'Leasing möglich'), onRemove: () => setLeasingPossible(false) } : null,
@@ -1868,12 +1869,12 @@ function VehicleResultCard({
     .join(', ')
   const meta = [
     listing.year,
-    listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null,
+    listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
   const importantInfo = [
-    listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null,
+    listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
@@ -2298,7 +2299,7 @@ function MapListingPreview({
     .join(', ')
   const facts = [
     listing.year,
-    listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null,
+    listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)

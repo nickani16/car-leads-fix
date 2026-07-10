@@ -28,7 +28,7 @@ import SavedListingButton from './SavedListingButton'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
-import { buildListingSpecChips, translateListingVehicleValue } from '@/lib/listing-display'
+import { buildListingSpecChips, formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
 import { getMapStyle } from '@/lib/map-style'
 import { normalizeSwedishLocationName, swedishCounties } from '@/lib/swedish-locations'
@@ -412,7 +412,7 @@ export default function MarketplaceCategoryBrowser({
       : null,
     minMileage || maxMileage
       ? {
-          label: `${copy.kilometerTitle}: ${rangeChipLabel(minMileage, maxMileage, copy.minPrice, copy.maxPrice, 'km', displayLocale)}`,
+          label: `${copy.kilometerTitle}: ${mileageRangeChipLabel(minMileage, maxMileage, copy.minPrice, copy.maxPrice, displayLocale)}`,
           onClear: () => {
             setMinMileage('')
             setMaxMileage('')
@@ -1240,7 +1240,7 @@ export default function MarketplaceCategoryBrowser({
                       <h2 className={listingLayout === 'grid' ? 'break-words text-base font-bold tracking-[-0.035em] sm:text-xl' : 'break-words text-xl font-bold tracking-[-0.035em] sm:text-2xl'}>{listing.title}</h2>
                     </Link>
                     <p className={listingLayout === 'grid' ? 'mt-2 text-xs text-[#667085] sm:text-sm' : 'mt-2 text-sm text-[#667085]'}>
-                      {[listing.year, listing.fuelType, listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null]
+                      {[listing.year, listing.fuelType, listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, displayLocale) : null]
                         .filter(Boolean)
                         .join(' | ')}
                     </p>
@@ -1578,6 +1578,7 @@ function CompareOverlay({
               newestYear,
               lowestMileage,
               copy,
+              locale,
             })
 
             return (
@@ -1624,7 +1625,7 @@ function CompareOverlay({
                     <CompareRow label={copy.modelYearTitle} value={listing.year || '-'} />
                     <CompareRow
                       label={copy.kilometerTitle}
-                      value={listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : '-'}
+                      value={listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : '-'}
                     />
                     <CompareRow label={copy.fuelTitle} value={listing.fuelType || '-'} />
                     <CompareRow label={copy.gearboxTitle} value={listing.gearbox || '-'} />
@@ -1688,11 +1689,13 @@ function compareHighlights(
     newestYear,
     lowestMileage,
     copy,
+    locale,
   }: {
     bestPrice: number
     newestYear: number
     lowestMileage: number
     copy: MarketplaceCopy
+    locale: PublicLocale
   },
 ) {
   const highlights: string[] = []
@@ -1703,7 +1706,7 @@ function compareHighlights(
     highlights.push(`${copy.compareNewest} (${listing.year})`)
   }
   if (listing.mileageKm !== null && listing.mileageKm === lowestMileage) {
-    highlights.push(`${copy.compareLowestMileage} (${listing.mileageKm.toLocaleString('sv-SE')} km)`)
+    highlights.push(`${copy.compareLowestMileage} (${formatMileageAsMil(listing.mileageKm, locale)})`)
   }
   return highlights
 }
@@ -2555,6 +2558,21 @@ function rangeChipLabel(
   const max = maxValue ? (plainNumber ? maxValue : formatFilterNumber(Number(maxValue), locale)) : maxFallback
   const suffix = unit ? ` ${unit}` : ''
   return `${min}-${max}${suffix}`
+}
+
+function mileageRangeChipLabel(
+  minValue: string,
+  maxValue: string,
+  minFallback: string,
+  maxFallback: string,
+  locale: PublicLocale,
+) {
+  if (locale !== 'sv') {
+    return rangeChipLabel(minValue, maxValue, minFallback, maxFallback, 'km', locale)
+  }
+  const min = minValue ? formatMileageAsMil(Number(minValue), locale) : minFallback
+  const max = maxValue ? formatMileageAsMil(Number(maxValue), locale) : maxFallback
+  return `${min}-${max}`
 }
 
 function secondarySearchLabel(slug: string, locale: PublicLocale) {

@@ -30,7 +30,7 @@ import {
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { activeMarketCountryCodes, getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
-import { buildListingSpecChips } from '@/lib/listing-display'
+import { buildListingSpecChips, formatMileageAsMil } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
 import { getPublishedMarketplaceCategoryListings } from '@/lib/marketplace-public-data'
 import CategoryHeroSearch from './CategoryHeroSearch'
@@ -369,7 +369,7 @@ async function getLandingListings(
         title: listing.title,
         meta: [
           listing.model_year,
-          listing.mileage_km ? `${Number(listing.mileage_km).toLocaleString('sv-SE')} km` : null,
+          listing.mileage_km ? formatMileageAsMil(Number(listing.mileage_km), locale) : null,
           listing.operating_hours ? `${Number(listing.operating_hours).toLocaleString('sv-SE')} h` : null,
           getEuCountryName(listing.country_code, locale),
         ]

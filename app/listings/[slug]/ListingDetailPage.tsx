@@ -791,8 +791,8 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Bilens plats', 'Vehicle location', 'Fahrzeugstandort'), value: countryName },
     { label: localizedLabel(locale, 'Kommun', 'Municipality', 'Gemeinde'), value: listing.municipality },
     {
-      label: localizedLabel(locale, 'Kilometer', 'Mileage', 'Kilometerstand'),
-      value: listing.mileage_km !== null ? `${Number(listing.mileage_km).toLocaleString('sv-SE')} km` : null,
+      label: localizedLabel(locale, 'Miltal', 'Mileage', 'Kilometerstand'),
+      value: formatMileageAsMil(listing.mileage_km, locale),
     },
     {
       label: localizedLabel(locale, 'Drifttimmar', 'Operating hours', 'Betriebsstunden'),

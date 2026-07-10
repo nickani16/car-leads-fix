@@ -49,6 +49,7 @@ const mileageCategories = new Set<MarketplaceCategorySlug>([
   'caravans',
   'trucks',
 ])
+const swedishMileageFactor = 10
 
 export default function EditListingForm({
   listing,
@@ -64,7 +65,8 @@ export default function EditListingForm({
   const [description, setDescription] = useState(listing.description)
   const [equipmentKeys, setEquipmentKeys] = useState(listing.equipmentKeys)
   const [phoneVisibility, setPhoneVisibility] = useState(listing.phoneVisibility || 'public')
-  const [mileage, setMileage] = useState(listing.mileage ? String(listing.mileage) : '')
+  const usesSwedishMileage = isSwedishMileageCountry(listing.country)
+  const [mileage, setMileage] = useState(listing.mileage ? formatMileageForInput(listing.mileage, usesSwedishMileage) : '')
   const [operatingHours, setOperatingHours] = useState(listing.operatingHours ? String(listing.operatingHours) : '')
   const [technicalData, setTechnicalData] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -115,7 +117,7 @@ export default function EditListingForm({
         description,
         equipmentKeys,
         phoneVisibility,
-        mileage,
+        mileage: mileageInputToKilometers(mileage, usesSwedishMileage),
         operatingHours,
         technicalData,
         identifiers,
@@ -189,10 +191,11 @@ export default function EditListingForm({
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {showMileage ? (
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold">Miltal (km)</span>
+              <span className="mb-2 block text-sm font-semibold">Miltal ({usesSwedishMileage ? 'mil' : 'km'})</span>
               <input
                 type="number"
                 min="0"
+                step={usesSwedishMileage ? '1' : undefined}
                 value={mileage}
                 onChange={(event) => setMileage(event.target.value)}
                 className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
@@ -472,4 +475,19 @@ function TechnicalField({
       />
     </label>
   )
+}
+
+function isSwedishMileageCountry(country: string) {
+  const normalized = country.trim().toUpperCase()
+  return normalized === 'SE' || normalized === 'SWEDEN' || normalized === 'SVERIGE'
+}
+
+function formatMileageForInput(kilometers: number, usesSwedishMileage: boolean) {
+  return String(usesSwedishMileage ? Math.round(kilometers / swedishMileageFactor) : Math.round(kilometers))
+}
+
+function mileageInputToKilometers(value: string, usesSwedishMileage: boolean) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return value
+  return String(Math.round(usesSwedishMileage ? numeric * swedishMileageFactor : numeric))
 }

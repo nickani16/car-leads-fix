@@ -12,6 +12,7 @@ import {
   SAVED_LISTINGS_KEY,
 } from '@/lib/saved-listings'
 import { buildListingPath } from '@/lib/listing-url'
+import { formatMileageAsMil } from '@/lib/listing-display'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 export default function SavedListingsClient({
@@ -164,7 +165,7 @@ export default function SavedListingsClient({
                       listing.year,
                       listing.fuelType,
                       listing.mileageKm !== null
-                        ? `${listing.mileageKm.toLocaleString('sv-SE')} km`
+                        ? formatMileageAsMil(listing.mileageKm, locale)
                         : null,
                     ]
                       .filter(Boolean)

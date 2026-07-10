@@ -6,8 +6,11 @@ import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   ArrowRight,
+  CalendarDays,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   GripVertical,
   ImagePlus,
   Search,
@@ -82,6 +85,7 @@ const steps = [
   'Paket & publicering',
 ] as const
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
+const swedishMileageFactor = 10
 
 const packageCopy = {
   free_7d: {
@@ -136,6 +140,8 @@ export default function NewListingForm({
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
   const copy = getListingFormCopy(locale)
+  const usesSwedishMileage = countryCode.toUpperCase() === 'SE'
+  const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
   const progress = Math.round(((step + 1) / steps.length) * 100)
   const orderedImages = useMemo(() => {
@@ -278,7 +284,7 @@ export default function NewListingForm({
     form.set('category', draft.category)
     form.set('sellerCountryCode', countryCode)
     Object.entries(draft.values).forEach(([key, value]) => {
-      if (value) form.set(key, value)
+      if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
     form.set(
       'color',
@@ -358,7 +364,7 @@ export default function NewListingForm({
     form.set('category', category)
     form.set('sellerCountryCode', countryCode)
     Object.entries(values).forEach(([key, value]) => {
-      if (value) form.set(key, value)
+      if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
     form.set(
       'color',
@@ -484,11 +490,12 @@ export default function NewListingForm({
             {category !== 'agriculture' && category !== 'construction' ? (
               <Field
                 name="mileage"
-                label={copy.kilometers}
+                label={`${copy.kilometers} (${mileageUnit})`}
                 type="number"
                 value={values.mileage || ''}
                 onValueChange={setValue}
                 required={!['caravans', 'electric-bikes', 'e-scooters'].includes(category)}
+                step={usesSwedishMileage ? '1' : undefined}
               />
             ) : (
               <Field
@@ -637,6 +644,7 @@ export default function NewListingForm({
             equipment={equipment}
             images={orderedImages}
             onChange={setValue}
+            usesSwedishMileage={usesSwedishMileage}
           />
         ) : null}
 
@@ -743,12 +751,26 @@ function TechnicalCard({
   onToggle: () => void
   onChange: (value: string) => void
 }) {
-  if (field.kind === 'text' || field.kind === 'date') {
+  if (field.kind === 'date') {
+    return (
+      <DatePickerCard
+        label={localizeVehicleText(locale, field.label)}
+        value={value}
+        locale={locale}
+        open={open}
+        onToggle={onToggle}
+        onChange={onChange}
+        required={field.required}
+      />
+    )
+  }
+
+  if (field.kind === 'text') {
     return (
       <Field
         name={field.name}
         label={localizeVehicleText(locale, field.label)}
-        type={field.kind === 'date' ? 'date' : 'text'}
+        type="text"
         value={value}
         onValueChange={(_, next) => onChange(next)}
         required={field.required}
@@ -822,6 +844,134 @@ function SelectCard({
         <ChevronDown className={`h-5 w-5 shrink-0 text-[#667085] transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {open ? <div className="border-t border-[#edf1f7] p-4">{children}</div> : null}
+    </div>
+  )
+}
+
+function DatePickerCard({
+  label,
+  value,
+  locale,
+  open,
+  onToggle,
+  onChange,
+  required,
+}: {
+  label: string
+  value: string
+  locale: PublicLocale
+  open: boolean
+  onToggle: () => void
+  onChange: (value: string) => void
+  required?: boolean
+}) {
+  const selectedDate = parseIsoDate(value)
+  const today = new Date()
+  const [visibleYear, setVisibleYear] = useState(selectedDate?.getFullYear() || today.getFullYear())
+  const [visibleMonth, setVisibleMonth] = useState(selectedDate?.getMonth() || today.getMonth())
+  const monthLabel = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, visibleMonth, 1))
+  const years = Array.from({ length: 90 }, (_, index) => today.getFullYear() + 1 - index)
+
+  function moveMonth(delta: number) {
+    const next = new Date(visibleYear, visibleMonth + delta, 1)
+    setVisibleYear(next.getFullYear())
+    setVisibleMonth(next.getMonth())
+  }
+
+  return (
+    <div className="relative min-w-0 rounded-[18px] border border-[#d7deed] bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex min-h-16 w-full items-center justify-between gap-3 px-4 text-left"
+        aria-expanded={open}
+      >
+        <span className="min-w-0">
+          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
+            {label}{required ? ' *' : ''}
+          </span>
+          <span className={`mt-1 block truncate text-sm font-semibold ${selectedDate ? 'text-[#101828]' : 'text-[#98a2b3]'}`}>
+            {selectedDate ? formatDateChoice(selectedDate, locale) : localizeFormText(locale, 'Välj datum', 'Choose date', 'Datum wählen')}
+          </span>
+        </span>
+        <CalendarDays className="h-5 w-5 shrink-0 text-[#667085]" />
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 top-[calc(100%+8px)] z-40 w-full min-w-[290px] rounded-[18px] border border-[#d7deed] bg-white p-3 shadow-[0_20px_48px_rgba(16,24,40,.16)] sm:w-[360px]">
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => moveMonth(-1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="grid min-w-0 flex-1 grid-cols-[1fr_auto] gap-2">
+              <select
+                value={visibleMonth}
+                onChange={(event) => setVisibleMonth(Number(event.target.value))}
+                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-semibold outline-none"
+              >
+                {Array.from({ length: 12 }, (_, month) => (
+                  <option key={month} value={month}>
+                    {new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, month, 1))}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={visibleYear}
+                onChange={(event) => setVisibleYear(Number(event.target.value))}
+                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-semibold outline-none"
+              >
+                {years.map((year) => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <button type="button" onClick={() => moveMonth(1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <p className="mt-3 text-center text-sm font-semibold capitalize text-[#101828]">{monthLabel} {visibleYear}</p>
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase text-[#667085]">
+            {weekdayLabels(locale).map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {calendarDays(visibleYear, visibleMonth).map((day) => {
+              const iso = toIsoDate(day.date)
+              const active = value === iso
+              return (
+                <button
+                  key={day.key}
+                  type="button"
+                  onClick={() => {
+                    onChange(iso)
+                    onToggle()
+                  }}
+                  className={`h-10 rounded-[10px] text-sm font-semibold transition ${
+                    active
+                      ? 'bg-[#0866ff] text-white'
+                      : day.inMonth
+                        ? 'text-[#101828] hover:bg-[#eef5ff]'
+                        : 'text-[#98a2b3] hover:bg-[#f8faff]'
+                  }`}
+                >
+                  {day.date.getDate()}
+                </button>
+              )
+            })}
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-[#edf1f6] pt-3">
+            <button type="button" onClick={() => onChange('')} className="text-sm font-semibold text-[#667085]">
+              {localizeFormText(locale, 'Rensa', 'Clear', 'Leeren')}
+            </button>
+            <button type="button" onClick={() => {
+              onChange(toIsoDate(today))
+              onToggle()
+            }} className="text-sm font-semibold text-[#0866ff]">
+              {localizeFormText(locale, 'Idag', 'Today', 'Heute')}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -1166,6 +1316,7 @@ function PreviewStep({
   equipment,
   images,
   onChange,
+  usesSwedishMileage,
 }: {
   locale: PublicLocale
   copy: ListingFormCopy
@@ -1174,11 +1325,12 @@ function PreviewStep({
   equipment: string[]
   images: UploadImage[]
   onChange: (name: string, value: string) => void
+  usesSwedishMileage: boolean
 }) {
   const title = [values.make, values.model, values.variant].filter(Boolean).join(' ')
   const specs = [
     values.modelYear,
-    values.mileage ? `${Number(values.mileage).toLocaleString('sv-SE')} km` : '',
+    values.mileage ? formatMileageInput(values.mileage, usesSwedishMileage) : '',
     values.operatingHours ? `${Number(values.operatingHours).toLocaleString('sv-SE')} timmar` : '',
     values.fuelType,
     values.gearbox,
@@ -1516,6 +1668,62 @@ function SelectNative({
 
 function labelFor(options: ListingOption[], value: string) {
   return options.find((option) => option.value === value)?.label || ''
+}
+
+function mileageInputToKilometers(value: string, usesSwedishMileage: boolean) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return value
+  return String(Math.round(usesSwedishMileage ? numeric * swedishMileageFactor : numeric))
+}
+
+function formatMileageInput(value: string, usesSwedishMileage: boolean) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return ''
+  return `${numeric.toLocaleString('sv-SE')} ${usesSwedishMileage ? 'mil' : 'km'}`
+}
+
+function parseIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function toIsoDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateChoice(date: Date, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
+function weekdayLabels(locale: PublicLocale) {
+  const monday = new Date(2026, 0, 5)
+  return Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(locale, { weekday: 'short' })
+      .format(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index))
+      .replace('.', ''),
+  )
+}
+
+function calendarDays(year: number, month: number) {
+  const first = new Date(year, month, 1)
+  const mondayOffset = (first.getDay() + 6) % 7
+  const start = new Date(year, month, 1 - mondayOffset)
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index)
+    return {
+      key: toIsoDate(date),
+      date,
+      inMonth: date.getMonth() === month,
+    }
+  })
 }
 
 type ListingFormCopy = ReturnType<typeof getListingFormCopy>
