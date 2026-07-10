@@ -32,6 +32,11 @@ export default function ListingImageGallery({
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
+  const dotCount = Math.min(imageCount, 5)
+  const activeDot =
+    imageCount > dotCount && dotCount > 1
+      ? Math.round((active / (imageCount - 1)) * (dotCount - 1))
+      : active
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -124,13 +129,22 @@ export default function ListingImageGallery({
             className="block h-full w-full touch-pan-y"
             aria-label="Open photos"
           >
-            {/* Public listing images can come from storage/CDN URLs outside Next image config. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={activeImage}
-              alt={title}
-              className="h-full w-full object-cover"
-            />
+            <div
+              className="flex h-full w-full transition-transform duration-500 ease-[cubic-bezier(.22,.8,.24,1)]"
+              style={{ transform: `translate3d(-${active * 100}%, 0, 0)` }}
+            >
+              {safeImages.map((image, index) => (
+                <div key={`${image}-${index}`} className="h-full w-full shrink-0">
+                  {/* Public listing images can come from storage/CDN URLs outside Next image config. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image}
+                    alt={index === active ? title : ''}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
           </button>
         ) : (
           <div className="grid h-full place-items-center text-[#0866ff]">
@@ -145,7 +159,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-[#101828]/72 text-white shadow-lg backdrop-blur transition hover:bg-[#101828] lg:grid"
+              className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-[#101828]/58 text-white opacity-100 shadow-lg backdrop-blur transition hover:bg-[#101828]/76 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -153,7 +167,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-[#101828]/72 text-white shadow-lg backdrop-blur transition hover:bg-[#101828] lg:grid"
+              className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-[#101828]/58 text-white opacity-100 shadow-lg backdrop-blur transition hover:bg-[#101828]/76 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
               <ChevronRight className="h-6 w-6" />
@@ -161,12 +175,24 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={openFullscreen}
-              className="absolute bottom-3 left-1/2 inline-flex min-h-9 -translate-x-1/2 items-center gap-2 rounded-full bg-[#101828]/82 px-3 text-sm font-black text-white shadow-lg backdrop-blur"
+              className="absolute bottom-3 left-1/2 inline-flex min-h-9 -translate-x-1/2 items-center gap-2 rounded-full bg-[#101828]/76 px-3 text-sm font-black text-white shadow-lg backdrop-blur"
               aria-label="Open photos"
             >
               <Camera className="h-4 w-4" />
               {active + 1}/{safeImages.length}
             </button>
+            {dotCount > 1 ? (
+              <div className="absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/50 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.18)] backdrop-blur">
+                {Array.from({ length: dotCount }).map((_, dotIndex) => (
+                  <span
+                    key={`${title}-gallery-dot-${dotIndex}`}
+                    className={`h-1.5 rounded-full transition ${
+                      dotIndex === activeDot ? 'w-3 bg-white' : 'w-1.5 bg-white/55'
+                    }`}
+                  />
+                ))}
+              </div>
+            ) : null}
           </>
         ) : null}
       </div>

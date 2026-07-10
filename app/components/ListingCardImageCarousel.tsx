@@ -37,7 +37,6 @@ export default function ListingCardImageCarousel({
   const safeImageIndex = visibleImages.length
     ? Math.min(imageIndex, visibleImages.length - 1)
     : 0
-  const activeImage = visibleImages[safeImageIndex]
   const dotCount = Math.min(visibleImages.length, 5)
   const activeDot =
     visibleImages.length > dotCount && dotCount > 1
@@ -54,14 +53,23 @@ export default function ListingCardImageCarousel({
     setImageIndex((current) => (current >= visibleImages.length - 1 ? 0 : current + 1))
   }
 
-  const imageContent = activeImage ? (
-    <Image
-      src={activeImage}
-      alt={title}
-      fill
-      sizes={sizes}
-      className={`object-cover ${imageClassName}`}
-    />
+  const imageContent = visibleImages.length ? (
+    <div
+      className="flex h-full w-full transition-transform duration-500 ease-[cubic-bezier(.22,.8,.24,1)]"
+      style={{ transform: `translate3d(-${safeImageIndex * 100}%, 0, 0)` }}
+    >
+      {visibleImages.map((image, index) => (
+        <div key={`${image}-${index}`} className="relative h-full w-full shrink-0">
+          <Image
+            src={image}
+            alt={index === safeImageIndex ? title : ''}
+            fill
+            sizes={sizes}
+            className={`object-cover ${imageClassName}`}
+          />
+        </div>
+      ))}
+    </div>
   ) : (
     placeholder || null
   )
@@ -119,7 +127,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute left-3 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
+            className="absolute left-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-100 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:opacity-0 md:group-hover:opacity-100"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -131,7 +139,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute right-3 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
+            className="absolute right-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-100 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:opacity-0 md:group-hover:opacity-100"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -139,12 +147,12 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.18)] md:hidden">
+        <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur">
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
               className={`h-1.5 rounded-full transition ${
-                dotIndex === activeDot ? 'w-3 bg-[#0866ff]' : 'w-1.5 bg-[#d2d8e3]'
+                dotIndex === activeDot ? 'w-3 bg-white' : 'w-1.5 bg-white/55'
               }`}
             />
           ))}
