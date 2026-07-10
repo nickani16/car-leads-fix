@@ -3,25 +3,15 @@ import { manualPublicTranslation } from './manual-public-translations'
 
 export const publicLanguages = [
   'en',
+  'at',
+  'be',
   'fr',
   'es',
   'it',
   'pl',
   'nl',
-  'pt',
   'fi',
   'da',
-  'cs',
-  'ro',
-  'bg',
-  'hr',
-  'el',
-  'hu',
-  'sk',
-  'sl',
-  'et',
-  'lv',
-  'lt',
 ] as const
 
 export type PublicLanguage = (typeof publicLanguages)[number]
@@ -31,25 +21,15 @@ const localePathPrefixes: Record<PublicLocale, string> = {
   sv: '/se',
   de: '/de',
   en: '',
+  at: '/at',
+  be: '/be',
   fr: '/fr',
   es: '/es',
   it: '/it',
   pl: '/pl',
   nl: '/nl',
-  pt: '/pt',
   fi: '/fi',
   da: '/dk',
-  cs: '/cz',
-  ro: '/ro',
-  bg: '/bg',
-  hr: '/hr',
-  el: '/gr',
-  hu: '/hu',
-  sk: '/sk',
-  sl: '/si',
-  et: '/ee',
-  lv: '/lv',
-  lt: '/lt',
 }
 
 const localePrefixes = new Set(
@@ -77,11 +57,11 @@ export function isPublicLanguage(value: string): value is PublicLanguage {
 }
 
 export function translatePublic(locale: PublicLocale, value: string) {
-  if (locale === 'sv' || locale === 'de' || locale === 'en') return value
-  const manual = manualPublicTranslation(locale, value)
+  if (locale === 'en') return value
+  const manual = manualPublicTranslation(translationLocale(locale), value)
   if (manual) return manual
-  const dictionary = translations[locale] as Record<string, string>
-  return dictionary[value] || value
+  const dictionary = (translations as Record<string, Record<string, string> | undefined>)[translationLocale(locale)]
+  return dictionary?.[value] || value
 }
 
 export function translatePublicObject<T>(
@@ -145,6 +125,12 @@ export function localizePublicHref(locale: PublicLocale, href: string) {
 
 export function localePathPrefix(locale: PublicLocale) {
   return localePathPrefixes[locale]
+}
+
+export function translationLocale(locale: PublicLocale): PublicLocale {
+  if (locale === 'at') return 'de'
+  if (locale === 'be') return 'nl'
+  return locale
 }
 
 export function stripLocalePrefix(pathname: string) {

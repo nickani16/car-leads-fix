@@ -40,25 +40,15 @@ const popularRoutes = [
 const localeByPathPrefix: Record<string, PublicLocale> = {
   se: 'sv',
   de: 'de',
+  at: 'at',
+  be: 'be',
   fr: 'fr',
   es: 'es',
   it: 'it',
   pl: 'pl',
   nl: 'nl',
-  pt: 'pt',
   fi: 'fi',
   dk: 'da',
-  cz: 'cs',
-  ro: 'ro',
-  bg: 'bg',
-  hr: 'hr',
-  gr: 'el',
-  hu: 'hu',
-  sk: 'sk',
-  si: 'sl',
-  ee: 'et',
-  lv: 'lv',
-  lt: 'lt',
 }
 
 function getLocaleFromPathname(pathname: string | null): PublicLocale | null {

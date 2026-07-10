@@ -1,13 +1,23 @@
 import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
+import { localePathPrefix, type PublicLocale } from './public-i18n'
 
-type PublicLocale = 'sv' | 'de' | 'en'
+const siteHost = 'https://www.autorell.com'
 
-const hosts = {
-  sv: 'https://www.autorell.com/se',
-  de: 'https://www.autorell.com/de',
-  en: 'https://www.autorell.com',
-} as const
+const hreflangByLocale: Record<PublicLocale, string> = {
+  sv: 'sv-SE',
+  de: 'de-DE',
+  en: 'en',
+  at: 'de-AT',
+  be: 'nl-BE',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  it: 'it-IT',
+  pl: 'pl-PL',
+  nl: 'nl-NL',
+  fi: 'fi-FI',
+  da: 'da-DK',
+}
 
 export function createPublicMetadata({
   title,
@@ -25,13 +35,20 @@ export function createPublicMetadata({
   languagePaths?: Partial<Record<PublicLocale, string>>
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
-  const canonical = `${hosts[locale]}${normalizedPath}`
+  const canonical = `${siteHost}${localePathPrefix(locale)}${normalizedPath}`
   const seoTitle = cleanSeoText(title, 65)
   const seoDescription = cleanSeoText(description, 150)
-  const localizedPath = (targetLocale: PublicLocale) => {
+  const localizedHref = (targetLocale: PublicLocale) => {
     const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
-    return targetPath === '/' ? '' : targetPath
+    const pathPart = targetPath === '/' ? '' : targetPath
+    return `${siteHost}${localePathPrefix(targetLocale)}${pathPart}`
   }
+  const alternates = Object.fromEntries(
+    (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
+      hreflangByLocale[targetLocale],
+      localizedHref(targetLocale),
+    ]),
+  )
 
   return {
     title: { absolute: seoTitle },
@@ -40,10 +57,8 @@ export function createPublicMetadata({
     alternates: {
       canonical,
       languages: {
-        'sv-SE': `${hosts.sv}${localizedPath('sv')}`,
-        'de-DE': `${hosts.de}${localizedPath('de')}`,
-        en: `${hosts.en}${localizedPath('en')}`,
-        'x-default': `${hosts.en}${localizedPath('en')}`,
+        ...alternates,
+        'x-default': localizedHref('en'),
       },
     },
     openGraph: {
@@ -51,7 +66,7 @@ export function createPublicMetadata({
       description: seoDescription,
       url: canonical,
       siteName: 'Autorell',
-      locale: locale === 'sv' ? 'sv_SE' : locale === 'de' ? 'de_DE' : 'en_GB',
+      locale: hreflangByLocale[locale].replace('-', '_'),
       type: 'website',
     },
   }

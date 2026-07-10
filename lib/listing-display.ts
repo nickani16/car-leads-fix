@@ -52,6 +52,8 @@ export function buildListingSpecChips(input: ListingChipInput, locale: PublicLoc
 function numberLocale(locale: PublicLocale) {
   if (locale === 'sv') return 'sv-SE'
   if (locale === 'de') return 'de-DE'
+  if (locale === 'at') return 'de-AT'
+  if (locale === 'be') return 'nl-BE'
   return 'en-GB'
 }
 

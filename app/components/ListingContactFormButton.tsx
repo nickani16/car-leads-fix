@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { Mail, Send, X } from 'lucide-react'
-import type { PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingContactFormButtonProps = {
   listingId: string
@@ -75,7 +75,14 @@ export default function ListingContactFormButton({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const text = locale === 'sv' || locale === 'de' ? copy[locale] : copy.en
+  const text =
+    locale === 'sv'
+      ? copy.sv
+      : locale === 'de' || locale === 'at'
+        ? copy.de
+        : locale === 'en'
+          ? copy.en
+          : translatePublicObject(locale, copy.en)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

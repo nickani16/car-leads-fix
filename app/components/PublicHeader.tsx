@@ -141,30 +141,22 @@ function localeFromPathname(pathname: string): PublicLocale {
   const first = pathname.split('/').filter(Boolean)[0]
   if (first === 'se') return 'sv'
   if (first === 'de') return 'de'
+  if (first === 'at') return 'at'
+  if (first === 'be') return 'be'
   const market = euBuyerMarkets.find((item) => item.code === first)
   if (market) return market.language as PublicLocale
   if (
     [
       'en',
+      'at',
+      'be',
       'fr',
       'es',
       'it',
       'pl',
       'nl',
-      'pt',
       'fi',
       'da',
-      'cs',
-      'ro',
-      'bg',
-      'hr',
-      'el',
-      'hu',
-      'sk',
-      'sl',
-      'et',
-      'lv',
-      'lt',
     ].includes(first)
   ) {
     return first as PublicLocale

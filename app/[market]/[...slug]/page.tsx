@@ -11,5 +11,11 @@ export default async function LocalizedMarketPage({
   const { market: marketCode } = await params
   const market = getEuBuyerMarket(marketCode)
   if (!market) notFound()
-  return <BusinessMarketplaceHome locale={market.language as PublicLocale} />
+  return <BusinessMarketplaceHome locale={marketLocale(market.code, market.language)} marketCode={market.code} />
+}
+
+function marketLocale(code: string, language: string): PublicLocale {
+  if (code === 'at') return 'at'
+  if (code === 'be') return 'be'
+  return language as PublicLocale
 }

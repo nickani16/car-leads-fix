@@ -1,12 +1,20 @@
 import { createPublicMetadata } from '@/lib/public-seo'
+import { getRequestLocale } from '@/lib/request-locale'
+import { translatePublic } from '@/lib/public-i18n'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata = createPublicMetadata({
-  title: 'Cookiepolicy och cookieinställningar | Autorell',
-  description:
-    'Information om nödvändiga cookies, säkerhet, sessionshantering, framtida analysverktyg och hur du hanterar cookies på Autorell.',
-  path: '/cookies',
-})
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  return createPublicMetadata({
+    title: `${translatePublic(locale, 'Cookie Policy')} | Autorell`,
+    description: translatePublic(
+      locale,
+      'Information about necessary cookies, security, session handling, future analytics tools and how you manage cookies on Autorell.',
+    ),
+    path: '/cookies',
+    locale,
+  })
+}
 
 const sections = [
   {

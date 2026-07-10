@@ -159,11 +159,11 @@ function localeFromPathname(pathname: string): PublicLocale {
   const first = pathname.split('/').filter(Boolean)[0]
   if (first === 'se') return 'sv'
   if (first === 'de') return 'de'
-  if (first === 'pl' || first === 'fr' || first === 'es' || first === 'it' || first === 'nl' || first === 'pt' || first === 'fi') {
+  if (first === 'at') return 'at'
+  if (first === 'be') return 'be'
+  if (first === 'pl' || first === 'fr' || first === 'es' || first === 'it' || first === 'nl' || first === 'fi') {
     return first
   }
   if (first === 'dk') return 'da'
-  if (first === 'cz') return 'cs'
-  if (first === 'gr') return 'el'
   return 'en'
 }

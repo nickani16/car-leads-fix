@@ -1,11 +1,20 @@
 import { createPublicMetadata } from '@/lib/public-seo'
+import { getRequestLocale } from '@/lib/request-locale'
+import { translatePublic } from '@/lib/public-i18n'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata = createPublicMetadata({
-  title: 'Integritetspolicy för Autorell marketplace',
-  description: 'Hur Autorell behandlar konto-, kontakt-, annons-, meddelande-, betalnings- och säkerhetsuppgifter enligt GDPR.',
-  path: '/integritet',
-})
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  return createPublicMetadata({
+    title: `${translatePublic(locale, 'Privacy Policy')} | Autorell`,
+    description: translatePublic(
+      locale,
+      'How Autorell processes account, contact, listing, message, payment and security data under GDPR.',
+    ),
+    path: '/privacy',
+    locale,
+  })
+}
 
 const sections = [
   {

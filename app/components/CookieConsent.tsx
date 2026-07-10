@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Check, Settings2, X } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import BrandLogo from './BrandLogo'
-import { euBuyerMarkets, type EuBuyerLanguage } from '@/lib/eu-buyer-markets'
+import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -15,7 +15,7 @@ const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
 
 type ConsentChoice = 'necessary' | 'all'
-type CookieLocale = 'sv' | EuBuyerLanguage
+type CookieLocale = 'sv' | 'de' | 'en' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da'
 
 const cookieCopy = {
   sv: {
@@ -120,10 +120,14 @@ function getCookieLocale(): CookieLocale {
   const marketCode = window.location.pathname.split('/').filter(Boolean)[0]
   if (marketCode === 'se') return 'sv'
   if (marketCode === 'de') return 'de'
-  if (isPublicLanguage(marketCode)) return marketCode
+  if (marketCode === 'at') return 'de'
+  if (marketCode === 'be') return 'nl'
+  if (isPublicLanguage(marketCode)) {
+    return marketCode as CookieLocale
+  }
   const market = euBuyerMarkets.find((item) => item.code === marketCode)
-  if (market && market.language in cookieCopy) {
-    return market.language as keyof typeof cookieCopy
+  if (market) {
+    return market.language as CookieLocale
   }
 
   const hostname = window.location.hostname.toLowerCase()

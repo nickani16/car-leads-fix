@@ -2,7 +2,7 @@
 
 import { AlertTriangle, X } from 'lucide-react'
 import { FormEvent, useState } from 'react'
-import type { PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingReportButtonProps = {
   listingId: string
@@ -75,7 +75,14 @@ export default function ListingReportButton({
   listingTitle,
   locale,
 }: ListingReportButtonProps) {
-  const copy = locale === 'sv' || locale === 'de' ? reportCopy[locale] : reportCopy.en
+  const copy =
+    locale === 'sv'
+      ? reportCopy.sv
+      : locale === 'de' || locale === 'at'
+        ? reportCopy.de
+        : locale === 'en'
+          ? reportCopy.en
+          : translatePublicObject(locale, reportCopy.en)
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)

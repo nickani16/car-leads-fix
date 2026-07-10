@@ -46,12 +46,17 @@ export async function generateMetadata({
     : getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
+  const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const locale: PublicLocale =
-    requestedLanguage === 'sv' || requestedLanguage === 'de'
-      ? requestedLanguage
-      : requestedLanguage && isPublicLanguage(requestedLanguage)
-      ? requestedLanguage
-      : 'en'
+    marketCode?.toUpperCase() === 'AT'
+      ? 'at'
+      : marketCode?.toUpperCase() === 'BE'
+        ? 'be'
+        : requestedLanguage === 'sv' || requestedLanguage === 'de'
+          ? requestedLanguage
+          : requestedLanguage && isPublicLanguage(requestedLanguage)
+            ? requestedLanguage
+            : 'en'
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -124,11 +129,15 @@ export default async function MarketplaceCategoryPage({
     requestedCountry ||
     automaticCountry
   const locale: PublicLocale =
-    requestedLanguage === 'sv' || requestedLanguage === 'de'
-      ? requestedLanguage
-      : requestedLanguage && isPublicLanguage(requestedLanguage)
-      ? requestedLanguage
-      : 'en'
+    marketCode?.toUpperCase() === 'AT'
+      ? 'at'
+      : marketCode?.toUpperCase() === 'BE'
+        ? 'be'
+        : requestedLanguage === 'sv' || requestedLanguage === 'de'
+          ? requestedLanguage
+          : requestedLanguage && isPublicLanguage(requestedLanguage)
+            ? requestedLanguage
+            : 'en'
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'

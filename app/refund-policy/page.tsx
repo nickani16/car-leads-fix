@@ -1,12 +1,20 @@
 import { createPublicMetadata } from '@/lib/public-seo'
+import { getRequestLocale } from '@/lib/request-locale'
+import { translatePublic } from '@/lib/public-i18n'
 import PublicLegalPage from '../components/PublicLegalPage'
 
-export const metadata = createPublicMetadata({
-  title: 'Refund Policy for Listing Fees | Autorell',
-  description:
-    'Refund policy for paid listing fees on Autorell, including published listings, technical errors, duplicate payments and processing times.',
-  path: '/refund-policy',
-})
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  return createPublicMetadata({
+    title: `${translatePublic(locale, 'Refund Policy for Listing Fees')} | Autorell`,
+    description: translatePublic(
+      locale,
+      'Refund policy for paid listing fees on Autorell, including published listings, technical errors, duplicate payments and processing times.',
+    ),
+    path: '/refund-policy',
+    locale,
+  })
+}
 
 const sections = [
   {

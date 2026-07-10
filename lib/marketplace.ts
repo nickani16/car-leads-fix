@@ -67,7 +67,9 @@ export function getMarketplaceCategory(value: string) {
 }
 
 export function marketplaceLanguage(locale: PublicLocale): 'sv' | 'en' | 'de' {
-  return locale === 'sv' || locale === 'de' ? locale : 'en'
+  if (locale === 'sv' || locale === 'de') return locale
+  if (locale === 'at') return 'de'
+  return 'en'
 }
 
 export const supportedCurrencies = [
@@ -118,9 +120,8 @@ export function formatMarketplacePrice(
   currency: string,
   locale: PublicLocale,
 ) {
-  void locale
   const normalizedCurrency = currency.toUpperCase()
-  const formattedAmount = new Intl.NumberFormat('sv-SE', {
+  const formattedAmount = new Intl.NumberFormat(priceNumberLocale(locale), {
     maximumFractionDigits: 0,
     minimumFractionDigits: 0,
     useGrouping: true,
@@ -128,6 +129,21 @@ export function formatMarketplacePrice(
   const suffix = normalizedCurrency === 'EUR' ? '€' : normalizedCurrency
 
   return `${formattedAmount} ${suffix}`
+}
+
+function priceNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de') return 'de-DE'
+  if (locale === 'at') return 'de-AT'
+  if (locale === 'be') return 'nl-BE'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'nl') return 'nl-NL'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'es') return 'es-ES'
+  return 'en-GB'
 }
 
 export const marketplacePublicSelect =

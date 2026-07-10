@@ -1,4 +1,20 @@
+import { createPublicMetadata } from '@/lib/public-seo'
+import { getRequestLocale } from '@/lib/request-locale'
+import { translatePublic } from '@/lib/public-i18n'
 import PublicLegalPage from '../components/PublicLegalPage'
+
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  return createPublicMetadata({
+    title: `${translatePublic(locale, 'Terms and Conditions')} | Autorell`,
+    description: translatePublic(
+      locale,
+      'Rules for accounts, listings, messages, payments and safe use of Autorell.',
+    ),
+    path: '/terms',
+    locale,
+  })
+}
 
 const sections = [
   {

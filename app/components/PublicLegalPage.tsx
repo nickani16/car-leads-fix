@@ -33,7 +33,9 @@ export default async function PublicLegalPage({
   const activeLocale = locale || (await getRequestLocale())
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const fallback = legalFallbackCopy(title)
+  const fallback = activeLocale === 'de' || activeLocale === 'at'
+    ? legalFallbackCopyDe(title)
+    : legalFallbackCopy(title)
   const localized =
     activeLocale === 'sv'
       ? {
@@ -152,6 +154,183 @@ export default async function PublicLegalPage({
       <PublicFooter locale={activeLocale} />
     </main>
   )
+}
+
+function legalFallbackCopyDe(title: string): {
+  title: string
+  intro: string
+  sections: LegalSection[]
+} {
+  const normalizedTitle = title.toLowerCase()
+
+  if (normalizedTitle.includes('refund') || normalizedTitle.includes('återbetal')) {
+    return {
+      title: 'Erstattungsrichtlinie für Anzeigengebühren',
+      intro:
+        'So behandelt Autorell Erstattungen für bezahlte Anzeigengebühren, wenn eine Anzeige veröffentlicht, storniert oder von einem Zahlungs- oder Technikproblem betroffen ist.',
+      sections: [
+        {
+          id: 'published-listings',
+          title: 'Nach der Veröffentlichung einer Anzeige',
+          paragraphs: [
+            'Wenn eine Anzeige auf Autorell veröffentlicht wurde, beginnt die Leistung unmittelbar. Anzeigengebühren werden nach der Veröffentlichung daher normalerweise nicht erstattet.',
+          ],
+        },
+        {
+          id: 'refund-eligible',
+          title: 'Wann eine Erstattung möglich ist',
+          items: [
+            'Die Anzeige konnte wegen eines technischen Fehlers bei Autorell nicht veröffentlicht werden.',
+            'Die Zahlung wurde versehentlich mehrfach verarbeitet.',
+            'Es wurde ein falscher Betrag berechnet.',
+            'Autorell hat die Anzeige versehentlich falsch veröffentlicht oder bearbeitet.',
+            'Verbraucherschutzrecht gibt Ihnen in Ihrem Land einen Anspruch auf Erstattung.',
+          ],
+        },
+        {
+          id: 'no-refund',
+          title: 'Wann normalerweise keine Erstattung erfolgt',
+          items: [
+            'Sie entfernen die Anzeige nach der Veröffentlichung.',
+            'Sie verkaufen das Fahrzeug oder brechen den Verkauf ab.',
+            'Die Anzeigenlaufzeit endet ohne Verkauf.',
+            'Sie ändern Ihre Meinung nach der Veröffentlichung.',
+            'Die Anzeige wird entfernt, weil sie gegen Autorell-Bedingungen oder geltendes Recht verstößt.',
+          ],
+        },
+      ],
+    }
+  }
+
+  if (normalizedTitle.includes('cookie')) {
+    return {
+      title: 'Cookie-Richtlinie',
+      intro:
+        'Wir verwenden so wenige Cookies wie möglich und aktivieren nicht notwendiges Tracking nur mit der gesetzlich erforderlichen Zustimmung.',
+      sections: [
+        {
+          id: 'cookies',
+          title: 'Was sind Cookies?',
+          paragraphs: [
+            'Cookies sind kleine Dateien, die eine Website auf Ihrem Gerät speichert oder daraus ausliest. Ähnliche Technologien können lokalen Speicher oder andere Kennungen verwenden.',
+          ],
+        },
+        {
+          id: 'current-use',
+          title: 'Was wir derzeit verwenden',
+          paragraphs: [
+            'Autorell verwendet notwendige Technologien für sichere Anmeldung, Sitzungen, Missbrauchsschutz und vom Nutzer angeforderte Funktionen.',
+            'Marketing-Cookies oder eigenständige Analysewerkzeuge werden auf der öffentlichen Website nicht ohne erforderliche Zustimmung aktiviert.',
+          ],
+        },
+        {
+          id: 'necessary',
+          title: 'Notwendige Cookies',
+          items: [
+            'Authentifizierungs- und Sitzungscookies für das Autorell-Konto.',
+            'Sicherheitsfunktionen, die für den Betrieb des Dienstes erforderlich sind.',
+            'Technischer Speicher für ausdrücklich angeforderte Funktionen.',
+          ],
+        },
+        {
+          id: 'manage',
+          title: 'Cookies verwalten',
+          paragraphs: [
+            'Sie können Cookies in Ihrem Browser löschen oder blockieren. Wenn notwendige Authentifizierungscookies blockiert werden, funktionieren Konto-, Anzeigen- und Nachrichtenfunktionen möglicherweise nicht.',
+          ],
+        },
+      ],
+    }
+  }
+
+  if (normalizedTitle.includes('privacy') || normalizedTitle.includes('integritet')) {
+    return {
+      title: 'Datenschutzerklärung',
+      intro:
+        'Wie personenbezogene Daten für Konten, Anzeigen, Nachrichten, Zahlungen und Sicherheit auf Autorell verwendet werden.',
+      sections: [
+        {
+          id: 'controller',
+          title: 'Verantwortlicher',
+          paragraphs: [
+            'Autorell AB in Schweden ist Verantwortlicher für den Marktplatz. Fragen, Widersprüche und Rechteanfragen können an info@autorell.com gesendet werden.',
+          ],
+        },
+        {
+          id: 'data',
+          title: 'Daten, die wir verarbeiten',
+          items: [
+            'Kontotyp, Name, E-Mail, Telefon, Land, Adresse, Login- und Sicherheitsinformationen.',
+            'Anzeigendaten, Bilder, Fahrzeugidentität, Preis, Standort, Zustand, Historie und bekannte Mängel.',
+            'Nachrichten, Meldungen, Supportfälle, Moderationsentscheidungen und Nachweise bei vermutetem Missbrauch.',
+            'Zahlungsreferenzen, Pakete, Beträge, Belege und Erstattungsstatus. Vollständige Kartendaten werden nicht von Autorell gespeichert.',
+          ],
+        },
+        {
+          id: 'purposes',
+          title: 'Zwecke und Rechtsgrundlagen',
+          items: [
+            'Vertrag und Nutzeranfrage: Kontoerstellung, Anzeigen, Anzeigenpakete, Nachrichten und Support.',
+            'Rechtliche Pflicht: Buchhaltung, Steuern, Behördenanfragen und digitale Plattformpflichten.',
+            'Berechtigtes Interesse: sicherer Betrieb, Betrugsprävention, Moderation, Streitnachweise und Weiterentwicklung des Dienstes.',
+            'Einwilligung wird verwendet, wenn dies gesetzlich erforderlich ist, zum Beispiel für nicht notwendige Cookies oder separates Marketing.',
+          ],
+        },
+        {
+          id: 'rights',
+          title: 'Ihre Rechte',
+          items: [
+            'Auskunft, Berichtigung, Löschung oder Einschränkung verlangen, wenn die DSGVO-Voraussetzungen erfüllt sind.',
+            'Widerspruch gegen Verarbeitung auf Grundlage berechtigter Interessen einlegen und Datenübertragbarkeit verlangen, soweit anwendbar.',
+            'Einwilligung widerrufen, ohne die Rechtmäßigkeit früherer Verarbeitung zu berühren.',
+          ],
+        },
+      ],
+    }
+  }
+
+  return {
+    title: 'Allgemeine Geschäftsbedingungen',
+    intro:
+      'Die Regeln für Konten, Anzeigen, Kontakt zwischen Nutzern, Zahlungen und Sicherheit auf Autorell.',
+    sections: [
+      {
+        id: 'platform-role',
+        title: 'Rolle der Plattform',
+        paragraphs: [
+          'Autorell stellt einen digitalen Marktplatz bereit, auf dem private Verkäufer und Unternehmen Fahrzeuganzeigen veröffentlichen, suchen, Suchen speichern und kommunizieren können.',
+          'Bei gewöhnlichen Marktplatzanzeigen ist Autorell nicht automatisch Käufer, Verkäufer, Vermittler, Garant oder Partei der Vereinbarung zwischen Nutzern.',
+        ],
+      },
+      {
+        id: 'accounts',
+        title: 'Private und geschäftliche Konten',
+        items: [
+          'Der Kontoinhaber muss mindestens 18 Jahre alt sein und korrekte aktuelle Kontakt- und Identitätsdaten angeben.',
+          'Private Konten sind für persönlichen, nicht gewerblichen Handel bestimmt. Gewerbliche Verkäufer müssen ein Geschäftskonto verwenden.',
+          'Private Verkäufer zeigen öffentlich normalerweise nur den Vornamen. Geschäftskonten zeigen den registrierten Firmennamen.',
+          'Das Konto ist persönlich. Passwörter und Zugänge dürfen nicht geteilt werden.',
+        ],
+      },
+      {
+        id: 'listings',
+        title: 'Anzeigen und Verantwortung des Verkäufers',
+        items: [
+          'Der Verkäufer muss berechtigt sein, das Fahrzeug anzubieten und zu verkaufen.',
+          'Kategorie, Identität, Eigentum, Preis, Standort, Zustand, Laufleistung, Betriebsstunden, Mängel und Bilder müssen korrekt und nicht irreführend sein.',
+          'Autorell kann Inhalte prüfen, einschränken, ausblenden oder entfernen und notwendige Nachweise sichern.',
+        ],
+      },
+      {
+        id: 'messages',
+        title: 'Nachrichten und verbotenes Verhalten',
+        items: [
+          'Zum Kontakt mit einem Verkäufer ist eine Anmeldung erforderlich. Nachrichten dürfen nur für legitime Kommunikation zur Anzeige genutzt werden.',
+          'Betrug, Belästigung, Spam, schädliche Links, Identitätsmissbrauch und Versuche, Passwörter, Kartendaten oder unzulässige Zahlungen anzufordern, sind verboten.',
+        ],
+      },
+    ],
+  }
 }
 
 function legalFallbackCopy(title: string): {

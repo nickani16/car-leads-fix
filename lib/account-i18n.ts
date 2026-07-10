@@ -1,4 +1,4 @@
-import type { PublicLocale } from './public-i18n'
+import { translationLocale, type PublicLocale } from './public-i18n'
 
 export type AccountCopy = {
   account: string
@@ -58,7 +58,7 @@ const en: AccountCopy = {
   privacyNotice: 'privacy notice',
 }
 
-const translations: Partial<Record<PublicLocale, Partial<AccountCopy>>> = {
+const translations: Record<string, Partial<AccountCopy>> = {
   sv: { account: 'Konto', signIn: 'Logga in', register: 'Registrera', email: 'E-post', password: 'Lösenord', name: 'Namn', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto', company: 'Företagsnamn', registrationNumber: 'Organisationsnummer', profile: 'Profil', listings: 'Annonser', messages: 'Meddelanden', support: 'Hjälp & trygghet', signOut: 'Logga ut', save: 'Spara', createAccount: 'Skapa konto', noAccount: 'Inget konto ännu?', haveAccount: 'Har du redan ett konto?', registerDescription: 'Skapa ett privatkonto eller företagskonto för att publicera annonser, spara sökningar och kontakta säljare tryggt i hela Europa. Privata säljare visar normalt bara förnamn publikt; fullständigt namn används internt för konto, säkerhet och juridik.', acceptPrefix: 'Jag godkänner', acceptJoin: 'och', marketplaceTerms: 'marknadsplatsens villkor', privacyNotice: 'integritetsmeddelandet' },
   de: { account: 'Konto', signIn: 'Anmelden', register: 'Registrieren', email: 'E-Mail', password: 'Passwort', name: 'Name', phone: 'Telefonnummer', country: 'Land', privateAccount: 'Privatkonto', businessAccount: 'Unternehmenskonto', company: 'Firmenname', registrationNumber: 'Handelsregisternummer', profile: 'Profil', listings: 'Anzeigen', messages: 'Nachrichten', support: 'Hilfe & Sicherheit', signOut: 'Abmelden', save: 'Speichern', createAccount: 'Konto erstellen', noAccount: 'Noch kein Konto?', haveAccount: 'Bereits registriert?', registerDescription: 'Erstellen Sie ein Privat- oder Unternehmenskonto, um Anzeigen zu veröffentlichen, Suchanfragen zu speichern und Verkäufer in ganz Europa sicher zu kontaktieren.', acceptPrefix: 'Ich akzeptiere die', acceptJoin: 'und die', marketplaceTerms: 'Marktplatzbedingungen', privacyNotice: 'Datenschutzhinweise' },
   fr: { account: 'Compte', signIn: 'Se connecter', register: "S'inscrire", email: 'E-mail', password: 'Mot de passe', name: 'Nom', phone: 'Téléphone', country: 'Pays', privateAccount: 'Compte particulier', businessAccount: 'Compte entreprise', company: "Nom de l'entreprise", registrationNumber: "Numéro d'immatriculation", profile: 'Profil', listings: 'Annonces', messages: 'Messages', support: 'Aide et sécurité', signOut: 'Déconnexion', save: 'Enregistrer', createAccount: 'Créer un compte' },
@@ -83,5 +83,5 @@ const translations: Partial<Record<PublicLocale, Partial<AccountCopy>>> = {
 }
 
 export function getAccountCopy(locale: PublicLocale): AccountCopy {
-  return { ...en, ...(translations[locale] || {}) }
+  return { ...en, ...(translations[translationLocale(locale)] || {}) }
 }

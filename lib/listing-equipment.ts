@@ -384,14 +384,14 @@ export function normalizeEquipmentKeys(values: unknown) {
 
 export function equipmentLabel(option: EquipmentOption, locale: PublicLocale) {
   if (locale === 'sv') return option.sv
-  if (locale === 'de') return option.de
+  if (locale === 'de' || locale === 'at') return option.de
   if (locale === 'en') return option.en
   return translatePublic(locale, option.en)
 }
 
 export function equipmentGroupLabel(group: EquipmentGroup, locale: PublicLocale) {
   if (locale === 'sv') return group.sv
-  if (locale === 'de') return group.de
+  if (locale === 'de' || locale === 'at') return group.de
   if (locale === 'en') return group.en
   return translatePublic(locale, group.en)
 }

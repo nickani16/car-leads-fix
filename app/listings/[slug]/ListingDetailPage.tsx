@@ -200,7 +200,7 @@ export default async function ListingDetailPage({
   const category = getMarketplaceCategory(listing.category)
   const language = marketplaceLanguage(locale)
   const categoryLabel =
-    locale === 'sv' || locale === 'de' || locale === 'en'
+    locale === 'sv' || locale === 'de' || locale === 'at' || locale === 'en'
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const displayCurrency = displayCurrencyForMarket(marketCode)
@@ -487,7 +487,7 @@ export default async function ListingDetailPage({
                   </Link>
                 ) : null}
                 <RevealPhoneButton listingId={listing.id} locale={locale} />
-                <MessageSellerButton listingId={listing.id} enabled variant="button" />
+                <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
                 <ListingContactFormButton
                   listingId={listing.id}
                   listingTitle={listing.title}
@@ -769,7 +769,7 @@ function PrivateSellerProfileCard({
         ? localizedLabel(locale, `${ratingCount} omdömen`, `${ratingCount} reviews`, `${ratingCount} Bewertungen`)
         : localizedLabel(locale, 'Inga omdömen ännu', 'No reviews yet', 'Noch keine Bewertungen')
   const memberSince = memberSinceYear
-    ? localizedLabel(locale, `På Autorell sedan ${memberSinceYear}`, `On Autorell since ${memberSinceYear}`, `Bei Autorell seit ${memberSinceYear}`)
+    ? memberSinceLabel(locale, memberSinceYear)
     : localizedLabel(locale, 'Privat säljare på Autorell', 'Private seller on Autorell', 'Privater Verkäufer bei Autorell')
 
   return (
@@ -799,6 +799,19 @@ function PrivateSellerProfileCard({
       </div>
     </div>
   )
+}
+
+function memberSinceLabel(locale: PublicLocale, year: number) {
+  if (locale === 'sv') return `På Autorell sedan ${year}`
+  if (locale === 'de' || locale === 'at') return `Bei Autorell seit ${year}`
+  if (locale === 'es') return `En Autorell desde ${year}`
+  if (locale === 'fr') return `Sur Autorell depuis ${year}`
+  if (locale === 'it') return `Su Autorell dal ${year}`
+  if (locale === 'nl' || locale === 'be') return `Op Autorell sinds ${year}`
+  if (locale === 'pl') return `Na Autorell od ${year}`
+  if (locale === 'da') return `På Autorell siden ${year}`
+  if (locale === 'fi') return `Autorellissa vuodesta ${year}`
+  return `On Autorell since ${year}`
 }
 
 async function getListingTechnicalDetails(listingId: string): Promise<ListingTechnicalDetails | null> {
@@ -846,7 +859,7 @@ function localizedLabel(
   de: string,
 ) {
   if (locale === 'sv') return sv
-  if (locale === 'de') return de
+  if (locale === 'de' || locale === 'at') return de
   return translatePublic(locale, en)
 }
 
@@ -907,7 +920,7 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Försäljningsform', 'Sale type', 'Verkaufsform'), value: saleFormLabel(listing, locale) },
     { label: localizedLabel(locale, 'Skick', 'Condition', 'Zustand'), value: translateSpecValue(locale, listing.condition) },
     { label: localizedLabel(locale, 'Servicehistorik', 'Service history', 'Servicehistorie'), value: translateSpecValue(locale, listing.service_history) },
-    { label: localizedLabel(locale, 'Skador / fel', 'Damage / faults', 'Schäden / Mängel'), value: listing.known_faults },
+    { label: localizedLabel(locale, 'Skador / fel', 'Damage / faults', 'Schäden / Mängel'), value: translateSpecValue(locale, listing.known_faults) },
   ]
 
   return specs.filter(
@@ -949,27 +962,19 @@ function translateSpecValue(locale: PublicLocale, value?: string | null) {
 }
 
 function saleFormLabel(listing: ListingRow, locale: PublicLocale) {
-  const category = getMarketplaceCategory(listing.category)
-  const language = marketplaceLanguage(locale)
-  const singular =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? category.singular[language]
-      : category.singular.en
   const condition = String(listing.condition || '').toLowerCase()
+  const isNew = condition.includes('ny') || condition.includes('new')
 
-  if (condition.includes('ny') || condition.includes('new')) {
-    return locale === 'sv'
-      ? `Ny ${singular} till salu`
-      : locale === 'de'
-        ? `Neues ${singular} zum Verkauf`
-        : translatePublic(locale, `New ${singular} for sale`)
-  }
-
-  return locale === 'sv'
-    ? `Begagnad ${singular} till salu`
-    : locale === 'de'
-      ? `Gebrauchtes ${singular} zum Verkauf`
-      : translatePublic(locale, `Used ${singular} for sale`)
+  if (locale === 'sv') return isNew ? 'Nytt fordon till salu' : 'Begagnat fordon till salu'
+  if (locale === 'de' || locale === 'at') return isNew ? 'Neues Fahrzeug zum Verkauf' : 'Gebrauchtes Fahrzeug zum Verkauf'
+  if (locale === 'es') return isNew ? 'VehÃ­culo nuevo en venta' : 'VehÃ­culo usado en venta'
+  if (locale === 'fr') return isNew ? 'VÃ©hicule neuf Ã  vendre' : "VÃ©hicule d'occasion Ã  vendre"
+  if (locale === 'it') return isNew ? 'Veicolo nuovo in vendita' : 'Veicolo usato in vendita'
+  if (locale === 'nl' || locale === 'be') return isNew ? 'Nieuw voertuig te koop' : 'Tweedehands voertuig te koop'
+  if (locale === 'pl') return isNew ? 'Nowy pojazd na sprzedaÅ¼' : 'UÅ¼ywany pojazd na sprzedaÅ¼'
+  if (locale === 'da') return isNew ? 'Nyt kÃ¸retÃ¸j til salg' : 'Brugt kÃ¸retÃ¸j til salg'
+  if (locale === 'fi') return isNew ? 'Uusi ajoneuvo myytÃ¤vÃ¤nÃ¤' : 'KÃ¤ytetty ajoneuvo myytÃ¤vÃ¤nÃ¤'
+  return isNew ? 'New vehicle for sale' : 'Used vehicle for sale'
 }
 
 function splitCsv(value?: string | null) {
@@ -981,7 +986,7 @@ function splitCsv(value?: string | null) {
 }
 
 function formatDate(value: string, locale: PublicLocale) {
-  return new Intl.DateTimeFormat(locale === 'sv' ? 'sv-SE' : locale, {
+  return new Intl.DateTimeFormat(detailNumberLocale(locale), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -989,13 +994,28 @@ function formatDate(value: string, locale: PublicLocale) {
 }
 
 function formatDateTime(value: string, locale: PublicLocale) {
-  return new Intl.DateTimeFormat(locale === 'sv' ? 'sv-SE' : locale, {
+  return new Intl.DateTimeFormat(detailNumberLocale(locale), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value))
+}
+
+function detailNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de') return 'de-DE'
+  if (locale === 'at') return 'de-AT'
+  if (locale === 'be') return 'nl-BE'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'nl') return 'nl-NL'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'es') return 'es-ES'
+  return 'en-GB'
 }
 
 function getDaysLeft(value?: string | null) {
@@ -1017,7 +1037,7 @@ function formatDaysLeft(days: number | null, locale: PublicLocale) {
     return localizedLabel(locale, 'Försvinner idag', 'Expires today', 'Läuft heute ab')
   }
   if (locale === 'sv') return days === 1 ? '1 dag kvar' : `${days} dagar kvar`
-  if (locale === 'de') return days === 1 ? '1 Tag übrig' : `${days} Tage übrig`
+  if (locale === 'de' || locale === 'at') return days === 1 ? '1 Tag übrig' : `${days} Tage übrig`
   const label = days === 1 ? 'day left' : 'days left'
   return translatePublic(locale, `${days} ${label}`)
 }
@@ -1089,8 +1109,8 @@ const listingDetailCopy = {
 } as const
 
 function getListingDetailCopy(locale: PublicLocale) {
-  if (locale === 'sv' || locale === 'de' || locale === 'en') {
-    return listingDetailCopy[locale]
+  if (locale === 'sv' || locale === 'de' || locale === 'at' || locale === 'en') {
+    return listingDetailCopy[locale === 'at' ? 'de' : locale]
   }
 
   return translatePublicObject(locale, listingDetailCopy.en)

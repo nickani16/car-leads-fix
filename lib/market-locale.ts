@@ -14,26 +14,16 @@ export type LocaleMarket = {
 const localeMarketData = [
   ['sv', 'SE', 'Sverige', 'Svenska', 'se'],
   ['de', 'DE', 'Deutschland', 'Deutsch', 'de'],
+  ['at', 'AT', 'Österreich', 'Deutsch', 'at'],
+  ['be', 'BE', 'België', 'Nederlands', 'be'],
   ['en', 'EU', 'Europe', 'English', ''],
   ['fr', 'FR', 'France', 'Francais', 'fr'],
   ['es', 'ES', 'Espana', 'Espanol', 'es'],
   ['it', 'IT', 'Italia', 'Italiano', 'it'],
   ['pl', 'PL', 'Polska', 'Polski', 'pl'],
   ['nl', 'NL', 'Nederland', 'Nederlands', 'nl'],
-  ['pt', 'PT', 'Portugal', 'Portugues', 'pt'],
   ['fi', 'FI', 'Suomi', 'Suomi', 'fi'],
   ['da', 'DK', 'Danmark', 'Dansk', 'dk'],
-  ['cs', 'CZ', 'Cesko', 'Cestina', 'cz'],
-  ['ro', 'RO', 'Romania', 'Romana', 'ro'],
-  ['bg', 'BG', 'Bulgaria', 'Bulgarski', 'bg'],
-  ['hr', 'HR', 'Hrvatska', 'Hrvatski', 'hr'],
-  ['el', 'GR', 'Greece', 'Ellinika', 'gr'],
-  ['hu', 'HU', 'Magyarorszag', 'Magyar', 'hu'],
-  ['sk', 'SK', 'Slovensko', 'Slovencina', 'sk'],
-  ['sl', 'SI', 'Slovenija', 'Slovenscina', 'si'],
-  ['et', 'EE', 'Eesti', 'Eesti', 'ee'],
-  ['lv', 'LV', 'Latvija', 'Latviesu', 'lv'],
-  ['lt', 'LT', 'Lietuva', 'Lietuviu', 'lt'],
 ] as const
 
 export const localeMarkets: LocaleMarket[] = localeMarketData.map(

@@ -57,8 +57,14 @@ export default async function MarketPage({ params }: MarketPageProps) {
   if (!market) notFound()
   return (
     <BusinessMarketplaceHome
-      locale={market.language as PublicLocale}
+      locale={marketLocale(market.code, market.language)}
       marketCode={market.code}
     />
   )
+}
+
+function marketLocale(code: string, language: string): PublicLocale {
+  if (code === 'at') return 'at'
+  if (code === 'be') return 'be'
+  return language as PublicLocale
 }

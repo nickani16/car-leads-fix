@@ -2,7 +2,7 @@
 
 import { Phone } from 'lucide-react'
 import { useState } from 'react'
-import type { PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type RevealPhoneButtonProps = {
   listingId: string
@@ -35,7 +35,14 @@ export default function RevealPhoneButton({ listingId, locale }: RevealPhoneButt
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<'unavailable' | 'login' | ''>('')
-  const text = locale === 'sv' || locale === 'de' ? copy[locale] : copy.en
+  const text =
+    locale === 'sv'
+      ? copy.sv
+      : locale === 'de' || locale === 'at'
+        ? copy.de
+        : locale === 'en'
+          ? copy.en
+          : translatePublicObject(locale, copy.en)
   const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`
 
   async function revealPhone() {

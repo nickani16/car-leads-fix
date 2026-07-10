@@ -1101,7 +1101,7 @@ function EquipmentMultiSelect({
           return (
             <section key={group.key} className="rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] p-3">
               <h4 className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
-                {locale === 'sv' ? group.sv : locale === 'de' ? group.de : translatePublic(locale, group.en)}
+                {locale === 'sv' ? group.sv : locale === 'de' || locale === 'at' ? group.de : translatePublic(locale, group.en)}
               </h4>
               <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {options.map((option) => {
@@ -1385,7 +1385,7 @@ function PreviewStep({
           </span>
           <h4 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">{title || copy.listingTitle}</h4>
           <p className="mt-2 text-lg font-semibold text-[#101828]">
-            {values.price ? `${Number(values.price).toLocaleString(locale === 'sv' ? 'sv-SE' : locale)} ${values.currency || 'EUR'}` : copy.priceMissing}
+            {values.price ? `${Number(values.price).toLocaleString(formNumberLocale(locale))} ${values.currency || 'EUR'}` : copy.priceMissing}
           </p>
           <p className="mt-1 text-sm text-[#667085]">{values.city || copy.city} | {values.postalCode || copy.postalCode}</p>
           <p className="mt-1 text-sm font-semibold text-[#475467]">
@@ -1696,17 +1696,32 @@ function toIsoDate(date: Date) {
 }
 
 function formatDateChoice(date: Date, locale: PublicLocale) {
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(formNumberLocale(locale), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   }).format(date)
 }
 
+function formNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de') return 'de-DE'
+  if (locale === 'at') return 'de-AT'
+  if (locale === 'be') return 'nl-BE'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'nl') return 'nl-NL'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'es') return 'es-ES'
+  return 'en-GB'
+}
+
 function weekdayLabels(locale: PublicLocale) {
   const monday = new Date(2026, 0, 5)
   return Array.from({ length: 7 }, (_, index) =>
-    new Intl.DateTimeFormat(locale, { weekday: 'short' })
+    new Intl.DateTimeFormat(formNumberLocale(locale), { weekday: 'short' })
       .format(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index))
       .replace('.', ''),
   )
@@ -1883,7 +1898,7 @@ function getListingFormCopy(locale: PublicLocale) {
       publish: 'Publicera annons',
     }
   }
-  if (locale === 'de') {
+  if (locale === 'de' || locale === 'at') {
     const de = {
       ...en,
       step: 'Schritt',
@@ -1928,7 +1943,7 @@ function getListingFormCopy(locale: PublicLocale) {
 
 function localizeFormText(locale: PublicLocale, sv: string, en: string, de: string) {
   if (locale === 'sv') return sv
-  if (locale === 'de') return de
+  if (locale === 'de' || locale === 'at') return de
   return translatePublic(locale, en)
 }
 
@@ -1936,7 +1951,6 @@ function localizeVehicleText(locale: PublicLocale, value?: string | null) {
   if (!value) return ''
   if (locale === 'sv') return value
   const english = vehicleValueInEnglish(value) || value
-  if (locale === 'de') return english
   return translatePublic(locale, english)
 }
 
@@ -1952,7 +1966,7 @@ function categoryLabelForLocale(category: string, locale: PublicLocale) {
   const localeLabels = categoryLabelOverrides[locale]?.[marketplaceCategory.slug]
   if (localeLabels) return localeLabels
   const language = marketplaceLanguage(locale)
-  if (locale === 'sv' || locale === 'de' || locale === 'en') {
+  if (locale === 'sv' || locale === 'de' || locale === 'at' || locale === 'en') {
     return marketplaceCategory.labels[language]
   }
   return translatePublic(locale, marketplaceCategory.labels.en)
