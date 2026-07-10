@@ -15,6 +15,7 @@ import {
   TrendingDown,
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
+import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingBackLink from '@/app/components/ListingBackLink'
 import ListingReportButton from '@/app/components/ListingReportButton'
@@ -97,7 +98,7 @@ type ListingTechnicalDetails = {
   registrationNumber: string | null
   vin: string | null
   chassisNumber: string | null
-  technicalData: Record<string, string | number | string[]>
+  technicalData: Record<string, string | number | string[] | null>
 }
 
 type SellerVerification = {
@@ -533,7 +534,13 @@ export default async function ListingDetailPage({
                     <p className={`text-lg font-semibold tracking-[-0.02em] ${hidePrivateSellerIdentity ? 'select-none blur-[4px]' : ''}`}>
                       {sellerDisplayLabel}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-[#667085]">{sellerTypeLabel}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
+                      <span>{sellerTypeLabel}</span>
+                      <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
+                        <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
+                        {countryName || listing.country_code}
+                      </span>
+                    </div>
                     <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
                       {sellerVerification.label}
                     </span>
@@ -722,7 +729,7 @@ function sellerBadgeClass(tone: SellerVerification['tone']) {
 async function getListingTechnicalDetails(listingId: string): Promise<ListingTechnicalDetails | null> {
   const { data } = await createAdminClient()
     .from('marketplace_listing_identifiers')
-    .select('registration_number,vin,chassis_number,metadata')
+    .select('registration_number,vin,chassis_number,total_weight_kg,axle_configuration,machine_type,metadata')
     .eq('listing_id', listingId)
     .maybeSingle()
 
@@ -730,14 +737,19 @@ async function getListingTechnicalDetails(listingId: string): Promise<ListingTec
 
   const metadata = isRecord(data.metadata) ? data.metadata : {}
   const technicalData = isRecord(metadata.technical_data)
-    ? (metadata.technical_data as Record<string, string | number | string[]>)
+    ? (metadata.technical_data as Record<string, string | number | string[] | null>)
     : {}
 
   return {
     registrationNumber: textOrNull(data.registration_number),
     vin: textOrNull(data.vin),
     chassisNumber: textOrNull(data.chassis_number),
-    technicalData,
+    technicalData: {
+      ...technicalData,
+      totalWeightKg: technicalData.totalWeightKg ?? data.total_weight_kg ?? null,
+      axleConfiguration: technicalData.axleConfiguration ?? data.axle_configuration ?? null,
+      machineType: technicalData.machineType ?? data.machine_type ?? null,
+    },
   }
 }
 
@@ -791,8 +803,25 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Motorvolym', 'Engine size', 'Hubraum'), value: formatTechnicalValue(technical.engineLiters, 'L') },
     { label: localizedLabel(locale, 'Växellåda', 'Gearbox', 'Getriebe'), value: translateSpecValue(locale, listing.gearbox) },
     { label: localizedLabel(locale, 'Max trailervikt', 'Maximum trailer weight', 'Maximale Anhängelast'), value: formatTechnicalValue(technical.maxTrailerWeightKg, 'kg') },
+    { label: localizedLabel(locale, 'Totalvikt', 'Total weight', 'Gesamtgewicht'), value: formatTechnicalValue(technical.totalWeightKg, 'kg') },
+    { label: localizedLabel(locale, 'Lastvikt', 'Payload', 'Nutzlast'), value: formatTechnicalValue(technical.payloadKg, 'kg') },
+    { label: localizedLabel(locale, 'Lastvolym', 'Cargo volume', 'Ladevolumen'), value: formatTechnicalValue(technical.cargoVolumeM3, 'm³') },
+    { label: localizedLabel(locale, 'Lastutrymme längd', 'Load length', 'Laderaumlänge'), value: formatTechnicalValue(technical.loadLengthCm, 'cm') },
+    { label: localizedLabel(locale, 'Tågvikt', 'Gross combination weight', 'Zuggesamtgewicht'), value: formatTechnicalValue(technical.grossCombinationWeightKg, 'kg') },
+    { label: localizedLabel(locale, 'Axelkonfiguration', 'Axle configuration', 'Achskonfiguration'), value: translateSpecValue(locale, formatTechnicalValue(technical.axleConfiguration, '')) },
+    { label: localizedLabel(locale, 'Antal axlar', 'Axle count', 'Achsenanzahl'), value: translateSpecValue(locale, formatTechnicalValue(technical.axleCount, '')) },
     { label: localizedLabel(locale, 'Drivhjul', 'Driven wheels', 'Antriebsräder'), value: translateSpecValue(locale, formatTechnicalValue(technical.drivetrain, '')) },
     { label: localizedLabel(locale, 'Säten', 'Seats', 'Sitze'), value: formatTechnicalValue(technical.seats, '') },
+    { label: localizedLabel(locale, 'Sovplatser', 'Sleeping places', 'Schlafplätze'), value: formatTechnicalValue(technical.sleepingPlaces, '') },
+    { label: localizedLabel(locale, 'Längd', 'Length', 'Länge'), value: formatTechnicalValue(technical.lengthCm, 'cm') },
+    { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(technical.motorPowerW, 'W') },
+    { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(technical.batteryCapacityWh, 'Wh') },
+    { label: localizedLabel(locale, 'Batterispänning', 'Battery voltage', 'Batteriespannung'), value: formatTechnicalValue(technical.batteryVoltageV, 'V') },
+    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(technical.rangeKm, 'km') },
+    { label: localizedLabel(locale, 'Maxhastighet', 'Maximum speed', 'Höchstgeschwindigkeit'), value: formatTechnicalValue(technical.maxSpeedKmh, 'km/h') },
+    { label: localizedLabel(locale, 'Maskintyp', 'Machine type', 'Maschinentyp'), value: translateSpecValue(locale, formatTechnicalValue(technical.machineType, '')) },
+    { label: localizedLabel(locale, 'Maskinvikt', 'Operating weight', 'Betriebsgewicht'), value: formatTechnicalValue(technical.operatingWeightKg, 'kg') },
+    { label: localizedLabel(locale, 'Grävdjup', 'Digging depth', 'Grabtiefe'), value: formatTechnicalValue(technical.diggingDepthCm, 'cm') },
     { label: localizedLabel(locale, 'Kaross / typ', 'Body type', 'Karosserie / Typ'), value: translateSpecValue(locale, listing.body_type) },
     { label: localizedLabel(locale, 'Färg', 'Colour', 'Farbe'), value: translateSpecValue(locale, listing.color) },
     { label: localizedLabel(locale, 'Färgbeskrivning', 'Colour description', 'Farbbeschreibung'), value: translateSpecValue(locale, formatTechnicalValue(technical.colorDescription, '')) },

@@ -2669,7 +2669,7 @@ function categoryFilterProfile(slug: string): {
   if (slug === 'electric-bikes' || slug === 'e-scooters') {
     return {
       basic: ['condition'],
-      advanced: ['bodyType', 'year', 'mileage', 'equipment'],
+      advanced: ['bodyType', 'year', 'equipment'],
     }
   }
   if (slug === 'motorcycles') {

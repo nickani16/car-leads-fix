@@ -81,6 +81,7 @@ const steps = [
   'Annonsförhandsvisning',
   'Paket & publicering',
 ] as const
+const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 
 const packageCopy = {
   free_7d: {
@@ -421,7 +422,7 @@ export default function NewListingForm({
               {copy.steps[step]}
             </h2>
           </div>
-          <strong className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm text-[#0866ff]">
+          <strong className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#0866ff]">
             {progress} % {copy.complete}
           </strong>
         </div>
@@ -759,14 +760,14 @@ function TechnicalCard({
     return (
       <Field
         name={field.name}
-        label={`${localizeVehicleText(locale, field.label)}${field.suffix ? ` (${field.suffix})` : ''}`}
+        label={`${localizeVehicleText(locale, field.label)}${field.suffix ? ` (${field.suffix})` : ''}${field.name === 'maxTrailerWeightKg' && !field.required ? ` (${localizeFormText(locale, 'valfritt', 'optional', 'optional')})` : ''}`}
         type="number"
         value={value}
         onValueChange={(_, next) => onChange(next)}
         required={field.required}
         min={field.min}
         max={field.max}
-        step={field.name === 'engineLiters' ? '0.1' : '1'}
+        step={decimalTechnicalFieldNames.has(field.name) ? '0.1' : '1'}
       />
     )
   }
@@ -814,7 +815,7 @@ function SelectCard({
           <span className="block text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
             {label}{required ? ' *' : ''}
           </span>
-          <strong className="mt-1 block min-w-0 whitespace-normal break-words text-sm leading-5 text-[#101828]">
+          <strong className="mt-1 block min-w-0 whitespace-normal break-words text-sm font-semibold leading-5 text-[#101828]">
             {value}
           </strong>
         </span>
@@ -1093,7 +1094,7 @@ function ImageStep({
       </div>
       <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed border-[#a8b4c7] bg-[#fbfcff] p-6 text-center">
         <ImagePlus className="h-8 w-8 text-[#0866ff]" />
-        <strong className="mt-3 text-[#101828]">{copy.addImages}</strong>
+        <strong className="mt-3 font-semibold text-[#101828]">{copy.addImages}</strong>
         <span className="mt-1 text-sm text-[#667085]">{images.length}/20 {copy.uploaded}</span>
         <input
           type="file"
@@ -1247,7 +1248,7 @@ function PreviewStep({
           </div>
           {equipment.length ? (
             <p className="mt-4 text-sm leading-6 text-[#475467]">
-              <strong>{copy.equipment}:</strong>{' '}
+              <strong className="font-semibold">{copy.equipment}:</strong>{' '}
               {equipment
                 .map((key) => {
                   const option = equipmentOptionByKey.get(key)
@@ -1329,7 +1330,7 @@ function PublishStep({
               }`}
             >
               <span className="text-sm font-semibold text-[#0866ff]">{packageItemCopy.days}</span>
-              <strong className="mt-2 block text-xl">{packageItemCopy.title}</strong>
+              <strong className="mt-2 block text-xl font-semibold">{packageItemCopy.title}</strong>
               <span className="mt-2 block text-2xl font-semibold">
                 {item.price === 0 ? copy.free : formatListingPrice(item.price)}
               </span>
@@ -1354,7 +1355,7 @@ function PublishStep({
                   : 'border-[#d7deed] bg-white text-[#344054]'
               }`}
             >
-              <strong className="block">{copy.phoneVisibilityPublic}</strong>
+              <strong className="block font-semibold">{copy.phoneVisibilityPublic}</strong>
               <span className="mt-1 block text-xs leading-5 text-[#667085]">
                 {copy.phoneVisibilityPublicText}
               </span>
@@ -1368,7 +1369,7 @@ function PublishStep({
                   : 'border-[#d7deed] bg-white text-[#344054]'
               }`}
             >
-              <strong className="block">{copy.phoneVisibilityRegistered}</strong>
+              <strong className="block font-semibold">{copy.phoneVisibilityRegistered}</strong>
               <span className="mt-1 block text-xs leading-5 text-[#667085]">
                 {copy.phoneVisibilityRegisteredText}
               </span>

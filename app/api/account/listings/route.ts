@@ -38,6 +38,7 @@ import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 
 const MAX_IMAGES = 20
 const MAX_IMAGE_SIZE = 25 * 1024 * 1024
+const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 type UploadedMarketplaceImage = {
   avifUrl: string
   webpUrl: string
@@ -91,7 +92,7 @@ function collectStructuredTechnicalData(
         }
       }
       technicalData[field.name] =
-        field.name === 'engineLiters' ? Math.round(value * 10) / 10 : Math.round(value)
+        decimalTechnicalFieldNames.has(field.name) ? Math.round(value * 10) / 10 : Math.round(value)
       continue
     }
 
@@ -406,12 +407,11 @@ export async function POST(request: Request) {
           ? 'public'
           : 'registered_only'
     if (
-      category === 'agriculture' &&
-      identifiers.agricultureObjectType !== 'implement' &&
+      ['agriculture', 'construction'].includes(category) &&
       !Number(text(form, 'operatingHours'))
     ) {
       return NextResponse.json(
-        { error: 'Drifttimmar krävs för traktorer.' },
+        { error: 'Drifttimmar krävs för maskiner.' },
         { status: 400 },
       )
     }

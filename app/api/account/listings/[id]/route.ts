@@ -4,13 +4,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
+import { normalizeMarketplaceCategory } from '@/lib/marketplace'
+import { categoryTechnicalFields } from '@/lib/listing-form-options'
 import {
   equipmentLabel,
   equipmentOptionByKey,
   normalizeEquipmentKeys,
 } from '@/lib/listing-equipment'
+import {
+  normalizeIdentifier,
+  validateRequiredIdentifiers,
+  type ListingIdentifierInput,
+} from '@/lib/marketplace-security'
 
 const actions = new Set(['mark_sold', 'update_listing'])
+const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 
 function clean(value: unknown) {
   return String(value || '').replace(/\s+/g, ' ').trim()
@@ -19,6 +27,60 @@ function clean(value: unknown) {
 function normalizePrice(value: unknown) {
   const price = Number(value)
   return Number.isFinite(price) && price > 0 ? Math.round(price) : null
+}
+
+function numberOrNull(value: unknown) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
+}
+
+function cleanTechnicalInput(value: unknown) {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function collectStructuredTechnicalData(
+  input: Record<string, unknown>,
+  category: ReturnType<typeof normalizeMarketplaceCategory>,
+) {
+  const technicalData: Record<string, string | number> = {}
+  const fields = categoryTechnicalFields[category] || []
+
+  for (const field of fields) {
+    const rawValue = clean(input[field.name])
+    if (!rawValue) {
+      if (field.required) {
+        return {
+          error: `Välj ${field.label.toLowerCase()} innan du fortsätter.`,
+          technicalData,
+        }
+      }
+      continue
+    }
+
+    if (field.kind === 'number') {
+      const value = Number(rawValue)
+      if (
+        !Number.isFinite(value) ||
+        (field.min !== undefined && value < field.min) ||
+        (field.max !== undefined && value > field.max)
+      ) {
+        return { error: `${field.label} har ett ogiltigt värde.`, technicalData }
+      }
+      technicalData[field.name] =
+        decimalTechnicalFieldNames.has(field.name) ? Math.round(value * 10) / 10 : Math.round(value)
+      continue
+    }
+
+    const allowedValues = new Set((field.options || []).map((option) => option.value))
+    if (allowedValues.size && !allowedValues.has(rawValue)) {
+      return { error: `${field.label} har ett ogiltigt val.`, technicalData }
+    }
+    technicalData[field.name] = rawValue
+  }
+
+  return { error: '', technicalData }
 }
 
 function equipmentTextFromKeys(keys: string[]) {
@@ -54,6 +116,10 @@ export async function PATCH(
     description?: string
     equipmentKeys?: string[]
     phoneVisibility?: string
+    mileage?: number | string
+    operatingHours?: number | string
+    technicalData?: Record<string, unknown>
+    identifiers?: Partial<Record<keyof ListingIdentifierInput, string | number | null>>
   }
   const action = String(body.action || '')
   if (!actions.has(action)) {
@@ -63,7 +129,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,city,country_code,country,address,latitude,longitude,seller_type,phone_visibility')
+    .select('id,seller_user_id,status,review_status,title,price,currency,description,city,country_code,country,address,latitude,longitude,seller_type,phone_visibility,category')
     .eq('id', id)
     .maybeSingle()
 
@@ -91,6 +157,41 @@ export async function PATCH(
     const country = clean(body.country) || listing.country || listing.country_code
     const description = String(body.description || '').trim().slice(0, 5000)
     const equipmentKeys = normalizeEquipmentKeys(body.equipmentKeys || [])
+    const category = normalizeMarketplaceCategory(listing.category)
+    const technicalInput = cleanTechnicalInput(body.technicalData)
+    const identifiers: ListingIdentifierInput = {
+      registrationNumber: normalizeIdentifier(String(body.identifiers?.registrationNumber || '')),
+      vin: normalizeIdentifier(String(body.identifiers?.vin || '')),
+      chassisNumber: normalizeIdentifier(String(body.identifiers?.chassisNumber || '')),
+      serialNumber: normalizeIdentifier(String(body.identifiers?.serialNumber || '')),
+      frameNumber: normalizeIdentifier(String(body.identifiers?.frameNumber || '')),
+      batterySerialNumber: normalizeIdentifier(String(body.identifiers?.batterySerialNumber || '')),
+      totalWeightKg: numberOrNull(body.identifiers?.totalWeightKg),
+      axleConfiguration: clean(body.identifiers?.axleConfiguration),
+      machineType: clean(body.identifiers?.machineType),
+      agricultureObjectType: clean(body.identifiers?.agricultureObjectType) || 'tractor',
+    }
+    const identifierValidation = validateRequiredIdentifiers(category, identifiers)
+    if (!identifierValidation.valid) {
+      return NextResponse.json(
+        { error: identifierValidation.message },
+        { status: 400 },
+      )
+    }
+    const { error: technicalError, technicalData } =
+      collectStructuredTechnicalData(technicalInput, category)
+    if (technicalError) {
+      return NextResponse.json({ error: technicalError }, { status: 400 })
+    }
+    if (
+      ['agriculture', 'construction'].includes(category) &&
+      !Number(body.operatingHours)
+    ) {
+      return NextResponse.json(
+        { error: 'Drifttimmar krävs för maskiner.' },
+        { status: 400 },
+      )
+    }
     const phoneVisibility =
       listing.seller_type === 'business'
         ? 'public'
@@ -121,6 +222,16 @@ export async function PATCH(
       equipment: equipmentTextFromKeys(equipmentKeys) || null,
       phone_visibility: phoneVisibility,
       updated_at: now,
+      mileage_km: Number.isFinite(Number(body.mileage))
+        ? Math.max(0, Math.round(Number(body.mileage)))
+        : null,
+      operating_hours: Number(body.operatingHours) || null,
+      body_type: technicalInput.bodyType ? clean(technicalInput.bodyType) : category,
+      fuel_type: technicalInput.fuelType ? clean(technicalInput.fuelType) : null,
+      gearbox: technicalInput.gearbox ? clean(technicalInput.gearbox) : null,
+      condition: technicalInput.condition ? clean(technicalInput.condition) : null,
+      known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
+      service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
     }
     if (priceChanged) {
       patch.updated_at = now
@@ -133,6 +244,51 @@ export async function PATCH(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    const { data: identifierRow } = await admin
+      .from('marketplace_listing_identifiers')
+      .select('id,metadata')
+      .eq('listing_id', listing.id)
+      .maybeSingle()
+    const metadata =
+      identifierRow?.metadata && typeof identifierRow.metadata === 'object' && !Array.isArray(identifierRow.metadata)
+        ? (identifierRow.metadata as Record<string, unknown>)
+        : {}
+    const identifierPatch = {
+      seller_user_id: listing.seller_user_id,
+      category,
+      registration_number: identifiers.registrationNumber || null,
+      vin: identifiers.vin || null,
+      chassis_number: identifiers.chassisNumber || identifiers.vin || null,
+      serial_number: identifiers.serialNumber || null,
+      frame_number: identifiers.frameNumber || null,
+      battery_serial_number: identifiers.batterySerialNumber || null,
+      total_weight_kg: identifiers.totalWeightKg,
+      axle_configuration: identifiers.axleConfiguration || null,
+      machine_type: identifiers.machineType || null,
+      metadata: {
+        ...metadata,
+        agriculture_object_type: identifiers.agricultureObjectType,
+        technical_data: technicalData,
+      },
+    }
+    const identifierResult = identifierRow
+      ? await admin
+          .from('marketplace_listing_identifiers')
+          .update(identifierPatch)
+          .eq('id', identifierRow.id)
+      : await admin
+          .from('marketplace_listing_identifiers')
+          .insert({
+            ...identifierPatch,
+            listing_id: listing.id,
+          })
+    if (identifierResult.error) {
+      return NextResponse.json(
+        { error: identifierResult.error.message },
+        { status: 400 },
+      )
     }
 
     await Promise.all([

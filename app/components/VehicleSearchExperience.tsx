@@ -1961,8 +1961,8 @@ function VehicleResultCard({
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-7 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
-                  <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />
+                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
+                  <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                 </span>
               ) : null}
             </div>
@@ -2360,8 +2360,8 @@ function MapListingPreview({
           <div className="mt-4 flex items-center justify-between gap-3">
             <p className="line-clamp-1 text-sm font-medium text-[#667085]">{listing.sellerIsTrader ? listing.sellerName : 'Privat'}</p>
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-              <span className="relative hidden h-8 w-28 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
-                <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="112px" className="object-contain" />
+              <span className="relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
+                <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
               </span>
             ) : null}
           </div>
@@ -2483,7 +2483,7 @@ function categoryFilterProfile(category: string): VehicleFilterKey[] {
     return ['bodyType', 'condition', 'fuel', 'gearbox', 'year']
   }
   if (category === 'electric-bikes' || category === 'e-scooters') {
-    return ['condition', 'bodyType', 'year', 'mileage']
+    return ['condition', 'bodyType', 'year']
   }
   if (category === 'motorcycles') {
     return ['condition', 'fuel', 'gearbox', 'bodyType', 'year', 'mileage']

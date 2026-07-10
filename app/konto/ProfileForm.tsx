@@ -129,10 +129,10 @@ export default function ProfileForm({
                   <img
                     src={logoUrl}
                     alt=""
-                    className="h-14 w-14 rounded-[12px] border border-[#d7deed] bg-white object-contain p-1"
+                    className="h-10 w-40 rounded-[12px] border border-[#d7deed] bg-white object-contain p-1"
                   />
                 ) : null}
-                <label className="inline-flex min-h-11 cursor-pointer items-center rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-bold text-[#0866ff]">
+                <label className="inline-flex min-h-11 cursor-pointer items-center rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff]">
                   {logoUploading ? copy.uploadingLogo : copy.uploadLogo}
                   <input
                     type="file"
@@ -161,7 +161,7 @@ export default function ProfileForm({
         </label>
         <div className="sm:col-span-2">
           {message && <p className="mb-4 text-sm text-[#475467]">{message}</p>}
-          <button className="min-h-12 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white">
+          <button className="min-h-12 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white">
             {copy.saveProfile}
           </button>
         </div>
@@ -232,7 +232,7 @@ function getProfileCopy(locale: PublicLocale) {
     uploadingLogo: 'Uploading...',
     logoUploaded: 'Logo uploaded.',
     logoUploadError: 'Could not upload logo.',
-    logoHelp: 'PNG, JPG or WebP under 2 MB.',
+    logoHelp: 'PNG, JPG or WebP under 2 MB. Recommended size for listing cards: 640 x 160 px, transparent background.',
     registrationNumber: 'Registration number',
     vatNumber: 'VAT number',
     websiteUrl: 'Website',
@@ -267,7 +267,7 @@ function getProfileCopy(locale: PublicLocale) {
       uploadingLogo: 'Laddar upp...',
       logoUploaded: 'Logotypen är uppladdad.',
       logoUploadError: 'Kunde inte ladda upp logotypen.',
-      logoHelp: 'PNG, JPG eller WebP under 2 MB.',
+      logoHelp: 'PNG, JPG eller WebP under 2 MB. Rekommenderad storlek för annonskort: 640 x 160 px, transparent bakgrund.',
       registrationNumber: 'Registreringsnummer',
       vatNumber: 'VAT-nummer',
       websiteUrl: 'Webbplats',
@@ -303,7 +303,7 @@ function getProfileCopy(locale: PublicLocale) {
       uploadingLogo: 'Subiendo...',
       logoUploaded: 'Logotipo subido.',
       logoUploadError: 'No se pudo subir el logotipo.',
-      logoHelp: 'PNG, JPG o WebP de menos de 2 MB.',
+      logoHelp: 'PNG, JPG o WebP de menos de 2 MB. Tamaño recomendado para tarjetas de anuncio: 640 x 160 px, fondo transparente.',
       registrationNumber: 'Número de registro',
       vatNumber: 'Número de IVA',
       websiteUrl: 'Sitio web',

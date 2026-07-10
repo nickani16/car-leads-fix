@@ -60,6 +60,8 @@ const drivetrainOptions = options([
   'Bakhjulsdrift',
   'Fyrhjulsdrift',
 ])
+const motorcycleGearboxOptions = options(['Manuell', 'Automat', 'Halvautomat'])
+const machineDrivetrainOptions = options(['Band', 'Hjul', '4WD', '2WD', 'Annat'])
 
 const conditionOptions = options(['Ny', 'Begagnad', 'Defekt', 'Reservdelsobjekt'])
 const yesNoUnknownOptions = options(['Nej', 'Ja', 'Vet ej'])
@@ -75,7 +77,10 @@ const damageStatusOptions = options([
   'Annat fel',
 ])
 
-const feeClassOptions = options(['Personbil', 'Lätt lastbil', 'Husbil', 'Husvagn', 'MC', 'Annat', 'Vet ej'])
+const vanFeeClassOptions = options(['Lätt lastbil', 'Annat', 'Vet ej'])
+const motorhomeFeeClassOptions = options(['Husbil', 'Annat', 'Vet ej'])
+const caravanFeeClassOptions = options(['Husvagn', 'Annat', 'Vet ej'])
+const axleCountOptions = options(['2 axlar', '3 axlar', '4 axlar', '5+ axlar'])
 
 export const categoryTechnicalFields: Record<
   MarketplaceCategorySlug,
@@ -86,7 +91,6 @@ export const categoryTechnicalFields: Record<
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
     numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 10000, 'kg'),
     numberField('seats', 'Säten', 1, 12, 'st'),
-    chips('feeClass', 'Avgiftsklass', feeClassOptions),
     dateField('firstRegistrationDate', 'Registreringsdatum'),
     chips('bodyType', 'Kaross', ['Halvkombi', 'Sedan', 'SUV', 'Kombi', 'Coupé', 'Cabriolet', 'Pickup', 'Elbil'], true),
     chips('fuelType', 'Bränsle / drivlina', fuelOptions, true),
@@ -101,10 +105,13 @@ export const categoryTechnicalFields: Record<
     numberField('powerHp', 'Effekt', 1, 3000, 'HK'),
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
     numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
+    numberField('payloadKg', 'Lastvikt', 1, 10000, 'kg', true),
+    numberField('cargoVolumeM3', 'Lastvolym', 1, 80, 'm³'),
+    numberField('loadLengthCm', 'Lastutrymme längd', 1, 800, 'cm'),
     numberField('seats', 'Säten', 1, 20, 'st'),
-    chips('feeClass', 'Avgiftsklass', feeClassOptions),
+    chips('feeClass', 'Avgiftsklass', vanFeeClassOptions),
     dateField('firstRegistrationDate', 'Registreringsdatum'),
-    chips('bodyType', 'Typ', ['Skåpbil', 'Crew van', 'Box van', 'Kylbil', 'Minibuss', 'Pickup', 'Eltransport', 'Camper'], true),
+    chips('bodyType', 'Karosstyp', ['Skåpbil', 'Crew van', 'Box van', 'Kylbil', 'Minibuss', 'Pickup', 'Flak', 'Chassi', 'Eltransport'], true),
     chips('fuelType', 'Bränsle / drivlina', fuelOptions, true),
     chips('gearbox', 'Växellåda', gearboxOptions, true),
     chips('drivetrain', 'Drivning', drivetrainOptions),
@@ -114,10 +121,11 @@ export const categoryTechnicalFields: Record<
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
   motorcycles: [
-    chips('bodyType', 'Typ', ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross / enduro', 'Naked', 'Adventure'], true),
+    chips('bodyType', 'Motorcykeltyp', ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross / enduro', 'Naked', 'Adventure', 'Moped', 'ATV'], true),
     numberField('engineCc', 'Motorvolym', 1, 10000, 'cc', true),
+    numberField('powerHp', 'Effekt', 1, 500, 'HK'),
     chips('fuelType', 'Drivmedel', ['Bensin', 'El', 'Hybrid', 'Annat'], true),
-    chips('gearbox', 'Växellåda', ['Manuell', 'Automat', 'Halvautomat']),
+    chips('gearbox', 'Växellåda', motorcycleGearboxOptions),
     chips('abs', 'ABS', yesNoUnknownOptions, true),
     chips('condition', 'Skick', conditionOptions, true),
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
@@ -127,8 +135,9 @@ export const categoryTechnicalFields: Record<
     numberField('powerHp', 'Effekt', 1, 3000, 'HK'),
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
     numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
+    numberField('totalWeightKg', 'Totalvikt', 1, 12000, 'kg', true),
     numberField('seats', 'Säten', 1, 12, 'st'),
-    chips('feeClass', 'Avgiftsklass', feeClassOptions),
+    chips('feeClass', 'Avgiftsklass', motorhomeFeeClassOptions),
     dateField('firstRegistrationDate', 'Registreringsdatum'),
     chips('bodyType', 'Typ', ['Helintegrerad', 'Halvintegrerad', 'Alkov', 'Camper van', 'Plåtis'], true),
     numberField('sleepingPlaces', 'Sovplatser', 1, 12, 'st', true),
@@ -142,8 +151,9 @@ export const categoryTechnicalFields: Record<
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
   caravans: [
-    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 5000, 'kg'),
-    chips('feeClass', 'Avgiftsklass', feeClassOptions),
+    numberField('totalWeightKg', 'Totalvikt', 1, 5000, 'kg', true),
+    numberField('payloadKg', 'Lastvikt', 1, 2500, 'kg'),
+    chips('feeClass', 'Avgiftsklass', caravanFeeClassOptions),
     dateField('firstRegistrationDate', 'Registreringsdatum'),
     chips('bodyType', 'Typ', ['Enkelaxel', 'Boggie', 'Familjevagn', 'Vintervagn', 'Liten husvagn'], true),
     numberField('sleepingPlaces', 'Sovplatser', 1, 12, 'st', true),
@@ -155,7 +165,10 @@ export const categoryTechnicalFields: Record<
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
   trucks: [
-    chips('bodyType', 'Typ', ['Dragbil', 'Skåpbil', 'Flak', 'Tippbil', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil'], true),
+    chips('bodyType', 'Påbyggnad', ['Dragbil', 'Skåp', 'Flak', 'Tipp', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil', 'Lastväxlare', 'Betongbil'], true),
+    numberField('payloadKg', 'Lastvikt', 1, 60000, 'kg', true),
+    numberField('grossCombinationWeightKg', 'Tågvikt', 1, 100000, 'kg'),
+    chips('axleCount', 'Antal axlar', axleCountOptions, true),
     chips('euroClass', 'Euroklass', ['Euro 3', 'Euro 4', 'Euro 5', 'Euro 6', 'El', 'Annat']),
     chips('fuelType', 'Drivmedel', heavyFuelOptions, true),
     chips('gearbox', 'Växellåda', gearboxOptions, true),
@@ -164,22 +177,30 @@ export const categoryTechnicalFields: Record<
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
   ],
   agriculture: [
+    chips('bodyType', 'Maskintyp', ['Traktor', 'Skördetröska', 'Redskap', 'Press', 'Vagn', 'Spruta', 'Lastare', 'Annat'], true),
     chips('fuelType', 'Drivmedel', heavyFuelOptions),
     chips('attachmentType', 'Redskapsfäste', ['Trepunkt', 'Frontlastare', 'PTO', 'Hydrauliskt', 'Drag', 'Annat']),
+    chips('drivetrain', 'Drivning', machineDrivetrainOptions),
+    numberField('powerHp', 'Effekt', 1, 1000, 'HK'),
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
   ],
   construction: [
+    chips('bodyType', 'Maskintyp', ['Grävmaskin', 'Minigrävare', 'Hjullastare', 'Dumper', 'Dozer', 'Vält', 'Lift', 'Kran', 'Kompaktor', 'Annat'], true),
     chips('fuelType', 'Drivmedel', heavyFuelOptions, true),
     chips('attachmentType', 'Redskapsfäste', ['S40', 'S45', 'S50', 'S60', 'S70', 'Hydrauliskt', 'Annat']),
+    chips('drivetrain', 'Drivning', machineDrivetrainOptions),
+    numberField('operatingWeightKg', 'Maskinvikt', 1, 150000, 'kg'),
+    numberField('diggingDepthCm', 'Grävdjup', 1, 3000, 'cm'),
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
   ],
   'electric-bikes': [
-    chips('bodyType', 'Typ', ['City', 'Hybrid', 'Mountainbike', 'Cargo', 'Folding', 'Speedbike'], true),
+    chips('bodyType', 'Cykeltyp', ['City', 'Hybrid', 'Mountainbike', 'Cargo', 'Folding', 'Speedbike', 'Racer', 'Barncykel'], true),
     numberField('batteryCapacityWh', 'Batterikapacitet', 1, 3000, 'Wh', true),
+    numberField('batteryVoltageV', 'Batterispänning', 1, 100, 'V'),
     numberField('rangeKm', 'Räckvidd', 1, 500, 'km'),
     numberField('motorPowerW', 'Motoreffekt', 1, 2000, 'W'),
     numberField('maxSpeedKmh', 'Maxhastighet', 1, 80, 'km/h'),
@@ -187,8 +208,9 @@ export const categoryTechnicalFields: Record<
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
   'e-scooters': [
-    chips('bodyType', 'Typ', ['Elsparkcykel', 'Mopedklassad', 'Hopfällbar', 'Offroad', 'Cargo'], true),
+    chips('bodyType', 'Sparkcykeltyp', ['Elsparkcykel', 'Mopedklassad', 'Hopfällbar', 'Offroad', 'Cargo'], true),
     numberField('batteryCapacityWh', 'Batterikapacitet', 1, 3000, 'Wh', true),
+    numberField('batteryVoltageV', 'Batterispänning', 1, 100, 'V'),
     numberField('rangeKm', 'Räckvidd', 1, 300, 'km'),
     numberField('motorPowerW', 'Motoreffekt', 1, 4000, 'W'),
     numberField('maxSpeedKmh', 'Maxhastighet', 1, 100, 'km/h'),

@@ -34,7 +34,7 @@ export const listingRequirementsByCategory: Record<
   vans: [
     { key: 'registrationNumber', label: 'Registreringsnummer, om relevant', required: false },
     { key: 'vin', label: 'VIN/chassinummer', required: false },
-    { key: 'totalWeightKg', label: 'Totalvikt kg', required: false },
+    { key: 'totalWeightKg', label: 'Totalvikt kg', required: true },
   ],
   motorcycles: [
     { key: 'registrationNumber', label: 'Registreringsnummer, om relevant', required: false },

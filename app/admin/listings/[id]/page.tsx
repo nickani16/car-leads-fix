@@ -15,7 +15,7 @@ export default async function AdminListingDetailPage({
 }) {
   const { id } = await params
   const { adminClient } = await requireAdmin()
-  const [{ data: listing }, { data: events }, { data: reports }] = await Promise.all([
+  const [{ data: listing }, { data: identifiers }, { data: events }, { data: reports }] = await Promise.all([
     adminClient
       .from('marketplace_listings')
       .select(`
@@ -60,6 +60,11 @@ export default async function AdminListingDetailPage({
       .eq('id', id)
       .maybeSingle(),
     adminClient
+      .from('marketplace_listing_identifiers')
+      .select('total_weight_kg,axle_configuration,machine_type,metadata')
+      .eq('listing_id', id)
+      .maybeSingle(),
+    adminClient
       .from('marketplace_listing_events')
       .select('id,event_type,from_status,to_status,from_review_status,to_review_status,metadata,created_at')
       .eq('listing_id', id)
@@ -77,6 +82,10 @@ export default async function AdminListingDetailPage({
 
   const firstImage =
     Array.isArray(listing.images) && listing.images.length ? listing.images[0] : null
+  const technicalData =
+    isRecord(identifiers?.metadata) && isRecord(identifiers.metadata.technical_data)
+      ? identifiers.metadata.technical_data
+      : {}
 
   return (
     <main className="px-4 py-7 sm:px-6 lg:px-8">
@@ -116,9 +125,29 @@ export default async function AdminListingDetailPage({
                 { label: 'Årsmodell', value: listing.model_year },
                 { label: 'Kilometer', value: listing.mileage_km ? `${formatNumber(listing.mileage_km)} km` : null },
                 { label: 'Drifttimmar', value: listing.operating_hours },
+                { label: 'Totalvikt', value: formatTechnicalValue(technicalData.totalWeightKg ?? identifiers?.total_weight_kg, 'kg') },
+                { label: 'Lastvikt', value: formatTechnicalValue(technicalData.payloadKg, 'kg') },
+                { label: 'Lastvolym', value: formatTechnicalValue(technicalData.cargoVolumeM3, 'm³') },
+                { label: 'Lastutrymme längd', value: formatTechnicalValue(technicalData.loadLengthCm, 'cm') },
+                { label: 'Tågvikt', value: formatTechnicalValue(technicalData.grossCombinationWeightKg, 'kg') },
+                { label: 'Axelkonfiguration', value: identifiers?.axle_configuration },
+                { label: 'Antal axlar', value: formatTechnicalValue(technicalData.axleCount, '') },
                 { label: 'Bränsle', value: listing.fuel_type },
                 { label: 'Växellåda', value: listing.gearbox },
                 { label: 'Kaross / typ', value: listing.body_type },
+                { label: 'Euroklass', value: formatTechnicalValue(technicalData.euroClass, '') },
+                { label: 'Sovplatser', value: formatTechnicalValue(technicalData.sleepingPlaces, '') },
+                { label: 'Längd', value: formatTechnicalValue(technicalData.lengthCm, 'cm') },
+                { label: 'Motorvolym', value: formatTechnicalValue(technicalData.engineCc ?? technicalData.engineLiters, technicalData.engineCc ? 'cc' : 'L') },
+                { label: 'Effekt', value: formatTechnicalValue(technicalData.powerHp, 'HK') },
+                { label: 'Batterikapacitet', value: formatTechnicalValue(technicalData.batteryCapacityWh, 'Wh') },
+                { label: 'Batterispänning', value: formatTechnicalValue(technicalData.batteryVoltageV, 'V') },
+                { label: 'Räckvidd', value: formatTechnicalValue(technicalData.rangeKm, 'km') },
+                { label: 'Motoreffekt', value: formatTechnicalValue(technicalData.motorPowerW, 'W') },
+                { label: 'Maxhastighet', value: formatTechnicalValue(technicalData.maxSpeedKmh, 'km/h') },
+                { label: 'Maskintyp', value: identifiers?.machine_type || formatTechnicalValue(technicalData.machineType, '') },
+                { label: 'Maskinvikt', value: formatTechnicalValue(technicalData.operatingWeightKg, 'kg') },
+                { label: 'Grävdjup', value: formatTechnicalValue(technicalData.diggingDepthCm, 'cm') },
                 { label: 'Färg', value: listing.color },
                 { label: 'Regnummer', value: listing.registration_reference },
                 { label: 'VIN', value: listing.vin || listing.chassis_number },
@@ -224,4 +253,14 @@ export default async function AdminListingDetailPage({
       </div>
     </main>
   )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function formatTechnicalValue(value: unknown, suffix: string) {
+  if (value === null || value === undefined || value === '') return null
+  const text = typeof value === 'number' ? formatNumber(value) : String(value)
+  return suffix ? `${text} ${suffix}` : text
 }
