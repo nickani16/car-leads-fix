@@ -27,6 +27,7 @@ import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import RevealPhoneButton from '@/app/components/RevealPhoneButton'
 import SavedListingButton from '@/app/components/SavedListingButton'
+import SellerDescriptionClamp from '@/app/components/SellerDescriptionClamp'
 import SellerDescriptionTranslationButton from '@/app/components/SellerDescriptionTranslationButton'
 import ShareListingButton from '@/app/components/ShareListingButton'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
@@ -431,9 +432,11 @@ export default async function ListingDetailPage({
                   {copy.sellerDescription}
                 </h2>
                 <p className="mt-2 text-sm font-medium text-[#667085]">{copy.originalLanguage}</p>
-                <p className="mt-4 whitespace-pre-line text-base leading-8 text-[#475467]">
-                  {listing.description}
-                </p>
+                <SellerDescriptionClamp
+                  text={listing.description}
+                  readMoreLabel={localizedLabel(locale, 'Läs mer', 'Read more', 'Mehr anzeigen')}
+                  showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
+                />
                 <SellerDescriptionTranslationButton text={listing.description} locale={locale} />
               </section>
             ) : null}
