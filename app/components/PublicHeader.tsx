@@ -684,6 +684,7 @@ export default function PublicHeader({
     { href: savedSearchesHref, label: publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen'), icon: Bookmark },
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
   ]
+  const savedListingBadge = savedListingCount > 99 ? '99+' : savedListingCount ? String(savedListingCount) : ''
   const profileMenuLinks = [
     { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
     { href: accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
@@ -946,7 +947,14 @@ export default function PublicHeader({
                       onClick={(event) => handleInternalNavigation(event, href)}
                       className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
-                      <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                      <span className="relative">
+                        <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                        {href === savedHref && savedListingBadge ? (
+                          <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                            {savedListingBadge}
+                          </span>
+                        ) : null}
+                      </span>
                       <span>{label}</span>
                     </Link>
                   ))}
@@ -1246,6 +1254,32 @@ export default function PublicHeader({
             mobileMoreOpen ? 'hidden' : 'flex'
           }`}
         >
+          {headerAccount.authenticated ? (
+            <Link
+              href={savedHref}
+              onClick={closeMobile}
+              aria-label={publicLabel('Saved listings', 'Sparade annonser', 'Gespeicherte Anzeigen')}
+              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+            >
+              <span className="relative">
+                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                {savedListingBadge ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedListingBadge}
+                  </span>
+                ) : null}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', savedHref)}
+              aria-label={publicLabel('Saved listings', 'Sparade annonser', 'Gespeicherte Anzeigen')}
+              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+            >
+              <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
+            </button>
+          )}
           {headerAccount.authenticated ? (
             <Link
               href={savedSearchesHref}
@@ -1571,7 +1605,7 @@ export default function PublicHeader({
                 <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
                 {savedListingCount ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {savedListingCount > 99 ? '99+' : savedListingCount}
+                    {savedListingBadge}
                   </span>
                 ) : null}
               </span>

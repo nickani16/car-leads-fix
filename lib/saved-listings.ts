@@ -29,7 +29,6 @@ export async function fetchSavedListingIds() {
     ? payload.listingIds.filter((id): id is string => typeof id === 'string')
     : []
   window.localStorage.setItem(SAVED_LISTINGS_KEY, JSON.stringify(ids))
-  window.dispatchEvent(new CustomEvent(SAVED_LISTINGS_EVENT, { detail: { ids } }))
   return { authenticated: true, ids }
 }
 

@@ -52,6 +52,28 @@ export default function SavedListingButton({
   async function toggle() {
     if (busy) return
     if (!authenticated) {
+      setBusy(true)
+      try {
+        const result = await fetchSavedListingIds()
+        setAuthenticated(result.authenticated)
+        if (result.authenticated) {
+          const currentSaved = result.ids.includes(listingId)
+          const nextSaved = !currentSaved
+          setSaved(nextSaved)
+          const toggleResult = nextSaved
+            ? await saveListingId(listingId)
+            : await removeSavedListingId(listingId)
+          if (!toggleResult.authenticated) {
+            setAuthenticated(false)
+            setSaved(false)
+          }
+          return
+        }
+      } catch {
+        // Fall through to the auth prompt below.
+      } finally {
+        setBusy(false)
+      }
       const firstSegment = window.location.pathname.split('/').filter(Boolean)[0]
       const prefix =
         firstSegment && /^[a-z]{2}$/.test(firstSegment) && firstSegment !== 'en' && firstSegment !== 'eu'

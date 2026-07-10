@@ -25,6 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import SavedListingButton from './SavedListingButton'
 import {
   AutorellAgricultureIcon,
   AutorellAllCategoriesIcon,
@@ -1712,17 +1713,9 @@ function VehicleResultCard({
               Verifierad
             </span>
           ) : null}
-          <button
-            type="button"
-            aria-label="Spara annons"
-            onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-            }}
-            className="pointer-events-auto absolute right-3 top-3 z-30 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-md transition hover:text-[#0866ff]"
-          >
-            <Heart className="h-5 w-5" />
-          </button>
+          <div className="pointer-events-auto absolute right-3 top-3 z-30 scale-[.91] origin-top-right">
+            <SavedListingButton listingId={listing.id} />
+          </div>
           <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full max-[420px]:h-6 max-[420px]:w-6" />
           <button
             type="button"
@@ -2139,13 +2132,9 @@ function MapListingPreview({
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
               <p className="mt-1 line-clamp-1 text-sm font-medium text-[#667085]">{location}</p>
             </Link>
-            <button
-              type="button"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-              aria-label="Spara annons"
-            >
-              <Heart className="h-5 w-5" />
-            </button>
+            <div className="shrink-0 scale-[.91] origin-top-right">
+              <SavedListingButton listingId={listing.id} />
+            </div>
           </div>
           <p className="mt-4 text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
