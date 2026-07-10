@@ -55,6 +55,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { fetchSavedListingIds, SAVED_LISTINGS_KEY } from '@/lib/saved-listings'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
 
@@ -448,7 +449,7 @@ export default function PublicHeader({
   useEffect(() => {
     const syncSaved = () => {
       try {
-        const value = JSON.parse(window.localStorage.getItem('autorell-saved-listings') || '[]')
+        const value = JSON.parse(window.localStorage.getItem(SAVED_LISTINGS_KEY) || '[]')
         setSavedListingCount(Array.isArray(value) ? value.length : 0)
       } catch {
         setSavedListingCount(0)
@@ -462,7 +463,10 @@ export default function PublicHeader({
       setAuthModalOpen(false)
       setMarketSelectorOpen(true)
     }
-    const timer = window.setTimeout(syncSaved, 0)
+    const timer = window.setTimeout(() => {
+      syncSaved()
+      void fetchSavedListingIds().then((result) => setSavedListingCount(result.ids.length)).catch(() => undefined)
+    }, 0)
     window.addEventListener('autorell:saved-listings', syncSaved)
     window.addEventListener('storage', syncSaved)
     window.addEventListener('autorell:open-auth', openAuth)

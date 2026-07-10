@@ -8,8 +8,8 @@ import SavedListingButton from './SavedListingButton'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import {
-  readSavedListingIds,
   SAVED_LISTINGS_EVENT,
+  SAVED_LISTINGS_KEY,
 } from '@/lib/saved-listings'
 import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
@@ -24,53 +24,51 @@ export default function SavedListingsClient({
   const [savedIds, setSavedIds] = useState<string[]>([])
   const [listings, setListings] = useState<MarketplaceListing[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [authenticated, setAuthenticated] = useState(true)
 
   useEffect(() => {
-    const sync = () => setSavedIds(readSavedListingIds())
-    sync()
+    const sync = () => {
+      void loadSavedListings()
+    }
     window.addEventListener(SAVED_LISTINGS_EVENT, sync)
     window.addEventListener('storage', sync)
+    void loadSavedListings()
     return () => {
       window.removeEventListener(SAVED_LISTINGS_EVENT, sync)
       window.removeEventListener('storage', sync)
     }
-  }, [])
-
-  useEffect(() => {
-    if (!savedIds.length) {
-      return
-    }
-
-    const controller = new AbortController()
-    const params = new URLSearchParams({
-      ids: savedIds.join(','),
-      locale,
-    })
-    if (marketCode) params.set('market', marketCode)
 
     async function loadSavedListings() {
       setIsLoading(true)
+      const params = new URLSearchParams({ locale })
+      if (marketCode) params.set('market', marketCode)
       try {
         const response = await fetch(`/api/saved-listings?${params.toString()}`, {
-          signal: controller.signal,
+          credentials: 'same-origin',
+          cache: 'no-store',
           headers: {
             Accept: 'application/json',
           },
         })
+        if (response.status === 401) {
+          setAuthenticated(false)
+          setSavedIds([])
+          setListings([])
+          return
+        }
         if (!response.ok) throw new Error('Could not load saved listings')
-        const payload = (await response.json()) as { listings?: MarketplaceListing[] }
-        if (!controller.signal.aborted) setListings(payload.listings || [])
+        const payload = (await response.json()) as { listingIds?: string[]; listings?: MarketplaceListing[] }
+        setAuthenticated(true)
+        setSavedIds(payload.listingIds || [])
+        setListings(payload.listings || [])
+        window.localStorage.setItem(SAVED_LISTINGS_KEY, JSON.stringify(payload.listingIds || []))
       } catch {
-        if (!controller.signal.aborted) setListings([])
+        setListings([])
       } finally {
-        if (!controller.signal.aborted) setIsLoading(false)
+        setIsLoading(false)
       }
     }
-
-    void loadSavedListings()
-
-    return () => controller.abort()
-  }, [locale, marketCode, savedIds])
+  }, [locale, marketCode])
 
   const savedListings = useMemo(
     () =>
@@ -83,7 +81,7 @@ export default function SavedListingsClient({
   return (
     <section className="bg-[#f7f8fb] py-10 sm:py-14">
       <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
-        {savedIds.length > 0 && isLoading ? (
+        {isLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {[0, 1, 2].map((item) => (
               <div
@@ -98,6 +96,16 @@ export default function SavedListingsClient({
                 </div>
               </div>
             ))}
+          </div>
+        ) : !authenticated ? (
+          <div className="relative overflow-hidden rounded-[28px] border border-[#dce3f2] bg-white px-6 py-16 text-center shadow-[0_18px_55px_rgba(16,24,40,.05)]">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-[17px] bg-[#0866ff] text-white">
+              <Heart className="h-6 w-6" />
+            </span>
+            <h2 className="mt-6 text-2xl tracking-[-0.035em]">Logga in för sparade annonser.</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#667085]">
+              Sparade annonser är kopplade till ditt konto så att de finns kvar mellan enheter.
+            </p>
           </div>
         ) : savedListings.length ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">

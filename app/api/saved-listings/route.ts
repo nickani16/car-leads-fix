@@ -23,6 +23,10 @@ function parseIds(value: string | null) {
     .slice(0, MAX_SAVED_LISTINGS)
 }
 
+function normalizeListingId(value: unknown) {
+  return typeof value === 'string' && UUID_PATTERN.test(value) ? value : ''
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const {
@@ -34,9 +38,27 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams
-  const ids = parseIds(searchParams.get('ids'))
+  const savedRows = await createAdminClient()
+    .from('marketplace_saved_listings')
+    .select('listing_id')
+    .eq('user_id', user.id)
+    .order('saved_at', { ascending: false })
+    .limit(MAX_SAVED_LISTINGS)
+
+  if (savedRows.error) {
+    return jsonResponse({ error: 'Could not load saved listings' }, { status: 500 })
+  }
+
+  const accountIds = (savedRows.data || [])
+    .map((row) => row.listing_id)
+    .filter((id): id is string => typeof id === 'string')
+  const requestedIds = parseIds(searchParams.get('ids'))
+  const ids = requestedIds.length
+    ? requestedIds.filter((id) => accountIds.includes(id))
+    : accountIds
+
   if (!ids.length) {
-    return jsonResponse({ listings: [] })
+    return jsonResponse({ listingIds: accountIds, listings: [] })
   }
 
   const locale = (searchParams.get('locale') || 'sv') as PublicLocale
@@ -97,6 +119,66 @@ export async function GET(request: NextRequest) {
   )
 
   return jsonResponse({
+    listingIds: accountIds,
     listings: ids.map((id) => listingById.get(id)).filter(Boolean),
   })
+}
+
+export async function POST(request: NextRequest) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await request.json().catch(() => ({})) as { listingId?: unknown }
+  const listingId = normalizeListingId(body.listingId)
+  if (!listingId) {
+    return jsonResponse({ error: 'Invalid listing id' }, { status: 400 })
+  }
+
+  const { error } = await createAdminClient()
+    .from('marketplace_saved_listings')
+    .upsert({ user_id: user.id, listing_id: listingId, saved_at: new Date().toISOString() }, { onConflict: 'user_id,listing_id' })
+
+  if (error) {
+    return jsonResponse({ error: 'Could not save listing' }, { status: 500 })
+  }
+
+  return jsonResponse({ saved: true, listingId })
+}
+
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const searchParamId = request.nextUrl.searchParams.get('listingId')
+  const body = request.headers.get('content-type')?.includes('application/json')
+    ? await request.json().catch(() => ({})) as { listingId?: unknown }
+    : {}
+  const listingId = normalizeListingId(searchParamId || body.listingId)
+  if (!listingId) {
+    return jsonResponse({ error: 'Invalid listing id' }, { status: 400 })
+  }
+
+  const { error } = await createAdminClient()
+    .from('marketplace_saved_listings')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('listing_id', listingId)
+
+  if (error) {
+    return jsonResponse({ error: 'Could not remove saved listing' }, { status: 500 })
+  }
+
+  return jsonResponse({ saved: false, listingId })
 }

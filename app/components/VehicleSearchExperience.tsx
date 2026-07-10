@@ -276,6 +276,21 @@ export default function VehicleSearchExperience({
   initialModel = '',
   initialMinPrice = '',
   initialMaxPrice = '',
+  initialMode = 'sale',
+  initialMinYear = '',
+  initialMaxYear = '',
+  initialMaxMileage = '',
+  initialFuel = '',
+  initialGearbox = '',
+  initialBodyType = '',
+  initialCondition = '',
+  initialColor = '',
+  initialSellerType = 'all',
+  initialVerifiedOnly = false,
+  initialFourWheelDrive = false,
+  initialLeasingPossible = false,
+  initialEquipmentQuery = '',
+  initialSortBy = 'published',
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
@@ -289,6 +304,21 @@ export default function VehicleSearchExperience({
   initialModel?: string
   initialMinPrice?: string
   initialMaxPrice?: string
+  initialMode?: SearchMode
+  initialMinYear?: string
+  initialMaxYear?: string
+  initialMaxMileage?: string
+  initialFuel?: string
+  initialGearbox?: string
+  initialBodyType?: string
+  initialCondition?: string
+  initialColor?: string
+  initialSellerType?: string
+  initialVerifiedOnly?: boolean
+  initialFourWheelDrive?: boolean
+  initialLeasingPossible?: boolean
+  initialEquipmentQuery?: string
+  initialSortBy?: string
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
   const safeInitialCategories = initialCategories.length
@@ -300,7 +330,7 @@ export default function VehicleSearchExperience({
     initialMarkets.length ? initialMarkets : [safeInitialCountry],
     safeAutomaticCountry,
   )
-  const [mode, setMode] = useState<SearchMode>('sale')
+  const [mode, setMode] = useState<SearchMode>(initialMode === 'leasing' ? 'leasing' : 'sale')
   const [query, setQuery] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
@@ -309,27 +339,28 @@ export default function VehicleSearchExperience({
   const [marketOpen, setMarketOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileDockVisible, setMobileDockVisible] = useState(true)
-  const [sortBy, setSortBy] = useState('published')
+  const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
-  const [minYear, setMinYear] = useState('')
-  const [maxYear, setMaxYear] = useState('')
-  const [maxMileage, setMaxMileage] = useState('')
+  const [minYear, setMinYear] = useState(initialMinYear)
+  const [maxYear, setMaxYear] = useState(initialMaxYear)
+  const [maxMileage, setMaxMileage] = useState(initialMaxMileage)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
-  const [fuel, setFuel] = useState('')
-  const [gearbox, setGearbox] = useState('')
-  const [bodyType, setBodyType] = useState('')
-  const [condition, setCondition] = useState('')
-  const [color, setColor] = useState('')
-  const [sellerType, setSellerType] = useState('all')
-  const [verifiedOnly, setVerifiedOnly] = useState(false)
-  const [fourWheelDrive, setFourWheelDrive] = useState(false)
-  const [leasingPossible, setLeasingPossible] = useState(false)
-  const [equipmentQuery, setEquipmentQuery] = useState('')
+  const [fuel, setFuel] = useState(initialFuel)
+  const [gearbox, setGearbox] = useState(initialGearbox)
+  const [bodyType, setBodyType] = useState(initialBodyType)
+  const [condition, setCondition] = useState(initialCondition)
+  const [color, setColor] = useState(initialColor)
+  const [sellerType, setSellerType] = useState(initialSellerType || 'all')
+  const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly)
+  const [fourWheelDrive, setFourWheelDrive] = useState(initialFourWheelDrive)
+  const [leasingPossible, setLeasingPossible] = useState(initialLeasingPossible)
+  const [equipmentQuery, setEquipmentQuery] = useState(initialEquipmentQuery)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
+  const [savingSearch, setSavingSearch] = useState(false)
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -466,22 +497,22 @@ export default function VehicleSearchExperience({
     setMarketOverride(false)
     setMinPrice(initialMinPrice)
     setMaxPrice(initialMaxPrice)
-    setMinYear('')
-    setMaxYear('')
-    setMaxMileage('')
+    setMinYear(initialMinYear)
+    setMaxYear(initialMaxYear)
+    setMaxMileage(initialMaxMileage)
     setMake(initialMake)
     setModel(initialModel)
-    setFuel('')
-    setGearbox('')
-    setBodyType('')
-    setCondition('')
-    setColor('')
-    setSellerType('all')
-    setVerifiedOnly(false)
-    setFourWheelDrive(false)
-    setLeasingPossible(false)
-    setEquipmentQuery('')
-    setSortBy('latest')
+    setFuel(initialFuel)
+    setGearbox(initialGearbox)
+    setBodyType(initialBodyType)
+    setCondition(initialCondition)
+    setColor(initialColor)
+    setSellerType(initialSellerType || 'all')
+    setVerifiedOnly(initialVerifiedOnly)
+    setFourWheelDrive(initialFourWheelDrive)
+    setLeasingPossible(initialLeasingPossible)
+    setEquipmentQuery(initialEquipmentQuery)
+    setSortBy(initialSortBy || 'published')
     setSavedSearchMessage('')
   }
 
@@ -524,7 +555,104 @@ export default function VehicleSearchExperience({
     })
   }
 
-  function saveCurrentSearch() {
+  async function saveCurrentSearch() {
+    if (savingSearch) return
+    setSavingSearch(true)
+    setSavedSearchMessage('')
+    const params = new URLSearchParams()
+    const setParam = (key: string, value: string) => {
+      const cleanValue = value.trim()
+      if (cleanValue) params.set(key, cleanValue)
+    }
+    if (mode !== 'sale') params.set('mode', mode)
+    setParam('q', query)
+    if (selectedCategories.length) params.set('categories', selectedCategories.join(','))
+    if (marketOverride) {
+      params.set('markets', selectedMarkets.length ? selectedMarkets.join(',') : 'EU')
+    } else if (selectedMarkets.length) {
+      params.set('markets', selectedMarkets.join(','))
+    }
+    setParam('make', make)
+    setParam('model', model)
+    setParam('minPrice', minPrice)
+    setParam('maxPrice', maxPrice)
+    setParam('minYear', minYear)
+    setParam('maxYear', maxYear)
+    setParam('maxMileage', maxMileage)
+    setParam('fuel', fuel)
+    setParam('gearbox', gearbox)
+    setParam('bodyType', bodyType)
+    setParam('condition', condition)
+    setParam('color', color)
+    if (sellerType !== 'all') params.set('sellerType', sellerType)
+    if (verifiedOnly) params.set('verifiedOnly', '1')
+    if (fourWheelDrive) params.set('fourWheelDrive', '1')
+    if (leasingPossible) params.set('leasingPossible', '1')
+    setParam('equipment', equipmentQuery)
+    if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
+
+    const href = `/marketplace${params.size ? `?${params.toString()}` : ''}`
+    const filterSnapshot = {
+      mode,
+      query: query.trim(),
+      categories: selectedCategories,
+      markets: selectedMarkets,
+      make,
+      model,
+      minPrice,
+      maxPrice,
+      minYear,
+      maxYear,
+      maxMileage,
+      fuel,
+      gearbox,
+      bodyType,
+      condition,
+      color,
+      sellerType,
+      verifiedOnly,
+      fourWheelDrive,
+      leasingPossible,
+      equipmentQuery: equipmentQuery.trim(),
+      sortBy,
+    }
+    const name = query.trim() || selectedCategoryItems.map((item) => categoryText(item, locale, true)).join(', ') || marketSummary || uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge')
+
+    try {
+      const response = await fetch('/api/saved-searches', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          href,
+          locale,
+          marketCode: selectedMarkets[0] || '',
+          filters: filterSnapshot,
+        }),
+      })
+      if (response.status === 401) {
+        window.dispatchEvent(
+          new CustomEvent('autorell:open-auth', {
+            detail: { mode: 'login', destination: localizePublicHref(locale, '/saved-searches') },
+          }),
+        )
+        setSavedSearchMessage(uiText(locale, 'Log in to save', 'Logga in för att spara', 'Zum Speichern anmelden'))
+        return
+      }
+      if (!response.ok) throw new Error('Could not save search')
+      setSavedSearchMessage(uiText(locale, 'Search saved', 'Sökningen är sparad', 'Suche gespeichert'))
+      return
+    } catch {
+      setSavedSearchMessage(uiText(locale, 'Could not save search', 'Kunde inte spara sökningen', 'Suche konnte nicht gespeichert werden'))
+      return
+    } finally {
+      setSavingSearch(false)
+    }
+
     const savedSearch: SavedVehicleSearch = {
       savedAt: new Date().toISOString(),
       filters: {
@@ -554,7 +682,7 @@ export default function VehicleSearchExperience({
 
     try {
       const current = window.localStorage.getItem(SAVED_SEARCHES_STORAGE_KEY)
-      const searches = current ? (JSON.parse(current) as SavedVehicleSearch[]) : []
+      const searches = current ? (JSON.parse(current || '[]') as SavedVehicleSearch[]) : []
       window.localStorage.setItem(
         SAVED_SEARCHES_STORAGE_KEY,
         JSON.stringify([savedSearch, ...searches].slice(0, 20)),
@@ -791,6 +919,7 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={saveCurrentSearch}
+                    disabled={savingSearch}
                     className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-medium text-white transition lg:col-span-1 ${
                       savedSearchMessage
                         ? 'bg-[#079455]'
@@ -1088,6 +1217,7 @@ export default function VehicleSearchExperience({
               onSaveSearch={saveCurrentSearch}
               saveSearchButtonLabel={saveSearchButtonLabel}
               saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
+              saveSearchBusy={savingSearch}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
@@ -1660,6 +1790,7 @@ function VehicleSearchMap({
   onSaveSearch,
   saveSearchButtonLabel,
   saveSearchActive,
+  saveSearchBusy,
 }: {
   listings: VehicleSearchListing[]
   country: string
@@ -1672,6 +1803,7 @@ function VehicleSearchMap({
   onSaveSearch: () => void
   saveSearchButtonLabel: string
   saveSearchActive: boolean
+  saveSearchBusy: boolean
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -1886,6 +2018,7 @@ function VehicleSearchMap({
             <button
               type="button"
               onClick={onSaveSearch}
+              disabled={saveSearchBusy}
               className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-sm font-semibold text-white shadow-sm transition sm:inline-flex ${
                 saveSearchActive ? 'bg-[#0866ff] hover:bg-[#0757da]' : 'bg-[#d1d3d8]'
               }`}

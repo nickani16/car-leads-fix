@@ -3,9 +3,11 @@
 import { Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
+  fetchSavedListingIds,
+  removeSavedListingId,
   readSavedListingIds,
+  saveListingId,
   SAVED_LISTINGS_EVENT,
-  writeSavedListingIds,
 } from '@/lib/saved-listings'
 
 export default function SavedListingButton({
@@ -17,10 +19,15 @@ export default function SavedListingButton({
 }) {
   const [saved, setSaved] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     const sync = () => setSaved(readSavedListingIds().includes(listingId))
     sync()
+    void fetchSavedListingIds().then((result) => {
+      setAuthenticated(result.authenticated)
+      setSaved(result.ids.includes(listingId))
+    }).catch(() => undefined)
     window.addEventListener(SAVED_LISTINGS_EVENT, sync)
     window.addEventListener('storage', sync)
     return () => {
@@ -42,7 +49,8 @@ export default function SavedListingButton({
     }
   }, [])
 
-  function toggle() {
+  async function toggle() {
+    if (busy) return
     if (!authenticated) {
       const firstSegment = window.location.pathname.split('/').filter(Boolean)[0]
       const prefix =
@@ -56,12 +64,27 @@ export default function SavedListingButton({
       )
       return
     }
-    const current = readSavedListingIds()
-    writeSavedListingIds(
-      current.includes(listingId)
-        ? current.filter((id) => id !== listingId)
-        : [...current, listingId],
-    )
+    const nextSaved = !saved
+    setBusy(true)
+    setSaved(nextSaved)
+    try {
+      const result = nextSaved
+        ? await saveListingId(listingId)
+        : await removeSavedListingId(listingId)
+      if (!result.authenticated) {
+        setAuthenticated(false)
+        setSaved(false)
+        window.dispatchEvent(
+          new CustomEvent('autorell:open-auth', {
+            detail: { mode: 'login', destination: '/saved' },
+          }),
+        )
+      }
+    } catch {
+      setSaved(!nextSaved)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -70,9 +93,10 @@ export default function SavedListingButton({
       onClick={toggle}
       aria-label={saved ? 'Ta bort sparad annons' : label}
       aria-pressed={saved}
+      disabled={busy}
       className={`grid h-11 w-11 place-items-center rounded-[14px] bg-white shadow-md transition ${
         saved ? 'text-[#0866ff]' : 'text-[#344054] hover:text-[#0866ff]'
-      }`}
+      } ${busy ? 'opacity-70' : ''}`}
     >
       <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
     </button>
