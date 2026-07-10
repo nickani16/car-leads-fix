@@ -104,6 +104,12 @@ export default async function MarketplaceCategoryPage({
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
+  const requestedMarketValues = getSearchParamList(resolvedSearchParams, 'markets').map((item) => item.toUpperCase())
+  const requestedAllEurope = requestedMarketValues.includes('EU')
+  const requestedMarkets = requestedMarketValues.filter((item) => euCountryCodes.has(item))
+  const requestedCategories = getSearchParamList(resolvedSearchParams, 'categories')
+    .map((item) => normalizeMarketplaceCategory(item))
+    .filter((item) => marketplaceCategories.some((categoryItem) => categoryItem.slug === item))
   const automaticCountry =
     marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
@@ -113,6 +119,8 @@ export default async function MarketplaceCategoryPage({
           ? 'DE'
           : ''
   const defaultCountry =
+    requestedAllEurope ? '' :
+    requestedMarkets[0] ||
     requestedCountry ||
     automaticCountry
   const locale: PublicLocale =
@@ -192,6 +200,8 @@ export default async function MarketplaceCategoryPage({
         defaultCountry={defaultCountry}
         automaticCountry={automaticCountry}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
+        initialCategories={requestedCategories}
+        initialMarkets={requestedAllEurope ? ['EU'] : requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
         initialMake={getSearchParam(resolvedSearchParams, 'make')}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
@@ -208,6 +218,15 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function getSearchParamList(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  const values = Array.isArray(value) ? value : value ? [value] : []
+  return values.flatMap((item) => item.split(',')).map((item) => item.trim()).filter(Boolean)
 }
 
 function getMarketplaceSeoCopy(

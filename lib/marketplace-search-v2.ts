@@ -12,8 +12,10 @@ export type MarketplaceSort =
 
 export type MarketplaceSearchInput = {
   category?: string | null
+  categories?: string | null
   country?: string | null
   countryCode?: string | null
+  markets?: string | null
   q?: string | null
   make?: string | null
   model?: string | null
@@ -80,8 +82,8 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
     .eq('status', 'published')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
-  if (filters.category) query = query.eq('category', filters.category)
-  if (filters.country) query = query.eq('country_code', filters.country)
+  if (filters.categories.length) query = query.in('category', filters.categories)
+  if (filters.markets.length) query = query.in('country_code', filters.markets)
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
@@ -142,16 +144,21 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
   const categoryValue = clean(input.category)
+  const categories = normalizeCategoryList(input.categories)
   const category =
     categoryValue && categoryValue !== 'all' && categoryValue !== 'vehicles'
       ? normalizeMarketplaceCategory(categoryValue)
       : null
+  const selectedCategories = categories.length ? categories : category ? [category] : []
   const sort = normalizeSort(input.sort)
   const cursor = decodeCursor(input.cursor, sort)
+  const markets = normalizeMarketList(input.markets || input.countryCode || input.country)
 
   return {
     category,
-    country: clean(input.countryCode || input.country).toUpperCase(),
+    categories: selectedCategories,
+    country: markets[0] || '',
+    markets,
     q: clean(input.q).slice(0, 80),
     make: clean(input.make).slice(0, 80),
     model: clean(input.model).slice(0, 80),
@@ -172,6 +179,33 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
 
 function clean(value: unknown) {
   return String(value || '').replace(/\s+/g, ' ').trim()
+}
+
+function splitCsv(value: unknown) {
+  return clean(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function normalizeCategoryList(value: unknown) {
+  return [
+    ...new Set(
+      splitCsv(value)
+        .filter((item) => item !== 'all' && item !== 'vehicles')
+        .map((item) => normalizeMarketplaceCategory(item)),
+    ),
+  ]
+}
+
+function normalizeMarketList(value: unknown) {
+  const values = splitCsv(value).map((item) => item.toUpperCase())
+  if (values.some((item) => item === 'EU' || item === '')) return []
+  return [
+    ...new Set(
+      values.filter((item) => /^[A-Z]{2}$/.test(item)),
+    ),
+  ]
 }
 
 function positiveNumber(value: unknown) {
@@ -287,8 +321,8 @@ async function getMarketplaceFacets(filters: ReturnType<typeof normalizeMarketpl
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .limit(1000)
 
-  if (filters.category) query = query.eq('category', filters.category as MarketplaceCategorySlug)
-  if (filters.country) query = query.eq('country_code', filters.country)
+  if (filters.categories.length) query = query.in('category', filters.categories as MarketplaceCategorySlug[])
+  if (filters.markets.length) query = query.in('country_code', filters.markets)
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     query = query.textSearch('search_document', filters.q, {
       type: 'websearch',
