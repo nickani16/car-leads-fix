@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import {
   CalendarDays,
-  ChevronRight,
   ExternalLink,
   Fuel,
   Gauge,
@@ -32,7 +31,6 @@ import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/c
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath, buildListingSlug, extractListingIdFromSlug } from '@/lib/listing-url'
 import {
-  categorySearchPath,
   getMarketplaceCategory,
   marketplaceLanguage,
   type MarketplaceCategorySlug,
@@ -339,41 +337,27 @@ export default async function ListingDetailPage({
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
-        <nav
-          aria-label={localizedLabel(locale, 'Brödsmulor', 'Breadcrumbs', 'Breadcrumbs')}
-          className="mb-4 flex flex-wrap items-center gap-1.5 text-sm font-medium text-[#667085]"
-        >
-          <Link href={localizePublicHref(locale, '/')} className="text-[#0866ff] transition hover:text-[#0757da]">
-            Autorell
-          </Link>
-          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
-          <Link
-            href={localizePublicHref(locale, '/marketplace')}
-            className="text-[#0866ff] transition hover:text-[#0757da]"
-          >
-            {localizedLabel(locale, 'Fordon', 'Vehicles', 'Fahrzeuge')}
-          </Link>
-          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
-          <Link
-            href={localizePublicHref(locale, categorySearchPath(listing.category))}
-            className="text-[#0866ff] transition hover:text-[#0757da]"
-          >
-            {categoryLabel}
-          </Link>
-          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
-          <span className="min-w-0 truncate text-[#475467]">{listing.title}</span>
-        </nav>
-        <ListingBackLink
-          fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
-          label={copy.backToListings}
-        />
+        <div className="flex items-center justify-between gap-4">
+          <ListingBackLink
+            fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
+            label={copy.backToListings}
+          />
+          <div className="flex shrink-0 items-center gap-2">
+            <ShareListingButton
+              title={listing.title}
+              url={publicUrl}
+              label={copy.shareListing}
+            />
+            <SavedListingButton listingId={listing.id} />
+          </div>
+        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
           <div className="min-w-0 space-y-6">
             <ListingImageGallery images={listing.images || []} title={listing.title} />
 
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col items-stretch gap-4">
                 <div className="min-w-0 flex-1">
                   <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
                     {listing.title}
@@ -393,14 +377,6 @@ export default async function ListingDetailPage({
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
-                </div>
-                <div className="flex shrink-0 gap-2 self-start">
-                  <SavedListingButton listingId={listing.id} />
-                  <ShareListingButton
-                    title={listing.title}
-                    url={publicUrl}
-                    label={copy.shareListing}
-                  />
                 </div>
               </div>
               {headlineFacts.length ? (
@@ -471,7 +447,7 @@ export default async function ListingDetailPage({
             />
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-1">
             <div className="overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_22px_60px_rgba(16,24,40,.12)]">
               <div className="border-b border-[#edf1f6] p-6">
                 <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#667085]">
@@ -510,11 +486,6 @@ export default async function ListingDetailPage({
                 ) : null}
                 <RevealPhoneButton listingId={listing.id} locale={locale} />
                 <MessageSellerButton listingId={listing.id} enabled variant="button" />
-                <ShareListingButton
-                  title={listing.title}
-                  url={publicUrl}
-                  label={copy.shareListing}
-                />
               </div>
 
               <div className="border-t border-[#edf1f6] p-6">
@@ -613,11 +584,6 @@ export default async function ListingDetailPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-2 lg:justify-end">
-              <ShareListingButton
-                title={listing.title}
-                url={publicUrl}
-                label={copy.shareListing}
-              />
               <ListingReportButton listingId={listing.id} listingTitle={listing.title} locale={locale} />
             </div>
           </div>
@@ -787,29 +753,28 @@ function PrivateSellerProfileCard({
     : localizedLabel(locale, 'Privat säljare på Autorell', 'Private seller on Autorell', 'Privater Verkäufer bei Autorell')
 
   return (
-    <div className="flex items-center gap-5 border-y border-[#dfe6f2] py-6">
-      <div className="relative h-[108px] w-[108px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
-        <div className="absolute left-1/2 top-[18px] h-[52px] w-[52px] -translate-x-1/2 rounded-full border-[5px] border-[#b9c6d4] bg-[#f8fbff]" />
-        <div className="absolute left-1/2 top-[74px] h-[76px] w-[92px] -translate-x-1/2 rounded-t-full border-[5px] border-[#b9c6d4] bg-[#f8fbff]" />
-        <div className="absolute left-[34px] top-[26px] h-[26px] w-[52px] rounded-b-full border-b-[5px] border-[#b9c6d4]" />
+    <div className="flex items-center gap-4 border-y border-[#dfe6f2] py-5">
+      <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
+        <div className="absolute left-1/2 top-[16px] h-[40px] w-[40px] -translate-x-1/2 rounded-full border-[4px] border-[#b9c6d4] bg-[#f8fbff]" />
+        <div className="absolute left-1/2 top-[59px] h-[58px] w-[74px] -translate-x-1/2 rounded-t-full border-[4px] border-[#b9c6d4] bg-[#f8fbff]" />
       </div>
       <div className="min-w-0">
-        <p className="flex min-w-0 items-center gap-2 text-xl font-semibold leading-7 tracking-[-0.02em] text-[#0866ff]">
+        <p className="flex min-w-0 items-center gap-2 text-lg font-semibold leading-6 text-[#0866ff]">
           <span className="truncate">{name}</span>
           <Info className="h-4 w-4 shrink-0 text-[#344054]" />
         </p>
-        <p className="mt-1 inline-flex items-center gap-2 text-base font-medium text-[#101828]">
-          <ShieldCheck className={`h-5 w-5 ${verification.tone === 'verified' ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} />
+        <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-[#101828]">
+          <ShieldCheck className={`h-4 w-4 ${verification.tone === 'verified' ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} />
           {verification.label}
         </p>
-        <p className="mt-1 text-base font-medium text-[#101828]">{memberSince}</p>
+        <p className="mt-1 text-sm font-medium text-[#101828]">{memberSince}</p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           {ratingAverage && ratingCount ? (
-            <span className="rounded-[8px] bg-[#eef5ff] px-2.5 py-1.5 text-xl font-semibold leading-none text-[#0866ff]">
+            <span className="rounded-[8px] bg-[#eef5ff] px-2.5 py-1.5 text-base font-semibold leading-none text-[#0866ff]">
               {ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })}
             </span>
           ) : null}
-          <span className="text-base font-semibold text-[#101828]">{reviewLabel}</span>
+          <span className="text-sm font-semibold text-[#101828]">{reviewLabel}</span>
         </div>
       </div>
     </div>
@@ -1042,7 +1007,7 @@ const listingDetailCopy = {
     sellerDescription: 'Säljarens information',
     originalLanguage: 'Säljarens fritext visas på det språk som säljaren själv har skrivit.',
     noticeEyebrow: 'Annonsuppgifter',
-    noticeTitle: 'ID, delning och granskning',
+    noticeTitle: 'ID och granskning',
     noticeIntro:
       'Spara annons-ID om du kontaktar säljaren eller vill att Autorell granskar annonsen.',
     adId: 'Annons-ID',
@@ -1051,7 +1016,7 @@ const listingDetailCopy = {
     country: 'Land',
     shareListing: 'Dela annons',
     breadcrumbLabel: 'Brödsmulor',
-    backToListings: 'Tillbaka till annonser',
+    backToListings: 'Tillbaka',
     home: 'Hem',
     euDisclaimer:
       'Annonsen kan vara ofullständig eller inaktuell. Säljaren ansvarar för att lämna korrekta och fullständiga uppgifter enligt tillämplig upplysningsplikt i EU och nationell lag. Autorell kontrollerar inte varje uppgift och ansvarar inte för informationen i annonsen.',
@@ -1060,7 +1025,7 @@ const listingDetailCopy = {
     sellerDescription: 'Seller information',
     originalLanguage: 'The seller text is shown in the language provided by the seller.',
     noticeEyebrow: 'Listing details',
-    noticeTitle: 'ID, sharing and reporting',
+    noticeTitle: 'ID and reporting',
     noticeIntro:
       'Keep the listing ID when contacting the seller or reporting a listing for Autorell review.',
     adId: 'Listing ID',
@@ -1069,7 +1034,7 @@ const listingDetailCopy = {
     country: 'Country',
     shareListing: 'Share listing',
     breadcrumbLabel: 'Breadcrumb',
-    backToListings: 'Back to listings',
+    backToListings: 'Back',
     home: 'Home',
     euDisclaimer:
       'The listing may be incomplete or out of date. The seller is responsible for providing correct and complete information under applicable EU and national disclosure obligations. Autorell does not verify every statement and is not responsible for the accuracy of the information in the listing.',
@@ -1078,7 +1043,7 @@ const listingDetailCopy = {
     sellerDescription: 'Information des Verkäufers',
     originalLanguage: 'Freitext des Verkäufers wird in der Originalsprache angezeigt.',
     noticeEyebrow: 'Anzeigenangaben',
-    noticeTitle: 'ID, Teilen und Meldung',
+    noticeTitle: 'ID und Meldung',
     noticeIntro:
       'Speichern Sie die Anzeigen-ID, wenn Sie mit dem Verkäufer sprechen oder eine Anzeige zur Prüfung melden.',
     adId: 'Anzeigen-ID',
@@ -1087,7 +1052,7 @@ const listingDetailCopy = {
     country: 'Land',
     shareListing: 'Anzeige teilen',
     breadcrumbLabel: 'Breadcrumb',
-    backToListings: 'Zurück zu den Anzeigen',
+    backToListings: 'Zurück',
     home: 'Startseite',
     euDisclaimer:
       'Die Anzeige kann unvollständig oder veraltet sein. Der Verkäufer ist dafür verantwortlich, korrekte und vollständige Informationen gemäß der geltenden EU- und nationalen Aufklärungspflichten bereitzustellen. Autorell prüft nicht alle Angaben und übernimmt keine Verantwortung für die Richtigkeit der Informationen in der Anzeige.',
