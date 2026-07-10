@@ -58,7 +58,7 @@ export default function ListingCardImageCarousel({
       alt={title}
       fill
       sizes={sizes}
-      className={`object-cover transition duration-500 group-hover:scale-[1.03] ${imageClassName}`}
+      className={`object-cover ${imageClassName}`}
     />
   ) : (
     placeholder || null

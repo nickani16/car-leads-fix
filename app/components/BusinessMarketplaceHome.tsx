@@ -294,7 +294,7 @@ function HomeListingCard({
   locale: PublicLocale
 }) {
   return (
-    <article className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,24,40,.12)] sm:w-auto sm:max-w-none">
+    <article className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition-colors hover:border-[#0866ff] sm:w-auto sm:max-w-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel

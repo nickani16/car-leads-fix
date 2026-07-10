@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Bookmark, Search, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 
 type SavedSearch = {
   id: string
@@ -64,6 +65,7 @@ export default function SavedSearchesClient({
       })
       if (!response.ok) throw new Error('Could not delete saved search')
       setSearches((current) => current.filter((search) => search.id !== id))
+      window.dispatchEvent(new CustomEvent(SAVED_SEARCHES_EVENT))
     } catch {
       await loadSavedSearches()
     } finally {

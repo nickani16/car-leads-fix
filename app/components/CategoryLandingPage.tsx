@@ -209,7 +209,7 @@ export default async function CategoryLandingPage({
               <Link
                 key={type.query}
                 href={localizePublicHref(locale, `/marketplace/${slug}?filter=${encodeURIComponent(type.query)}`)}
-                className="group relative min-h-[128px] overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(16,24,40,.09)]"
+                className="group relative min-h-[128px] overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white p-4 shadow-sm transition-colors hover:border-[#0866ff]"
               >
                 <strong className="relative z-10 block text-sm font-bold text-[#101828]">
                   {locale === 'sv' || locale === 'de' || locale === 'en'
@@ -224,7 +224,7 @@ export default async function CategoryLandingPage({
                   alt=""
                   width={180}
                   height={120}
-                  className="absolute bottom-0 right-0 h-[94px] w-[134px] object-contain transition group-hover:scale-105"
+                  className="absolute bottom-0 right-0 h-[94px] w-[134px] object-contain"
                 />
               </Link>
             ))}
@@ -429,7 +429,7 @@ function ListingCard({
   )
 
   return (
-    <article className="group overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.1)]">
+    <article className="group overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition-colors hover:border-[#0866ff]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#edf4ff]">
         {listing.imageUrls.length ? (
           <ListingCardImageCarousel

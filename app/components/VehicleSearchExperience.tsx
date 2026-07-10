@@ -43,6 +43,7 @@ import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
@@ -645,6 +646,7 @@ export default function VehicleSearchExperience({
         return
       }
       if (!response.ok) throw new Error('Could not save search')
+      window.dispatchEvent(new CustomEvent(SAVED_SEARCHES_EVENT))
       setSavedSearchMessage(uiText(locale, 'Search saved', 'Sökningen är sparad', 'Suche gespeichert'))
       return
     } catch {

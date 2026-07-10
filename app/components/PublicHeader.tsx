@@ -56,6 +56,11 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { fetchSavedListingIds, SAVED_LISTINGS_KEY } from '@/lib/saved-listings'
+import {
+  fetchSavedSearchCount,
+  readSavedSearchCount,
+  SAVED_SEARCHES_EVENT,
+} from '@/lib/saved-searches'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
 
@@ -378,6 +383,7 @@ export default function PublicHeader({
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(() => readCachedHeaderAccount())
   const [savedListingCount, setSavedListingCount] = useState(0)
+  const [savedSearchCount, setSavedSearchCount] = useState(0)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -454,6 +460,8 @@ export default function PublicHeader({
       } catch {
         setSavedListingCount(0)
       }
+      setSavedSearchCount(readSavedSearchCount())
+      void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
     }
     const openAuth = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: 'login' | 'register'; destination?: string }>).detail
@@ -466,14 +474,17 @@ export default function PublicHeader({
     const timer = window.setTimeout(() => {
       syncSaved()
       void fetchSavedListingIds().then((result) => setSavedListingCount(result.ids.length)).catch(() => undefined)
+      void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
     }, 0)
     window.addEventListener('autorell:saved-listings', syncSaved)
+    window.addEventListener(SAVED_SEARCHES_EVENT, syncSaved)
     window.addEventListener('storage', syncSaved)
     window.addEventListener('autorell:open-auth', openAuth)
     window.addEventListener('autorell:open-market', openMarket)
     window.addEventListener('autorell:auth-changed', refreshHeaderAccount)
     return () => {
       window.removeEventListener('autorell:saved-listings', syncSaved)
+      window.removeEventListener(SAVED_SEARCHES_EVENT, syncSaved)
       window.removeEventListener('storage', syncSaved)
       window.removeEventListener('autorell:open-auth', openAuth)
       window.removeEventListener('autorell:open-market', openMarket)
@@ -685,6 +696,7 @@ export default function PublicHeader({
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
   ]
   const savedListingBadge = savedListingCount > 99 ? '99+' : savedListingCount ? String(savedListingCount) : ''
+  const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
   const profileMenuLinks = [
     { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
     { href: accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
@@ -952,6 +964,11 @@ export default function PublicHeader({
                         {href === savedHref && savedListingBadge ? (
                           <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                             {savedListingBadge}
+                          </span>
+                        ) : null}
+                        {href === savedSearchesHref && savedSearchBadge ? (
+                          <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                            {savedSearchBadge}
                           </span>
                         ) : null}
                       </span>
@@ -1287,7 +1304,14 @@ export default function PublicHeader({
               aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="relative">
+                <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                {savedSearchBadge ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedSearchBadge}
+                  </span>
+                ) : null}
+              </span>
             </Link>
           ) : (
             <button
@@ -1627,7 +1651,14 @@ export default function PublicHeader({
               onClick={closeMobile}
               className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+              <span className="relative">
+                <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                {savedSearchBadge ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedSearchBadge}
+                  </span>
+                ) : null}
+              </span>
               <span className="max-w-full truncate text-[10px] font-medium leading-none">
                 {publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               </span>
