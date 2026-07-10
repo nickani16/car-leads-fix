@@ -17,8 +17,8 @@ export const fallbackMapStyle: StyleSpecification = {
       source: 'carto',
       paint: {
         'raster-opacity': 1,
-        'raster-saturation': 0.42,
-        'raster-contrast': 0.02,
+        'raster-saturation': 0.58,
+        'raster-contrast': 0.03,
       },
     },
   ],

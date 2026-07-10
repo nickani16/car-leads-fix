@@ -2434,11 +2434,11 @@ function MapLayerPicker({
   compact?: boolean
 }) {
   return (
-    <div className={`${compact ? 'h-10 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
+    <div className={`${compact ? 'h-10 w-full min-w-0 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
       <button
         type="button"
         onClick={() => onMapLayerChange('standard')}
-        className={`inline-flex min-w-[112px] items-center justify-center gap-1.5 rounded-[7px] px-2.5 text-[13px] font-semibold transition ${
+        className={`inline-flex ${compact ? 'min-w-0 flex-1 px-2' : 'min-w-[112px] px-2.5'} items-center justify-center gap-1.5 rounded-[7px] text-[13px] font-semibold transition ${
           mapLayer === 'standard'
             ? 'bg-[#0866ff] text-white'
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
@@ -2450,13 +2450,13 @@ function MapLayerPicker({
       <button
         type="button"
         onClick={() => onMapLayerChange('satellite')}
-        className={`inline-flex min-w-[112px] items-center justify-center rounded-[7px] px-2.5 text-[13px] font-semibold transition ${
+        className={`inline-flex ${compact ? 'min-w-0 flex-1 px-2' : 'min-w-[112px] px-2.5'} items-center justify-center rounded-[7px] text-[13px] font-semibold transition ${
           mapLayer === 'satellite'
             ? 'bg-[#0866ff] text-white'
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
         }`}
       >
-        Satellit
+        <span className="truncate">Satellit</span>
       </button>
     </div>
   )
@@ -2487,15 +2487,14 @@ function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean)
   markerElement.type = 'button'
   markerElement.setAttribute('aria-label', listing.title)
   markerElement.className = [
-    'group relative grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-transparent transition-transform duration-200 hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
-    active ? '-translate-y-1 scale-110' : '',
+    'group relative grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-transparent focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
   ].filter(Boolean).join(' ')
 
   const dot = document.createElement('span')
   dot.className = [
-    'relative z-10 block h-5 w-5 rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-all duration-200 group-hover:shadow-[0_14px_34px_rgba(16,24,40,.28)]',
+    'relative z-10 block h-5 w-5 rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-[background-color,box-shadow] duration-200 group-hover:shadow-[0_14px_34px_rgba(16,24,40,.28)]',
     baseColorClass,
-    active ? 'scale-125 bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
+    active ? 'bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
   ].filter(Boolean).join(' ')
   markerElement.appendChild(dot)
 
