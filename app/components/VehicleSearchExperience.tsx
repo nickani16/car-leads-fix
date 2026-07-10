@@ -2109,10 +2109,7 @@ function VehicleSearchMap({
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
-        const markerElement = document.createElement('button')
-        markerElement.type = 'button'
-        markerElement.className = 'h-3.5 w-3.5 rounded-full border border-white bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.38)]'
-        markerElement.setAttribute('aria-label', listing.title)
+        const markerElement = createAutorellMapMarker(listing, selectedListing?.id === listing.id)
         markerElement.addEventListener('click', () => {
           setSelectedListing(listing)
         })
@@ -2133,7 +2130,7 @@ function VehicleSearchMap({
     return () => {
       cancelled = true
     }
-  }, [country, mapListings, mapReady])
+  }, [country, mapListings, mapReady, selectedListing?.id])
 
   return (
     <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
@@ -2474,12 +2471,46 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
       tiles.push(
         layer === 'satellite'
           ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`,
+          : `https://a.basemaps.cartocdn.com/light_all/${zoom}/${x}/${y}.png`,
       )
     }
   }
 
   return tiles
+}
+
+function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
+  const markerElement = document.createElement('button')
+  markerElement.type = 'button'
+  markerElement.setAttribute('aria-label', listing.title)
+  markerElement.className = [
+    'group relative inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#0866ff] px-2 text-[11px] font-semibold text-white shadow-[0_10px_26px_rgba(8,102,255,.34)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0757da] hover:shadow-[0_14px_34px_rgba(8,102,255,.40)] focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
+    active ? '-translate-y-1 scale-110 bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
+  ].filter(Boolean).join(' ')
+
+  const point = document.createElement('span')
+  point.className = [
+    'absolute left-1/2 top-full h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-white bg-[#0866ff] transition-colors duration-200 group-hover:bg-[#0757da]',
+    active ? 'bg-[#101828]' : '',
+  ].filter(Boolean).join(' ')
+  markerElement.appendChild(point)
+
+  const label = document.createElement('span')
+  label.className = 'relative z-10 max-w-[78px] truncate'
+  label.textContent = compactMapMarkerLabel(listing)
+  markerElement.appendChild(label)
+
+  return markerElement
+}
+
+function compactMapMarkerLabel(listing: VehicleSearchListing) {
+  const compactPrice = (listing.priceLabel || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(SEK|EUR|DKK|NOK|PLN|GBP)\b/i, '')
+    .trim()
+
+  if (compactPrice) return compactPrice
+  return listing.country || 'EU'
 }
 
 function getTileCoordinate(latitude: number, longitude: number, zoom: number) {

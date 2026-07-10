@@ -5,7 +5,7 @@ export const fallbackMapStyle: StyleSpecification = {
   sources: {
     carto: {
       type: 'raster',
-      tiles: ['https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'],
+      tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
       tileSize: 256,
       attribution: 'OpenStreetMap contributors, CARTO',
     },
@@ -15,6 +15,11 @@ export const fallbackMapStyle: StyleSpecification = {
       id: 'carto',
       type: 'raster',
       source: 'carto',
+      paint: {
+        'raster-opacity': 0.96,
+        'raster-saturation': -0.24,
+        'raster-contrast': -0.08,
+      },
     },
   ],
 }
@@ -34,6 +39,11 @@ export const fallbackSatelliteMapStyle: StyleSpecification = {
       id: 'esri',
       type: 'raster',
       source: 'esri',
+      paint: {
+        'raster-opacity': 0.92,
+        'raster-saturation': -0.08,
+        'raster-contrast': -0.04,
+      },
     },
   ],
 }
