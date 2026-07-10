@@ -348,7 +348,7 @@ export default async function ListingDetailPage({
               <ShareListingButton
                 title={listing.title}
                 url={publicUrl}
-                label={copy.shareAction}
+                label={copy.shareListing}
                 variant="plain"
               />
             </div>
@@ -386,11 +386,11 @@ export default async function ListingDetailPage({
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
-                  <div className="mt-4 flex border-t-2 border-[#0866ff] pt-3 sm:hidden">
+                  <div className="mt-4 flex sm:hidden">
                     <ShareListingButton
                       title={listing.title}
                       url={publicUrl}
-                      label={copy.shareAction}
+                      label={copy.shareListing}
                       variant="plain"
                     />
                   </div>
