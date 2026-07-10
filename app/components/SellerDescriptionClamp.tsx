@@ -20,15 +20,24 @@ export default function SellerDescriptionClamp({
     shouldClamp && !expanded
       ? characters.slice(0, DESCRIPTION_LIMIT).join('')
       : text
+  const continuationHint =
+    shouldClamp && !expanded
+      ? characters.slice(DESCRIPTION_LIMIT, DESCRIPTION_LIMIT + 180).join('')
+      : ''
 
   return (
     <div className="mt-4">
-      <div className="relative">
+      <div>
         <p className="whitespace-pre-line text-[14px] leading-7 text-[#475467]">
           {visibleText}
         </p>
         {shouldClamp && !expanded ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-white/0 via-white/92 to-white" />
+          <div className="relative -mt-1 max-h-14 overflow-hidden" aria-hidden="true">
+            <p className="select-none whitespace-pre-line text-[14px] leading-7 text-[#475467]/45 blur-[1.4px]">
+              {continuationHint}
+            </p>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-white/72 to-white" />
+          </div>
         ) : null}
       </div>
       {shouldClamp ? (
