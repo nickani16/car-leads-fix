@@ -493,7 +493,7 @@ export default async function ListingDetailPage({
                   listingTitle={listing.title}
                   locale={locale}
                 />
-                <div className="flex justify-center py-1">
+                <div className="flex justify-start py-1">
                   <ShareListingButton
                     title={listing.title}
                     url={publicUrl}
