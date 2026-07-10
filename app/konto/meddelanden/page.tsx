@@ -21,6 +21,7 @@ import CountryFlag from '@/app/components/CountryFlag'
 import MessageComposer from './MessageComposer'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { getEuCountryName } from '@/lib/eu-countries'
+import { publicSellerName } from '@/lib/public-seller'
 
 export const generateMetadata = generateAccountMetadata('messages')
 
@@ -130,7 +131,7 @@ export default async function MessagesPage({
       participantIds.length
         ? admin
             .from('marketplace_profiles')
-            .select('user_id,display_name,company_name,account_type,country_code')
+            .select('user_id,display_name,first_name,company_name,account_type,country_code')
             .in('user_id', participantIds)
         : Promise.resolve({ data: [] }),
       conversationIds.length
@@ -248,7 +249,12 @@ export default async function MessagesPage({
                         ) : null}
                       </span>
                       <span className="mt-1 block truncate text-xs font-medium text-[#667085]">
-                        {other?.company_name || other?.display_name || text.conversation}
+                        {publicSellerName({
+                          account_type: other?.account_type,
+                          first_name: other?.first_name,
+                          display_name: other?.display_name,
+                          company_name: other?.company_name,
+                        }, text.conversation)}
                       </span>
                       <span className="mt-1 inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-[#dfe6f2] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#475467]">
                         <CountryFlag code={otherCountryCode} className="h-3.5 w-5 shrink-0 rounded-[3px]" />
@@ -276,7 +282,12 @@ export default async function MessagesPage({
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#667085]">
                       <span className="inline-flex items-center gap-1.5">
                         <UserRound className="h-3.5 w-3.5" />
-                        {selectedRole}: {selectedOther?.company_name || selectedOther?.display_name || text.conversation}
+                        {selectedRole}: {publicSellerName({
+                          account_type: selectedOther?.account_type,
+                          first_name: selectedOther?.first_name,
+                          display_name: selectedOther?.display_name,
+                          company_name: selectedOther?.company_name,
+                        }, text.conversation)}
                       </span>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2 py-0.5 font-semibold text-[#475467]">
                         <CountryFlag

@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { marketplacePublicSelect, normalizeMarketplaceCategory, type MarketplaceCategorySlug } from './marketplace'
+import { sanitizePublicListingSellerName } from './public-seller'
 import { createAdminClient } from './supabase/admin'
 
 export type MarketplaceSort =
@@ -71,6 +72,8 @@ type MarketplaceSearchRow = Record<string, unknown> & {
   price?: number | string | null
   model_year?: number | string | null
   mileage_km?: number | string | null
+  seller_name?: string | null
+  seller_type?: string | null
 }
 
 export async function searchMarketplaceListings(input: MarketplaceSearchInput): Promise<MarketplaceSearchResult> {
@@ -128,7 +131,7 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   }
 
   const rows = (data || []) as MarketplaceSearchRow[]
-  const items = rows.slice(0, filters.limit)
+  const items = rows.slice(0, filters.limit).map(sanitizePublicListingSellerName)
   const facets = await getMarketplaceFacets(filters)
   const hasNext = rows.length > filters.limit
   const lastItem = items[items.length - 1] || null

@@ -88,6 +88,8 @@ export default async function FindCarsPage({
         sellerTrust: sellerProfile?.trust || 'unverified',
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',
+        sellerRatingAverage: sellerProfile?.ratingAverage ?? null,
+        sellerRatingCount: sellerProfile?.ratingCount ?? 0,
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,

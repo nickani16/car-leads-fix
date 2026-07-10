@@ -281,6 +281,7 @@ function legalFallbackCopy(title: string): {
           title: 'Data we process',
           items: [
             'Account type, name, email, phone, country, address, login and security information.',
+            'For private sellers, full names are kept for account, verification, safety and legal purposes. Public marketplace views normally show only the seller first name and account type.',
             'Listing data, images, vehicle identity, price, location, condition, history and known faults.',
             'Messages, reports, support cases, moderation decisions and evidence of suspected misuse.',
             'Payment references, packages, amounts, receipt and refund status. Full card details are not stored by Autorell.',
@@ -325,11 +326,12 @@ function legalFallbackCopy(title: string): {
       {
         id: 'accounts',
         title: 'Private and business accounts',
-        items: [
-          'The account holder must be at least 18 years old and provide correct and current contact and identity information.',
-          'Private accounts are used for personal, non-professional trading. Business sellers must use a business account.',
-          'The account is personal. Passwords and access must not be shared.',
-        ],
+          items: [
+            'The account holder must be at least 18 years old and provide correct and current contact and identity information.',
+            'Private accounts are used for personal, non-professional trading. Business sellers must use a business account.',
+            'Private sellers normally show only first name publicly. Business accounts show the registered company name.',
+            'The account is personal. Passwords and access must not be shared.',
+          ],
       },
       {
         id: 'listings',

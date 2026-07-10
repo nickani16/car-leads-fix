@@ -64,7 +64,7 @@ export default function EditListingForm({
   const [address, setAddress] = useState(listing.address)
   const [description, setDescription] = useState(listing.description)
   const [equipmentKeys, setEquipmentKeys] = useState(listing.equipmentKeys)
-  const [phoneVisibility, setPhoneVisibility] = useState(listing.phoneVisibility || 'public')
+  const [phoneVisibility, setPhoneVisibility] = useState(listing.phoneVisibility || (listing.sellerType === 'private' ? 'registered_only' : 'public'))
   const usesSwedishMileage = isSwedishMileageCountry(listing.country)
   const [mileage, setMileage] = useState(listing.mileage ? formatMileageForInput(listing.mileage, usesSwedishMileage) : '')
   const [operatingHours, setOperatingHours] = useState(listing.operatingHours ? String(listing.operatingHours) : '')

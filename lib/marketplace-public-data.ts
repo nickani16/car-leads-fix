@@ -4,6 +4,7 @@ import {
   marketplacePublicSelect,
   type MarketplaceCategorySlug,
 } from './marketplace'
+import { sanitizePublicListingSellerName } from './public-seller'
 import { createAdminClient } from './supabase/admin'
 
 const publicListingTtl = 300
@@ -22,7 +23,7 @@ export const getPublishedMarketplaceListings = unstable_cache(
       .order('published_at', { ascending: false })
       .limit(limit)
 
-    return data || []
+    return (data || []).map(sanitizePublicListingSellerName)
   },
   ['published-marketplace-listings'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -53,7 +54,7 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
       .order('published_at', { ascending: false })
       .limit(limit)
 
-    return data || []
+    return (data || []).map(sanitizePublicListingSellerName)
   },
   ['published-marketplace-home-listings'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -76,7 +77,7 @@ export const getPublishedMarketplaceCategoryListings = unstable_cache(
 
     const { data } = await query
 
-    return data || []
+    return (data || []).map(sanitizePublicListingSellerName)
   },
   ['published-marketplace-category-listings'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -92,7 +93,7 @@ export const getPublishedMarketplaceListingById = unstable_cache(
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .maybeSingle()
 
-    return data || null
+    return data ? sanitizePublicListingSellerName(data) : null
   },
   ['published-marketplace-listing-by-id'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -140,7 +141,7 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
 export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
   const ids = [...new Set(userIds.filter(Boolean))]
   if (!ids.length) {
-    return new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified' }>()
+    return new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified'; ratingAverage: number | null; ratingCount: number }>()
   }
 
   const { data } = await createAdminClient()
@@ -148,7 +149,23 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     .select('user_id,account_type,identity_status,business_verification_status,logo_url')
     .in('user_id', ids)
 
-  const profiles = new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified' }>()
+  const { data: reviewData } = await createAdminClient()
+    .from('marketplace_reviews')
+    .select('reviewee_id,rating')
+    .in('reviewee_id', ids)
+    .eq('status', 'visible')
+
+  const reviewStats = new Map<string, { total: number; count: number }>()
+  for (const review of reviewData || []) {
+    const rating = Number(review.rating)
+    if (!Number.isFinite(rating)) continue
+    const current = reviewStats.get(review.reviewee_id) || { total: 0, count: 0 }
+    current.total += rating
+    current.count += 1
+    reviewStats.set(review.reviewee_id, current)
+  }
+
+  const profiles = new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified'; ratingAverage: number | null; ratingCount: number }>()
   for (const profile of data || []) {
     const businessVerified =
       profile.account_type === 'business' &&
@@ -156,9 +173,12 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     const privateVerified =
       profile.account_type !== 'business' &&
       ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+    const stats = reviewStats.get(profile.user_id)
     profiles.set(profile.user_id, {
       logoUrl: typeof profile.logo_url === 'string' && profile.logo_url ? profile.logo_url : null,
       trust: businessVerified || privateVerified ? 'verified' : 'unverified',
+      ratingAverage: stats?.count ? Math.round((stats.total / stats.count) * 10) / 10 : null,
+      ratingCount: stats?.count || 0,
     })
   }
   return profiles

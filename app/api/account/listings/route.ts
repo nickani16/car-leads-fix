@@ -24,6 +24,7 @@ import { validatePostalCode } from '@/lib/postal-code-validation'
 import { euCountryCodes } from '@/lib/eu-countries'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
+import { publicSellerName } from '@/lib/public-seller'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -574,7 +575,11 @@ export async function POST(request: Request) {
         seller_name:
           profile.account_type === 'business'
             ? profile.company_name
-            : profile.display_name,
+            : publicSellerName({
+                account_type: profile.account_type,
+                first_name: profile.first_name,
+                display_name: profile.display_name,
+              }),
         seller_type: profile.account_type,
         phone_visibility: phoneVisibility,
         status: packageId === 'free_7d' ? 'published' : 'pending_payment',

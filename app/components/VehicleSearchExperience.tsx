@@ -19,6 +19,7 @@ import {
   Search,
   Scale,
   SlidersHorizontal,
+  Star,
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -103,6 +104,8 @@ export type VehicleSearchListing = {
   sellerTrust: 'verified' | 'unverified'
   sellerName: string
   sellerIsTrader: boolean
+  sellerRatingAverage?: number | null
+  sellerRatingCount?: number
   condition: string | null
   color: string | null
   equipment: string | null
@@ -296,6 +299,12 @@ function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
   if (locale === 'sv') return sv
   if (locale === 'de') return de || en
   return locale === 'en' ? en : translatePublic(locale, en)
+}
+
+function formatRating(value: number, locale: PublicLocale) {
+  return value.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, {
+    maximumFractionDigits: 1,
+  })
 }
 
 function categoryText(item: (typeof categories)[number], locale: PublicLocale, short = false) {
@@ -1954,8 +1963,14 @@ function VehicleResultCard({
                 ? listing.sellerName
                   ? `${uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')} | ${listing.sellerName}`
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
-                : 'Privat'}
+                : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
+            {listing.sellerRatingAverage && listing.sellerRatingCount ? (
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
+                <Star className="h-3.5 w-3.5 text-[#0866ff]" fill="currentColor" />
+                {formatRating(listing.sellerRatingAverage, locale)} ({listing.sellerRatingCount})
+              </p>
+            ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-[#101828]">
                 <MapPin className="h-4 w-4 shrink-0 text-[#0866ff]" />
@@ -2359,7 +2374,15 @@ function MapListingPreview({
           <p className="mt-4 text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
           <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="line-clamp-1 text-sm font-medium text-[#667085]">{listing.sellerIsTrader ? listing.sellerName : 'Privat'}</p>
+            <div className="min-w-0">
+              <p className="line-clamp-1 text-sm font-medium text-[#667085]">{listing.sellerIsTrader ? listing.sellerName : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}</p>
+              {listing.sellerRatingAverage && listing.sellerRatingCount ? (
+                <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
+                  <Star className="h-3.5 w-3.5 text-[#0866ff]" fill="currentColor" />
+                  {formatRating(listing.sellerRatingAverage, locale)} ({listing.sellerRatingCount})
+                </p>
+              ) : null}
+            </div>
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
               <span className="relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
                 <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />

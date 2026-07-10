@@ -43,6 +43,7 @@ import { resolveListingCoordinates } from '@/lib/location-coordinates'
 import { selectedEquipmentGroups } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { cleanSeoText } from '@/lib/market-seo'
+import { publicSellerName } from '@/lib/public-seller'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
@@ -84,6 +85,7 @@ type ListingRow = {
   edited_at: string | null
   last_price_change_at: string | null
   images: string[] | null
+  seller_user_id: string | null
   seller_name: string
   seller_type: 'private' | 'business'
   phone_visibility: 'public' | 'registered_only' | null
@@ -110,6 +112,8 @@ type SellerDetails = SellerVerification & {
   websiteUrl: string | null
   logoUrl: string | null
   address: string | null
+  ratingAverage: number | null
+  ratingCount: number
 }
 
 export async function generateListingMetadata({
@@ -185,7 +189,6 @@ export default async function ListingDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const isLoggedIn = Boolean(user)
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const canonicalPath = localizePublicHref(locale, buildListingPath(listing))
   if (slug !== buildListingSlug(listing)) {
@@ -236,14 +239,13 @@ export default async function ListingDetailPage({
   }
   const sellerLabel =
     listing.seller_type === 'business'
-      ? listing.seller_name || localizedLabel(locale, 'Företagssäljare', 'Business seller', 'Gewerblicher Verkäufer')
-      : localizedLabel(locale, 'Verifierad privat säljare', 'Verified private seller', 'Verifizierter privater Verkäufer')
+      ? publicSellerName({ seller_type: listing.seller_type, sellerName: listing.seller_name })
+      : publicSellerName({ seller_type: listing.seller_type, sellerName: listing.seller_name }, localizedLabel(locale, 'Privat säljare', 'Private seller', 'Privatverkäufer'))
   const sellerTypeLabel =
     listing.seller_type === 'business'
       ? localizedLabel(locale, 'Företag', 'Company', 'Unternehmen')
       : localizedLabel(locale, 'Privat annons', 'Private listing', 'Private Anzeige')
-  const hidePrivateSellerIdentity = !isLoggedIn && listing.seller_type === 'private'
-  const sellerDisplayLabel = hidePrivateSellerIdentity ? localizedLabel(locale, 'Logga in för att se säljaren', 'Log in to view the seller', 'Anmelden, um den Verkäufer zu sehen') : sellerLabel
+  const sellerDisplayLabel = sellerLabel
   const publishedDate = listing.published_at || listing.created_at
   const publicUrl = `https://www.autorell.com${canonicalPath}`
   const daysLeft = getDaysLeft(listing.expires_at)
@@ -531,7 +533,7 @@ export default async function ListingDetailPage({
                     </span>
                   )}
                   <div>
-                    <p className={`text-lg font-semibold tracking-[-0.02em] ${hidePrivateSellerIdentity ? 'select-none blur-[4px]' : ''}`}>
+                    <p className="text-lg font-semibold tracking-[-0.02em]">
                       {sellerDisplayLabel}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
@@ -544,6 +546,12 @@ export default async function ListingDetailPage({
                     <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
                       {sellerVerification.label}
                     </span>
+                    {sellerDetails.ratingAverage && sellerDetails.ratingCount ? (
+                      <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#475467]">
+                        <span className="text-[#0866ff]">★</span>
+                        {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
+                      </p>
+                    ) : null}
                     {listing.seller_type === 'business' ? (
                       <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
                         {sellerDetails.address ? (
@@ -564,11 +572,6 @@ export default async function ListingDetailPage({
                           </a>
                         ) : null}
                       </div>
-                    ) : null}
-                    {hidePrivateSellerIdentity ? (
-                      <p className="mt-2 text-xs font-semibold text-[#0866ff]">
-                        {localizedLabel(locale, 'Logga in för att visa säljaruppgifter.', 'Log in to view seller details.', 'Anmelden, um Verkäuferdetails zu sehen.')}
-                      </p>
                     ) : null}
                     <p className="mt-3 text-sm leading-6 text-[#667085]">
                       {localizedLabel(
@@ -655,6 +658,8 @@ async function getSellerDetails(
     websiteUrl: null,
     logoUrl: null,
     address: null,
+    ratingAverage: null,
+    ratingCount: 0,
   }
   const admin = createAdminClient()
   const { data: listing } = await admin
@@ -665,11 +670,26 @@ async function getSellerDetails(
 
   if (!listing?.seller_user_id) return empty
 
-  const { data: profile } = await admin
-    .from('marketplace_profiles')
-    .select('website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region')
-    .eq('user_id', listing.seller_user_id)
-    .maybeSingle()
+  const [{ data: profile }, { data: reviews }] = await Promise.all([
+    admin
+      .from('marketplace_profiles')
+      .select('website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region')
+      .eq('user_id', listing.seller_user_id)
+      .maybeSingle(),
+    admin
+      .from('marketplace_reviews')
+      .select('rating')
+      .eq('reviewee_id', listing.seller_user_id)
+      .eq('status', 'visible'),
+  ])
+
+  const visibleRatings = (reviews || [])
+    .map((review) => Number(review.rating))
+    .filter((rating) => Number.isFinite(rating))
+  const ratingCount = visibleRatings.length
+  const ratingAverage = ratingCount
+    ? Math.round((visibleRatings.reduce((sum, rating) => sum + rating, 0) / ratingCount) * 10) / 10
+    : null
 
   const addressLine = [
     textOrNull(profile?.address_line_1),
@@ -681,6 +701,8 @@ async function getSellerDetails(
     websiteUrl: sellerType === 'business' ? textOrNull(profile?.website_url) : null,
     logoUrl: sellerType === 'business' ? textOrNull(profile?.logo_url) : null,
     address: sellerType === 'business' ? textOrNull(addressLine) : null,
+    ratingAverage,
+    ratingCount,
   }
 
   if (sellerType === 'business') {

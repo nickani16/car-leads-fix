@@ -21,6 +21,7 @@ import {
 } from '@/lib/public-i18n'
 import ListingStatusActions, { type ListingBuyerOption } from './ListingStatusActions'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { publicSellerName } from '@/lib/public-seller'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -44,6 +45,8 @@ type ConversationRow = {
 
 type ProfileRow = {
   user_id: string
+  account_type: string | null
+  first_name: string | null
   display_name: string | null
   company_name: string | null
 }
@@ -80,7 +83,7 @@ export default async function AccountListingsPage() {
   const { data: profileData } = buyerIds.length
     ? await admin
         .from('marketplace_profiles')
-        .select('user_id,display_name,company_name')
+        .select('user_id,account_type,first_name,display_name,company_name')
         .in('user_id', buyerIds)
     : { data: [] }
   const profilesById = new Map(
@@ -94,7 +97,12 @@ export default async function AccountListingsPage() {
     const profile = profilesById.get(conversation.buyer_user_id)
     const buyer = {
       userId: conversation.buyer_user_id,
-      name: profile?.company_name || profile?.display_name || copy.buyer,
+      name: publicSellerName({
+        account_type: profile?.account_type,
+        first_name: profile?.first_name,
+        display_name: profile?.display_name,
+        company_name: profile?.company_name,
+      }, copy.buyer),
     }
     buyersByListing.set(conversation.listing_id, [
       ...(buyersByListing.get(conversation.listing_id) || []),

@@ -124,7 +124,7 @@ export default function NewListingForm({
   const createInitialValues = () => ({
     packageId: 'free_7d',
     currency: currencyForCountry(countryCode),
-    phoneVisibility: 'public',
+    phoneVisibility: accountType === 'private' ? 'registered_only' : 'public',
   })
   const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
@@ -1502,7 +1502,7 @@ function PublishStep({
               type="button"
               onClick={() => onChange('phoneVisibility', 'public')}
               className={`rounded-[14px] border px-4 py-3 text-left text-sm transition ${
-                (values.phoneVisibility || 'public') === 'public'
+                values.phoneVisibility === 'public'
                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                   : 'border-[#d7deed] bg-white text-[#344054]'
               }`}
@@ -1516,7 +1516,7 @@ function PublishStep({
               type="button"
               onClick={() => onChange('phoneVisibility', 'registered_only')}
               className={`rounded-[14px] border px-4 py-3 text-left text-sm transition ${
-                values.phoneVisibility === 'registered_only'
+                (values.phoneVisibility || 'registered_only') === 'registered_only'
                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                   : 'border-[#d7deed] bg-white text-[#344054]'
               }`}

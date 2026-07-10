@@ -2,6 +2,7 @@ import type { MarketplaceListing } from '@/app/components/MarketplaceCategoryBro
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { marketplacePublicSelect } from '@/lib/marketplace'
 import { getMarketplaceSellerTrustByUserIds } from '@/lib/marketplace-public-data'
+import { publicSellerName } from '@/lib/public-seller'
 import { type PublicLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -110,7 +111,10 @@ export async function GET(request: NextRequest) {
         imageAvailable: Boolean(listing.images?.[0]),
         imageUrl: listing.images?.[0] || null,
         imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
-        sellerName: listing.seller_name,
+        sellerName: publicSellerName({
+          seller_type: listing.seller_type,
+          sellerName: listing.seller_name,
+        }),
         sellerIsTrader: listing.seller_type === 'business',
         sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',
         messagingEnabled: true,

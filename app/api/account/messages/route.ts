@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { publicSellerName } from '@/lib/public-seller'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -163,8 +164,12 @@ function displayProfileName(profile?: {
   last_name?: string | null
 }) {
   if (!profile) return ''
-  if (profile.account_type === 'business') return profile.company_name || profile.display_name || ''
-  return [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.display_name || ''
+  return publicSellerName({
+    account_type: profile.account_type,
+    company_name: profile.company_name,
+    display_name: profile.display_name,
+    first_name: profile.first_name,
+  }, '')
 }
 
 function truncateMessage(value: string, maxLength: number) {
