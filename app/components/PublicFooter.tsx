@@ -369,12 +369,10 @@ export default function PublicFooter({
           </div>
         </div>
 
-        <div className="my-8 h-px bg-[#dfe5ee]" />
+        <div className="my-7 h-px bg-[#dfe5ee]" />
 
-        <div className="flex flex-col gap-5 bg-white pb-8 text-[13px] text-[#475467]">
-          <p className="order-2 shrink-0">© 2026 Autorell. All rights reserved.</p>
-
-          <div className="order-1 flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
+        <div className="flex flex-col gap-4 bg-white pb-7 text-[13px] text-[#475467]">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
             <button
               type="button"
               onClick={() => setIsMarketOpen(true)}
@@ -406,26 +404,30 @@ export default function PublicFooter({
             />
           </div>
 
-          <nav className="order-3 flex flex-wrap gap-x-5 gap-y-2 font-medium lg:justify-end">
-            <Link href={termsHref} className="transition hover:text-[#075fff]">
-              {t.terms}
-            </Link>
-            <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
-              {t.purchaseTerms}
-            </Link>
-            <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
-              {t.refundPolicy}
-            </Link>
-            <Link href={privacyHref} className="transition hover:text-[#075fff]">
-              {t.privacy}
-            </Link>
-            <Link
-              href={localizePublicHref(locale, '/cookies')}
-              className="transition hover:text-[#075fff]"
-            >
-              {t.cookies}
-            </Link>
-          </nav>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
+
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium lg:justify-end">
+              <Link href={termsHref} className="transition hover:text-[#075fff]">
+                {t.terms}
+              </Link>
+              <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
+                {t.purchaseTerms}
+              </Link>
+              <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
+                {t.refundPolicy}
+              </Link>
+              <Link href={privacyHref} className="transition hover:text-[#075fff]">
+                {t.privacy}
+              </Link>
+              <Link
+                href={localizePublicHref(locale, '/cookies')}
+                className="transition hover:text-[#075fff]"
+              >
+                {t.cookies}
+              </Link>
+            </nav>
+          </div>
         </div>
       </div>
       <MarketSelectorModal
