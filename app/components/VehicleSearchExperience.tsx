@@ -753,8 +753,13 @@ export default function VehicleSearchExperience({
         return
       }
       if (!response.ok) throw new Error('Could not save search')
+      const payload = (await response.json()) as { duplicate?: boolean }
       window.dispatchEvent(new CustomEvent(SAVED_SEARCHES_EVENT))
-      setSavedSearchMessage(uiText(locale, 'Search saved', 'Sökningen är sparad', 'Suche gespeichert'))
+      setSavedSearchMessage(
+        payload.duplicate
+          ? uiText(locale, 'Search already saved', 'Sökningen är redan sparad', 'Suche bereits gespeichert')
+          : uiText(locale, 'Search saved', 'Sökningen är sparad', 'Suche gespeichert'),
+      )
       return
     } catch {
       setSavedSearchMessage(uiText(locale, 'Could not save search', 'Kunde inte spara sökningen', 'Suche konnte nicht gespeichert werden'))
