@@ -110,7 +110,7 @@ export default function ListingImageGallery({
 
   return (
     <section className="block">
-      <div className="group relative aspect-[16/10] overflow-hidden rounded-[18px] bg-[#edf4ff] shadow-sm lg:aspect-[4/3]">
+      <div className="group relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#edf4ff] shadow-sm lg:aspect-[4/3]">
         {activeImage ? (
           <button
             type="button"
@@ -177,7 +177,7 @@ export default function ListingImageGallery({
               key={`${image}-${index}`}
               type="button"
               onClick={() => setActive(index)}
-              className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-[12px] border bg-[#edf4ff] transition lg:h-[92px] lg:w-full ${
+              className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-[8px] border bg-[#edf4ff] transition lg:h-[92px] lg:w-full ${
                 active === index
                   ? 'border-[#0866ff] ring-2 ring-[#0866ff]/20'
                   : 'border-[#d9e1ec] hover:border-[#9bbcff]'
@@ -235,7 +235,7 @@ export default function ListingImageGallery({
                       setActive(index)
                       setShowGrid(false)
                     }}
-                    className={`relative aspect-[4/3] overflow-hidden rounded-[12px] border bg-white/5 transition ${
+                    className={`relative aspect-[4/3] overflow-hidden rounded-[8px] border bg-white/5 transition ${
                       active === index
                         ? 'border-[#0866ff] ring-2 ring-[#0866ff]/50'
                         : 'border-white/10 hover:border-white/40'
