@@ -346,6 +346,13 @@ export default async function ListingDetailPage({
             label={copy.backToListings}
           />
           <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
+            <ShareListingButton
+              title={listing.title}
+              url={publicUrl}
+              label={copy.shareListing}
+              variant="plain"
+              className="hidden md:inline-flex"
+            />
             <SavedListingButton
               listingId={listing.id}
               label={copy.favoriteListing}

@@ -182,7 +182,7 @@ export default function ListingImageGallery({
               {active + 1}/{safeImages.length}
             </button>
             {dotCount > 1 ? (
-              <div className="absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/50 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.18)] backdrop-blur">
+              <div className="absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/50 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.18)] backdrop-blur lg:hidden">
                 {Array.from({ length: dotCount }).map((_, dotIndex) => (
                   <span
                     key={`${title}-gallery-dot-${dotIndex}`}

@@ -121,7 +121,7 @@ export default function SavedListingButton({
         aria-label={saved ? 'Ta bort sparad annons' : label}
         aria-pressed={saved}
         disabled={busy}
-        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 sm:text-base sm:font-medium ${
+        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-medium text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 sm:text-base ${
           busy ? 'opacity-70' : ''
         }`}
       >
