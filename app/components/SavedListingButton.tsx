@@ -121,11 +121,11 @@ export default function SavedListingButton({
         aria-label={saved ? 'Ta bort sparad annons' : label}
         aria-pressed={saved}
         disabled={busy}
-        className={`inline-flex items-center justify-center gap-2 text-base font-medium transition ${
-          saved ? 'text-[#0866ff]' : 'text-[#ff2b7a] hover:text-[#d91563]'
-        } ${busy ? 'opacity-70' : ''}`}
+        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 sm:text-base sm:font-medium ${
+          busy ? 'opacity-70' : ''
+        }`}
       >
-        <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
+        <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${saved ? 'fill-current' : ''}`} />
         <span>{saved ? savedLabel : label}</span>
       </button>
     )
@@ -138,7 +138,7 @@ export default function SavedListingButton({
       aria-label={saved ? 'Ta bort sparad annons' : label}
       aria-pressed={saved}
       disabled={busy}
-      className={`grid h-11 w-11 place-items-center rounded-[14px] bg-white shadow-md transition ${
+      className={`grid h-11 w-11 cursor-pointer place-items-center rounded-[14px] bg-white shadow-md transition disabled:cursor-not-allowed ${
         saved ? 'text-[#0866ff]' : 'text-[#344054] hover:text-[#0866ff]'
       } ${busy ? 'opacity-70' : ''}`}
     >

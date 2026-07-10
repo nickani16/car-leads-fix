@@ -58,7 +58,7 @@ export default function RevealPhoneButton({ listingId, locale }: RevealPhoneButt
     return (
       <a
         href={telHref}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-5 text-base font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
         aria-label={text.call}
       >
         <Phone className="h-4 w-4 text-[#0866ff]" />
@@ -72,7 +72,7 @@ export default function RevealPhoneButton({ listingId, locale }: RevealPhoneButt
       type="button"
       onClick={revealPhone}
       disabled={loading}
-      className="inline-flex min-h-12 w-full items-center justify-center rounded-[12px] border border-[#cfd8e6] bg-white px-5 text-base font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f5f9ff]"
+      className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-[12px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] disabled:cursor-not-allowed"
     >
       {error === 'login' ? text.signIn : error ? text.unavailable : loading ? '...' : text.show}
     </button>

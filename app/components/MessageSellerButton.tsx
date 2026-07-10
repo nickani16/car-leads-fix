@@ -53,8 +53,8 @@ export default function MessageSellerButton({
 
   const buttonClass =
     variant === 'button'
-      ? 'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-black text-white shadow-[0_12px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:bg-[#c7d7f5]'
-      : 'inline-flex items-center gap-2 text-sm font-bold text-[#0866ff] disabled:text-[#98a2b3]'
+      ? 'inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]'
+      : 'inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#0866ff] disabled:cursor-not-allowed disabled:text-[#98a2b3]'
 
   return (
     <div>

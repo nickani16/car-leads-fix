@@ -119,7 +119,7 @@ export default function ListingContactFormButton({
           setOpen(true)
           setStatus('idle')
         }}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
       >
         <Mail className="h-4 w-4 text-[#0866ff]" />
         {text.open}
@@ -142,7 +142,7 @@ export default function ListingContactFormButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={text.close}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3]"
+                className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -171,7 +171,7 @@ export default function ListingContactFormButton({
                   name="privacy"
                   type="checkbox"
                   required
-                  className="mt-1 h-4 w-4 rounded border-[#98a2b3] text-[#0866ff]"
+                  className="mt-1 h-4 w-4 cursor-pointer rounded border-[#98a2b3] text-[#0866ff]"
                 />
                 <span>{text.privacy}</span>
               </label>
@@ -190,7 +190,7 @@ export default function ListingContactFormButton({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:bg-[#c7d7f5]"
+                className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
               >
                 <Send className="h-4 w-4" />
                 {loading ? text.sending : text.submit}

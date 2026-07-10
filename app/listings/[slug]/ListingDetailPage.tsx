@@ -344,12 +344,14 @@ export default async function ListingDetailPage({
             label={copy.backToListings}
           />
           <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
-            <ShareListingButton
-              title={listing.title}
-              url={publicUrl}
-              label={copy.shareAction}
-              variant="plain"
-            />
+            <div className="hidden sm:block">
+              <ShareListingButton
+                title={listing.title}
+                url={publicUrl}
+                label={copy.shareAction}
+                variant="plain"
+              />
+            </div>
             <SavedListingButton
               listingId={listing.id}
               label={copy.favoriteListing}
@@ -384,6 +386,14 @@ export default async function ListingDetailPage({
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
+                  <div className="mt-4 flex border-t-2 border-[#0866ff] pt-3 sm:hidden">
+                    <ShareListingButton
+                      title={listing.title}
+                      url={publicUrl}
+                      label={copy.shareAction}
+                      variant="plain"
+                    />
+                  </div>
                 </div>
               </div>
               {headlineFacts.length ? (

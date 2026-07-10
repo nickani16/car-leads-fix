@@ -22,7 +22,7 @@ export default function ListingBackLink({
         }
         router.push(fallbackHref)
       }}
-      className="inline-flex items-center gap-2 text-base font-medium text-[#101828] transition hover:text-[#0866ff]"
+      className="inline-flex cursor-pointer items-center gap-2 text-base font-medium text-[#101828] transition hover:text-[#0866ff]"
     >
       <ArrowLeft className="h-4 w-4" />
       {label}
