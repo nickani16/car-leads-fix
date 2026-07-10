@@ -188,6 +188,10 @@ function matchesSelectedMarkets(country: string, markets: string[]) {
   return !selected.length || selected.includes(country)
 }
 
+function isLeasingListing(listing: VehicleSearchListing) {
+  return (listing.equipment || '').toLowerCase().includes('leasing')
+}
+
 const categoryEnglishLabels: Record<string, string> = {
   all: 'All vehicles',
   cars: 'Cars',
@@ -433,7 +437,6 @@ export default function VehicleSearchExperience({
   }, [listings])
 
   const filteredListings = useMemo(() => {
-    if (mode !== 'sale') return []
     const normalizedQuery = query.trim().toLowerCase()
     const minPriceValue = parseOptionalNumber(minPrice)
     const maxPriceValue = parseOptionalNumber(maxPrice)
@@ -441,6 +444,7 @@ export default function VehicleSearchExperience({
     const maxYearValue = parseOptionalNumber(maxYear)
     const maxMileageValue = parseOptionalNumber(maxMileage)
     const matches = listings.filter((listing) => {
+      if (mode === 'leasing' && !isLeasingListing(listing)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
       if (make && listing.make !== make) return false

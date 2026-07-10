@@ -111,6 +111,7 @@ export default async function FindCarsPage({
         initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
         initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
+        initialMode={getSearchMode(resolvedSearchParams)}
       />
     </>
   )
@@ -134,4 +135,11 @@ function getSearchParamList(
     .flatMap((item) => String(item || '').split(','))
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+function getSearchMode(
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const value = (getSearchParam(params, 'mode') || getSearchParam(params, 'intent')).toLowerCase()
+  return value === 'leasing' ? 'leasing' : 'sale'
 }

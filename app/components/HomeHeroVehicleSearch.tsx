@@ -377,7 +377,7 @@ export default function HomeHeroVehicleSearch({
     const params = new URLSearchParams()
     const trimmedQuery = query.trim()
     if (trimmedQuery) params.set('q', trimmedQuery)
-    if (intent === 'leasing') params.set('intent', 'leasing')
+    if (intent === 'leasing') params.set('mode', 'leasing')
     if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
     if (selectedCategories.length > 1) params.set('categories', selectedCategories.join(','))

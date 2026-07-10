@@ -208,7 +208,7 @@ export default async function MarketplaceCategoryPage({
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
         initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
-        initialMode={getSearchParam(resolvedSearchParams, 'mode') === 'leasing' ? 'leasing' : 'sale'}
+        initialMode={getSearchMode(resolvedSearchParams)}
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear')}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear')}
         initialMaxMileage={getSearchParam(resolvedSearchParams, 'maxMileage')}
@@ -254,6 +254,13 @@ function getBooleanSearchParam(
 ) {
   const value = getSearchParam(params, key).toLowerCase()
   return value === '1' || value === 'true' || value === 'yes'
+}
+
+function getSearchMode(
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const value = (getSearchParam(params, 'mode') || getSearchParam(params, 'intent')).toLowerCase()
+  return value === 'leasing' ? 'leasing' : 'sale'
 }
 
 function getMarketplaceSeoCopy(
