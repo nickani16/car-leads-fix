@@ -1978,7 +1978,7 @@ function VehicleResultCard({
             ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-[#101828]">
-                <MapPin className="h-4 w-4 shrink-0 text-[#0866ff]" />
+                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
@@ -1989,10 +1989,6 @@ function VehicleResultCard({
             </div>
           </div>
         </div>
-        <CountryFlag
-          code={listing.country}
-          className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white max-[420px]:h-6 max-[420px]:w-6"
-        />
       </div>
     </article>
   )
@@ -2266,9 +2262,9 @@ function VehicleSearchMap({
           <button
             type="button"
             onClick={() => setFullscreen(true)}
-            className="inline-flex h-12 items-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
+            className="inline-flex h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
           >
-            <Expand className="h-5 w-5" />
+            <Expand className="h-4 w-4" />
             Fullskärm
           </button>
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
@@ -2373,7 +2369,10 @@ function MapListingPreview({
           <div className="flex items-start justify-between gap-3">
             <Link href={href} onClick={onBeforeNavigate} className="min-w-0">
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
-              <p className="mt-1 line-clamp-1 text-sm font-medium text-[#667085]">{location}</p>
+              <p className="mt-1 flex min-w-0 items-center gap-2 text-sm font-medium text-[#667085]">
+                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                <span className="truncate">{location}</span>
+              </p>
             </Link>
             <div className="shrink-0 scale-[.91] origin-top-right">
               <SavedListingButton listingId={listing.id} />
@@ -2399,10 +2398,6 @@ function MapListingPreview({
           </div>
         </div>
       </div>
-      <CountryFlag
-        code={listing.country}
-        className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
-      />
     </div>
   )
 }
@@ -2442,11 +2437,11 @@ function MapLayerPicker({
   compact?: boolean
 }) {
   return (
-    <div className={`${compact ? 'h-10 border border-[#0866ff] bg-white shadow-sm' : 'h-12 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
+    <div className={`${compact ? 'h-10 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
       <button
         type="button"
         onClick={() => onMapLayerChange('standard')}
-        className={`inline-flex items-center gap-2 rounded-[8px] px-3 text-sm font-semibold transition ${
+        className={`inline-flex min-w-[112px] items-center justify-center gap-1.5 rounded-[7px] px-2.5 text-[13px] font-semibold transition ${
           mapLayer === 'standard'
             ? 'bg-[#0866ff] text-white'
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
@@ -2458,7 +2453,7 @@ function MapLayerPicker({
       <button
         type="button"
         onClick={() => onMapLayerChange('satellite')}
-        className={`inline-flex items-center rounded-[8px] px-3 text-sm font-semibold transition ${
+        className={`inline-flex min-w-[112px] items-center justify-center rounded-[7px] px-2.5 text-[13px] font-semibold transition ${
           mapLayer === 'satellite'
             ? 'bg-[#0866ff] text-white'
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'

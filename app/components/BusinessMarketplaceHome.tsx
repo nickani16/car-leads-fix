@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, BadgeCheck } from 'lucide-react'
-import CountryFlag from './CountryFlag'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -328,10 +327,6 @@ function HomeListingCard({
         <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
         <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
       </div>
-      <CountryFlag
-        code={item.countryCode}
-        className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
-      />
     </article>
   )
 }

@@ -32,11 +32,6 @@ export default function ListingImageGallery({
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
-  const dotCount = Math.min(imageCount, 5)
-  const activeDot =
-    imageCount > dotCount && dotCount > 1
-      ? Math.round((active / (imageCount - 1)) * (dotCount - 1))
-      : active
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -181,18 +176,6 @@ export default function ListingImageGallery({
               <Camera className="h-4 w-4" />
               {active + 1}/{safeImages.length}
             </button>
-            {dotCount > 1 ? (
-              <div className="absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/50 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.18)] backdrop-blur lg:hidden">
-                {Array.from({ length: dotCount }).map((_, dotIndex) => (
-                  <span
-                    key={`${title}-gallery-dot-${dotIndex}`}
-                    className={`h-1.5 rounded-full transition ${
-                      dotIndex === activeDot ? 'w-3 bg-white' : 'w-1.5 bg-white/55'
-                    }`}
-                  />
-                ))}
-              </div>
-            ) : null}
           </>
         ) : null}
       </div>

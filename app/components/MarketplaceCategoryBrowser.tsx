@@ -1256,7 +1256,7 @@ export default function MarketplaceCategoryBrowser({
                       {listing.sellerIsTrader ? `${copy.businessSeller} | ${sellerLabel}` : sellerLabel}
                     </p>
                     <div className={listingLayout === 'grid' ? 'mt-4 hidden items-start gap-3 border-t border-[#edf1f6] pt-4 sm:flex' : 'mt-5 flex items-start gap-3 border-t border-[#edf1f6] pt-4'}>
-                      <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+                      <CountryFlag code={listing.country || 'eu'} className="mt-0.5 h-5 w-5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">{copy.listingCountry}</p>
                         <p className="mt-1 text-sm font-bold text-[#101828]">
@@ -1279,10 +1279,6 @@ export default function MarketplaceCategoryBrowser({
                       </Link>
                     </div>
                   </div>
-                  <CountryFlag
-                    code={listing.country || 'eu'}
-                    className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
-                  />
                   </div>
                 </article>
                 )
@@ -1640,11 +1636,6 @@ function CompareOverlay({
                     {copy.viewListing}
                   </Link>
                 </div>
-                <CountryFlag
-                  code={listing.country || 'eu'}
-                  className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
-                />
-
                 <div className="border-t border-[#dfe5ef] bg-[#f5fbf8] p-4 sm:p-6">
                   <p className="text-xs font-black uppercase tracking-[0.12em] text-[#101828]">
                     {copy.compareStrengths}
