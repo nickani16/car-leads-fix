@@ -1832,11 +1832,17 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         ))}
       </div>
       <div className="mt-8 border-t border-[#dfe5ee] pt-6">
-        <BrandLogo compact underline={false} />
+        <div className="inline-flex w-[104px] flex-col items-start">
+          <BrandLogo compact underline={false} />
+          <span className="-mt-1 block self-center text-center text-[8px] font-semibold uppercase leading-none tracking-[0.28em] text-[#101828]">
+            Marketplace
+          </span>
+        </div>
         <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
           {uiText(locale, 'Autorell is a European marketplace for vehicle listings. Buyers can find listings and sellers can reach the right customers in a safe and clear way.', 'Autorell är en europeisk marknadsplats för fordon. Här kan köpare hitta annonser och säljare nå rätt kunder på ett tryggt och tydligt sätt.', 'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen passende Kunden sicher und klar.')}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
+          <Link href={localizePublicHref(locale, '/terms')} className="hover:text-[#0866ff]">{uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}</Link>
           <Link href={localizePublicHref(locale, '/privacy')} className="hover:text-[#0866ff]">{uiText(locale, 'Privacy Policy', 'Integritet', 'Datenschutz')}</Link>
           <Link href={localizePublicHref(locale, '/cookies')} className="hover:text-[#0866ff]">Cookies</Link>
           <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">{uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}</Link>

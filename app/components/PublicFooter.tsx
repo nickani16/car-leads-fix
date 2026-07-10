@@ -360,9 +360,6 @@ export default function PublicFooter({
               <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
                 <BrandLogo underline={false} />
               </Link>
-              <span className="-mt-0.5 block self-center text-center text-[9px] font-semibold uppercase leading-none tracking-[0.24em] text-[#101828]">
-                Marketplace
-              </span>
             </div>
             <SocialLinks />
           </div>
@@ -374,10 +371,10 @@ export default function PublicFooter({
 
         <div className="my-8 h-px bg-[#dfe5ee]" />
 
-        <div className="flex flex-col gap-4 bg-white pb-8 text-[13px] text-[#475467] lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-5 bg-white pb-8 text-[13px] text-[#475467]">
           <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
             <button
               type="button"
               onClick={() => setIsMarketOpen(true)}
