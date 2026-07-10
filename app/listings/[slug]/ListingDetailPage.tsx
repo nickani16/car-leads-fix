@@ -137,7 +137,7 @@ export async function generateListingMetadata({
     listing.model_year,
     listing.make,
     listing.model,
-    listing.mileage_km !== null ? `${Number(listing.mileage_km).toLocaleString('sv-SE')} km` : null,
+    listing.mileage_km !== null ? formatMileageAsMil(listing.mileage_km, locale) : null,
     location,
   ]
     .filter(Boolean)

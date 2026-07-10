@@ -1477,11 +1477,11 @@ export default function VehicleSearchExperience({
                       <FilterSelect label="Modell" value={model} onChange={setModel} options={models} />
                       <FilterSelect label="Drivmedel" value={fuel} onChange={setFuel} options={fuels} />
                       <FilterSelect label="Växellåda" value={gearbox} onChange={setGearbox} options={gearboxes} />
-                      <FilterSelect label="Miltal" value={maxMileage} onChange={setMaxMileage} options={[
+                      <FilterSelect label={uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')} value={maxMileage} onChange={setMaxMileage} options={[
                         { value: '', label: 'Alla' },
-                        { value: '5000', label: 'Upp till 5 000 km' },
-                        { value: '20000', label: 'Upp till 20 000 km' },
-                        { value: '100000', label: 'Upp till 100 000 km' },
+                        { value: '5000', label: `${uiText(locale, 'Up to', 'Upp till', 'Bis')} ${formatMileageAsMil(5000, locale)}` },
+                        { value: '20000', label: `${uiText(locale, 'Up to', 'Upp till', 'Bis')} ${formatMileageAsMil(20000, locale)}` },
+                        { value: '100000', label: `${uiText(locale, 'Up to', 'Upp till', 'Bis')} ${formatMileageAsMil(100000, locale)}` },
                       ]} />
                     </div>
                   </FilterSection>

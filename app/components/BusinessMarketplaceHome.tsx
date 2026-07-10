@@ -20,6 +20,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { countryForLocale } from '@/lib/market-locale'
+import { formatMileageAsMil } from '@/lib/listing-display'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]'
@@ -439,11 +440,10 @@ async function mapHomeListingCard(
     .filter(Boolean)
     .join(', ')
   const price = Number(listing.price)
-  const numberLocale = locale === 'sv' ? 'sv-SE' : locale === 'de' ? 'de-DE' : 'en-US'
   const mileage = Number(listing.mileage_km)
   const vehicleMeta = [
     listing.model_year ? String(listing.model_year) : null,
-    Number.isFinite(mileage) ? `${mileage.toLocaleString(numberLocale)} km` : null,
+    Number.isFinite(mileage) ? formatMileageAsMil(mileage, locale) : null,
     location || countryName,
   ]
     .filter(Boolean)

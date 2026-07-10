@@ -2098,7 +2098,7 @@ const marketplaceCopy = {
     minPrice: 'Min',
     maxPrice: 'Max',
     modelYearTitle: 'Modellår',
-    kilometerTitle: 'Kilometer',
+    kilometerTitle: 'Miltal',
     operatingHoursTitle: 'Drifttimmar',
     hoursUnit: 'tim',
     beforePrefix: 'Före',
@@ -2120,7 +2120,7 @@ const marketplaceCopy = {
     color: 'Alla färger',
     condition: 'Alla skick',
     yearFrom: 'Årsmodell från',
-    maxMileage: 'Max kilometer',
+    maxMileage: 'Max miltal',
     equipment: 'Utrustning, exempelvis dragkrok eller navigation',
     maxHours: 'Max drifttimmar',
     moreFilters: 'Fler filter',
@@ -2130,7 +2130,7 @@ const marketplaceCopy = {
     sortingInfo: 'Så här sorteras sökträffarna',
     recommended: 'Rekommenderat',
     newest: 'Nyaste årsmodell',
-    mileage: 'Lägst kilometer',
+    mileage: 'Lägst miltal',
     lowestPrice: 'Lägst pris',
     listings: 'annonser i',
     saveSearch: 'Spara sökning',
@@ -2705,22 +2705,22 @@ function categoryFilterProfile(slug: string): {
 function categoryQuickFilters(slug: string, locale: PublicLocale) {
   const values: Record<string, Record<'sv' | 'en' | 'de', string[]>> = {
     cars: {
-      sv: ['Nya', 'Begagnade', 'El', 'Hybrid', 'Pris', 'Kilometer'],
+      sv: ['Nya', 'Begagnade', 'El', 'Hybrid', 'Pris', 'Miltal'],
       en: ['New', 'Used', 'Electric', 'Hybrid', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Elektro', 'Hybrid', 'Preis', 'Kilometer'],
     },
     vans: {
-      sv: ['Nya', 'Begagnade', 'El', 'Automat', 'Pris', 'Kilometer'],
+      sv: ['Nya', 'Begagnade', 'El', 'Automat', 'Pris', 'Miltal'],
       en: ['New', 'Used', 'Electric', 'Automatic', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Elektro', 'Automatik', 'Preis', 'Kilometer'],
     },
     motorcycles: {
-      sv: ['Nya', 'Begagnade', 'El', 'Touring', 'Pris', 'Kilometer'],
+      sv: ['Nya', 'Begagnade', 'El', 'Touring', 'Pris', 'Miltal'],
       en: ['New', 'Used', 'Electric', 'Touring', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Elektro', 'Touring', 'Preis', 'Kilometer'],
     },
     motorhomes: {
-      sv: ['Nya', 'Begagnade', 'Automat', 'Helintegrerad', 'Pris', 'Kilometer'],
+      sv: ['Nya', 'Begagnade', 'Automat', 'Helintegrerad', 'Pris', 'Miltal'],
       en: ['New', 'Used', 'Automatic', 'A-class', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Automatik', 'Vollintegriert', 'Preis', 'Kilometer'],
     },
@@ -2730,7 +2730,7 @@ function categoryQuickFilters(slug: string, locale: PublicLocale) {
       de: ['Neu', 'Gebraucht', 'Einachser', 'Tandemachser', 'Preis'],
     },
     trucks: {
-      sv: ['Nya', 'Begagnade', 'Dragbil', 'Lastväxlare', 'Pris', 'Kilometer'],
+      sv: ['Nya', 'Begagnade', 'Dragbil', 'Lastväxlare', 'Pris', 'Miltal'],
       en: ['New', 'Used', 'Tractor unit', 'Hook lift', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Sattelzugmaschine', 'Abrollkipper', 'Preis', 'Kilometer'],
     },
