@@ -1832,9 +1832,9 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         ))}
       </div>
       <div className="mt-8 border-t border-[#dfe5ee] pt-6">
-        <div className="inline-flex w-[104px] flex-col items-start">
+        <div className="inline-flex w-[112px] flex-col items-center">
           <BrandLogo compact underline={false} />
-          <span className="-mt-1 block self-center text-center text-[8px] font-semibold uppercase leading-none tracking-[0.28em] text-[#101828]">
+          <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
             Marketplace
           </span>
         </div>

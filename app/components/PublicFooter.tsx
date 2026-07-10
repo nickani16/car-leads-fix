@@ -405,9 +405,9 @@ export default function PublicFooter({
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <p className="shrink-0">© 2026 Autorell. All rights reserved.</p>
+            <p className="order-2 shrink-0 lg:order-1">© 2026 Autorell. All rights reserved.</p>
 
-            <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium lg:justify-end">
+            <nav className="order-1 flex flex-wrap gap-x-5 gap-y-2 font-medium lg:order-2 lg:justify-end">
               <Link href={termsHref} className="transition hover:text-[#075fff]">
                 {t.terms}
               </Link>
