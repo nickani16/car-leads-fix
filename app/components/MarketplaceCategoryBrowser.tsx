@@ -1176,7 +1176,7 @@ export default function MarketplaceCategoryBrowser({
                 return (
                 <article
                   key={listing.id}
-                  className={`group overflow-hidden rounded-[8px] border bg-white shadow-[0_12px_36px_rgba(16,24,40,.07)] transition-colors hover:border-[#0866ff] ${
+                  className={`group overflow-hidden rounded-[8px] border bg-white shadow-[0_12px_36px_rgba(16,24,40,.07)] transition-colors hover:border-[#344054] ${
                     compared ? 'border-[#0866ff] ring-2 ring-[#0866ff]/10' : 'border-[#d9e1ec]'
                   }`}
                 >

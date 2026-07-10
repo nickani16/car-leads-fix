@@ -1273,32 +1273,6 @@ export default function PublicHeader({
         >
           {headerAccount.authenticated ? (
             <Link
-              href={savedHref}
-              onClick={closeMobile}
-              aria-label={publicLabel('Saved listings', 'Sparade annonser', 'Gespeicherte Anzeigen')}
-              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-            >
-              <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                {savedListingBadge ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {savedListingBadge}
-                  </span>
-                ) : null}
-              </span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedHref)}
-              aria-label={publicLabel('Saved listings', 'Sparade annonser', 'Gespeicherte Anzeigen')}
-              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-            >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            </button>
-          )}
-          {headerAccount.authenticated ? (
-            <Link
               href={savedSearchesHref}
               onClick={closeMobile}
               aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
@@ -1551,7 +1525,7 @@ export default function PublicHeader({
           visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
-        <div className="grid h-[54px] w-[100dvw] max-w-[100dvw] grid-cols-5 px-1 pt-1">
+        <div className="grid h-[54px] w-[100dvw] max-w-[100dvw] grid-cols-4 px-1 pt-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
@@ -1576,28 +1550,9 @@ export default function PublicHeader({
           </Link>
           {headerAccount.authenticated ? (
             <Link
-              href={createListingHref}
-              onClick={closeMobile}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', createListingHref)}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <Plus className="h-[22px] w-[22px]" strokeWidth={1.8} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.sell}</span>
-            </button>
-          )}
-          {headerAccount.authenticated ? (
-            <Link
               href={accountMessagesHref}
               onClick={closeMobile}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1613,7 +1568,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
@@ -1623,7 +1578,7 @@ export default function PublicHeader({
             <Link
               href={savedHref}
               onClick={closeMobile}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1639,7 +1594,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
@@ -1649,7 +1604,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <span className="relative">
                 <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1667,7 +1622,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              className="order-5 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">

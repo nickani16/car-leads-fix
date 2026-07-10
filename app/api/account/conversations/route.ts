@@ -43,21 +43,44 @@ export async function POST(request: Request) {
     )
   }
 
+  const participants = {
+    listing_id: listing.id,
+    buyer_user_id: user.id,
+    seller_user_id: listing.seller_user_id,
+  }
+  const now = new Date().toISOString()
+  const { data: existing, error: existingError } = await admin
+    .from('marketplace_conversations')
+    .select('id')
+    .match(participants)
+    .maybeSingle()
+
+  if (existingError) {
+    return NextResponse.json({ error: existingError.message }, { status: 400 })
+  }
+  if (existing?.id) {
+    await admin
+      .from('marketplace_conversations')
+      .update({ last_message_at: now })
+      .eq('id', existing.id)
+    return NextResponse.json({ id: existing.id })
+  }
+
   const { data, error } = await admin
     .from('marketplace_conversations')
-    .upsert(
-      {
-        listing_id: listing.id,
-        buyer_user_id: user.id,
-        seller_user_id: listing.seller_user_id,
-        last_message_at: new Date().toISOString(),
-      },
-      { onConflict: 'listing_id,buyer_user_id,seller_user_id' },
-    )
+    .insert({ ...participants, last_message_at: now })
     .select('id')
     .single()
 
-  return error
-    ? NextResponse.json({ error: error.message }, { status: 400 })
-    : NextResponse.json({ id: data.id })
+  if (!error) return NextResponse.json({ id: data.id })
+
+  const { data: racedConversation } = await admin
+    .from('marketplace_conversations')
+    .select('id')
+    .match(participants)
+    .maybeSingle()
+
+  return racedConversation?.id
+    ? NextResponse.json({ id: racedConversation.id })
+    : NextResponse.json({ error: error.message }, { status: 400 })
 }
