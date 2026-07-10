@@ -139,7 +139,7 @@ export default function SavedListingButton({
       aria-pressed={saved}
       disabled={busy}
       className={`grid h-11 w-11 cursor-pointer place-items-center rounded-[14px] bg-white shadow-md transition disabled:cursor-not-allowed ${
-        saved ? 'text-[#0866ff]' : 'text-[#344054] hover:text-[#0866ff]'
+        saved ? 'text-[#0866ff]' : 'text-[#0866ff] hover:text-[#0057e6]'
       } ${busy ? 'opacity-70' : ''}`}
     >
       <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />

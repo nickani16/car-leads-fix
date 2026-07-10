@@ -127,7 +127,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute left-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-100 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:opacity-0 md:group-hover:opacity-100"
+            className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:grid md:group-hover:opacity-100"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -139,7 +139,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute right-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-100 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:opacity-0 md:group-hover:opacity-100"
+            className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:grid md:group-hover:opacity-100"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

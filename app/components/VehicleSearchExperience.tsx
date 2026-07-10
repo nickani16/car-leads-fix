@@ -1934,7 +1934,6 @@ function VehicleResultCard({
           <div className="pointer-events-auto absolute right-3 top-3 z-30 scale-[.91] origin-top-right">
             <SavedListingButton listingId={listing.id} />
           </div>
-          <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full max-[420px]:h-6 max-[420px]:w-6" />
           <button
             type="button"
             aria-pressed={compareActive}
@@ -1990,6 +1989,10 @@ function VehicleResultCard({
             </div>
           </div>
         </div>
+        <CountryFlag
+          code={listing.country}
+          className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white max-[420px]:h-6 max-[420px]:w-6"
+        />
       </div>
     </article>
   )
@@ -2365,7 +2368,6 @@ function MapListingPreview({
           <span className={`absolute left-3 top-3 rounded-[8px] px-2.5 py-1 text-xs font-semibold shadow-sm ${sellerTrustClass}`}>
             {sellerTrustLabel}
           </span>
-          <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
         </div>
         <div className="min-w-0 pb-1 sm:py-1">
           <div className="flex items-start justify-between gap-3">
@@ -2397,6 +2399,10 @@ function MapListingPreview({
           </div>
         </div>
       </div>
+      <CountryFlag
+        code={listing.country}
+        className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+      />
     </div>
   )
 }

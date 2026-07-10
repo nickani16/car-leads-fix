@@ -1176,7 +1176,7 @@ export default function MarketplaceCategoryBrowser({
                 return (
                 <article
                   key={listing.id}
-                  className={`group overflow-hidden rounded-[8px] border bg-white shadow-[0_12px_36px_rgba(16,24,40,.07)] transition-colors hover:border-[#344054] ${
+                  className={`group relative overflow-hidden rounded-[8px] border bg-white shadow-[0_12px_36px_rgba(16,24,40,.07)] transition-colors hover:border-[#344054] ${
                     compared ? 'border-[#0866ff] ring-2 ring-[#0866ff]/10' : 'border-[#d9e1ec]'
                   }`}
                 >
@@ -1214,10 +1214,6 @@ export default function MarketplaceCategoryBrowser({
                         {copy.verified}
                       </span>
                     ) : null}
-                    <CountryFlag
-                      code={listing.country || 'eu'}
-                      className="absolute bottom-3 left-3 h-7 w-7 rounded-full"
-                    />
                     {compareEnabled ? (
                       <button
                         type="button"
@@ -1283,6 +1279,10 @@ export default function MarketplaceCategoryBrowser({
                       </Link>
                     </div>
                   </div>
+                  <CountryFlag
+                    code={listing.country || 'eu'}
+                    className="absolute bottom-3 right-3 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
+                  />
                   </div>
                 </article>
                 )
