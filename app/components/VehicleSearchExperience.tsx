@@ -504,6 +504,41 @@ export default function VehicleSearchExperience({
     sortBy,
   }), [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
+  const marketplaceSearchParams = useMemo(() => {
+    const params = new URLSearchParams()
+    const setParam = (key: string, value: string) => {
+      const cleanValue = value.trim()
+      if (cleanValue) params.set(key, cleanValue)
+    }
+    if (mode !== 'sale') params.set('mode', mode)
+    setParam('q', query)
+    if (selectedCategories.length) params.set('categories', selectedCategories.join(','))
+    if (marketOverride) {
+      params.set('markets', selectedMarkets.length ? selectedMarkets.join(',') : 'EU')
+    } else if (selectedMarkets.length && !sameMarketSelection(selectedMarkets, [safeAutomaticCountry])) {
+      params.set('markets', selectedMarkets.join(','))
+    }
+    setParam('make', make)
+    setParam('model', model)
+    setParam('minPrice', minPrice)
+    setParam('maxPrice', maxPrice)
+    setParam('minYear', minYear)
+    setParam('maxYear', maxYear)
+    setParam('maxMileage', maxMileage)
+    setParam('fuel', fuel)
+    setParam('gearbox', gearbox)
+    setParam('bodyType', bodyType)
+    setParam('condition', condition)
+    setParam('color', color)
+    if (sellerType !== 'all') params.set('sellerType', sellerType)
+    if (verifiedOnly) params.set('verifiedOnly', '1')
+    if (fourWheelDrive) params.set('fourWheelDrive', '1')
+    if (leasingPossible) params.set('leasingPossible', '1')
+    setParam('equipment', equipmentQuery)
+    if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
+    return params
+  }, [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, safeAutomaticCountry, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+
   useEffect(() => {
     if (hasExplicitInitialFilters) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
@@ -550,6 +585,16 @@ export default function VehicleSearchExperience({
     if (!searchStateReady) return
     writePersistedMarketplaceSearchState(locale, safeAutomaticCountry, currentSearchState)
   }, [currentSearchState, locale, safeAutomaticCountry, searchStateReady])
+
+  useEffect(() => {
+    if (!searchStateReady || typeof window === 'undefined') return
+    const nextQuery = marketplaceSearchParams.toString()
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(window.history.state, '', nextUrl)
+    }
+  }, [marketplaceSearchParams, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -749,38 +794,8 @@ export default function VehicleSearchExperience({
     if (savingSearch) return
     setSavingSearch(true)
     setSavedSearchMessage('')
-    const params = new URLSearchParams()
-    const setParam = (key: string, value: string) => {
-      const cleanValue = value.trim()
-      if (cleanValue) params.set(key, cleanValue)
-    }
-    if (mode !== 'sale') params.set('mode', mode)
-    setParam('q', query)
-    if (selectedCategories.length) params.set('categories', selectedCategories.join(','))
-    if (marketOverride) {
-      params.set('markets', selectedMarkets.length ? selectedMarkets.join(',') : 'EU')
-    } else if (selectedMarkets.length) {
-      params.set('markets', selectedMarkets.join(','))
-    }
-    setParam('make', make)
-    setParam('model', model)
-    setParam('minPrice', minPrice)
-    setParam('maxPrice', maxPrice)
-    setParam('minYear', minYear)
-    setParam('maxYear', maxYear)
-    setParam('maxMileage', maxMileage)
-    setParam('fuel', fuel)
-    setParam('gearbox', gearbox)
-    setParam('bodyType', bodyType)
-    setParam('condition', condition)
-    setParam('color', color)
-    if (sellerType !== 'all') params.set('sellerType', sellerType)
-    if (verifiedOnly) params.set('verifiedOnly', '1')
-    if (fourWheelDrive) params.set('fourWheelDrive', '1')
-    if (leasingPossible) params.set('leasingPossible', '1')
-    setParam('equipment', equipmentQuery)
-    if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
 
+    const params = marketplaceSearchParams
     const href = `/marketplace${params.size ? `?${params.toString()}` : ''}`
     const filterSnapshot = currentSearchState
     const name = query.trim() || selectedCategoryItems.map((item) => categoryText(item, locale, true)).join(', ') || marketSummary || uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge')

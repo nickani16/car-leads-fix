@@ -112,6 +112,20 @@ export default async function FindCarsPage({
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
         initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
         initialMode={getSearchMode(resolvedSearchParams)}
+        initialMinYear={getSearchParam(resolvedSearchParams, 'minYear') || ''}
+        initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear') || ''}
+        initialMaxMileage={getSearchParam(resolvedSearchParams, 'maxMileage') || ''}
+        initialFuel={getSearchParam(resolvedSearchParams, 'fuel') || ''}
+        initialGearbox={getSearchParam(resolvedSearchParams, 'gearbox') || ''}
+        initialBodyType={getSearchParam(resolvedSearchParams, 'bodyType') || ''}
+        initialCondition={getSearchParam(resolvedSearchParams, 'condition') || ''}
+        initialColor={getSearchParam(resolvedSearchParams, 'color') || ''}
+        initialSellerType={getSearchParam(resolvedSearchParams, 'sellerType') || 'all'}
+        initialVerifiedOnly={getBooleanSearchParam(resolvedSearchParams, 'verifiedOnly')}
+        initialFourWheelDrive={getBooleanSearchParam(resolvedSearchParams, 'fourWheelDrive')}
+        initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
+        initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment') || ''}
+        initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
       />
     </>
   )
@@ -142,4 +156,12 @@ function getSearchMode(
 ) {
   const value = (getSearchParam(params, 'mode') || getSearchParam(params, 'intent')).toLowerCase()
   return value === 'leasing' ? 'leasing' : 'sale'
+}
+
+function getBooleanSearchParam(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = getSearchParam(params, key).toLowerCase()
+  return value === '1' || value === 'true' || value === 'yes'
 }
