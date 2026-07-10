@@ -41,10 +41,11 @@ export default async function FindCarsPage({
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
   const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
     .map((value) => value.toUpperCase())
-    .filter((value) => euCountryCodes.has(value))
+    .filter((value) => value === 'EU' || euCountryCodes.has(value))
   const requestedCategories = getSearchParamList(resolvedSearchParams, 'categories')
+  const requestedCountryMarkets = requestedMarkets.filter((value) => value !== 'EU')
   const defaultCountry =
-    requestedMarkets[0] ||
+    requestedCountryMarkets[0] ||
     requestedCountry ||
     automaticCountry
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)

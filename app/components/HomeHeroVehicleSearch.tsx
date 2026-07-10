@@ -125,6 +125,8 @@ const marketOptions = [
   { code: 'EU', sv: 'Europa', en: 'Europe', de: 'Europa' },
 ]
 
+const allMarketsCode = 'EU'
+
 const copyByLocale = {
   sv: {
     title: 'Ett större utbud av fordon till salu',
@@ -343,11 +345,13 @@ export default function HomeHeroVehicleSearch({
 
   function toggleMarket(code: string) {
     setMarkets((current) => {
+      if (code === allMarketsCode) return [allMarketsCode]
+      const selectedCountries = current.filter((item) => item !== allMarketsCode)
       if (current.includes(code)) {
-        const next = current.filter((item) => item !== code)
-        return next.length ? next : current
+        const next = selectedCountries.filter((item) => item !== code)
+        return next.length ? next : [allMarketsCode]
       }
-      return [...current, code]
+      return [...selectedCountries, code]
     })
   }
 
@@ -374,7 +378,7 @@ export default function HomeHeroVehicleSearch({
     const trimmedQuery = query.trim()
     if (trimmedQuery) params.set('q', trimmedQuery)
     if (intent === 'leasing') params.set('intent', 'leasing')
-    if (markets.length) params.set('markets', markets.join(','))
+    if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
     if (selectedCategories.length > 1) params.set('categories', selectedCategories.join(','))
     Object.entries(advancedFilters).forEach(([key, value]) => {
@@ -403,10 +407,12 @@ export default function HomeHeroVehicleSearch({
     router.push(href)
   }
 
-  const selectedMarketsLabel = marketOptions
-    .filter((option) => markets.includes(option.code))
-    .map((option) => marketLabel(option, locale))
-    .join(', ')
+  const selectedMarketOptions = marketOptions.filter((option) => markets.includes(option.code))
+  const selectedMarketsLabel = markets.includes(allMarketsCode)
+    ? marketLabel(marketOptions.find((option) => option.code === allMarketsCode) || marketOptions[0], locale)
+    : selectedMarketOptions.length > 2
+      ? `${selectedMarketOptions.length} ${localizedLabel(locale, 'marknader', 'Märkte', 'markets')}`
+      : selectedMarketOptions.map((option) => marketLabel(option, locale)).join(', ')
 
   const searchAgain = lastSearch || {
     label: t.searchAgain,
@@ -530,7 +536,7 @@ export default function HomeHeroVehicleSearch({
               locale={locale}
               markets={markets}
               onToggle={toggleMarket}
-              className="absolute left-0 top-[calc(100%+8px)] z-50 w-[247px]"
+              className="absolute left-0 top-[calc(100%+8px)] z-50 w-[320px]"
             />
           ) : null}
         </div>
@@ -748,13 +754,15 @@ function MarketPicker({
             key={option.code}
             type="button"
             onClick={() => onToggle(option.code)}
-            className={`flex min-h-[44px] items-center justify-center rounded-[10px] border px-3 text-center text-sm !font-normal transition [&_*]:!font-normal ${
+            aria-pressed={selected}
+            className={`flex min-h-[44px] items-center justify-between gap-2 rounded-[10px] border px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
               selected
                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                 : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
             }`}
           >
             <span className="truncate !font-normal">{marketLabel(option, locale)}</span>
+            {selected ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.4} /> : null}
           </button>
         )
       })}

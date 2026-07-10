@@ -107,14 +107,10 @@ export default async function MarketplaceCategoryPage({
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
-  const requestedMarkets = getSearchParam(resolvedSearchParams, 'markets')
-    .split(',')
-    .map((value) => value.trim().toUpperCase())
-    .filter(Boolean)
-  const requestedCategories = getSearchParam(resolvedSearchParams, 'categories')
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean)
+  const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
+    .map((value) => value.toUpperCase())
+    .filter((value) => value === 'EU' || euCountryCodes.has(value))
+  const requestedCategories = getSearchParamList(resolvedSearchParams, 'categories')
   const automaticCountry =
     marketCode && euCountryCodes.has(marketCode.toUpperCase())
       ? marketCode.toUpperCase()
@@ -124,7 +120,7 @@ export default async function MarketplaceCategoryPage({
           ? 'DE'
           : ''
   const defaultCountry =
-    requestedMarkets[0] ||
+    requestedMarkets.find((value) => value !== 'EU') ||
     requestedCountry ||
     automaticCountry
   const locale: PublicLocale =
@@ -223,6 +219,18 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function getSearchParamList(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  const values = Array.isArray(value) ? value : [value]
+  return values
+    .flatMap((item) => String(item || '').split(','))
+    .map((item) => item.trim())
+    .filter(Boolean)
 }
 
 function getMarketplaceSeoCopy(

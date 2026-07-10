@@ -156,17 +156,20 @@ const countryFilterOptions = marketOptions.map((option) => ({
 }))
 
 const selectableMarketCodes = new Set(marketOptions.map((option) => option.value).filter(Boolean))
+const allMarketCodes = new Set(['EU', 'ALL'])
 
 function normalizeMarketSelection(values: string[], fallback = '') {
+  const rawValues = values
+    .flatMap((value) => String(value || '').split(','))
+    .map((value) => value.trim().toUpperCase())
+    .filter(Boolean)
   const normalized = [
     ...new Set(
-      values
-        .flatMap((value) => String(value || '').split(','))
-        .map((value) => value.trim().toUpperCase())
-        .filter((value) => selectableMarketCodes.has(value)),
+      rawValues.filter((value) => selectableMarketCodes.has(value)),
     ),
   ]
   if (normalized.length) return normalized
+  if (rawValues.some((value) => allMarketCodes.has(value))) return []
   const fallbackCode = fallback.trim().toUpperCase()
   return selectableMarketCodes.has(fallbackCode) ? [fallbackCode] : []
 }
@@ -501,7 +504,7 @@ export default function VehicleSearchExperience({
       return
     }
     setSelectedMarkets((current) => {
-      const normalized = normalizeMarketSelection(current, safeAutomaticCountry)
+      const normalized = normalizeMarketSelection(current)
       const next = normalized.includes(value)
         ? normalized.filter((item) => item !== value)
         : [...normalized, value]
@@ -514,7 +517,7 @@ export default function VehicleSearchExperience({
     setMake('')
     setModel('')
     setSelectedMarkets((current) => {
-      const next = normalizeMarketSelection(current, safeAutomaticCountry).filter((item) => item !== value)
+      const next = normalizeMarketSelection(current).filter((item) => item !== value)
       setMarketOverride(true)
       return next
     })
