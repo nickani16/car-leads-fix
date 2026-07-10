@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Fuel,
   Gauge,
+  Info,
   MapPin,
   ShieldCheck,
   Settings2,
@@ -114,6 +115,7 @@ type SellerDetails = SellerVerification & {
   address: string | null
   ratingAverage: number | null
   ratingCount: number
+  memberSinceYear: number | null
 }
 
 export async function generateListingMetadata({
@@ -516,43 +518,52 @@ export default async function ListingDetailPage({
               </div>
 
               <div className="border-t border-[#edf1f6] p-6">
-                <div className="grid gap-4">
-                  {listing.seller_type === 'business' && sellerDetails.logoUrl ? (
-                    <div className="inline-flex w-fit max-w-full rounded-[14px] border border-[#dfe6f2] bg-white px-4 py-3 shadow-sm">
-                      <Image
-                        src={sellerDetails.logoUrl}
-                        alt={sellerLabel}
-                        width={190}
-                        height={64}
-                        className="max-h-14 w-auto max-w-[210px] object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
-                      <ShieldCheck className="h-6 w-6" />
-                    </span>
-                  )}
-                  <div>
-                    <p className="text-lg font-semibold tracking-[-0.02em]">
-                      {sellerDisplayLabel}
-                    </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
-                      <span>{sellerTypeLabel}</span>
-                      <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
-                        <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
-                        {countryName || listing.country_code}
+                {listing.seller_type === 'private' ? (
+                  <PrivateSellerProfileCard
+                    name={sellerDisplayLabel}
+                    locale={locale}
+                    verification={sellerVerification}
+                    ratingAverage={sellerDetails.ratingAverage}
+                    ratingCount={sellerDetails.ratingCount}
+                    memberSinceYear={sellerDetails.memberSinceYear || yearFromDate(listing.created_at)}
+                  />
+                ) : (
+                  <div className="grid gap-4">
+                    {sellerDetails.logoUrl ? (
+                      <div className="inline-flex w-fit max-w-full rounded-[14px] border border-[#dfe6f2] bg-white px-4 py-3 shadow-sm">
+                        <Image
+                          src={sellerDetails.logoUrl}
+                          alt={sellerLabel}
+                          width={190}
+                          height={64}
+                          className="max-h-14 w-auto max-w-[210px] object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
+                        <ShieldCheck className="h-6 w-6" />
                       </span>
-                    </div>
-                    <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
-                      {sellerVerification.label}
-                    </span>
-                    {sellerDetails.ratingAverage && sellerDetails.ratingCount ? (
-                      <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#475467]">
-                        <span className="text-[#0866ff]">★</span>
-                        {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
+                    )}
+                    <div>
+                      <p className="text-lg font-semibold tracking-[-0.02em]">
+                        {sellerDisplayLabel}
                       </p>
-                    ) : null}
-                    {listing.seller_type === 'business' ? (
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
+                        <span>{sellerTypeLabel}</span>
+                        <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
+                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
+                          {countryName || listing.country_code}
+                        </span>
+                      </div>
+                      <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
+                        {sellerVerification.label}
+                      </span>
+                      {sellerDetails.ratingAverage && sellerDetails.ratingCount ? (
+                        <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#475467]">
+                          <span className="text-[#0866ff]">★</span>
+                          {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
+                        </p>
+                      ) : null}
                       <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
                         {sellerDetails.address ? (
                           <p className="inline-flex min-w-0 items-start gap-2">
@@ -572,17 +583,17 @@ export default async function ListingDetailPage({
                           </a>
                         ) : null}
                       </div>
-                    ) : null}
-                    <p className="mt-3 text-sm leading-6 text-[#667085]">
-                      {localizedLabel(
-                        locale,
-                        'Kontakt sker via Autorell så att köpare och säljare får en tydlig historik.',
-                        'Contact happens through Autorell so buyers and sellers have a clear history.',
-                        'Kontakt erfolgt über Autorell, damit Käufer und Verkäufer eine klare Historie haben.',
-                      )}
-                    </p>
+                      <p className="mt-3 text-sm leading-6 text-[#667085]">
+                        {localizedLabel(
+                          locale,
+                          'Kontakt sker via Autorell så att köpare och säljare får en tydlig historik.',
+                          'Contact happens through Autorell so buyers and sellers have a clear history.',
+                          'Kontakt erfolgt über Autorell, damit Käufer und Verkäufer eine klare Historie haben.',
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </aside>
@@ -660,6 +671,7 @@ async function getSellerDetails(
     address: null,
     ratingAverage: null,
     ratingCount: 0,
+    memberSinceYear: null,
   }
   const admin = createAdminClient()
   const { data: listing } = await admin
@@ -673,7 +685,7 @@ async function getSellerDetails(
   const [{ data: profile }, { data: reviews }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region')
+      .select('website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region,created_at')
       .eq('user_id', listing.seller_user_id)
       .maybeSingle(),
     admin
@@ -703,6 +715,7 @@ async function getSellerDetails(
     address: sellerType === 'business' ? textOrNull(addressLine) : null,
     ratingAverage,
     ratingCount,
+    memberSinceYear: yearFromDate(profile?.created_at),
   }
 
   if (sellerType === 'business') {
@@ -746,6 +759,61 @@ function sellerBadgeClass(tone: SellerVerification['tone']) {
   if (tone === 'verified') return 'bg-emerald-50 text-emerald-700'
   if (tone === 'pending') return 'bg-amber-50 text-amber-800'
   return 'bg-[#f2f4f7] text-[#475467]'
+}
+
+function PrivateSellerProfileCard({
+  name,
+  locale,
+  verification,
+  ratingAverage,
+  ratingCount,
+  memberSinceYear,
+}: {
+  name: string
+  locale: PublicLocale
+  verification: SellerVerification
+  ratingAverage: number | null
+  ratingCount: number
+  memberSinceYear: number | null
+}) {
+  const reviewLabel =
+    ratingCount === 1
+      ? localizedLabel(locale, '1 omdöme', '1 review', '1 Bewertung')
+      : ratingCount > 1
+        ? localizedLabel(locale, `${ratingCount} omdömen`, `${ratingCount} reviews`, `${ratingCount} Bewertungen`)
+        : localizedLabel(locale, 'Inga omdömen ännu', 'No reviews yet', 'Noch keine Bewertungen')
+  const memberSince = memberSinceYear
+    ? localizedLabel(locale, `På Autorell sedan ${memberSinceYear}`, `On Autorell since ${memberSinceYear}`, `Bei Autorell seit ${memberSinceYear}`)
+    : localizedLabel(locale, 'Privat säljare på Autorell', 'Private seller on Autorell', 'Privater Verkäufer bei Autorell')
+
+  return (
+    <div className="flex items-center gap-5 border-y border-[#dfe6f2] py-6">
+      <div className="relative h-[108px] w-[108px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
+        <div className="absolute left-1/2 top-[18px] h-[52px] w-[52px] -translate-x-1/2 rounded-full border-[5px] border-[#b9c6d4] bg-[#f8fbff]" />
+        <div className="absolute left-1/2 top-[74px] h-[76px] w-[92px] -translate-x-1/2 rounded-t-full border-[5px] border-[#b9c6d4] bg-[#f8fbff]" />
+        <div className="absolute left-[34px] top-[26px] h-[26px] w-[52px] rounded-b-full border-b-[5px] border-[#b9c6d4]" />
+      </div>
+      <div className="min-w-0">
+        <p className="flex min-w-0 items-center gap-2 text-xl font-semibold leading-7 tracking-[-0.02em] text-[#0866ff]">
+          <span className="truncate">{name}</span>
+          <Info className="h-4 w-4 shrink-0 text-[#344054]" />
+        </p>
+        <p className="mt-1 inline-flex items-center gap-2 text-base font-medium text-[#101828]">
+          <ShieldCheck className={`h-5 w-5 ${verification.tone === 'verified' ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} />
+          {verification.label}
+        </p>
+        <p className="mt-1 text-base font-medium text-[#101828]">{memberSince}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {ratingAverage && ratingCount ? (
+            <span className="rounded-[8px] bg-[#eef5ff] px-2.5 py-1.5 text-xl font-semibold leading-none text-[#0866ff]">
+              {ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })}
+            </span>
+          ) : null}
+          <span className="text-base font-semibold text-[#101828]">{reviewLabel}</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 async function getListingTechnicalDetails(listingId: string): Promise<ListingTechnicalDetails | null> {
@@ -950,6 +1018,12 @@ function getDaysLeft(value?: string | null) {
   const expiresAt = new Date(value).getTime()
   if (!Number.isFinite(expiresAt)) return null
   return Math.max(0, Math.ceil((expiresAt - Date.now()) / 86_400_000))
+}
+
+function yearFromDate(value?: string | null) {
+  if (!value) return null
+  const year = new Date(value).getFullYear()
+  return Number.isFinite(year) ? year : null
 }
 
 function formatDaysLeft(days: number | null, locale: PublicLocale) {
