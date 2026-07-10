@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   })
   if (rate.limited) return rateLimitJson(rate.retryAfter)
 
-  const input = searchParamsToInput(request.nextUrl.searchParams)
+  const input = Object.fromEntries(request.nextUrl.searchParams.entries()) as MarketplaceSearchInput
 
   try {
     const result = await searchMarketplaceListings(input)
@@ -29,13 +29,4 @@ export async function GET(request: NextRequest) {
       { status: 503, headers: { 'Cache-Control': 'no-store' } },
     )
   }
-}
-
-function searchParamsToInput(searchParams: URLSearchParams): MarketplaceSearchInput {
-  const input = Object.fromEntries(searchParams.entries()) as MarketplaceSearchInput
-  const markets = searchParams.getAll('markets')
-  const categories = searchParams.getAll('categories')
-  if (markets.length > 1) input.markets = markets.join(',')
-  if (categories.length > 1) input.categories = categories.join(',')
-  return input
 }
