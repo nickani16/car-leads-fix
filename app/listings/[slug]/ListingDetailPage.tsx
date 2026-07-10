@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
+import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingBackLink from '@/app/components/ListingBackLink'
@@ -344,14 +345,6 @@ export default async function ListingDetailPage({
             label={copy.backToListings}
           />
           <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
-            <div className="hidden sm:block">
-              <ShareListingButton
-                title={listing.title}
-                url={publicUrl}
-                label={copy.shareListing}
-                variant="plain"
-              />
-            </div>
             <SavedListingButton
               listingId={listing.id}
               label={copy.favoriteListing}
@@ -386,14 +379,6 @@ export default async function ListingDetailPage({
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
-                  <div className="mt-4 flex sm:hidden">
-                    <ShareListingButton
-                      title={listing.title}
-                      url={publicUrl}
-                      label={copy.shareListing}
-                      variant="plain"
-                    />
-                  </div>
                 </div>
               </div>
               {headlineFacts.length ? (
@@ -465,7 +450,7 @@ export default async function ListingDetailPage({
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-1">
-            <div className="overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_22px_60px_rgba(16,24,40,.12)]">
+            <div id="listing-contact-card" className="overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_22px_60px_rgba(16,24,40,.12)]">
               <div className="border-b border-[#edf1f6] p-6">
                 <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#667085]">
                   {localizedLabel(locale, 'Pris', 'Price', 'Preis')}
@@ -508,6 +493,14 @@ export default async function ListingDetailPage({
                   listingTitle={listing.title}
                   locale={locale}
                 />
+                <div className="flex justify-center py-1">
+                  <ShareListingButton
+                    title={listing.title}
+                    url={publicUrl}
+                    label={copy.shareListing}
+                    variant="plain"
+                  />
+                </div>
               </div>
 
               <div className="border-t border-[#edf1f6] p-6">
@@ -628,6 +621,11 @@ export default async function ListingDetailPage({
           </div>
         </section>
       </div>
+      <ListingMobileContactBar
+        listingId={listing.id}
+        locale={locale}
+        contactTargetId="listing-contact-card"
+      />
       <PublicFooter locale={locale} />
       <script
         type="application/ld+json"
