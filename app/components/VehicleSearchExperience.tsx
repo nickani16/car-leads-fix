@@ -2481,20 +2481,27 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
 
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
   const leasing = isLeasingListing(listing)
-  const baseColorClass = leasing ? 'bg-[#16a34a] hover:bg-[#15803d]' : 'bg-[#0866ff] hover:bg-[#0757da]'
+  const baseColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
   const pointColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
   const markerElement = document.createElement('button')
   markerElement.type = 'button'
   markerElement.setAttribute('aria-label', listing.title)
   markerElement.className = [
-    'group relative inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:shadow-[0_14px_34px_rgba(16,24,40,.28)] focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
-    baseColorClass,
-    active ? '-translate-y-1 scale-125 bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
+    'group relative grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-transparent transition-transform duration-200 hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
+    active ? '-translate-y-1 scale-110' : '',
   ].filter(Boolean).join(' ')
+
+  const dot = document.createElement('span')
+  dot.className = [
+    'relative z-10 block h-5 w-5 rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-all duration-200 group-hover:shadow-[0_14px_34px_rgba(16,24,40,.28)]',
+    baseColorClass,
+    active ? 'scale-125 bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
+  ].filter(Boolean).join(' ')
+  markerElement.appendChild(dot)
 
   const point = document.createElement('span')
   point.className = [
-    'absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-white transition-colors duration-200',
+    'absolute left-1/2 top-[31px] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-white transition-colors duration-200',
     pointColorClass,
     active ? 'bg-[#101828]' : '',
   ].filter(Boolean).join(' ')
