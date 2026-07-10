@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { useSearchParams } from 'next/navigation'
@@ -9,7 +8,6 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
   SlidersHorizontal,
   ImageIcon,
   LayoutGrid,
@@ -28,6 +26,7 @@ import {
 } from '@/lib/public-i18n'
 import SavedListingButton from './SavedListingButton'
 import CountryFlag from './CountryFlag'
+import ListingCardImageCarousel from './ListingCardImageCarousel'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips, translateListingVehicleValue } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
@@ -123,9 +122,6 @@ export default function MarketplaceCategoryBrowser({
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
   const [compareError, setCompareError] = useState('')
-  const [galleryIndices, setGalleryIndices] = useState<Record<string, number>>({})
-  const imageTouchStartRef = useRef<{ id: string; x: number; y: number } | null>(null)
-  const suppressImageClickRef = useRef<string | null>(null)
   const displayLocale = locale
   const localizedCategory = {
     ...localizeCategory(category, locale),
@@ -1167,15 +1163,6 @@ export default function MarketplaceCategoryBrowser({
                   : listing.imageUrl
                     ? [listing.imageUrl]
                     : []
-                const imageIndex = imageUrls.length
-                  ? Math.min(galleryIndices[listing.id] || 0, imageUrls.length - 1)
-                  : 0
-                const activeImageUrl = imageUrls[imageIndex] || null
-                const imageDotCount = Math.min(imageUrls.length, 5)
-                const activeImageDot =
-                  imageUrls.length > imageDotCount && imageDotCount > 1
-                    ? Math.round((imageIndex / (imageUrls.length - 1)) * (imageDotCount - 1))
-                    : imageIndex
                 const specChips = buildListingSpecChips(
                   {
                     fuelType: listing.fuelType,
@@ -1195,115 +1182,30 @@ export default function MarketplaceCategoryBrowser({
                 >
                   <div className={listingLayout === 'grid' ? 'grid min-w-0' : 'grid min-w-0 md:grid-cols-[300px_minmax(0,1fr)]'}>
                   <div
-                    onTouchStart={(event) => {
-                      if (imageUrls.length < 2) return
-                      const touch = event.touches[0]
-                      imageTouchStartRef.current = { id: listing.id, x: touch.clientX, y: touch.clientY }
-                    }}
-                    onTouchEnd={(event) => {
-                      const start = imageTouchStartRef.current
-                      if (!start || start.id !== listing.id || imageUrls.length < 2) return
-                      imageTouchStartRef.current = null
-                      const touch = event.changedTouches[0]
-                      const deltaX = touch.clientX - start.x
-                      const deltaY = touch.clientY - start.y
-                      if (Math.abs(deltaX) < 36 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return
-                      suppressImageClickRef.current = listing.id
-                      setGalleryIndices((current) => ({
-                        ...current,
-                        [listing.id]:
-                          deltaX < 0
-                            ? imageIndex >= imageUrls.length - 1
-                              ? 0
-                              : imageIndex + 1
-                            : imageIndex <= 0
-                              ? imageUrls.length - 1
-                              : imageIndex - 1,
-                      }))
-                      window.setTimeout(() => {
-                        if (suppressImageClickRef.current === listing.id) suppressImageClickRef.current = null
-                      }, 0)
-                    }}
                     className={
                       listingLayout === 'grid'
                         ? 'relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]'
                         : 'relative min-h-[230px] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)] md:h-full'
                     }
                   >
-                    <Link
+                    <ListingCardImageCarousel
+                      images={imageUrls}
+                      title={listing.title}
                       href={detailHref}
-                      onClick={(event) => {
-                        if (suppressImageClickRef.current !== listing.id) return
-                        event.preventDefault()
-                        suppressImageClickRef.current = null
-                      }}
-                      className="absolute inset-0 block"
-                    >
-                    {activeImageUrl ? (
-                      <Image
-                        src={activeImageUrl}
-                        alt={listing.title}
-                        fill
-                        sizes={listingLayout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw' : '(max-width: 768px) 100vw, 300px'}
-                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <>
-                        <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />
-                        <div className="absolute inset-0 grid place-items-center text-[#0866ff]">
-                          <span className="grid h-16 w-16 place-items-center rounded-[20px] border border-white bg-white/75 shadow-sm backdrop-blur">
-                            <ImageIcon className="h-7 w-7" />
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    </Link>
-                    {imageUrls.length > 1 ? (
-                      <>
-                        <button
-                          type="button"
-                          aria-label={copy.previousPhoto}
-                          onClick={(event) => {
-                            event.preventDefault()
-                            event.stopPropagation()
-                            setGalleryIndices((current) => ({
-                              ...current,
-                              [listing.id]: imageIndex <= 0 ? imageUrls.length - 1 : imageIndex - 1,
-                            }))
-                          }}
-                          className="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
-                        >
-                          <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={copy.nextPhoto}
-                          onClick={(event) => {
-                            event.preventDefault()
-                            event.stopPropagation()
-                            setGalleryIndices((current) => ({
-                              ...current,
-                              [listing.id]: imageIndex >= imageUrls.length - 1 ? 0 : imageIndex + 1,
-                            }))
-                          }}
-                          className="absolute right-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/95 text-[#101828] opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.22)] transition hover:bg-white hover:text-[#0866ff] group-hover:opacity-100 md:grid"
-                        >
-                          <ChevronRight className="h-5 w-5" />
-                        </button>
-                      </>
-                    ) : null}
-                    {imageDotCount > 1 ? (
-                      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.18)] md:hidden">
-                        {Array.from({ length: imageDotCount }).map((_, dotIndex) => (
-                          <span
-                            key={`${listing.id}-image-dot-${dotIndex}`}
-                            className={`h-1.5 rounded-full transition ${
-                              dotIndex === activeImageDot ? 'w-3 bg-[#0866ff]' : 'w-1.5 bg-[#d2d8e3]'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    ) : null}
+                      sizes={listingLayout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw' : '(max-width: 768px) 100vw, 300px'}
+                      previousLabel={copy.previousPhoto}
+                      nextLabel={copy.nextPhoto}
+                      placeholder={
+                        <>
+                          <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />
+                          <div className="absolute inset-0 grid place-items-center text-[#0866ff]">
+                            <span className="grid h-16 w-16 place-items-center rounded-[20px] border border-white bg-white/75 shadow-sm backdrop-blur">
+                              <ImageIcon className="h-7 w-7" />
+                            </span>
+                          </div>
+                        </>
+                      }
+                    />
                     <div className="absolute right-4 top-4">
                       <SavedListingButton listingId={listing.id} />
                     </div>
@@ -1682,19 +1584,19 @@ function CompareOverlay({
               <article key={listing.id} className="border-r border-[#dfe5ef]">
                 <div className="p-4 sm:p-6">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#edf4ff]">
-                    {listing.imageUrl ? (
-                      <Image
-                        src={listing.imageUrl}
-                        alt={listing.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="grid h-full place-items-center text-[#0866ff]">
-                        <ImageIcon className="h-10 w-10" />
-                      </div>
-                    )}
+                    <ListingCardImageCarousel
+                      images={listing.imageUrls?.length ? listing.imageUrls : listing.imageUrl ? [listing.imageUrl] : []}
+                      title={listing.title}
+                      href={detailHref}
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      previousLabel={copy.previousPhoto}
+                      nextLabel={copy.nextPhoto}
+                      placeholder={
+                        <div className="grid h-full place-items-center text-[#0866ff]">
+                          <ImageIcon className="h-10 w-10" />
+                        </div>
+                      }
+                    />
                     <button
                       type="button"
                       onClick={() => onRemove(listing.id)}

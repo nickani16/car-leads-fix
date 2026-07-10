@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
         priceValue: Number(listing.price),
         imageAvailable: Boolean(listing.images?.[0]),
         imageUrl: listing.images?.[0] || null,
+        imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
         sellerName: listing.seller_name,
         sellerIsTrader: listing.seller_type === 'business',
         sellerTrust: sellerTrust.get(listing.seller_user_id || '') || 'unverified',

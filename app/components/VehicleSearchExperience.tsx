@@ -24,6 +24,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
+import ListingCardImageCarousel from './ListingCardImageCarousel'
 import {
   AutorellAgricultureIcon,
   AutorellAllCategoriesIcon,
@@ -1563,10 +1564,13 @@ function VehicleResultCard({
           layout === 'split' ? 'aspect-[4/3] min-h-[138px]' : 'h-[246px] sm:h-[174px]'
         }`}>
           {listing.imageUrls.length ? (
-            <ListingImageScroller
+            <ListingCardImageCarousel
               images={listing.imageUrls}
               title={listing.title}
+              href={href}
               sizes={layout === 'split' ? '(max-width: 560px) 100vw, 50vw' : '(max-width: 640px) 100vw, 260px'}
+              previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
+              nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -1979,12 +1983,15 @@ function MapListingPreview({
         </button>
       </div>
       <div className="grid gap-4 p-3 sm:grid-cols-[260px_minmax(0,1fr)] sm:p-4">
-        <Link href={href} className="relative block aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+        <div className="relative block aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
           {listing.imageUrls.length ? (
-            <ListingImageScroller
+            <ListingCardImageCarousel
               images={listing.imageUrls}
               title={listing.title}
+              href={href}
               sizes="(max-width: 640px) 100vw, 260px"
+              previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
+              nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
           ) : (
             <div className="grid h-full place-items-center text-[#0866ff]">
@@ -1992,7 +1999,7 @@ function MapListingPreview({
             </div>
           )}
           <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
-        </Link>
+        </div>
         <div className="min-w-0 pb-1 sm:py-1">
           <div className="flex items-start justify-between gap-3">
             <Link href={href} className="min-w-0">
@@ -2045,32 +2052,6 @@ function MetaSeparatorList({
         </span>
       ))}
     </p>
-  )
-}
-
-function ListingImageScroller({
-  images,
-  title,
-  sizes,
-}: {
-  images: string[]
-  title: string
-  sizes: string
-}) {
-  return (
-    <div className="pointer-events-auto relative z-30 flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {images.map((image, index) => (
-        <span key={`${image}-${index}`} className="relative h-full w-full shrink-0 snap-center">
-          <Image
-            src={image}
-            alt={index === 0 ? title : `${title} ${index + 1}`}
-            fill
-            sizes={sizes}
-            className="object-cover transition duration-500 group-hover:scale-[1.02]"
-          />
-        </span>
-      ))}
-    </div>
   )
 }
 

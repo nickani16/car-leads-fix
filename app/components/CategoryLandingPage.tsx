@@ -37,6 +37,7 @@ import CategoryHeroSearch from './CategoryHeroSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import CountryFlag from './CountryFlag'
+import ListingCardImageCarousel from './ListingCardImageCarousel'
 
 type LandingTopListing = {
   id: string
@@ -45,6 +46,7 @@ type LandingTopListing = {
   countryCode: string
   price: string
   imageUrl: string | null
+  imageUrls: string[]
   tag: string
   fuelType: string | null
   gearbox: string | null
@@ -375,6 +377,7 @@ async function getLandingListings(
           .join(' | '),
         price: price.label,
         imageUrl: listing.images?.[0] || null,
+        imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
         countryCode: listing.country_code,
         tag: listing.body_type || listing.condition || 'Featured',
         fuelType: listing.fuel_type,
@@ -426,24 +429,22 @@ function ListingCard({
   )
 
   return (
-    <Link
-      href={localizePublicHref(
-        locale,
-        buildListingPath({
-          id: listing.id,
-          title: listing.title,
-        }),
-      )}
-      className="group overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.1)]"
-    >
+    <article className="group overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.1)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#edf4ff]">
-        {listing.imageUrl ? (
-          <Image
-            src={listing.imageUrl}
-            alt={listing.title}
-            fill
+        {listing.imageUrls.length ? (
+          <ListingCardImageCarousel
+            images={listing.imageUrls}
+            title={listing.title}
+            href={localizePublicHref(
+              locale,
+              buildListingPath({
+                id: listing.id,
+                title: listing.title,
+              }),
+            )}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
+            previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
+            nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
           />
         ) : (
           <div className="grid h-full place-items-center text-[#0866ff]">
@@ -462,7 +463,18 @@ function ListingCard({
         />
       </div>
       <div className="p-3 sm:p-4">
-        <h3 className="line-clamp-2 min-h-[36px] text-[13px] font-bold leading-[18px] sm:min-h-[40px] sm:text-sm sm:leading-5">{listing.title}</h3>
+        <Link
+          href={localizePublicHref(
+            locale,
+            buildListingPath({
+              id: listing.id,
+              title: listing.title,
+            }),
+          )}
+          className="block hover:text-[#0866ff]"
+        >
+          <h3 className="line-clamp-2 min-h-[36px] text-[13px] font-bold leading-[18px] sm:min-h-[40px] sm:text-sm sm:leading-5">{listing.title}</h3>
+        </Link>
         <p className="mt-2 line-clamp-2 text-[11px] font-medium leading-4 text-[#667085] sm:text-xs">{listing.meta}</p>
         {specChips.length ? (
           <div className="mt-3 hidden flex-wrap gap-1.5 sm:flex">
@@ -478,7 +490,7 @@ function ListingCard({
         ) : null}
         <p className="mt-3 text-sm font-bold tracking-[-0.03em] sm:mt-4 sm:text-base">{listing.price}</p>
       </div>
-    </Link>
+    </article>
   )
 }
 

@@ -5,6 +5,7 @@ import CountryFlag from './CountryFlag'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
+import ListingCardImageCarousel from './ListingCardImageCarousel'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
@@ -293,15 +294,16 @@ function HomeListingCard({
   locale: PublicLocale
 }) {
   return (
-    <Link
-      href={item.href}
-      className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,24,40,.12)] sm:w-auto sm:max-w-none"
-    >
+    <article className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,24,40,.12)] sm:w-auto sm:max-w-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
         {item.imageUrls.length ? (
-          <HomeListingImageScroller
+          <ListingCardImageCarousel
             images={item.imageUrls}
             title={item.title}
+            href={item.href}
+            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw"
+            previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
+            nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
           />
         ) : (
           <NoPhotoFrame className="h-full w-full border-0" compact locale={locale} />
@@ -318,37 +320,15 @@ function HomeListingCard({
         <CountryFlag code={item.countryCode} className="absolute bottom-3 left-3 h-7 w-7 rounded-full shadow-md" />
       </div>
       <div className="p-3">
-        <h3 className="line-clamp-2 text-[15px] font-medium leading-5 text-[#101828] transition group-hover:text-[#0866ff]">
-          {item.title}
-        </h3>
+        <Link href={item.href} className="block">
+          <h3 className="line-clamp-2 text-[15px] font-medium leading-5 text-[#101828] transition hover:text-[#0866ff]">
+            {item.title}
+          </h3>
+        </Link>
         <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
         <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
       </div>
-    </Link>
-  )
-}
-
-function HomeListingImageScroller({
-  images,
-  title,
-}: {
-  images: string[]
-  title: string
-}) {
-  return (
-    <div className="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {images.map((image, index) => (
-        <span key={`${image}-${index}`} className="relative h-full w-full shrink-0 snap-center">
-          <Image
-            src={image}
-            alt={index === 0 ? title : `${title} ${index + 1}`}
-            fill
-            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition duration-500 group-hover:scale-[1.03]"
-          />
-        </span>
-      ))}
-    </div>
+    </article>
   )
 }
 

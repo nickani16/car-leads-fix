@@ -1,12 +1,12 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, ImageIcon, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { MarketplaceListing } from './MarketplaceCategoryBrowser'
 import SavedListingButton from './SavedListingButton'
 import CountryFlag from './CountryFlag'
+import ListingCardImageCarousel from './ListingCardImageCarousel'
 import {
   readSavedListingIds,
   SAVED_LISTINGS_EVENT,
@@ -121,16 +121,14 @@ export default function SavedListingsClient({
                 className="overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_12px_38px_rgba(16,24,40,.06)]"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(145deg,#edf3ff,#dce8ff)]">
-                  <Link href={detailHref} className="absolute inset-0 block">
-                    {listing.imageUrl ? (
-                      <Image
-                        src={listing.imageUrl}
-                        alt={listing.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                        className="object-cover"
-                      />
-                    ) : (
+                  <ListingCardImageCarousel
+                    images={listing.imageUrls?.length ? listing.imageUrls : listing.imageUrl ? [listing.imageUrl] : []}
+                    title={listing.title}
+                    href={detailHref}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    previousLabel="Föregående bild"
+                    nextLabel="Nästa bild"
+                    placeholder={
                       <>
                         <div className="market-blob absolute -right-16 -top-20 h-56 w-56 bg-white/65" />
                         <div className="absolute inset-0 grid place-items-center text-[#0866ff]">
@@ -139,8 +137,8 @@ export default function SavedListingsClient({
                           </span>
                         </div>
                       </>
-                    )}
-                  </Link>
+                    }
+                  />
                   <div className="absolute right-4 top-4">
                     <SavedListingButton listingId={listing.id} />
                   </div>
