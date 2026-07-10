@@ -15,6 +15,7 @@ type ListingCardImageCarouselProps = {
   previousLabel?: string
   nextLabel?: string
   placeholder?: ReactNode
+  onNavigate?: () => void
 }
 
 export default function ListingCardImageCarousel({
@@ -27,6 +28,7 @@ export default function ListingCardImageCarousel({
   previousLabel = 'Previous photo',
   nextLabel = 'Next photo',
   placeholder,
+  onNavigate,
 }: ListingCardImageCarouselProps) {
   const [imageIndex, setImageIndex] = useState(0)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -92,9 +94,12 @@ export default function ListingCardImageCarousel({
         <Link
           href={href}
           onClick={(event) => {
-            if (!suppressClickRef.current) return
-            event.preventDefault()
-            suppressClickRef.current = false
+            if (suppressClickRef.current) {
+              event.preventDefault()
+              suppressClickRef.current = false
+              return
+            }
+            onNavigate?.()
           }}
           className="absolute inset-0 z-0 block"
         >

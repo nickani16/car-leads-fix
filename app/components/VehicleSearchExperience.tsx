@@ -72,8 +72,11 @@ type SavedVehicleSearch = {
     fourWheelDrive: boolean
     leasingPossible: boolean
     equipmentQuery: string
+    sortBy?: string
   }
 }
+
+type MarketplaceReturnSearchState = SavedVehicleSearch['filters']
 
 export type VehicleSearchListing = {
   id: string
@@ -108,6 +111,9 @@ const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: s
   { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Fordon till salu', hint: 'Privata och företag' },
   { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
 ]
+
+const MARKETPLACE_RETURN_SEARCH_STATE_KEY = 'autorell:marketplace-return-search'
+const MARKETPLACE_RETURN_SEARCH_ARMED_KEY = 'autorell:marketplace-return-search-armed'
 
 const categories = [
   { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellAllCategoriesIcon },
@@ -186,6 +192,45 @@ function sameMarketSelection(left: string[], right: string[]) {
 function matchesSelectedMarkets(country: string, markets: string[]) {
   const selected = normalizeMarketSelection(markets)
   return !selected.length || selected.includes(country)
+}
+
+function normalizeSavedCategories(values: unknown) {
+  const rawValues = Array.isArray(values) ? values : []
+  return [
+    ...new Set(
+      rawValues
+        .map((value) => String(value || '').trim())
+        .filter((value) => categories.some((category) => category.key === value && value !== 'all')),
+    ),
+  ]
+}
+
+function readMarketplaceReturnSearchState(locale: PublicLocale) {
+  if (typeof window === 'undefined') return null
+  try {
+    if (window.sessionStorage.getItem(MARKETPLACE_RETURN_SEARCH_ARMED_KEY) !== '1') return null
+    const raw = window.sessionStorage.getItem(MARKETPLACE_RETURN_SEARCH_STATE_KEY)
+    window.sessionStorage.removeItem(MARKETPLACE_RETURN_SEARCH_ARMED_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { locale?: PublicLocale; state?: MarketplaceReturnSearchState }
+    if (parsed.locale && parsed.locale !== locale) return null
+    return parsed.state || null
+  } catch {
+    return null
+  }
+}
+
+function writeMarketplaceReturnSearchState(locale: PublicLocale, state: MarketplaceReturnSearchState) {
+  if (typeof window === 'undefined') return
+  try {
+    window.sessionStorage.setItem(
+      MARKETPLACE_RETURN_SEARCH_STATE_KEY,
+      JSON.stringify({ locale, state, savedAt: new Date().toISOString() }),
+    )
+    window.sessionStorage.setItem(MARKETPLACE_RETURN_SEARCH_ARMED_KEY, '1')
+  } catch {
+    // sessionStorage can be unavailable; navigation should still work.
+  }
 }
 
 function isLeasingListing(listing: VehicleSearchListing) {
@@ -336,6 +381,31 @@ export default function VehicleSearchExperience({
     initialMarkets.length ? initialMarkets : [safeInitialCountry],
     safeAutomaticCountry,
   )
+  const hasExplicitInitialFilters = Boolean(
+    initialMarkets.length ||
+      initialCategories.length ||
+      safeInitialCategory !== 'all' ||
+      initialQuery ||
+      initialMake ||
+      initialModel ||
+      initialMinPrice ||
+      initialMaxPrice ||
+      initialMode !== 'sale' ||
+      initialMinYear ||
+      initialMaxYear ||
+      initialMaxMileage ||
+      initialFuel ||
+      initialGearbox ||
+      initialBodyType ||
+      initialCondition ||
+      initialColor ||
+      (initialSellerType && initialSellerType !== 'all') ||
+      initialVerifiedOnly ||
+      initialFourWheelDrive ||
+      initialLeasingPossible ||
+      initialEquipmentQuery ||
+      (initialSortBy && initialSortBy !== 'published'),
+  )
   const [mode, setMode] = useState<SearchMode>(initialMode === 'leasing' ? 'leasing' : 'sale')
   const [query, setQuery] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
@@ -367,6 +437,39 @@ export default function VehicleSearchExperience({
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
+
+  useEffect(() => {
+    if (hasExplicitInitialFilters) return
+    const restored = readMarketplaceReturnSearchState(locale)
+    if (!restored) return
+
+    const timer = window.setTimeout(() => {
+      setMode(restored.mode === 'leasing' ? 'leasing' : 'sale')
+      setQuery(restored.query || '')
+      setSelectedCategories(normalizeSavedCategories(restored.categories))
+      setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
+      setMarketOverride(true)
+      setMinPrice(restored.minPrice || '')
+      setMaxPrice(restored.maxPrice || '')
+      setMinYear(restored.minYear || '')
+      setMaxYear(restored.maxYear || '')
+      setMaxMileage(restored.maxMileage || '')
+      setMake(restored.make || '')
+      setModel(restored.model || '')
+      setFuel(restored.fuel || '')
+      setGearbox(restored.gearbox || '')
+      setBodyType(restored.bodyType || '')
+      setCondition(restored.condition || '')
+      setColor(restored.color || '')
+      setSellerType(restored.sellerType || 'all')
+      setVerifiedOnly(Boolean(restored.verifiedOnly))
+      setFourWheelDrive(Boolean(restored.fourWheelDrive))
+      setLeasingPossible(Boolean(restored.leasingPossible))
+      setEquipmentQuery(restored.equipmentQuery || '')
+      setSortBy(restored.sortBy || 'published')
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [hasExplicitInitialFilters, locale, safeAutomaticCountry])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -698,6 +801,33 @@ export default function VehicleSearchExperience({
     } catch {
       setSavedSearchMessage(uiText(locale, 'Could not save search', 'Kunde inte spara sökningen', 'Suche konnte nicht gespeichert werden'))
     }
+  }
+
+  function rememberSearchBeforeListingNavigation() {
+    writeMarketplaceReturnSearchState(locale, {
+      mode,
+      query: query.trim(),
+      categories: selectedCategories,
+      markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
+      make,
+      model,
+      minPrice,
+      maxPrice,
+      minYear,
+      maxYear,
+      maxMileage,
+      fuel,
+      gearbox,
+      bodyType,
+      condition,
+      color,
+      sellerType,
+      verifiedOnly,
+      fourWheelDrive,
+      leasingPossible,
+      equipmentQuery: equipmentQuery.trim(),
+      sortBy,
+    })
   }
 
   const toggleCompare = (listingId: string) => {
@@ -1178,6 +1308,7 @@ export default function VehicleSearchExperience({
                       locale={locale}
                       compareActive={compareIds.includes(listing.id)}
                       onCompare={() => toggleCompare(listing.id)}
+                      onBeforeNavigate={rememberSearchBeforeListingNavigation}
                       layout={resultsLayout}
                     />
                   ))}
@@ -1222,6 +1353,7 @@ export default function VehicleSearchExperience({
                 setFiltersOpen(true)
               }}
               onSaveSearch={saveCurrentSearch}
+              onBeforeListingNavigate={rememberSearchBeforeListingNavigation}
               saveSearchButtonLabel={saveSearchButtonLabel}
               saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
               saveSearchBusy={savingSearch}
@@ -1655,12 +1787,14 @@ function VehicleResultCard({
   locale,
   compareActive,
   onCompare,
+  onBeforeNavigate,
   layout = 'single',
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
   compareActive: boolean
   onCompare: () => void
+  onBeforeNavigate: () => void
   layout?: ResultsLayout
 }) {
   const href = localizePublicHref(
@@ -1693,7 +1827,7 @@ function VehicleResultCard({
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
       layout === 'split' ? 'mx-0 px-3 py-4 min-[560px]:border-r sm:px-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
     }`}>
-      <Link href={href} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
+      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
       <div className={`pointer-events-none relative z-20 grid gap-4 ${
         layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
       }`}>
@@ -1705,6 +1839,7 @@ function VehicleResultCard({
               images={listing.imageUrls}
               title={listing.title}
               href={href}
+              onNavigate={onBeforeNavigate}
               sizes={layout === 'split' ? '(max-width: 560px) 100vw, 50vw' : '(max-width: 640px) 100vw, 260px'}
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
@@ -1787,6 +1922,7 @@ function VehicleSearchMap({
   onCloseMobileMap,
   onOpenFilters,
   onSaveSearch,
+  onBeforeListingNavigate,
   saveSearchButtonLabel,
   saveSearchActive,
   saveSearchBusy,
@@ -1800,6 +1936,7 @@ function VehicleSearchMap({
   onCloseMobileMap?: () => void
   onOpenFilters: () => void
   onSaveSearch: () => void
+  onBeforeListingNavigate: () => void
   saveSearchButtonLabel: string
   saveSearchActive: boolean
   saveSearchBusy: boolean
@@ -2063,6 +2200,7 @@ function VehicleSearchMap({
           listing={selectedListing}
           locale={locale}
           onClose={() => setSelectedListing(null)}
+          onBeforeNavigate={onBeforeListingNavigate}
           mobileOverlay={mobileOverlay}
         />
       ) : null}
@@ -2074,11 +2212,13 @@ function MapListingPreview({
   listing,
   locale,
   onClose,
+  onBeforeNavigate,
   mobileOverlay,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
   onClose: () => void
+  onBeforeNavigate: () => void
   mobileOverlay?: boolean
 }) {
   const href = localizePublicHref(
@@ -2121,6 +2261,7 @@ function MapListingPreview({
               images={listing.imageUrls}
               title={listing.title}
               href={href}
+              onNavigate={onBeforeNavigate}
               sizes="(max-width: 640px) 100vw, 260px"
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
@@ -2134,7 +2275,7 @@ function MapListingPreview({
         </div>
         <div className="min-w-0 pb-1 sm:py-1">
           <div className="flex items-start justify-between gap-3">
-            <Link href={href} className="min-w-0">
+            <Link href={href} onClick={onBeforeNavigate} className="min-w-0">
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
               <p className="mt-1 line-clamp-1 text-sm font-medium text-[#667085]">{location}</p>
             </Link>
