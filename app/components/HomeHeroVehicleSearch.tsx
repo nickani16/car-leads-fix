@@ -4,6 +4,7 @@ import {
   FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentType,
   type SVGProps,
@@ -29,8 +30,18 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
-import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import {
+  localizePublicHref,
+  translatePublic,
+  translatePublicObject,
+  type PublicLocale,
+} from '@/lib/public-i18n'
+import {
+  getMarketplaceCategory,
+  marketplaceLanguage,
+  type MarketplaceCategorySlug,
+} from '@/lib/marketplace'
+import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 
 type Intent = 'sale' | 'leasing'
 
@@ -100,6 +111,14 @@ const categories = [
 }>
 
 const marketOptions = [
+  { code: 'AT', sv: 'Österrike', en: 'Austria', de: 'Österreich' },
+  { code: 'BE', sv: 'Belgien', en: 'Belgium', de: 'Belgien' },
+  { code: 'ES', sv: 'Spanien', en: 'Spain', de: 'Spanien' },
+  { code: 'FR', sv: 'Frankrike', en: 'France', de: 'Frankreich' },
+  { code: 'IT', sv: 'Italien', en: 'Italy', de: 'Italien' },
+  { code: 'PL', sv: 'Polen', en: 'Poland', de: 'Polen' },
+  { code: 'NL', sv: 'Nederlander', en: 'Netherlands', de: 'Niederlande' },
+  { code: 'FI', sv: 'Finland', en: 'Finland', de: 'Finnland' },
   { code: 'SE', sv: 'Sverige', en: 'Sweden', de: 'Schweden' },
   { code: 'DE', sv: 'Tyskland', en: 'Germany', de: 'Deutschland' },
   { code: 'DK', sv: 'Danmark', en: 'Denmark', de: 'Dänemark' },
@@ -205,7 +224,27 @@ function marketLabel(
 ) {
   if (locale === 'sv') return option.sv
   if (locale === 'de') return option.de
-  return option.en
+  return locale === 'en' ? option.en : translatePublic(locale, option.en)
+}
+
+function localizedLabel(
+  locale: PublicLocale,
+  sv: string,
+  de: string,
+  en: string,
+) {
+  if (locale === 'sv') return sv
+  if (locale === 'de') return de
+  return locale === 'en' ? en : translatePublic(locale, en)
+}
+
+function categoryLabel(slug: MarketplaceCategorySlug, locale: PublicLocale) {
+  const category = getMarketplaceCategory(slug)
+  const language = marketplaceLanguage(locale)
+  const label = category.labels[language]
+  return locale === 'sv' || locale === 'de' || locale === 'en'
+    ? label
+    : translatePublic(locale, category.labels.en)
 }
 
 export default function HomeHeroVehicleSearch({
@@ -219,7 +258,9 @@ export default function HomeHeroVehicleSearch({
       ? copyByLocale.de
       : locale === 'en'
         ? copyByLocale.en
-        : copyByLocale.sv
+        : locale === 'sv'
+          ? copyByLocale.sv
+          : translatePublicObject(locale, copyByLocale.en)
   const [intent, setIntent] = useState<Intent>('sale')
   const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
   const [query, setQuery] = useState('')
@@ -234,13 +275,14 @@ export default function HomeHeroVehicleSearch({
     gearbox: '',
   })
   const [markets, setMarkets] = useState<string[]>(() => [
-    locale === 'de' ? 'DE' : locale === 'sv' ? 'SE' : 'EU',
+    defaultSearchCountryForLocale(locale) || 'EU',
   ])
   const [marketsOpen, setMarketsOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
+  const moreFiltersRef = useRef<HTMLDivElement>(null)
 
   const selectedRoute = useMemo(() => {
     if (selectedCategories.length === 1) {
@@ -251,15 +293,23 @@ export default function HomeHeroVehicleSearch({
   const selectedCategory =
     categories.find((item) => item.slug === selectedCategories[0]) || categories[0]
   const SelectedCategoryIcon = selectedCategory.icon
-  const allVehiclesLabel =
-    locale === 'sv' ? 'Alla fordon' : locale === 'de' ? 'Alle Fahrzeuge' : 'All vehicles'
-  const chooseCategoryLabel =
-    locale === 'sv' ? 'Välj kategori' : locale === 'de' ? 'Kategorie wählen' : 'Choose category'
+  const allVehiclesLabel = localizedLabel(
+    locale,
+    'Alla fordon',
+    'Alle Fahrzeuge',
+    'All vehicles',
+  )
+  const chooseCategoryLabel = localizedLabel(
+    locale,
+    'Välj kategori',
+    'Kategorie wählen',
+    'Choose category',
+  )
   const selectedCategoryLabel =
     selectedCategories.length === 1
-      ? selectedCategory.label
+      ? categoryLabel(selectedCategory.slug, locale)
       : selectedCategories.length > 1
-        ? `${selectedCategories.length} kategorier`
+        ? `${selectedCategories.length} ${localizedLabel(locale, 'kategorier', 'Kategorien', 'categories')}`
         : chooseCategoryLabel
 
   useEffect(() => {
@@ -276,6 +326,20 @@ export default function HomeHeroVehicleSearch({
 
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (!moreFiltersOpen) return
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (moreFiltersRef.current?.contains(target)) return
+      setMoreFiltersOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [moreFiltersOpen])
 
   function toggleMarket(code: string) {
     setMarkets((current) => {
@@ -323,7 +387,7 @@ export default function HomeHeroVehicleSearch({
       `${selectedRoute}${params.size ? `?${params}` : ''}`,
     )
     const savedSearch = {
-      label: `${locale === 'sv' ? 'Sök igen' : locale === 'de' ? 'Erneut suchen' : 'Search again'}: ${
+      label: `${localizedLabel(locale, 'Sök igen', 'Erneut suchen', 'Search again')}: ${
         trimmedQuery || (selectedCategories.length ? selectedCategoryLabel : allVehiclesLabel)
       }`,
       subLabel: t.tabs[intent],
@@ -487,7 +551,7 @@ export default function HomeHeroVehicleSearch({
           </button>
           {categoryOpen ? (
             <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
-              {categories.map(({ slug, label, icon: Icon }) => (
+              {categories.map(({ slug, icon: Icon }) => (
                 <button
                   key={slug}
                   type="button"
@@ -499,7 +563,7 @@ export default function HomeHeroVehicleSearch({
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate !font-normal">{label}</span>
+                  <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
                 </button>
               ))}
             </div>
@@ -507,7 +571,7 @@ export default function HomeHeroVehicleSearch({
         </div>
 
         <div className="mt-8 hidden grid-cols-3 gap-2 lg:grid">
-          {categories.slice(0, 6).map(({ slug, label, icon: Icon }) => (
+          {categories.slice(0, 6).map(({ slug, icon: Icon }) => (
             <button
               key={slug}
               type="button"
@@ -520,7 +584,7 @@ export default function HomeHeroVehicleSearch({
               }`}
             >
               <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-              <span className="truncate !font-normal">{label}</span>
+              <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
             </button>
           ))}
         </div>
@@ -544,7 +608,7 @@ export default function HomeHeroVehicleSearch({
 
         {moreCategoriesOpen ? (
           <div className="mt-3 hidden grid-cols-3 gap-2 lg:grid">
-            {categories.slice(6).map(({ slug, label, icon: Icon }) => (
+            {categories.slice(6).map(({ slug, icon: Icon }) => (
               <button
                 key={slug}
                 type="button"
@@ -557,13 +621,13 @@ export default function HomeHeroVehicleSearch({
                 }`}
               >
                 <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-                <span className="truncate !font-normal">{label}</span>
+                <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
               </button>
             ))}
           </div>
         ) : null}
 
-        <div className="relative mt-7 lg:mt-6">
+        <div ref={moreFiltersRef} className="relative mt-7 lg:mt-6">
           <button
             type="button"
             onClick={() => setMoreFiltersOpen((current) => !current)}
@@ -724,22 +788,33 @@ function AdvancedFiltersPanel({
           value={values.model}
           onChange={(value) => onChange('model', value)}
         />
-        <FilterField
+        <HomeRangeField
+          className="lg:col-span-2"
           label={labels.priceMax}
           value={values.priceMax}
-          inputMode="numeric"
+          min={0}
+          max={1500000}
+          step={10000}
+          suffix="kr"
           onChange={(value) => onChange('priceMax', value)}
         />
-        <FilterField
+        <HomeRangeField
+          className="lg:col-span-2"
           label={labels.yearMin}
           value={values.yearMin}
-          inputMode="numeric"
+          min={1980}
+          max={new Date().getFullYear()}
+          step={1}
           onChange={(value) => onChange('yearMin', value)}
         />
-        <FilterField
+        <HomeRangeField
+          className="lg:col-span-2"
           label={labels.mileageMax}
           value={values.mileageMax}
-          inputMode="numeric"
+          min={0}
+          max={250000}
+          step={5000}
+          suffix="km"
           onChange={(value) => onChange('mileageMax', value)}
         />
         <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
@@ -756,7 +831,7 @@ function AdvancedFiltersPanel({
             <option value="electric">{labels.electric}</option>
           </select>
         </label>
-        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054] lg:col-span-2">
+        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
           {labels.gearbox}
           <select
             value={values.gearbox}
@@ -770,6 +845,54 @@ function AdvancedFiltersPanel({
         </label>
       </div>
     </div>
+  )
+}
+
+function HomeRangeField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  suffix = '',
+  className = '',
+  onChange,
+}: {
+  label: string
+  value: string
+  min: number
+  max: number
+  step: number
+  suffix?: string
+  className?: string
+  onChange: (value: string) => void
+}) {
+  const rangeValue = Number(value || max)
+  const formattedValue = value ? formatHomeFilterNumber(Number(value)) : label
+  const displaySuffix = value && suffix ? ` ${suffix}` : ''
+
+  return (
+    <label className={`grid gap-1.5 text-[13px] font-medium text-[#344054] ${className}`}>
+      {label}
+      <div className="rounded-[8px] border border-[#d8e0ec] bg-white px-3 py-2 transition hover:border-[#0866ff] focus-within:border-[#0866ff]">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={rangeValue}
+          onChange={(event) => onChange(event.target.value)}
+          className="autorell-range h-6 w-full accent-[#0866ff]"
+        />
+        <div className="mt-1 flex items-center justify-between text-xs font-semibold text-[#667085]">
+          <span>{formatHomeFilterNumber(min)}</span>
+          <span>{formatHomeFilterNumber(max)}{suffix ? ` ${suffix}` : ''}+</span>
+        </div>
+        <div className={`mt-2 text-[14px] font-normal ${value ? 'text-[#101828]' : 'text-[#767676]'}`}>
+          {formattedValue}{displaySuffix}
+        </div>
+      </div>
+    </label>
   )
 }
 
@@ -792,8 +915,12 @@ function FilterField({
         inputMode={inputMode}
         onChange={(event) => onChange(event.target.value)}
         placeholder={label}
-        className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition placeholder:text-[#767676] hover:border-[#0866ff] focus:border-[#0866ff]"
+        className="home-filter-text-control min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition placeholder:text-[#767676] hover:border-[#0866ff] focus:border-[#0866ff]"
       />
     </label>
   )
+}
+
+function formatHomeFilterNumber(value: number) {
+  return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(value)
 }

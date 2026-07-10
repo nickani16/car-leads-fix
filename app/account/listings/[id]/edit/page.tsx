@@ -7,11 +7,14 @@ import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { normalizeMarketplaceCategory } from '@/lib/marketplace'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import EditListingForm from './EditListingForm'
 
 type EditListingPageProps = {
   params: Promise<{ id: string }>
 }
+
+export const generateMetadata = generateAccountMetadata('edit-listing')
 
 export default async function EditListingPage({ params }: EditListingPageProps) {
   const locale = await getRequestLocale()

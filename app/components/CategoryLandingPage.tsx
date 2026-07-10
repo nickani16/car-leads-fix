@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { headers } from 'next/headers'
@@ -27,8 +27,9 @@ import {
   displayCurrencyForMarket,
   formatMarketplacePriceDisplay,
 } from '@/lib/currency-rates'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
-import { getEuCountryName } from '@/lib/eu-countries'
+import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { activeMarketCountryCodes, getEuCountryName } from '@/lib/eu-countries'
+import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { buildListingSpecChips } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
 import { getPublishedMarketplaceCategoryListings } from '@/lib/marketplace-public-data'
@@ -94,6 +95,10 @@ export default async function CategoryLandingPage({
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const displayCurrency = displayCurrencyForMarket(marketCode)
   const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
+  const requestedMarketCode = (marketCode || '').toUpperCase()
+  const localCountryCode = activeMarketCountryCodes.has(requestedMarketCode)
+    ? requestedMarketCode
+    : defaultSearchCountryForLocale(locale)
   const config = getCategoryLanding(slug)
   const localized = localizeCategoryLanding(config, locale)
   const copy = categoryLandingCopy(locale)
@@ -205,7 +210,9 @@ export default async function CategoryLandingPage({
                 className="group relative min-h-[128px] overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(16,24,40,.09)]"
               >
                 <strong className="relative z-10 block text-sm font-bold text-[#101828]">
-                  {type.label[language]}
+                  {locale === 'sv' || locale === 'de' || locale === 'en'
+                    ? type.label[language]
+                    : translatePublic(locale, type.label.en)}
                 </strong>
                 <span className="relative z-10 mt-1 block text-xs font-semibold text-[#667085]">
                   {typeCounts[type.query] || 0} {page.listings}
@@ -276,8 +283,8 @@ export default async function CategoryLandingPage({
               <div>
                 <h2 className="text-2xl tracking-[-0.04em]">{page.countryTitle}</h2>
                 <p className="mt-4 inline-flex items-center gap-2 text-sm font-bold">
-                  <CountryFlag code={locale === 'sv' ? 'se' : 'eu'} className="h-[18px] w-[27px]" />
-                  {locale === 'sv' ? 'Sweden' : 'Europe'}
+                  <CountryFlag code={localCountryCode ? localCountryCode.toLowerCase() : 'eu'} className="h-[18px] w-[27px]" />
+                  {localCountryCode ? getEuCountryName(localCountryCode, locale) : copy.allEurope}
                 </p>
               </div>
               <Link href="#market-selector" className="text-xs font-bold text-[#0866ff]">
@@ -365,7 +372,7 @@ async function getLandingListings(
           getEuCountryName(listing.country_code, locale),
         ]
           .filter(Boolean)
-          .join(' · '),
+          .join(' | '),
         price: price.label,
         imageUrl: listing.images?.[0] || null,
         countryCode: listing.country_code,
@@ -556,20 +563,20 @@ function listingMatchesTypeCard(
 function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
   const cards: Record<MarketplaceCategorySlug, TypeCard[]> = {
     cars: [
-      type('Halvkombi', 'Hatchback', 'Kompaktwagen', 'hatchback', '/category-types/cars-hatchback.png', ['5-dörrar', '5 door']),
+      type('Halvkombi', 'Hatchback', 'Kompaktwagen', 'hatchback', '/category-types/cars-hatchback.png', ['5-dÃ¶rrar', '5 door']),
       type('Sedan', 'Sedan', 'Limousine', 'sedan', '/category-types/cars-sedan.png'),
       type('SUV', 'SUV', 'SUV', 'suv', '/category-types/cars-suv.png'),
       type('Kombi', 'Estate', 'Kombi', 'estate', '/category-types/cars-estate.png', ['wagon', 'touring']),
-      type('Coupé', 'Coupe', 'Coupe', 'coupe', '/category-types/cars-coupe.png'),
+      type('CoupÃ©', 'Coupe', 'Coupe', 'coupe', '/category-types/cars-coupe.png'),
       type('Sportbil', 'Sports car', 'Sportwagen', 'sports car', '/category-types/cars-sports-car.png', ['sport car', 'sport']),
       type('Elbil', 'Electric', 'Elektro', 'electric', '/category-types/cars-electric.png'),
       type('Pickup', 'Pickup', 'Pickup', 'pickup', '/category-types/cars-pickup.png'),
     ],
     vans: [
-      type('Skåpbil', 'Panel van', 'Kastenwagen', 'panel', '/category-types/vans-panel.png'),
+      type('SkÃ¥pbil', 'Panel van', 'Kastenwagen', 'panel', '/category-types/vans-panel.png'),
       type('Crew van', 'Crew van', 'Doppelkabine', 'crew', '/category-types/vans-crew.png'),
       type('Box van', 'Box van', 'Koffer', 'box', '/category-types/vans-box.png'),
-      type('Kylbil', 'Refrigerated', 'Kühlfahrzeug', 'refrigerated', '/category-types/vans-refrigerated.png'),
+      type('Kylbil', 'Refrigerated', 'KÃ¼hlfahrzeug', 'refrigerated', '/category-types/vans-refrigerated.png'),
       type('Minibuss', 'Minibus', 'Minibus', 'minibus', '/category-types/vans-minibus.png'),
       type('Pickup', 'Pickup', 'Pickup', 'pickup', '/category-types/vans-pickup.png'),
       type('Eltransport', 'Electric', 'Elektro', 'electric', '/category-types/vans-electric.png'),
@@ -607,9 +614,9 @@ function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
     ],
     trucks: [
       type('Dragbil', 'Tractor unit', 'Sattelzugmaschine', 'tractor unit', '/category-types/trucks-tractor-unit.png'),
-      type('Skåp', 'Rigid box', 'Koffer', 'rigid box', '/category-types/trucks-rigid-box.png'),
+      type('SkÃ¥p', 'Rigid box', 'Koffer', 'rigid box', '/category-types/trucks-rigid-box.png'),
       type('Tippbil', 'Tipper', 'Kipper', 'tipper', '/category-types/trucks-tipper.png'),
-      type('Kylbil', 'Refrigerated', 'Kühlfahrzeug', 'refrigerated', '/category-types/trucks-refrigerated.png'),
+      type('Kylbil', 'Refrigerated', 'KÃ¼hlfahrzeug', 'refrigerated', '/category-types/trucks-refrigerated.png'),
       type('Biltransport', 'Car transporter', 'Autotransporter', 'transporter', '/category-types/trucks-transporter.png'),
       type('Tankbil', 'Tanker', 'Tankwagen', 'tanker', '/category-types/trucks-tanker.png'),
       type('Flak', 'Flatbed', 'Pritsche', 'flatbed', '/category-types/trucks-flatbed.png'),
@@ -617,19 +624,19 @@ function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
     ],
     agriculture: [
       type('Traktorer', 'Tractors', 'Traktoren', 'tractor', '/category-types/agriculture-tractor.png'),
-      type('Skördare', 'Combines', 'Mähdrescher', 'combine', '/category-types/agriculture-combine.png'),
+      type('SkÃ¶rdare', 'Combines', 'MÃ¤hdrescher', 'combine', '/category-types/agriculture-combine.png'),
       type('Teleskoplastare', 'Telehandlers', 'Teleskoplader', 'telehandler', '/category-types/agriculture-telehandler.png'),
       type('Balpressar', 'Balers', 'Ballenpressen', 'baler', '/category-types/agriculture-baler.png'),
-      type('Plogar', 'Ploughs', 'Pflüge', 'plough', '/category-types/agriculture-plough.png'),
-      type('Såmaskiner', 'Seed drills', 'Sämaschinen', 'seed drill', '/category-types/agriculture-seed-drill.png'),
+      type('Plogar', 'Ploughs', 'PflÃ¼ge', 'plough', '/category-types/agriculture-plough.png'),
+      type('SÃ¥maskiner', 'Seed drills', 'SÃ¤maschinen', 'seed drill', '/category-types/agriculture-seed-drill.png'),
       type('Sprutor', 'Sprayers', 'Spritzen', 'sprayer', '/category-types/agriculture-sprayer.png'),
       type('Frontlastare', 'Front loaders', 'Frontlader', 'front loader', '/category-types/agriculture-front-loader.png'),
     ],
     construction: [
-      type('Grävmaskiner', 'Excavators', 'Bagger', 'excavator', '/category-types/construction-excavator.png'),
+      type('GrÃ¤vmaskiner', 'Excavators', 'Bagger', 'excavator', '/category-types/construction-excavator.png'),
       type('Hjullastare', 'Wheel loaders', 'Radlader', 'wheel loader', '/category-types/construction-wheel-loader.png'),
-      type('Minigrävare', 'Mini excavators', 'Minibagger', 'mini excavator', '/category-types/construction-mini-excavator.png'),
-      type('Grävlastare', 'Backhoe loaders', 'Baggerlader', 'backhoe', '/category-types/construction-backhoe.png'),
+      type('MinigrÃ¤vare', 'Mini excavators', 'Minibagger', 'mini excavator', '/category-types/construction-mini-excavator.png'),
+      type('GrÃ¤vlastare', 'Backhoe loaders', 'Baggerlader', 'backhoe', '/category-types/construction-backhoe.png'),
       type('Bulldozers', 'Bulldozers', 'Planierraupen', 'bulldozer', '/category-types/construction-bulldozer.png'),
       type('Dumprar', 'Dump trucks', 'Dumper', 'dump truck', '/category-types/construction-dump-truck.png'),
       type('Kompaktlastare', 'Skid steers', 'Kompaktlader', 'skid steer', '/category-types/construction-skid-steer.png'),
@@ -663,16 +670,16 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
   const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
   const heroContent = getCategoryHeroContent(slug, locale)
   const heroTitles: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
-    cars: t3('Köp bilar i hela Europa', 'Buy cars across Europe', 'Autos in ganz Europa kaufen'),
-    vans: t3('Köp transportbilar i hela Europa', 'Buy vans across Europe', 'Transporter in ganz Europa kaufen'),
-    motorcycles: t3('Köp motorcyklar i hela Europa', 'Buy motorcycles across Europe', 'Motorräder in ganz Europa kaufen'),
-    motorhomes: t3('Köp husbilar i hela Europa', 'Buy motorhomes across Europe', 'Wohnmobile in ganz Europa kaufen'),
-    caravans: t3('Köp husvagnar i hela Europa', 'Buy caravans across Europe', 'Wohnwagen in ganz Europa kaufen'),
-    trucks: t3('Köp lastbilar i hela Europa', 'Buy trucks across Europe', 'Lkw in ganz Europa kaufen'),
-    agriculture: t3('Köp lantbruksmaskiner i hela Europa', 'Buy agricultural machinery across Europe', 'Landmaschinen in ganz Europa kaufen'),
-    construction: t3('Köp entreprenadmaskiner i hela Europa', 'Buy construction machinery across Europe', 'Baumaschinen in ganz Europa kaufen'),
-    'electric-bikes': t3('Köp cyklar i hela Europa', 'Buy bikes across Europe', 'Fahrräder in ganz Europa kaufen'),
-    'e-scooters': t3('Köp sparkcyklar i hela Europa', 'Buy scooters across Europe', 'Scooter in ganz Europa kaufen'),
+    cars: t3('KÃ¶p bilar i hela Europa', 'Buy cars across Europe', 'Autos in ganz Europa kaufen'),
+    vans: t3('KÃ¶p transportbilar i hela Europa', 'Buy vans across Europe', 'Transporter in ganz Europa kaufen'),
+    motorcycles: t3('KÃ¶p motorcyklar i hela Europa', 'Buy motorcycles across Europe', 'MotorrÃ¤der in ganz Europa kaufen'),
+    motorhomes: t3('KÃ¶p husbilar i hela Europa', 'Buy motorhomes across Europe', 'Wohnmobile in ganz Europa kaufen'),
+    caravans: t3('KÃ¶p husvagnar i hela Europa', 'Buy caravans across Europe', 'Wohnwagen in ganz Europa kaufen'),
+    trucks: t3('KÃ¶p lastbilar i hela Europa', 'Buy trucks across Europe', 'Lkw in ganz Europa kaufen'),
+    agriculture: t3('KÃ¶p lantbruksmaskiner i hela Europa', 'Buy agricultural machinery across Europe', 'Landmaschinen in ganz Europa kaufen'),
+    construction: t3('KÃ¶p entreprenadmaskiner i hela Europa', 'Buy construction machinery across Europe', 'Baumaschinen in ganz Europa kaufen'),
+    'electric-bikes': t3('KÃ¶p cyklar i hela Europa', 'Buy bikes across Europe', 'FahrrÃ¤der in ganz Europa kaufen'),
+    'e-scooters': t3('KÃ¶p sparkcyklar i hela Europa', 'Buy scooters across Europe', 'Scooter in ganz Europa kaufen'),
   }
   const heroEyebrows: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
     cars: t3('Europas bilmarknad', "Europe's car marketplace", 'Europas Automarkt'),
@@ -687,26 +694,26 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     'e-scooters': t3('Europas sparkcykelmarknad', "Europe's scooter marketplace", 'Europas Scooter-Markt'),
   }
   const searchCtas: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
-    cars: t3('Sök bil', 'Search cars', 'Autos suchen'),
-    vans: t3('Sök transportbil', 'Search vans', 'Transporter suchen'),
-    motorcycles: t3('Sök motorcykel', 'Search motorcycles', 'Motorräder suchen'),
-    motorhomes: t3('Sök husbil', 'Search motorhomes', 'Wohnmobile suchen'),
-    caravans: t3('Sök husvagn', 'Search caravans', 'Wohnwagen suchen'),
-    trucks: t3('Sök lastbil', 'Search trucks', 'Lkw suchen'),
-    agriculture: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
-    construction: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
-    'electric-bikes': t3('Sök cykel', 'Search bikes', 'Fahrräder suchen'),
-    'e-scooters': t3('Sök sparkcykel', 'Search scooters', 'Scooter suchen'),
+    cars: t3('SÃ¶k bil', 'Search cars', 'Autos suchen'),
+    vans: t3('SÃ¶k transportbil', 'Search vans', 'Transporter suchen'),
+    motorcycles: t3('SÃ¶k motorcykel', 'Search motorcycles', 'MotorrÃ¤der suchen'),
+    motorhomes: t3('SÃ¶k husbil', 'Search motorhomes', 'Wohnmobile suchen'),
+    caravans: t3('SÃ¶k husvagn', 'Search caravans', 'Wohnwagen suchen'),
+    trucks: t3('SÃ¶k lastbil', 'Search trucks', 'Lkw suchen'),
+    agriculture: t3('SÃ¶k maskin', 'Search machinery', 'Maschinen suchen'),
+    construction: t3('SÃ¶k maskin', 'Search machinery', 'Maschinen suchen'),
+    'electric-bikes': t3('SÃ¶k cykel', 'Search bikes', 'FahrrÃ¤der suchen'),
+    'e-scooters': t3('SÃ¶k sparkcykel', 'Search scooters', 'Scooter suchen'),
   }
   const base = {
     sv: {
       eyebrow: heroEyebrows[slug].sv,
-      heroTypingPrefix: `Hitta rätt ${singular.toLowerCase()} bland`,
-      assurances: ['Verifierade annonser', 'Tryggare betalningar', 'Skydd över hela Europa'],
-      browseByType: 'Bläddra efter typ',
+      heroTypingPrefix: `Hitta rÃ¤tt ${singular.toLowerCase()} bland`,
+      assurances: ['Verifierade annonser', 'Tryggare betalningar', 'Skydd Ã¶ver hela Europa'],
+      browseByType: 'BlÃ¤ddra efter typ',
       category: 'Kategori',
-      make: 'Märke',
-      allMakes: 'Alla märken',
+      make: 'MÃ¤rke',
+      allMakes: 'Alla mÃ¤rken',
       model: 'Modell',
       allModels: 'Alla modeller',
       price: 'Pris',
@@ -714,41 +721,41 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       minPrice: 'Minpris',
       maxPrice: 'Maxpris',
       clearFilter: 'Rensa',
-      applyFilter: 'Använd',
+      applyFilter: 'AnvÃ¤nd',
       location: 'Plats',
       searchCta: searchCtas[slug].sv,
       moreFilters: 'Fler filter',
       topRatedTitle: 'Topprankade annonser',
       viewAll: `Visa alla ${label.toLowerCase()}`,
-      noListingsTitle: 'Inga publicerade annonser ännu.',
-      noListingsText: 'När riktiga annonser publiceras visas de här automatiskt. Var först med att lägga upp ett fordon på Autorell.',
+      noListingsTitle: 'Inga publicerade annonser Ã¤nnu.',
+      noListingsText: 'NÃ¤r riktiga annonser publiceras visas de hÃ¤r automatiskt. Var fÃ¶rst med att lÃ¤gga upp ett fordon pÃ¥ Autorell.',
       listings: 'annonser',
       moreTypes: 'Fler typer',
-      sellTitle: `Sälj din ${singular} till köpare över hela Europa`,
-      sellText: 'Det är gratis att börja. Få mer synlighet och sälj snabbare.',
-      sellCta: `Sälj din ${singular}`,
-      whyTitle: 'Därför väljer säljare Autorell',
-      whyText: `Vi gör det enklare att köpa och sälja ${label.toLowerCase()} över landsgränser.`,
-      countryTitle: 'Populärt i ditt land',
-      changeCountry: 'Ändra land',
+      sellTitle: `SÃ¤lj din ${singular} till kÃ¶pare Ã¶ver hela Europa`,
+      sellText: 'Det Ã¤r gratis att bÃ¶rja. FÃ¥ mer synlighet och sÃ¤lj snabbare.',
+      sellCta: `SÃ¤lj din ${singular}`,
+      whyTitle: 'DÃ¤rfÃ¶r vÃ¤ljer sÃ¤ljare Autorell',
+      whyText: `Vi gÃ¶r det enklare att kÃ¶pa och sÃ¤lja ${label.toLowerCase()} Ã¶ver landsgrÃ¤nser.`,
+      countryTitle: 'PopulÃ¤rt i ditt land',
+      changeCountry: 'Ã„ndra land',
       newToday: 'Annonser totalt',
-      priceDrops: 'Prisändringar idag',
-      soldWeek: 'Sålda denna vecka',
+      priceDrops: 'PrisÃ¤ndringar idag',
+      soldWeek: 'SÃ¥lda denna vecka',
       seeLocal: `Se ${label.toLowerCase()} i Sverige`,
-      newsletterTitle: `Få de senaste annonserna för ${label.toLowerCase()}`,
-      newsletterText: 'Var först med att se nya annonser som matchar dina behov.',
+      newsletterTitle: `FÃ¥ de senaste annonserna fÃ¶r ${label.toLowerCase()}`,
+      newsletterText: 'Var fÃ¶rst med att se nya annonser som matchar dina behov.',
       emailPlaceholder: 'Ange din e-postadress',
       subscribe: 'Prenumerera',
       trust: [
-        { title: 'Brett urval', text: `Från vardag till specialistfordon.` },
-        { title: 'Verifierade annonser', text: 'Annonser kontrolleras för kvalitet.' },
-        { title: 'Tryggare köp', text: 'Tydlig information och skydd.' },
-        { title: 'Support när du behöver', text: 'Vårt team finns med hela vägen.' },
+        { title: 'Brett urval', text: `FrÃ¥n vardag till specialistfordon.` },
+        { title: 'Verifierade annonser', text: 'Annonser kontrolleras fÃ¶r kvalitet.' },
+        { title: 'Tryggare kÃ¶p', text: 'Tydlig information och skydd.' },
+        { title: 'Support nÃ¤r du behÃ¶ver', text: 'VÃ¥rt team finns med hela vÃ¤gen.' },
       ],
       why: [
-        { title: 'Verifierade säljare', text: 'Konton och annonser granskas.' },
-        { title: 'Tryggare betalningar', text: 'Din betalning är bättre skyddad.' },
-        { title: 'Skydd i Europa', text: 'Du är täckt i varje land.' },
+        { title: 'Verifierade sÃ¤ljare', text: 'Konton och annonser granskas.' },
+        { title: 'Tryggare betalningar', text: 'Din betalning Ã¤r bÃ¤ttre skyddad.' },
+        { title: 'Skydd i Europa', text: 'Du Ã¤r tÃ¤ckt i varje land.' },
       ],
     },
     en: {
@@ -816,27 +823,27 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       price: 'Preis',
       anyPrice: 'Jeder Preis',
       minPrice: 'Mindestpreis',
-      maxPrice: 'Höchstpreis',
-      clearFilter: 'Zurücksetzen',
+      maxPrice: 'HÃ¶chstpreis',
+      clearFilter: 'ZurÃ¼cksetzen',
       applyFilter: 'Anwenden',
       location: 'Standort',
       searchCta: searchCtas[slug].de,
       moreFilters: 'Mehr Filter',
       topRatedTitle: 'Top bewertete Anzeigen',
       viewAll: `Alle ${label} ansehen`,
-      noListingsTitle: 'Noch keine veröffentlichten Anzeigen.',
-      noListingsText: 'Sobald echte Anzeigen veröffentlicht werden, erscheinen sie hier automatisch.',
+      noListingsTitle: 'Noch keine verÃ¶ffentlichten Anzeigen.',
+      noListingsText: 'Sobald echte Anzeigen verÃ¶ffentlicht werden, erscheinen sie hier automatisch.',
       listings: 'Anzeigen',
       moreTypes: 'Mehr Typen',
-      sellTitle: `${singular} an Käufer in ganz Europa verkaufen`,
+      sellTitle: `${singular} an KÃ¤ufer in ganz Europa verkaufen`,
       sellText: 'Der Einstieg ist kostenlos. Mehr Sichtbarkeit, schneller verkaufen.',
       sellCta: `${singular} verkaufen`,
-      whyTitle: 'Warum Verkäufer Autorell wählen',
+      whyTitle: 'Warum VerkÃ¤ufer Autorell wÃ¤hlen',
       whyText: `Wir machen Kaufen und Verkaufen von ${label} in Europa einfacher.`,
       countryTitle: 'Beliebt in Ihrem Land',
-      changeCountry: 'Land ändern',
+      changeCountry: 'Land Ã¤ndern',
       newToday: 'Anzeigen gesamt',
-      priceDrops: 'Preisänderungen heute',
+      priceDrops: 'PreisÃ¤nderungen heute',
       soldWeek: 'Verkauft diese Woche',
       seeLocal: `Lokale ${label} ansehen`,
       newsletterTitle: `Neue ${label}-Anzeigen erhalten`,
@@ -844,14 +851,14 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
       emailPlaceholder: 'E-Mail-Adresse eingeben',
       subscribe: 'Abonnieren',
       trust: [
-        { title: 'Große Auswahl', text: 'Vom Alltag bis Spezialfahrzeug.' },
-        { title: 'Verifizierte Anzeigen', text: 'Anzeigen werden geprüft.' },
+        { title: 'GroÃŸe Auswahl', text: 'Vom Alltag bis Spezialfahrzeug.' },
+        { title: 'Verifizierte Anzeigen', text: 'Anzeigen werden geprÃ¼ft.' },
         { title: 'Sicher kaufen', text: 'Klare Daten und Schutz.' },
         { title: 'Support bei Bedarf', text: 'Unser Team hilft weiter.' },
       ],
       why: [
-        { title: 'Verifizierte Verkäufer', text: 'Konten und Anzeigen werden geprüft.' },
-        { title: 'Sichere Zahlungen', text: 'Ihre Zahlung ist geschützt.' },
+        { title: 'Verifizierte VerkÃ¤ufer', text: 'Konten und Anzeigen werden geprÃ¼ft.' },
+        { title: 'Sichere Zahlungen', text: 'Ihre Zahlung ist geschÃ¼tzt.' },
         { title: 'Schutz in Europa', text: 'Abdeckung in jedem Land.' },
       ],
     },
@@ -873,54 +880,54 @@ function getCategoryHeroContent(
   const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
   const content: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', { title: string; body: string }>> = {
     cars: {
-      sv: { title: 'Hitta din nästa bil', body: 'Utforska nya och begagnade bilar från privatpersoner och företag.' },
+      sv: { title: 'Hitta din nÃ¤sta bil', body: 'Utforska nya och begagnade bilar frÃ¥n privatpersoner och fÃ¶retag.' },
       en: { title: 'Find your next car', body: 'Explore new and used cars from private and business sellers.' },
-      de: { title: 'Finden Sie Ihr nächstes Auto', body: 'Entdecken Sie neue und gebrauchte Autos von privaten und gewerblichen Verkäufern.' },
+      de: { title: 'Finden Sie Ihr nÃ¤chstes Auto', body: 'Entdecken Sie neue und gebrauchte Autos von privaten und gewerblichen VerkÃ¤ufern.' },
     },
     vans: {
-      sv: { title: 'Transportbilar för jobb och vardag', body: 'Hitta flexibla transportbilar för leverans, service och företag i hela Europa.' },
+      sv: { title: 'Transportbilar fÃ¶r jobb och vardag', body: 'Hitta flexibla transportbilar fÃ¶r leverans, service och fÃ¶retag i hela Europa.' },
       en: { title: 'Vans for work and everyday use', body: 'Find practical vans for delivery, service and business across Europe.' },
-      de: { title: 'Transporter für Arbeit und Alltag', body: 'Finden Sie praktische Transporter für Lieferung, Service und Gewerbe in Europa.' },
+      de: { title: 'Transporter fÃ¼r Arbeit und Alltag', body: 'Finden Sie praktische Transporter fÃ¼r Lieferung, Service und Gewerbe in Europa.' },
     },
     motorcycles: {
-      sv: { title: 'Motorcyklar för varje körstil', body: 'Utforska motorcyklar för pendling, touring och fritid från privata och företag.' },
+      sv: { title: 'Motorcyklar fÃ¶r varje kÃ¶rstil', body: 'Utforska motorcyklar fÃ¶r pendling, touring och fritid frÃ¥n privata och fÃ¶retag.' },
       en: { title: 'Motorcycles for every ride', body: 'Explore motorcycles for commuting, touring and leisure from private and business sellers.' },
-      de: { title: 'Motorräder für jede Fahrt', body: 'Entdecken Sie Motorräder für Pendeln, Touren und Freizeit von privaten und Händlern.' },
+      de: { title: 'MotorrÃ¤der fÃ¼r jede Fahrt', body: 'Entdecken Sie MotorrÃ¤der fÃ¼r Pendeln, Touren und Freizeit von privaten und HÃ¤ndlern.' },
     },
     motorhomes: {
-      sv: { title: 'Husbilar för nästa resa', body: 'Jämför husbilar för semester, långresor och frihet på vägarna i Europa.' },
+      sv: { title: 'Husbilar fÃ¶r nÃ¤sta resa', body: 'JÃ¤mfÃ¶r husbilar fÃ¶r semester, lÃ¥ngresor och frihet pÃ¥ vÃ¤garna i Europa.' },
       en: { title: 'Motorhomes for your next trip', body: 'Compare motorhomes for holidays, long journeys and freedom on European roads.' },
-      de: { title: 'Wohnmobile für die nächste Reise', body: 'Vergleichen Sie Wohnmobile für Urlaub, lange Reisen und Freiheit auf Europas Straßen.' },
+      de: { title: 'Wohnmobile fÃ¼r die nÃ¤chste Reise', body: 'Vergleichen Sie Wohnmobile fÃ¼r Urlaub, lange Reisen und Freiheit auf Europas StraÃŸen.' },
     },
     caravans: {
-      sv: { title: 'Husvagnar för säsong och äventyr', body: 'Hitta husvagnar för familj, camping och längre vistelser från säljare i Europa.' },
+      sv: { title: 'Husvagnar fÃ¶r sÃ¤song och Ã¤ventyr', body: 'Hitta husvagnar fÃ¶r familj, camping och lÃ¤ngre vistelser frÃ¥n sÃ¤ljare i Europa.' },
       en: { title: 'Caravans for seasons and escapes', body: 'Find caravans for families, camping and longer stays from sellers across Europe.' },
-      de: { title: 'Wohnwagen für Saison und Abenteuer', body: 'Finden Sie Wohnwagen für Familie, Camping und längere Aufenthalte in Europa.' },
+      de: { title: 'Wohnwagen fÃ¼r Saison und Abenteuer', body: 'Finden Sie Wohnwagen fÃ¼r Familie, Camping und lÃ¤ngere Aufenthalte in Europa.' },
     },
     trucks: {
-      sv: { title: 'Lastbilar för transport och logistik', body: 'Sök lastbilar för åkeri, distribution och tunga uppdrag från europeiska säljare.' },
+      sv: { title: 'Lastbilar fÃ¶r transport och logistik', body: 'SÃ¶k lastbilar fÃ¶r Ã¥keri, distribution och tunga uppdrag frÃ¥n europeiska sÃ¤ljare.' },
       en: { title: 'Trucks for transport and logistics', body: 'Search trucks for haulage, distribution and heavy-duty work from European sellers.' },
-      de: { title: 'Lkw für Transport und Logistik', body: 'Suchen Sie Lkw für Spedition, Verteilung und schwere Einsätze in Europa.' },
+      de: { title: 'Lkw fÃ¼r Transport und Logistik', body: 'Suchen Sie Lkw fÃ¼r Spedition, Verteilung und schwere EinsÃ¤tze in Europa.' },
     },
     agriculture: {
-      sv: { title: 'Maskiner för lantbruket', body: 'Utforska traktorer, redskap och lantbruksmaskiner för modern drift och produktion.' },
+      sv: { title: 'Maskiner fÃ¶r lantbruket', body: 'Utforska traktorer, redskap och lantbruksmaskiner fÃ¶r modern drift och produktion.' },
       en: { title: 'Machinery for modern farming', body: 'Explore tractors, implements and farm machinery for efficient agricultural work.' },
-      de: { title: 'Maschinen für moderne Landwirtschaft', body: 'Entdecken Sie Traktoren, Geräte und Landmaschinen für effiziente Arbeit.' },
+      de: { title: 'Maschinen fÃ¼r moderne Landwirtschaft', body: 'Entdecken Sie Traktoren, GerÃ¤te und Landmaschinen fÃ¼r effiziente Arbeit.' },
     },
     construction: {
-      sv: { title: 'Entreprenadmaskiner för jobbet', body: 'Hitta grävmaskiner, lastare och maskiner för bygg, markarbete och infrastruktur.' },
+      sv: { title: 'Entreprenadmaskiner fÃ¶r jobbet', body: 'Hitta grÃ¤vmaskiner, lastare och maskiner fÃ¶r bygg, markarbete och infrastruktur.' },
       en: { title: 'Construction machines for the job', body: 'Find excavators, loaders and machines for building, earthmoving and infrastructure.' },
-      de: { title: 'Baumaschinen für den Einsatz', body: 'Finden Sie Bagger, Lader und Maschinen für Bau, Erdarbeiten und Infrastruktur.' },
+      de: { title: 'Baumaschinen fÃ¼r den Einsatz', body: 'Finden Sie Bagger, Lader und Maschinen fÃ¼r Bau, Erdarbeiten und Infrastruktur.' },
     },
     'electric-bikes': {
-      sv: { title: 'Cyklar för stad och pendling', body: 'Jämför cyklar för vardag, last och längre turer från privata och företag.' },
+      sv: { title: 'Cyklar fÃ¶r stad och pendling', body: 'JÃ¤mfÃ¶r cyklar fÃ¶r vardag, last och lÃ¤ngre turer frÃ¥n privata och fÃ¶retag.' },
       en: { title: 'Bikes for city and commuting', body: 'Compare bikes for everyday travel, cargo and longer rides from trusted sellers.' },
-      de: { title: 'Fahrräder für Stadt und Pendeln', body: 'Vergleichen Sie Fahrräder für Alltag, Lasten und längere Fahrten.' },
+      de: { title: 'FahrrÃ¤der fÃ¼r Stadt und Pendeln', body: 'Vergleichen Sie FahrrÃ¤der fÃ¼r Alltag, Lasten und lÃ¤ngere Fahrten.' },
     },
     'e-scooters': {
-      sv: { title: 'Sparkcyklar för smidig vardag', body: 'Sök sparkcyklar för korta resor, pendling och enkel mobilitet i staden.' },
+      sv: { title: 'Sparkcyklar fÃ¶r smidig vardag', body: 'SÃ¶k sparkcyklar fÃ¶r korta resor, pendling och enkel mobilitet i staden.' },
       en: { title: 'Scooters for easy mobility', body: 'Search scooters for short trips, commuting and simple city transport.' },
-      de: { title: 'Scooter für flexible Mobilität', body: 'Suchen Sie Scooter für kurze Wege, Pendeln und einfache Stadtmobilität.' },
+      de: { title: 'Scooter fÃ¼r flexible MobilitÃ¤t', body: 'Suchen Sie Scooter fÃ¼r kurze Wege, Pendeln und einfache StadtmobilitÃ¤t.' },
     },
   }
 
@@ -934,56 +941,57 @@ function getCategorySeoContent(
   const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
   const seo: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', { title: string; description: string }>> = {
     cars: {
-      sv: { title: 'Bilar till salu | Köp en begagnad eller ny bil | Autorell', description: 'Hitta bilar till salu, begagnade bilar och nya bilar från privatpersoner och företag i Europa.' },
+      sv: { title: 'Bilar till salu | KÃ¶p en begagnad eller ny bil | Autorell', description: 'Hitta bilar till salu, begagnade bilar och nya bilar frÃ¥n privatpersoner och fÃ¶retag i Europa.' },
       en: { title: 'Cars for sale | Buy a used or new car | Autorell', description: 'Find cars for sale, used cars and new cars from private and business sellers across Europe.' },
-      de: { title: 'Autos kaufen | Gebrauchte und neue Autos | Autorell', description: 'Finden Sie Autos, Gebrauchtwagen und Neuwagen von privaten und gewerblichen Verkäufern in Europa.' },
+      de: { title: 'Autos kaufen | Gebrauchte und neue Autos | Autorell', description: 'Finden Sie Autos, Gebrauchtwagen und Neuwagen von privaten und gewerblichen VerkÃ¤ufern in Europa.' },
     },
     vans: {
-      sv: { title: 'Transportbilar till salu | Begagnade och nya transportbilar | Autorell', description: 'Sök transportbilar till salu från privatpersoner och företag. Jämför nya och begagnade transportbilar.' },
+      sv: { title: 'Transportbilar till salu | Begagnade och nya transportbilar | Autorell', description: 'SÃ¶k transportbilar till salu frÃ¥n privatpersoner och fÃ¶retag. JÃ¤mfÃ¶r nya och begagnade transportbilar.' },
       en: { title: 'Vans for sale | Used and new vans | Autorell', description: 'Search vans for sale from private and business sellers. Compare used and new vans across Europe.' },
-      de: { title: 'Transporter kaufen | Gebrauchte und neue Transporter | Autorell', description: 'Suchen Sie Transporter von privaten und gewerblichen Verkäufern. Vergleichen Sie neue und gebrauchte Transporter.' },
+      de: { title: 'Transporter kaufen | Gebrauchte und neue Transporter | Autorell', description: 'Suchen Sie Transporter von privaten und gewerblichen VerkÃ¤ufern. Vergleichen Sie neue und gebrauchte Transporter.' },
     },
     motorcycles: {
-      sv: { title: 'Motorcyklar till salu | Köp begagnad eller ny MC | Autorell', description: 'Hitta motorcyklar till salu i Europa. Jämför begagnade och nya motorcyklar från privata och företag.' },
+      sv: { title: 'Motorcyklar till salu | KÃ¶p begagnad eller ny MC | Autorell', description: 'Hitta motorcyklar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya motorcyklar frÃ¥n privata och fÃ¶retag.' },
       en: { title: 'Motorcycles for sale | Used and new bikes | Autorell', description: 'Find motorcycles for sale in Europe. Compare used and new bikes from private and business sellers.' },
-      de: { title: 'Motorräder kaufen | Gebrauchte und neue Motorräder | Autorell', description: 'Finden Sie Motorräder in Europa. Vergleichen Sie gebrauchte und neue Motorräder von privaten und Händlern.' },
+      de: { title: 'MotorrÃ¤der kaufen | Gebrauchte und neue MotorrÃ¤der | Autorell', description: 'Finden Sie MotorrÃ¤der in Europa. Vergleichen Sie gebrauchte und neue MotorrÃ¤der von privaten und HÃ¤ndlern.' },
     },
     motorhomes: {
-      sv: { title: 'Husbilar till salu | Köp begagnad eller ny husbil | Autorell', description: 'Sök husbilar till salu i Europa. Jämför begagnade och nya husbilar från privatpersoner och företag.' },
+      sv: { title: 'Husbilar till salu | KÃ¶p begagnad eller ny husbil | Autorell', description: 'SÃ¶k husbilar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya husbilar frÃ¥n privatpersoner och fÃ¶retag.' },
       en: { title: 'Motorhomes for sale | Used and new motorhomes | Autorell', description: 'Search motorhomes for sale in Europe. Compare used and new motorhomes from private and business sellers.' },
-      de: { title: 'Wohnmobile kaufen | Gebrauchte und neue Wohnmobile | Autorell', description: 'Suchen Sie Wohnmobile in Europa. Vergleichen Sie gebrauchte und neue Wohnmobile von privaten und Händlern.' },
+      de: { title: 'Wohnmobile kaufen | Gebrauchte und neue Wohnmobile | Autorell', description: 'Suchen Sie Wohnmobile in Europa. Vergleichen Sie gebrauchte und neue Wohnmobile von privaten und HÃ¤ndlern.' },
     },
     caravans: {
-      sv: { title: 'Husvagnar till salu | Köp begagnad eller ny husvagn | Autorell', description: 'Hitta husvagnar till salu i Europa. Jämför begagnade och nya husvagnar från privatpersoner och företag.' },
+      sv: { title: 'Husvagnar till salu | KÃ¶p begagnad eller ny husvagn | Autorell', description: 'Hitta husvagnar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya husvagnar frÃ¥n privatpersoner och fÃ¶retag.' },
       en: { title: 'Caravans for sale | Used and new caravans | Autorell', description: 'Find caravans for sale in Europe. Compare used and new caravans from private and business sellers.' },
-      de: { title: 'Wohnwagen kaufen | Gebrauchte und neue Wohnwagen | Autorell', description: 'Finden Sie Wohnwagen in Europa. Vergleichen Sie gebrauchte und neue Wohnwagen von privaten und Händlern.' },
+      de: { title: 'Wohnwagen kaufen | Gebrauchte und neue Wohnwagen | Autorell', description: 'Finden Sie Wohnwagen in Europa. Vergleichen Sie gebrauchte und neue Wohnwagen von privaten und HÃ¤ndlern.' },
     },
     trucks: {
-      sv: { title: 'Lastbilar till salu | Köp begagnad eller ny lastbil | Autorell', description: 'Sök lastbilar till salu i Europa. Jämför begagnade och nya lastbilar för transport och logistik.' },
+      sv: { title: 'Lastbilar till salu | KÃ¶p begagnad eller ny lastbil | Autorell', description: 'SÃ¶k lastbilar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya lastbilar fÃ¶r transport och logistik.' },
       en: { title: 'Trucks for sale | Used and new trucks | Autorell', description: 'Search trucks for sale in Europe. Compare used and new trucks for transport and logistics.' },
-      de: { title: 'Lkw kaufen | Gebrauchte und neue Lkw | Autorell', description: 'Suchen Sie Lkw in Europa. Vergleichen Sie gebrauchte und neue Lkw für Transport und Logistik.' },
+      de: { title: 'Lkw kaufen | Gebrauchte und neue Lkw | Autorell', description: 'Suchen Sie Lkw in Europa. Vergleichen Sie gebrauchte und neue Lkw fÃ¼r Transport und Logistik.' },
     },
     agriculture: {
-      sv: { title: 'Lantbruksmaskiner till salu | Begagnat och nytt | Autorell', description: 'Hitta lantbruksmaskiner till salu i Europa. Jämför traktorer, redskap och maskiner från företag och privata.' },
+      sv: { title: 'Lantbruksmaskiner till salu | Begagnat och nytt | Autorell', description: 'Hitta lantbruksmaskiner till salu i Europa. JÃ¤mfÃ¶r traktorer, redskap och maskiner frÃ¥n fÃ¶retag och privata.' },
       en: { title: 'Farm machinery for sale | Used and new machines | Autorell', description: 'Find farm machinery for sale in Europe. Compare tractors, implements and machines from trusted sellers.' },
-      de: { title: 'Landmaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Finden Sie Landmaschinen in Europa. Vergleichen Sie Traktoren, Geräte und Maschinen von Verkäufern.' },
+      de: { title: 'Landmaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Finden Sie Landmaschinen in Europa. Vergleichen Sie Traktoren, GerÃ¤te und Maschinen von VerkÃ¤ufern.' },
     },
     construction: {
-      sv: { title: 'Entreprenadmaskiner till salu | Begagnat och nytt | Autorell', description: 'Sök entreprenadmaskiner till salu i Europa. Jämför grävmaskiner, lastare och maskiner för bygg.' },
+      sv: { title: 'Entreprenadmaskiner till salu | Begagnat och nytt | Autorell', description: 'SÃ¶k entreprenadmaskiner till salu i Europa. JÃ¤mfÃ¶r grÃ¤vmaskiner, lastare och maskiner fÃ¶r bygg.' },
       en: { title: 'Construction machinery for sale | Used and new | Autorell', description: 'Search construction machinery for sale in Europe. Compare excavators, loaders and machines for building.' },
-      de: { title: 'Baumaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Suchen Sie Baumaschinen in Europa. Vergleichen Sie Bagger, Lader und Maschinen für Bau und Infrastruktur.' },
+      de: { title: 'Baumaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Suchen Sie Baumaschinen in Europa. Vergleichen Sie Bagger, Lader und Maschinen fÃ¼r Bau und Infrastruktur.' },
     },
     'electric-bikes': {
-      sv: { title: 'Cyklar till salu | Köp begagnad eller ny cykel | Autorell', description: 'Hitta cyklar till salu i Europa. Jämför begagnade och nya cyklar för stad, pendling och vardag.' },
+      sv: { title: 'Cyklar till salu | KÃ¶p begagnad eller ny cykel | Autorell', description: 'Hitta cyklar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya cyklar fÃ¶r stad, pendling och vardag.' },
       en: { title: 'Bikes for sale | Used and new bikes | Autorell', description: 'Find bikes for sale in Europe. Compare used and new bikes for city, commuting and everyday travel.' },
-      de: { title: 'Fahrräder kaufen | Gebrauchte und neue Fahrräder | Autorell', description: 'Finden Sie Fahrräder in Europa. Vergleichen Sie gebrauchte und neue Fahrräder für Stadt und Alltag.' },
+      de: { title: 'FahrrÃ¤der kaufen | Gebrauchte und neue FahrrÃ¤der | Autorell', description: 'Finden Sie FahrrÃ¤der in Europa. Vergleichen Sie gebrauchte und neue FahrrÃ¤der fÃ¼r Stadt und Alltag.' },
     },
     'e-scooters': {
-      sv: { title: 'Sparkcyklar till salu | Köp begagnad eller ny sparkcykel | Autorell', description: 'Sök sparkcyklar till salu i Europa. Jämför begagnade och nya sparkcyklar för pendling och korta resor.' },
+      sv: { title: 'Sparkcyklar till salu | KÃ¶p begagnad eller ny sparkcykel | Autorell', description: 'SÃ¶k sparkcyklar till salu i Europa. JÃ¤mfÃ¶r begagnade och nya sparkcyklar fÃ¶r pendling och korta resor.' },
       en: { title: 'Scooters for sale | Used and new scooters | Autorell', description: 'Search scooters for sale in Europe. Compare used and new scooters for commuting and short trips.' },
-      de: { title: 'Scooter kaufen | Gebrauchte und neue Scooter | Autorell', description: 'Suchen Sie Scooter in Europa. Vergleichen Sie gebrauchte und neue Scooter für Pendeln und kurze Wege.' },
+      de: { title: 'Scooter kaufen | Gebrauchte und neue Scooter | Autorell', description: 'Suchen Sie Scooter in Europa. Vergleichen Sie gebrauchte und neue Scooter fÃ¼r Pendeln und kurze Wege.' },
     },
   }
 
   return seo[slug][language]
 }
+

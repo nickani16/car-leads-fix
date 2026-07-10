@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
-import { createPublicMetadata } from '@/lib/public-seo'
+import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 
 async function getRootMarket() {
   const requestHeaders = await headers()
@@ -16,30 +16,22 @@ export async function generateMetadata(): Promise<Metadata> {
   const market = await getRootMarket()
 
   if (market === 'de') {
-    return createPublicMetadata({
-      title: 'Europas Marktplatz für Fahrzeuge | Autorell',
-      description:
-        'Fahrzeuge und Maschinen in ganz Europa kaufen und verkaufen — für Privatpersonen und Unternehmen.',
-      path: '/',
-      locale: 'de',
+    return createSeoMetadata({
+      seo: getMarketHomeSeo('de'),
+      canonical: 'https://www.autorell.com/de',
     })
   }
 
   if (market === 'en') {
-    return createPublicMetadata({
-      title: "Europe's marketplace for vehicles | Autorell",
-      description:
-        'Buy and sell cars, vans, motorcycles, leisure vehicles and machinery across Europe — for private sellers and businesses.',
-      path: '/',
-      locale: 'en',
+    return createSeoMetadata({
+      seo: getMarketHomeSeo('eu'),
+      canonical: 'https://www.autorell.com',
     })
   }
 
-  return createPublicMetadata({
-    title: 'Europas marknadsplats för fordon | Autorell',
-    description:
-      'Köp och sälj bilar, transportbilar, motorcyklar, fritidsfordon och maskiner över hela Europa — för privatpersoner och företag.',
-    path: '/',
+  return createSeoMetadata({
+    seo: getMarketHomeSeo('se'),
+    canonical: 'https://www.autorell.com/se',
   })
 }
 

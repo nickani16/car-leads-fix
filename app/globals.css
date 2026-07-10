@@ -450,6 +450,12 @@ input, textarea, select {
   opacity: 1 !important;
 }
 
+.home-filter-text-control::placeholder {
+  color: #767676 !important;
+  -webkit-text-fill-color: #767676 !important;
+  opacity: 1 !important;
+}
+
 @media (max-width: 767px) {
   input,
   textarea,

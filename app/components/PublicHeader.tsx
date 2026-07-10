@@ -365,6 +365,11 @@ export default function PublicHeader({
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? copy[language]
       : translatePublicObject(locale, copy.en)
+  const publicLabel = (en: string, sv: string, de?: string) => {
+    if (locale === 'sv') return sv
+    if (locale === 'de') return de || en
+    return locale === 'en' ? en : translatePublic(locale, en)
+  }
   const [open, setOpen] = useState(false)
   const [marketSelectorOpen, setMarketSelectorOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -634,50 +639,56 @@ export default function PublicHeader({
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
   const createListingHref = localizePublicHref(locale, '/account/listings/new')
-  const sellMenuLinks = sellerItems[language].map((item) => ({
-    ...item,
-    href: localizePublicHref(locale, item.href),
-  }))
+  const sellMenuLinks = sellerItems[language].map((item) => {
+    const translatedItem =
+      locale === 'sv' || locale === 'de' || locale === 'en'
+        ? item
+        : translatePublicObject(locale, item)
+    return {
+      ...translatedItem,
+      href: localizePublicHref(locale, item.href),
+    }
+  })
   const mobileMainLinks = [
     {
       href: localizePublicHref(locale, '/marketplace'),
-      label: language === 'sv' ? 'Sök fordon' : 'Search vehicles',
+      label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen'),
       icon: Search,
     },
     {
       href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'),
-      label: language === 'sv' ? 'Sälja' : t.sell,
+      label: publicLabel(t.sell, 'Sälja', t.sell),
       icon: Plus,
       children: sellMenuLinks,
     },
     { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
     {
       href: localizePublicHref(locale, '/help-center'),
-      label: language === 'sv' ? 'Hjälpcenter' : t.help,
+      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
       icon: CircleHelp,
     },
   ]
   const accountListingsHref = `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
-    { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: language === 'sv' ? 'Sök fordon' : 'Search vehicles' },
-    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: language === 'sv' ? 'Sälja' : t.sell },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
+    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'link' as const, href: localizePublicHref(locale, '/business'), label: t.business },
-    { kind: 'link' as const, href: localizePublicHref(locale, '/help-center'), label: language === 'sv' ? 'Hjälpcenter' : t.help },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center') },
   ]
   const desktopAccountLinks = [
-    { href: savedHref, label: language === 'sv' ? 'Sparade annonser' : t.saved, icon: Heart },
-    { href: savedSearchesHref, label: language === 'sv' ? 'Sparade sökningar' : 'Saved searches', icon: Bookmark },
+    { href: savedHref, label: publicLabel(t.saved, 'Sparade annonser', t.saved), icon: Heart },
+    { href: savedSearchesHref, label: publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen'), icon: Bookmark },
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
   ]
   const profileMenuLinks = [
-    { href: createListingHref, label: language === 'sv' ? 'Skapa annons' : 'Create listing', icon: FilePlus2 },
-    { href: accountHref, label: language === 'sv' ? 'Inställningar' : 'Settings', icon: Settings },
-    { href: accountListingsHref, label: language === 'sv' ? 'Mina annonser' : 'My listings', icon: CarFront },
+    { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
+    { href: accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
+    { href: accountListingsHref, label: publicLabel('My listings', 'Mina annonser', 'Meine Anzeigen'), icon: CarFront },
   ]
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
-  const mobileProfileLabel = locale === 'sv' ? 'Min profil' : locale === 'en' ? 'My profile' : t.profileNav
+  const mobileProfileLabel = publicLabel('My profile', 'Min profil', t.profileNav)
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()
@@ -972,7 +983,7 @@ export default function PublicHeader({
                         className="flex min-h-11 w-full items-center gap-3 border-t border-[#edf1f6] px-4 pt-2 text-left text-sm font-medium text-[#b42318] transition hover:bg-[#fff5f5]"
                       >
                         <LogOut className="h-4.5 w-4.5" strokeWidth={1.9} />
-                        {language === 'sv' ? 'Logga ut' : 'Sign out'}
+                        {publicLabel('Sign out', 'Logga ut', 'Abmelden')}
                       </button>
                     </div>
                   </div>
@@ -1235,7 +1246,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1244,7 +1255,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              aria-label={language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -1357,11 +1368,11 @@ export default function PublicHeader({
                         {t.signIn}
                       </h2>
                       <p className="mt-1 max-w-[28rem] text-[15px] font-medium leading-6 text-[#344054]">
-                        {locale === 'sv'
-                          ? 'Spara fordon, s\u00f6kningar och f\u00e5 enklare kontakt med s\u00e4ljare.'
-                          : locale === 'de'
-                            ? 'Fahrzeuge und Suchen speichern und Verk\u00e4ufer einfacher kontaktieren.'
-                            : 'Save vehicles, searches and contact sellers faster.'}
+                        {publicLabel(
+                          'Save vehicles, searches and contact sellers faster.',
+                          'Spara fordon, sökningar och få enklare kontakt med säljare.',
+                          'Fahrzeuge und Suchen speichern und Verkäufer einfacher kontaktieren.',
+                        )}
                       </p>
                     </div>
                   </div>
@@ -1370,11 +1381,11 @@ export default function PublicHeader({
                     onClick={() => openAuthModal('login', accountHref)}
                     className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#0866ff] bg-white px-5 text-[15px] font-semibold text-[#0866ff]"
                   >
-                    {locale === 'sv'
-                      ? 'Logga in eller skapa konto'
-                      : locale === 'de'
-                        ? 'Anmelden oder Konto erstellen'
-                        : 'Sign in or create an account'}
+                    {publicLabel(
+                      'Sign in or create an account',
+                      'Logga in eller skapa konto',
+                      'Anmelden oder Konto erstellen',
+                    )}
                   </button>
                 </div>
               )}
@@ -1498,7 +1509,7 @@ export default function PublicHeader({
           >
             <Search className="h-[22px] w-[22px]" strokeWidth={1.8} />
             <span className="max-w-full truncate text-[10px] font-medium leading-none">
-              {language === 'sv' ? 'Sök' : 'Search'}
+              {publicLabel('Search', 'Sök', 'Suche')}
             </span>
           </Link>
           {headerAccount.authenticated ? (
@@ -1580,7 +1591,7 @@ export default function PublicHeader({
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+                {publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               </span>
             </Link>
           ) : (
@@ -1591,7 +1602,7 @@ export default function PublicHeader({
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {language === 'sv' ? 'Sparade sökningar' : 'Saved searches'}
+                {publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
               </span>
             </button>
           )}

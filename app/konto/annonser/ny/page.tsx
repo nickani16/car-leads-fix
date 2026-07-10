@@ -5,7 +5,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { euCountryCodes } from '@/lib/eu-countries'
+import { countryForLocale } from '@/lib/market-locale'
 import NewListingForm from './NewListingForm'
+import { headers } from 'next/headers'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('new-listing')
 
 export default async function NewListingPage({
   searchParams,
@@ -27,6 +33,15 @@ export default async function NewListingPage({
   if (!profile) redirect(localizePublicHref(locale, '/register'))
 
   const { category = 'cars' } = await searchParams
+  const requestHeaders = await headers()
+  const marketCode = (requestHeaders.get('x-autorell-market') || '').toUpperCase()
+  const localeCountry = countryForLocale(locale)
+  const listingCountryCode =
+    euCountryCodes.has(marketCode)
+      ? marketCode
+      : localeCountry !== 'EU' && euCountryCodes.has(localeCountry)
+        ? localeCountry
+        : profile.country_code || 'SE'
   const copy = getNewListingPageCopy(locale)
 
   return (
@@ -62,7 +77,7 @@ export default async function NewListingPage({
           <div className="min-w-0 p-4 sm:p-6 lg:p-8">
             <NewListingForm
               accountType={profile.account_type}
-              countryCode={profile.country_code || 'SE'}
+              countryCode={listingCountryCode}
               defaultCategory={category}
               locale={locale}
             />

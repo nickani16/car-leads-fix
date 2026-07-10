@@ -38,8 +38,14 @@ export default async function FindCarsPage({
         : locale === 'de'
           ? 'DE'
           : 'SE'
+  const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
+  const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
+    .map((value) => value.toUpperCase())
+    .filter((value) => euCountryCodes.has(value))
+  const requestedCategories = getSearchParamList(resolvedSearchParams, 'categories')
   const defaultCountry =
-    getSearchParam(resolvedSearchParams, 'country') ||
+    requestedMarkets[0] ||
+    requestedCountry ||
     automaticCountry
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
   const data = await getPublishedMarketplaceCategoryListings('vehicles', 240)
@@ -76,6 +82,7 @@ export default async function FindCarsPage({
         priceLabel: price.label,
         priceValue: Number(listing.price),
         imageUrl: listing.images?.[0] || null,
+        imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
         sellerLogoUrl: sellerProfile?.logoUrl || null,
         sellerTrust: sellerProfile?.trust || 'unverified',
         sellerName: listing.seller_name,
@@ -96,6 +103,8 @@ export default async function FindCarsPage({
         defaultCountry={defaultCountry}
         automaticCountry={automaticCountry}
         initialCategory={getSearchParam(resolvedSearchParams, 'category') || 'all'}
+        initialMarkets={requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []}
+        initialCategories={requestedCategories}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
         initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
@@ -112,4 +121,16 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function getSearchParamList(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  const values = Array.isArray(value) ? value : [value]
+  return values
+    .flatMap((item) => String(item || '').split(','))
+    .map((item) => item.trim())
+    .filter(Boolean)
 }

@@ -118,7 +118,7 @@ export default function ReviewFlowPanel({
               <div className="rounded-[16px] bg-[#f6f8fc] p-4">
                 <strong>{selected.revieweeName}</strong>
                 <p className="mt-1 text-sm text-[#667085]">
-                  {selected.roleLabel} · {selected.listingTitle}
+                  {selected.roleLabel} | {selected.listingTitle}
                 </p>
               </div>
               <div>

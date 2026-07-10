@@ -18,6 +18,9 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import MessageComposer from './MessageComposer'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('messages')
 
 const copy = {
   sv: {

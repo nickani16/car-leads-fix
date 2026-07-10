@@ -28,6 +28,37 @@ export const getPublishedMarketplaceListings = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
+export const getPublishedMarketplaceHomeListings = unstable_cache(
+  async (
+    countryCode: string | null,
+    sort: 'top' | 'latest',
+    limit = 8,
+  ) => {
+    let query = createAdminClient()
+      .from('marketplace_listings')
+      .select(marketplacePublicSelect)
+      .eq('status', 'published')
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+
+    const normalizedCountry = (countryCode || '').toUpperCase()
+    if (normalizedCountry && normalizedCountry !== 'EU') {
+      query = query.eq('country_code', normalizedCountry)
+    }
+
+    if (sort === 'top') {
+      query = query.order('priority', { ascending: false })
+    }
+
+    const { data } = await query
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    return data || []
+  },
+  ['published-marketplace-home-listings'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
 export const getPublishedMarketplaceCategoryListings = unstable_cache(
   async (category: MarketplaceCategorySlug | 'vehicles', limit = 120) => {
     let query = createAdminClient()

@@ -26,6 +26,9 @@ import {
 import AccountLogoutButton from './AccountLogoutButton'
 import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('profile')
 
 type ProfileRow = {
   account_type: 'private' | 'business'

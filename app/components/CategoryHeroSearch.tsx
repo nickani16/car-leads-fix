@@ -4,7 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, MapPin, Search, Tag } from 'lucide-react'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 
 type CategoryHeroSearchProps = {
@@ -128,9 +129,7 @@ function resolveDefaultCountry(
   const requested = (defaultCountry || '').toUpperCase()
   const validCountries = new Set(euCountries.map(([code]) => code.toUpperCase()))
   if (validCountries.has(requested)) return requested
-  if (locale === 'sv') return 'SE'
-  if (locale === 'de') return 'DE'
-  return ''
+  return defaultSearchCountryForLocale(locale)
 }
 
 function SearchField({
@@ -257,7 +256,7 @@ function AnimatedSearchInput({
 function searchLabel(locale: PublicLocale) {
   if (locale === 'sv') return 'Sök'
   if (locale === 'de') return 'Suche'
-  return 'Search'
+  return locale === 'en' ? 'Search' : translatePublic(locale, 'Search')
 }
 
 function getSearchPlaceholders(
@@ -305,5 +304,6 @@ function getSearchPlaceholders(
 
   if (locale === 'sv') return sv[slug]
   if (locale === 'de') return de[slug]
-  return en[slug]
+  if (locale === 'en') return en[slug]
+  return en[slug].map((item) => translatePublic(locale, item))
 }

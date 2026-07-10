@@ -1,26 +1,9 @@
 import BusinessMarketplaceHome from '../components/BusinessMarketplaceHome'
-import { createPublicMetadata } from '@/lib/public-seo'
+import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 
-export const metadata = createPublicMetadata({
-  title: 'Europas Marktplatz für Fahrzeuge | Autorell',
-  description:
-    'Fahrzeuge und Maschinen in ganz Europa kaufen und verkaufen — für Privatpersonen und Unternehmen.',
-  path: '/',
-  locale: 'de',
-  keywords: [
-    'Fahrzeugmarktplatz Europa',
-    'Autos kaufen Europa',
-    'Fahrzeuge verkaufen Europa',
-    'Marktplatz für Privatpersonen',
-    'Fahrzeugmarkt für Unternehmen',
-    'Transporter',
-    'Motorräder',
-    'Wohnmobile',
-    'Landmaschinen',
-    'Baumaschinen',
-    'Fahrräder',
-    'Scooter',
-  ],
+export const metadata = createSeoMetadata({
+  seo: getMarketHomeSeo('de'),
+  canonical: 'https://www.autorell.com/de',
 })
 
 export default function GermanVehiclePage() {

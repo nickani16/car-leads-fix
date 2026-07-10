@@ -14,6 +14,12 @@ export async function GET(request: NextRequest) {
   if (rate.limited) return rateLimitJson(rate.retryAfter)
 
   const input = Object.fromEntries(request.nextUrl.searchParams.entries()) as MarketplaceSearchInput
+  const markets = request.nextUrl.searchParams.getAll('markets')
+  const countries = request.nextUrl.searchParams.getAll('countries')
+  const categories = request.nextUrl.searchParams.getAll('categories')
+  if (markets.length > 1) input.markets = markets
+  if (countries.length > 1) input.countries = countries
+  if (categories.length > 1) input.categories = categories
 
   try {
     const result = await searchMarketplaceListings(input)

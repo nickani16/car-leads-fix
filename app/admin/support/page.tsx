@@ -1,23 +1,20 @@
 import { requireAdmin } from '@/lib/admin-auth'
-import AdminEntityActions from '../AdminEntityActions'
 import {
   AdminEmpty,
   AdminFilters,
   AdminPageHeader,
-  AdminPagination,
-  AdminTable,
-  Badge,
   FilterSelect,
 } from '../AdminUI'
 import {
   AdminSearchParams,
-  formatDate,
   getPage,
   getParam,
   pageRange,
   queryToUrlSearchParams,
-  statusTone,
 } from '../admin-helpers'
+import SupportTicketDetail from '@/components/support/SupportTicketDetail'
+import SupportTicketList from '@/components/support/SupportTicketList'
+import { fetchTicketBundle, type SupportTicket } from '@/lib/support/tickets'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,23 +26,44 @@ export default async function AdminSupportPage({
   const params = await searchParams
   const q = getParam(params, 'q')
   const status = getParam(params, 'status')
+  const priority = getParam(params, 'priority')
+  const category = getParam(params, 'category')
+  const language = getParam(params, 'language')
+  const assignedTo = getParam(params, 'assigned_to')
+  const selectedTicketId = getParam(params, 'ticket')
   const page = getPage(params)
   const { from, to } = pageRange(page)
   const { adminClient } = await requireAdmin()
 
   let query = adminClient
-    .from('admin_support_cases')
-    .select('id,subject,status,priority,customer_email,category,description,created_at,updated_at', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .from('support_tickets')
+    .select('*', { count: 'exact' })
+    .order('updated_at', { ascending: false })
     .range(from, to)
 
   if (status) query = query.eq('status', status)
+  if (priority) query = query.eq('priority', priority)
+  if (category) query = query.eq('category', category)
+  if (language) query = query.eq('customer_language', language)
+  if (assignedTo === 'unassigned') query = query.is('assigned_to', null)
+  else if (assignedTo) query = query.eq('assigned_to', assignedTo)
   if (q) {
     const escaped = q.replace(/[%_,]/g, '')
-    query = query.or(`subject.ilike.%${escaped}%,customer_email.ilike.%${escaped}%,category.ilike.%${escaped}%,description.ilike.%${escaped}%`)
+    query = query.or(`subject.ilike.%${escaped}%,customer_email.ilike.%${escaped}%,customer_name.ilike.%${escaped}%`)
   }
 
-  const { data: cases, count } = await query
+  const [{ data: tickets }, { data: agents }] = await Promise.all([
+    query,
+    adminClient
+      .from('support_agent_profiles')
+      .select('user_id,display_name,role,languages,is_active')
+      .eq('is_active', true)
+      .order('display_name', { ascending: true }),
+  ])
+
+  const typedTickets = (tickets || []) as SupportTicket[]
+  const selectedId = selectedTicketId || typedTickets[0]?.id
+  const bundle = selectedId ? await fetchTicketBundle(adminClient, selectedId) : null
   const urlQuery = queryToUrlSearchParams(params)
 
   return (
@@ -53,63 +71,101 @@ export default async function AdminSupportPage({
       <AdminPageHeader
         eyebrow="Kundsupport"
         title="Support"
-        description="Öppna ärenden, ändra status och koppla ärenden till användare eller annonser."
+        description="AI-eskalerade chatthistoriker, kundmeddelanden, interna anteckningar och manuella supportåtgärder."
       />
-      <AdminFilters search={q} searchPlaceholder="Sök ämne, kund, kategori eller beskrivning">
+      <AdminFilters search={q} searchPlaceholder="Sök ämne, kund eller e-post">
         <FilterSelect
           name="status"
           value={status}
           label="Status"
           options={[
-            { value: 'new', label: 'Nytt' },
-            { value: 'in_progress', label: 'Pågående' },
-            { value: 'waiting_customer', label: 'Väntar på kund' },
+            { value: 'open', label: 'Open' },
+            { value: 'waiting_customer', label: 'Väntar kund' },
+            { value: 'waiting_internal', label: 'Väntar internt' },
             { value: 'resolved', label: 'Löst' },
             { value: 'closed', label: 'Stängt' },
           ]}
         />
+        <FilterSelect
+          name="priority"
+          value={priority}
+          label="Prioritet"
+          options={[
+            { value: 'low', label: 'Low' },
+            { value: 'normal', label: 'Normal' },
+            { value: 'high', label: 'High' },
+            { value: 'urgent', label: 'Urgent' },
+          ]}
+        />
+        <FilterSelect
+          name="category"
+          value={category}
+          label="Kategori"
+          options={[
+            { value: 'listing', label: 'Listing' },
+            { value: 'account', label: 'Account' },
+            { value: 'payment', label: 'Payment' },
+            { value: 'business_account', label: 'Business' },
+            { value: 'report_listing', label: 'Report listing' },
+            { value: 'fraud', label: 'Fraud' },
+            { value: 'gdpr', label: 'GDPR' },
+            { value: 'technical', label: 'Technical' },
+            { value: 'other', label: 'Other' },
+          ]}
+        />
+        <FilterSelect
+          name="language"
+          value={language}
+          label="Språk"
+          options={[
+            { value: 'sv', label: 'Svenska' },
+            { value: 'en', label: 'English' },
+            { value: 'de', label: 'Deutsch' },
+            { value: 'fr', label: 'Français' },
+            { value: 'nl', label: 'Nederlands' },
+            { value: 'da', label: 'Dansk' },
+            { value: 'fi', label: 'Suomi' },
+            { value: 'it', label: 'Italiano' },
+            { value: 'pl', label: 'Polski' },
+            { value: 'es', label: 'Español' },
+          ]}
+        />
+        <FilterSelect
+          name="assigned_to"
+          value={assignedTo}
+          label="Tilldelad"
+          options={[
+            { value: 'unassigned', label: 'Ej tilldelad' },
+            ...((agents || []) as { user_id: string; display_name: string | null; role: string }[]).map((agent) => ({
+              value: agent.user_id,
+              label: agent.display_name || agent.role,
+            })),
+          ]}
+        />
       </AdminFilters>
 
-      {!cases?.length ? (
-        <AdminEmpty text="Inga supportärenden hittades. Kör Supabase-migrationen för supporttabellen om detta är första versionen av adminpanelen." />
+      {!typedTickets.length ? (
+        <AdminEmpty text="Inga supportärenden hittades. Kör Supabase-migrationen för support AI-MVP om detta är första versionen." />
       ) : (
-        <>
-          <AdminTable columns={['Ärende', 'Kund', 'Prioritet', 'Status', 'Uppdaterad', 'Actions']}>
-            {cases.map((supportCase) => (
-              <tr key={supportCase.id} className="align-top hover:bg-[#f8fafc]">
-                <td className="px-4 py-4">
-                  <p className="font-bold">{supportCase.subject}</p>
-                  <p className="mt-1 max-w-xl text-sm text-[#475467]">{supportCase.description}</p>
-                </td>
-                <td className="px-4 py-4 text-[#475467]">{supportCase.customer_email || 'Saknas'}</td>
-                <td className="px-4 py-4">
-                  <Badge label={supportCase.priority || 'normal'} tone="gray" />
-                </td>
-                <td className="px-4 py-4">
-                  <Badge label={supportCase.status || 'new'} tone={statusTone(supportCase.status || 'new')} />
-                </td>
-                <td className="px-4 py-4 text-[#667085]">{formatDate(supportCase.updated_at || supportCase.created_at)}</td>
-                <td className="px-4 py-4">
-                  <AdminEntityActions
-                    endpoint={`/api/admin/support/${supportCase.id}`}
-                    actions={[
-                      { action: 'in_progress', label: 'Pågående' },
-                      { action: 'waiting_customer', label: 'Väntar kund' },
-                      { action: 'resolved', label: 'Löst', requiresReason: true },
-                      { action: 'closed', label: 'Stäng', requiresReason: true },
-                    ]}
-                  />
-                </td>
-              </tr>
-            ))}
-          </AdminTable>
-          <AdminPagination
-            page={page}
-            hasNext={(count || 0) > to + 1}
-            basePath="/admin/support"
-            query={urlQuery}
-          />
-        </>
+        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <SupportTicketList tickets={typedTickets} selectedId={selectedId} query={urlQuery} />
+          {bundle ? (
+            <SupportTicketDetail
+              ticket={bundle.ticket}
+              messages={bundle.messages}
+              chatMessages={bundle.chatMessages as {
+                id: string
+                role: string
+                message: string
+                created_at: string
+                metadata?: { attachment?: { name: string; dataUrl: string } }
+              }[]}
+              agents={(agents || []) as { user_id: string; display_name: string | null; role: string }[]}
+            />
+          ) : (
+            <AdminEmpty text="Välj ett ärende." />
+          )}
+        </div>
       )}
     </main>
   )

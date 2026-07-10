@@ -16,6 +16,7 @@ import {
 } from '@/lib/public-i18n'
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
+import { marketForPathCode } from '@/lib/market-locale'
 import BrandLogo from './BrandLogo'
 
 const footerCopy = {
@@ -475,6 +476,15 @@ function localeFromPathname(pathname: string): PublicLocale {
 }
 
 function getFooterMarket(pathMarket: string, locale: PublicLocale) {
+  const mappedMarket = marketForPathCode(pathMarket)
+  if (mappedMarket && mappedMarket.countryCode !== 'EU') {
+    return {
+      flagCode: mappedMarket.countryCode,
+      label: mappedMarket.countryName,
+      currency: mappedMarket.currency.toLowerCase(),
+    }
+  }
+
   if (pathMarket === 'se' || (!pathMarket && locale === 'sv')) {
     return { flagCode: 'SE', label: 'Sverige', currency: 'sek' }
   }

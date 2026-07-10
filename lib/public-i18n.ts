@@ -1,4 +1,5 @@
 import translations from './generated-public-translations.json'
+import { manualPublicTranslation } from './manual-public-translations'
 
 export const publicLanguages = [
   'en',
@@ -77,6 +78,8 @@ export function isPublicLanguage(value: string): value is PublicLanguage {
 
 export function translatePublic(locale: PublicLocale, value: string) {
   if (locale === 'sv' || locale === 'de' || locale === 'en') return value
+  const manual = manualPublicTranslation(locale, value)
+  if (manual) return manual
   const dictionary = translations[locale] as Record<string, string>
   return dictionary[value] || value
 }

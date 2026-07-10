@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import {
   CalendarDays,
+  ChevronRight,
   ExternalLink,
   Fuel,
   Gauge,
@@ -28,6 +29,7 @@ import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/c
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath, buildListingSlug, extractListingIdFromSlug } from '@/lib/listing-url'
 import {
+  categorySearchPath,
   getMarketplaceCategory,
   marketplaceLanguage,
   type MarketplaceCategorySlug,
@@ -38,6 +40,7 @@ import { getPublishedMarketplaceListingById } from '@/lib/marketplace-public-dat
 import { resolveListingCoordinates } from '@/lib/location-coordinates'
 import { selectedEquipmentGroups } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
+import { cleanSeoText } from '@/lib/market-seo'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
@@ -136,16 +139,18 @@ export async function generateListingMetadata({
     location,
   ]
     .filter(Boolean)
-    .join(' · ')
+    .join(' | ')
+  const seoTitle = cleanSeoText(title, 65)
+  const seoDescription = cleanSeoText(description, 150)
   const image = listing.images?.[0] || undefined
 
   return {
-    title: { absolute: title },
-    description,
+    title: { absolute: seoTitle },
+    description: seoDescription,
     alternates: { canonical },
     openGraph: {
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       url: canonical,
       siteName: 'Autorell',
       type: 'website',
@@ -153,8 +158,8 @@ export async function generateListingMetadata({
     },
     twitter: {
       card: image ? 'summary_large_image' : 'summary',
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       images: image ? [image] : undefined,
     },
     other: {
@@ -258,7 +263,7 @@ export default async function ListingDetailPage({
     translateSpecValue(locale, listing.gearbox),
   ]
     .filter(Boolean)
-    .join(' · ')
+    .join(' | ')
   const headlineFacts = [
     {
       label: localizedLabel(locale, 'Modellår', 'Model year', 'Baujahr'),
@@ -328,6 +333,30 @@ export default async function ListingDetailPage({
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
+        <nav
+          aria-label={localizedLabel(locale, 'Brödsmulor', 'Breadcrumbs', 'Breadcrumbs')}
+          className="mb-4 flex flex-wrap items-center gap-1.5 text-sm font-medium text-[#667085]"
+        >
+          <Link href={localizePublicHref(locale, '/')} className="text-[#0866ff] transition hover:text-[#0757da]">
+            Autorell
+          </Link>
+          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
+          <Link
+            href={localizePublicHref(locale, '/marketplace')}
+            className="text-[#0866ff] transition hover:text-[#0757da]"
+          >
+            {localizedLabel(locale, 'Fordon', 'Vehicles', 'Fahrzeuge')}
+          </Link>
+          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
+          <Link
+            href={localizePublicHref(locale, categorySearchPath(listing.category))}
+            className="text-[#0866ff] transition hover:text-[#0757da]"
+          >
+            {categoryLabel}
+          </Link>
+          <ChevronRight className="h-4 w-4 text-[#98a2b3]" />
+          <span className="min-w-0 truncate text-[#475467]">{listing.title}</span>
+        </nav>
         <ListingBackLink
           fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
           label={copy.backToListings}

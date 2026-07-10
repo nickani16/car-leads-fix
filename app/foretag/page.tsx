@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import {
@@ -20,28 +20,29 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { cleanSeoText } from '@/lib/market-seo'
 
 const businessPageCopy = {
   sv: {
     metaTitle: 'Företagskonto för fordonsförsäljare | Autorell',
     metaDescription:
       'Publicera fordonslager, hantera annonser och nå köpare i hela EU med Autorells företagskonto.',
-    eyebrow: 'Autorell för företag',
-    title: 'Sälj fordon till köpare i hela Europa.',
+    eyebrow: 'Autorell fÃ¶r fÃ¶retag',
+    title: 'SÃ¤lj fordon till kÃ¶pare i hela Europa.',
     intro:
-      'Autorell ger handlare, verkstäder, åkerier, maskinföretag och återkommande säljare en tydlig plats att publicera lager, hantera förfrågningar och nå rätt marknad utan krångliga flöden.',
-    primaryCta: 'Skapa företagskonto',
+      'Autorell ger handlare, verkstÃ¤der, Ã¥kerier, maskinfÃ¶retag och Ã¥terkommande sÃ¤ljare en tydlig plats att publicera lager, hantera fÃ¶rfrÃ¥gningar och nÃ¥ rÃ¤tt marknad utan krÃ¥ngliga flÃ¶den.',
+    primaryCta: 'Skapa fÃ¶retagskonto',
     secondaryCta: 'Publicera fordon',
     proof: [
-      'Byggt för EU-marknader',
-      'Privata och professionella köpare',
-      'Ett konto för hela lagret',
+      'Byggt fÃ¶r EU-marknader',
+      'Privata och professionella kÃ¶pare',
+      'Ett konto fÃ¶r hela lagret',
     ],
-    featureTitle: 'Verktygen företag behöver från första annonsen.',
+    featureTitle: 'Verktygen fÃ¶retag behÃ¶ver frÃ¥n fÃ¶rsta annonsen.',
     features: [
       {
-        title: 'Företagsprofil',
-        text: 'Samla företagsnamn, kontaktuppgifter och annonser på en professionell säljarprofil.',
+        title: 'FÃ¶retagsprofil',
+        text: 'Samla fÃ¶retagsnamn, kontaktuppgifter och annonser pÃ¥ en professionell sÃ¤ljarprofil.',
         icon: Building2,
       },
       {
@@ -50,44 +51,44 @@ const businessPageCopy = {
         icon: Warehouse,
       },
       {
-        title: 'Köparförfrågningar',
-        text: 'Få meddelanden från seriösa köpare och håll kontakten samlad i Autorell.',
+        title: 'KÃ¶parfÃ¶rfrÃ¥gningar',
+        text: 'FÃ¥ meddelanden frÃ¥n seriÃ¶sa kÃ¶pare och hÃ¥ll kontakten samlad i Autorell.',
         icon: MessageCircle,
       },
       {
-        title: 'EU-räckvidd',
-        text: 'Visa fordon på rätt språk, valuta och marknad när köpare söker över landsgränser.',
+        title: 'EU-rÃ¤ckvidd',
+        text: 'Visa fordon pÃ¥ rÃ¤tt sprÃ¥k, valuta och marknad nÃ¤r kÃ¶pare sÃ¶ker Ã¶ver landsgrÃ¤nser.',
         icon: Globe2,
       },
       {
         title: 'Trygg presentation',
-        text: 'Tydliga annonser, fordonsdata och säljarinformation gör affären enklare att förstå.',
+        text: 'Tydliga annonser, fordonsdata och sÃ¤ljarinformation gÃ¶r affÃ¤ren enklare att fÃ¶rstÃ¥.',
         icon: ShieldCheck,
       },
       {
-        title: 'Bättre överblick',
-        text: 'Följ publicerade, pausade, sålda och utgångna annonser från samma konto.',
+        title: 'BÃ¤ttre Ã¶verblick',
+        text: 'FÃ¶lj publicerade, pausade, sÃ¥lda och utgÃ¥ngna annonser frÃ¥n samma konto.',
         icon: BarChart3,
       },
     ],
-    stepsTitle: 'Så kommer företaget igång',
+    stepsTitle: 'SÃ¥ kommer fÃ¶retaget igÃ¥ng',
     steps: [
       {
-        title: 'Skapa företagskonto',
-        text: 'Registrera organisationen och välj kontaktuppgifter som köpare ska se.',
+        title: 'Skapa fÃ¶retagskonto',
+        text: 'Registrera organisationen och vÃ¤lj kontaktuppgifter som kÃ¶pare ska se.',
       },
       {
-        title: 'Lägg upp fordon',
-        text: 'Fyll i pris, bilder, plats, specifikationer och den beskrivning säljaren vill visa.',
+        title: 'LÃ¤gg upp fordon',
+        text: 'Fyll i pris, bilder, plats, specifikationer och den beskrivning sÃ¤ljaren vill visa.',
       },
       {
         title: 'Hantera dialogen',
-        text: 'Köpare kontaktar er via Autorell och ni slutför affären enligt era egna villkor.',
+        text: 'KÃ¶pare kontaktar er via Autorell och ni slutfÃ¶r affÃ¤ren enligt era egna villkor.',
       },
     ],
-    ctaTitle: 'Redo att visa ert lager för fler köpare?',
+    ctaTitle: 'Redo att visa ert lager fÃ¶r fler kÃ¶pare?',
     ctaText:
-      'Starta med ett företagskonto och publicera första fordonet när allt är klart.',
+      'Starta med ett fÃ¶retagskonto och publicera fÃ¶rsta fordonet nÃ¤r allt Ã¤r klart.',
   },
   en: {
     metaTitle: 'Business account for vehicle sellers | Autorell',
@@ -160,47 +161,47 @@ const businessPageCopy = {
     metaTitle: 'Unternehmenskonto für Fahrzeugverkäufer | Autorell',
     metaDescription:
       'Fahrzeugbestand veröffentlichen, Anzeigen verwalten und Käufer in der EU mit einem Autorell-Unternehmenskonto erreichen.',
-    eyebrow: 'Autorell für Unternehmen',
-    title: 'Fahrzeuge an Käufer in ganz Europa verkaufen.',
+    eyebrow: 'Autorell fÃ¼r Unternehmen',
+    title: 'Fahrzeuge an KÃ¤ufer in ganz Europa verkaufen.',
     intro:
-      'Autorell bietet Händlern, Werkstätten, Transportunternehmen, Maschinenbetrieben und regelmäßigen Verkäufern einen klaren Ort, um Bestand zu veröffentlichen, Anfragen zu verwalten und den richtigen Markt ohne komplizierte Abläufe zu erreichen.',
+      'Autorell bietet HÃ¤ndlern, WerkstÃ¤tten, Transportunternehmen, Maschinenbetrieben und regelmÃ¤ÃŸigen VerkÃ¤ufern einen klaren Ort, um Bestand zu verÃ¶ffentlichen, Anfragen zu verwalten und den richtigen Markt ohne komplizierte AblÃ¤ufe zu erreichen.',
     primaryCta: 'Unternehmenskonto erstellen',
     secondaryCta: 'Fahrzeug inserieren',
     proof: [
-      'Für EU-Märkte gebaut',
-      'Private und professionelle Käufer',
-      'Ein Konto für den gesamten Bestand',
+      'FÃ¼r EU-MÃ¤rkte gebaut',
+      'Private und professionelle KÃ¤ufer',
+      'Ein Konto fÃ¼r den gesamten Bestand',
     ],
     featureTitle: 'Die Werkzeuge, die Unternehmen ab der ersten Anzeige brauchen.',
     features: [
       {
         title: 'Unternehmensprofil',
-        text: 'Firmenname, Kontaktdaten und Anzeigen in einem professionellen Verkäuferprofil bündeln.',
+        text: 'Firmenname, Kontaktdaten und Anzeigen in einem professionellen VerkÃ¤uferprofil bÃ¼ndeln.',
         icon: Building2,
       },
       {
         title: 'Bestandsanzeigen',
-        text: 'Autos, Transporter, Maschinen, Lkw und weitere Fahrzeugkategorien mit strukturierten Daten veröffentlichen.',
+        text: 'Autos, Transporter, Maschinen, Lkw und weitere Fahrzeugkategorien mit strukturierten Daten verÃ¶ffentlichen.',
         icon: Warehouse,
       },
       {
-        title: 'Käuferanfragen',
-        text: 'Nachrichten von ernsthaften Käufern erhalten und die Kommunikation in Autorell organisiert halten.',
+        title: 'KÃ¤uferanfragen',
+        text: 'Nachrichten von ernsthaften KÃ¤ufern erhalten und die Kommunikation in Autorell organisiert halten.',
         icon: MessageCircle,
       },
       {
         title: 'EU-Reichweite',
-        text: 'Fahrzeuge mit passender Sprache, Währung und Marktsicht zeigen, wenn Käufer grenzüberschreitend suchen.',
+        text: 'Fahrzeuge mit passender Sprache, WÃ¤hrung und Marktsicht zeigen, wenn KÃ¤ufer grenzÃ¼berschreitend suchen.',
         icon: Globe2,
       },
       {
         title: 'Vertrauensvolle Darstellung',
-        text: 'Klare Anzeigen, Fahrzeugdaten und Verkäuferinformationen machen jedes Geschäft leichter verständlich.',
+        text: 'Klare Anzeigen, Fahrzeugdaten und VerkÃ¤uferinformationen machen jedes GeschÃ¤ft leichter verstÃ¤ndlich.',
         icon: ShieldCheck,
       },
       {
-        title: 'Bessere Übersicht',
-        text: 'Veröffentlichte, pausierte, verkaufte und abgelaufene Anzeigen über dasselbe Konto verfolgen.',
+        title: 'Bessere Ãœbersicht',
+        text: 'VerÃ¶ffentlichte, pausierte, verkaufte und abgelaufene Anzeigen Ã¼ber dasselbe Konto verfolgen.',
         icon: BarChart3,
       },
     ],
@@ -208,20 +209,20 @@ const businessPageCopy = {
     steps: [
       {
         title: 'Unternehmenskonto erstellen',
-        text: 'Organisation registrieren und festlegen, welche Kontaktdaten Käufer sehen sollen.',
+        text: 'Organisation registrieren und festlegen, welche Kontaktdaten KÃ¤ufer sehen sollen.',
       },
       {
-        title: 'Fahrzeuge hinzufügen',
-        text: 'Preis, Bilder, Standort, Spezifikationen und die Beschreibung eintragen, die der Verkäufer zeigen möchte.',
+        title: 'Fahrzeuge hinzufÃ¼gen',
+        text: 'Preis, Bilder, Standort, Spezifikationen und die Beschreibung eintragen, die der VerkÃ¤ufer zeigen mÃ¶chte.',
       },
       {
         title: 'Dialog verwalten',
-        text: 'Käufer kontaktieren Sie über Autorell und Sie schließen das Geschäft zu Ihren eigenen Bedingungen ab.',
+        text: 'KÃ¤ufer kontaktieren Sie Ã¼ber Autorell und Sie schlieÃŸen das GeschÃ¤ft zu Ihren eigenen Bedingungen ab.',
       },
     ],
-    ctaTitle: 'Bereit, Ihren Bestand mehr Käufern zu zeigen?',
+    ctaTitle: 'Bereit, Ihren Bestand mehr KÃ¤ufern zu zeigen?',
     ctaText:
-      'Starten Sie mit einem Unternehmenskonto und veröffentlichen Sie das erste Fahrzeug, sobald alles bereit ist.',
+      'Starten Sie mit einem Unternehmenskonto und verÃ¶ffentlichen Sie das erste Fahrzeug, sobald alles bereit ist.',
   },
 } as const
 
@@ -231,10 +232,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const headerStore = await headers()
   const locale = getRequestedLocale(headerStore)
   const copy = getBusinessCopy(locale)
+  const canonicalPath = headerStore.get('x-autorell-pathname') || '/business'
   return {
-    title: { absolute: copy.metaTitle },
-    description: copy.metaDescription,
-    alternates: { canonical: 'https://www.autorell.com/business' },
+    title: { absolute: cleanSeoText(copy.metaTitle, 65) },
+    description: cleanSeoText(copy.metaDescription, 150),
+    alternates: { canonical: `https://www.autorell.com${canonicalPath}` },
   }
 }
 
@@ -362,3 +364,5 @@ function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): P
     ? requested
     : 'sv'
 }
+
+

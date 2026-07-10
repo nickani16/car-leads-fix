@@ -162,7 +162,7 @@ export default function SavedListingsClient({
                         : null,
                     ]
                       .filter(Boolean)
-                      .join(' · ')}
+                      .join(' | ')}
                   </p>
                   <p className="mt-3 text-xs font-semibold text-[#475467]">
                     {sellerLabel}

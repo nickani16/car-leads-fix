@@ -1,4 +1,5 @@
 import EditListingPage from '@/app/account/listings/[id]/edit/page'
+export { generateMetadata } from '@/app/account/listings/[id]/edit/page'
 
 type LegacyEditListingPageProps = {
   params: Promise<{ id: string }>

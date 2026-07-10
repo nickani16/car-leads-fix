@@ -1340,7 +1340,7 @@ export default function MarketplaceCategoryBrowser({
                     <p className={listingLayout === 'grid' ? 'mt-2 text-xs text-[#667085] sm:text-sm' : 'mt-2 text-sm text-[#667085]'}>
                       {[listing.year, listing.fuelType, listing.mileageKm !== null ? `${listing.mileageKm.toLocaleString('sv-SE')} km` : null]
                         .filter(Boolean)
-                        .join(' · ')}
+                        .join(' | ')}
                     </p>
                     {specChips.length ? (
                       <div className={listingLayout === 'grid' ? 'mt-3 hidden flex-wrap gap-1.5 sm:flex' : 'mt-3 flex flex-wrap gap-1.5'}>
@@ -1355,7 +1355,7 @@ export default function MarketplaceCategoryBrowser({
                       </div>
                     ) : null}
                     <p className={listingLayout === 'grid' ? 'mt-2 text-xs font-semibold text-[#475467] sm:mt-3' : 'mt-3 text-xs font-semibold text-[#475467]'}>
-                      {listing.sellerIsTrader ? `${copy.businessSeller} · ${sellerLabel}` : sellerLabel}
+                      {listing.sellerIsTrader ? `${copy.businessSeller} | ${sellerLabel}` : sellerLabel}
                     </p>
                     <div className={listingLayout === 'grid' ? 'mt-4 hidden items-start gap-3 border-t border-[#edf1f6] pt-4 sm:flex' : 'mt-5 flex items-start gap-3 border-t border-[#edf1f6] pt-4'}>
                       <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />

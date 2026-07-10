@@ -20,6 +20,9 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import ListingStatusActions, { type ListingBuyerOption } from './ListingStatusActions'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('listings')
 
 type ListingRow = {
   id: string

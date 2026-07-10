@@ -34,7 +34,7 @@ create table if not exists public.marketplace_listings (
   postal_code text,
   price numeric(14,2) not null check (price > 0),
   currency text not null default 'EUR' check (currency in (
-    'EUR', 'SEK', 'DKK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN'
+    'EUR', 'SEK', 'DKK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'NOK', 'CHF', 'GBP', 'USD'
   )),
   images text[] not null default '{}',
   seller_name text not null,

@@ -1,1 +1,1 @@
-export { default } from '../../konto/meddelanden/page'
+export { default, generateMetadata } from '../../konto/meddelanden/page'

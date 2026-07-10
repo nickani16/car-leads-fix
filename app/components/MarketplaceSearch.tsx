@@ -29,6 +29,7 @@ import {
 } from '@/lib/public-i18n'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 
 type ListingIntent = 'sale' | 'leasing' | 'rent'
 
@@ -66,6 +67,7 @@ const categoryOptions: Array<{
 
 export default function MarketplaceSearch({
   locale = 'sv',
+  defaultCountry,
 }: {
   locale?: PublicLocale
   defaultCountry?: string
@@ -75,7 +77,7 @@ export default function MarketplaceSearch({
   const [listingIntent, setListingIntent] = useState<ListingIntent>('sale')
   const [query, setQuery] = useState('')
   const [country, setCountry] = useState(() =>
-    resolveDefaultCountry(undefined, locale),
+    resolveDefaultCountry(defaultCountry, locale),
   )
   const [openPicker, setOpenPicker] = useState<'category' | 'intent' | null>(null)
   const pickerRef = useRef<HTMLFormElement>(null)
@@ -148,6 +150,7 @@ export default function MarketplaceSearch({
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     if (listingIntent !== 'sale') params.set('intent', listingIntent)
+    if (country) params.set('country', country)
     router.push(localizePublicHref(locale, `${route}${params.size ? `?${params}` : ''}`))
   }
 
@@ -629,9 +632,7 @@ function resolveDefaultCountry(
   const requested = (defaultCountry || '').toUpperCase()
   const validCountries = new Set(euCountries.map(([code]) => code.toUpperCase()))
   if (validCountries.has(requested)) return requested
-  if (locale === 'sv') return 'SE'
-  if (locale === 'de') return 'DE'
-  return ''
+  return defaultSearchCountryForLocale(locale)
 }
 
 function SearchField({

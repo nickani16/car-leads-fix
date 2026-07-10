@@ -12,8 +12,11 @@ export type MarketplaceSort =
 
 export type MarketplaceSearchInput = {
   category?: string | null
+  categories?: string | string[] | null
   country?: string | null
   countryCode?: string | null
+  countries?: string | string[] | null
+  markets?: string | string[] | null
   q?: string | null
   make?: string | null
   model?: string | null
@@ -80,8 +83,8 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
     .eq('status', 'published')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
-  if (filters.category) query = query.eq('category', filters.category)
-  if (filters.country) query = query.eq('country_code', filters.country)
+  query = applyMultiFilter(query, 'category', filters.categories)
+  query = applyMultiFilter(query, 'country_code', filters.markets)
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
@@ -141,17 +144,13 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
 }
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
-  const categoryValue = clean(input.category)
-  const category =
-    categoryValue && categoryValue !== 'all' && categoryValue !== 'vehicles'
-      ? normalizeMarketplaceCategory(categoryValue)
-      : null
+  const categories = normalizeCategoryFilters(input.categories ?? input.category)
   const sort = normalizeSort(input.sort)
   const cursor = decodeCursor(input.cursor, sort)
 
   return {
-    category,
-    country: clean(input.countryCode || input.country).toUpperCase(),
+    categories,
+    markets: normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country),
     q: clean(input.q).slice(0, 80),
     make: clean(input.make).slice(0, 80),
     model: clean(input.model).slice(0, 80),
@@ -168,6 +167,34 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     cursor,
     limit: clampInt(input.limit, 1, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE),
   }
+}
+
+function splitFilterValues(value: unknown) {
+  const values = Array.isArray(value) ? value : [value]
+  return values
+    .flatMap((item) => String(item || '').split(','))
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function normalizeCategoryFilters(value: unknown) {
+  return [
+    ...new Set(
+      splitFilterValues(value)
+        .filter((item) => item !== 'all' && item !== 'vehicles')
+        .map((item) => normalizeMarketplaceCategory(item)),
+    ),
+  ]
+}
+
+function normalizeCountryFilters(value: unknown) {
+  return [
+    ...new Set(
+      splitFilterValues(value)
+        .map((item) => item.toUpperCase())
+        .filter((item) => /^[A-Z]{2}$/.test(item)),
+    ),
+  ]
 }
 
 function clean(value: unknown) {
@@ -196,6 +223,17 @@ function normalizeSort(value: unknown): MarketplaceSort {
     return value
   }
   return 'published'
+}
+
+function applyMultiFilter<
+  T extends {
+    eq: (column: string, value: string) => T
+    in: (column: string, values: string[]) => T
+  },
+>(query: T, column: string, values: string[]) {
+  if (values.length === 1) return query.eq(column, values[0])
+  if (values.length > 1) return query.in(column, values)
+  return query
 }
 
 function applySort<T extends { order: (column: string, options?: Record<string, unknown>) => T }>(
@@ -287,8 +325,8 @@ async function getMarketplaceFacets(filters: ReturnType<typeof normalizeMarketpl
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .limit(1000)
 
-  if (filters.category) query = query.eq('category', filters.category as MarketplaceCategorySlug)
-  if (filters.country) query = query.eq('country_code', filters.country)
+  query = applyMultiFilter(query, 'category', filters.categories as MarketplaceCategorySlug[])
+  query = applyMultiFilter(query, 'country_code', filters.markets)
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     query = query.textSearch('search_document', filters.q, {
       type: 'websearch',

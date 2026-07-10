@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cleanSeoText } from './market-seo'
 
 type PublicLocale = 'sv' | 'de' | 'en'
 
@@ -25,14 +26,16 @@ export function createPublicMetadata({
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
   const canonical = `${hosts[locale]}${normalizedPath}`
+  const seoTitle = cleanSeoText(title, 65)
+  const seoDescription = cleanSeoText(description, 150)
   const localizedPath = (targetLocale: PublicLocale) => {
     const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
     return targetPath === '/' ? '' : targetPath
   }
 
   return {
-    title: { absolute: title },
-    description,
+    title: { absolute: seoTitle },
+    description: seoDescription,
     keywords,
     alternates: {
       canonical,
@@ -44,8 +47,8 @@ export function createPublicMetadata({
       },
     },
     openGraph: {
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       url: canonical,
       siteName: 'Autorell',
       locale: locale === 'sv' ? 'sv_SE' : locale === 'de' ? 'de_DE' : 'en_GB',

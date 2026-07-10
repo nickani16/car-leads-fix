@@ -6,6 +6,9 @@ import { redirect } from 'next/navigation'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('saved-listings')
 
 export default async function SavedListingsPage() {
   const locale = await getRequestLocale()

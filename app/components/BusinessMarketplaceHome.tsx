@@ -1,20 +1,24 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, BadgeCheck } from 'lucide-react'
+import CountryFlag from './CountryFlag'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
-import {
-  categorySearchPath,
-  marketplaceCategories,
-  type MarketplaceCategorySlug,
-} from '@/lib/marketplace'
+import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
+import { buildListingPath } from '@/lib/listing-url'
+import {
+  getMarketplaceSellerPublicProfiles,
+  getPublishedMarketplaceHomeListings,
+} from '@/lib/marketplace-public-data'
 import {
   localizePublicHref,
+  translatePublic,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { countryForLocale } from '@/lib/market-locale'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]'
@@ -24,8 +28,6 @@ const homeCopy = {
     heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
     vehicleNewsTitle: 'Fordonsnyheter',
     allNews: 'Alla nyheter',
-    topListsTitle: 'Topplistor',
-    allTopLists: 'Alla topplistor',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
   },
@@ -33,8 +35,6 @@ const homeCopy = {
     heroAlt: 'European vehicle marketplace for private and business sellers',
     vehicleNewsTitle: 'Vehicle news',
     allNews: 'All news',
-    topListsTitle: 'Top lists',
-    allTopLists: 'All top lists',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
   },
@@ -42,12 +42,28 @@ const homeCopy = {
     heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
     vehicleNewsTitle: 'Fahrzeugnews',
     allNews: 'Alle News',
-    topListsTitle: 'Toplisten',
-    allTopLists: 'Alle Toplisten',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
   },
 } as const
+
+type HomeListingCardItem = {
+  id: string
+  title: string
+  href: string
+  imageUrl: string | null
+  imageUrls: string[]
+  priceLabel: string
+  meta: string
+  countryCode: string
+  sellerTrust: 'verified' | 'unverified'
+}
+
+type HomeListingSectionData = {
+  title: string
+  emptyText: string
+  items: HomeListingCardItem[]
+}
 
 export default async function BusinessMarketplaceHome({
   locale = 'sv',
@@ -65,13 +81,49 @@ export default async function BusinessMarketplaceHome({
           ? homeCopy.en
           : translatePublicObject(locale, homeCopy.en)
   const localMarketCode =
-    marketCode || (locale === 'sv' ? 'SE' : locale === 'de' ? 'DE' : 'EU')
+    marketCode || countryForLocale(locale)
   const localMarketLabel =
     localMarketCode === 'EU'
       ? 'Europe'
       : getEuCountryName(localMarketCode, locale)
+  const displayCurrency = displayCurrencyForMarket(localMarketCode)
   const newsCards = getVehicleNewsCards(locale)
-  const topListSections = getTopListSections(locale, localMarketLabel)
+  const [localTopListings, localLatestListings, europeTopListings, europeLatestListings] =
+    await Promise.all([
+      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
+      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
+      getPublishedMarketplaceHomeListings('EU', 'top', 8),
+      getPublishedMarketplaceHomeListings('EU', 'latest', 8),
+    ])
+  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
+    [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
+      .map((listing) => listing.seller_user_id)
+      .filter(Boolean),
+  )
+  const toHomeCard = (listing: HomeListingSource) =>
+    mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified')
+  const listingSections = [
+    {
+      title: homeListingSectionTitle(locale, 'top', localMarketLabel),
+      emptyText: homeEmptyListingText(locale, 'country'),
+      items: await Promise.all(localTopListings.map(toHomeCard)),
+    },
+    {
+      title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
+      emptyText: homeEmptyListingText(locale, 'country'),
+      items: await Promise.all(localLatestListings.map(toHomeCard)),
+    },
+    {
+      title: homeListingSectionTitle(locale, 'top', homeEuropeLabel(locale)),
+      emptyText: homeEmptyListingText(locale, 'europe'),
+      items: await Promise.all(europeTopListings.map(toHomeCard)),
+    },
+    {
+      title: homeListingSectionTitle(locale, 'latest', homeEuropeLabel(locale)),
+      emptyText: homeEmptyListingText(locale, 'europe'),
+      items: await Promise.all(europeLatestListings.map(toHomeCard)),
+    },
+  ]
 
   return (
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
@@ -119,39 +171,14 @@ export default async function BusinessMarketplaceHome({
                 item={item}
                 category={t.newsCategory}
                 readTime={t.newsReadTime}
+                locale={locale}
               />
             ))}
           </div>
 
-          <div className="mt-12 flex items-end justify-between gap-5 sm:mt-16">
-            <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.035em] sm:text-[34px]">
-              {t.topListsTitle}
-            </h2>
-            <Link
-              href={localizePublicHref(locale, '/marketplace')}
-              className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
-            >
-              {t.allTopLists}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="mt-7 space-y-8">
-            {topListSections.map((section) => (
-              <div key={section.title}>
-                <h3 className="text-sm font-semibold text-[#101828]">
-                  {section.title}
-                </h3>
-                <div className="mt-3 flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0">
-                  {section.items.map((item, index) => (
-                    <TopListCard
-                      key={`${section.title}-${item.title}`}
-                      item={item}
-                      index={index + 1}
-                    />
-                  ))}
-                </div>
-              </div>
+          <div className="mt-12 space-y-10 sm:mt-16">
+            {listingSections.map((section) => (
+              <HomeListingSection key={section.title} section={section} locale={locale} />
             ))}
           </div>
         </div>
@@ -166,16 +193,18 @@ function VehicleNewsCard({
   item,
   category,
   readTime,
+  locale,
 }: {
   item: { title: string; href: string }
   category: string
   readTime: string
+  locale: PublicLocale
 }) {
   return (
     <Link href={item.href} className="group w-full flex-none snap-start sm:w-auto">
-      <NoPhotoFrame className="aspect-[16/10] rounded-[8px]" />
+      <NoPhotoFrame className="aspect-[16/10] rounded-[8px]" locale={locale} />
       <div className="mt-2 text-[11px] font-medium text-[#667085]">
-        {category} · {readTime}
+        {category} | {readTime}
       </div>
       <h3 className="mt-1 line-clamp-2 text-[14px] font-semibold leading-5 text-[#101828] transition group-hover:text-[#0866ff]">
         {item.title}
@@ -184,50 +213,141 @@ function VehicleNewsCard({
   )
 }
 
-function TopListCard({
+function NoPhotoFrame({
+  className = '',
+  compact = false,
+  locale = 'en',
+}: {
+  className?: string
+  compact?: boolean
+  locale?: PublicLocale
+}) {
+  const label = locale === 'de'
+    ? 'Kein Foto verfügbar'
+    : locale === 'sv'
+      ? 'Ingen bild tillgänglig'
+      : translatePublic(locale, 'No photo available')
+  const [first, ...rest] = label.split(' ')
+  return (
+    <div
+      className={`grid place-items-center border border-[#e3e8f0] bg-[#f6f7f9] text-center text-[#9b9ca0] ${className}`}
+      aria-label={label}
+    >
+      <span className={`${compact ? 'text-[15px]' : 'text-[22px]'} font-light uppercase leading-[1.35] tracking-[0.04em]`}>
+        {first || label}
+        <br />
+        {rest.join(' ')}
+      </span>
+    </div>
+  )
+}
+
+function HomeListingSection({
+  section,
+  locale,
+}: {
+  section: HomeListingSectionData
+  locale: PublicLocale
+}) {
+  return (
+    <section>
+      <div className="flex items-end justify-between gap-5">
+        <h2 className="text-[24px] font-medium leading-tight tracking-[-0.035em] text-[#101828] sm:text-[30px]">
+          {section.title}
+        </h2>
+        <Link
+          href={localizePublicHref(locale, '/marketplace')}
+          className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
+        >
+          {homeViewListingsLabel(locale)}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+      {section.items.length ? (
+        <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
+          {section.items.map((item, index) => (
+            <HomeListingCard
+              key={`${section.title}-${item.id}`}
+              item={item}
+              index={index + 1}
+              locale={locale}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-[12px] border border-[#d8e0ec] bg-[#f8fbff] px-5 py-7 text-sm font-medium text-[#667085]">
+          {section.emptyText}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function HomeListingCard({
   item,
   index,
+  locale,
 }: {
-  item: { title: string; meta: string; href: string }
+  item: HomeListingCardItem
   index: number
+  locale: PublicLocale
 }) {
   return (
     <Link
       href={item.href}
-      className="group relative w-[152px] flex-none snap-start overflow-hidden rounded-[8px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,24,40,.12)] sm:w-auto"
+      className="group w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(16,24,40,.12)] sm:w-auto sm:max-w-none"
     >
-      <NoPhotoFrame className="aspect-[5/3]" compact />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#101828]/70 via-[#101828]/10 to-transparent" />
-      <span className="absolute left-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-[#101828]/70 text-xs font-semibold text-white">
-        {index}
-      </span>
-      <div className="absolute inset-x-0 bottom-0 p-2 text-white">
-        <h4 className="line-clamp-2 text-[12px] font-semibold leading-4">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
+        {item.imageUrls.length ? (
+          <HomeListingImageScroller
+            images={item.imageUrls}
+            title={item.title}
+          />
+        ) : (
+          <NoPhotoFrame className="h-full w-full border-0" compact locale={locale} />
+        )}
+        <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-[#101828]/75 text-xs font-semibold text-white">
+          {index}
+        </span>
+        {item.sellerTrust === 'verified' ? (
+          <span className="absolute right-3 top-3 inline-flex h-7 items-center gap-1 rounded-full bg-[#0866ff] px-2.5 text-[11px] font-semibold text-white shadow-md">
+            <BadgeCheck className="h-3.5 w-3.5" />
+            {locale === 'sv' ? 'Verifierad' : translatePublic(locale, 'Verified')}
+          </span>
+        ) : null}
+        <CountryFlag code={item.countryCode} className="absolute bottom-3 left-3 h-7 w-7 rounded-full shadow-md" />
+      </div>
+      <div className="p-3">
+        <h3 className="line-clamp-2 text-[15px] font-medium leading-5 text-[#101828] transition group-hover:text-[#0866ff]">
           {item.title}
-        </h4>
-        <p className="mt-1 text-[11px] font-medium text-white/90">{item.meta}</p>
+        </h3>
+        <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
+        <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
       </div>
     </Link>
   )
 }
 
-function NoPhotoFrame({
-  className = '',
-  compact = false,
+function HomeListingImageScroller({
+  images,
+  title,
 }: {
-  className?: string
-  compact?: boolean
+  images: string[]
+  title: string
 }) {
   return (
-    <div
-      className={`grid place-items-center border border-[#e3e8f0] bg-[#f6f7f9] text-center text-[#9b9ca0] ${className}`}
-      aria-label="No photo available"
-    >
-      <span className={`${compact ? 'text-[15px]' : 'text-[22px]'} font-light uppercase leading-[1.35] tracking-[0.04em]`}>
-        No photo
-        <br />
-        available
-      </span>
+    <div className="flex h-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {images.map((image, index) => (
+        <span key={`${image}-${index}`} className="relative h-full w-full shrink-0 snap-center">
+          <Image
+            src={image}
+            alt={index === 0 ? title : `${title} ${index + 1}`}
+            fill
+            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          />
+        </span>
+      ))}
     </div>
   )
 }
@@ -248,6 +368,13 @@ function getVehicleNewsCards(locale: PublicLocale) {
       { title: 'What price, location and vehicle history reveal in a listing', href },
     ]
   }
+  if (locale !== 'sv') {
+    return [
+      { title: translatePublic(locale, 'How buyers compare vehicles across European markets'), href },
+      { title: translatePublic(locale, 'A practical checklist for safer vehicle deals'), href },
+      { title: translatePublic(locale, 'What price, location and vehicle history reveal in a listing'), href },
+    ]
+  }
   return [
     { title: 'Så jämför köpare fordon mellan europeiska marknader', href },
     { title: 'Checklista för en tryggare fordonsaffär online', href },
@@ -255,47 +382,110 @@ function getVehicleNewsCards(locale: PublicLocale) {
   ]
 }
 
-function getTopListSections(locale: PublicLocale, marketLabel: string) {
-  const categoryLabel = (slug: MarketplaceCategorySlug) => {
-    const category = marketplaceCategories.find((item) => item.slug === slug)
-    if (!category) return slug
-    if (locale === 'de') return category.labels.de
-    if (locale === 'en') return category.labels.en
-    return category.labels.sv
-  }
-  const href = (slug: MarketplaceCategorySlug) =>
-    localizePublicHref(locale, categorySearchPath(slug))
-  const latestTitle =
-    locale === 'de'
-      ? `Neueste Anzeigen in ${marketLabel}`
-      : locale === 'en'
-        ? `Latest listings in ${marketLabel}`
-        : `Senaste annonserna i ${marketLabel}`
-  const watchedTitle =
-    locale === 'de'
-      ? `Top-Anzeigen in ${marketLabel}`
-      : locale === 'en'
-        ? `Top listings in ${marketLabel}`
-        : `Topplista i ${marketLabel}`
-  const meta =
-    locale === 'de' ? 'Premiumplatz' : locale === 'en' ? 'Premium spot' : 'Premiumplats'
-
-  return [
-    {
-      title: latestTitle,
-      items: (['cars', 'vans', 'motorcycles', 'motorhomes', 'trucks'] as MarketplaceCategorySlug[]).map((slug) => ({
-        title: categoryLabel(slug),
-        meta,
-        href: href(slug),
-      })),
-    },
-    {
-      title: watchedTitle,
-      items: (['construction', 'agriculture', 'caravans', 'electric-bikes', 'e-scooters'] as MarketplaceCategorySlug[]).map((slug) => ({
-        title: categoryLabel(slug),
-        meta,
-        href: href(slug),
-      })),
-    },
-  ]
+function homeEuropeLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Europa'
+  if (locale === 'de') return 'Europa'
+  if (locale === 'en') return 'Europe'
+  return translatePublic(locale, 'Europe')
 }
+
+function homeListingSectionTitle(
+  locale: PublicLocale,
+  kind: 'top' | 'latest',
+  marketLabel: string,
+) {
+  if (kind === 'latest') {
+    if (locale === 'sv') return `Senaste annonser i ${marketLabel}`
+    if (locale === 'de') return `Neueste Anzeigen in ${marketLabel}`
+    if (locale === 'en') return `Latest listings in ${marketLabel}`
+    return `${translatePublic(locale, 'Latest listings in')} ${marketLabel}`
+  }
+
+  if (locale === 'sv') return `Topplistan i ${marketLabel}`
+  if (locale === 'de') return `Top-Anzeigen in ${marketLabel}`
+  if (locale === 'en') return `Top listings in ${marketLabel}`
+  return `${translatePublic(locale, 'Top listings in')} ${marketLabel}`
+}
+
+function homeEmptyListingText(locale: PublicLocale, scope: 'country' | 'europe') {
+  const english =
+    scope === 'country'
+      ? 'Listings will appear here when vehicles are published in this market.'
+      : 'European listings will appear here when matching vehicles are published.'
+  if (locale === 'sv') {
+    return scope === 'country'
+      ? 'Annonser visas här när fordon publiceras på den här marknaden.'
+      : 'Europeiska annonser visas här när matchande fordon publiceras.'
+  }
+  if (locale === 'de') {
+    return scope === 'country'
+      ? 'Anzeigen erscheinen hier, wenn Fahrzeuge in diesem Markt veröffentlicht werden.'
+      : 'Europäische Anzeigen erscheinen hier, wenn passende Fahrzeuge veröffentlicht werden.'
+  }
+  if (locale === 'en') return english
+  return translatePublic(locale, english)
+}
+
+function homeViewListingsLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Visa annonser'
+  if (locale === 'de') return 'Anzeigen ansehen'
+  if (locale === 'en') return 'View listings'
+  return translatePublic(locale, 'View listings')
+}
+
+type HomeListingSource = {
+  id: string
+  title: string
+  make: string | null
+  model: string | null
+  model_year: number | string | null
+  mileage_km: number | string | null
+  city: string | null
+  country_code: string
+  price: number | string | null
+  currency: string | null
+  images?: string[] | null
+  seller_user_id?: string | null
+}
+
+async function mapHomeListingCard(
+  listing: HomeListingSource,
+  locale: PublicLocale,
+  displayCurrency: string,
+  sellerTrust: 'verified' | 'unverified',
+): Promise<HomeListingCardItem> {
+  const countryName = getEuCountryName(listing.country_code, locale)
+  const location = [listing.city, countryName]
+    .filter(Boolean)
+    .join(', ')
+  const price = Number(listing.price)
+  const numberLocale = locale === 'sv' ? 'sv-SE' : locale === 'de' ? 'de-DE' : 'en-US'
+  const mileage = Number(listing.mileage_km)
+  const vehicleMeta = [
+    listing.model_year ? String(listing.model_year) : null,
+    Number.isFinite(mileage) ? `${mileage.toLocaleString(numberLocale)} km` : null,
+    location || countryName,
+  ]
+    .filter(Boolean)
+    .join(' | ')
+
+  return {
+    id: listing.id,
+    title: listing.title,
+    href: localizePublicHref(locale, buildListingPath(listing)),
+    imageUrl: listing.images?.[0] || null,
+    imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
+    priceLabel: Number.isFinite(price)
+      ? (await formatMarketplacePriceDisplay({
+          amount: price,
+          currency: listing.currency || 'EUR',
+          locale,
+          targetCurrency: displayCurrency,
+        })).label
+      : translatePublic(locale, 'Price on request'),
+    meta: vehicleMeta,
+    countryCode: listing.country_code,
+    sellerTrust,
+  }
+}
+

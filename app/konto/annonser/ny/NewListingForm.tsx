@@ -21,6 +21,7 @@ import {
 } from '@/lib/marketplace-pricing'
 import {
   euCurrencies,
+  currencyForCountry,
   getMarketplaceCategory,
   marketplaceLanguage,
   normalizeMarketplaceCategory,
@@ -104,7 +105,7 @@ export default function NewListingForm({
   )
   const [values, setValues] = useState<Values>({
     packageId: 'free_7d',
-    currency: 'EUR',
+    currency: currencyForCountry(countryCode),
     phoneVisibility: 'public',
   })
   const [equipment, setEquipment] = useState<string[]>([])
@@ -144,7 +145,7 @@ export default function NewListingForm({
     setCategory(normalizeMarketplaceCategory(value))
     setValues((current) => ({
       packageId: current.packageId || 'free_7d',
-      currency: current.currency || 'EUR',
+      currency: current.currency || currencyForCountry(countryCode),
     }))
     setEquipment([])
     setEquipmentSearch('')
@@ -1104,7 +1105,7 @@ function PreviewStep({
           <p className="mt-2 text-lg font-bold text-[#101828]">
             {values.price ? `${Number(values.price).toLocaleString(locale === 'sv' ? 'sv-SE' : locale)} ${values.currency || 'EUR'}` : copy.priceMissing}
           </p>
-          <p className="mt-1 text-sm text-[#667085]">{values.city || copy.city} · {values.postalCode || copy.postalCode}</p>
+          <p className="mt-1 text-sm text-[#667085]">{values.city || copy.city} | {values.postalCode || copy.postalCode}</p>
           <p className="mt-1 text-sm font-semibold text-[#475467]">
             {copy.package}: {packageCopy[(values.packageId || 'free_7d') as keyof typeof packageCopy]?.title || copy.notSelected}
           </p>
