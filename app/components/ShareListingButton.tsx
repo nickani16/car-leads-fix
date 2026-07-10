@@ -7,10 +7,12 @@ export default function ShareListingButton({
   title,
   url,
   label = 'Dela annons',
+  variant = 'button',
 }: {
   title: string
   url: string
   label?: string
+  variant?: 'button' | 'plain'
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -28,11 +30,16 @@ export default function ShareListingButton({
     }
   }
 
+  const className =
+    variant === 'plain'
+      ? 'inline-flex items-center justify-center gap-2 text-base font-medium text-[#101828] transition hover:text-[#0866ff]'
+      : 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]'
+
   return (
     <button
       type="button"
       onClick={share}
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-bold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+      className={className}
     >
       <Share2 className="h-4 w-4" />
       {copied ? 'Länk kopierad' : label}

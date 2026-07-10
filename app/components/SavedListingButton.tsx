@@ -13,9 +13,13 @@ import {
 export default function SavedListingButton({
   listingId,
   label = 'Spara annons',
+  savedLabel = 'Sparad',
+  variant = 'icon',
 }: {
   listingId: string
   label?: string
+  savedLabel?: string
+  variant?: 'icon' | 'plain'
 }) {
   const [saved, setSaved] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
@@ -107,6 +111,24 @@ export default function SavedListingButton({
     } finally {
       setBusy(false)
     }
+  }
+
+  if (variant === 'plain') {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={saved ? 'Ta bort sparad annons' : label}
+        aria-pressed={saved}
+        disabled={busy}
+        className={`inline-flex items-center justify-center gap-2 text-base font-medium transition ${
+          saved ? 'text-[#0866ff]' : 'text-[#ff2b7a] hover:text-[#d91563]'
+        } ${busy ? 'opacity-70' : ''}`}
+      >
+        <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
+        <span>{saved ? savedLabel : label}</span>
+      </button>
+    )
   }
 
   return (

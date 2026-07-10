@@ -15,6 +15,7 @@ import {
   TrendingDown,
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
+import ListingContactFormButton from '@/app/components/ListingContactFormButton'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingBackLink from '@/app/components/ListingBackLink'
@@ -336,23 +337,29 @@ export default async function ListingDetailPage({
         marketCode={marketCode}
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
-        <div className="flex items-center justify-between gap-4">
+      <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-3 sm:px-6 lg:px-10 lg:py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <ListingBackLink
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
           />
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
             <ShareListingButton
               title={listing.title}
               url={publicUrl}
-              label={copy.shareListing}
+              label={copy.shareAction}
+              variant="plain"
             />
-            <SavedListingButton listingId={listing.id} />
+            <SavedListingButton
+              listingId={listing.id}
+              label={copy.favoriteListing}
+              savedLabel={copy.favoriteSaved}
+              variant="plain"
+            />
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
           <div className="min-w-0 space-y-6">
             <ListingImageGallery images={listing.images || []} title={listing.title} />
 
@@ -486,6 +493,11 @@ export default async function ListingDetailPage({
                 ) : null}
                 <RevealPhoneButton listingId={listing.id} locale={locale} />
                 <MessageSellerButton listingId={listing.id} enabled variant="button" />
+                <ListingContactFormButton
+                  listingId={listing.id}
+                  listingTitle={listing.title}
+                  locale={locale}
+                />
               </div>
 
               <div className="border-t border-[#edf1f6] p-6">
@@ -1015,6 +1027,9 @@ const listingDetailCopy = {
     reference: 'Referens',
     country: 'Land',
     shareListing: 'Dela annons',
+    shareAction: 'Dela',
+    favoriteListing: 'Lägg till i favoriter',
+    favoriteSaved: 'Sparad i favoriter',
     breadcrumbLabel: 'Brödsmulor',
     backToListings: 'Tillbaka',
     home: 'Hem',
@@ -1033,6 +1048,9 @@ const listingDetailCopy = {
     reference: 'Reference',
     country: 'Country',
     shareListing: 'Share listing',
+    shareAction: 'Share',
+    favoriteListing: 'Add to favourites',
+    favoriteSaved: 'Saved to favourites',
     breadcrumbLabel: 'Breadcrumb',
     backToListings: 'Back',
     home: 'Home',
@@ -1051,6 +1069,9 @@ const listingDetailCopy = {
     reference: 'Referenz',
     country: 'Land',
     shareListing: 'Anzeige teilen',
+    shareAction: 'Teilen',
+    favoriteListing: 'Zu Favoriten hinzufügen',
+    favoriteSaved: 'In Favoriten gespeichert',
     breadcrumbLabel: 'Breadcrumb',
     backToListings: 'Zurück',
     home: 'Startseite',
