@@ -2471,7 +2471,7 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
       tiles.push(
         layer === 'satellite'
           ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : `https://a.basemaps.cartocdn.com/light_all/${zoom}/${x}/${y}.png`,
+          : `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`,
       )
     }
   }
