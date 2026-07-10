@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, FilePlus2, ShieldCheck } from 'lucide-react'
+import { FilePlus2, ShieldCheck } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -46,24 +45,16 @@ export default async function NewListingPage({
 
   return (
     <main className="mx-auto max-w-[1360px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-      <Link
-        href={localizePublicHref(locale, '/account/listings')}
-        className="inline-flex items-center gap-2 text-sm font-bold text-[#475467] transition hover:text-[#0866ff]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {copy.back}
-      </Link>
-
-      <section className="mt-5 overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
+      <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="border-b border-[#dfe6f1] bg-[#f4f8ff] p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-white text-[#0866ff] shadow-sm">
               <FilePlus2 className="h-6 w-6" />
             </span>
-            <p className="mt-5 text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">
               {copy.eyebrow}
             </p>
-            <h1 className="mt-2 text-2xl font-bold leading-tight tracking-[-.04em] text-[#101828]">
+            <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-[-.04em] text-[#101828]">
               {copy.title}
             </h1>
             <p className="mt-3 text-sm leading-6 text-[#667085]">

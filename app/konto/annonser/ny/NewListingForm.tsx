@@ -60,6 +60,19 @@ type UploadImage = {
   name: string
   size: number
 }
+type ListingDraft = {
+  id: string
+  category: MarketplaceCategorySlug
+  values: Values
+  equipment: string[]
+  images: UploadImage[]
+  mainImageId: string
+}
+type ListingCreationResult = {
+  listingId: string
+  requiresPayment?: boolean
+  packageId?: string
+}
 
 const steps = [
   'Kategori & grundinfo',
@@ -103,11 +116,12 @@ export default function NewListingForm({
   const [category, setCategory] = useState<MarketplaceCategorySlug>(
     normalizeMarketplaceCategory(defaultCategory),
   )
-  const [values, setValues] = useState<Values>({
+  const createInitialValues = () => ({
     packageId: 'free_7d',
     currency: currencyForCountry(countryCode),
     phoneVisibility: 'public',
   })
+  const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [images, setImages] = useState<UploadImage[]>([])
@@ -116,6 +130,7 @@ export default function NewListingForm({
   const [draggedImageId, setDraggedImageId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [batchDrafts, setBatchDrafts] = useState<ListingDraft[]>([])
   const selectedPricing =
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
@@ -224,6 +239,114 @@ export default function NewListingForm({
     setStep((current) => Math.max(0, current - 1) as StepId)
   }
 
+  function currentDraft(): ListingDraft {
+    return {
+      id: crypto.randomUUID(),
+      category,
+      values: { ...values },
+      equipment: [...equipment],
+      images: orderedImages,
+      mainImageId,
+    }
+  }
+
+  function resetCurrentListing() {
+    setValues(createInitialValues())
+    setEquipment([])
+    setEquipmentSearch('')
+    setImages([])
+    setMainImageId('')
+    setOpenField(null)
+    setDraggedImageId('')
+    setStep(0)
+  }
+
+  function addCurrentToBatch() {
+    if (!validate(4)) return
+    setBatchDrafts((current) => [...current, currentDraft()])
+    resetCurrentListing()
+    setError('')
+  }
+
+  function removeBatchDraft(id: string) {
+    setBatchDrafts((current) => current.filter((draft) => draft.id !== id))
+  }
+
+  async function createListingFromDraft(draft: ListingDraft): Promise<ListingCreationResult> {
+    const form = new FormData()
+    form.set('category', draft.category)
+    form.set('sellerCountryCode', countryCode)
+    Object.entries(draft.values).forEach(([key, value]) => {
+      if (value) form.set(key, value)
+    })
+    form.set(
+      'color',
+      draft.values.colorChoice === 'other' ? 'Annan fÃ¤rg' : draft.values.colorChoice || '',
+    )
+    form.set('equipmentKeys', JSON.stringify(draft.equipment))
+    sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
+    draft.images.forEach((image) => form.append('images', image.file, image.name))
+
+    const response = await fetch('/api/account/listings', {
+      method: 'POST',
+      body: form,
+    })
+    const result = (await response.json()) as {
+      error?: string
+      listingId?: string
+      requiresPayment?: boolean
+      packageId?: string
+    }
+    if (!response.ok || !result.listingId) {
+      throw new Error(result.error || 'Kunde inte skapa annonsen.')
+    }
+    return {
+      listingId: result.listingId,
+      requiresPayment: result.requiresPayment,
+      packageId: result.packageId,
+    }
+  }
+
+  async function startCheckout(listingId: string, packageId?: string) {
+    const checkout = await fetch('/api/account/listing-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        listingId,
+        packageId,
+      }),
+    })
+    const checkoutResult = (await checkout.json()) as {
+      url?: string
+      error?: string
+    }
+    if (checkoutResult.url) {
+      window.location.assign(checkoutResult.url)
+      return
+    }
+    throw new Error(checkoutResult.error || 'Betalningen kunde inte startas.')
+  }
+
+  async function publishBatchDrafts() {
+    if (!batchDrafts.length) return
+    setLoading(true)
+    setError('')
+
+    try {
+      for (const draft of batchDrafts) {
+        const result = await createListingFromDraft(draft)
+        if (result.requiresPayment) {
+          await startCheckout(result.listingId, result.packageId)
+          return
+        }
+      }
+      router.push('/account/listings')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Kunde inte publicera annonskÃ¶n.')
+      setLoading(false)
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!validate(4)) return
@@ -291,10 +414,10 @@ export default function NewListingForm({
       <div className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#0866ff]">
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">
               {copy.step} {step + 1} {copy.of} {steps.length}
             </p>
-            <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[#101828]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#101828]">
               {copy.steps[step]}
             </h2>
           </div>
@@ -316,7 +439,7 @@ export default function NewListingForm({
               onClick={() => {
                 if (index <= step || validate(step)) setStep(index as StepId)
               }}
-              className={`min-h-11 rounded-[12px] px-3 py-2 text-left text-xs font-bold leading-4 transition ${
+              className={`min-h-11 rounded-[12px] px-3 py-2 text-left text-xs font-semibold leading-4 transition ${
                 index === step
                   ? 'bg-[#0866ff] text-white'
                   : index < step
@@ -522,7 +645,13 @@ export default function NewListingForm({
             values={values}
             selectedPricing={selectedPricing}
             accountType={accountType}
+            batchDrafts={batchDrafts}
+            loading={loading}
             onChange={setValue}
+            onAddToBatch={addCurrentToBatch}
+            onPublishBatch={publishBatchDrafts}
+            onRemoveBatchDraft={removeBatchDraft}
+            locale={locale}
           />
         ) : null}
 
@@ -538,7 +667,7 @@ export default function NewListingForm({
           type="button"
           onClick={previousStep}
           disabled={step === 0 || loading}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d7deed] bg-white px-5 font-bold text-[#344054] disabled:opacity-40"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d7deed] bg-white px-5 font-semibold text-[#344054] disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" />
           {copy.back}
@@ -547,7 +676,7 @@ export default function NewListingForm({
           <button
             type="button"
             onClick={nextStep}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white"
           >
             {copy.next}
             <ArrowRight className="h-4 w-4" />
@@ -555,7 +684,7 @@ export default function NewListingForm({
         ) : (
           <button
             disabled={loading}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white disabled:opacity-60"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:opacity-60"
           >
             {loading ? copy.publishing : copy.publish}
             <Check className="h-4 w-4" />
@@ -580,7 +709,7 @@ function StepShell({
   return (
     <section>
       <div className="mb-6">
-        <h3 className="text-xl font-bold tracking-[-0.03em] text-[#101828]">{title}</h3>
+        <h3 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">{title}</h3>
         <p className="mt-1 text-sm leading-6 text-[#667085]">{text}</p>
       </div>
       <div
@@ -682,7 +811,7 @@ function SelectCard({
         className="flex min-h-16 w-full items-center justify-between gap-4 px-4 py-3 text-left"
       >
         <span className="min-w-0">
-          <span className="block text-xs font-bold uppercase tracking-[.12em] text-[#667085]">
+          <span className="block text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
             {label}{required ? ' *' : ''}
           </span>
           <strong className="mt-1 block min-w-0 whitespace-normal break-words text-sm leading-5 text-[#101828]">
@@ -733,7 +862,7 @@ function ChoiceButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-12 min-w-0 items-center justify-between gap-3 rounded-[14px] border px-4 py-2.5 text-left text-sm font-bold leading-5 transition ${
+      className={`flex min-h-12 min-w-0 items-center justify-between gap-3 rounded-[14px] border px-4 py-2.5 text-left text-sm font-semibold leading-5 transition ${
         selected
           ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
           : 'border-[#d7deed] bg-white text-[#344054] hover:border-[#0866ff]/50'
@@ -782,7 +911,7 @@ function EquipmentMultiSelect({
           {selectedOptions.map((option) => (
             <span
               key={option.key}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1.5 text-sm font-bold text-[#0866ff]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1.5 text-sm font-semibold text-[#0866ff]"
             >
               {equipmentLabel(option, locale)}
               <button
@@ -820,7 +949,7 @@ function EquipmentMultiSelect({
 
           return (
             <section key={group.key} className="rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] p-3">
-              <h4 className="px-1 text-xs font-black uppercase tracking-[0.14em] text-[#667085]">
+              <h4 className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
                 {locale === 'sv' ? group.sv : locale === 'de' ? group.de : translatePublic(locale, group.en)}
               </h4>
               <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -829,7 +958,7 @@ function EquipmentMultiSelect({
                   return (
                     <label
                       key={option.key}
-                      className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-[12px] border px-3 py-2 text-sm font-bold transition ${
+                      className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-[12px] border px-3 py-2 text-sm font-semibold transition ${
                         checked
                           ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                           : 'border-[#d7deed] bg-white text-[#344054] hover:border-[#0866ff]/50'
@@ -882,7 +1011,7 @@ function ColorCard({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`flex min-h-14 min-w-0 items-center gap-3 rounded-[16px] border px-3 py-2 text-left text-sm font-bold leading-5 transition ${
+            className={`flex min-h-14 min-w-0 items-center gap-3 rounded-[16px] border px-3 py-2 text-left text-sm font-semibold leading-5 transition ${
               value === option.value
                 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff] shadow-[0_10px_28px_rgba(8,102,255,.12)]'
                 : 'border-[#d7deed] bg-white text-[#344054] hover:border-[#0866ff]/50'
@@ -957,7 +1086,7 @@ function ImageStep({
   return (
     <section>
       <div className="mb-6">
-        <h3 className="text-xl font-bold tracking-[-0.03em] text-[#101828]">{copy.imagesTitle}</h3>
+        <h3 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">{copy.imagesTitle}</h3>
         <p className="mt-1 text-sm leading-6 text-[#667085]">
           {copy.imagesText}
         </p>
@@ -987,7 +1116,7 @@ function ImageStep({
             >
               <Image src={image.preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-cover" />
               <div className="flex items-center justify-between gap-2 p-3">
-                <span className="flex min-w-0 items-center gap-2 text-xs font-bold text-[#667085]">
+                <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-[#667085]">
                   <GripVertical className="h-4 w-4 shrink-0" />
                   {copy.image} {index + 1}
                 </span>
@@ -995,7 +1124,7 @@ function ImageStep({
                   <button
                     type="button"
                     onClick={() => onMainImageId(image.id)}
-                    className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-xs font-bold ${
+                    className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold ${
                       mainImageId === image.id ? 'bg-[#0866ff] text-white' : 'bg-[#eef5ff] text-[#0866ff]'
                     }`}
                     aria-label={copy.chooseMainImage}
@@ -1016,7 +1145,7 @@ function ImageStep({
                 </div>
               </div>
               {mainImageId === image.id ? (
-                <div className="border-t border-[#edf1f7] px-3 py-2 text-xs font-bold text-[#0866ff]">
+                <div className="border-t border-[#edf1f7] px-3 py-2 text-xs font-semibold text-[#0866ff]">
                   {copy.mainImage}
                 </div>
               ) : null}
@@ -1061,15 +1190,15 @@ function PreviewStep({
   return (
     <section className="grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
       <div>
-        <h3 className="text-xl font-bold tracking-[-0.03em] text-[#101828]">{copy.previewTitle}</h3>
+        <h3 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">{copy.previewTitle}</h3>
         <p className="mt-1 text-sm leading-6 text-[#667085]">
           {copy.previewText}
         </p>
-        <p className="mt-4 rounded-[14px] border border-[#cfe0ff] bg-[#eef5ff] px-4 py-3 text-sm font-bold text-[#0866ff]">
+        <p className="mt-4 rounded-[14px] border border-[#cfe0ff] bg-[#eef5ff] px-4 py-3 text-sm font-semibold text-[#0866ff]">
           {copy.previewNotice}
         </p>
         <div className="mt-5 rounded-[18px] border border-[#d7deed] bg-white p-4">
-          <h4 className="text-sm font-bold text-[#101828]">{copy.structuredDataTitle}</h4>
+          <h4 className="text-sm font-semibold text-[#101828]">{copy.structuredDataTitle}</h4>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
             {copy.structuredDataText}
           </p>
@@ -1098,11 +1227,11 @@ function PreviewStep({
           </div>
         )}
         <div className="p-5">
-          <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
+          <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
             {categoryLabel}
           </span>
-          <h4 className="mt-3 text-2xl font-bold tracking-[-0.04em]">{title || copy.listingTitle}</h4>
-          <p className="mt-2 text-lg font-bold text-[#101828]">
+          <h4 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">{title || copy.listingTitle}</h4>
+          <p className="mt-2 text-lg font-semibold text-[#101828]">
             {values.price ? `${Number(values.price).toLocaleString(locale === 'sv' ? 'sv-SE' : locale)} ${values.currency || 'EUR'}` : copy.priceMissing}
           </p>
           <p className="mt-1 text-sm text-[#667085]">{values.city || copy.city} | {values.postalCode || copy.postalCode}</p>
@@ -1111,7 +1240,7 @@ function PreviewStep({
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {specs.map((spec) => (
-              <span key={String(spec)} className="rounded-full bg-[#f2f4f7] px-3 py-1 text-xs font-bold text-[#475467]">
+              <span key={String(spec)} className="rounded-full bg-[#f2f4f7] px-3 py-1 text-xs font-semibold text-[#475467]">
                 {spec}
               </span>
             ))}
@@ -1150,13 +1279,25 @@ function PublishStep({
   values,
   selectedPricing,
   accountType,
+  batchDrafts,
+  loading,
   onChange,
+  onAddToBatch,
+  onPublishBatch,
+  onRemoveBatchDraft,
+  locale,
 }: {
   copy: ListingFormCopy
   values: Values
   selectedPricing: (typeof marketplaceCategories)[number]
   accountType: 'private' | 'business'
+  batchDrafts: ListingDraft[]
+  loading: boolean
   onChange: (name: string, value: string) => void
+  onAddToBatch: () => void
+  onPublishBatch: () => void
+  onRemoveBatchDraft: (id: string) => void
+  locale: PublicLocale
 }) {
   const packages = [
     { id: 'free_7d', price: 0 },
@@ -1167,7 +1308,7 @@ function PublishStep({
   return (
     <section>
       <div className="mb-6">
-        <h3 className="text-xl font-bold tracking-[-0.03em] text-[#101828]">{copy.publishTitle}</h3>
+        <h3 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">{copy.publishTitle}</h3>
         <p className="mt-1 text-sm leading-6 text-[#667085]">
           {copy.publishText}
         </p>
@@ -1187,9 +1328,9 @@ function PublishStep({
                   : 'border-[#d7deed] bg-white'
               }`}
             >
-              <span className="text-sm font-bold text-[#0866ff]">{packageItemCopy.days}</span>
+              <span className="text-sm font-semibold text-[#0866ff]">{packageItemCopy.days}</span>
               <strong className="mt-2 block text-xl">{packageItemCopy.title}</strong>
-              <span className="mt-2 block text-2xl font-bold">
+              <span className="mt-2 block text-2xl font-semibold">
                 {item.price === 0 ? copy.free : formatListingPrice(item.price)}
               </span>
               <span className="mt-3 block text-sm leading-6 text-[#667085]">{packageItemCopy.text}</span>
@@ -1200,7 +1341,7 @@ function PublishStep({
       {accountType === 'private' ? (
         <section className="mt-6 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
           <div>
-            <h4 className="text-sm font-black text-[#101828]">{copy.phoneVisibilityTitle}</h4>
+            <h4 className="text-sm font-semibold text-[#101828]">{copy.phoneVisibilityTitle}</h4>
             <p className="mt-1 text-xs leading-5 text-[#667085]">{copy.phoneVisibilityText}</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -1235,6 +1376,69 @@ function PublishStep({
           </div>
         </section>
       ) : null}
+      <section className="mt-6 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div>
+            <h4 className="text-sm font-semibold text-[#101828]">{copy.batchTitle}</h4>
+            <p className="mt-1 text-xs leading-5 text-[#667085]">{copy.batchText}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onAddToBatch}
+            disabled={loading}
+            className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] disabled:opacity-50"
+          >
+            {copy.addToBatch}
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {copy.volumeOffers.map((offer) => (
+            <div key={offer.title} className="rounded-[14px] border border-[#dfe6f2] bg-white p-3">
+              <strong className="block text-sm font-semibold text-[#101828]">{offer.title}</strong>
+              <span className="mt-1 block text-xs leading-5 text-[#667085]">{offer.text}</span>
+            </div>
+          ))}
+        </div>
+        {batchDrafts.length ? (
+          <div className="mt-4 rounded-[14px] border border-[#cfe0ff] bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <strong className="text-sm font-semibold text-[#101828]">
+                {copy.batchCount.replace('{count}', String(batchDrafts.length))}
+              </strong>
+              <button
+                type="button"
+                onClick={onPublishBatch}
+                disabled={loading}
+                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {loading ? copy.publishing : copy.publishBatch}
+              </button>
+            </div>
+            <div className="mt-3 grid gap-2">
+              {batchDrafts.map((draft, index) => (
+                <div key={draft.id} className="flex items-center justify-between gap-3 rounded-[12px] border border-[#edf1f7] px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#101828]">
+                      {index + 1}. {draft.values.make || copy.listingTitle} {draft.values.model || ''}
+                    </p>
+                    <p className="text-xs text-[#667085]">
+                      {categoryLabelForLocale(draft.category, locale)} · {draft.images.length} {copy.image.toLowerCase()}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveBatchDraft(draft.id)}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#667085] hover:bg-[#f2f4f7] hover:text-[#101828]"
+                    aria-label={copy.removeFromBatch}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
       <label className="mt-6 flex gap-3 rounded-[18px] border border-[#d7deed] p-4 text-sm leading-6 text-[#475467]">
         <input
           type="checkbox"
@@ -1368,6 +1572,17 @@ function getListingFormCopy(locale: PublicLocale) {
     notSelected: 'Not selected',
     publishTitle: 'Package & publishing',
     publishText: 'Choose a package. The publish button is enabled once the confirmation is accepted.',
+    batchTitle: 'Create several listings at once',
+    batchText: 'Add the finished listing to a queue, create the next one, preview the queue and publish everything in one flow.',
+    addToBatch: 'Add to listing queue',
+    publishBatch: 'Publish queued listings',
+    batchCount: '{count} listings ready',
+    removeFromBatch: 'Remove from queue',
+    volumeOffers: [
+      { title: '3 for 2', text: 'Good for smaller batches and repeat sellers.' },
+      { title: '6 for 4', text: 'Better value when listing a broader stock.' },
+      { title: '12+ listings', text: 'Request a tailored company quote from Autorell.' },
+    ],
     phoneVisibilityTitle: 'Phone number visibility',
     phoneVisibilityText: 'A public phone number can make it easier for buyers to contact you. Requiring login may reduce enquiries and slow down the sale.',
     phoneVisibilityPublic: 'Show phone number to everyone',
@@ -1434,6 +1649,17 @@ function getListingFormCopy(locale: PublicLocale) {
       notSelected: 'Ej valt',
       publishTitle: 'Paket & publicering',
       publishText: 'Välj paket. Publicera-knappen visas först när bekräftelsen är godkänd.',
+      batchTitle: 'Skapa flera annonser samtidigt',
+      batchText: 'Lägg den färdiga annonsen i en kö, skapa nästa, förhandsgranska kön och publicera allt i samma flöde.',
+      addToBatch: 'Lägg till i annonskö',
+      publishBatch: 'Publicera annonskö',
+      batchCount: '{count} annonser klara',
+      removeFromBatch: 'Ta bort från kön',
+      volumeOffers: [
+        { title: '3 för 2', text: 'Bra för mindre batchar och återkommande säljare.' },
+        { title: '6 för 4', text: 'Bättre pris när fler objekt läggs upp samtidigt.' },
+        { title: '12+ annonser', text: 'Be Autorell om en anpassad företagsoffert.' },
+      ],
       phoneVisibilityTitle: 'Synlighet för telefonnummer',
       phoneVisibilityText: 'Ett öppet telefonnummer kan göra det enklare för köpare att kontakta dig. Krav på inloggning kan minska antalet förfrågningar och göra försäljningen långsammare.',
       phoneVisibilityPublic: 'Visa telefonnummer för alla',
@@ -1458,6 +1684,17 @@ function getListingFormCopy(locale: PublicLocale) {
       next: 'Weiter',
       publish: 'Anzeige veröffentlichen',
       publishing: 'Wird veröffentlicht...',
+      batchTitle: 'Mehrere Anzeigen gleichzeitig erstellen',
+      batchText: 'Fertige Anzeige in die Warteschlange legen, die nächste erstellen, alles prüfen und gemeinsam veröffentlichen.',
+      addToBatch: 'Zur Anzeigenwarteschlange',
+      publishBatch: 'Warteschlange veröffentlichen',
+      batchCount: '{count} Anzeigen bereit',
+      removeFromBatch: 'Aus Warteschlange entfernen',
+      volumeOffers: [
+        { title: '3 für 2', text: 'Gut für kleinere Pakete und wiederkehrende Verkäufer.' },
+        { title: '6 für 4', text: 'Besserer Preis bei größerem Bestand.' },
+        { title: '12+ Anzeigen', text: 'Individuelles Firmenangebot bei Autorell anfragen.' },
+      ],
       phoneVisibilityTitle: 'Sichtbarkeit der Telefonnummer',
       phoneVisibilityText: 'Eine öffentliche Telefonnummer kann Käufern die Kontaktaufnahme erleichtern. Eine Anmeldungspflicht kann Anfragen reduzieren und den Verkauf verlangsamen.',
       phoneVisibilityPublic: 'Telefonnummer allen anzeigen',
@@ -1471,7 +1708,11 @@ function getListingFormCopy(locale: PublicLocale) {
   return Object.fromEntries(
     Object.entries(en).map(([key, value]) => [
       key,
-      Array.isArray(value) ? value.map((item) => translatePublic(locale, item)) : translatePublic(locale, value),
+      key === 'volumeOffers'
+        ? value
+        : Array.isArray(value)
+          ? value.map((item) => (typeof item === 'string' ? translatePublic(locale, item) : item))
+          : translatePublic(locale, value),
     ]),
   ) as typeof en
 }

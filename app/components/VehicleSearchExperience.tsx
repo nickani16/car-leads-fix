@@ -1877,6 +1877,14 @@ function VehicleResultCard({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
+  const sellerTrustLabel = listing.sellerTrust === 'verified'
+    ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+    : listing.sellerIsTrader
+      ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
+      : uiText(locale, 'Unverified email', 'Ej verifierad e-post', 'Nicht verifizierte E-Mail')
+  const sellerTrustClass = listing.sellerTrust === 'verified'
+    ? 'bg-[#0866ff] text-white'
+    : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
@@ -1904,11 +1912,9 @@ function VehicleResultCard({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          {listing.sellerTrust === 'verified' ? (
-            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white">
-              Verifierad
-            </span>
-          ) : null}
+          <span className={`absolute left-3 top-3 rounded-[8px] px-2.5 py-1 text-xs font-semibold shadow-sm ${sellerTrustClass}`}>
+            {sellerTrustLabel}
+          </span>
           <div className="pointer-events-auto absolute right-3 top-3 z-30 scale-[.91] origin-top-right">
             <SavedListingButton listingId={listing.id} />
           </div>
@@ -2296,6 +2302,14 @@ function MapListingPreview({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
+  const sellerTrustLabel = listing.sellerTrust === 'verified'
+    ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+    : listing.sellerIsTrader
+      ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
+      : uiText(locale, 'Unverified email', 'Ej verifierad e-post', 'Nicht verifizierte E-Mail')
+  const sellerTrustClass = listing.sellerTrust === 'verified'
+    ? 'bg-[#0866ff] text-white'
+    : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'
 
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
@@ -2326,6 +2340,9 @@ function MapListingPreview({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
+          <span className={`absolute left-3 top-3 rounded-[8px] px-2.5 py-1 text-xs font-semibold shadow-sm ${sellerTrustClass}`}>
+            {sellerTrustLabel}
+          </span>
           <CountryFlag code={listing.country} className="absolute bottom-3 left-3 h-7 w-7 rounded-full" />
         </div>
         <div className="min-w-0 pb-1 sm:py-1">
