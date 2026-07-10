@@ -51,7 +51,7 @@ export default function ListingMobileContactBar({
   const phoneText =
     locale === 'sv'
       ? phoneCopy.sv
-      : locale === 'de' || locale === 'at'
+      : locale === 'de'
         ? phoneCopy.de
         : locale === 'en'
           ? phoneCopy.en
@@ -174,7 +174,7 @@ export default function ListingMobileContactBar({
               ? '...'
               : locale === 'sv'
                 ? messageCopy.sv
-                : locale === 'de' || locale === 'at'
+                : locale === 'de'
                   ? messageCopy.de
                   : locale === 'en'
                     ? messageCopy.en
