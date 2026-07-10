@@ -1521,11 +1521,11 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
-        className={`fixed bottom-0 left-0 right-auto z-[120] w-[100dvw] max-w-[100dvw] transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
           visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
-        <div className="grid h-[54px] w-[100dvw] max-w-[100dvw] grid-cols-4 px-1 pt-1">
+        <div className="grid h-[54px] w-full grid-cols-4 px-1 pt-1">
           <Link
             href={homeHref}
             onClick={closeMobile}
