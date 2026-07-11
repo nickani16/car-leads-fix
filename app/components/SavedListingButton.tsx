@@ -121,6 +121,7 @@ export default function SavedListingButton({
         aria-label={saved ? 'Ta bort sparad annons' : label}
         aria-pressed={saved}
         disabled={busy}
+        style={{ fontWeight: 500 }}
         className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-[14px] font-[500] text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 ${
           busy ? 'opacity-70' : ''
         }`}

@@ -41,6 +41,7 @@ export default function ShareListingButton({
     <button
       type="button"
       onClick={share}
+      style={variant === 'plain' ? { fontWeight: 500 } : undefined}
       className={`${buttonClassName} ${extraClassName}`.trim()}
     >
       <Share2 className="h-4 w-4 text-[#0866ff]" />

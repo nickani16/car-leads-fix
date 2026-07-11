@@ -1112,6 +1112,7 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
+                    style={{ fontWeight: 500 }}
                     className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-[500] shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
                       filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}
@@ -1134,6 +1135,7 @@ export default function VehicleSearchExperience({
                     type="button"
                     onClick={saveCurrentSearch}
                     disabled={savingSearch}
+                    style={{ fontWeight: 500 }}
                     className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-[500] text-white transition lg:col-span-1 ${
                       savedSearchMessage
                         ? 'bg-[#079455]'
@@ -2218,7 +2220,8 @@ function VehicleSearchMap({
               <button
                 type="button"
                 onClick={onOpenFilters}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm"
+                style={{ fontWeight: 500 }}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Sökfilter
@@ -2255,7 +2258,8 @@ function VehicleSearchMap({
                 setFullscreen(false)
                 window.setTimeout(onOpenFilters, 0)
               }}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff]"
+              style={{ fontWeight: 500 }}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff]"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Sökfilter</span>
@@ -2264,7 +2268,8 @@ function VehicleSearchMap({
               type="button"
               onClick={onSaveSearch}
               disabled={saveSearchBusy}
-              className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-sm font-semibold text-white shadow-sm transition sm:inline-flex ${
+              style={{ fontWeight: 500 }}
+              className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-[14px] font-[500] text-white shadow-sm transition sm:inline-flex ${
                 saveSearchActive ? 'bg-[#0866ff] hover:bg-[#0757da]' : 'bg-[#d1d3d8]'
               }`}
             >
