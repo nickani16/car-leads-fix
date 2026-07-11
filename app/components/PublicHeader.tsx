@@ -16,9 +16,11 @@ import {
   LogOut,
   Mail,
   MessageSquareText,
+  Newspaper,
   Plus,
   Search,
   Settings,
+  ShieldCheck,
   Store,
   UserPlus,
   UserRound,
@@ -380,12 +382,15 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false)
   const [mobileSellMenuOpen, setMobileSellMenuOpen] = useState(false)
+  const [mobileHelpMenuOpen, setMobileHelpMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
+  const helpMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -401,7 +406,9 @@ export default function PublicHeader({
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
         setSellMenuOpen(false)
+        setHelpMenuOpen(false)
         setMobileSellMenuOpen(false)
+        setMobileHelpMenuOpen(false)
       } else if (difference < -1) setVisible(true)
 
       lastScrollY.current = currentScrollY
@@ -493,21 +500,24 @@ export default function PublicHeader({
   }, [open])
 
   useEffect(() => {
-    if (!profileMenuOpen && !sellMenuOpen) return
+    if (!profileMenuOpen && !sellMenuOpen && !helpMenuOpen) return
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
       if (profileMenuRef.current?.contains(target)) return
       if (sellMenuRef.current?.contains(target)) return
+      if (helpMenuRef.current?.contains(target)) return
       setProfileMenuOpen(false)
       setSellMenuOpen(false)
+      setHelpMenuOpen(false)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setProfileMenuOpen(false)
         setSellMenuOpen(false)
+        setHelpMenuOpen(false)
       }
     }
 
@@ -517,7 +527,7 @@ export default function PublicHeader({
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [profileMenuOpen, sellMenuOpen])
+  }, [profileMenuOpen, sellMenuOpen, helpMenuOpen])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -656,6 +666,33 @@ export default function PublicHeader({
       href: localizePublicHref(locale, item.href),
     }
   })
+  const helpMenuLinks = [
+    {
+      href: localizePublicHref(locale, '/help-center'),
+      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
+      description: publicLabel('Answers, account help and marketplace support.', 'Svar, kontohjälp och support för marknadsplatsen.', 'Antworten, Kontohilfe und Marktplatz-Support.'),
+      icon: CircleHelp,
+    },
+    {
+      href: localizePublicHref(locale, '/fordonsnyheter'),
+      label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Fahrzeugnews'),
+      description: publicLabel('Guides, updates and articles about vehicle markets.', 'Guider, uppdateringar och artiklar om fordonsmarknaden.', 'Ratgeber, Updates und Artikel zum Fahrzeugmarkt.'),
+      icon: Newspaper,
+    },
+    {
+      href: localizePublicHref(locale, '/safety-tips'),
+      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheitstipps'),
+      description: publicLabel('Practical checks before you buy or sell.', 'Praktiska kontroller innan du köper eller säljer.', 'Praktische Checks vor Kauf oder Verkauf.'),
+      icon: ShieldCheck,
+    },
+    {
+      href: localizePublicHref(locale, '/report'),
+      label: publicLabel('Report a problem', 'Rapportera problem', 'Problem melden'),
+      description: publicLabel('Tell Autorell if something does not look right.', 'Meddela Autorell om något inte ser rätt ut.', 'Melden Sie Autorell, wenn etwas nicht stimmt.'),
+      icon: MessageSquareText,
+    },
+  ]
+
   const mobileMainLinks = [
     {
       href: localizePublicHref(locale, '/marketplace'),
@@ -673,6 +710,8 @@ export default function PublicHeader({
       href: localizePublicHref(locale, '/help-center'),
       label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
       icon: CircleHelp,
+      children: helpMenuLinks,
+      menu: 'help' as const,
     },
   ]
   const accountListingsHref = `${marketPathPrefix}/account/listings`
@@ -680,7 +719,7 @@ export default function PublicHeader({
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'link' as const, href: localizePublicHref(locale, '/business'), label: t.business },
-    { kind: 'link' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center') },
+    { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center') },
   ]
   const desktopAccountLinks = [
     { href: savedHref, label: publicLabel(t.saved, 'Sparade annonser', t.saved), icon: Heart },
@@ -712,7 +751,9 @@ export default function PublicHeader({
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileHelpMenuOpen(false)
     setSellMenuOpen(false)
+    setHelpMenuOpen(false)
   }
 
   function openAuthModal(mode: 'login' | 'register', destination?: string) {
@@ -723,8 +764,10 @@ export default function PublicHeader({
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileHelpMenuOpen(false)
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setHelpMenuOpen(false)
   }
 
   async function signOut() {
@@ -768,7 +811,9 @@ export default function PublicHeader({
     }
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileHelpMenuOpen(false)
     closeMobile()
   }
 
@@ -776,7 +821,9 @@ export default function PublicHeader({
     event.preventDefault()
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileHelpMenuOpen(false)
     closeMobile()
     window.location.assign(homeHref)
   }
@@ -868,7 +915,9 @@ export default function PublicHeader({
                   unprefixedPathname === targetPath ||
                   (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage)) ||
                   (item.kind === 'sell' &&
-                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === unprefixedPathname))
+                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === unprefixedPathname)) ||
+                  (item.kind === 'help' &&
+                    helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === unprefixedPathname))
 
                 if (item.kind === 'sell') {
                   return (
@@ -915,6 +964,62 @@ export default function PublicHeader({
                             </span>
                             <span className="min-w-0 flex-1">
                               <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+
+                if (item.kind === 'help') {
+                  return (
+                    <div
+                      key={href}
+                      ref={helpMenuRef}
+                      className="relative flex h-full items-center"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={helpMenuOpen}
+                        onClick={() => setHelpMenuOpen((current) => !current)}
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition ${helpMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[330px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                          helpMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        {helpMenuLinks.map(({ href: helpHref, label: helpLabel, description, icon: Icon }) => (
+                          <Link
+                            key={helpHref}
+                            href={helpHref}
+                            onClick={(event) => {
+                              setHelpMenuOpen(false)
+                              handleInternalNavigation(event, helpHref)
+                            }}
+                            className="group flex min-h-[58px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                          >
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
+                              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{helpLabel}</span>
+                              <span className="mt-0.5 block text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                                {description}
+                              </span>
                             </span>
                           </Link>
                         ))}
@@ -1094,14 +1199,21 @@ export default function PublicHeader({
             </div>
 
             <nav className="mt-6 grid gap-2">
-              {mobileMainLinks.map(({ href, label, icon: Icon, children }) => (
+              {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
+                const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                const toggleExpanded = () => {
+                  if (menu === 'help') setMobileHelpMenuOpen((current) => !current)
+                  else setMobileSellMenuOpen((current) => !current)
+                }
+
+                return (
                 <div key={href}>
                   {children ? (
                     <>
                       <button
                         type="button"
-                        aria-expanded={mobileSellMenuOpen}
-                        onClick={() => setMobileSellMenuOpen((current) => !current)}
+                        aria-expanded={expanded}
+                        onClick={toggleExpanded}
                         className="group flex min-h-[58px] w-full items-center justify-between rounded-[15px] border border-[#e0e7ef] bg-white px-4 text-left text-[16px] font-semibold text-[#101828] shadow-[0_10px_26px_rgba(16,24,40,.04)] transition hover:border-[#bcd3ff] hover:bg-[#f7fbff]"
                       >
                         <span className="flex min-w-0 items-center gap-3">
@@ -1110,11 +1222,11 @@ export default function PublicHeader({
                           </span>
                           <span className="min-w-0 truncate">{label}</span>
                         </span>
-                        <ChevronDown className={`h-5 w-5 shrink-0 text-[#667085] transition ${mobileSellMenuOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
+                        <ChevronDown className={`h-5 w-5 shrink-0 text-[#667085] transition ${expanded ? 'rotate-180 text-[#0866ff]' : ''}`} />
                       </button>
                       <div
                         className={`grid transition-all duration-200 ${
-                          mobileSellMenuOpen ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                          expanded ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                         }`}
                       >
                         <div className="overflow-hidden">
@@ -1155,7 +1267,7 @@ export default function PublicHeader({
                     </Link>
                   )}
                 </div>
-              ))}
+              )})}
             </nav>
 
             <Link
@@ -1444,14 +1556,21 @@ export default function PublicHeader({
 
             <section className="mb-7">
               <div className="grid gap-2">
-                {mobileMainLinks.map(({ href, label, icon: Icon, children }) => (
+                {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
+                  const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                  const toggleExpanded = () => {
+                    if (menu === 'help') setMobileHelpMenuOpen((current) => !current)
+                    else setMobileSellMenuOpen((current) => !current)
+                  }
+
+                  return (
                   <div key={href}>
                     {children ? (
                       <>
                         <button
                           type="button"
-                          aria-expanded={mobileSellMenuOpen}
-                          onClick={() => setMobileSellMenuOpen((current) => !current)}
+                          aria-expanded={expanded}
+                          onClick={toggleExpanded}
                           className="group flex min-h-[56px] w-full items-center justify-between rounded-[16px] border border-[#e0e7ef] bg-white px-3 text-left text-[17px] font-semibold tracking-[-0.01em] text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.045)] transition active:bg-[#f7fbff]"
                         >
                           <span className="flex min-w-0 items-center gap-3">
@@ -1460,11 +1579,11 @@ export default function PublicHeader({
                             </span>
                             <span className="min-w-0 truncate">{label}</span>
                           </span>
-                          <ChevronDown className={`h-4 w-4 shrink-0 text-[#98a2b3] transition ${mobileSellMenuOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
+                          <ChevronDown className={`h-4 w-4 shrink-0 text-[#98a2b3] transition ${expanded ? 'rotate-180 text-[#0866ff]' : ''}`} />
                         </button>
                         <div
                           className={`grid transition-all duration-200 ${
-                            mobileSellMenuOpen ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                            expanded ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                           }`}
                         >
                           <div className="overflow-hidden">
@@ -1505,7 +1624,7 @@ export default function PublicHeader({
                       </Link>
                     )}
                   </div>
-                ))}
+                )})}
               </div>
             </section>
 

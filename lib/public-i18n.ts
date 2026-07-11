@@ -160,6 +160,7 @@ export const publicPagePaths = [
   '/about',
   '/faq',
   '/help-center',
+  '/fordonsnyheter',
   '/contact',
   '/sell-vehicle',
   '/how-selling-works',

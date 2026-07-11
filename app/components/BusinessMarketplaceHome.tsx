@@ -157,7 +157,7 @@ export default async function BusinessMarketplaceHome({
               {t.vehicleNewsTitle}
             </h2>
             <Link
-              href={localizePublicHref(locale, '/buying-guide')}
+              href={localizePublicHref(locale, '/fordonsnyheter')}
               className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
             >
               {t.allNews}
@@ -326,7 +326,7 @@ function HomeListingCard({
 }
 
 function getVehicleNewsCards(locale: PublicLocale) {
-  const href = localizePublicHref(locale, '/buying-guide')
+  const href = localizePublicHref(locale, '/fordonsnyheter')
   if (locale === 'de') {
     return [
       { title: 'So finden Käufer das richtige Fahrzeug über Ländergrenzen hinweg', href },
