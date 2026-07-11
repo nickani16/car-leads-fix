@@ -11,6 +11,7 @@ import {
   localizePublicHref,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { swedishCounties as swedishLocationCounties } from '@/lib/swedish-locations'
 
 export type PublicSearchEntry = {
   href: string
@@ -61,7 +62,7 @@ type DetectedVehicleQuery = {
   usesAllEurope: boolean
 }
 
-const PUBLIC_SEARCH_CACHE_VERSION = 'vehicle-structured-v2'
+const PUBLIC_SEARCH_CACHE_VERSION = 'vehicle-structured-v3'
 const PUBLIC_SEARCH_CACHE_TTL_MS = 60_000
 
 const locationStopWords = new Set([
@@ -137,17 +138,17 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
   },
 }
 
+const swedishVehicleLocations: VehicleLocation[] = swedishLocationCounties.flatMap((county) =>
+  county.municipalities.map((municipality) => ({
+    country: 'SE',
+    region: county.name,
+    municipality,
+    city: municipality,
+  })),
+)
+
 const vehicleLocationsByCountry: Record<string, VehicleLocation[]> = {
-  SE: [
-    { country: 'SE', region: 'Stockholms lan', municipality: 'Huddinge', city: 'Huddinge' },
-    { country: 'SE', region: 'Stockholms lan', municipality: 'Nacka', city: 'Nacka' },
-    { country: 'SE', region: 'Stockholms lan', municipality: 'Stockholm', city: 'Stockholm' },
-    { country: 'SE', region: 'Vastra Gotalands lan', municipality: 'Goteborg', city: 'Goteborg' },
-    { country: 'SE', region: 'Skane lan', municipality: 'Malmo', city: 'Malmo' },
-    { country: 'SE', region: 'Uppsala lan', municipality: 'Uppsala', city: 'Uppsala' },
-    { country: 'SE', region: 'Ostergotlands lan', municipality: 'Linkoping', city: 'Linkoping' },
-    { country: 'SE', region: 'Orebro lan', municipality: 'Orebro', city: 'Orebro' },
-  ],
+  SE: swedishVehicleLocations,
   ES: [
     { country: 'ES', region: 'Comunidad de Madrid', city: 'Madrid' },
     { country: 'ES', region: 'Cataluna', city: 'Barcelona' },
@@ -446,7 +447,7 @@ function scoreLocationMatch(location: VehicleLocation, terms: string[]) {
   return terms
     .filter((term) => term.length >= 2 && !locationStopWords.has(term) && !europeTerms.has(term))
     .reduce((score, term) => {
-      const matched = locationParts.some((part) => part === term || part.startsWith(term) || part.includes(term))
+      const matched = locationParts.some((part) => part === term || part.startsWith(term) || (term.length >= 4 && part.includes(term)))
       return score + (matched ? (term.length >= 4 ? 5 : 3) : 0)
     }, 0)
 }
@@ -515,7 +516,7 @@ function createCategoryEntry({
   return {
     href: localizePublicHref(locale, `/marketplace?${params.toString()}`),
     title: label,
-    description: market === 'EU' ? 'Europe' : market || '',
+    description: market === 'EU' ? 'Europe' : countryDisplayName(market, locale),
     keywords: `${label} ${category} ${market}`,
     type: 'category' as const,
   }
@@ -541,7 +542,7 @@ function createMakeEntry({
   return {
     href: localizePublicHref(locale, `/marketplace?${params.toString()}`),
     title,
-    description: market === 'EU' ? 'Europe' : market,
+    description: market === 'EU' ? 'Europe' : countryDisplayName(market, locale),
     keywords: `${title} ${(make.models || []).join(' ')}`,
     type: model ? ('model' as const) : ('make' as const),
   }
@@ -577,8 +578,9 @@ function formatLocationTitle(location: VehicleLocation, locale: PublicLocale, in
 
 function locationDescriptor(location: VehicleLocation, locale: PublicLocale) {
   const region = formatLocationName(location.region || '')
-  if (region) return `${region}, ${location.country}`
-  return locale === 'sv' && location.municipality ? 'Kommun' : location.country
+  if (locale === 'sv' && location.municipality) return 'Kommun'
+  if (region) return region
+  return countryDisplayName(location.country, locale)
 }
 
 function joinLocalized(subject: string, location: string, locale: PublicLocale) {
@@ -624,6 +626,25 @@ function formatLocationName(value: string) {
         .join('-'),
     )
     .join(' ')
+}
+
+function countryDisplayName(country: string, locale: PublicLocale) {
+  const normalized = String(country || '').toUpperCase()
+  if (!normalized) return ''
+  const names: Record<string, Record<string, string>> = {
+    SE: { sv: 'Sverige', en: 'Sweden', de: 'Schweden', es: 'Suecia' },
+    ES: { sv: 'Spanien', en: 'Spain', de: 'Spanien', es: 'Espa\u00f1a' },
+    DE: { sv: 'Tyskland', en: 'Germany', de: 'Deutschland', es: 'Alemania' },
+    PL: { sv: 'Polen', en: 'Poland', de: 'Polen', es: 'Polonia' },
+    FR: { sv: 'Frankrike', en: 'France', de: 'Frankreich', es: 'Francia' },
+    IT: { sv: 'Italien', en: 'Italy', de: 'Italien', es: 'Italia' },
+    NL: { sv: 'Nederl\u00e4nderna', en: 'Netherlands', de: 'Niederlande', es: 'Pa\u00edses Bajos' },
+    BE: { sv: 'Belgien', en: 'Belgium', de: 'Belgien', es: 'B\u00e9lgica' },
+    AT: { sv: '\u00d6sterrike', en: 'Austria', de: '\u00d6sterreich', es: 'Austria' },
+    DK: { sv: 'Danmark', en: 'Denmark', de: 'D\u00e4nemark', es: 'Dinamarca' },
+    FI: { sv: 'Finland', en: 'Finland', de: 'Finnland', es: 'Finlandia' },
+  }
+  return names[normalized]?.[locale] || names[normalized]?.en || normalized
 }
 
 function dedupeEntries(entries: PublicSearchEntry[]) {
