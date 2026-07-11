@@ -111,6 +111,8 @@ export default async function FindCarsPage({
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter') || ''}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || ''}
         initialModel={getSearchParam(resolvedSearchParams, 'model') || ''}
+        initialCity={getSearchParam(resolvedSearchParams, 'city') || ''}
+        initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality') || ''}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice') || ''}
         initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice') || ''}
         initialMode={getSearchMode(resolvedSearchParams)}

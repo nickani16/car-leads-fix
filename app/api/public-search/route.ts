@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get('locale') || 'en'
   const query = request.nextUrl.searchParams.get('q') || ''
   const limit = Number(request.nextUrl.searchParams.get('limit') || 10)
-  const results = await searchPublicEntries({ locale, query, limit })
+  const market = request.nextUrl.searchParams.get('market') || ''
+  const results = await searchPublicEntries({ locale, query, limit, market })
 
   return Response.json(results, {
     headers: {

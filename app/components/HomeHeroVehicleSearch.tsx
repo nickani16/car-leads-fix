@@ -42,6 +42,11 @@ import {
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
+import {
+  useVehicleSmartSearchSuggestions,
+  VehicleSmartSearchSuggestionPanel,
+  type VehicleSmartSearchSuggestion,
+} from './VehicleSmartSearchSuggestions'
 
 type Intent = 'sale' | 'leasing'
 
@@ -283,6 +288,7 @@ export default function HomeHeroVehicleSearch({
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
   const moreFiltersRef = useRef<HTMLDivElement>(null)
   const marketsPickerRef = useRef<HTMLDivElement>(null)
@@ -428,6 +434,29 @@ export default function HomeHeroVehicleSearch({
     : selectedMarketOptions.length > 2
       ? `${selectedMarketOptions.length} ${localizedLabel(locale, 'marknader', 'Märkte', 'markets')}`
       : selectedMarketOptions.map((option) => marketLabel(option, locale)).join(', ')
+  const smartSearchMarketCode =
+    markets.length === 1 && markets[0] !== allMarketsCode ? markets[0] : defaultSearchCountryForLocale(locale) || undefined
+  const smartSearch = useVehicleSmartSearchSuggestions({
+    query,
+    locale,
+    marketCode: smartSearchMarketCode,
+    active: searchFocused,
+  })
+
+  function selectSmartSearchSuggestion(suggestion: VehicleSmartSearchSuggestion) {
+    const savedSearch = {
+      label: `${localizedLabel(locale, 'Sök igen', 'Erneut suchen', 'Search again')}: ${suggestion.title}`,
+      subLabel: suggestion.description || t.tabs[intent],
+      href: suggestion.href,
+    }
+    try {
+      window.localStorage.setItem(lastSearchStorageKey, JSON.stringify(savedSearch))
+    } catch {
+      // localStorage can be unavailable in private modes. Navigation should still work.
+    }
+    setLastSearch(savedSearch)
+    setSearchFocused(false)
+  }
 
   const searchAgain = lastSearch || {
     label: t.searchAgain,
@@ -490,24 +519,35 @@ export default function HomeHeroVehicleSearch({
           </div>
         </div>
 
-        <label className="group relative mt-4 flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:mt-4 lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder=""
-            aria-label={t.placeholder}
-            className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[190px] lg:text-left lg:text-[14px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
+        <div className="relative mt-4 lg:mt-4">
+          <label className="group relative flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
+              placeholder=""
+              aria-label={t.placeholder}
+              className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[190px] lg:text-left lg:text-[14px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
+            />
+            {query ? null : (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
+              >
+                {t.placeholder}
+              </span>
+            )}
+            <Search className="h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4" strokeWidth={2.1} />
+          </label>
+          <VehicleSmartSearchSuggestionPanel
+            query={query}
+            suggestions={smartSearch.suggestions}
+            loading={smartSearch.loading}
+            locale={locale}
+            onSelect={selectSmartSearchSuggestion}
           />
-          {query ? null : (
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
-            >
-              {t.placeholder}
-            </span>
-          )}
-          <Search className="h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4" strokeWidth={2.1} />
-        </label>
+        </div>
 
         <label className="group mt-5 flex cursor-pointer items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
           <input

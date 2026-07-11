@@ -1005,7 +1005,7 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${helpMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[330px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                        className={`absolute left-1/2 top-full z-[150] mt-2 w-[460px] max-w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                           helpMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
@@ -1026,7 +1026,7 @@ export default function PublicHeader({
                             </span>
                             <span className="min-w-0 flex-1">
                               <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{helpLabel}</span>
-                              <span className="mt-0.5 block text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                              <span className="mt-0.5 block whitespace-normal break-words text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
                                 {description}
                               </span>
                             </span>

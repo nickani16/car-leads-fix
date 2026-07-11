@@ -21,6 +21,8 @@ export type MarketplaceSearchInput = {
   q?: string | null
   make?: string | null
   model?: string | null
+  city?: string | null
+  municipality?: string | null
   minPrice?: string | number | null
   maxPrice?: string | number | null
   minYear?: string | number | null
@@ -90,6 +92,8 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   query = applyMultiFilter(query, 'country_code', filters.markets)
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
+  if (filters.city) query = query.ilike('city', filters.city)
+  if (filters.municipality) query = query.ilike('municipality', filters.municipality)
   if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
   if (filters.gearbox) query = query.eq('gearbox', filters.gearbox)
   if (filters.bodyType) query = query.eq('body_type', filters.bodyType)
@@ -157,6 +161,8 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     q: clean(input.q).slice(0, 80),
     make: clean(input.make).slice(0, 80),
     model: clean(input.model).slice(0, 80),
+    city: clean(input.city).slice(0, 80),
+    municipality: clean(input.municipality).slice(0, 80),
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
     bodyType: clean(input.bodyType).slice(0, 80),

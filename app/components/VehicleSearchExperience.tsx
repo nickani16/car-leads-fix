@@ -28,6 +28,11 @@ import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import SavedListingButton from './SavedListingButton'
 import {
+  useVehicleSmartSearchSuggestions,
+  VehicleSmartSearchSuggestionPanel,
+  type VehicleSmartSearchSuggestion,
+} from './VehicleSmartSearchSuggestions'
+import {
   AutorellAgricultureIcon,
   AutorellAllCategoriesIcon,
   AutorellBikeIcon,
@@ -59,6 +64,8 @@ type SavedVehicleSearch = {
     markets: string[]
     make: string
     model: string
+    city: string
+    municipality: string
     minPrice: string
     maxPrice: string
     minYear: string
@@ -387,6 +394,8 @@ export default function VehicleSearchExperience({
   initialQuery = '',
   initialMake = '',
   initialModel = '',
+  initialCity = '',
+  initialMunicipality = '',
   initialMinPrice = '',
   initialMaxPrice = '',
   initialMode = 'sale',
@@ -415,6 +424,8 @@ export default function VehicleSearchExperience({
   initialQuery?: string
   initialMake?: string
   initialModel?: string
+  initialCity?: string
+  initialMunicipality?: string
   initialMinPrice?: string
   initialMaxPrice?: string
   initialMode?: SearchMode
@@ -450,6 +461,8 @@ export default function VehicleSearchExperience({
       initialQuery ||
       initialMake ||
       initialModel ||
+      initialCity ||
+      initialMunicipality ||
       initialMinPrice ||
       initialMaxPrice ||
       initialMode !== 'sale' ||
@@ -486,6 +499,8 @@ export default function VehicleSearchExperience({
   const [maxMileage, setMaxMileage] = useState(initialMaxMileage)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
+  const [city, setCity] = useState(initialCity)
+  const [municipality, setMunicipality] = useState(initialMunicipality)
   const [fuel, setFuel] = useState(initialFuel)
   const [gearbox, setGearbox] = useState(initialGearbox)
   const [bodyType, setBodyType] = useState(initialBodyType)
@@ -500,6 +515,8 @@ export default function VehicleSearchExperience({
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
   const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [mobileMapSearchFocused, setMobileMapSearchFocused] = useState(false)
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,
@@ -508,6 +525,8 @@ export default function VehicleSearchExperience({
     markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
     make,
     model,
+    city,
+    municipality,
     minPrice,
     maxPrice,
     minYear,
@@ -524,7 +543,7 @@ export default function VehicleSearchExperience({
     leasingPossible,
     equipmentQuery: equipmentQuery.trim(),
     sortBy,
-  }), [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -542,6 +561,8 @@ export default function VehicleSearchExperience({
     }
     setParam('make', make)
     setParam('model', model)
+    setParam('city', city)
+    setParam('municipality', municipality)
     setParam('minPrice', minPrice)
     setParam('maxPrice', maxPrice)
     setParam('minYear', minYear)
@@ -559,7 +580,7 @@ export default function VehicleSearchExperience({
     setParam('equipment', equipmentQuery)
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, safeAutomaticCountry, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, safeAutomaticCountry, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   useEffect(() => {
     if (hasExplicitInitialFilters) {
@@ -587,6 +608,8 @@ export default function VehicleSearchExperience({
       setMaxMileage(restored.maxMileage || '')
       setMake(restored.make || '')
       setModel(restored.model || '')
+      setCity(restored.city || '')
+      setMunicipality(restored.municipality || '')
       setFuel(restored.fuel || '')
       setGearbox(restored.gearbox || '')
       setBodyType(restored.bodyType || '')
@@ -699,6 +722,8 @@ export default function VehicleSearchExperience({
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
       if (make && listing.make !== make) return false
       if (model && listing.model !== model) return false
+      if (city && normalizeSearchText(listing.city) !== normalizeSearchText(city)) return false
+      if (municipality && normalizeSearchText(listing.municipality) !== normalizeSearchText(municipality)) return false
       if (fuel && listing.fuelType !== fuel) return false
       if (gearbox && listing.gearbox !== gearbox) return false
       if (bodyType && listing.bodyType !== bodyType) return false
@@ -744,7 +769,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, query, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -759,6 +784,8 @@ export default function VehicleSearchExperience({
     setMaxMileage(initialMaxMileage)
     setMake(initialMake)
     setModel(initialModel)
+    setCity(initialCity)
+    setMunicipality(initialMunicipality)
     setFuel(initialFuel)
     setGearbox(initialGearbox)
     setBodyType(initialBodyType)
@@ -872,6 +899,8 @@ export default function VehicleSearchExperience({
         markets: selectedMarkets,
         make,
         model,
+        city,
+        municipality,
         minPrice,
         maxPrice,
         minYear,
@@ -930,6 +959,43 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'selected markets', 'valda marknader', 'ausgewählte Märkte')
       : uiText(locale, 'All markets', 'alla marknader', 'alle Märkte')
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
+  const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
+  const smartSearch = useVehicleSmartSearchSuggestions({
+    query,
+    locale,
+    marketCode: smartSearchMarketCode,
+    active: searchFocused,
+  })
+  const mobileMapSmartSearch = useVehicleSmartSearchSuggestions({
+    query,
+    locale,
+    marketCode: smartSearchMarketCode,
+    active: mobileMapSearchFocused,
+  })
+
+  function selectMarketplaceSuggestion(href: string) {
+    try {
+      const url = new URL(href, window.location.origin)
+      const params = url.searchParams
+      setQuery(params.get('q') || '')
+      setMake(params.get('make') || '')
+      setModel(params.get('model') || '')
+      setCity(params.get('city') || '')
+      setMunicipality(params.get('municipality') || '')
+      const nextCategories = params.get('categories')
+      if (nextCategories !== null) setSelectedCategories(normalizeSavedCategories(nextCategories.split(',')))
+      const nextMarkets = params.get('markets')
+      if (nextMarkets !== null) {
+        setSelectedMarkets(normalizeMarketSelection(nextMarkets.split(','), safeAutomaticCountry))
+        setMarketOverride(true)
+      }
+      setSearchFocused(false)
+      setMobileMapSearchFocused(false)
+    } catch {
+      setSearchFocused(false)
+      setMobileMapSearchFocused(false)
+    }
+  }
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
     ...selectedCategoryItems.map((item) => {
       const Icon = item.icon
@@ -969,6 +1035,8 @@ export default function VehicleSearchExperience({
       setModel('')
     } } : null,
     model ? { key: 'model', label: model, onRemove: () => setModel('') } : null,
+    city ? { key: 'city', label: city, onRemove: () => setCity('') } : null,
+    municipality ? { key: 'municipality', label: `${municipality} kommun`, onRemove: () => setMunicipality('') } : null,
     fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
     gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
     bodyType ? { key: 'bodyType', label: bodyType, onRemove: () => setBodyType('') } : null,
@@ -1086,13 +1154,16 @@ export default function VehicleSearchExperience({
             </div>
 
             <div>
-              <div className="min-w-0 max-w-full overflow-hidden">
-                <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-4 py-3 sm:px-6">
+              <div className="min-w-0 max-w-full overflow-visible">
+                <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
+                <div className="relative">
                 <label className="group relative flex h-[50px] items-center justify-start gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
                   <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
                     placeholder=""
                     aria-label={uiText(locale, 'Search vehicle, city or area', 'Sök fordon, ort eller kommun', 'Fahrzeug, Ort oder Gemeinde suchen')}
                     className="vehicle-search-control w-full min-w-0 bg-transparent pr-10 text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
@@ -1107,6 +1178,14 @@ export default function VehicleSearchExperience({
                   )}
                   <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
                 </label>
+                <VehicleSmartSearchSuggestionPanel
+                  query={query}
+                  suggestions={smartSearch.suggestions}
+                  loading={smartSearch.loading}
+                  locale={locale}
+                  onSelect={(suggestion) => selectMarketplaceSuggestion(suggestion.href)}
+                />
+                </div>
 
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
                   <button
@@ -1436,6 +1515,10 @@ export default function VehicleSearchExperience({
               saveSearchButtonLabel={saveSearchButtonLabel}
               saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
               saveSearchBusy={savingSearch}
+              smartSearchSuggestions={mobileMapSmartSearch.suggestions}
+              smartSearchLoading={mobileMapSmartSearch.loading}
+              onSearchFocusChange={setMobileMapSearchFocused}
+              onSmartSearchSelect={(href) => selectMarketplaceSuggestion(href)}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
@@ -2040,6 +2123,10 @@ function VehicleSearchMap({
   saveSearchButtonLabel,
   saveSearchActive,
   saveSearchBusy,
+  smartSearchSuggestions,
+  smartSearchLoading,
+  onSearchFocusChange,
+  onSmartSearchSelect,
 }: {
   listings: VehicleSearchListing[]
   country: string
@@ -2054,6 +2141,10 @@ function VehicleSearchMap({
   saveSearchButtonLabel: string
   saveSearchActive: boolean
   saveSearchBusy: boolean
+  smartSearchSuggestions: VehicleSmartSearchSuggestion[]
+  smartSearchLoading: boolean
+  onSearchFocusChange: (focused: boolean) => void
+  onSmartSearchSelect: (href: string) => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -2196,11 +2287,14 @@ function VehicleSearchMap({
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
+              <div className="relative min-w-0 flex-1">
               <label className="group relative flex h-[50px] min-w-0 flex-1 items-center justify-start gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
                 <span className="sr-only">Sök</span>
                 <input
                   value={query}
                   onChange={(event) => onQueryChange(event.target.value)}
+                  onFocus={() => onSearchFocusChange(true)}
+                  onBlur={() => window.setTimeout(() => onSearchFocusChange(false), 120)}
                   placeholder=""
                   aria-label="Sök fordon, ort eller kommun"
                   className="vehicle-search-control w-full min-w-0 bg-transparent pr-10 text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
@@ -2215,6 +2309,15 @@ function VehicleSearchMap({
                 )}
                 <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
               </label>
+              <VehicleSmartSearchSuggestionPanel
+                query={query}
+                suggestions={smartSearchSuggestions}
+                loading={smartSearchLoading}
+                locale={locale}
+                onSelect={(suggestion) => onSmartSearchSelect(suggestion.href)}
+                className="left-0 right-0"
+              />
+              </div>
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
