@@ -38,6 +38,7 @@ export type MarketplaceSearchInput = {
   equipment?: string | null
   fourWheelDrive?: string | boolean | null
   leasingPossible?: string | boolean | null
+  verifiedOnly?: string | boolean | null
   mode?: string | null
   page?: string | number | null
   sort?: string | null
@@ -98,6 +99,13 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
     .select(marketplacePublicSelect, { count: 'exact' })
 
   query = applyMarketplaceListingFilters(query, filters)
+  if (filters.verifiedOnly) {
+    const verifiedSellerIds = await getVerifiedMarketplaceSellerIds()
+    if (!verifiedSellerIds.length) {
+      return emptyMarketplaceSearchResult(filters)
+    }
+    query = query.in('seller_user_id', verifiedSellerIds)
+  }
 
   if (filters.sort === 'price-asc' || filters.sort === 'price-desc') query = query.not('price', 'is', null)
   if (filters.sort === 'year-desc') query = query.not('model_year', 'is', null)
@@ -157,6 +165,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
+    verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice),
     minYear: positiveNumber(input.minYear),
@@ -167,6 +176,41 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     page: clampInt(input.page, 1, 10_000, 1),
     limit: clampInt(input.limit, 1, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE),
   }
+}
+
+function emptyMarketplaceSearchResult(filters: ReturnType<typeof normalizeMarketplaceSearchInput>): MarketplaceSearchResult {
+  return {
+    items: [],
+    facets: emptyMarketplaceFacets(),
+    nextCursor: null,
+    totalEstimate: 0,
+    totalCount: 0,
+    page: filters.page,
+    pageSize: filters.limit,
+    totalPages: 1,
+    limit: filters.limit,
+    hasNext: false,
+  }
+}
+
+async function getVerifiedMarketplaceSellerIds() {
+  const { data } = await createAdminClient()
+    .from('marketplace_profiles')
+    .select('user_id,account_type,identity_status,business_verification_status')
+    .limit(10_000)
+
+  return (data || [])
+    .filter((profile) => {
+      const businessVerified =
+        profile.account_type === 'business' &&
+        ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
+      const privateVerified =
+        profile.account_type !== 'business' &&
+        ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+      return businessVerified || privateVerified
+    })
+    .map((profile) => profile.user_id)
+    .filter((id): id is string => typeof id === 'string' && Boolean(id))
 }
 
 function applyMarketplaceListingFilters<T extends {
