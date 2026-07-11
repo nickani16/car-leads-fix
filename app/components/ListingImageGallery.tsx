@@ -154,26 +154,25 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-[#101828]/58 text-white opacity-100 shadow-lg backdrop-blur transition hover:bg-[#101828]/76 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-3 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
             </button>
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-[#101828]/58 text-white opacity-100 shadow-lg backdrop-blur transition hover:bg-[#101828]/76 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-3 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
             </button>
             <button
               type="button"
               onClick={openFullscreen}
-              className="absolute bottom-3 left-1/2 inline-flex min-h-9 -translate-x-1/2 items-center gap-2 rounded-full bg-[#101828]/76 px-3 text-sm font-black text-white shadow-lg backdrop-blur"
+              className="absolute bottom-3 right-3 inline-flex min-h-8 items-center rounded-[8px] bg-white/92 px-3 text-[14px] font-[500] text-[#101828] shadow-[0_4px_14px_rgba(16,24,40,.18)] backdrop-blur"
               aria-label="Open photos"
             >
-              <Camera className="h-4 w-4" />
               {active + 1}/{safeImages.length}
             </button>
           </>

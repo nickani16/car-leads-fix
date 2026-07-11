@@ -121,11 +121,11 @@ export default function SavedListingButton({
         aria-label={saved ? 'Ta bort sparad annons' : label}
         aria-pressed={saved}
         disabled={busy}
-        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-medium text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 sm:text-base ${
+        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-[14px] font-[500] text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 ${
           busy ? 'opacity-70' : ''
         }`}
       >
-        <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${saved ? 'fill-current' : ''}`} />
+        <Heart className={`h-4 w-4 ${saved ? 'fill-current' : ''}`} />
         <span>{saved ? savedLabel : label}</span>
       </button>
     )

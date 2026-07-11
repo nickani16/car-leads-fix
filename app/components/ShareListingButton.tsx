@@ -34,7 +34,7 @@ export default function ShareListingButton({
 
   const buttonClassName =
     variant === 'plain'
-      ? 'inline-flex cursor-pointer items-center justify-center gap-2 text-sm font-medium text-[#101828] transition hover:text-[#0866ff]'
+      ? 'inline-flex cursor-pointer items-center justify-center gap-2 text-[14px] font-[500] text-[#101828] transition hover:text-[#0866ff]'
       : 'inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]'
 
   return (
