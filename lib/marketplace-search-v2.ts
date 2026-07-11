@@ -230,9 +230,7 @@ function applyMarketplaceListingFilters<T extends {
   query = query
     .eq('status', 'published')
     .not('published_at', 'is', null)
-    .is('deleted_at', null)
     .is('sold_at', null)
-    .or('removed_by_admin.is.null,removed_by_admin.eq.false')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
   query = applyMultiFilter(query, 'category', filters.categories)
@@ -257,10 +255,18 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
-    query = query.textSearch('search_document', filters.q, {
-      type: 'websearch',
-      config: 'simple',
-    })
+    const escaped = escapeIlike(filters.q)
+    query = query.or(
+      [
+        `title.ilike.%${escaped}%`,
+        `make.ilike.%${escaped}%`,
+        `model.ilike.%${escaped}%`,
+        `variant.ilike.%${escaped}%`,
+        `city.ilike.%${escaped}%`,
+        `municipality.ilike.%${escaped}%`,
+        `reference_number.ilike.%${escaped}%`,
+      ].join(','),
+    )
   } else if (filters.q) {
     const identifierQuery = filters.q.replace(/[%_,]/g, '')
     query = query.or(

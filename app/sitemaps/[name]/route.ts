@@ -114,20 +114,18 @@ async function listingUrls(country: string, page: number) {
   const offset = (page - 1) * maxUrlsPerSitemap
   const { data } = await createAdminClient()
     .from('marketplace_listings')
-    .select('id,title,make,model,model_year,city,country_code,published_at,created_at,edited_at,last_price_change_at')
+    .select('id,title,make,model,model_year,city,country_code,published_at,created_at')
     .eq('status', 'published')
     .eq('country_code', country)
     .not('published_at', 'is', null)
-    .is('deleted_at', null)
     .is('sold_at', null)
-    .or('removed_by_admin.is.null,removed_by_admin.eq.false')
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .order('published_at', { ascending: false })
     .range(offset, offset + maxUrlsPerSitemap - 1)
 
   return (data || []).map((listing) => sitemapUrl(
     buildListingPath(listing),
-    listing.last_price_change_at || listing.edited_at || listing.published_at || listing.created_at,
+    listing.published_at || listing.created_at,
     'daily',
     '0.9',
   ))

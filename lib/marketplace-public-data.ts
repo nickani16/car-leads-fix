@@ -19,9 +19,7 @@ export const getPublishedMarketplaceListings = unstable_cache(
       .select(marketplacePublicSelect)
       .eq('status', 'published')
       .not('published_at', 'is', null)
-      .is('deleted_at', null)
       .is('sold_at', null)
-      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })
@@ -44,9 +42,7 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
       .select(marketplacePublicSelect)
       .eq('status', 'published')
       .not('published_at', 'is', null)
-      .is('deleted_at', null)
       .is('sold_at', null)
-      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
     const normalizedCountry = (countryCode || '').toUpperCase()
@@ -75,9 +71,7 @@ export const getPublishedMarketplaceCategoryListings = unstable_cache(
       .select(marketplacePublicSelect)
       .eq('status', 'published')
       .not('published_at', 'is', null)
-      .is('deleted_at', null)
       .is('sold_at', null)
-      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })
@@ -103,9 +97,7 @@ export const getPublishedMarketplaceListingById = unstable_cache(
       .eq('id', id)
       .eq('status', 'published')
       .not('published_at', 'is', null)
-      .is('deleted_at', null)
       .is('sold_at', null)
-      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .maybeSingle()
 
@@ -127,8 +119,6 @@ export const getMarketplaceListingForPublicDetail = unstable_cache(
     if (!data) return null
 
     const status = String(data.status || '')
-    if (data.deleted_at || data.removed_by_admin) return null
-
     const isExpiredPublished =
       status === 'published' &&
       data.expires_at &&
@@ -148,9 +138,7 @@ export const getPublishedMarketplaceListingCount = unstable_cache(
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published')
         .not('published_at', 'is', null)
-        .is('deleted_at', null)
         .is('sold_at', null)
-        .or('removed_by_admin.is.null,removed_by_admin.eq.false')
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
       const normalizedCountry = (countryCode || '').toUpperCase()
@@ -184,9 +172,7 @@ export const getPublicSearchListings = unstable_cache(
       .select(publicSearchListingSelect)
       .eq('status', 'published')
       .not('published_at', 'is', null)
-      .is('deleted_at', null)
       .is('sold_at', null)
-      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })

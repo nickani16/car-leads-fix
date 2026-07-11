@@ -58,9 +58,7 @@ async function getListingSitemapNames() {
         .eq('status', 'published')
         .eq('country_code', listingCountries[market])
         .not('published_at', 'is', null)
-        .is('deleted_at', null)
         .is('sold_at', null)
-        .or('removed_by_admin.is.null,removed_by_admin.eq.false')
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
       const pages = Math.ceil((count || 0) / maxUrlsPerSitemap)
