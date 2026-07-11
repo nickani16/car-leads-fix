@@ -281,6 +281,18 @@ function isLeasingListing(listing: VehicleSearchListing) {
   return (listing.equipment || '').toLowerCase().includes('leasing')
 }
 
+function listingEquipmentChips(equipment: string | null | undefined) {
+  return Array.from(
+    new Set(
+      (equipment || '')
+        .split(/[,;\n|]+/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .filter((item) => item.length <= 28),
+    ),
+  ).slice(0, 2)
+}
+
 const categoryEnglishLabels: Record<string, string> = {
   all: 'All vehicles',
   cars: 'Cars',
@@ -1100,7 +1112,7 @@ export default function VehicleSearchExperience({
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
-                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-medium shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
+                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-[500] shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
                       filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}
                   >
@@ -1122,7 +1134,7 @@ export default function VehicleSearchExperience({
                     type="button"
                     onClick={saveCurrentSearch}
                     disabled={savingSearch}
-                    className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-medium text-white transition lg:col-span-1 ${
+                    className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-[500] text-white transition lg:col-span-1 ${
                       savedSearchMessage
                         ? 'bg-[#079455]'
                         : activeFilters.length
@@ -1879,16 +1891,20 @@ function VehicleResultCard({
       city: listing.city,
     }),
   )
-  const location = [listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
-    .filter(Boolean)
+  const location = Array.from(new Set([listing.city, listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean)))
     .join(', ')
+  const categoryLabel = categoryText(
+    categories.find((item) => item.key === listing.category) || categories[0],
+    locale,
+  )
+  const subtitle = [categoryLabel, location].filter(Boolean).join(' · ')
+  const equipmentChips = listingEquipmentChips(listing.equipment)
+  const sellerTypeLabel = listing.sellerIsTrader
+    ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
+    : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')
+  const countryLabel = getEuCountryName(listing.country, locale)
   const meta = [
     listing.year,
-    listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
-    listing.fuelType,
-    listing.gearbox,
-  ].filter(Boolean)
-  const importantInfo = [
     listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
     listing.fuelType,
     listing.gearbox,
@@ -1956,20 +1972,34 @@ function VehicleResultCard({
             <span className={`${layout === 'split' ? 'text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
-            <MetaSeparatorList items={meta} className="text-[14px] font-medium leading-5 text-[#667085]" />
+            <p className="line-clamp-1 text-[14px] font-light leading-5 text-[#667085]">
+              {subtitle}
+            </p>
             <p className="text-[17px] font-semibold leading-6 text-[#101828]">
               {listing.priceLabel}
             </p>
-            <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#101828]">
-              {importantInfo.join('   ')}
-            </p>
-            <p className="line-clamp-1 text-[14px] font-medium leading-5 text-[#475467]">
+            <MetaSeparatorList items={meta} className="text-[14px] font-light leading-5 text-[#101828]" />
+            <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName
                   ? `${uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')} | ${listing.sellerName}`
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              {equipmentChips.map((item) => (
+                <span key={item} className="max-w-[150px] truncate rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                  {item}
+                </span>
+              ))}
+              <span className="rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                {sellerTypeLabel}
+              </span>
+              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                <span className="truncate">{countryLabel}</span>
+              </span>
+            </div>
             {listing.sellerRatingAverage && listing.sellerRatingCount ? (
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
                 <Star className="h-3.5 w-3.5 text-[#0866ff]" fill="currentColor" />
@@ -1977,7 +2007,7 @@ function VehicleResultCard({
               </p>
             ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
-              <p className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-[#101828]">
+              <p className="hidden">
                 <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                 <span className="truncate">{location}</span>
               </p>
