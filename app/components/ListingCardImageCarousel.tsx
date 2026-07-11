@@ -127,7 +127,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute inset-y-0 left-0 z-20 hidden w-12 place-items-center bg-gradient-to-r from-[#101828]/38 via-[#101828]/18 to-transparent text-white opacity-0 transition hover:from-[#101828]/48 md:grid md:group-hover:opacity-100"
+            className="absolute left-2 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
           >
             <ChevronLeft className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
@@ -139,7 +139,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute inset-y-0 right-0 z-20 hidden w-12 place-items-center bg-gradient-to-l from-[#101828]/38 via-[#101828]/18 to-transparent text-white opacity-0 transition hover:from-[#101828]/48 md:grid md:group-hover:opacity-100"
+            className="absolute right-2 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
           >
             <ChevronRight className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
@@ -147,7 +147,7 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur-[2px]">
+        <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur-[2px] md:hidden">
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
