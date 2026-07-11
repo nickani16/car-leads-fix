@@ -351,7 +351,7 @@ export default async function ListingDetailPage({
               url={publicUrl}
               label={copy.shareListing}
               variant="plain"
-              className="hidden md:inline-flex"
+              className="hidden lg:inline-flex"
             />
             <SavedListingButton
               listingId={listing.id}

@@ -154,7 +154,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-3 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-0 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
@@ -162,7 +162,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-3 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-0 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
               <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />

@@ -127,7 +127,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute left-2 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
+            className="absolute left-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
           >
             <ChevronLeft className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
@@ -139,7 +139,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute right-2 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
+            className="absolute right-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
           >
             <ChevronRight className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
