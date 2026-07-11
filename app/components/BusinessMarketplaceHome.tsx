@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -294,7 +294,7 @@ function HomeListingCard({
   locale: PublicLocale
 }) {
   return (
-    <article className="group relative w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm transition-colors hover:border-[#344054] sm:w-auto sm:max-w-none">
+    <article className="group relative w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
@@ -311,12 +311,6 @@ function HomeListingCard({
         <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-[#101828]/75 text-xs font-semibold text-white">
           {index}
         </span>
-        {item.sellerTrust === 'verified' ? (
-          <span className="absolute right-3 top-3 inline-flex h-7 items-center gap-1 rounded-full bg-[#0866ff] px-2.5 text-[11px] font-semibold text-white shadow-md">
-            <BadgeCheck className="h-3.5 w-3.5" />
-            {locale === 'sv' ? 'Verifierad' : translatePublic(locale, 'Verified')}
-          </span>
-        ) : null}
       </div>
       <div className="p-3">
         <Link href={item.href} className="block">

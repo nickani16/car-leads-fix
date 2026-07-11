@@ -170,7 +170,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={openFullscreen}
-              className="absolute bottom-3 right-3 inline-flex min-h-8 items-center rounded-[8px] bg-white/92 px-3 text-[14px] font-[500] text-[#101828] shadow-[0_4px_14px_rgba(16,24,40,.18)] backdrop-blur"
+              className="absolute bottom-3 right-3 inline-flex min-h-8 items-center rounded-[8px] bg-white/92 px-3 text-[14px] font-[400] text-[#101828] shadow-[0_4px_14px_rgba(16,24,40,.18)] backdrop-blur"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}

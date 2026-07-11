@@ -860,7 +860,7 @@ export default function PublicHeader({
               <BrandLogo underline={false} />
             </Link>
 
-            <nav className="ml-14 hidden h-full shrink-0 items-center gap-7 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-16 xl:gap-8">
+            <nav className="ml-8 hidden h-full shrink-0 items-center gap-5 overflow-visible whitespace-nowrap min-[1120px]:flex xl:ml-10 xl:gap-6">
               {desktopNavLinks.map((item) => {
                 const { href, label } = item
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
@@ -941,7 +941,7 @@ export default function PublicHeader({
               })}
             </nav>
 
-            <div className="ml-auto hidden h-full shrink-0 items-center gap-4 min-[1120px]:flex xl:gap-6">
+            <div className="ml-auto hidden h-full shrink-0 items-center gap-3 min-[1120px]:flex xl:gap-4">
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
@@ -949,10 +949,10 @@ export default function PublicHeader({
                       key={href}
                       href={href}
                       onClick={(event) => handleInternalNavigation(event, href)}
-                      className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                      className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
                       <span className="relative">
-                        <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                        <Icon className="h-5 w-5" strokeWidth={1.9} />
                         {href === savedHref && savedListingBadge ? (
                           <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                             {savedListingBadge}
@@ -972,9 +972,9 @@ export default function PublicHeader({
                       type="button"
                       onClick={() => setProfileMenuOpen((current) => !current)}
                       aria-expanded={profileMenuOpen}
-                      className="inline-flex h-full items-center gap-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                      className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e9f0fd] text-[11px] font-semibold text-[#0866ff]">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e9f0fd] text-[10px] font-semibold text-[#0866ff]">
                         {mobileAccountInitials}
                       </span>
                       <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>

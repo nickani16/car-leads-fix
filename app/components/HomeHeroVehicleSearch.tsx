@@ -285,6 +285,7 @@ export default function HomeHeroVehicleSearch({
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
   const moreFiltersRef = useRef<HTMLDivElement>(null)
+  const marketsPickerRef = useRef<HTMLDivElement>(null)
 
   const selectedRoute = useMemo(() => {
     if (selectedCategories.length === 1) {
@@ -342,6 +343,20 @@ export default function HomeHeroVehicleSearch({
     document.addEventListener('pointerdown', closeOnOutsidePointer)
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
   }, [moreFiltersOpen])
+
+  useEffect(() => {
+    if (!marketsOpen) return
+
+    function closeMarketsOnOutsidePointer(event: PointerEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (marketsPickerRef.current?.contains(target)) return
+      setMarketsOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeMarketsOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeMarketsOnOutsidePointer)
+  }, [marketsOpen])
 
   function toggleMarket(code: string) {
     setMarkets((current) => {
@@ -519,7 +534,7 @@ export default function HomeHeroVehicleSearch({
           <span>{t.verified}</span>
         </label>
 
-        <div className="relative mt-7 hidden lg:block">
+        <div ref={marketsPickerRef} className="relative mt-7 hidden lg:block">
           <div className="mb-2 text-[14px] font-semibold text-[#101828]">
             {t.expandArea}
           </div>
