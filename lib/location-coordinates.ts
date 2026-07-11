@@ -27,8 +27,7 @@ export function resolveListingCoordinates(input: LocationInput): LocationCoordin
     }
   }
 
-  const cityKey = normalizeLocationName(input.city || input.municipality || '')
-  const city = cityKey ? cityCoordinates[cityKey] : null
+  const city = resolveCityCoordinate(input.city) || resolveCityCoordinate(input.municipality)
   if (city) {
     return {
       latitude: city[1],
@@ -50,6 +49,11 @@ export function resolveListingCoordinates(input: LocationInput): LocationCoordin
   return null
 }
 
+function resolveCityCoordinate(value?: string | null) {
+  const key = normalizeLocationName(value || '')
+  return key ? cityCoordinates[key] || null : null
+}
+
 export function normalizeLocationName(value: string) {
   return value
     .trim()
@@ -63,6 +67,7 @@ export function normalizeLocationName(value: string) {
 
 const cityCoordinates: Record<string, [number, number]> = {
   nacka: [18.1637, 59.3105],
+  taby: [18.0687, 59.4439],
   stockholm: [18.0686, 59.3293],
   goteborg: [11.9746, 57.7089],
   malmo: [13.0038, 55.605],

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
+import { swedishMunicipalitySearchTerms } from './swedish-location-mapping'
 import { createAdminClient } from './supabase/admin'
 
 export type MarketplaceSort =
@@ -238,7 +239,24 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
-  if (filters.municipality) query = query.ilike('municipality', filters.municipality)
+  if (filters.municipality) {
+    const municipalityTerms = (!filters.markets.length || filters.markets.includes('SE'))
+      ? swedishMunicipalitySearchTerms(filters.municipality)
+      : []
+
+    if (municipalityTerms.length) {
+      query = query.or(
+        municipalityTerms
+          .flatMap((term) => {
+            const escaped = escapeIlike(term)
+            return [`municipality.ilike.${escaped}`, `city.ilike.${escaped}`]
+          })
+          .join(','),
+      )
+    } else {
+      query = query.ilike('municipality', filters.municipality)
+    }
+  }
   if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
   if (filters.gearbox) query = query.eq('gearbox', filters.gearbox)
   if (filters.bodyType) query = query.eq('body_type', filters.bodyType)
