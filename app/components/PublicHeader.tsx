@@ -312,19 +312,19 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/sell-vehicle', label: 'Annonsera fordon på Autorell', description: 'Bygg en professionell fordonsannons.', icon: CarFront },
-    { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Se priser och synlighet.', icon: Store },
-    { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Från annons till kontakt.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront },
+    { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
+    { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
   ],
   en: [
-    { href: '/sell-vehicle', label: 'Sell vehicle', description: 'Start a clear vehicle listing.', icon: CarFront },
-    { href: '/pricing', label: 'Pricing', description: 'See packages and visibility.', icon: Store },
-    { href: '/how-selling-works', label: 'How it works', description: 'From listing to buyer enquiry.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Sell vehicle', description: 'Free to start for private and business sellers.', icon: CarFront },
+    { href: '/pricing', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
+    { href: '/how-selling-works', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
-    { href: '/sell-vehicle', label: 'Fahrzeug verkaufen', description: 'Eine klare Fahrzeuganzeige starten.', icon: CarFront },
-    { href: '/pricing', label: 'Preise', description: 'Pakete und Sichtbarkeit ansehen.', icon: Store },
-    { href: '/how-selling-works', label: 'So funktioniert es', description: 'Von der Anzeige bis zur Anfrage.', icon: CircleHelp },
+    { href: '/sell-vehicle', label: 'Fahrzeug verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
+    { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
+    { href: '/how-selling-works', label: 'So funktioniert es', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
 }
 
@@ -756,6 +756,12 @@ export default function PublicHeader({
     setHelpMenuOpen(false)
   }
 
+  function toggleDesktopMenu(menu: 'sell' | 'help' | 'profile') {
+    setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
+    setHelpMenuOpen((current) => (menu === 'help' ? !current : false))
+    setProfileMenuOpen((current) => (menu === 'profile' ? !current : false))
+  }
+
   function openAuthModal(mode: 'login' | 'register', destination?: string) {
     setAuthInitialMode(mode)
     setAuthDestination(destination)
@@ -929,7 +935,7 @@ export default function PublicHeader({
                       <button
                         type="button"
                         aria-expanded={sellMenuOpen}
-                        onClick={() => setSellMenuOpen((current) => !current)}
+                        onClick={() => toggleDesktopMenu('sell')}
                         style={{ fontWeight: 500 }}
                         className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
                           isActive
@@ -949,7 +955,7 @@ export default function PublicHeader({
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, icon: Icon }) => (
+                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon }) => (
                           <Link
                             key={sellHref}
                             href={sellHref}
@@ -957,13 +963,16 @@ export default function PublicHeader({
                               setSellMenuOpen(false)
                               handleInternalNavigation(event, sellHref)
                             }}
-                            className="group flex min-h-[50px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                            className="group flex min-h-[58px] items-start gap-3 px-4 py-2.5 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
                           >
                             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
                               <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                             </span>
                             <span className="min-w-0 flex-1">
                               <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
+                              <span className="mt-0.5 block whitespace-normal text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                                {description}
+                              </span>
                             </span>
                           </Link>
                         ))}
@@ -982,7 +991,7 @@ export default function PublicHeader({
                       <button
                         type="button"
                         aria-expanded={helpMenuOpen}
-                        onClick={() => setHelpMenuOpen((current) => !current)}
+                        onClick={() => toggleDesktopMenu('help')}
                         style={{ fontWeight: 500 }}
                         className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
                           isActive
@@ -1010,7 +1019,7 @@ export default function PublicHeader({
                               setHelpMenuOpen(false)
                               handleInternalNavigation(event, helpHref)
                             }}
-                            className="group flex min-h-[58px] items-center gap-3 px-4 py-2 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                            className="group flex min-h-[58px] items-start gap-3 px-4 py-2.5 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
                           >
                             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
                               <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
@@ -1075,7 +1084,7 @@ export default function PublicHeader({
                   <div ref={profileMenuRef} className="relative flex h-full items-center">
                     <button
                       type="button"
-                      onClick={() => setProfileMenuOpen((current) => !current)}
+                      onClick={() => toggleDesktopMenu('profile')}
                       aria-expanded={profileMenuOpen}
                       className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
@@ -1202,8 +1211,13 @@ export default function PublicHeader({
               {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
                 const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
                 const toggleExpanded = () => {
-                  if (menu === 'help') setMobileHelpMenuOpen((current) => !current)
-                  else setMobileSellMenuOpen((current) => !current)
+                  if (menu === 'help') {
+                    setMobileHelpMenuOpen((current) => !current)
+                    setMobileSellMenuOpen(false)
+                  } else {
+                    setMobileSellMenuOpen((current) => !current)
+                    setMobileHelpMenuOpen(false)
+                  }
                 }
 
                 return (

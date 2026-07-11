@@ -149,13 +149,13 @@ export default function VehicleNewsPage({ locale, marketCode }: VehicleNewsPageP
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <nav className="border-b border-[#e5eaf2] bg-white">
-        <div className="mx-auto flex max-w-[var(--autorell-page-max)] items-center gap-5 overflow-x-auto px-5 py-3 text-[14px] font-[500] text-[#344054] sm:px-8">
+        <div className="mx-auto flex max-w-[1060px] items-center justify-center gap-5 overflow-x-auto px-5 py-3 text-[14px] font-[400] text-[#344054] sm:px-8">
           {categories.slice(1, 6).map((category) => (
             <a key={category.id} href={`#${category.id}`} className="shrink-0 transition hover:text-[#0866ff]">
               {localizeCategoryLabel(category, locale)}
             </a>
           ))}
-          <a href="#article-search" className="ml-auto inline-flex shrink-0 items-center gap-2 text-[#101828] transition hover:text-[#0866ff]">
+          <a href="#article-search" className="inline-flex shrink-0 items-center gap-2 text-[#101828] transition hover:text-[#0866ff]">
             <Search className="h-4 w-4" />
             {t('Sök artiklar', 'Search articles', 'Artikel suchen')}
           </a>
