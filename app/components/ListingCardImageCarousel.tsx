@@ -127,9 +127,9 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:grid md:group-hover:opacity-100"
+            className="absolute inset-y-0 left-0 z-20 hidden w-12 place-items-center bg-gradient-to-r from-[#101828]/38 via-[#101828]/18 to-transparent text-white opacity-0 transition hover:from-[#101828]/48 md:grid md:group-hover:opacity-100"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
           <button
             type="button"
@@ -139,20 +139,20 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#101828]/52 text-white opacity-0 shadow-[0_8px_22px_rgba(16,24,40,.24)] backdrop-blur transition hover:bg-[#101828]/72 md:grid md:group-hover:opacity-100"
+            className="absolute inset-y-0 right-0 z-20 hidden w-12 place-items-center bg-gradient-to-l from-[#101828]/38 via-[#101828]/18 to-transparent text-white opacity-0 transition hover:from-[#101828]/48 md:grid md:group-hover:opacity-100"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
         </>
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2.5 py-1.5 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur md:hidden">
+        <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur-[2px]">
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
               className={`h-1.5 rounded-full transition ${
-                dotIndex === activeDot ? 'w-3 bg-white' : 'w-1.5 bg-white/55'
+                dotIndex === activeDot ? 'w-2.5 bg-white' : 'w-1.5 bg-white/55'
               }`}
             />
           ))}
