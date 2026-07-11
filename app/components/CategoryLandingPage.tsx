@@ -435,13 +435,11 @@ function ListingCard({
           <ListingCardImageCarousel
             images={listing.imageUrls}
             title={listing.title}
-            href={localizePublicHref(
-              locale,
-              buildListingPath({
-                id: listing.id,
-                title: listing.title,
-              }),
-            )}
+            href={buildListingPath({
+              id: listing.id,
+              title: listing.title,
+              country_code: listing.countryCode,
+            })}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
             nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
@@ -460,13 +458,11 @@ function ListingCard({
       </div>
       <div className="p-3 sm:p-4">
         <Link
-          href={localizePublicHref(
-            locale,
-            buildListingPath({
-              id: listing.id,
-              title: listing.title,
-            }),
-          )}
+          href={buildListingPath({
+            id: listing.id,
+            title: listing.title,
+            country_code: listing.countryCode,
+          })}
           className="block hover:text-[#0866ff]"
         >
           <h3 className="line-clamp-2 min-h-[36px] text-[13px] font-bold leading-[18px] sm:min-h-[40px] sm:text-sm sm:leading-5">{listing.title}</h3>

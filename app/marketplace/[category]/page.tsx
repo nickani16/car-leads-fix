@@ -27,6 +27,8 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import { swedishMunicipalities } from '@/lib/swedish-regions.generated'
+import { buildSeoPath, slugifySeoPart, type SeoLocation, type SeoMarketCode } from '@/lib/seo-routes'
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -67,15 +69,25 @@ export async function generateMetadata({
   const seo = getMarketplaceSeoCopy(category.slug, label, locale, filter)
   const pathname = requestHeaders.get('x-autorell-pathname')
   const canonicalPath = pathname || `/marketplace/${category.slug}`
-  const canonical = filter
-    ? `${host}${canonicalPath}?filter=${encodeURIComponent(filter)}`
-    : `${host}${canonicalPath}`
+  const marketplaceSeo = resolveMarketplaceSeoCanonical(
+    locale,
+    marketCode,
+    category.slug,
+    resolvedSearchParams,
+    canonicalPath,
+  )
+  const canonical = marketplaceSeo.canonical || (
+    filter
+      ? `${host}${canonicalPath}?filter=${encodeURIComponent(filter)}`
+      : `${host}${canonicalPath}`
+  )
   const { title, description } = seo
 
   return {
     title: { absolute: title },
     description,
     alternates: { canonical },
+    robots: marketplaceSeo.robots,
     openGraph: {
       title,
       description,
@@ -414,6 +426,98 @@ function normalizeFilterLabel(filter?: string) {
     return 'new'
   }
   return ''
+}
+
+function resolveMarketplaceSeoCanonical(
+  locale: PublicLocale,
+  marketCode: string | undefined,
+  category: string,
+  params: { [key: string]: string | string[] | undefined },
+  fallbackPath: string,
+) {
+  const host = 'https://www.autorell.com'
+  const meaningfulParams = canonicalSearchParams(params)
+  if (!meaningfulParams.size) {
+    return {
+      canonical: `${host}${fallbackPath}`,
+      robots: { index: true, follow: true },
+    }
+  }
+
+  const canonicalAllowed = new Set(['category', 'categories', 'make', 'model', 'city', 'municipality', 'markets', 'page'])
+  const keys = [...meaningfulParams.keys()]
+  const canCanonicalizeToSeo = keys.every((key) => canonicalAllowed.has(key))
+  const page = normalizeCanonicalPage(getSearchParam(params, 'page'))
+  const onlyPagination = keys.every((key) => key === 'page')
+  const seoMarket = marketplaceSeoMarket(locale, marketCode)
+  const seoCategory = normalizeMarketplaceCategory(getSearchParam(params, 'categories') || getSearchParam(params, 'category') || category)
+  const make = getSearchParam(params, 'make') || undefined
+  const model = getSearchParam(params, 'model') || undefined
+  const location = seoLocationFromMarketplaceParams(seoMarket, params)
+  const canonicalPath = canCanonicalizeToSeo && seoMarket && !onlyPagination
+    ? buildSeoPath({
+        market: seoMarket,
+        category: seoCategory,
+        make,
+        model,
+        location,
+      })
+    : null
+  const selfCanonical = `${host}${fallbackPath}?${meaningfulParams.toString()}`
+  const pagedCanonical = canonicalPath && page > 1 ? `${canonicalPath}?page=${page}` : canonicalPath
+
+  return {
+    canonical: pagedCanonical ? `${host}${pagedCanonical}` : selfCanonical,
+    robots: {
+      index: Boolean(pagedCanonical || onlyPagination),
+      follow: true,
+    },
+  }
+}
+
+function normalizeCanonicalPage(value: string) {
+  const page = Number(value)
+  return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1
+}
+
+function canonicalSearchParams(params: { [key: string]: string | string[] | undefined }) {
+  const ignored = new Set(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'])
+  const searchParams = new URLSearchParams()
+  for (const key of Object.keys(params).sort()) {
+    if (ignored.has(key)) continue
+    const value = params[key]
+    const values = Array.isArray(value) ? value : [value]
+    for (const item of values) {
+      if (item) searchParams.append(key, item)
+    }
+  }
+  return searchParams
+}
+
+function marketplaceSeoMarket(locale: PublicLocale, marketCode: string | undefined): SeoMarketCode | null {
+  const code = (marketCode || '').toUpperCase()
+  if (code === 'SE' || locale === 'sv') return 'se'
+  if (code === 'DE' || locale === 'de') return 'de'
+  if (code === 'ES' || locale === 'es') return 'es'
+  return null
+}
+
+function seoLocationFromMarketplaceParams(
+  market: SeoMarketCode | null,
+  params: { [key: string]: string | string[] | undefined },
+): SeoLocation | undefined {
+  if (!market) return undefined
+  const city = getSearchParam(params, 'city')
+  if (city) {
+    return { market, type: 'city', name: city, slug: slugifySeoPart(city) }
+  }
+  const municipality = getSearchParam(params, 'municipality')
+  if (!municipality || market !== 'se') return undefined
+  const normalized = municipality.replace(/\s+kommun$/i, '')
+  const item = swedishMunicipalities.find((candidate) => candidate.name.toLowerCase() === normalized.toLowerCase())
+  return item
+    ? { market, type: 'municipality', name: `${item.name} kommun`, slug: `${item.slug}-kommun` }
+    : undefined
 }
 
 

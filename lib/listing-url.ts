@@ -6,6 +6,7 @@ type ListingUrlSource = {
   model_year?: number | string | null
   year?: number | string | null
   city?: string | null
+  country_code?: string | null
 }
 
 const uuidPattern =
@@ -31,7 +32,27 @@ export function buildListingSlug(listing: ListingUrlSource) {
 }
 
 export function buildListingPath(listing: ListingUrlSource) {
-  return `/listings/${buildListingSlug(listing)}`
+  const readableSlug = buildListingSlug(listing).replace(new RegExp(`-${listing.id}$`, 'i'), '')
+  const market = listingMarketPath(listing.country_code)
+  return `${market.prefix}/${market.adSegment}/${listing.id}/${readableSlug}`
+}
+
+export function listingMarketPath(countryCode?: string | null) {
+  const code = (countryCode || '').toUpperCase()
+  const markets: Record<string, { prefix: string; adSegment: string }> = {
+    SE: { prefix: '/se', adSegment: 'annons' },
+    DE: { prefix: '/de', adSegment: 'anzeige' },
+    ES: { prefix: '/es', adSegment: 'anuncio' },
+    FR: { prefix: '/fr', adSegment: 'annonce' },
+    IT: { prefix: '/it', adSegment: 'annuncio' },
+    NL: { prefix: '/nl', adSegment: 'advertentie' },
+    BE: { prefix: '/be', adSegment: 'advertentie' },
+    PL: { prefix: '/pl', adSegment: 'ogloszenie' },
+    AT: { prefix: '/at', adSegment: 'anzeige' },
+    DK: { prefix: '/dk', adSegment: 'annonce' },
+    FI: { prefix: '/fi', adSegment: 'ilmoitus' },
+  }
+  return markets[code] || { prefix: '', adSegment: 'annons' }
 }
 
 function slugifyListingPart(value: string) {

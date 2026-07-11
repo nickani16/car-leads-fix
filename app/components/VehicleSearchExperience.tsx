@@ -118,6 +118,22 @@ export type VehicleSearchListing = {
   equipment: string | null
 }
 
+type MarketplaceSearchApiResponse = {
+  items: Array<Record<string, unknown>>
+  totalCount?: number
+  page?: number
+  pageSize?: number
+  totalPages?: number
+  hasNext?: boolean
+  facets?: {
+    makes?: string[]
+    models?: string[]
+    fuels?: string[]
+    gearboxes?: string[]
+    bodyTypes?: string[]
+  }
+}
+
 const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
   { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Fordon till salu', hint: 'Privata och företag' },
   { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
@@ -517,6 +533,12 @@ export default function VehicleSearchExperience({
   const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
   const [searchFocused, setSearchFocused] = useState(false)
   const [mobileMapSearchFocused, setMobileMapSearchFocused] = useState(false)
+  const [searchListings, setSearchListings] = useState<VehicleSearchListing[]>(listings)
+  const [searchTotalCount, setSearchTotalCount] = useState(listings.length)
+  const [searchPage, setSearchPage] = useState(1)
+  const [searchTotalPages, setSearchTotalPages] = useState(1)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,
@@ -640,6 +662,47 @@ export default function VehicleSearchExperience({
       window.history.replaceState(window.history.state, '', nextUrl)
     }
   }, [marketplaceSearchParams, searchStateReady])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchPage(1), 0)
+    return () => window.clearTimeout(timer)
+  }, [marketplaceSearchParams])
+
+  useEffect(() => {
+    if (!searchStateReady) return
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setSearchLoading(true)
+      setSearchError(false)
+      const params = new URLSearchParams(marketplaceSearchParams)
+      params.set('page', String(searchPage))
+      params.set('limit', '48')
+
+      try {
+        const response = await fetch(`/api/marketplace/search-v2?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        })
+        if (!response.ok) throw new Error('Search failed')
+        const payload = (await response.json()) as MarketplaceSearchApiResponse
+        const nextListings = payload.items.map((item) => mapApiListingToVehicleSearchListing(item, locale))
+        setSearchListings((current) => searchPage > 1 ? [...current, ...nextListings] : nextListings)
+        setSearchTotalCount(payload.totalCount ?? nextListings.length)
+        setSearchTotalPages(payload.totalPages ?? 1)
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          setSearchError(true)
+        }
+      } finally {
+        if (!controller.signal.aborted) setSearchLoading(false)
+      }
+    }, query.trim() || equipmentQuery.trim() ? 320 : 80)
+
+    return () => {
+      controller.abort()
+      window.clearTimeout(timer)
+    }
+  }, [equipmentQuery, locale, marketplaceSearchParams, query, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -649,12 +712,12 @@ export default function VehicleSearchExperience({
 
   const optionListings = useMemo(
     () =>
-      listings.filter(
+      searchListings.filter(
         (listing) =>
           (!selectedCategories.length || selectedCategories.includes(listing.category)) &&
           matchesSelectedMarkets(listing.country, selectedMarkets),
       ),
-    [listings, selectedCategories, selectedMarkets],
+    [searchListings, selectedCategories, selectedMarkets],
   )
   const fuels = useMemo(
     () => [...new Set(optionListings.map((listing) => listing.fuelType).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'sv-SE')),
@@ -699,15 +762,15 @@ export default function VehicleSearchExperience({
     [optionListings],
   )
   const priceBounds = useMemo(() => {
-    const prices = listings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
+    const prices = searchListings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
     const max = prices.length ? Math.max(...prices) : 700000
     return { min: 0, max: Math.max(700000, Math.ceil(max / 10000) * 10000) }
-  }, [listings])
+  }, [searchListings])
   const mileageBounds = useMemo(() => {
-    const mileages = listings.map((listing) => listing.mileageKm).filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
+    const mileages = searchListings.map((listing) => listing.mileageKm).filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
     const max = mileages.length ? Math.max(...mileages) : 200000
     return { min: 0, max: Math.max(200000, Math.ceil(max / 10000) * 10000) }
-  }, [listings])
+  }, [searchListings])
 
   const filteredListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -716,7 +779,7 @@ export default function VehicleSearchExperience({
     const minYearValue = parseOptionalNumber(minYear)
     const maxYearValue = parseOptionalNumber(maxYear)
     const maxMileageValue = parseOptionalNumber(maxMileage)
-    const matches = listings.filter((listing) => {
+    const matches = searchListings.filter((listing) => {
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
@@ -769,7 +832,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, listings, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -944,10 +1007,7 @@ export default function VehicleSearchExperience({
     )
   }
 
-  const currentTabLabel = mode === 'sale'
-    ? uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
-    : uiText(locale, 'Leasing', 'Leasing', 'Leasing')
-  const visibleCount = filteredListings.length
+  const visibleCount = searchTotalCount
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
   const marketSummary = selectedMarketCodes.length
@@ -959,6 +1019,19 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'selected markets', 'valda marknader', 'ausgewählte Märkte')
       : uiText(locale, 'All markets', 'alla marknader', 'alle Märkte')
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
+  const resultCountSummary = formatSearchResultCountSummary({
+    locale,
+    count: visibleCount,
+    make,
+    model,
+    minYear,
+    maxYear,
+    selectedCategoryItems,
+    marketSummary,
+    resultLocationName,
+    city,
+    municipality,
+  })
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
     query,
@@ -1408,19 +1481,13 @@ export default function VehicleSearchExperience({
 
             <div className="px-5 py-4 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-medium leading-6">
-                  {mode === 'sale' ? (
-                    <>
-                      {uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')}{' '}
-                      {uiText(locale, 'in', 'i', 'in')}{' '}
-                      <strong className="font-semibold">{resultLocationName}</strong>.{' '}
-                      <strong className="font-semibold">{visibleCount.toLocaleString(locale === 'sv' ? 'sv-SE' : undefined)}</strong>{' '}
-                      {uiText(locale, 'listings shown', 'annonser visas', 'Anzeigen werden angezeigt')}.
-                    </>
+                <p className="min-h-6 text-sm font-medium leading-6">
+                  {searchLoading && searchPage === 1 ? (
+                    <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
+                  ) : searchError ? (
+                    <span>{uiText(locale, 'Could not update search count', 'Kunde inte uppdatera antal', 'Anzahl konnte nicht aktualisiert werden')}</span>
                   ) : (
-                    <>
-                      {currentTabLabel} {uiText(locale, 'in', 'i', 'in')} <strong className="font-semibold">{countryName}</strong>.
-                    </>
+                    resultCountSummary
                   )}
                 </p>
                 <div className="flex items-center gap-2">
@@ -1474,13 +1541,29 @@ export default function VehicleSearchExperience({
               ) : (
                 <div className="px-8 py-14">
                   <div className="rounded-[8px] border border-[#d9e1ec] bg-[#f8fbff] p-7">
-                    <p className="text-xl font-semibold text-[#101828]">{currentTabLabel}</p>
+                    <p className="text-xl font-semibold text-[#101828]">
+                      {uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')}
+                    </p>
                     <p className="mt-3 max-w-xl text-base leading-7 text-[#667085]">
-                      {uiText(locale, 'Here vehicles for sale will appear when listings have the correct listing type in the database.', 'Här kommer fordon till salu visas när annonserna har rätt annonstyp i databasen.', 'Hier erscheinen Fahrzeuge, sobald Anzeigen den richtigen Anzeigentyp in der Datenbank haben.')}
+                      {uiText(locale, '0 listings', '0 annonser', '0 Anzeigen')}
                     </p>
                   </div>
                 </div>
               )}
+              {filteredListings.length > 0 && searchPage < searchTotalPages ? (
+                <div className="border-t border-[#eceff4] px-5 py-5 text-center sm:px-6">
+                  <button
+                    type="button"
+                    onClick={() => setSearchPage((page) => page + 1)}
+                    disabled={searchLoading}
+                    className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-[#d0d5dd] bg-white px-5 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {searchLoading
+                      ? uiText(locale, 'Loading...', 'Laddar...', 'Wird geladen...')
+                      : uiText(locale, 'Show more listings', 'Visa fler annonser', 'Mehr Anzeigen zeigen')}
+                  </button>
+                </div>
+              ) : null}
               <VehicleSearchFooter locale={locale} />
             </div>
               </div>
@@ -1965,17 +2048,15 @@ function VehicleResultCard({
   onBeforeNavigate: () => void
   layout?: ResultsLayout
 }) {
-  const href = localizePublicHref(
-    locale,
-    buildListingPath({
-      id: listing.id,
-      title: listing.title,
-      make: listing.make,
-      model: listing.model,
-      year: listing.year,
-      city: listing.city,
-    }),
-  )
+  const href = buildListingPath({
+    id: listing.id,
+    title: listing.title,
+    make: listing.make,
+    model: listing.model,
+    year: listing.year,
+    city: listing.city,
+    country_code: listing.country,
+  })
   const location = Array.from(new Set([listing.city, listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean)))
     .join(', ')
   const categoryLabel = categoryText(
@@ -2438,17 +2519,15 @@ function MapListingPreview({
   onBeforeNavigate: () => void
   mobileOverlay?: boolean
 }) {
-  const href = localizePublicHref(
-    locale,
-    buildListingPath({
-      id: listing.id,
-      title: listing.title,
-      make: listing.make,
-      model: listing.model,
-      year: listing.year,
-      city: listing.city,
-    }),
-  )
+  const href = buildListingPath({
+    id: listing.id,
+    title: listing.title,
+    make: listing.make,
+    model: listing.model,
+    year: listing.year,
+    city: listing.city,
+    country_code: listing.country,
+  })
   const location = [listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
     .filter(Boolean)
     .join(', ')
@@ -2685,6 +2764,164 @@ function categoryFilterProfile(category: string): VehicleFilterKey[] {
     return ['condition', 'fuel', 'gearbox', 'bodyType', 'year', 'mileage']
   }
   return ['fuel', 'gearbox', 'bodyType', 'condition', 'year', 'mileage']
+}
+
+function mapApiListingToVehicleSearchListing(
+  listing: Record<string, unknown>,
+  locale: PublicLocale,
+): VehicleSearchListing {
+  const priceValue = Number(listing.price || 0)
+  const currency = String(listing.currency || 'EUR')
+  const images = Array.isArray(listing.images)
+    ? listing.images.filter((image): image is string => typeof image === 'string' && Boolean(image))
+    : []
+
+  return {
+    id: String(listing.id || ''),
+    category: String(listing.category || ''),
+    title: String(listing.title || ''),
+    make: String(listing.make || ''),
+    model: String(listing.model || ''),
+    year: listing.model_year ? String(listing.model_year) : null,
+    mileageKm: numberOrNull(listing.mileage_km),
+    fuelType: stringOrNull(listing.fuel_type),
+    gearbox: stringOrNull(listing.gearbox),
+    bodyType: stringOrNull(listing.body_type),
+    country: String(listing.country_code || ''),
+    city: stringOrNull(listing.city),
+    municipality: stringOrNull(listing.municipality),
+    latitude: numberOrNull(listing.latitude),
+    longitude: numberOrNull(listing.longitude),
+    priceLabel: formatApiPrice(priceValue, currency, locale),
+    priceValue,
+    imageUrl: images[0] || null,
+    imageUrls: images,
+    sellerLogoUrl: null,
+    sellerTrust: 'unverified',
+    sellerName: String(listing.seller_name || ''),
+    sellerIsTrader: listing.seller_type === 'business',
+    sellerRatingAverage: null,
+    sellerRatingCount: 0,
+    condition: stringOrNull(listing.condition),
+    color: stringOrNull(listing.color),
+    equipment: stringOrNull(listing.equipment),
+  }
+}
+
+function formatApiPrice(amount: number, currency: string, locale: PublicLocale) {
+  if (!Number.isFinite(amount) || amount <= 0) return uiText(locale, 'Price on request', 'Pris på begäran', 'Preis auf Anfrage')
+  return `${amount.toLocaleString(countNumberLocale(locale), { maximumFractionDigits: 0 })} ${currency.toUpperCase()}`
+}
+
+function formatSearchResultCountSummary({
+  locale,
+  count,
+  make,
+  model,
+  minYear,
+  maxYear,
+  selectedCategoryItems,
+  marketSummary,
+  resultLocationName,
+  city,
+  municipality,
+}: {
+  locale: PublicLocale
+  count: number
+  make: string
+  model: string
+  minYear: string
+  maxYear: string
+  selectedCategoryItems: Array<(typeof categories)[number]>
+  marketSummary: string
+  resultLocationName: string
+  city: string
+  municipality: string
+}) {
+  if (count === 0) return uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')
+
+  const formatted = count.toLocaleString(countNumberLocale(locale))
+  const subject =
+    [make, model].filter(Boolean).join(' ') ||
+    (selectedCategoryItems.length === 1
+      ? countCategoryLabel(selectedCategoryItems[0], locale, count)
+      : count === 1
+        ? uiText(locale, 'vehicle', 'fordon', 'Fahrzeug')
+        : uiText(locale, 'vehicles', 'fordon', 'Fahrzeuge'))
+  const location = city || municipality
+    ? resultLocationName
+    : marketSummary
+  const yearText = minYear || maxYear
+    ? countYearRangeText(locale, minYear, maxYear)
+    : ''
+
+  if (locale === 'sv') {
+    return `${formatted} ${subject} till salu${location ? ` i ${location}` : ''}${yearText}`
+  }
+  if (locale === 'de') {
+    return `${formatted} ${subject} zum Verkauf${location ? ` in ${location}` : ''}${yearText}`
+  }
+  return `${formatted} ${subject} for sale${location ? ` in ${location}` : ''}${yearText}`
+}
+
+function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {
+  if (locale === 'sv') {
+    const singular: Record<string, string> = {
+      cars: 'bil',
+      vans: 'transportbil',
+      motorcycles: 'motorcykel',
+      motorhomes: 'husbil',
+      caravans: 'husvagn',
+      trucks: 'lastbil',
+      agriculture: 'lantbruksmaskin',
+      construction: 'entreprenadmaskin',
+      'electric-bikes': 'cykel',
+      'e-scooters': 'sparkcykel',
+    }
+    return count === 1 ? singular[item.key] || 'fordon' : categoryText(item, locale, true).toLocaleLowerCase('sv-SE')
+  }
+  return count === 1
+    ? categoryText(item, locale, true).replace(/s$/i, '').toLocaleLowerCase()
+    : categoryText(item, locale, true).toLocaleLowerCase()
+}
+
+function countYearRangeText(locale: PublicLocale, minYear: string, maxYear: string) {
+  if (locale === 'sv') {
+    if (minYear && maxYear) return ` från ${minYear} till ${maxYear}`
+    if (minYear) return ` från ${minYear}`
+    return ` till ${maxYear}`
+  }
+  if (locale === 'de') {
+    if (minYear && maxYear) return ` von ${minYear} bis ${maxYear}`
+    if (minYear) return ` ab ${minYear}`
+    return ` bis ${maxYear}`
+  }
+  if (minYear && maxYear) return ` from ${minYear} to ${maxYear}`
+  if (minYear) return ` from ${minYear}`
+  return ` up to ${maxYear}`
+}
+
+function countNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de' || locale === 'at') return 'de-DE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl' || locale === 'be') return 'nl-NL'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  return 'en-GB'
+}
+
+function numberOrNull(value: unknown) {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function stringOrNull(value: unknown) {
+  return typeof value === 'string' && value ? value : null
 }
 
 function parseOptionalNumber(value: string | number | null | undefined) {

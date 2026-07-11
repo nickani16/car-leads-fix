@@ -5,6 +5,7 @@ import {
   isPublicLanguage,
   type PublicLanguage,
 } from '@/lib/public-i18n'
+import { isSeoVehiclePath } from '@/lib/seo-routes'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
@@ -85,6 +86,24 @@ const LOCALIZED_PUBLIC_ALIASES = new Map([
   ['safety-tips', 'safety-tips'],
   ['payments', 'payments'],
   ['shipping-delivery', 'shipping-delivery'],
+  ['annons', 'annons'],
+  ['anzeige', 'annons'],
+  ['anuncio', 'annons'],
+  ['annonce', 'annons'],
+  ['annuncio', 'annons'],
+  ['advertentie', 'annons'],
+  ['ogloszenie', 'annons'],
+  ['ilmoitus', 'annons'],
+])
+const LOCALIZED_AD_SEGMENTS = new Set([
+  'annons',
+  'anzeige',
+  'anuncio',
+  'annonce',
+  'annuncio',
+  'advertentie',
+  'ogloszenie',
+  'ilmoitus',
 ])
 const CANONICAL_LOCALIZED_SLUGS = new Map([
   ['kontakt', 'contact'],
@@ -426,7 +445,7 @@ function withMarketCookie(response: NextResponse, market: string) {
   return response
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
   const selectedMarket = request.nextUrl.searchParams.get('market')
@@ -434,6 +453,9 @@ export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   if (methodCanRedirect) {
+    const goneListingResponse = await responseForPermanentlyRemovedListing(request)
+    if (goneListingResponse) return goneListingResponse
+
     const retiredCategoryTarget = RETIRED_CATEGORY_ROUTES.get(pathname)
     if (retiredCategoryTarget) {
       const url = request.nextUrl.clone()
@@ -572,6 +594,21 @@ export function proxy(request: NextRequest) {
       requestHeaders.set('x-autorell-language', localeContext.language)
       requestHeaders.set('x-autorell-market', localeContext.marketHeader)
       requestHeaders.set('x-autorell-pathname', pathname)
+
+      if (isSeoVehiclePath(pathMarket, segments.slice(1))) {
+        const seoUrl = request.nextUrl.clone()
+        seoUrl.pathname = `/seo/${pathMarket}/${segments.slice(1).join('/')}`
+        requestHeaders.set('x-autorell-internal-seo', '1')
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.rewrite(seoUrl, {
+              request: { headers: requestHeaders },
+            }),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
 
       if (segments.length === 1) {
         return withMarketCookie(
@@ -923,6 +960,103 @@ export function proxy(request: NextRequest) {
   }
 
   return NextResponse.next()
+}
+
+async function responseForPermanentlyRemovedListing(request: NextRequest) {
+  const listingId = listingIdFromPathname(request.nextUrl.pathname)
+  if (!listingId) return null
+
+  const state = await getListingPublicLifecycleState(listingId)
+  if (!state?.gone) return null
+
+  return new Response(goneListingHtml(), {
+    status: 410,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      'X-Robots-Tag': 'noindex, nofollow',
+    },
+  })
+}
+
+function listingIdFromPathname(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+  if (segments[0] === 'listings') {
+    return segments[1]?.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}/i)?.[0] || null
+  }
+
+  if (LOCALIZED_AD_SEGMENTS.has(segments[0]) && uuidPattern.test(segments[1] || '')) {
+    return segments[1]
+  }
+
+  if (segments.length >= 3 && LOCALIZED_AD_SEGMENTS.has(segments[1]) && uuidPattern.test(segments[2] || '')) {
+    return segments[2]
+  }
+
+  return null
+}
+
+async function getListingPublicLifecycleState(id: string) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) return null
+
+  const url = new URL('/rest/v1/marketplace_listings', supabaseUrl)
+  url.searchParams.set('id', `eq.${id}`)
+  url.searchParams.set('select', 'status,published_at,sold_at,deleted_at,removed_by_admin')
+  url.searchParams.set('limit', '1')
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+    })
+    if (!response.ok) return null
+    const rows = (await response.json()) as Array<{
+      status?: string | null
+      published_at?: string | null
+      sold_at?: string | null
+      deleted_at?: string | null
+      removed_by_admin?: boolean | null
+    }>
+    const row = rows[0]
+    if (!row) return null
+    const wasPublic = Boolean(row.published_at || row.sold_at)
+    const permanentlyRemoved =
+      row.status === 'deleted' ||
+      Boolean(row.deleted_at) ||
+      row.removed_by_admin === true
+    return { gone: wasPublic && permanentlyRemoved }
+  } catch {
+    return null
+  }
+}
+
+function goneListingHtml() {
+  return [
+    '<!doctype html>',
+    '<html lang="sv">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="robots" content="noindex,nofollow">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>Annonsen ar borttagen | Autorell</title>',
+    '</head>',
+    '<body>',
+    '<main style="font-family:system-ui,sans-serif;max-width:680px;margin:12vh auto;padding:0 24px;line-height:1.5">',
+    '<h1>Annonsen ar permanent borttagen</h1>',
+    '<p>Den har annonsen finns inte langre pa Autorell.</p>',
+    '<p><a href="/marketplace">Visa aktuella annonser</a></p>',
+    '</main>',
+    '</body>',
+    '</html>',
+  ].join('')
 }
 
 export const config = {

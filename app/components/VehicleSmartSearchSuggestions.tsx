@@ -76,22 +76,22 @@ function typeLabel(type: string | undefined, locale: PublicLocale) {
     if (type === 'category') return 'Kategorie'
     if (type === 'place') return 'Ort'
     if (type === 'vehicle-query') return 'Suche'
-    if (type === 'make-model') return 'Marke'
+    if (type === 'make' || type === 'model') return 'Marke'
     if (type === 'listing') return 'Anzeige'
-    return 'Seite'
+    return 'Fahrzeug'
   }
   if (locale === 'en') {
     if (type === 'category') return 'Category'
     if (type === 'place') return 'Area'
     if (type === 'vehicle-query') return 'Search'
-    if (type === 'make-model') return 'Make'
+    if (type === 'make' || type === 'model') return 'Make'
     if (type === 'listing') return 'Listing'
-    return 'Page'
+    return 'Vehicle'
   }
   if (type === 'category') return 'Kategori'
+  if (type === 'make' || type === 'model') return 'M\u00e4rke'
   if (type === 'place') return 'Område'
   if (type === 'vehicle-query') return 'Sökning'
-  if (type === 'make-model') return 'Märke'
   if (type === 'listing') return 'Annons'
   return 'Sida'
 }

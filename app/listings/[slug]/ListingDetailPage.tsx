@@ -40,7 +40,7 @@ import {
 } from '@/lib/marketplace'
 import { localizePublicHref, translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
-import { getPublishedMarketplaceListingById } from '@/lib/marketplace-public-data'
+import { getMarketplaceListingForPublicDetail } from '@/lib/marketplace-public-data'
 import { resolveListingCoordinates } from '@/lib/location-coordinates'
 import { selectedEquipmentGroups } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
@@ -93,8 +93,10 @@ type ListingRow = {
   phone_visibility: 'public' | 'registered_only' | null
   package_id: string | null
   priority: number | null
+  status: 'published' | 'sold' | string
   created_at: string
   published_at: string | null
+  sold_at: string | null
   expires_at: string | null
 }
 
@@ -136,7 +138,7 @@ export async function generateListingMetadata({
   const locale = await getRequestLocale()
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const canonicalPath = localizePublicHref(locale, buildListingPath(listing))
+  const canonicalPath = buildListingPath(listing)
   const canonical = `https://www.autorell.com${canonicalPath}`
   const location = [listing.city, getEuCountryName(listing.country_code, locale)].filter(Boolean).join(', ')
   const title = `${listing.title} | ${location} | Autorell`
@@ -156,7 +158,10 @@ export async function generateListingMetadata({
   return {
     title: { absolute: seoTitle },
     description: seoDescription,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+    },
+    robots: { index: listing.status === 'published', follow: true },
     openGraph: {
       title: seoTitle,
       description: seoDescription,
@@ -193,10 +198,16 @@ export default async function ListingDetailPage({
     data: { user },
   } = await supabase.auth.getUser()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const canonicalPath = localizePublicHref(locale, buildListingPath(listing))
-  if (slug !== buildListingSlug(listing)) {
+  const canonicalPath = buildListingPath(listing)
+  const requestPathname = requestHeaders.get('x-autorell-pathname') || ''
+  if (
+    slug !== buildListingSlug(listing) ||
+    requestPathname.includes('/listings/') ||
+    (requestPathname && normalizePathname(requestPathname) !== normalizePathname(canonicalPath))
+  ) {
     permanentRedirect(canonicalPath)
   }
+  const isSold = listing.status === 'sold'
 
   const category = getMarketplaceCategory(listing.category)
   const language = marketplaceLanguage(locale)
@@ -316,12 +327,18 @@ export default async function ListingDetailPage({
   const copy = getListingDetailCopy(locale)
   const listingIdentity =
     listing.listing_number || listing.reference_number || listing.id.slice(0, 8).toUpperCase()
-  const vehicleSchema = buildVehicleSchema({
+  const listingJsonLd = buildListingJsonLd({
     listing,
     price: Number(listing.price),
     url: publicUrl,
     location,
     sellerLabel,
+    includeOffer: !isSold,
+    breadcrumbs: [
+      { label: copy.home, href: `https://www.autorell.com${localizePublicHref(locale, '/')}` },
+      { label: categoryLabel, href: `https://www.autorell.com${localizePublicHref(locale, `/marketplace/${listing.category}`)}` },
+      { label: listing.title, href: publicUrl },
+    ],
   })
   const mapCoordinates = resolveListingCoordinates({
     latitude: listing.latitude,
@@ -367,6 +384,11 @@ export default async function ListingDetailPage({
             <ListingImageGallery images={listing.images || []} title={listing.title} />
 
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
+              {isSold ? (
+                <div className="mb-5 rounded-[12px] border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm font-semibold text-[#9a3412]">
+                  {localizedLabel(locale, 'Den här annonsen är såld', 'This listing is sold', 'Diese Anzeige ist verkauft')}
+                </div>
+              ) : null}
               <div className="flex flex-col items-stretch gap-4">
                 <div className="min-w-0 flex-1">
                   <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
@@ -496,13 +518,24 @@ export default async function ListingDetailPage({
                     {localizedLabel(locale, 'Redigera annons', 'Edit listing', 'Anzeige bearbeiten')}
                   </Link>
                 ) : null}
-                <RevealPhoneButton listingId={listing.id} locale={locale} />
-                <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
-                <ListingContactFormButton
-                  listingId={listing.id}
-                  listingTitle={listing.title}
-                  locale={locale}
-                />
+                {isSold ? (
+                  <Link
+                    href={localizePublicHref(locale, `/marketplace/${listing.category}`)}
+                    className="inline-flex h-12 items-center justify-center rounded-[12px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828]"
+                  >
+                    {localizedLabel(locale, 'Visa liknande annonser', 'View similar listings', 'Ähnliche Anzeigen ansehen')}
+                  </Link>
+                ) : (
+                  <>
+                    <RevealPhoneButton listingId={listing.id} locale={locale} />
+                    <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
+                    <ListingContactFormButton
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      locale={locale}
+                    />
+                  </>
+                )}
                 <div className="flex justify-start py-1">
                   <ShareListingButton
                     title={listing.title}
@@ -631,15 +664,17 @@ export default async function ListingDetailPage({
           </div>
         </section>
       </div>
-      <ListingMobileContactBar
-        listingId={listing.id}
-        locale={locale}
-        contactTargetId="listing-contact-card"
-      />
+      {!isSold ? (
+        <ListingMobileContactBar
+          listingId={listing.id}
+          locale={locale}
+          contactTargetId="listing-contact-card"
+        />
+      ) : null}
       <PublicFooter locale={locale} />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleSchema) }}
+        dangerouslySetInnerHTML={{ __html: sanitizeJsonLd(listingJsonLd) }}
       />
     </main>
   )
@@ -649,7 +684,7 @@ async function fetchListingFromSlug(slug: string) {
   const id = extractListingIdFromSlug(slug)
   if (!id) return null
 
-  const data = await getPublishedMarketplaceListingById(id)
+  const data = await getMarketplaceListingForPublicDetail(id)
 
   return (data || null) as ListingRow | null
 }
@@ -1126,47 +1161,78 @@ function getListingDetailCopy(locale: PublicLocale) {
   return translatePublicObject(locale, listingDetailCopy.en)
 }
 
-function buildVehicleSchema({
+function buildListingJsonLd({
   listing,
   price,
   url,
   location,
   sellerLabel,
+  breadcrumbs,
+  includeOffer,
 }: {
   listing: ListingRow
   price: number
   url: string
   location: string
   sellerLabel: string
+  breadcrumbs: Array<{ label: string; href: string }>
+  includeOffer: boolean
 }) {
+  const offer = includeOffer
+    ? {
+        '@type': 'Offer',
+        price,
+        priceCurrency: listing.currency,
+        availability: 'https://schema.org/InStock',
+        url,
+        seller:
+          listing.seller_type === 'business'
+            ? { '@type': 'Organization', name: sellerLabel }
+            : { '@type': 'Person', name: 'Private seller' },
+      }
+    : undefined
+
   return {
     '@context': 'https://schema.org',
-    '@type': 'Vehicle',
-    name: listing.title,
-    description: listing.description || `${listing.title} - ${location}`,
-    image: listing.images || [],
-    brand: listing.make ? { '@type': 'Brand', name: listing.make } : undefined,
-    model: listing.model || undefined,
-    vehicleModelDate: listing.model_year || undefined,
-    mileageFromOdometer:
-      listing.mileage_km !== null
-        ? { '@type': 'QuantitativeValue', value: listing.mileage_km, unitCode: 'KMT' }
-        : undefined,
-    color: listing.color || undefined,
-    itemCondition:
-      listing.condition?.toLowerCase().includes('ny') || listing.condition?.toLowerCase().includes('new')
-        ? 'https://schema.org/NewCondition'
-        : 'https://schema.org/UsedCondition',
-    offers: {
-      '@type': 'Offer',
-      price,
-      priceCurrency: listing.currency,
-      availability: 'https://schema.org/InStock',
-      url,
-      seller:
-        listing.seller_type === 'business'
-          ? { '@type': 'Organization', name: sellerLabel }
-          : { '@type': 'Person', name: 'Private seller' },
-    },
+    '@graph': [
+      {
+        '@type': ['Product', 'Vehicle'],
+        name: listing.title,
+        description: listing.description || `${listing.title} - ${location}`,
+        image: listing.images || [],
+        brand: listing.make ? { '@type': 'Brand', name: listing.make } : undefined,
+        model: listing.model || undefined,
+        vehicleModelDate: listing.model_year || undefined,
+        mileageFromOdometer:
+          listing.mileage_km !== null
+            ? { '@type': 'QuantitativeValue', value: listing.mileage_km, unitCode: 'KMT' }
+            : undefined,
+        vehicleTransmission: listing.gearbox || undefined,
+        fuelType: listing.fuel_type || undefined,
+        color: listing.color || undefined,
+        itemCondition:
+          listing.condition?.toLowerCase().includes('ny') || listing.condition?.toLowerCase().includes('new')
+            ? 'https://schema.org/NewCondition'
+            : 'https://schema.org/UsedCondition',
+        offers: offer,
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.label,
+          item: item.href,
+        })),
+      },
+    ],
   }
+}
+
+function normalizePathname(pathname: string) {
+  return pathname.replace(/\/+$/, '') || '/'
+}
+
+function sanitizeJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c')
 }

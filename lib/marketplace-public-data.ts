@@ -18,6 +18,10 @@ export const getPublishedMarketplaceListings = unstable_cache(
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
       .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .is('deleted_at', null)
+      .is('sold_at', null)
+      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })
@@ -39,6 +43,10 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
       .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .is('deleted_at', null)
+      .is('sold_at', null)
+      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
     const normalizedCountry = (countryCode || '').toUpperCase()
@@ -66,6 +74,10 @@ export const getPublishedMarketplaceCategoryListings = unstable_cache(
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
       .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .is('deleted_at', null)
+      .is('sold_at', null)
+      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })
@@ -90,6 +102,10 @@ export const getPublishedMarketplaceListingById = unstable_cache(
       .select(marketplacePublicSelect)
       .eq('id', id)
       .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .is('deleted_at', null)
+      .is('sold_at', null)
+      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .maybeSingle()
 
@@ -99,12 +115,78 @@ export const getPublishedMarketplaceListingById = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
+export const getMarketplaceListingForPublicDetail = unstable_cache(
+  async (id: string) => {
+    const { data } = await createAdminClient()
+      .from('marketplace_listings')
+      .select(marketplacePublicSelect)
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle()
+
+    if (!data) return null
+
+    const status = String(data.status || '')
+    if (data.deleted_at || data.removed_by_admin) return null
+
+    const isExpiredPublished =
+      status === 'published' &&
+      data.expires_at &&
+      new Date(data.expires_at).getTime() <= Date.now()
+
+    return isExpiredPublished ? null : sanitizePublicListingSellerName(data)
+  },
+  ['public-marketplace-listing-detail-by-id'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
+export const getPublishedMarketplaceListingCount = unstable_cache(
+  async (countryCode: string | null) => {
+    return withCountTimeout(async () => {
+      let query = createAdminClient()
+        .from('marketplace_listings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'published')
+        .not('published_at', 'is', null)
+        .is('deleted_at', null)
+        .is('sold_at', null)
+        .or('removed_by_admin.is.null,removed_by_admin.eq.false')
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+
+      const normalizedCountry = (countryCode || '').toUpperCase()
+      if (normalizedCountry && normalizedCountry !== 'EU') {
+        query = query.eq('country_code', normalizedCountry)
+      }
+
+      const { count } = await query
+      return count ?? null
+    })
+  },
+  ['published-marketplace-listing-count'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
+async function withCountTimeout(run: () => Promise<number | null>) {
+  try {
+    return await Promise.race([
+      run(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3_000)),
+    ])
+  } catch {
+    return null
+  }
+}
+
 export const getPublicSearchListings = unstable_cache(
   async (limit = 250) => {
     const { data } = await createAdminClient()
       .from('marketplace_listings')
       .select(publicSearchListingSelect)
       .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .is('deleted_at', null)
+      .is('sold_at', null)
+      .or('removed_by_admin.is.null,removed_by_admin.eq.false')
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
       .order('published_at', { ascending: false })

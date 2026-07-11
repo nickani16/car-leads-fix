@@ -256,8 +256,12 @@ function categoryLabel(slug: MarketplaceCategorySlug, locale: PublicLocale) {
 
 export default function HomeHeroVehicleSearch({
   locale,
+  localListingCount,
+  europeListingCount,
 }: {
   locale: PublicLocale
+  localListingCount?: number | null
+  europeListingCount?: number | null
 }) {
   const router = useRouter()
   const t =
@@ -472,6 +476,10 @@ export default function HomeHeroVehicleSearch({
   const noteText = t.note.startsWith('Autorell')
     ? { brand: 'Autorell', rest: t.note.slice('Autorell'.length) }
     : null
+  const heroCount = Math.max(europeListingCount || 0, localListingCount || 0)
+  const heroCountText = heroCount
+    ? formatHomeListingCount(locale, heroCount)
+    : ''
 
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
@@ -489,6 +497,11 @@ export default function HomeHeroVehicleSearch({
               t.title
             )}
           </h1>
+          {heroCountText ? (
+            <p className="mx-auto mt-3 max-w-[300px] text-[13px] font-medium leading-5 text-[#475467]">
+              {heroCountText}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -787,6 +800,33 @@ export default function HomeHeroVehicleSearch({
       </div>
     </div>
   )
+}
+
+function formatHomeListingCount(locale: PublicLocale, count: number) {
+  const formatted = count.toLocaleString(numberLocale(locale))
+  if (locale === 'sv') return `Utforska ${formatted} fordon från hela Europa`
+  if (locale === 'de') return `${formatted} Fahrzeuge aus ganz Europa entdecken`
+  if (locale === 'fr') return `Explorez ${formatted} véhicules dans toute l'Europe`
+  if (locale === 'es') return `Explora ${formatted} vehículos de toda Europa`
+  if (locale === 'it') return `Esplora ${formatted} veicoli da tutta Europa`
+  if (locale === 'pl') return `Przeglądaj ${formatted} pojazdów z całej Europy`
+  if (locale === 'nl' || locale === 'be') return `Ontdek ${formatted} voertuigen uit heel Europa`
+  if (locale === 'da') return `Udforsk ${formatted} køretøjer fra hele Europa`
+  if (locale === 'fi') return `Tutustu ${formatted} ajoneuvoon eri puolilta Eurooppaa`
+  return `Explore ${formatted} vehicles from across Europe`
+}
+
+function numberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de' || locale === 'at') return 'de-DE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl' || locale === 'be') return 'nl-NL'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  return 'en-GB'
 }
 
 function MarketPicker({

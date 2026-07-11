@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { marketplacePublicSelect, normalizeMarketplaceCategory, type MarketplaceCategorySlug } from './marketplace'
+import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import { createAdminClient } from './supabase/admin'
 
@@ -33,6 +33,13 @@ export type MarketplaceSearchInput = {
   gearbox?: string | null
   bodyType?: string | null
   sellerType?: string | null
+  condition?: string | null
+  color?: string | null
+  equipment?: string | null
+  fourWheelDrive?: string | boolean | null
+  leasingPossible?: string | boolean | null
+  mode?: string | null
+  page?: string | number | null
   sort?: string | null
   cursor?: string | null
   limit?: string | number | null
@@ -49,6 +56,10 @@ export type MarketplaceSearchResult = {
   }
   nextCursor: string | null
   totalEstimate: number | null
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
   limit: number
   hasNext: boolean
 }
@@ -84,50 +95,18 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
 
   let query = admin
     .from('marketplace_listings')
-    .select(marketplacePublicSelect, { count: 'estimated' })
-    .eq('status', 'published')
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .select(marketplacePublicSelect, { count: 'exact' })
 
-  query = applyMultiFilter(query, 'category', filters.categories)
-  query = applyMultiFilter(query, 'country_code', filters.markets)
-  if (filters.make) query = query.eq('make', filters.make)
-  if (filters.model) query = query.eq('model', filters.model)
-  if (filters.city) query = query.ilike('city', filters.city)
-  if (filters.municipality) query = query.ilike('municipality', filters.municipality)
-  if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
-  if (filters.gearbox) query = query.eq('gearbox', filters.gearbox)
-  if (filters.bodyType) query = query.eq('body_type', filters.bodyType)
-  if (filters.sellerType && filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
-  if (filters.minPrice !== null) query = query.gte('price', filters.minPrice)
-  if (filters.maxPrice !== null) query = query.lte('price', filters.maxPrice)
-  if (filters.minYear !== null) query = query.gte('model_year', filters.minYear)
-  if (filters.maxYear !== null) query = query.lte('model_year', filters.maxYear)
-  if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
+  query = applyMarketplaceListingFilters(query, filters)
 
   if (filters.sort === 'price-asc' || filters.sort === 'price-desc') query = query.not('price', 'is', null)
   if (filters.sort === 'year-desc') query = query.not('model_year', 'is', null)
   if (filters.sort === 'mileage-asc') query = query.not('mileage_km', 'is', null)
 
-  if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
-    query = query.textSearch('search_document', filters.q, {
-      type: 'websearch',
-      config: 'simple',
-    })
-  } else if (filters.q) {
-    const identifierQuery = filters.q.replace(/[%_,]/g, '')
-    query = query.or(
-      [
-        `vin.ilike.%${identifierQuery}%`,
-        `chassis_number.ilike.%${identifierQuery}%`,
-        `serial_number.ilike.%${identifierQuery}%`,
-        `registration_reference.ilike.%${identifierQuery}%`,
-        `reference_number.ilike.%${identifierQuery}%`,
-      ].join(','),
-    )
-  }
-
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
   query = applyCursor(query, filters.cursor)
-  query = applySort(query, filters.sort).limit(filters.limit + 1)
+  query = applySort(query, filters.sort).range(from, to)
 
   const { data, error, count } = await query
   if (error) {
@@ -135,16 +114,22 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   }
 
   const rows = (data || []) as MarketplaceSearchRow[]
-  const items = rows.slice(0, filters.limit).map(sanitizePublicListingSellerName)
-  const facets = await getMarketplaceFacets(filters)
-  const hasNext = rows.length > filters.limit
+  const items = rows.map(sanitizePublicListingSellerName)
+  const facets = emptyMarketplaceFacets()
+  const totalCount = count || 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / filters.limit))
+  const hasNext = filters.page < totalPages
   const lastItem = items[items.length - 1] || null
 
   return {
     items,
     facets,
     nextCursor: hasNext && lastItem ? encodeCursor(cursorFromRow(lastItem, filters.sort)) : null,
-    totalEstimate: filters.cursor ? null : count,
+    totalEstimate: totalCount,
+    totalCount,
+    page: filters.page,
+    pageSize: filters.limit,
+    totalPages,
     limit: filters.limit,
     hasNext,
   }
@@ -167,6 +152,11 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     gearbox: clean(input.gearbox).slice(0, 80),
     bodyType: clean(input.bodyType).slice(0, 80),
     sellerType: clean(input.sellerType).slice(0, 24),
+    condition: clean(input.condition).slice(0, 80),
+    color: clean(input.color).slice(0, 80),
+    equipment: clean(input.equipment).slice(0, 80),
+    fourWheelDrive: truthy(input.fourWheelDrive),
+    leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice),
     minYear: positiveNumber(input.minYear),
@@ -174,8 +164,73 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     maxMileage: positiveNumber(input.maxMileage),
     sort,
     cursor,
+    page: clampInt(input.page, 1, 10_000, 1),
     limit: clampInt(input.limit, 1, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE),
   }
+}
+
+function applyMarketplaceListingFilters<T extends {
+  eq: (column: string, value: string | boolean) => T
+  in: (column: string, values: string[]) => T
+  is: (column: string, value: null) => T
+  not: (column: string, operator: string, value: unknown) => T
+  or: (filters: string) => T
+  gte: (column: string, value: number) => T
+  lte: (column: string, value: number) => T
+  ilike: (column: string, pattern: string) => T
+  textSearch: (column: string, query: string, options?: Record<string, unknown>) => T
+}>(
+  query: T,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+) {
+  query = query
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .is('deleted_at', null)
+    .is('sold_at', null)
+    .or('removed_by_admin.is.null,removed_by_admin.eq.false')
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+
+  query = applyMultiFilter(query, 'category', filters.categories)
+  query = applyMultiFilter(query, 'country_code', filters.markets)
+  if (filters.make) query = query.eq('make', filters.make)
+  if (filters.model) query = query.eq('model', filters.model)
+  if (filters.city) query = query.ilike('city', filters.city)
+  if (filters.municipality) query = query.ilike('municipality', filters.municipality)
+  if (filters.fuelType) query = query.eq('fuel_type', filters.fuelType)
+  if (filters.gearbox) query = query.eq('gearbox', filters.gearbox)
+  if (filters.bodyType) query = query.eq('body_type', filters.bodyType)
+  if (filters.condition) query = query.eq('condition', filters.condition)
+  if (filters.color) query = query.eq('color', filters.color)
+  if (filters.sellerType && filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
+  if (filters.equipment) query = query.ilike('equipment', `%${escapeIlike(filters.equipment)}%`)
+  if (filters.fourWheelDrive) query = query.ilike('equipment', '%fyrhjuls%')
+  if (filters.leasingPossible) query = query.ilike('equipment', '%leasing%')
+  if (filters.minPrice !== null) query = query.gte('price', filters.minPrice)
+  if (filters.maxPrice !== null) query = query.lte('price', filters.maxPrice)
+  if (filters.minYear !== null) query = query.gte('model_year', filters.minYear)
+  if (filters.maxYear !== null) query = query.lte('model_year', filters.maxYear)
+  if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
+
+  if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
+    query = query.textSearch('search_document', filters.q, {
+      type: 'websearch',
+      config: 'simple',
+    })
+  } else if (filters.q) {
+    const identifierQuery = filters.q.replace(/[%_,]/g, '')
+    query = query.or(
+      [
+        `vin.ilike.%${identifierQuery}%`,
+        `chassis_number.ilike.%${identifierQuery}%`,
+        `serial_number.ilike.%${identifierQuery}%`,
+        `registration_reference.ilike.%${identifierQuery}%`,
+        `reference_number.ilike.%${identifierQuery}%`,
+      ].join(','),
+    )
+  }
+
+  return query
 }
 
 function splitFilterValues(value: unknown) {
@@ -214,6 +269,16 @@ function positiveNumber(value: unknown) {
   if (value === null || value === undefined || value === '') return null
   const parsed = Number(String(value).replace(/[^\d.-]/g, ''))
   return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : null
+}
+
+function truthy(value: unknown) {
+  if (typeof value === 'boolean') return value
+  const normalized = String(value || '').toLowerCase()
+  return normalized === '1' || normalized === 'true' || normalized === 'yes'
+}
+
+function escapeIlike(value: string) {
+  return value.replace(/[%_]/g, '')
 }
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {
@@ -325,40 +390,14 @@ function stringOrNull(value: unknown) {
   return typeof value === 'string' && value ? value : null
 }
 
-async function getMarketplaceFacets(filters: ReturnType<typeof normalizeMarketplaceSearchInput>) {
-  const admin = createAdminClient()
-  let query = admin
-    .from('marketplace_listings')
-    .select('make,model,fuel_type,gearbox,body_type')
-    .eq('status', 'published')
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .limit(1000)
-
-  query = applyMultiFilter(query, 'category', filters.categories as MarketplaceCategorySlug[])
-  query = applyMultiFilter(query, 'country_code', filters.markets)
-  if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
-    query = query.textSearch('search_document', filters.q, {
-      type: 'websearch',
-      config: 'simple',
-    })
-  }
-
-  const { data } = await query
-  const rows = data || []
-
+function emptyMarketplaceFacets() {
   return {
-    makes: uniqueSorted(rows.map((row) => row.make)),
-    models: uniqueSorted(rows.map((row) => row.model)),
-    fuels: uniqueSorted(rows.map((row) => row.fuel_type)),
-    gearboxes: uniqueSorted(rows.map((row) => row.gearbox)),
-    bodyTypes: uniqueSorted(rows.map((row) => row.body_type)),
+    makes: [],
+    models: [],
+    fuels: [],
+    gearboxes: [],
+    bodyTypes: [],
   }
-}
-
-function uniqueSorted(values: Array<string | null>) {
-  return [...new Set(values.filter((value): value is string => Boolean(value)))].sort((a, b) =>
-    a.localeCompare(b, 'sv-SE'),
-  )
 }
 
 function encodeCursor(value: MarketplaceSearchCursor) {

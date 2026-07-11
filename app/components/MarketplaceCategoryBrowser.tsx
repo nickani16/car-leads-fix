@@ -1145,17 +1145,15 @@ export default function MarketplaceCategoryBrowser({
           {visibleListings.length ? (
             <div className={listingLayout === 'grid' ? 'grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-2' : 'grid gap-4'}>
               {visibleListings.map((listing) => {
-                const detailHref = localizePublicHref(
-                  locale,
-                  buildListingPath({
-                    id: listing.id,
-                    title: listing.title,
-                    make: listing.make,
-                    model: listing.model,
-                    year: listing.year,
-                    city: listing.city,
-                  }),
-                )
+                const detailHref = buildListingPath({
+                  id: listing.id,
+                  title: listing.title,
+                  make: listing.make,
+                  model: listing.model,
+                  year: listing.year,
+                  city: listing.city,
+                  country_code: listing.country,
+                })
                 const sellerLabel = listing.sellerIsTrader ? listing.sellerName : copy.privateSeller
                 const compared = compareIds.includes(listing.id)
                 const imageUrls = listing.imageUrls?.length
@@ -1392,17 +1390,15 @@ function MarketplaceMapPanel({
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
-        const detailHref = localizePublicHref(
-          locale,
-          buildListingPath({
-            id: listing.id,
-            title: listing.title,
-            make: listing.make,
-            model: listing.model,
-            year: listing.year,
-            city: listing.city,
-          }),
-        )
+        const detailHref = buildListingPath({
+          id: listing.id,
+          title: listing.title,
+          make: listing.make,
+          model: listing.model,
+          year: listing.year,
+          city: listing.city,
+          country_code: listing.country,
+        })
         const locationLabel = [listing.address, listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
           .filter(Boolean)
           .join(', ')
@@ -1558,17 +1554,15 @@ function CompareOverlay({
           style={{ gridTemplateColumns: `repeat(${Math.max(listings.length, 2)}, minmax(260px, 1fr))` }}
         >
           {listings.map((listing, index) => {
-            const detailHref = localizePublicHref(
-              locale,
-              buildListingPath({
-                id: listing.id,
-                title: listing.title,
-                make: listing.make,
-                model: listing.model,
-                year: listing.year,
-                city: listing.city,
-              }),
-            )
+            const detailHref = buildListingPath({
+              id: listing.id,
+              title: listing.title,
+              make: listing.make,
+              model: listing.model,
+              year: listing.year,
+              city: listing.city,
+              country_code: listing.country,
+            })
             const highlights = compareHighlights(listing, {
               bestPrice,
               newestYear,

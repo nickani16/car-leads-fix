@@ -10,6 +10,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import {
   getMarketplaceSellerPublicProfiles,
+  getPublishedMarketplaceListingCount,
   getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
 import {
@@ -89,12 +90,21 @@ export default async function BusinessMarketplaceHome({
       : getEuCountryName(localMarketCode, locale)
   const displayCurrency = displayCurrencyForMarket(localMarketCode)
   const newsCards = getVehicleNewsCards(locale)
-  const [localTopListings, localLatestListings, europeTopListings, europeLatestListings] =
+  const [
+    localTopListings,
+    localLatestListings,
+    europeTopListings,
+    europeLatestListings,
+    localListingCount,
+    europeListingCount,
+  ] =
     await Promise.all([
       getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
       getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
       getPublishedMarketplaceHomeListings('EU', 'top', 8),
       getPublishedMarketplaceHomeListings('EU', 'latest', 8),
+      getPublishedMarketplaceListingCount(localMarketCode),
+      getPublishedMarketplaceListingCount('EU'),
     ])
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
@@ -145,7 +155,11 @@ export default async function BusinessMarketplaceHome({
             className="pointer-events-none absolute left-0 top-0 h-[54%] w-[34%] bg-[radial-gradient(ellipse_at_8%_18%,rgba(255,237,198,0.16)_0%,rgba(255,244,224,0.08)_38%,rgba(255,255,255,0)_72%)]"
           />
           <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:max-w-[1888px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
-            <HomeHeroVehicleSearch locale={locale} />
+            <HomeHeroVehicleSearch
+              locale={locale}
+              localListingCount={localListingCount}
+              europeListingCount={europeListingCount}
+            />
           </div>
         </div>
       </section>
@@ -444,7 +458,7 @@ async function mapHomeListingCard(
   return {
     id: listing.id,
     title: listing.title,
-    href: localizePublicHref(locale, buildListingPath(listing)),
+    href: buildListingPath(listing),
     imageUrl: listing.images?.[0] || null,
     imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
     priceLabel: Number.isFinite(price)

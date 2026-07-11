@@ -22,17 +22,31 @@ export async function GET(request: NextRequest) {
   if (categories.length > 1) input.categories = categories
 
   try {
-    const result = await searchMarketplaceListings(input)
+    const result = await withTimeout(
+      searchMarketplaceListings(input),
+      15_000,
+      'Marketplace search timed out.',
+    )
     return Response.json(result, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=30, s-maxage=120, stale-while-revalidate=600',
       },
     })
-  } catch {
+  } catch (error) {
+    console.error('Marketplace search v2 failed', error)
     return Response.json(
       { error: 'Marketplace search is not available yet.' },
       { status: 503, headers: { 'Cache-Control': 'no-store' } },
     )
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(message)), timeoutMs)
+    }),
+  ])
 }

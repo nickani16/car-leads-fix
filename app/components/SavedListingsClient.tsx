@@ -13,7 +13,7 @@ import {
 } from '@/lib/saved-listings'
 import { buildListingPath } from '@/lib/listing-url'
 import { formatMileageAsMil } from '@/lib/listing-display'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 export default function SavedListingsClient({
   locale = 'sv',
@@ -111,17 +111,15 @@ export default function SavedListingsClient({
         ) : savedListings.length ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {savedListings.map((listing) => {
-              const detailHref = localizePublicHref(
-                locale,
-                buildListingPath({
-                  id: listing.id,
-                  title: listing.title,
-                  make: listing.make,
-                  model: listing.model,
-                  year: listing.year,
-                  city: listing.city,
-                }),
-              )
+              const detailHref = buildListingPath({
+                id: listing.id,
+                title: listing.title,
+                make: listing.make,
+                model: listing.model,
+                year: listing.year,
+                city: listing.city,
+                country_code: listing.country,
+              })
               const sellerLabel = listing.sellerIsTrader ? listing.sellerName : 'Privat'
 
               return (

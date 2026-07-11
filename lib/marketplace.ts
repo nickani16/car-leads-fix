@@ -147,4 +147,4 @@ function priceNumberLocale(locale: PublicLocale) {
 }
 
 export const marketplacePublicSelect =
-  'id,seller_user_id,listing_number,reference_number,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,country_code,country,city,municipality,address,latitude,longitude,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,created_at,published_at,expires_at'
+  'id,seller_user_id,listing_number,reference_number,status,review_status,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,equipment_keys,country_code,country,city,municipality,address,latitude,longitude,price,currency,original_price,images,seller_name,seller_type,phone_visibility,package_id,priority,created_at,published_at,edited_at,last_price_change_at,expires_at,sold_at,deleted_at,removed_by_admin'
