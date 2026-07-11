@@ -7,6 +7,11 @@ type SwedishLocationInput = {
   countryCode?: string | null
 }
 
+type SwedishLocationMatch = {
+  municipality: string
+  county: string
+}
+
 const localityToMunicipality: Record<string, string> = {
   alta: 'Nacka',
   alvsjo: 'Stockholm',
@@ -42,6 +47,22 @@ const municipalityNames = swedishCounties.flatMap((county) => county.municipalit
 const municipalityByNormalized = new Map(
   municipalityNames.map((municipality) => [normalizeSwedishLocationKey(municipality), municipality]),
 )
+const countyByMunicipality = new Map(
+  swedishCounties.flatMap((county) =>
+    county.municipalities.map((municipality) => [
+      normalizeSwedishLocationKey(municipality),
+      county.name,
+    ] as const),
+  ),
+)
+const countyByNormalized = new Map(
+  swedishCounties.flatMap((county) => {
+    const key = normalizeSwedishCountyKey(county.name)
+    return [
+      [key, county],
+    ] as const
+  }),
+)
 
 const aliasesByMunicipality = Object.entries(localityToMunicipality).reduce((map, [locality, municipality]) => {
   const normalizedMunicipality = normalizeSwedishLocationKey(municipality)
@@ -65,9 +86,9 @@ export function normalizeSwedishLocationKey(value: string) {
     .trim()
 }
 
-export function inferSwedishMunicipality(input: SwedishLocationInput) {
+export function inferSwedishLocation(input: SwedishLocationInput): SwedishLocationMatch {
   const country = String(input.countryCode || input.country || '').toUpperCase()
-  if (country && country !== 'SE') return ''
+  if (country && country !== 'SE') return emptySwedishLocationMatch()
 
   const candidates = [
     input.municipality,
@@ -80,17 +101,25 @@ export function inferSwedishMunicipality(input: SwedishLocationInput) {
     const key = normalizeSwedishLocationKey(candidate || '')
     if (!key) continue
     const municipality = municipalityByNormalized.get(key)
-    if (municipality) return municipality
+    if (municipality) return locationMatchForMunicipality(municipality)
   }
 
   for (const candidate of candidates) {
     const key = normalizeSwedishLocationKey(candidate || '')
     if (!key) continue
     const municipality = localityToMunicipality[key]
-    if (municipality) return municipalityByNormalized.get(normalizeSwedishLocationKey(municipality)) || municipality
+    if (municipality) {
+      return locationMatchForMunicipality(
+        municipalityByNormalized.get(normalizeSwedishLocationKey(municipality)) || municipality,
+      )
+    }
   }
 
-  return ''
+  return emptySwedishLocationMatch()
+}
+
+export function inferSwedishMunicipality(input: SwedishLocationInput) {
+  return inferSwedishLocation(input).municipality
 }
 
 export function swedishMunicipalitySearchTerms(municipality: string) {
@@ -99,6 +128,40 @@ export function swedishMunicipalitySearchTerms(municipality: string) {
   if (!official) return []
 
   return [...new Set([official, ...(aliasesByMunicipality.get(normalizeSwedishLocationKey(official)) || [])])]
+}
+
+export function swedishCountyMunicipalitySearchTerms(county: string) {
+  const key = normalizeSwedishCountyKey(county)
+  const countyMatch = countyByNormalized.get(key)
+  if (!countyMatch) return []
+
+  return [
+    ...new Set(
+      countyMatch.municipalities.flatMap((municipality) =>
+        swedishMunicipalitySearchTerms(municipality),
+      ),
+    ),
+  ]
+}
+
+function normalizeSwedishCountyKey(value: string) {
+  const key = normalizeSwedishLocationKey(value).replace(/\s+lan$/, '')
+  return key.endsWith('s') ? key.slice(0, -1) : key
+}
+
+function locationMatchForMunicipality(municipality: string): SwedishLocationMatch {
+  const key = normalizeSwedishLocationKey(municipality)
+  return {
+    municipality,
+    county: countyByMunicipality.get(key) || '',
+  }
+}
+
+function emptySwedishLocationMatch(): SwedishLocationMatch {
+  return {
+    municipality: '',
+    county: '',
+  }
 }
 
 function splitLocationParts(value?: string | null) {

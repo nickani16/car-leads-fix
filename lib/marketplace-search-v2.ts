@@ -2,7 +2,10 @@ import 'server-only'
 
 import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
-import { swedishMunicipalitySearchTerms } from './swedish-location-mapping'
+import {
+  swedishCountyMunicipalitySearchTerms,
+  swedishMunicipalitySearchTerms,
+} from './swedish-location-mapping'
 import { createAdminClient } from './supabase/admin'
 
 export type MarketplaceSort =
@@ -24,6 +27,8 @@ export type MarketplaceSearchInput = {
   model?: string | null
   city?: string | null
   municipality?: string | null
+  county?: string | null
+  region?: string | null
   minPrice?: string | number | null
   maxPrice?: string | number | null
   minYear?: string | number | null
@@ -157,6 +162,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     model: clean(input.model).slice(0, 80),
     city: clean(input.city).slice(0, 80),
     municipality: clean(input.municipality).slice(0, 80),
+    county: clean(input.county || input.region).slice(0, 80),
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
     bodyType: clean(input.bodyType).slice(0, 80),
@@ -239,6 +245,22 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
+  if (filters.county) {
+    const countyTerms = (!filters.markets.length || filters.markets.includes('SE'))
+      ? swedishCountyMunicipalitySearchTerms(filters.county)
+      : []
+
+    if (countyTerms.length) {
+      query = query.or(
+        countyTerms
+          .flatMap((term) => {
+            const escaped = escapeIlike(term)
+            return [`municipality.ilike.${escaped}`, `city.ilike.${escaped}`]
+          })
+          .join(','),
+      )
+    }
+  }
   if (filters.municipality) {
     const municipalityTerms = (!filters.markets.length || filters.markets.includes('SE'))
       ? swedishMunicipalitySearchTerms(filters.municipality)

@@ -25,7 +25,7 @@ import { euCountryCodes } from '@/lib/eu-countries'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { publicSellerName } from '@/lib/public-seller'
-import { inferSwedishMunicipality } from '@/lib/swedish-location-mapping'
+import { inferSwedishLocation } from '@/lib/swedish-location-mapping'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -350,14 +350,13 @@ export async function POST(request: Request) {
     const listingCountryCode = euCountryCodes.has(requestedListingCountry)
       ? requestedListingCountry
       : profile.country_code
-    const municipality =
-      inferSwedishMunicipality({
+    const swedishLocation =
+      inferSwedishLocation({
         city,
         municipality: rawMunicipality,
         countryCode: listingCountryCode,
-      }) ||
-      rawMunicipality ||
-      ''
+      })
+    const municipality = swedishLocation.municipality || rawMunicipality || ''
     if (postalCode && !validatePostalCode(postalCode, listingCountryCode)) {
       return NextResponse.json(
         { error: 'Postnumret verkar inte vara giltigt för valt land.' },
@@ -643,6 +642,7 @@ export async function POST(request: Request) {
             address: address || null,
             city,
             municipality: municipality || null,
+            county: swedishLocation.county || null,
             country: listingCountryCode,
             latitude,
             longitude,
