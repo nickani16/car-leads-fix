@@ -337,8 +337,8 @@ export default function PublicFooter({
   }
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-4 pb-0 pt-10 text-[#101828] sm:px-6 lg:px-0 lg:pt-16">
-      <div className="mx-auto max-w-[var(--autorell-page-max)] bg-white">
+    <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
+      <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px]">
         <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
           {t.columns.map((column) => (
             <FooterColumn
