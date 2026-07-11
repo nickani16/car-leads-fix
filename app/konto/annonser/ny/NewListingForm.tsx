@@ -53,6 +53,8 @@ import {
   postalCodeHelpText,
   validatePostalCode,
 } from '@/lib/postal-code-validation'
+import { activeMarketCountries, getEuCountryName } from '@/lib/eu-countries'
+import { swedishCounties } from '@/lib/swedish-locations'
 
 type StepId = 0 | 1 | 2 | 3 | 4
 type Values = Record<string, string>
@@ -66,6 +68,7 @@ type UploadImage = {
 type ListingDraft = {
   id: string
   category: MarketplaceCategorySlug
+  countryCode: string
   values: Values
   equipment: string[]
   images: UploadImage[]
@@ -118,6 +121,7 @@ export default function NewListingForm({
 }) {
   const router = useRouter()
   const [step, setStep] = useState<StepId>(0)
+  const [listingCountryCode, setListingCountryCode] = useState(countryCode.toUpperCase())
   const [category, setCategory] = useState<MarketplaceCategorySlug>(
     normalizeMarketplaceCategory(defaultCategory),
   )
@@ -140,10 +144,17 @@ export default function NewListingForm({
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
   const copy = getListingFormCopy(locale)
-  const usesSwedishMileage = countryCode.toUpperCase() === 'SE'
+  const usesSwedishMileage = listingCountryCode.toUpperCase() === 'SE'
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
   const progress = Math.round(((step + 1) / steps.length) * 100)
+  const isSwedishListing = listingCountryCode === 'SE'
+  const swedishMunicipalityOptions = useMemo(() => {
+    const county = swedishCounties.find((item) => item.name === values.county)
+    return county
+      ? [...county.municipalities]
+      : swedishCounties.flatMap((item) => item.municipalities)
+  }, [values.county])
   const orderedImages = useMemo(() => {
     if (!mainImageId) return images
     const main = images.find((image) => image.id === mainImageId)
@@ -156,18 +167,53 @@ export default function NewListingForm({
     const nextValue = identifierFieldNames.has(name)
       ? normalizeIdentifierInput(value)
       : name === 'postalCode'
-        ? normalizePostalCode(value, countryCode)
+        ? normalizePostalCode(value, listingCountryCode)
         : smartTextFieldNames.has(name)
           ? formatSmartText(value)
           : value
     setValues((current) => ({ ...current, [name]: nextValue }))
   }
 
+  function changeListingCountry(value: string) {
+    const nextCountry = value.toUpperCase()
+    setListingCountryCode(nextCountry)
+    setValues((current) => ({
+      ...current,
+      currency: currencyForCountry(nextCountry),
+      county: '',
+      municipality: '',
+      postalCode: '',
+    }))
+  }
+
+  function changeSwedishCounty(value: string) {
+    const county = swedishCounties.find((item) => item.name === value)
+    setValues((current) => ({
+      ...current,
+      county: value,
+      municipality:
+        county && current.municipality && !county.municipalities.includes(current.municipality as never)
+          ? ''
+          : current.municipality || '',
+    }))
+  }
+
+  function changeSwedishMunicipality(value: string) {
+    const county = swedishCounties.find((item) =>
+      item.municipalities.includes(value as never),
+    )
+    setValues((current) => ({
+      ...current,
+      municipality: value,
+      county: county?.name || current.county || '',
+    }))
+  }
+
   function changeCategory(value: string) {
     setCategory(normalizeMarketplaceCategory(value))
     setValues((current) => ({
       packageId: current.packageId || 'free_7d',
-      currency: current.currency || currencyForCountry(countryCode),
+      currency: current.currency || currencyForCountry(listingCountryCode),
     }))
     setEquipment([])
     setEquipmentSearch('')
@@ -199,7 +245,7 @@ export default function NewListingForm({
       if (!values.city) return missing('Fyll i ort.')
       if (
         values.postalCode &&
-        !validatePostalCode(values.postalCode, countryCode)
+        !validatePostalCode(values.postalCode, listingCountryCode)
       ) {
         return missing('Postnumret verkar inte vara giltigt för valt land.')
       }
@@ -250,6 +296,7 @@ export default function NewListingForm({
     return {
       id: crypto.randomUUID(),
       category,
+      countryCode: listingCountryCode,
       values: { ...values },
       equipment: [...equipment],
       images: orderedImages,
@@ -281,10 +328,11 @@ export default function NewListingForm({
 
   async function createListingFromDraft(draft: ListingDraft): Promise<ListingCreationResult> {
     const form = new FormData()
+    const draftUsesSwedishMileage = draft.countryCode.toUpperCase() === 'SE'
     form.set('category', draft.category)
-    form.set('sellerCountryCode', countryCode)
+    form.set('sellerCountryCode', draft.countryCode)
     Object.entries(draft.values).forEach(([key, value]) => {
-      if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
+      if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, draftUsesSwedishMileage) : value)
     })
     form.set(
       'color',
@@ -362,7 +410,7 @@ export default function NewListingForm({
 
     const form = new FormData()
     form.set('category', category)
-    form.set('sellerCountryCode', countryCode)
+    form.set('sellerCountryCode', listingCountryCode)
     Object.entries(values).forEach(([key, value]) => {
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
@@ -513,14 +561,57 @@ export default function NewListingForm({
                 <option key={currency} value={currency}>{currency}</option>
               ))}
             </SelectNative>
+            <SelectNative
+              name="sellerCountryCode"
+              label={copy.country}
+              value={listingCountryCode}
+              onValueChange={(_, value) => changeListingCountry(value)}
+            >
+              {activeMarketCountries.map(([code]) => (
+                <option key={code} value={code}>
+                  {getEuCountryName(code, locale)}
+                </option>
+              ))}
+            </SelectNative>
             <Field name="city" label={copy.city} value={values.city || ''} onValueChange={setValue} required />
-            <Field
-              name="municipality"
-              label={copy.municipality}
-              value={values.municipality || ''}
-              onValueChange={setValue}
-              helper={copy.municipalityHelper}
-            />
+            {isSwedishListing ? (
+              <>
+                <SelectNative
+                  name="county"
+                  label={copy.county}
+                  value={values.county || ''}
+                  onValueChange={(_, value) => changeSwedishCounty(value)}
+                >
+                  <option value="">{copy.choose}</option>
+                  {swedishCounties.map((county) => (
+                    <option key={county.name} value={county.name}>
+                      {county.name}
+                    </option>
+                  ))}
+                </SelectNative>
+                <SelectNative
+                  name="municipality"
+                  label={copy.municipality}
+                  value={values.municipality || ''}
+                  onValueChange={(_, value) => changeSwedishMunicipality(value)}
+                >
+                  <option value="">{copy.choose}</option>
+                  {swedishMunicipalityOptions.map((municipality) => (
+                    <option key={municipality} value={municipality}>
+                      {municipality}
+                    </option>
+                  ))}
+                </SelectNative>
+              </>
+            ) : (
+              <Field
+                name="municipality"
+                label={copy.municipality}
+                value={values.municipality || ''}
+                onValueChange={setValue}
+                helper={copy.municipalityHelper}
+              />
+            )}
             <Field
               name="addressLine1"
               label={copy.streetAddress}
@@ -535,7 +626,7 @@ export default function NewListingForm({
               value={values.postalCode || ''}
               onValueChange={setValue}
               autoComplete="postal-code"
-              helper={postalCodeHelpText(countryCode)}
+              helper={postalCodeHelpText(listingCountryCode)}
             />
           </StepShell>
         ) : null}
@@ -1760,6 +1851,8 @@ function getListingFormCopy(locale: PublicLocale) {
     operatingHours: 'Operating hours',
     price: 'Price',
     currency: 'Currency',
+    country: 'Country',
+    county: 'Region',
     city: 'City',
     municipality: 'Municipality',
     municipalityHelper: 'Optional, but useful in Sweden and local markets.',
@@ -1837,6 +1930,8 @@ function getListingFormCopy(locale: PublicLocale) {
       operatingHours: 'Drifttimmar',
       price: 'Pris',
       currency: 'Valuta',
+      country: 'Land',
+      county: 'LÃ¤n',
       city: 'Ort',
       municipality: 'Kommun',
       municipalityHelper: 'Frivilligt, men gör platsen tydligare för köpare.',
