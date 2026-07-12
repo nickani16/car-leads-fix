@@ -60,6 +60,7 @@ create unique index if not exists billing_product_prices_active_unique_idx
   where active and effective_to is null;
 
 alter table public.billing_product_prices enable row level security;
+revoke all on public.billing_product_prices from anon, authenticated;
 drop policy if exists billing_product_prices_public_read_active on public.billing_product_prices;
 create policy billing_product_prices_public_read_active
   on public.billing_product_prices for select
@@ -106,6 +107,7 @@ create index if not exists payment_orders_listing_idx
   on public.payment_orders (listing_id, created_at desc);
 
 alter table public.payment_orders enable row level security;
+revoke all on public.payment_orders from anon, authenticated;
 drop policy if exists payment_orders_select_own on public.payment_orders;
 create policy payment_orders_select_own
   on public.payment_orders for select
@@ -123,6 +125,7 @@ create table if not exists public.stripe_webhook_events (
 );
 
 alter table public.stripe_webhook_events enable row level security;
+revoke all on public.stripe_webhook_events from anon, authenticated;
 
 alter table public.marketplace_listings drop constraint if exists marketplace_listings_boost_purchase_fk;
 alter table public.marketplace_listings
@@ -154,6 +157,53 @@ revoke update (
   premium_badge_expires_at
 ) on public.marketplace_listings from authenticated;
 
+create or replace function public.prevent_marketplace_payment_field_client_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_request_role text := coalesce(
+    current_setting('request.jwt.claim.role', true),
+    current_setting('role', true),
+    ''
+  );
+begin
+  if v_request_role in ('anon', 'authenticated') and (
+    new.status is distinct from old.status or
+    new.review_status is distinct from old.review_status or
+    new.package_id is distinct from old.package_id or
+    new.priority is distinct from old.priority or
+    new.published_at is distinct from old.published_at or
+    new.expires_at is distinct from old.expires_at or
+    new.sort_refreshed_at is distinct from old.sort_refreshed_at or
+    new.last_refreshed_at is distinct from old.last_refreshed_at or
+    new.boost_started_at is distinct from old.boost_started_at or
+    new.boost_expires_at is distinct from old.boost_expires_at or
+    new.boost_status is distinct from old.boost_status or
+    new.boost_purchase_id is distinct from old.boost_purchase_id or
+    new.featured_started_at is distinct from old.featured_started_at or
+    new.featured_expires_at is distinct from old.featured_expires_at or
+    new.featured_status is distinct from old.featured_status or
+    new.featured_purchase_id is distinct from old.featured_purchase_id or
+    new.premium_badge_expires_at is distinct from old.premium_badge_expires_at
+  ) then
+    raise exception 'Payment-controlled listing fields cannot be changed by clients';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists marketplace_listings_block_payment_field_client_update on public.marketplace_listings;
+create trigger marketplace_listings_block_payment_field_client_update
+  before update on public.marketplace_listings
+  for each row
+  execute function public.prevent_marketplace_payment_field_client_update();
+
+revoke all on function public.prevent_marketplace_payment_field_client_update() from public, anon, authenticated;
+
 create table if not exists public.refresh_credit_balances (
   owner_type text not null check (owner_type in ('user','business')),
   owner_id uuid not null,
@@ -163,6 +213,7 @@ create table if not exists public.refresh_credit_balances (
 );
 
 alter table public.refresh_credit_balances enable row level security;
+revoke all on public.refresh_credit_balances from anon, authenticated;
 drop policy if exists refresh_credit_balances_select_own_user on public.refresh_credit_balances;
 create policy refresh_credit_balances_select_own_user
   on public.refresh_credit_balances for select
@@ -183,6 +234,7 @@ create table if not exists public.refresh_credit_ledger (
 );
 
 alter table public.refresh_credit_ledger enable row level security;
+revoke all on public.refresh_credit_ledger from anon, authenticated;
 drop policy if exists refresh_credit_ledger_select_own_user on public.refresh_credit_ledger;
 create policy refresh_credit_ledger_select_own_user
   on public.refresh_credit_ledger for select
@@ -233,7 +285,7 @@ begin
 end;
 $$;
 
-revoke all on function public.increment_refresh_credits(text, uuid, integer, uuid) from public;
+revoke all on function public.increment_refresh_credits(text, uuid, integer, uuid) from public, anon, authenticated;
 grant execute on function public.increment_refresh_credits(text, uuid, integer, uuid) to service_role;
 
 create or replace function public.use_refresh_credit(
@@ -311,7 +363,7 @@ begin
 end;
 $$;
 
-revoke all on function public.use_refresh_credit(text, uuid, uuid, interval) from public;
+revoke all on function public.use_refresh_credit(text, uuid, uuid, interval) from public, anon, authenticated;
 grant execute on function public.use_refresh_credit(text, uuid, uuid, interval) to service_role;
 
 create table if not exists public.payment_audit_log (
@@ -325,6 +377,7 @@ create table if not exists public.payment_audit_log (
 );
 
 alter table public.payment_audit_log enable row level security;
+revoke all on public.payment_audit_log from anon, authenticated;
 drop policy if exists payment_audit_log_select_own on public.payment_audit_log;
 create policy payment_audit_log_select_own
   on public.payment_audit_log for select
@@ -354,6 +407,7 @@ create table if not exists public.business_subscriptions (
 );
 
 alter table public.business_subscriptions enable row level security;
+revoke all on public.business_subscriptions from anon, authenticated;
 drop policy if exists business_subscriptions_select_own_user on public.business_subscriptions;
 create policy business_subscriptions_select_own_user
   on public.business_subscriptions for select
