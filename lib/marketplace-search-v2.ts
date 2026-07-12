@@ -3,9 +3,11 @@ import 'server-only'
 import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import {
-  swedishCountyMunicipalitySearchTerms,
-  swedishMunicipalitySearchTerms,
-} from './swedish-location-mapping'
+  marketplaceLocations,
+  marketplaceMunicipalitySearchTerms,
+  marketplaceRegionMunicipalitySearchTerms,
+  marketplaceSearchLocationTermsForQuery,
+} from './marketplace-locations'
 import { createAdminClient } from './supabase/admin'
 
 export type MarketplaceSort =
@@ -89,6 +91,10 @@ type MarketplaceSearchRow = Record<string, unknown> & {
   id?: string | null
   published_at?: string | null
   priority?: number | string | null
+  boost_started_at?: string | null
+  boost_expires_at?: string | null
+  boost_status?: string | null
+  sort_refreshed_at?: string | null
   price?: number | string | null
   model_year?: number | string | null
   mileage_km?: number | string | null
@@ -99,6 +105,10 @@ type MarketplaceSearchRow = Record<string, unknown> & {
 export async function searchMarketplaceListings(input: MarketplaceSearchInput): Promise<MarketplaceSearchResult> {
   const admin = createAdminClient()
   const filters = normalizeMarketplaceSearchInput(input)
+
+  if (filters.sort === 'published' && !filters.cursor) {
+    return searchPublishedWithSponsoredBlock(admin, filters)
+  }
 
   let query = admin
     .from('marketplace_listings')
@@ -147,6 +157,114 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
     limit: filters.limit,
     hasNext,
   }
+}
+
+async function searchPublishedWithSponsoredBlock(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+): Promise<MarketplaceSearchResult> {
+  const now = new Date().toISOString()
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
+
+  let sponsoredCountQuery = admin
+    .from('marketplace_listings')
+    .select('id', { count: 'exact', head: true })
+  sponsoredCountQuery = applyMarketplaceListingFilters(sponsoredCountQuery, filters)
+  sponsoredCountQuery = applyActiveTopPlacementFilter(sponsoredCountQuery, now)
+
+  let normalCountQuery = admin
+    .from('marketplace_listings')
+    .select('id', { count: 'exact', head: true })
+  normalCountQuery = applyMarketplaceListingFilters(normalCountQuery, filters)
+  normalCountQuery = applyNotActiveTopPlacementFilter(normalCountQuery, now)
+
+  const [{ count: sponsoredCount, error: sponsoredCountError }, { count: normalCount, error: normalCountError }] =
+    await Promise.all([sponsoredCountQuery, normalCountQuery])
+  if (sponsoredCountError) throw new Error(sponsoredCountError.message)
+  if (normalCountError) throw new Error(normalCountError.message)
+
+  const topCount = sponsoredCount || 0
+  const regularCount = normalCount || 0
+  const totalCount = topCount + regularCount
+  const sponsoredNeeded = from < topCount
+  const sponsoredFrom = sponsoredNeeded ? from : 0
+  const sponsoredTo = sponsoredNeeded ? Math.min(to, topCount - 1) : -1
+  const sponsoredLimit = sponsoredTo >= sponsoredFrom ? sponsoredTo - sponsoredFrom + 1 : 0
+  const normalFrom = from >= topCount ? from - topCount : 0
+  const remaining = filters.limit - sponsoredLimit
+  const normalTo = remaining > 0 ? normalFrom + remaining - 1 : -1
+
+  const sponsoredPromise = sponsoredLimit > 0
+    ? fetchSponsoredRows(admin, filters, now, sponsoredFrom, sponsoredTo)
+    : Promise.resolve([] as MarketplaceSearchRow[])
+  const normalPromise = remaining > 0
+    ? fetchNormalRows(admin, filters, now, normalFrom, normalTo)
+    : Promise.resolve([] as MarketplaceSearchRow[])
+
+  const [sponsoredRows, normalRows] = await Promise.all([sponsoredPromise, normalPromise])
+  const items = [...sponsoredRows, ...normalRows].map((row) => ({
+    ...sanitizePublicListingSellerName(row),
+    is_top_placement:
+      row.boost_status === 'active' &&
+      Boolean(row.boost_expires_at) &&
+      new Date(String(row.boost_expires_at)).getTime() > Date.now(),
+  }))
+  const totalPages = Math.max(1, Math.ceil(totalCount / filters.limit))
+  const hasNext = filters.page < totalPages
+  const lastItem = items[items.length - 1] || null
+
+  return {
+    items,
+    facets: emptyMarketplaceFacets(),
+    nextCursor: hasNext && lastItem ? encodeCursor(cursorFromRow(lastItem, filters.sort)) : null,
+    totalEstimate: totalCount,
+    totalCount,
+    page: filters.page,
+    pageSize: filters.limit,
+    totalPages,
+    limit: filters.limit,
+    hasNext,
+  }
+}
+
+async function fetchSponsoredRows(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+  now: string,
+  from: number,
+  to: number,
+) {
+  let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+  query = applyMarketplaceListingFilters(query, filters)
+  query = applyActiveTopPlacementFilter(query, now)
+  const { data, error } = await query
+    .order('boost_started_at', { ascending: true, nullsFirst: false })
+    .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+    .order('published_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(from, to)
+  if (error) throw new Error(error.message)
+  return (data || []) as MarketplaceSearchRow[]
+}
+
+async function fetchNormalRows(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+  now: string,
+  from: number,
+  to: number,
+) {
+  let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+  query = applyMarketplaceListingFilters(query, filters)
+  query = applyNotActiveTopPlacementFilter(query, now)
+  const { data, error } = await query
+    .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+    .order('published_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(from, to)
+  if (error) throw new Error(error.message)
+  return (data || []) as MarketplaceSearchRow[]
 }
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
@@ -246,9 +364,9 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.county) {
-    const countyTerms = (!filters.markets.length || filters.markets.includes('SE'))
-      ? swedishCountyMunicipalitySearchTerms(filters.county)
-      : []
+    const countyTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
+      marketplaceRegionMunicipalitySearchTerms(country, filters.county),
+    )
 
     if (countyTerms.length) {
       query = query.or(
@@ -259,12 +377,15 @@ function applyMarketplaceListingFilters<T extends {
           })
           .join(','),
       )
+    } else {
+      const escaped = escapeIlike(filters.county)
+      query = query.or(`municipality.ilike.%${escaped}%,city.ilike.%${escaped}%`)
     }
   }
   if (filters.municipality) {
-    const municipalityTerms = (!filters.markets.length || filters.markets.includes('SE'))
-      ? swedishMunicipalitySearchTerms(filters.municipality)
-      : []
+    const municipalityTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
+      marketplaceMunicipalitySearchTerms(country, filters.municipality),
+    )
 
     if (municipalityTerms.length) {
       query = query.or(
@@ -296,6 +417,14 @@ function applyMarketplaceListingFilters<T extends {
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     const escaped = escapeIlike(filters.q)
+    const locationTerms = marketplaceSearchLocationTermsForQuery(
+      filters.q,
+      locationFilterCountryScopes(filters.markets),
+    )
+    const locationFilters = locationTerms.municipalities.flatMap((term) => {
+      const escapedTerm = escapeIlike(term)
+      return [`municipality.ilike.%${escapedTerm}%`, `city.ilike.%${escapedTerm}%`]
+    })
     query = query.or(
       [
         `title.ilike.%${escaped}%`,
@@ -305,6 +434,7 @@ function applyMarketplaceListingFilters<T extends {
         `city.ilike.%${escaped}%`,
         `municipality.ilike.%${escaped}%`,
         `reference_number.ilike.%${escaped}%`,
+        ...locationFilters,
       ].join(','),
     )
   } else if (filters.q) {
@@ -321,6 +451,25 @@ function applyMarketplaceListingFilters<T extends {
   }
 
   return query
+}
+
+function applyActiveTopPlacementFilter<T extends {
+  eq: (column: string, value: string | boolean) => T
+  not: (column: string, operator: string, value: unknown) => T
+  lte: (column: string, value: string) => T
+  gt: (column: string, value: string) => T
+}>(query: T, now: string) {
+  return query
+    .eq('boost_status', 'active')
+    .not('boost_started_at', 'is', null)
+    .lte('boost_started_at', now)
+    .gt('boost_expires_at', now)
+}
+
+function applyNotActiveTopPlacementFilter<T extends {
+  or: (filters: string) => T
+}>(query: T, now: string) {
+  return query.or(`boost_status.neq.active,boost_started_at.is.null,boost_started_at.gt.${now},boost_expires_at.is.null,boost_expires_at.lte.${now}`)
 }
 
 function splitFilterValues(value: unknown) {
@@ -346,6 +495,7 @@ function normalizeCountryFilters(value: unknown) {
     ...new Set(
       splitFilterValues(value)
         .map((item) => item.toUpperCase())
+        .filter((item) => item !== 'EU' && item !== 'ALL')
         .filter((item) => /^[A-Z]{2}$/.test(item)),
     ),
   ]
@@ -369,6 +519,10 @@ function truthy(value: unknown) {
 
 function escapeIlike(value: string) {
   return value.replace(/[%_]/g, '')
+}
+
+function locationFilterCountryScopes(markets: string[]) {
+  return markets.length ? markets : marketplaceLocations.map((market) => market.countryCode)
 }
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {
@@ -416,7 +570,11 @@ function applySort<T extends { order: (column: string, options?: Record<string, 
   if (sort === 'mileage-asc') {
     return query.order('mileage_km', { ascending: true, nullsFirst: false }).order('published_at', { ascending: false }).order('id', { ascending: false })
   }
-  return query.order('priority', { ascending: false }).order('published_at', { ascending: false }).order('id', { ascending: false })
+  return query
+    .order('priority', { ascending: false })
+    .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+    .order('published_at', { ascending: false })
+    .order('id', { ascending: false })
 }
 
 function applyCursor<T extends { or: (filters: string) => T }>(

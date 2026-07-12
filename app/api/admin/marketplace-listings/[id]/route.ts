@@ -4,6 +4,7 @@ import {
   requireSuperAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
+import { listingPackageDetails } from '@/lib/marketplace-pricing'
 
 const actions = new Set([
   'approve',
@@ -38,7 +39,7 @@ export async function PATCH(
   const { adminClient, user } = auth
   const { data: before, error: beforeError } = await adminClient
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title')
+    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title,package_id,published_at,expires_at,boost_status,boost_purchase_id,premium_badge_expires_at')
     .eq('id', id)
     .maybeSingle()
 
@@ -51,7 +52,21 @@ export async function PATCH(
   }
   if (action === 'approve') {
     listingPatch.review_status = 'approved'
-    if (before.status === 'pending_review') listingPatch.status = 'published'
+    if (before.status === 'pending_review') {
+      const packageId = String(before.package_id || 'free_7d') as keyof typeof listingPackageDetails
+      const details = listingPackageDetails[packageId] || listingPackageDetails.free_7d
+      const now = new Date()
+      const expiresAt = new Date(now.getTime() + details.durationDays * 86_400_000)
+      listingPatch.status = 'published'
+      listingPatch.published_at = now.toISOString()
+      listingPatch.expires_at = expiresAt.toISOString()
+      if (packageId === 'premium_30d') {
+        listingPatch.premium_badge_expires_at = expiresAt.toISOString()
+        listingPatch.boost_status = 'active'
+        listingPatch.boost_started_at = now.toISOString()
+        listingPatch.boost_expires_at = new Date(now.getTime() + 7 * 86_400_000).toISOString()
+      }
+    }
   }
   if (action === 'pause' || action === 'unpublish') {
     listingPatch.status = 'paused'

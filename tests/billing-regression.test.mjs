@@ -1,0 +1,97 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
+
+const catalog = readFileSync(new URL('../lib/billing/product-catalog.ts', import.meta.url), 'utf8')
+const checkout = readFileSync(new URL('../app/api/account/listing-checkout/route.ts', import.meta.url), 'utf8')
+const webhook = readFileSync(new URL('../app/api/stripe/webhook/route.ts', import.meta.url), 'utf8')
+const fulfillment = readFileSync(new URL('../lib/billing/fulfillment.ts', import.meta.url), 'utf8')
+const search = readFileSync(new URL('../lib/marketplace-search-v2.ts', import.meta.url), 'utf8')
+const publicData = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
+const migration = readFileSync(new URL('../supabase/migrations/20260712153000_billing_catalog_orders_and_visibility.sql', import.meta.url), 'utf8')
+const businessLimits = readFileSync(new URL('../lib/billing/business-limits.ts', import.meta.url), 'utf8')
+
+test('market currencies follow URL market requirements', () => {
+  for (const [market, currency] of Object.entries({
+    se: 'sek',
+    dk: 'dkk',
+    pl: 'pln',
+    de: 'eur',
+    fr: 'eur',
+    it: 'eur',
+    es: 'eur',
+    nl: 'eur',
+    be: 'eur',
+    at: 'eur',
+    fi: 'eur',
+  })) {
+    assert.match(catalog, new RegExp(`${market}: '${currency}'`))
+  }
+})
+
+test('catalog contains required private listing package prices', () => {
+  assert.match(catalog, /cars:[\s\S]*standard: \{ sek: 9900, eur: 899, dkk: 6900, pln: 3900 \}/)
+  assert.match(catalog, /cars:[\s\S]*premium: \{ sek: 19900, eur: 1799, dkk: 13900, pln: 7900 \}/)
+  assert.match(catalog, /construction:[\s\S]*standard: \{ sek: 29900, eur: 2599, dkk: 19900, pln: 11900 \}/)
+  assert.match(catalog, /construction:[\s\S]*premium: \{ sek: 69900, eur: 5999, dkk: 47900, pln: 27900 \}/)
+})
+
+test('checkout uses server-side catalog/database price lookup and rejects client pricing', () => {
+  assert.match(checkout, /resolveBillingPrice\(product, market\)/)
+  assert.doesNotMatch(checkout, /body\.amount|body\.currency/)
+  assert.match(checkout, /Product does not match listing category/)
+  assert.match(checkout, /Free listings do not use Stripe checkout/)
+})
+
+test('webhook handling is signature verified and idempotent', () => {
+  assert.match(webhook, /request\.headers\.get\('stripe-signature'\)/)
+  assert.match(webhook, /process\.env\.STRIPE_WEBHOOK_SECRET/)
+  assert.match(webhook, /constructEvent\(/)
+  assert.match(webhook, /stripe_webhook_events/)
+  assert.match(webhook, /duplicate/)
+  assert.match(migration, /stripe_event_id text primary key/)
+})
+
+test('premium fulfillment starts 30-day listing and 7-day boost only when publishable', () => {
+  assert.match(fulfillment, /product\.package === 'premium'/)
+  assert.match(fulfillment, /product\.includedBoostDays/)
+  assert.match(fulfillment, /pending_review/)
+  assert.match(catalog, /listingProduct\(typedCategory, 'premium', 30, prices\.premium, 7\)/)
+})
+
+test('top placement sorting uses active boost window before normal listings', () => {
+  assert.match(search, /searchPublishedWithSponsoredBlock/)
+  assert.match(search, /applyActiveTopPlacementFilter/)
+  assert.match(search, /\.eq\('boost_status', 'active'\)/)
+  assert.match(search, /\.gt\('boost_expires_at', now\)/)
+  assert.match(search, /applyNotActiveTopPlacementFilter/)
+})
+
+test('featured listings have active-window queries for home and category UI', () => {
+  assert.match(publicData, /getFeaturedMarketplaceHomeListings/)
+  assert.match(publicData, /getFeaturedMarketplaceCategoryListings/)
+  assert.match(publicData, /\.eq\('featured_status', 'active'\)/)
+  assert.match(publicData, /\.gt\('featured_expires_at', now\)/)
+})
+
+test('refresh credits are protected by RPC atomic locks and cooldown', () => {
+  assert.match(migration, /for update;/)
+  assert.match(migration, /last_refreshed_at > now\(\) - p_cooldown/)
+  assert.match(migration, /refresh_credits = refresh_credits - 1/)
+  assert.match(migration, /sort_refreshed_at = now\(\)/)
+  assert.doesNotMatch(migration, /created_at = now\(\)/)
+})
+
+test('client cannot update payment-controlled fields through normal authenticated grants', () => {
+  assert.match(migration, /revoke update \([\s\S]*boost_status[\s\S]*featured_status[\s\S]*premium_badge_expires_at[\s\S]*\) on public\.marketplace_listings from authenticated/)
+  assert.match(migration, /revoke all on function public\.increment_refresh_credits/)
+  assert.match(migration, /grant execute on function public\.increment_refresh_credits[\s\S]*to service_role/)
+})
+
+test('business listing limits are enforced at 25, 100 and 500 active listings', () => {
+  assert.match(businessLimits, /starter: 25/)
+  assert.match(businessLimits, /growth: 100/)
+  assert.match(businessLimits, /professional: 500/)
+  assert.match(businessLimits, /\.eq\('status', 'published'\)/)
+  assert.match(businessLimits, /active_listing_limit_reached/)
+})

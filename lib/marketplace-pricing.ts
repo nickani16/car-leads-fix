@@ -1,15 +1,33 @@
-export const marketplaceCategories = [
-  { slug: 'cars', label: 'Bilar', free: 0, standard: 129, premium: 249 },
-  { slug: 'vans', label: 'Transportbilar', free: 0, standard: 199, premium: 399 },
-  { slug: 'motorcycles', label: 'Motorcyklar', free: 0, standard: 129, premium: 349 },
-  { slug: 'motorhomes', label: 'Husbilar', free: 0, standard: 249, premium: 590 },
-  { slug: 'caravans', label: 'Husvagnar', free: 0, standard: 199, premium: 390 },
-  { slug: 'trucks', label: 'Lastbilar', free: 0, standard: 299, premium: 790 },
-  { slug: 'agriculture', label: 'Lantbruksmaskiner', free: 0, standard: 299, premium: 790 },
-  { slug: 'construction', label: 'Entreprenadmaskiner', free: 0, standard: 399, premium: 1190 },
-  { slug: 'electric-bikes', label: 'Cyklar', free: 0, standard: 79, premium: 179 },
-  { slug: 'e-scooters', label: 'Sparkcyklar', free: 0, standard: 49, premium: 129 },
-] as const
+import {
+  billingProductCatalog,
+  formatMoneyMinor,
+  getBillingProduct,
+  getProductAmount,
+  legacyListingPackageToProductKey,
+  listingCategoryLabels,
+  type BillingMarket,
+  type ListingCategory,
+} from '@/lib/billing/product-catalog'
+
+export const marketplaceCategories = (Object.entries(listingCategoryLabels) as Array<[ListingCategory, string]>).map(
+  ([slug, label]) => {
+    const standard = getBillingProduct(`listing.${slug}.standard`)
+    const premium = getBillingProduct(`listing.${slug}.premium`)
+    return {
+      slug,
+      label,
+      free: 0,
+      standard: standard ? (standard.amountMinor.sek || 0) / 100 : 0,
+      premium: premium ? (premium.amountMinor.sek || 0) / 100 : 0,
+    }
+  },
+) as Array<{
+  slug: ListingCategory
+  label: string
+  free: number
+  standard: number
+  premium: number
+}>
 
 export type MarketplaceCategory = (typeof marketplaceCategories)[number]['slug']
 export type MarketplaceAccountType = 'private' | 'business'
@@ -24,18 +42,37 @@ export function getListingPrice(
   packageId: MarketplacePackage,
   accountType: MarketplaceAccountType,
 ) {
-  const pricing = getCategoryPricing(category)
   void accountType
-  if (packageId === 'free_7d') return 0
-  return packageId === 'standard_15d' ? pricing.standard : pricing.premium
+  const productKey = legacyListingPackageToProductKey(category, packageId)
+  const product = productKey ? getBillingProduct(productKey) : null
+  return product ? (product.amountMinor.sek || 0) / 100 : 0
+}
+
+export function getListingPriceMinorForMarket(
+  category: string,
+  packageId: MarketplacePackage,
+  market: BillingMarket,
+) {
+  const productKey = legacyListingPackageToProductKey(category, packageId)
+  const product = productKey ? getBillingProduct(productKey) : null
+  return product ? getProductAmount(product, market) : null
 }
 
 export function formatListingPrice(price: number) {
   return `${price.toLocaleString('sv-SE')} kr`
 }
 
+export function formatListingPriceForMarket(category: string, packageId: MarketplacePackage, market: BillingMarket, locale = 'sv-SE') {
+  const price = getListingPriceMinorForMarket(category, packageId, market)
+  if (!price) return ''
+  if (price.amountMinor === 0) return locale.startsWith('sv') ? 'Gratis' : 'Free'
+  return formatMoneyMinor(price.amountMinor, price.currency, locale)
+}
+
 export const listingPackageDetails = {
-  free_7d: { durationDays: 7, priority: 0, label: '7 dagar' },
-  standard_15d: { durationDays: 15, priority: 40, label: '15 dagar' },
-  premium_30d: { durationDays: 30, priority: 100, label: 'Premium' },
+  free_7d: { durationDays: 7, priority: 0, label: 'Start' },
+  standard_15d: { durationDays: 15, priority: 0, label: 'Standard' },
+  premium_30d: { durationDays: 30, priority: 0, label: 'Premium', includedBoostDays: 7 },
 } as const
+
+export const marketplacePricingProducts = billingProductCatalog

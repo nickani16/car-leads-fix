@@ -10,6 +10,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import {
   getMarketplaceSellerPublicProfiles,
+  getFeaturedMarketplaceHomeListings,
   getPublishedMarketplaceListingCount,
   getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
@@ -59,6 +60,8 @@ type HomeListingCardItem = {
   meta: string
   countryCode: string
   sellerTrust: 'verified' | 'unverified'
+  isFeatured: boolean
+  isTopPlacement: boolean
 }
 
 type HomeListingSectionData = {
@@ -93,27 +96,36 @@ export default async function BusinessMarketplaceHome({
   const [
     localTopListings,
     localLatestListings,
+    localFeaturedListings,
     europeTopListings,
     europeLatestListings,
+    europeFeaturedListings,
     localListingCount,
     europeListingCount,
   ] =
     await Promise.all([
       getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
       getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
+      getFeaturedMarketplaceHomeListings(localMarketCode, 8),
       getPublishedMarketplaceHomeListings('EU', 'top', 8),
       getPublishedMarketplaceHomeListings('EU', 'latest', 8),
+      getFeaturedMarketplaceHomeListings('EU', 8),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
     ])
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
-    [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
+    [...localTopListings, ...localLatestListings, ...localFeaturedListings, ...europeTopListings, ...europeLatestListings, ...europeFeaturedListings]
       .map((listing) => listing.seller_user_id)
-      .filter(Boolean),
+      .filter((id): id is string => typeof id === 'string' && Boolean(id)),
   )
   const toHomeCard = (listing: HomeListingSource) =>
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified')
   const listingSections = [
+    {
+      title: homeListingSectionTitle(locale, 'featured', localMarketLabel),
+      emptyText: homeEmptyListingText(locale, 'country'),
+      items: await Promise.all(localFeaturedListings.map(toHomeCard)),
+    },
     {
       title: homeListingSectionTitle(locale, 'top', localMarketLabel),
       emptyText: homeEmptyListingText(locale, 'country'),
@@ -123,6 +135,11 @@ export default async function BusinessMarketplaceHome({
       title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
       emptyText: homeEmptyListingText(locale, 'country'),
       items: await Promise.all(localLatestListings.map(toHomeCard)),
+    },
+    {
+      title: homeListingSectionTitle(locale, 'featured', homeEuropeLabel(locale)),
+      emptyText: homeEmptyListingText(locale, 'europe'),
+      items: await Promise.all(europeFeaturedListings.map(toHomeCard)),
     },
     {
       title: homeListingSectionTitle(locale, 'top', homeEuropeLabel(locale)),
@@ -325,6 +342,15 @@ function HomeListingCard({
         <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-[#101828]/75 text-xs font-semibold text-white">
           {index}
         </span>
+        {item.isFeatured ? (
+          <span className="absolute right-3 top-3 rounded-full bg-[#0866ff] px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+            {featuredListingLabel(locale)}
+          </span>
+        ) : item.isTopPlacement ? (
+          <span className="absolute right-3 top-3 rounded-full bg-[#101828] px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+            {topListingLabel(locale)}
+          </span>
+        ) : null}
       </div>
       <div className="p-3">
         <Link href={item.href} className="block">
@@ -378,9 +404,15 @@ function homeEuropeLabel(locale: PublicLocale) {
 
 function homeListingSectionTitle(
   locale: PublicLocale,
-  kind: 'top' | 'latest',
+  kind: 'top' | 'latest' | 'featured',
   marketLabel: string,
 ) {
+  if (kind === 'featured') {
+    if (locale === 'sv') return `Utvalda annonser i ${marketLabel}`
+    if (locale === 'de') return `Ausgewählte Anzeigen in ${marketLabel}`
+    if (locale === 'en') return `Featured listings in ${marketLabel}`
+    return `${translatePublic(locale, 'Featured listings in')} ${marketLabel}`
+  }
   if (kind === 'latest') {
     if (locale === 'sv') return `Senaste annonser i ${marketLabel}`
     if (locale === 'de') return `Neueste Anzeigen in ${marketLabel}`
@@ -392,6 +424,20 @@ function homeListingSectionTitle(
   if (locale === 'de') return `Top-Anzeigen in ${marketLabel}`
   if (locale === 'en') return `Top listings in ${marketLabel}`
   return `${translatePublic(locale, 'Top listings in')} ${marketLabel}`
+}
+
+function featuredListingLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Utvald'
+  if (locale === 'de') return 'Ausgewählt'
+  if (locale === 'en') return 'Featured'
+  return translatePublic(locale, 'Featured')
+}
+
+function topListingLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Toppannons'
+  if (locale === 'de') return 'Top-Anzeige'
+  if (locale === 'en') return 'Sponsored'
+  return translatePublic(locale, 'Sponsored')
 }
 
 function homeEmptyListingText(locale: PublicLocale, scope: 'country' | 'europe') {
@@ -433,6 +479,12 @@ type HomeListingSource = {
   currency: string | null
   images?: string[] | null
   seller_user_id?: string | null
+  featured_status?: string | null
+  featured_started_at?: string | null
+  featured_expires_at?: string | null
+  boost_status?: string | null
+  boost_started_at?: string | null
+  boost_expires_at?: string | null
 }
 
 async function mapHomeListingCard(
@@ -458,7 +510,7 @@ async function mapHomeListingCard(
   return {
     id: listing.id,
     title: listing.title,
-    href: buildListingPath(listing),
+    href: buildListingPath(listing, locale),
     imageUrl: listing.images?.[0] || null,
     imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
     priceLabel: Number.isFinite(price)
@@ -472,6 +524,17 @@ async function mapHomeListingCard(
     meta: vehicleMeta,
     countryCode: listing.country_code,
     sellerTrust,
+    isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
+    isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
   }
+}
+
+function isActiveWindow(status?: string | null, startedAt?: string | null, expiresAt?: string | null) {
+  const now = Date.now()
+  return status === 'active' &&
+    Boolean(startedAt) &&
+    Boolean(expiresAt) &&
+    new Date(String(startedAt)).getTime() <= now &&
+    new Date(String(expiresAt)).getTime() > now
 }
 
