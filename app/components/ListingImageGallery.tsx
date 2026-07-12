@@ -18,12 +18,17 @@ import {
 
 export default function ListingImageGallery({
   images,
+  fullscreenImages,
   title,
 }: {
   images: string[]
+  fullscreenImages?: string[]
   title: string
 }) {
   const safeImages = images.filter(Boolean)
+  const safeFullscreenImages = safeImages.map((image, index) =>
+    fullscreenImages?.[index] || image,
+  )
   const [active, setActive] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
   const [showGrid, setShowGrid] = useState(false)
@@ -31,6 +36,7 @@ export default function ListingImageGallery({
   const touchStartY = useRef<number | null>(null)
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
+  const activeFullscreenImage = safeFullscreenImages[active]
   const imageCount = safeImages.length
 
   const showPrevious = useCallback(() => {
@@ -235,7 +241,7 @@ export default function ListingImageGallery({
           {showGrid ? (
             <div className="h-[calc(100vh-64px)] overflow-y-auto p-3 sm:p-5">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-                {safeImages.map((image, index) => (
+                {safeFullscreenImages.map((image, index) => (
                   <button
                     key={`full-${image}-${index}`}
                     type="button"
@@ -287,7 +293,7 @@ export default function ListingImageGallery({
               ) : null}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={activeImage}
+                src={activeFullscreenImage}
                 alt={title}
                 className="h-full w-full rounded-[10px] object-contain"
               />

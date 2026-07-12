@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
   const paths = [
     ...new Set(
       candidates
-        .flatMap((candidate) => [candidate.storage_avif_path, candidate.storage_webp_path])
+        .flatMap((candidate) => [
+          candidate.storage_avif_path,
+          candidate.storage_webp_path,
+          cardPathForListingVariant(candidate.storage_webp_path),
+        ])
         .filter(Boolean),
     ),
   ]
@@ -60,4 +64,10 @@ export async function POST(request: NextRequest) {
     images: imageIds.length,
     storageObjects: paths.length,
   })
+}
+
+function cardPathForListingVariant(path: string) {
+  return path.endsWith('/listing.webp')
+    ? path.slice(0, -'/listing.webp'.length) + '/card.webp'
+    : ''
 }

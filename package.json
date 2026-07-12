@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test tests/billing-regression.test.mjs"
+    "test": "node --test tests"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
