@@ -43,9 +43,37 @@ export async function POST(request: Request) {
     const duplicate =
       insertError.code === '23505' ||
       insertError.message?.toLowerCase().includes('duplicate')
-    if (duplicate) return NextResponse.json({ received: true, duplicate: true })
-    console.error('Stripe webhook event tracking failed:', insertError)
-    return NextResponse.json({ error: 'Webhook event tracking failed.' }, { status: 500 })
+    if (duplicate) {
+      const { data: existingEvent, error: lookupError } = await admin
+        .from('stripe_webhook_events')
+        .select('processing_status')
+        .eq('stripe_event_id', event.id)
+        .maybeSingle()
+      if (lookupError) {
+        console.error('Stripe webhook event lookup failed:', lookupError)
+        return NextResponse.json({ error: 'Webhook event lookup failed.' }, { status: 500 })
+      }
+      if (existingEvent?.processing_status !== 'failed') {
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+      const { error: retryError } = await admin
+        .from('stripe_webhook_events')
+        .update({
+          processing_status: 'processing',
+          error_message: null,
+          received_at: new Date().toISOString(),
+          processed_at: null,
+        })
+        .eq('stripe_event_id', event.id)
+        .eq('processing_status', 'failed')
+      if (retryError) {
+        console.error('Stripe webhook event retry tracking failed:', retryError)
+        return NextResponse.json({ error: 'Webhook event retry tracking failed.' }, { status: 500 })
+      }
+    } else {
+      console.error('Stripe webhook event tracking failed:', insertError)
+      return NextResponse.json({ error: 'Webhook event tracking failed.' }, { status: 500 })
+    }
   }
 
   try {
