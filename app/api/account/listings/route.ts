@@ -38,18 +38,24 @@ import {
 } from '@/lib/marketplace-security'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 
+export const runtime = 'nodejs'
+export const maxDuration = 300
+
 const MAX_IMAGES = 20
 const MAX_IMAGE_SIZE = 25 * 1024 * 1024
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 type UploadedMarketplaceImage = {
-  avifUrl: string
-  webpUrl: string
-  storageAvifPath: string
-  storageWebpPath: string
-  width: number | null
-  height: number | null
-  avifSizeBytes: number
-  webpSizeBytes: number
+  cardUrl: string
+  listingUrl: string
+  fullscreenUrl: string
+  storageCardPath: string
+  storageListingPath: string
+  storageFullscreenPath: string
+  width: number
+  height: number
+  cardSizeBytes: number
+  listingSizeBytes: number
+  fullscreenSizeBytes: number
   originalFilename: string
 }
 
@@ -146,25 +152,39 @@ async function uploadImage(
   index: number,
 ): Promise<UploadedMarketplaceImage> {
   const processed = await processMarketplaceImage(file)
-  const stem = `${crypto.randomUUID()}-${index}-${processed.baseName}`
-  const storageAvifPath = `${userId}/${stem}.avif`
-  const storageWebpPath = `${userId}/${stem}.webp`
+  const imageId = crypto.randomUUID()
+  const stem = `${userId}/${imageId}-${index}-${processed.baseName}`
+  const storageCardPath = `${stem}/card.webp`
+  const storageListingPath = `${stem}/listing.webp`
+  const storageFullscreenPath = `${stem}/fullscreen.avif`
+  const uploadedPaths: string[] = []
 
-  await uploadProcessedVariant(supabase, storageAvifPath, processed.avif, 'image/avif')
-  await uploadProcessedVariant(supabase, storageWebpPath, processed.webp, 'image/webp')
-
-  const avifUrl = publicStorageUrl(supabase, storageAvifPath)
-  const webpUrl = publicStorageUrl(supabase, storageWebpPath)
+  try {
+    await uploadProcessedVariant(supabase, storageCardPath, processed.card)
+    uploadedPaths.push(storageCardPath)
+    await uploadProcessedVariant(supabase, storageListingPath, processed.listing)
+    uploadedPaths.push(storageListingPath)
+    await uploadProcessedVariant(supabase, storageFullscreenPath, processed.fullscreen)
+    uploadedPaths.push(storageFullscreenPath)
+  } catch (error) {
+    if (uploadedPaths.length) {
+      await supabase.storage.from('marketplace-listings').remove(uploadedPaths)
+    }
+    throw error
+  }
 
   return {
-    avifUrl,
-    webpUrl,
-    storageAvifPath,
-    storageWebpPath,
-    width: processed.width,
-    height: processed.height,
-    avifSizeBytes: processed.avifSizeBytes,
-    webpSizeBytes: processed.webpSizeBytes,
+    cardUrl: publicStorageUrl(supabase, storageCardPath),
+    listingUrl: publicStorageUrl(supabase, storageListingPath),
+    fullscreenUrl: publicStorageUrl(supabase, storageFullscreenPath),
+    storageCardPath,
+    storageListingPath,
+    storageFullscreenPath,
+    width: processed.listing.width,
+    height: processed.listing.height,
+    cardSizeBytes: processed.card.sizeBytes,
+    listingSizeBytes: processed.listing.sizeBytes,
+    fullscreenSizeBytes: processed.fullscreen.sizeBytes,
     originalFilename: processed.originalFilename,
   }
 }
@@ -172,14 +192,13 @@ async function uploadImage(
 async function uploadProcessedVariant(
   supabase: SupabaseClient,
   path: string,
-  body: ProcessedMarketplaceImage['avif'],
-  contentType: 'image/avif' | 'image/webp',
+  variant: ProcessedMarketplaceImage['card'],
 ) {
   const { error } = await supabase.storage
     .from('marketplace-listings')
-    .upload(path, body, {
+    .upload(path, variant.body, {
       cacheControl: '31536000',
-      contentType,
+      contentType: variant.contentType,
       upsert: false,
     })
   if (error) throw error
@@ -189,6 +208,35 @@ function publicStorageUrl(supabase: SupabaseClient, path: string) {
   const { data } = supabase.storage.from('marketplace-listings').getPublicUrl(path)
   if (!data.publicUrl) throw new Error('Image URL failed')
   return data.publicUrl
+}
+
+async function cleanupUploadedImages(
+  supabase: SupabaseClient,
+  images: UploadedMarketplaceImage[],
+) {
+  const paths = images.flatMap((image) => [
+    image.storageCardPath,
+    image.storageListingPath,
+    image.storageFullscreenPath,
+  ])
+  if (paths.length) {
+    const { error } = await supabase.storage.from('marketplace-listings').remove(paths)
+    if (error) console.error('Marketplace image cleanup failed', { error: error.message })
+  }
+}
+
+function imageUploadErrorMessage(error: unknown) {
+  const code = error instanceof Error ? error.message : ''
+  if (code === 'HEIC_NOT_SUPPORTED') {
+    return 'HEIC/HEIF stöds inte ännu. Välj JPG, PNG, WebP eller AVIF.'
+  }
+  if (code === 'IMAGE_SIZE_INVALID') {
+    return 'En bild är tom eller större än 25 MB. Välj en mindre originalfil.'
+  }
+  if (code === 'UNSUPPORTED_IMAGE_TYPE' || code === 'IMAGE_SIGNATURE_MISMATCH') {
+    return 'En fil har ett format eller innehåll som inte stöds. Välj JPG, PNG, WebP eller AVIF.'
+  }
+  return 'Bilderna kunde inte behandlas. Försök igen eller ta bort den bild som misslyckades.'
 }
 
 async function insertListingImageRows(
@@ -204,14 +252,14 @@ async function insertListingImageRows(
         listing_id: listingId,
         seller_user_id: sellerUserId,
         position: index,
-        avif_url: image.avifUrl,
-        webp_url: image.webpUrl,
-        storage_avif_path: image.storageAvifPath,
-        storage_webp_path: image.storageWebpPath,
+        avif_url: image.fullscreenUrl,
+        webp_url: image.listingUrl,
+        storage_avif_path: image.storageFullscreenPath,
+        storage_webp_path: image.storageListingPath,
         width: image.width,
         height: image.height,
-        avif_size_bytes: image.avifSizeBytes,
-        webp_size_bytes: image.webpSizeBytes,
+        avif_size_bytes: image.fullscreenSizeBytes,
+        webp_size_bytes: image.listingSizeBytes,
         original_filename: image.originalFilename,
         expires_at: expiresAt,
         purge_after: expiresAt
@@ -529,14 +577,28 @@ export async function POST(request: Request) {
     const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
     const longitude = geocoded?.longitude ?? parseCoordinate(text(form, 'longitude'))
 
-    const uploadedImages = await Promise.all(
-      files.map((file, index) => uploadImage(admin, file, user.id, index)),
-    )
-    const serialPlateImage =
-      serialPlateFile instanceof File && serialPlateFile.size > 0
-        ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
-        : null
-    const images = uploadedImages.map((image) => image.webpUrl)
+    const uploadedImages: UploadedMarketplaceImage[] = []
+    let serialPlateImage: UploadedMarketplaceImage | null
+    try {
+      for (const [index, file] of files.entries()) {
+        uploadedImages.push(await uploadImage(admin, file, user.id, index))
+      }
+      serialPlateImage =
+        serialPlateFile instanceof File && serialPlateFile.size > 0
+          ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
+          : null
+    } catch (imageError) {
+      await cleanupUploadedImages(admin, uploadedImages)
+      console.error('Marketplace listing image processing failed', {
+        requestId: request.headers.get('x-request-id') || crypto.randomUUID(),
+        error: imageError instanceof Error ? imageError.message : String(imageError),
+      })
+      return NextResponse.json(
+        { error: imageUploadErrorMessage(imageError), step: 2, field: 'images' },
+        { status: 400 },
+      )
+    }
+    const images = uploadedImages.map((image) => image.cardUrl)
     const duration =
       listingPackageDetails[packageId as keyof typeof listingPackageDetails]
         .durationDays
@@ -544,7 +606,6 @@ export async function POST(request: Request) {
     const endsAt = startsAt
       ? new Date(startsAt.getTime() + duration * 86400000)
       : null
-
     const { data: listing, error } = await admin
       .from('marketplace_listings')
       .insert({
@@ -612,7 +673,13 @@ export async function POST(request: Request) {
       .select('id,status,review_status,reference_number,listing_number')
       .single()
 
-    if (error || !listing) throw error
+    if (error || !listing) {
+      await cleanupUploadedImages(
+        admin,
+        serialPlateImage ? [...uploadedImages, serialPlateImage] : uploadedImages,
+      )
+      throw error || new Error('Listing insert failed')
+    }
 
     await insertListingImageRows(admin, listing.id, user.id, uploadedImages, endsAt?.toISOString() || null)
 
@@ -653,14 +720,17 @@ export async function POST(request: Request) {
           technical_data: technicalData,
           image_variants: uploadedImages.map((image, index) => ({
             position: index,
-            avifUrl: image.avifUrl,
-            webpUrl: image.webpUrl,
-            storageAvifPath: image.storageAvifPath,
-            storageWebpPath: image.storageWebpPath,
+            cardUrl: image.cardUrl,
+            listingUrl: image.listingUrl,
+            fullscreenUrl: image.fullscreenUrl,
+            storageCardPath: image.storageCardPath,
+            storageListingPath: image.storageListingPath,
+            storageFullscreenPath: image.storageFullscreenPath,
             width: image.width,
             height: image.height,
-            avifSizeBytes: image.avifSizeBytes,
-            webpSizeBytes: image.webpSizeBytes,
+            cardSizeBytes: image.cardSizeBytes,
+            listingSizeBytes: image.listingSizeBytes,
+            fullscreenSizeBytes: image.fullscreenSizeBytes,
           })),
         },
       }),
@@ -717,12 +787,12 @@ export async function POST(request: Request) {
             listing_id: listing.id,
             seller_user_id: user.id,
             document_type: 'serial_plate',
-            file_url: serialPlateImage.avifUrl,
-            storage_path: serialPlateImage.storageAvifPath,
+            file_url: serialPlateImage.fullscreenUrl,
+            storage_path: serialPlateImage.storageFullscreenPath,
             metadata: {
               uploaded_from: 'listing_form',
-              webp_url: serialPlateImage.webpUrl,
-              storage_webp_path: serialPlateImage.storageWebpPath,
+              webp_url: serialPlateImage.listingUrl,
+              storage_webp_path: serialPlateImage.storageListingPath,
             },
           })
         : Promise.resolve({ error: null }),

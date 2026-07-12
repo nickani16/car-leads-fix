@@ -87,6 +87,10 @@ type ListingRow = {
   edited_at: string | null
   last_price_change_at: string | null
   images: string[] | null
+  image_variants?: Array<{
+    listingUrl: string
+    fullscreenUrl: string
+  }>
   seller_user_id: string | null
   seller_name: string
   seller_type: 'private' | 'business'
@@ -348,6 +352,12 @@ export default async function ListingDetailPage({
     country: listing.country,
     countryCode: listing.country_code,
   })
+  const galleryImages = listing.image_variants?.length
+    ? listing.image_variants.map((image) => image.listingUrl)
+    : listing.images || []
+  const fullscreenImages = listing.image_variants?.length
+    ? listing.image_variants.map((image) => image.fullscreenUrl || image.listingUrl)
+    : galleryImages
 
   return (
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
@@ -381,7 +391,11 @@ export default async function ListingDetailPage({
 
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
           <div className="min-w-0 space-y-6">
-            <ListingImageGallery images={listing.images || []} title={listing.title} />
+            <ListingImageGallery
+              images={galleryImages}
+              fullscreenImages={fullscreenImages}
+              title={listing.title}
+            />
 
             <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
               {isSold ? (

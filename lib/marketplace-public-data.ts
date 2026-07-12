@@ -9,6 +9,47 @@ import { createAdminClient } from './supabase/admin'
 
 const publicListingTtl = 300
 
+type MarketplacePublicRow = Record<string, unknown> & {
+  id: string
+  seller_user_id?: string | null
+  listing_number?: number | string | null
+  reference_number?: string | null
+  status?: string | null
+  review_status?: string | null
+  category?: string | null
+  title: string
+  description?: string | null
+  make: string | null
+  model: string | null
+  variant?: string | null
+  model_year: number | string | null
+  mileage_km: number | string | null
+  operating_hours?: number | string | null
+  fuel_type?: string | null
+  gearbox?: string | null
+  body_type?: string | null
+  condition?: string | null
+  country_code: string
+  country?: string | null
+  city: string | null
+  price: number | string | null
+  currency: string | null
+  images?: string[] | null
+  seller_type?: string | null
+  seller_name?: string | null
+  boost_status?: string | null
+  boost_started_at?: string | null
+  boost_expires_at?: string | null
+  featured_status?: string | null
+  featured_started_at?: string | null
+  featured_expires_at?: string | null
+  image_variants?: ListingImageVariant[]
+}
+
+export type ListingImageVariant = {
+  listingUrl: string
+  fullscreenUrl: string
+}
 export const publicSearchListingSelect =
   'id,category,title,make,model,variant,body_type,fuel_type,model_year,mileage_km,city,country_code,country,address,latitude,longitude,price,currency'
 
@@ -109,12 +150,21 @@ export const getPublishedMarketplaceListingById = unstable_cache(
 
 export const getMarketplaceListingForPublicDetail = unstable_cache(
   async (id: string) => {
-    const { data } = await createAdminClient()
-      .from('marketplace_listings')
-      .select(marketplacePublicSelect)
-      .eq('id', id)
-      .in('status', ['published', 'sold'])
-      .maybeSingle()
+    const admin = createAdminClient()
+    const [{ data }, { data: imageRows }] = await Promise.all([
+      admin
+        .from('marketplace_listings')
+        .select(marketplacePublicSelect)
+        .eq('id', id)
+        .in('status', ['published', 'sold'])
+        .maybeSingle(),
+      admin
+        .from('marketplace_listing_images')
+        .select('webp_url,avif_url,position')
+        .eq('listing_id', id)
+        .is('deleted_at', null)
+        .order('position', { ascending: true }),
+    ])
 
     if (!data) return null
 
@@ -124,7 +174,13 @@ export const getMarketplaceListingForPublicDetail = unstable_cache(
       data.expires_at &&
       new Date(data.expires_at).getTime() <= Date.now()
 
-    return isExpiredPublished ? null : sanitizePublicListingSellerName(data)
+    if (isExpiredPublished) return null
+    const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
+    listing.image_variants = (imageRows || []).map((image) => ({
+      listingUrl: image.webp_url,
+      fullscreenUrl: image.avif_url,
+    }))
+    return listing
   },
   ['public-marketplace-listing-detail-by-id'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },

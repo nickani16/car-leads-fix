@@ -404,6 +404,7 @@ export default function NewListingForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (loading) return
     if (!validate(4)) return
     setLoading(true)
     setError('')
@@ -422,11 +423,18 @@ export default function NewListingForm({
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
     orderedImages.forEach((image) => form.append('images', image.file, image.name))
 
-    const response = await fetch('/api/account/listings', {
-      method: 'POST',
-      body: form,
-    })
-    const result = (await response.json()) as {
+    let response: Response
+    try {
+      response = await fetch('/api/account/listings', {
+        method: 'POST',
+        body: form,
+      })
+    } catch {
+      setError('Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.')
+      setLoading(false)
+      return
+    }
+    const result = (await response.json().catch(() => ({}))) as {
       error?: string
       listingId?: string
       requiresPayment?: boolean
@@ -438,14 +446,21 @@ export default function NewListingForm({
       return
     }
     if (result.requiresPayment) {
-      const checkout = await fetch('/api/account/listing-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          listingId: result.listingId,
-          packageId: result.packageId,
-        }),
-      })
+      let checkout: Response
+      try {
+        checkout = await fetch('/api/account/listing-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listingId: result.listingId,
+            packageId: result.packageId,
+          }),
+        })
+      } catch {
+        setError('Annonsen sparades men betalningen kunde inte öppnas. Försök igen från Mina annonser.')
+        setLoading(false)
+        return
+      }
       const checkoutResult = (await checkout.json()) as {
         url?: string
         error?: string
@@ -1294,16 +1309,28 @@ function ImageStep({
   onImages: (value: UploadImage[]) => void
   onMainImageId: (value: string) => void
 }) {
+  const [processingImages, setProcessingImages] = useState(false)
+  const [imageErrors, setImageErrors] = useState<string[]>([])
+
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
-    const compressed = await Promise.all(
-      Array.from(files)
-        .slice(0, 20 - images.length)
-        .map(compressImage),
+    setProcessingImages(true)
+    setImageErrors([])
+    const selected = Array.from(files).slice(0, 20 - images.length)
+    const results = await Promise.allSettled(selected.map(compressImage))
+    const compressed = results.flatMap((result) =>
+      result.status === 'fulfilled' ? [result.value] : [],
+    )
+    const errors = results.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [`${selected[index]?.name || 'Bild'}: ${imageErrorText(result.reason)}`]
+        : [],
     )
     const next = [...images, ...compressed]
     onImages(next)
     if (!mainImageId && next[0]) onMainImageId(next[0].id)
+    setImageErrors(errors)
+    setProcessingImages(false)
   }
 
   function removeImage(id: string) {
@@ -1335,16 +1362,27 @@ function ImageStep({
       </div>
       <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed border-[#a8b4c7] bg-[#fbfcff] p-6 text-center">
         <ImagePlus className="h-8 w-8 text-[#0866ff]" />
-        <strong className="mt-3 font-semibold text-[#101828]">{copy.addImages}</strong>
+        <strong className="mt-3 font-semibold text-[#101828]">
+          {processingImages ? 'Bearbetar bilder…' : copy.addImages}
+        </strong>
         <span className="mt-1 text-sm text-[#667085]">{images.length}/20 {copy.uploaded}</span>
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif"
           multiple
-          onChange={(event) => void handleFiles(event.target.files)}
+          disabled={processingImages}
+          onChange={(event) => {
+            void handleFiles(event.target.files)
+            event.currentTarget.value = ''
+          }}
           className="sr-only"
         />
       </label>
+      {imageErrors.length ? (
+        <div className="mt-3 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+          {imageErrors.map((message) => <p key={message}>{message}</p>)}
+        </div>
+      ) : null}
       {images.length ? (
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((image, index) => (
@@ -2156,31 +2194,45 @@ function identifierHelpText(category: MarketplaceCategorySlug) {
 }
 
 async function compressImage(file: File): Promise<UploadImage> {
-  if (!file.type.startsWith('image/')) {
-    return {
-      id: crypto.randomUUID(),
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name,
-      size: file.size,
-    }
+  const supportedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
+  if (['image/heic', 'image/heif'].includes(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+    throw new Error('HEIC_NOT_SUPPORTED')
   }
+  if (!supportedTypes.has(file.type)) throw new Error('UNSUPPORTED_IMAGE_TYPE')
+  if (!file.size || file.size > 25 * 1024 * 1024) throw new Error('IMAGE_SIZE_INVALID')
+  if (!await hasSupportedImageSignature(file)) throw new Error('IMAGE_SIGNATURE_MISMATCH')
 
-  const bitmap = await createImageBitmap(file)
-  const maxWidth = 1800
-  const maxHeight = 1350
-  const ratio = Math.min(maxWidth / bitmap.width, maxHeight / bitmap.height, 1)
-  const width = Math.round(bitmap.width * ratio)
-  const height = Math.round(bitmap.height * ratio)
+  const decoded = await decodeBrowserImage(file)
+  const maxWidth = 2200
+  const maxHeight = 1650
+  const ratio = Math.min(maxWidth / decoded.width, maxHeight / decoded.height, 1)
+  let width = Math.max(1, Math.round(decoded.width * ratio))
+  let height = Math.max(1, Math.round(decoded.height * ratio))
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
   const context = canvas.getContext('2d')
-  context?.drawImage(bitmap, 0, 0, width, height)
+  if (!context) throw new Error('IMAGE_PROCESSING_UNAVAILABLE')
+  context.fillStyle = '#fff'
+  context.fillRect(0, 0, width, height)
+  context.drawImage(decoded.source, 0, 0, width, height)
+  decoded.close()
 
-  let blob = await canvasToJpeg(canvas, 0.78, file)
-  if (blob.size > 1_200_000) blob = await canvasToJpeg(canvas, 0.7, file)
-  if (blob.size > 1_200_000) blob = await canvasToJpeg(canvas, 0.62, file)
+  let blob = await encodeJpegWithinLimit(canvas, 180_000)
+  while (blob.size > 180_000 && width > 900 && height > 675) {
+    width = Math.max(900, Math.round(width * 0.82))
+    height = Math.max(675, Math.round(height * 0.82))
+    const resized = document.createElement('canvas')
+    resized.width = width
+    resized.height = height
+    const resizedContext = resized.getContext('2d')
+    if (!resizedContext) break
+    resizedContext.drawImage(canvas, 0, 0, width, height)
+    canvas.width = width
+    canvas.height = height
+    context.drawImage(resized, 0, 0)
+    blob = await encodeJpegWithinLimit(canvas, 180_000)
+  }
   const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
   const compressed = new File([blob], name, { type: 'image/jpeg' })
   return {
@@ -2192,12 +2244,72 @@ async function compressImage(file: File): Promise<UploadImage> {
   }
 }
 
-function canvasToJpeg(canvas: HTMLCanvasElement, quality: number, fallback: File) {
-  return new Promise<Blob>((resolve) => {
+async function encodeJpegWithinLimit(canvas: HTMLCanvasElement, maxBytes: number) {
+  let result: Blob | null = null
+  for (const quality of [0.82, 0.72, 0.62, 0.52]) {
+    result = await canvasToJpeg(canvas, quality)
+    if (result.size <= maxBytes) return result
+  }
+  if (!result) throw new Error('IMAGE_ENCODING_FAILED')
+  return result
+}
+
+function canvasToJpeg(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (result) => resolve(result || fallback),
+      (result) => result ? resolve(result) : reject(new Error('IMAGE_ENCODING_FAILED')),
       'image/jpeg',
       quality,
     )
   })
+}
+
+async function decodeBrowserImage(file: File) {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    return {
+      source: bitmap as CanvasImageSource,
+      width: bitmap.width,
+      height: bitmap.height,
+      close: () => bitmap.close(),
+    }
+  } catch {
+    const url = URL.createObjectURL(file)
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const element = new window.Image()
+        element.onload = () => resolve(element)
+        element.onerror = () => reject(new Error('IMAGE_DECODE_FAILED'))
+        element.src = url
+      })
+      return {
+        source: image as CanvasImageSource,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        close: () => URL.revokeObjectURL(url),
+      }
+    } catch (error) {
+      URL.revokeObjectURL(url)
+      throw error
+    }
+  }
+}
+
+async function hasSupportedImageSignature(file: File) {
+  const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer())
+  const ascii = String.fromCharCode(...bytes)
+  if (file.type === 'image/jpeg') return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+  if (file.type === 'image/png') return bytes.slice(0, 8).every((value, index) => value === [137, 80, 78, 71, 13, 10, 26, 10][index])
+  if (file.type === 'image/webp') return ascii.slice(0, 4) === 'RIFF' && ascii.slice(8, 12) === 'WEBP'
+  if (file.type === 'image/avif') return ascii.slice(4, 8) === 'ftyp' && /avif|avis|mif1/.test(ascii.slice(8))
+  return false
+}
+
+function imageErrorText(error: unknown) {
+  const code = error instanceof Error ? error.message : ''
+  if (code === 'HEIC_NOT_SUPPORTED') return 'HEIC/HEIF stöds inte ännu. Konvertera bilden till JPG.'
+  if (code === 'IMAGE_SIZE_INVALID') return 'Filen är tom eller större än 25 MB.'
+  if (code === 'UNSUPPORTED_IMAGE_TYPE' || code === 'IMAGE_SIGNATURE_MISMATCH') return 'Formatet stöds inte eller filens innehåll är ogiltigt.'
+  if (code === 'IMAGE_DECODE_FAILED') return 'Bilden kunde inte öppnas i den här webbläsaren.'
+  return 'Bilden kunde inte bearbetas. Försök igen.'
 }
