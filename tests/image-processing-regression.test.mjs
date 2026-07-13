@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { randomBytes } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
@@ -20,6 +21,7 @@ test('sharp is statically imported and traced into the listings function', () =>
 })
 
 test('JPG, PNG, WebP and AVIF can produce bounded card, listing and fullscreen variants', async () => {
+  const { processMarketplaceImage } = loadImageProcessingModule()
   const source = sharp({
     create: {
       width: 2400,
@@ -35,19 +37,23 @@ test('JPG, PNG, WebP and AVIF can produce bounded card, listing and fullscreen v
     source.clone().avif({ quality: 70 }).toBuffer(),
   ])
 
-  for (const input of inputs) {
-    const normalized = sharp(input, { failOn: 'error', limitInputPixels: 80_000_000 }).rotate()
-    const card = await normalized.clone().resize({ width: 720, height: 540, fit: 'inside' }).webp({ quality: 74 }).toBuffer({ resolveWithObject: true })
-    const listing = await normalized.clone().resize({ width: 1440, height: 1080, fit: 'inside' }).webp({ quality: 80 }).toBuffer({ resolveWithObject: true })
-    const fullscreen = await normalized.clone().resize({ width: 1920, height: 1440, fit: 'inside' }).avif({ quality: 60 }).toBuffer({ resolveWithObject: true })
-    assert.ok(card.info.width <= 720 && card.info.height <= 540)
-    assert.ok(listing.info.width <= 1440 && listing.info.height <= 1080)
-    assert.ok(fullscreen.info.width <= 1920 && fullscreen.info.height <= 1440)
-    assert.ok(card.data.length > 0 && listing.data.length > 0 && fullscreen.data.length > 0)
+  const contentTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
+  const extensions = ['jpg', 'png', 'webp', 'avif']
+
+  for (const [index, input] of inputs.entries()) {
+    const processed = await processMarketplaceImage(
+      new File([input], `vehicle.${extensions[index]}`, { type: contentTypes[index] }),
+    )
+    assert.ok(processed.card.width <= 720 && processed.card.height <= 540)
+    assert.ok(processed.listing.width <= 1440 && processed.listing.height <= 1080)
+    assert.ok(processed.fullscreen.width <= 1920 && processed.fullscreen.height <= 1440)
+    assert.ok(processed.card.body.length > 0)
+    assert.ok(processed.listing.body.length > 0)
+    assert.ok(processed.fullscreen.body.length > 0)
   }
 })
 
-test('vehicle subject framing trims empty margins while keeping the full subject visible', async () => {
+test('safe inside framing keeps the complete vehicle visible without subject cropping', async () => {
   const { processMarketplaceImage } = loadImageProcessingModule()
   const source = sharp({
     create: {
@@ -81,15 +87,56 @@ test('vehicle subject framing trims empty margins while keeping the full subject
   assert.equal(processed.card.width, 720)
   assert.equal(processed.card.height, 540)
   assert.ok(bounds, 'expected the synthetic vehicle subject to remain visible')
-  assert.ok(bounds.width / processed.card.width >= 0.9)
+  assert.ok(bounds.width / processed.card.width >= 0.55)
+  assert.ok(bounds.width / processed.card.width <= 0.62)
   assert.ok(bounds.left > 0 && bounds.top > 0)
   assert.ok(bounds.left + bounds.width < processed.card.width)
   assert.ok(bounds.top + bounds.height < processed.card.height)
 })
 
+test('a large vertical mobile image is accepted and remains vertical in every variant', async () => {
+  const { processMarketplaceImage } = loadImageProcessingModule()
+  const width = 1200
+  const height = 2000
+  const input = await sharp(randomBytes(width * height * 3), {
+    raw: { width, height, channels: 3 },
+  }).png({ compressionLevel: 0 }).toBuffer()
+  assert.ok(input.byteLength > 6 * 1024 * 1024)
+
+  const processed = await processMarketplaceImage(
+    new File([input], 'large-vertical.png', { type: 'image/png' }),
+  )
+  for (const variant of [processed.card, processed.listing, processed.fullscreen]) {
+    assert.ok(variant.height > variant.width)
+    assert.ok(variant.body.byteLength > 0)
+  }
+})
+
+test('unsupported and spoofed files are rejected with stable error codes', async () => {
+  const { processMarketplaceImage } = loadImageProcessingModule()
+  const jpeg = await sharp({
+    create: { width: 320, height: 240, channels: 3, background: '#0866ff' },
+  }).jpeg().toBuffer()
+
+  await assert.rejects(
+    processMarketplaceImage(new File([jpeg], 'vehicle.heic', { type: 'image/heic' })),
+    /HEIC_NOT_SUPPORTED/,
+  )
+  await assert.rejects(
+    processMarketplaceImage(new File([jpeg], 'vehicle.png', { type: 'image/png' })),
+    /IMAGE_SIGNATURE_MISMATCH/,
+  )
+  await assert.rejects(
+    processMarketplaceImage(new File(['not an image'], 'notes.txt', { type: 'text/plain' })),
+    /UNSUPPORTED_IMAGE_TYPE/,
+  )
+  assert.match(listingRouteSource, /HEIC\/HEIF stöds inte ännu\. Välj JPG, PNG, WebP eller AVIF\./)
+})
+
 test('listing creation processes images sequentially and stores card URLs separately', () => {
   assert.match(listingRouteSource, /for \(const \[index, file\] of files\.entries\(\)\)/)
   assert.doesNotMatch(listingRouteSource, /Promise\.all\(\s*files\.map/)
+  assert.match(listingRouteSource, /Promise\.allSettled\([\s\S]*variants\.map/)
   assert.match(listingRouteSource, /const images = uploadedImages\.map\(\(image\) => image\.cardUrl\)/)
   assert.match(listingRouteSource, /storageListingPath/)
   assert.match(listingRouteSource, /storageFullscreenPath/)
@@ -141,9 +188,11 @@ function darkPixelBounds(data, width, height, channels) {
   }
 }
 
-test('client accepts supported formats and keeps individual failures recoverable', () => {
+test('client accepts only supported formats and processes selected images without a memory burst', () => {
   assert.match(listingFormSource, /image\/jpeg,image\/png,image\/webp,image\/avif/)
-  assert.match(listingFormSource, /Promise\.allSettled/)
+  assert.doesNotMatch(listingFormSource, /accept="[^"]*(?:heic|heif)/i)
+  assert.match(listingFormSource, /for \(const file of selected\)[\s\S]*await compressImage\(file\)/)
   assert.match(listingFormSource, /Anslutningen avbröts\. Dina uppgifter finns kvar/)
+  assert.match(listingFormSource, /listingRequestTimeoutMs = 240_000/)
   assert.match(listingFormSource, /180_000/)
 })

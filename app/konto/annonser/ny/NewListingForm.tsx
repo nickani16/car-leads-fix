@@ -86,7 +86,7 @@ const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 const swedishMileageFactor = 10
 const minModelYear = 1950
 const maxModelYear = 2027
-const listingRequestTimeoutMs = 45_000
+const listingRequestTimeoutMs = 240_000
 const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
@@ -1252,15 +1252,15 @@ function ImageStep({
     setProcessingImages(true)
     setImageErrors([])
     const selected = Array.from(files).slice(0, 20 - images.length)
-    const results = await Promise.allSettled(selected.map(compressImage))
-    const compressed = results.flatMap((result) =>
-      result.status === 'fulfilled' ? [result.value] : [],
-    )
-    const errors = results.flatMap((result, index) =>
-      result.status === 'rejected'
-        ? [`${selected[index]?.name || 'Bild'}: ${imageErrorText(result.reason)}`]
-        : [],
-    )
+    const compressed: UploadImage[] = []
+    const errors: string[] = []
+    for (const file of selected) {
+      try {
+        compressed.push(await compressImage(file))
+      } catch (error) {
+        errors.push(`${file.name || 'Bild'}: ${imageErrorText(error)}`)
+      }
+    }
     const next = [...images, ...compressed]
     onImages(next)
     if (!mainImageId && next[0]) onMainImageId(next[0].id)
@@ -1303,7 +1303,7 @@ function ImageStep({
         <span className="mt-1 text-sm text-[#667085]">{images.length}/20 {copy.uploaded}</span>
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif"
+          accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif"
           multiple
           disabled={processingImages}
           onChange={(event) => {
@@ -2117,8 +2117,12 @@ async function compressImage(file: File): Promise<UploadImage> {
   if (!await hasSupportedImageSignature(file)) throw new Error('IMAGE_SIGNATURE_MISMATCH')
 
   const decoded = await decodeBrowserImage(file)
-  const maxWidth = 2200
-  const maxHeight = 1650
+  if (decoded.width * decoded.height > 80_000_000) {
+    decoded.close()
+    throw new Error('IMAGE_DIMENSIONS_TOO_LARGE')
+  }
+  const maxWidth = 1920
+  const maxHeight = 1440
   const ratio = Math.min(maxWidth / decoded.width, maxHeight / decoded.height, 1)
   let width = Math.max(1, Math.round(decoded.width * ratio))
   let height = Math.max(1, Math.round(decoded.height * ratio))
@@ -2225,5 +2229,6 @@ function imageErrorText(error: unknown) {
   if (code === 'IMAGE_SIZE_INVALID') return 'Filen är tom eller större än 25 MB.'
   if (code === 'UNSUPPORTED_IMAGE_TYPE' || code === 'IMAGE_SIGNATURE_MISMATCH') return 'Formatet stöds inte eller filens innehåll är ogiltigt.'
   if (code === 'IMAGE_DECODE_FAILED') return 'Bilden kunde inte öppnas i den här webbläsaren.'
+  if (code === 'IMAGE_DIMENSIONS_TOO_LARGE') return 'Bilden har för hög upplösning. Välj en bild under 80 megapixel.'
   return 'Bilden kunde inte bearbetas. Försök igen.'
 }

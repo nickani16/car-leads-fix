@@ -168,20 +168,23 @@ async function uploadImage(
   const storageCardPath = `${stem}/card.webp`
   const storageListingPath = `${stem}/listing.webp`
   const storageFullscreenPath = `${stem}/fullscreen.avif`
-  const uploadedPaths: string[] = []
-
-  try {
-    await uploadProcessedVariant(supabase, storageCardPath, processed.card)
-    uploadedPaths.push(storageCardPath)
-    await uploadProcessedVariant(supabase, storageListingPath, processed.listing)
-    uploadedPaths.push(storageListingPath)
-    await uploadProcessedVariant(supabase, storageFullscreenPath, processed.fullscreen)
-    uploadedPaths.push(storageFullscreenPath)
-  } catch (error) {
+  const variants = [
+    [storageCardPath, processed.card],
+    [storageListingPath, processed.listing],
+    [storageFullscreenPath, processed.fullscreen],
+  ] as const
+  const uploadResults = await Promise.allSettled(
+    variants.map(([path, variant]) => uploadProcessedVariant(supabase, path, variant)),
+  )
+  const failedUpload = uploadResults.find((result) => result.status === 'rejected')
+  if (failedUpload?.status === 'rejected') {
+    const uploadedPaths = variants.flatMap(([path], index) =>
+      uploadResults[index]?.status === 'fulfilled' ? [path] : [],
+    )
     if (uploadedPaths.length) {
       await supabase.storage.from('marketplace-listings').remove(uploadedPaths)
     }
-    throw error
+    throw failedUpload.reason
   }
 
   return {

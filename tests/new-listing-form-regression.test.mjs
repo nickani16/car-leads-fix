@@ -44,7 +44,7 @@ test('preview does not show package before package step', () => {
 })
 
 test('publishing never leaves the form in an endless spinner and bulk UI is hidden', () => {
-  assert.match(form, /const listingRequestTimeoutMs = 45_000/)
+  assert.match(form, /const listingRequestTimeoutMs = 240_000/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listings'/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listing-checkout'/)
   assert.match(form, /parseCheckoutResponse\(checkout\)/)
