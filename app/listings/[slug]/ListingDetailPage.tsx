@@ -43,7 +43,7 @@ import {
 import { localizePublicHref, translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
 import { getMarketplaceListingForPublicDetail } from '@/lib/marketplace-public-data'
-import { resolveListingCoordinates } from '@/lib/location-coordinates'
+import { resolveListingMapLocation } from '@/lib/listing-map-location'
 import { selectedEquipmentGroups } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { cleanSeoText } from '@/lib/market-seo'
@@ -81,6 +81,7 @@ type ListingRow = {
   city: string
   municipality: string | null
   address: string | null
+  postal_code: string | null
   latitude: number | null
   longitude: number | null
   price: number | string
@@ -346,11 +347,13 @@ export default async function ListingDetailPage({
       { label: listing.title, href: publicUrl },
     ],
   })
-  const mapCoordinates = resolveListingCoordinates({
+  const mapCoordinates = await resolveListingMapLocation({
+    id: listing.id,
+    address: listing.address,
+    postalCode: listing.postal_code,
     latitude: listing.latitude,
     longitude: listing.longitude,
     city: listing.city,
-    municipality: listing.municipality,
     country: listing.country,
     countryCode: listing.country_code,
   })
@@ -535,12 +538,16 @@ export default async function ListingDetailPage({
                 <div id="listing-location-map" className="scroll-mt-24">
               <ListingLocationMap
                 title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
+                listingId={listing.id}
                 address={listing.address}
+                postalCode={listing.postal_code}
                 city={listing.city}
                 country={countryName || listing.country_code}
                 latitude={mapCoordinates?.latitude}
                 longitude={mapCoordinates?.longitude}
                 approximate={mapCoordinates?.approximate}
+                mapSource={mapCoordinates?.source}
+                mapQuery={mapCoordinates?.query}
               />
                 </div>
             </div>

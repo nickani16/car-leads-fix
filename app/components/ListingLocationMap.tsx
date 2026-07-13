@@ -9,20 +9,28 @@ type ListingLocationMapProps = {
   latitude?: number | null
   longitude?: number | null
   title: string
+  listingId?: string
   address?: string | null
+  postalCode?: string | null
   city?: string | null
   country?: string | null
   approximate?: boolean
+  mapSource?: string | null
+  mapQuery?: string | null
 }
 
 export default function ListingLocationMap({
   latitude,
   longitude,
   title,
+  listingId,
   address,
+  postalCode,
   city,
   country,
   approximate = false,
+  mapSource = null,
+  mapQuery = null,
 }: ListingLocationMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -30,14 +38,16 @@ export default function ListingLocationMap({
   const [mapReady, setMapReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
+  const [actualMapCenter, setActualMapCenter] = useState<{ latitude: number; longitude: number } | null>(null)
   const hasCoordinates =
     typeof latitude === 'number' &&
     typeof longitude === 'number' &&
     Number.isFinite(latitude) &&
-    Number.isFinite(longitude)
-  const locationText = [address, [city, country].filter(Boolean).join(', ')]
+    Number.isFinite(longitude) &&
+    !(latitude === 0 && longitude === 0)
+  const locationText = [address, [postalCode, city].filter(Boolean).join(' '), country]
     .filter(Boolean)
-    .join(' | ')
+    .join(', ')
   const fallbackTiles = hasCoordinates
     ? getFallbackTileUrls(latitude as number, longitude as number, 12, mapLayer)
     : []
@@ -73,12 +83,18 @@ export default function ListingLocationMap({
           .addTo(map)
 
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
+        const updateActualCenter = () => {
+          const center = map.getCenter()
+          setActualMapCenter({ latitude: center.lat, longitude: center.lng })
+        }
         map.once('load', () => {
           if (!cancelled) {
             setMapReady(true)
             setMapFailed(false)
+            updateActualCenter()
           }
         })
+        map.on('moveend', updateActualCenter)
         mapRef.current = map
         markerRef.current = marker
       } catch {
@@ -97,6 +113,7 @@ export default function ListingLocationMap({
       markerRef.current = null
       mapRef.current?.remove()
       mapRef.current = null
+      setActualMapCenter(null)
       setMapReady(false)
       setMapFailed(false)
     }
@@ -104,7 +121,15 @@ export default function ListingLocationMap({
 
   if (!hasCoordinates) {
     return (
-      <LocationFallback title={title} locationText={locationText} />
+      <LocationFallback
+        title={title}
+        listingId={listingId}
+        locationText={locationText}
+        address={address}
+        postalCode={postalCode}
+        city={city}
+        country={country}
+      />
     )
   }
 
@@ -120,7 +145,7 @@ export default function ListingLocationMap({
             <p className="mt-1 text-sm font-medium leading-5 text-[#667085]">{locationText}</p>
           ) : null}
           {approximate ? (
-            <p className="mt-1 text-xs font-semibold text-[#0866ff]">Ungefärlig position baserad på ort.</p>
+            <p className="mt-1 text-xs font-semibold text-[#0866ff]">Ungefärlig position baserad på annonsens postnummer, ort och land.</p>
           ) : null}
         </div>
       </div>
@@ -155,6 +180,18 @@ export default function ListingLocationMap({
           <span className="ml-2">{city || country}</span>
         </span>
       </div>
+      <ListingMapDebug
+        listingId={listingId}
+        address={address}
+        postalCode={postalCode}
+        city={city}
+        country={country}
+        latitude={latitude}
+        longitude={longitude}
+        actualMapCenter={actualMapCenter}
+        mapSource={mapSource}
+        mapQuery={mapQuery}
+      />
     </div>
   )
 }
@@ -197,10 +234,20 @@ function ListingMapLayerPicker({
 
 function LocationFallback({
   title,
+  listingId,
   locationText,
+  address,
+  postalCode,
+  city,
+  country,
 }: {
   title: string
+  listingId?: string
   locationText: string
+  address?: string | null
+  postalCode?: string | null
+  city?: string | null
+  country?: string | null
 }) {
   return (
     <div className="rounded-[16px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-6">
@@ -211,12 +258,91 @@ function LocationFallback({
         <div>
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
           <p className="mt-1 text-sm font-medium leading-6 text-[#667085]">
-            {locationText || 'Plats visas av säljaren när mer information finns.'}
+            {locationText || 'Ingen kartposition kan visas eftersom annonsen saknar tillräcklig sparad platsdata.'}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#667085]">
+            Kartan visas först när annonsen har egna koordinater eller en adress/postnummer som kan geokodas.
           </p>
         </div>
       </div>
+      <ListingMapDebug
+        listingId={listingId}
+        address={address}
+        postalCode={postalCode}
+        city={city}
+        country={country}
+        latitude={null}
+        longitude={null}
+        actualMapCenter={null}
+        mapSource="no_listing_location"
+        mapQuery={null}
+      />
     </div>
   )
+}
+
+function ListingMapDebug({
+  listingId,
+  address,
+  postalCode,
+  city,
+  country,
+  latitude,
+  longitude,
+  actualMapCenter,
+  mapSource,
+  mapQuery,
+}: {
+  listingId?: string
+  address?: string | null
+  postalCode?: string | null
+  city?: string | null
+  country?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  actualMapCenter: { latitude: number; longitude: number } | null
+  mapSource?: string | null
+  mapQuery?: string | null
+}) {
+  if (process.env.NODE_ENV === 'production') return null
+
+  return (
+    <details className="border-t border-[#edf1f6] bg-[#f8fafc] px-4 py-3 text-xs leading-5 text-[#475467]">
+      <summary className="cursor-pointer font-semibold text-[#101828]">Listing map debug</summary>
+      <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+        <DebugLine label="listing id" value={listingId} />
+        <DebugLine label="address" value={address} />
+        <DebugLine label="postal code" value={postalCode} />
+        <DebugLine label="city" value={city} />
+        <DebugLine label="country" value={country} />
+        <DebugLine label="latitude" value={formatDebugNumber(latitude)} />
+        <DebugLine label="longitude" value={formatDebugNumber(longitude)} />
+        <DebugLine
+          label="actual map center"
+          value={
+            actualMapCenter
+              ? `${formatDebugNumber(actualMapCenter.latitude)}, ${formatDebugNumber(actualMapCenter.longitude)}`
+              : null
+          }
+        />
+        <DebugLine label="map source" value={mapSource} />
+        <DebugLine label="geocode query" value={mapQuery} />
+      </dl>
+    </details>
+  )
+}
+
+function DebugLine({ label, value }: { label: string; value?: string | number | null }) {
+  return (
+    <div className="grid grid-cols-[8rem_minmax(0,1fr)] gap-2">
+      <dt className="font-semibold">{label}</dt>
+      <dd className="min-w-0 break-words">{value ?? 'null'}</dd>
+    </div>
+  )
+}
+
+function formatDebugNumber(value?: number | null) {
+  return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(6) : null
 }
 
 function getFallbackTileUrls(
