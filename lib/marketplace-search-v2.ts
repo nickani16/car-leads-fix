@@ -3,9 +3,11 @@ import 'server-only'
 import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import {
-  swedishCountyMunicipalitySearchTerms,
-  swedishMunicipalitySearchTerms,
-} from './swedish-location-mapping'
+  marketplaceLocations,
+  marketplaceMunicipalitySearchTerms,
+  marketplaceRegionMunicipalitySearchTerms,
+  marketplaceSearchLocationTermsForQuery,
+} from './marketplace-locations'
 import { createAdminClient } from './supabase/admin'
 
 export type MarketplaceSort =
@@ -246,9 +248,9 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.county) {
-    const countyTerms = (!filters.markets.length || filters.markets.includes('SE'))
-      ? swedishCountyMunicipalitySearchTerms(filters.county)
-      : []
+    const countyTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
+      marketplaceRegionMunicipalitySearchTerms(country, filters.county),
+    )
 
     if (countyTerms.length) {
       query = query.or(
@@ -259,12 +261,15 @@ function applyMarketplaceListingFilters<T extends {
           })
           .join(','),
       )
+    } else {
+      const escaped = escapeIlike(filters.county)
+      query = query.or(`municipality.ilike.%${escaped}%,city.ilike.%${escaped}%`)
     }
   }
   if (filters.municipality) {
-    const municipalityTerms = (!filters.markets.length || filters.markets.includes('SE'))
-      ? swedishMunicipalitySearchTerms(filters.municipality)
-      : []
+    const municipalityTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
+      marketplaceMunicipalitySearchTerms(country, filters.municipality),
+    )
 
     if (municipalityTerms.length) {
       query = query.or(
@@ -296,6 +301,14 @@ function applyMarketplaceListingFilters<T extends {
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     const escaped = escapeIlike(filters.q)
+    const locationTerms = marketplaceSearchLocationTermsForQuery(
+      filters.q,
+      locationFilterCountryScopes(filters.markets),
+    )
+    const locationFilters = locationTerms.municipalities.flatMap((term) => {
+      const escapedTerm = escapeIlike(term)
+      return [`municipality.ilike.%${escapedTerm}%`, `city.ilike.%${escapedTerm}%`]
+    })
     query = query.or(
       [
         `title.ilike.%${escaped}%`,
@@ -305,6 +318,7 @@ function applyMarketplaceListingFilters<T extends {
         `city.ilike.%${escaped}%`,
         `municipality.ilike.%${escaped}%`,
         `reference_number.ilike.%${escaped}%`,
+        ...locationFilters,
       ].join(','),
     )
   } else if (filters.q) {
@@ -346,6 +360,7 @@ function normalizeCountryFilters(value: unknown) {
     ...new Set(
       splitFilterValues(value)
         .map((item) => item.toUpperCase())
+        .filter((item) => item !== 'EU' && item !== 'ALL')
         .filter((item) => /^[A-Z]{2}$/.test(item)),
     ),
   ]
@@ -369,6 +384,10 @@ function truthy(value: unknown) {
 
 function escapeIlike(value: string) {
   return value.replace(/[%_]/g, '')
+}
+
+function locationFilterCountryScopes(markets: string[]) {
+  return markets.length ? markets : marketplaceLocations.map((market) => market.countryCode)
 }
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {

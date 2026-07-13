@@ -15,11 +15,17 @@ export default function SavedListingButton({
   label = 'Spara annons',
   savedLabel = 'Sparad',
   variant = 'icon',
+  className: extraClassName = '',
+  labelClassName = '',
+  iconClassName = '',
 }: {
   listingId: string
   label?: string
   savedLabel?: string
-  variant?: 'icon' | 'plain'
+  variant?: 'icon' | 'plain' | 'button'
+  className?: string
+  labelClassName?: string
+  iconClassName?: string
 }) {
   const [saved, setSaved] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
@@ -124,10 +130,28 @@ export default function SavedListingButton({
         style={{ fontWeight: 500 }}
         className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-[14px] font-[500] text-[#0866ff] transition hover:text-[#0057e6] disabled:cursor-not-allowed sm:gap-2 ${
           busy ? 'opacity-70' : ''
-        }`}
+        } ${extraClassName}`.trim()}
       >
-        <Heart className={`h-4 w-4 ${saved ? 'fill-current' : ''}`} />
-        <span>{saved ? savedLabel : label}</span>
+        <Heart className={`${iconClassName || 'h-4 w-4'} ${saved ? 'fill-current' : ''}`} />
+        <span className={labelClassName}>{saved ? savedLabel : label}</span>
+      </button>
+    )
+  }
+
+  if (variant === 'button') {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={saved ? 'Ta bort sparad annons' : label}
+        aria-pressed={saved}
+        disabled={busy}
+        className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed ${
+          busy ? 'opacity-70' : ''
+        } ${extraClassName}`.trim()}
+      >
+        <Heart className={`${iconClassName || 'h-4 w-4'} ${saved ? 'fill-current text-[#0866ff]' : ''}`} />
+        <span className={labelClassName}>{saved ? savedLabel : label}</span>
       </button>
     )
   }
@@ -141,9 +165,9 @@ export default function SavedListingButton({
       disabled={busy}
       className={`grid h-11 w-11 cursor-pointer place-items-center rounded-[14px] bg-white shadow-md transition disabled:cursor-not-allowed ${
         saved ? 'text-[#0866ff]' : 'text-[#0866ff] hover:text-[#0057e6]'
-      } ${busy ? 'opacity-70' : ''}`}
+      } ${busy ? 'opacity-70' : ''} ${extraClassName}`.trim()}
     >
-      <Heart className={`h-5 w-5 ${saved ? 'fill-current' : ''}`} />
+      <Heart className={`${iconClassName || 'h-5 w-5'} ${saved ? 'fill-current' : ''}`} />
     </button>
   )
 }

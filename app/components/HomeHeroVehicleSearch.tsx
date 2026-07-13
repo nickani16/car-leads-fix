@@ -20,6 +20,7 @@ import {
   Search,
   SlidersHorizontal,
   Tractor,
+  X,
 } from 'lucide-react'
 import {
   AutorellBikeIcon,
@@ -64,6 +65,34 @@ type AdvancedFilters = {
   mileageMax: string
   fuel: string
   gearbox: string
+}
+
+type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
+  chipId: string
+  dedupeKey: string
+}
+
+let selectedSearchSuggestionSequence = 0
+
+function searchSuggestionDedupeKey(suggestion: VehicleSmartSearchSuggestion) {
+  return [
+    suggestion.type || 'suggestion',
+    suggestion.title.trim().toLowerCase(),
+    suggestion.href || '',
+  ].join('|')
+}
+
+function createSelectedSearchSuggestion(
+  suggestion: VehicleSmartSearchSuggestion,
+): SelectedSearchSuggestion {
+  const dedupeKey = searchSuggestionDedupeKey(suggestion)
+  selectedSearchSuggestionSequence += 1
+  return {
+    ...suggestion,
+    title: suggestion.title.trim(),
+    chipId: `${dedupeKey}|${selectedSearchSuggestionSequence}`,
+    dedupeKey,
+  }
 }
 
 type AdvancedFilterLabels = {
@@ -293,6 +322,7 @@ export default function HomeHeroVehicleSearch({
   const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>([])
   const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
   const moreFiltersRef = useRef<HTMLDivElement>(null)
   const marketsPickerRef = useRef<HTMLDivElement>(null)
@@ -401,7 +431,9 @@ export default function HomeHeroVehicleSearch({
     event.preventDefault()
     const params = new URLSearchParams()
     const trimmedQuery = query.trim()
+    const chipLabels = selectedSearchSuggestions.map((suggestion) => suggestion.title.trim()).filter(Boolean)
     if (trimmedQuery) params.set('q', trimmedQuery)
+    if (chipLabels.length) params.set('chips', chipLabels.join(','))
     if (intent === 'leasing') params.set('mode', 'leasing')
     if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
@@ -417,7 +449,7 @@ export default function HomeHeroVehicleSearch({
     )
     const savedSearch = {
       label: `${localizedLabel(locale, 'Sök igen', 'Erneut suchen', 'Search again')}: ${
-        trimmedQuery || (selectedCategories.length ? selectedCategoryLabel : allVehiclesLabel)
+        [...chipLabels, trimmedQuery].filter(Boolean).join(', ') || (selectedCategories.length ? selectedCategoryLabel : allVehiclesLabel)
       }`,
       subLabel: t.tabs[intent],
       href,
@@ -448,18 +480,40 @@ export default function HomeHeroVehicleSearch({
   })
 
   function selectSmartSearchSuggestion(suggestion: VehicleSmartSearchSuggestion) {
-    const savedSearch = {
-      label: `${localizedLabel(locale, 'Sök igen', 'Erneut suchen', 'Search again')}: ${suggestion.title}`,
-      subLabel: suggestion.description || t.tabs[intent],
-      href: suggestion.href,
-    }
+    if (suggestion.type === 'listing') return true
+
+    const nextSuggestion = createSelectedSearchSuggestion(suggestion)
+    setSelectedSearchSuggestions((current) =>
+      current.some((item) => item.dedupeKey === nextSuggestion.dedupeKey)
+        ? current
+        : [...current, nextSuggestion],
+    )
     try {
-      window.localStorage.setItem(lastSearchStorageKey, JSON.stringify(savedSearch))
+      const url = new URL(suggestion.href, window.location.origin)
+      const params = url.searchParams
+      const nextMarkets = params.get('markets')
+      const nextCategories = params.get('categories')
+      const nextMake = params.get('make')
+      const nextModel = params.get('model')
+      const nextFuel = params.get('fuel') || params.get('fuelType')
+      const nextMinYear = params.get('minYear')
+
+      if (nextMarkets) setMarkets(nextMarkets.split(',').filter(Boolean))
+      if (nextCategories) setSelectedCategories(nextCategories.split(',').filter(Boolean) as MarketplaceCategorySlug[])
+      setAdvancedFilters((current) => ({
+        ...current,
+        make: nextMake || current.make,
+        model: nextModel || current.model,
+        fuel: nextFuel || current.fuel,
+        yearMin: nextMinYear || current.yearMin,
+      }))
     } catch {
-      // localStorage can be unavailable in private modes. Navigation should still work.
+      // Keep the selected chip even if a malformed suggestion URL slips through.
     }
-    setLastSearch(savedSearch)
-    setSearchFocused(false)
+    setQuery('')
+    setSearchFocused(true)
+    window.setTimeout(() => setSearchFocused(true), 150)
+    return false
   }
 
   const searchAgain = lastSearch || {
@@ -533,17 +587,53 @@ export default function HomeHeroVehicleSearch({
         </div>
 
         <div className="relative mt-4 lg:mt-4">
-          <label className="group relative flex min-h-[50px] items-center gap-3 rounded-[8px] bg-[#f0f3f7] px-4 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:min-h-[50px] lg:justify-center lg:bg-[#f0f0f0] lg:px-4 lg:ring-0 lg:focus-within:justify-between lg:focus-within:ring-1 lg:focus-within:ring-[#101828]">
+          <div className={`group relative flex min-h-[50px] items-center gap-2 rounded-[8px] bg-[#f0f3f7] px-3 py-2 pr-11 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:min-h-[50px] lg:bg-[#f0f0f0] lg:ring-0 lg:focus-within:ring-1 lg:focus-within:ring-[#101828] ${
+            selectedSearchSuggestions.length
+              ? 'flex-wrap lg:justify-start'
+              : 'gap-3 lg:justify-center lg:px-4 lg:focus-within:justify-between'
+          }`}>
+            {selectedSearchSuggestions.map((suggestion) => (
+              <span
+                key={suggestion.chipId}
+                className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)] lg:max-w-[calc(50%-4px)]"
+              >
+                <span className="truncate">{suggestion.title}</span>
+                <button
+                  type="button"
+                  onPointerDown={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    setSelectedSearchSuggestions((current) =>
+                      current.filter((item) => item.chipId !== suggestion.chipId),
+                    )
+                  }}
+                  className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
+                  aria-label={localizedLabel(locale, 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen', 'Remove selected search suggestion')}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ))}
             <input
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value)
+              }}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
               placeholder=""
               aria-label={t.placeholder}
-              className="min-w-0 flex-1 appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:flex-none lg:w-[190px] lg:text-left lg:text-[14px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]"
+              className={`h-7 min-w-0 basis-full appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:text-left lg:text-[14px] ${
+                selectedSearchSuggestions.length
+                  ? 'lg:min-w-0'
+                  : 'lg:flex-none lg:w-[190px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]'
+              }`}
             />
-            {query ? null : (
+            {query || selectedSearchSuggestions.length ? null : (
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
@@ -551,14 +641,20 @@ export default function HomeHeroVehicleSearch({
                 {t.placeholder}
               </span>
             )}
-            <Search className="h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4" strokeWidth={2.1} />
-          </label>
+            <Search className={`h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 ${
+              selectedSearchSuggestions.length
+                ? 'absolute right-4 top-1/2 -translate-y-1/2'
+                : 'lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4'
+            }`} strokeWidth={2.1} />
+          </div>
           <VehicleSmartSearchSuggestionPanel
             query={query}
             suggestions={smartSearch.suggestions}
             loading={smartSearch.loading}
+            searched={smartSearch.searched}
             locale={locale}
             onSelect={selectSmartSearchSuggestion}
+            active={searchFocused}
           />
         </div>
 
@@ -803,30 +899,9 @@ export default function HomeHeroVehicleSearch({
 }
 
 function formatHomeListingCount(locale: PublicLocale, count: number) {
-  const formatted = count.toLocaleString(numberLocale(locale))
-  if (locale === 'sv') return `Utforska ${formatted} fordon från hela Europa`
-  if (locale === 'de') return `${formatted} Fahrzeuge aus ganz Europa entdecken`
-  if (locale === 'fr') return `Explorez ${formatted} véhicules dans toute l'Europe`
-  if (locale === 'es') return `Explora ${formatted} vehículos de toda Europa`
-  if (locale === 'it') return `Esplora ${formatted} veicoli da tutta Europa`
-  if (locale === 'pl') return `Przeglądaj ${formatted} pojazdów z całej Europy`
-  if (locale === 'nl' || locale === 'be') return `Ontdek ${formatted} voertuigen uit heel Europa`
-  if (locale === 'da') return `Udforsk ${formatted} køretøjer fra hele Europa`
-  if (locale === 'fi') return `Tutustu ${formatted} ajoneuvoon eri puolilta Eurooppaa`
-  return `Explore ${formatted} vehicles from across Europe`
-}
-
-function numberLocale(locale: PublicLocale) {
-  if (locale === 'sv') return 'sv-SE'
-  if (locale === 'de' || locale === 'at') return 'de-DE'
-  if (locale === 'fr') return 'fr-FR'
-  if (locale === 'es') return 'es-ES'
-  if (locale === 'it') return 'it-IT'
-  if (locale === 'pl') return 'pl-PL'
-  if (locale === 'nl' || locale === 'be') return 'nl-NL'
-  if (locale === 'da') return 'da-DK'
-  if (locale === 'fi') return 'fi-FI'
-  return 'en-GB'
+  void locale
+  void count
+  return ''
 }
 
 function MarketPicker({

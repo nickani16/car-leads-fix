@@ -34,21 +34,36 @@ export async function GET() {
       .maybeSingle(),
     admin
       .from('marketplace_conversations')
-      .select('id')
+      .select('id,buyer_user_id,seller_user_id')
       .or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`),
   ])
 
   const conversationIds = (conversations || []).map((conversation) => conversation.id)
   let unreadMessages = 0
+  let visibleConversationCount = 0
 
   if (conversationIds.length) {
-    const { count } = await admin
-      .from('marketplace_messages')
-      .select('id', { count: 'exact', head: true })
-      .in('conversation_id', conversationIds)
-      .neq('sender_user_id', user.id)
-      .is('read_at', null)
+    const [{ count }, { data: messageConversationData }] = await Promise.all([
+      admin
+        .from('marketplace_messages')
+        .select('id', { count: 'exact', head: true })
+        .in('conversation_id', conversationIds)
+        .neq('sender_user_id', user.id)
+        .is('read_at', null),
+      admin
+        .from('marketplace_messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds),
+    ])
     unreadMessages = count || 0
+    const conversationsWithMessages = new Set(
+      (messageConversationData || []).map((message) => message.conversation_id),
+    )
+    visibleConversationCount = (conversations || []).filter(
+      (conversation) =>
+        conversation.buyer_user_id === user.id ||
+        conversationsWithMessages.has(conversation.id),
+    ).length
   }
 
   const displayName =
@@ -62,7 +77,7 @@ export async function GET() {
       displayName,
       accountType: profile?.account_type || null,
       unreadMessages,
-      conversationCount: conversationIds.length,
+      conversationCount: visibleConversationCount,
     },
     {
       headers: {

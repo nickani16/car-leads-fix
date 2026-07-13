@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
@@ -12,6 +12,9 @@ export type VehicleSmartSearchSuggestion = {
   keywords?: string
   type?: string
 }
+
+const smartSearchCache = new Map<string, { expiresAt: number; data: VehicleSmartSearchSuggestion[] }>()
+const SMART_SEARCH_CACHE_TTL_MS = 60_000
 
 export function useVehicleSmartSearchSuggestions({
   query,
@@ -28,6 +31,7 @@ export function useVehicleSmartSearchSuggestions({
 }) {
   const [suggestions, setSuggestions] = useState<VehicleSmartSearchSuggestion[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchedQuery, setSearchedQuery] = useState('')
 
   useEffect(() => {
     const trimmed = query.trim()
@@ -43,20 +47,39 @@ export function useVehicleSmartSearchSuggestions({
         limit: String(limit),
       })
       if (marketCode) params.set('market', marketCode)
+      const cacheKey = params.toString()
+      const cached = smartSearchCache.get(cacheKey)
+      if (cached && cached.expiresAt > Date.now()) {
+        setSuggestions(cached.data)
+        setSearchedQuery(trimmed)
+        setLoading(false)
+        return
+      }
 
       setLoading(true)
       fetch(`/api/public-search?${params.toString()}`, { signal: controller.signal })
         .then((response) => (response.ok ? response.json() : []))
         .then((data: VehicleSmartSearchSuggestion[]) => {
-          if (!controller.signal.aborted) setSuggestions(Array.isArray(data) ? data : [])
+          if (!controller.signal.aborted) {
+            const nextSuggestions = Array.isArray(data) ? data : []
+            smartSearchCache.set(cacheKey, {
+              expiresAt: Date.now() + SMART_SEARCH_CACHE_TTL_MS,
+              data: nextSuggestions,
+            })
+            setSuggestions(nextSuggestions)
+            setSearchedQuery(trimmed)
+          }
         })
         .catch((error) => {
-          if (error?.name !== 'AbortError') setSuggestions([])
+          if (error?.name !== 'AbortError') {
+            setSuggestions([])
+            setSearchedQuery(trimmed)
+          }
         })
         .finally(() => {
           if (!controller.signal.aborted) setLoading(false)
         })
-    }, 300)
+    }, 450)
 
     return () => {
       window.clearTimeout(timer)
@@ -68,6 +91,7 @@ export function useVehicleSmartSearchSuggestions({
   return {
     suggestions: canSearch ? suggestions : [],
     loading: canSearch ? loading : false,
+    searched: canSearch && searchedQuery === query.trim(),
   }
 }
 
@@ -96,22 +120,73 @@ function typeLabel(type: string | undefined, locale: PublicLocale) {
   return 'Sida'
 }
 
+const localizedSmartSearchLabels = {
+  sv: { category: 'Kategori', place: 'Område', search: 'Sökning', make: 'Märke', listing: 'Annons', default: 'Sida', loading: 'Söker...' },
+  en: { category: 'Category', place: 'Area', search: 'Search', make: 'Make', listing: 'Listing', default: 'Vehicle', loading: 'Searching...' },
+  de: { category: 'Kategorie', place: 'Ort', search: 'Suche', make: 'Marke', listing: 'Anzeige', default: 'Fahrzeug', loading: 'Sucht...' },
+  it: { category: 'Categoria', place: 'Zona', search: 'Ricerca', make: 'Marca', listing: 'Annuncio', default: 'Veicolo', loading: 'Ricerca...' },
+  es: { category: 'Categoria', place: 'Zona', search: 'Busqueda', make: 'Marca', listing: 'Anuncio', default: 'Vehiculo', loading: 'Buscando...' },
+  fr: { category: 'Categorie', place: 'Lieu', search: 'Recherche', make: 'Marque', listing: 'Annonce', default: 'Vehicule', loading: 'Recherche...' },
+  nl: { category: 'Categorie', place: 'Gebied', search: 'Zoeken', make: 'Merk', listing: 'Advertentie', default: 'Voertuig', loading: 'Zoeken...' },
+  pl: { category: 'Kategoria', place: 'Obszar', search: 'Wyszukiwanie', make: 'Marka', listing: 'Ogloszenie', default: 'Pojazd', loading: 'Szukam...' },
+  da: { category: 'Kategori', place: 'Område', search: 'Søgning', make: 'Mærke', listing: 'Annonce', default: 'Køretøj', loading: 'Søger...' },
+  fi: { category: 'Luokka', place: 'Alue', search: 'Haku', make: 'Merkki', listing: 'Ilmoitus', default: 'Ajoneuvo', loading: 'Haetaan...' },
+} as const
+
+function localizedSmartSearchLocale(locale: PublicLocale) {
+  if (locale === 'at') return 'de'
+  if (locale === 'be') return 'nl'
+  return locale in localizedSmartSearchLabels ? (locale as keyof typeof localizedSmartSearchLabels) : 'en'
+}
+
+function localizedTypeLabel(type: string | undefined, locale: PublicLocale) {
+  if (locale !== 'at' && locale !== 'be' && !(locale in localizedSmartSearchLabels)) return typeLabel(type, locale)
+  const labels = localizedSmartSearchLabels[localizedSmartSearchLocale(locale)]
+  if (type === 'category') return labels.category
+  if (type === 'place') return labels.place
+  if (type === 'vehicle-query') return labels.search
+  if (type === 'make' || type === 'model') return labels.make
+  if (type === 'listing') return labels.listing
+  return labels.default
+}
+
+function localizedLoadingLabel(locale: PublicLocale) {
+  return localizedSmartSearchLabels[localizedSmartSearchLocale(locale)].loading
+}
+
+function localizedNoResultsLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Tyvärr finns det inga sökträffar som matchar din sökning.'
+  if (locale === 'de' || locale === 'at') return 'Leider gibt es keine Treffer, die zu Ihrer Suche passen.'
+  if (locale === 'es') return 'Lo sentimos, no hay resultados que coincidan con tu búsqueda.'
+  if (locale === 'fr') return 'Désolé, aucun résultat ne correspond à votre recherche.'
+  if (locale === 'it') return 'Spiacenti, non ci sono risultati corrispondenti alla tua ricerca.'
+  if (locale === 'nl' || locale === 'be') return 'Helaas zijn er geen resultaten die overeenkomen met je zoekopdracht.'
+  if (locale === 'pl') return 'Niestety nie ma wyników pasujących do wyszukiwania.'
+  if (locale === 'da') return 'Desværre er der ingen resultater, der matcher din søgning.'
+  if (locale === 'fi') return 'Valitettavasti hakuasi vastaavia tuloksia ei löytynyt.'
+  return 'Sorry, there are no results that match your search.'
+}
+
 export function VehicleSmartSearchSuggestionPanel({
   query,
   suggestions,
   loading,
+  searched = false,
   locale,
   onSelect,
+  active = true,
   className = '',
 }: {
   query: string
   suggestions: VehicleSmartSearchSuggestion[]
   loading: boolean
+  searched?: boolean
   locale: PublicLocale
-  onSelect?: (suggestion: VehicleSmartSearchSuggestion) => void
+  onSelect?: (suggestion: VehicleSmartSearchSuggestion) => void | boolean
+  active?: boolean
   className?: string
 }) {
-  const showPanel = query.trim().length >= 2 && (loading || suggestions.length > 0)
+  const showPanel = active && query.trim().length >= 2
   if (!showPanel) return null
 
   return (
@@ -121,7 +196,12 @@ export function VehicleSmartSearchSuggestionPanel({
       {loading && suggestions.length === 0 ? (
         <div className="flex min-h-12 items-center gap-2 px-4 text-[14px] font-[400] text-[#667085]">
           <Loader2 className="h-4 w-4 animate-spin text-[#0866ff]" />
-          {locale === 'de' ? 'Sucht...' : locale === 'en' ? 'Searching...' : 'Söker...'}
+          {localizedLoadingLabel(locale)}
+        </div>
+      ) : null}
+      {searched && !loading && suggestions.length === 0 ? (
+        <div className="px-4 py-4 text-[14px] font-[400] leading-6 text-[#475467]">
+          {localizedNoResultsLabel(locale)}
         </div>
       ) : null}
       <div className="max-h-[390px] overflow-y-auto">
@@ -130,7 +210,10 @@ export function VehicleSmartSearchSuggestionPanel({
             key={`${suggestion.type || 'result'}:${suggestion.href}:${suggestion.title}`}
             href={suggestion.href}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onSelect?.(suggestion)}
+            onClick={(event) => {
+              const shouldNavigate = onSelect?.(suggestion)
+              if (shouldNavigate === false) event.preventDefault()
+            }}
             className="grid min-h-[54px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-[#e4e7ec] px-4 py-3 text-left last:border-b-0 hover:bg-[#f8fbff]"
           >
             <span className="min-w-0">
@@ -144,7 +227,7 @@ export function VehicleSmartSearchSuggestionPanel({
               ) : null}
             </span>
             <span className="whitespace-nowrap text-[14px] font-[400] text-[#667085]">
-              {typeLabel(suggestion.type, locale)}
+              {localizedTypeLabel(suggestion.type, locale)}
             </span>
           </Link>
         ))}

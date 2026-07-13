@@ -31,7 +31,12 @@ import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips, formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
 import { getMapStyle } from '@/lib/map-style'
-import { normalizeSwedishLocationName, swedishCounties } from '@/lib/swedish-locations'
+import {
+  getMarketplaceCountryLocations,
+  marketAllLabel,
+  marketplaceListingMatchesLocationQuery,
+  normalizeLocationName,
+} from '@/lib/marketplace-locations'
 
 export type MarketplaceListing = {
   id: string
@@ -113,7 +118,7 @@ export default function MarketplaceCategoryBrowser({
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [country, setCountry] = useState((searchParams.get('country') || defaultCountry || '').toUpperCase())
-  const [county, setCounty] = useState(searchParams.get('county') || '')
+  const [county, setCounty] = useState(searchParams.get('county') || searchParams.get('region') || '')
   const [municipality, setMunicipality] = useState(searchParams.get('municipality') || searchParams.get('location') || '')
   const [activeFilter, setActiveFilter] = useState(searchParams.get('filter') || '')
   const [sort, setSort] = useState('recommended')
@@ -164,33 +169,37 @@ export default function MarketplaceCategoryBrowser({
         }),
     [defaultCountry, displayLocale],
   )
-  const swedishLocationCounts = useMemo(() => {
+  const locationMarket = useMemo(
+    () => getMarketplaceCountryLocations(country || defaultCountry || 'SE'),
+    [country, defaultCountry],
+  )
+  const locationCounts = useMemo(() => {
     const municipalityCounts = new Map<string, number>()
     for (const listing of listings) {
-      if (listing.country.toUpperCase() !== 'SE') continue
-      const normalizedListingLocation = normalizeSwedishLocationName(
+      if (listing.country.toUpperCase() !== locationMarket.countryCode) continue
+      const normalizedListingLocation = normalizeLocationName(
         [listing.municipality, listing.city].filter(Boolean).join(' '),
       )
       if (!normalizedListingLocation) continue
-      for (const countyItem of swedishCounties) {
-        const matchedMunicipality = countyItem.municipalities.find((name) =>
-          normalizedListingLocation.includes(normalizeSwedishLocationName(name)),
+      for (const regionItem of locationMarket.regions) {
+        const matchedMunicipality = regionItem.municipalities.find((name) =>
+          normalizedListingLocation.includes(normalizeLocationName(name)),
         )
         if (!matchedMunicipality) continue
         municipalityCounts.set(matchedMunicipality, (municipalityCounts.get(matchedMunicipality) || 0) + 1)
         break
       }
     }
-    const countyCounts = new Map<string, number>()
-    for (const countyItem of swedishCounties) {
-      const count = countyItem.municipalities.reduce(
+    const regionCounts = new Map<string, number>()
+    for (const regionItem of locationMarket.regions) {
+      const count = regionItem.municipalities.reduce(
         (sum, name) => sum + (municipalityCounts.get(name) || 0),
         0,
       )
-      countyCounts.set(countyItem.name, count)
+      regionCounts.set(regionItem.name, count)
     }
-    return { countyCounts, municipalityCounts }
-  }, [listings])
+    return { regionCounts, municipalityCounts }
+  }, [listings, locationMarket])
   const makes = useMemo(
     () => [...new Set(listings.map((listing) => listing.make).filter(Boolean))].sort((a, b) => a.localeCompare(b, displayLocale)),
     [displayLocale, listings],
@@ -242,18 +251,18 @@ export default function MarketplaceCategoryBrowser({
     const filtered = listings.filter((listing) => {
       if (country && listing.country.toUpperCase() !== country) return false
       if (county) {
-        const selectedCounty = swedishCounties.find((item) => item.name === county)
-        const listingLocation = normalizeSwedishLocationName(
+        const selectedRegion = locationMarket.regions.find((item) => item.name === county)
+        const listingLocation = normalizeLocationName(
           [listing.municipality, listing.city].filter(Boolean).join(' '),
         )
-        const inCounty = selectedCounty?.municipalities.some((name) =>
-          listingLocation.includes(normalizeSwedishLocationName(name)),
+        const inRegion = selectedRegion?.municipalities.some((name) =>
+          listingLocation.includes(normalizeLocationName(name)),
         )
-        if (!inCounty) return false
+        if (!inRegion) return false
       }
       if (municipality) {
-        const selectedMunicipality = normalizeSwedishLocationName(municipality)
-        const listingLocation = normalizeSwedishLocationName(
+        const selectedMunicipality = normalizeLocationName(municipality)
+        const listingLocation = normalizeLocationName(
           [listing.municipality, listing.city].filter(Boolean).join(' '),
         )
         if (!listingLocation.includes(selectedMunicipality)) return false
@@ -278,8 +287,18 @@ export default function MarketplaceCategoryBrowser({
         equipmentQuery.trim() &&
         !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())
       ) return false
-      const searchable = `${listing.title} ${listing.make} ${listing.model} ${listing.fuelType || ''} ${listing.gearbox || ''} ${listing.bodyType || ''} ${listing.equipment || ''} ${listing.city || ''} ${listing.municipality || ''}`.toLowerCase()
-      if (normalizedQuery && !searchable.includes(normalizedQuery)) return false
+      const searchable = `${listing.title} ${listing.make} ${listing.model} ${listing.year || ''} ${listing.fuelType || ''} ${listing.gearbox || ''} ${listing.bodyType || ''} ${listing.color || ''} ${listing.condition || ''} ${listing.equipment || ''} ${listing.city || ''} ${listing.municipality || ''}`.toLowerCase()
+      if (
+        normalizedQuery &&
+        !searchable.includes(normalizedQuery) &&
+        !marketplaceListingMatchesLocationQuery({
+          query,
+          countryCode: listing.country,
+          city: listing.city,
+          municipality: listing.municipality,
+          countryCodes: country ? [country] : defaultCountry ? [defaultCountry] : [],
+        })
+      ) return false
       if (normalizedModel && !listing.model.toLowerCase().includes(normalizedModel)) return false
       if (!activeFilter) return true
 
@@ -323,7 +342,7 @@ export default function MarketplaceCategoryBrowser({
       }
       return a.title.localeCompare(b.title, displayLocale)
     })
-  }, [activeFilter, bodyType, color, condition, country, county, defaultCountry, displayLocale, equipmentQuery, fuel, gearbox, listings, make, maxHours, maxMileage, maxPrice, minHours, minMileage, minPrice, modelQuery, municipality, query, sellerType, sort, typeCards, yearFrom, yearTo])
+  }, [activeFilter, bodyType, color, condition, country, county, defaultCountry, displayLocale, equipmentQuery, fuel, gearbox, listings, locationMarket, make, maxHours, maxMileage, maxPrice, minHours, minMileage, minPrice, modelQuery, municipality, query, sellerType, sort, typeCards, yearFrom, yearTo])
 
   const typeCounts = useMemo(() => {
     const counts = Object.fromEntries(typeCards.map((card) => [card.query, 0])) as Record<string, number>
@@ -605,10 +624,8 @@ export default function MarketplaceCategoryBrowser({
                 onChange={(event) => {
                   const nextCountry = event.target.value
                   setCountry(nextCountry)
-                  if (nextCountry !== 'SE') {
-                    setCounty('')
-                    setMunicipality('')
-                  }
+                  setCounty('')
+                  setMunicipality('')
                 }}
                 className="marketplace-search-control h-12 w-full min-w-0 appearance-none rounded-[8px] border border-[#cfd7e6] bg-white pl-10 pr-9 text-[16px] font-semibold text-[#202124] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[14px]"
               >
@@ -621,11 +638,11 @@ export default function MarketplaceCategoryBrowser({
               </select>
               <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
             </label>
-            {country === 'SE' ? (
+            {country ? (
               <div className="grid gap-2">
                 <LocationCheckboxRow
-                  label={copy.allSweden}
-                  count={listings.filter((listing) => listing.country.toUpperCase() === 'SE').length}
+                  label={marketAllLabel(locationMarket.countryCode, displayLocale)}
+                  count={listings.filter((listing) => listing.country.toUpperCase() === locationMarket.countryCode).length}
                   checked={!county && !municipality}
                   onClick={() => {
                     setCounty('')
@@ -633,25 +650,25 @@ export default function MarketplaceCategoryBrowser({
                   }}
                 />
                 <div className="max-h-[360px] overflow-auto pr-1">
-                  {swedishCounties.map((countyItem) => {
-                    const countySelected = county === countyItem.name
-                    const countyCount = swedishLocationCounts.countyCounts.get(countyItem.name) || 0
+                  {locationMarket.regions.map((regionItem) => {
+                    const regionSelected = county === regionItem.name
+                    const regionCount = locationCounts.regionCounts.get(regionItem.name) || 0
                     return (
-                      <div key={countyItem.name}>
+                      <div key={regionItem.name}>
                         <LocationCheckboxRow
-                          label={countyItem.name}
-                          count={countyCount}
-                          checked={countySelected && !municipality}
-                          disabled={countyCount === 0}
+                          label={regionItem.name}
+                          count={regionCount}
+                          checked={regionSelected && !municipality}
+                          disabled={regionCount === 0}
                           onClick={() => {
-                            setCounty(countySelected ? '' : countyItem.name)
+                            setCounty(regionSelected ? '' : regionItem.name)
                             setMunicipality('')
                           }}
                         />
-                        {countySelected ? (
+                        {regionSelected ? (
                           <div className="ml-5 border-l border-[#eef2f7] pl-3">
-                            {countyItem.municipalities.map((name) => {
-                              const count = swedishLocationCounts.municipalityCounts.get(name) || 0
+                            {regionItem.municipalities.map((name) => {
+                              const count = locationCounts.municipalityCounts.get(name) || 0
                               return (
                                 <LocationCheckboxRow
                                   key={name}
@@ -1153,7 +1170,7 @@ export default function MarketplaceCategoryBrowser({
                   year: listing.year,
                   city: listing.city,
                   country_code: listing.country,
-                })
+                }, locale)
                 const sellerLabel = listing.sellerIsTrader ? listing.sellerName : copy.privateSeller
                 const compared = compareIds.includes(listing.id)
                 const imageUrls = listing.imageUrls?.length
@@ -1398,7 +1415,7 @@ function MarketplaceMapPanel({
           year: listing.year,
           city: listing.city,
           country_code: listing.country,
-        })
+        }, locale)
         const locationLabel = [listing.address, listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
           .filter(Boolean)
           .join(', ')
@@ -1445,7 +1462,7 @@ function listingCoordinates(listing: MarketplaceListing, index: number): [number
   if (typeof listing.longitude === 'number' && typeof listing.latitude === 'number') {
     return [listing.longitude, listing.latitude]
   }
-  const key = normalizeSwedishLocationName(listing.city || listing.municipality || listing.country || '')
+  const key = normalizeLocationName(listing.city || listing.municipality || listing.country || '')
   const city = cityCoordinates[key]
   const country = countryCoordinates[listing.country.toUpperCase()] || countryCoordinates.EU
   const base = city || country
@@ -1562,7 +1579,7 @@ function CompareOverlay({
               year: listing.year,
               city: listing.city,
               country_code: listing.country,
-            })
+            }, locale)
             const highlights = compareHighlights(listing, {
               bestPrice,
               newestYear,
@@ -1956,7 +1973,7 @@ function getMarketplaceTypeCards(slug: string, locale: PublicLocale): TypeCard[]
     vehicles: [
       t('Bilar', 'Cars', 'Autos', 'cars', '/category-types/cars-sedan.png', ['car', 'bil', 'auto']),
       t('Transportbilar', 'Vans', 'Transporter', 'vans', '/category-types/vans-panel.png', ['van', 'transportbil']),
-      t('Motorcyklar', 'Motorcycles', 'MotorrÃ¤der', 'motorcycles', '/category-types/motorcycles-sport.png', ['mc', 'motorcycle']),
+      t('Motorcyklar', 'Motorcycles', 'Motorräder', 'motorcycles', '/category-types/motorcycles-sport.png', ['mc', 'motorcycle']),
       t('Husbilar', 'Motorhomes', 'Wohnmobile', 'motorhomes', '/category-types/recreation-camper-van.png', ['husbil', 'camper']),
       t('Husvagnar', 'Caravans', 'Wohnwagen', 'caravans', '/category-types/recreation-family-caravan.png', ['husvagn', 'caravan']),
       t('Lastbilar', 'Trucks', 'Lkw', 'trucks', '/category-types/trucks-tractor-unit.png', ['truck', 'lastbil']),
@@ -2149,9 +2166,9 @@ const marketplaceCopy = {
     allVehicles: 'Alla fordon',
     usedAndNewPrefix: 'Begagnade och nya',
     results: 'resultat',
-    showMap: 'Visa pÃ¥ karta',
-    hideMap: 'DÃ¶lj karta',
-    mapTitle: 'Annonser pÃ¥ karta',
+    showMap: 'Visa på karta',
+    hideMap: 'Dölj karta',
+    mapTitle: 'Annonser på karta',
     mapListings: 'annonser visas',
     vehiclePlural: 'Fordon',
     forSaleInArea: 'till salu i området:',

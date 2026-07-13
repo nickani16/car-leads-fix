@@ -416,8 +416,8 @@ function getIntentLabels(locale: PublicLocale): Record<ListingIntent, string> {
 
 function getIntentDescription(intent: ListingIntent, locale: PublicLocale) {
   const sv: Record<ListingIntent, string> = {
-    sale: 'Fordon frÃ¥n privata och fÃ¶retag',
-    leasing: 'Leasingfordon frÃ¥n fÃ¶retag',
+    sale: 'Fordon från privata och företag',
+    leasing: 'Leasingfordon från företag',
     rent: 'Fordon som kan hyras',
   }
   const en: Record<ListingIntent, string> = {
@@ -426,7 +426,7 @@ function getIntentDescription(intent: ListingIntent, locale: PublicLocale) {
     rent: 'Vehicles available to rent',
   }
   const de: Record<ListingIntent, string> = {
-    sale: 'Fahrzeuge von Privat und HÃ¤ndlern',
+    sale: 'Fahrzeuge von Privat und Händlern',
     leasing: 'Leasingfahrzeuge von Unternehmen',
     rent: 'Mietfahrzeuge',
   }
@@ -442,12 +442,12 @@ function getSearchCta(
   intent: ListingIntent,
 ) {
   if (intent === 'leasing') {
-    if (locale === 'sv') return 'SÃ¶k leasing'
+    if (locale === 'sv') return 'Sök leasing'
     if (locale === 'de') return 'Leasing suchen'
     return 'Search leasing'
   }
   if (intent === 'rent') {
-    if (locale === 'sv') return 'SÃ¶k uthyrning'
+    if (locale === 'sv') return 'Sök uthyrning'
     if (locale === 'de') return 'Miete suchen'
     return 'Search rentals'
   }

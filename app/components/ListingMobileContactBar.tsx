@@ -141,7 +141,7 @@ export default function ListingMobileContactBar({
 
   const show = visible && !contactVisible
   const bottomClass = bottomNavVisible
-    ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'
+    ? 'bottom-[calc(3.75rem+env(safe-area-inset-bottom))]'
     : 'bottom-[calc(.75rem+env(safe-area-inset-bottom))]'
 
   return (

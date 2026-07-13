@@ -3,7 +3,7 @@
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { Layers, MapPin } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
+import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
 
 type ListingLocationMapProps = {
   latitude?: number | null
@@ -120,7 +120,7 @@ export default function ListingLocationMap({
             <p className="mt-1 text-sm font-medium leading-5 text-[#667085]">{locationText}</p>
           ) : null}
           {approximate ? (
-            <p className="mt-1 text-xs font-semibold text-[#0866ff]">UngefÃ¤rlig position baserad pÃ¥ ort.</p>
+            <p className="mt-1 text-xs font-semibold text-[#0866ff]">Ungefärlig position baserad på ort.</p>
           ) : null}
         </div>
       </div>
@@ -211,7 +211,7 @@ function LocationFallback({
         <div>
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
           <p className="mt-1 text-sm font-medium leading-6 text-[#667085]">
-            {locationText || 'Plats visas av sÃ¤ljaren nÃ¤r mer information finns.'}
+            {locationText || 'Plats visas av säljaren när mer information finns.'}
           </p>
         </div>
       </div>
@@ -233,7 +233,7 @@ function getFallbackTileUrls(
       tiles.push(
         layer === 'satellite'
           ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`,
+          : getStandardFallbackTileUrl(zoom, x, y),
       )
     }
   }

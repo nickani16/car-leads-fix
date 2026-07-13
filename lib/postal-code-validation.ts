@@ -1,4 +1,4 @@
-const postalPatterns: Record<string, RegExp> = {
+﻿const postalPatterns: Record<string, RegExp> = {
   AT: /^\d{4}$/,
   BE: /^\d{4}$/,
   BG: /^\d{4}$/,
@@ -49,12 +49,4 @@ export function validatePostalCode(value: string, countryCode: string) {
   const pattern = postalPatterns[country]
   if (!pattern) return value.trim().length >= 3
   return pattern.test(normalizePostalCode(value, country))
-}
-
-export function postalCodeHelpText(countryCode: string) {
-  const country = countryCode.toUpperCase()
-  if (numericPostalCountries.has(country)) {
-    return 'Postnumret ska följa landets sifferformat.'
-  }
-  return 'Postnumret ska följa landets format med bokstäver och siffror.'
 }

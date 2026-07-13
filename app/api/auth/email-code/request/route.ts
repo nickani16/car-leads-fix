@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     })
     if (requestLimit.limited) {
       return NextResponse.json(
-        { error: 'VÃ¤nta nÃ¥gra minuter innan du begÃ¤r fler koder.' },
+        { error: 'Vänta några minuter innan du begär fler koder.' },
         {
           status: 429,
           headers: { 'Retry-After': String(requestLimit.retryAfter) },

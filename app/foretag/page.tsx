@@ -27,22 +27,22 @@ const businessPageCopy = {
     metaTitle: 'Företagskonto för fordonsförsäljare | Autorell',
     metaDescription:
       'Publicera fordonslager, hantera annonser och nå köpare i hela EU med Autorells företagskonto.',
-    eyebrow: 'Autorell fÃ¶r fÃ¶retag',
-    title: 'SÃ¤lj fordon till kÃ¶pare i hela Europa.',
+    eyebrow: 'Autorell för företag',
+    title: 'Sälj fordon till köpare i hela Europa.',
     intro:
-      'Autorell ger handlare, verkstÃ¤der, Ã¥kerier, maskinfÃ¶retag och Ã¥terkommande sÃ¤ljare en tydlig plats att publicera lager, hantera fÃ¶rfrÃ¥gningar och nÃ¥ rÃ¤tt marknad utan krÃ¥ngliga flÃ¶den.',
-    primaryCta: 'Skapa fÃ¶retagskonto',
+      'Autorell ger handlare, verkstäder, åkerier, maskinföretag och återkommande säljare en tydlig plats att publicera lager, hantera förfrågningar och nå rätt marknad utan krångliga flöden.',
+    primaryCta: 'Skapa företagskonto',
     secondaryCta: 'Publicera fordon',
     proof: [
-      'Byggt fÃ¶r EU-marknader',
-      'Privata och professionella kÃ¶pare',
-      'Ett konto fÃ¶r hela lagret',
+      'Byggt för EU-marknader',
+      'Privata och professionella köpare',
+      'Ett konto för hela lagret',
     ],
-    featureTitle: 'Verktygen fÃ¶retag behÃ¶ver frÃ¥n fÃ¶rsta annonsen.',
+    featureTitle: 'Verktygen företag behöver från första annonsen.',
     features: [
       {
-        title: 'FÃ¶retagsprofil',
-        text: 'Samla fÃ¶retagsnamn, kontaktuppgifter och annonser pÃ¥ en professionell sÃ¤ljarprofil.',
+        title: 'Företagsprofil',
+        text: 'Samla företagsnamn, kontaktuppgifter och annonser på en professionell säljarprofil.',
         icon: Building2,
       },
       {
@@ -51,44 +51,44 @@ const businessPageCopy = {
         icon: Warehouse,
       },
       {
-        title: 'KÃ¶parfÃ¶rfrÃ¥gningar',
-        text: 'FÃ¥ meddelanden frÃ¥n seriÃ¶sa kÃ¶pare och hÃ¥ll kontakten samlad i Autorell.',
+        title: 'Köparförfrågningar',
+        text: 'Få meddelanden från seriösa köpare och håll kontakten samlad i Autorell.',
         icon: MessageCircle,
       },
       {
-        title: 'EU-rÃ¤ckvidd',
-        text: 'Visa fordon pÃ¥ rÃ¤tt sprÃ¥k, valuta och marknad nÃ¤r kÃ¶pare sÃ¶ker Ã¶ver landsgrÃ¤nser.',
+        title: 'EU-räckvidd',
+        text: 'Visa fordon på rätt språk, valuta och marknad när köpare söker över landsgränser.',
         icon: Globe2,
       },
       {
         title: 'Trygg presentation',
-        text: 'Tydliga annonser, fordonsdata och sÃ¤ljarinformation gÃ¶r affÃ¤ren enklare att fÃ¶rstÃ¥.',
+        text: 'Tydliga annonser, fordonsdata och säljarinformation gör affären enklare att förstå.',
         icon: ShieldCheck,
       },
       {
-        title: 'BÃ¤ttre Ã¶verblick',
-        text: 'FÃ¶lj publicerade, pausade, sÃ¥lda och utgÃ¥ngna annonser frÃ¥n samma konto.',
+        title: 'Bättre överblick',
+        text: 'Följ publicerade, pausade, sålda och utgångna annonser från samma konto.',
         icon: BarChart3,
       },
     ],
-    stepsTitle: 'SÃ¥ kommer fÃ¶retaget igÃ¥ng',
+    stepsTitle: 'Så kommer företaget igång',
     steps: [
       {
-        title: 'Skapa fÃ¶retagskonto',
-        text: 'Registrera organisationen och vÃ¤lj kontaktuppgifter som kÃ¶pare ska se.',
+        title: 'Skapa företagskonto',
+        text: 'Registrera organisationen och välj kontaktuppgifter som köpare ska se.',
       },
       {
-        title: 'LÃ¤gg upp fordon',
-        text: 'Fyll i pris, bilder, plats, specifikationer och den beskrivning sÃ¤ljaren vill visa.',
+        title: 'Lägg upp fordon',
+        text: 'Fyll i pris, bilder, plats, specifikationer och den beskrivning säljaren vill visa.',
       },
       {
         title: 'Hantera dialogen',
-        text: 'KÃ¶pare kontaktar er via Autorell och ni slutfÃ¶r affÃ¤ren enligt era egna villkor.',
+        text: 'Köpare kontaktar er via Autorell och ni slutför affären enligt era egna villkor.',
       },
     ],
-    ctaTitle: 'Redo att visa ert lager fÃ¶r fler kÃ¶pare?',
+    ctaTitle: 'Redo att visa ert lager för fler köpare?',
     ctaText:
-      'Starta med ett fÃ¶retagskonto och publicera fÃ¶rsta fordonet nÃ¤r allt Ã¤r klart.',
+      'Starta med ett företagskonto och publicera första fordonet när allt är klart.',
   },
   en: {
     metaTitle: 'Business account for vehicle sellers | Autorell',
@@ -161,47 +161,47 @@ const businessPageCopy = {
     metaTitle: 'Unternehmenskonto für Fahrzeugverkäufer | Autorell',
     metaDescription:
       'Fahrzeugbestand veröffentlichen, Anzeigen verwalten und Käufer in der EU mit einem Autorell-Unternehmenskonto erreichen.',
-    eyebrow: 'Autorell fÃ¼r Unternehmen',
-    title: 'Fahrzeuge an KÃ¤ufer in ganz Europa verkaufen.',
+    eyebrow: 'Autorell für Unternehmen',
+    title: 'Fahrzeuge an Käufer in ganz Europa verkaufen.',
     intro:
-      'Autorell bietet HÃ¤ndlern, WerkstÃ¤tten, Transportunternehmen, Maschinenbetrieben und regelmÃ¤ÃŸigen VerkÃ¤ufern einen klaren Ort, um Bestand zu verÃ¶ffentlichen, Anfragen zu verwalten und den richtigen Markt ohne komplizierte AblÃ¤ufe zu erreichen.',
+      'Autorell bietet Händlern, Werkstätten, Transportunternehmen, Maschinenbetrieben und regelmäßigen Verkäufern einen klaren Ort, um Bestand zu veröffentlichen, Anfragen zu verwalten und den richtigen Markt ohne komplizierte Abläufe zu erreichen.',
     primaryCta: 'Unternehmenskonto erstellen',
     secondaryCta: 'Fahrzeug inserieren',
     proof: [
-      'FÃ¼r EU-MÃ¤rkte gebaut',
-      'Private und professionelle KÃ¤ufer',
-      'Ein Konto fÃ¼r den gesamten Bestand',
+      'Für EU-Märkte gebaut',
+      'Private und professionelle Käufer',
+      'Ein Konto für den gesamten Bestand',
     ],
     featureTitle: 'Die Werkzeuge, die Unternehmen ab der ersten Anzeige brauchen.',
     features: [
       {
         title: 'Unternehmensprofil',
-        text: 'Firmenname, Kontaktdaten und Anzeigen in einem professionellen VerkÃ¤uferprofil bÃ¼ndeln.',
+        text: 'Firmenname, Kontaktdaten und Anzeigen in einem professionellen Verkäuferprofil bündeln.',
         icon: Building2,
       },
       {
         title: 'Bestandsanzeigen',
-        text: 'Autos, Transporter, Maschinen, Lkw und weitere Fahrzeugkategorien mit strukturierten Daten verÃ¶ffentlichen.',
+        text: 'Autos, Transporter, Maschinen, Lkw und weitere Fahrzeugkategorien mit strukturierten Daten veröffentlichen.',
         icon: Warehouse,
       },
       {
-        title: 'KÃ¤uferanfragen',
-        text: 'Nachrichten von ernsthaften KÃ¤ufern erhalten und die Kommunikation in Autorell organisiert halten.',
+        title: 'Käuferanfragen',
+        text: 'Nachrichten von ernsthaften Käufern erhalten und die Kommunikation in Autorell organisiert halten.',
         icon: MessageCircle,
       },
       {
         title: 'EU-Reichweite',
-        text: 'Fahrzeuge mit passender Sprache, WÃ¤hrung und Marktsicht zeigen, wenn KÃ¤ufer grenzÃ¼berschreitend suchen.',
+        text: 'Fahrzeuge mit passender Sprache, Währung und Marktsicht zeigen, wenn Käufer grenzüberschreitend suchen.',
         icon: Globe2,
       },
       {
         title: 'Vertrauensvolle Darstellung',
-        text: 'Klare Anzeigen, Fahrzeugdaten und VerkÃ¤uferinformationen machen jedes GeschÃ¤ft leichter verstÃ¤ndlich.',
+        text: 'Klare Anzeigen, Fahrzeugdaten und Verkäuferinformationen machen jedes Geschäft leichter verständlich.',
         icon: ShieldCheck,
       },
       {
-        title: 'Bessere Ãœbersicht',
-        text: 'VerÃ¶ffentlichte, pausierte, verkaufte und abgelaufene Anzeigen Ã¼ber dasselbe Konto verfolgen.',
+        title: 'Bessere Übersicht',
+        text: 'Veröffentlichte, pausierte, verkaufte und abgelaufene Anzeigen über dasselbe Konto verfolgen.',
         icon: BarChart3,
       },
     ],
@@ -209,20 +209,20 @@ const businessPageCopy = {
     steps: [
       {
         title: 'Unternehmenskonto erstellen',
-        text: 'Organisation registrieren und festlegen, welche Kontaktdaten KÃ¤ufer sehen sollen.',
+        text: 'Organisation registrieren und festlegen, welche Kontaktdaten Käufer sehen sollen.',
       },
       {
-        title: 'Fahrzeuge hinzufÃ¼gen',
-        text: 'Preis, Bilder, Standort, Spezifikationen und die Beschreibung eintragen, die der VerkÃ¤ufer zeigen mÃ¶chte.',
+        title: 'Fahrzeuge hinzufügen',
+        text: 'Preis, Bilder, Standort, Spezifikationen und die Beschreibung eintragen, die der Verkäufer zeigen möchte.',
       },
       {
         title: 'Dialog verwalten',
-        text: 'KÃ¤ufer kontaktieren Sie Ã¼ber Autorell und Sie schlieÃŸen das GeschÃ¤ft zu Ihren eigenen Bedingungen ab.',
+        text: 'Käufer kontaktieren Sie über Autorell und Sie schließen das Geschäft zu Ihren eigenen Bedingungen ab.',
       },
     ],
-    ctaTitle: 'Bereit, Ihren Bestand mehr KÃ¤ufern zu zeigen?',
+    ctaTitle: 'Bereit, Ihren Bestand mehr Käufern zu zeigen?',
     ctaText:
-      'Starten Sie mit einem Unternehmenskonto und verÃ¶ffentlichen Sie das erste Fahrzeug, sobald alles bereit ist.',
+      'Starten Sie mit einem Unternehmenskonto und veröffentlichen Sie das erste Fahrzeug, sobald alles bereit ist.',
   },
 } as const
 

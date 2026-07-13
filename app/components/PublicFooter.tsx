@@ -2,7 +2,7 @@
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Check,
   ChevronDown,
@@ -22,7 +22,7 @@ import BrandLogo from './BrandLogo'
 const footerCopy = {
   sv: {
     description:
-      'Europas betrodda marknadsplats för att köpa och sälja fordon på utvalda europeiska marknader.',
+      'Autorell är en europeisk marknadsplats för fordonsannonser. Köpare kan hitta annonser och säljare kan nå rätt kunder på ett tryggt och tydligt sätt.',
     columns: [
       {
         title: 'Marketplace',
@@ -111,7 +111,7 @@ const footerCopy = {
   },
   de: {
     description:
-      'Europas vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in ausgewählten europäischen Märkten.',
+      'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
     columns: [
       {
         title: 'Marketplace',
@@ -200,7 +200,7 @@ const footerCopy = {
   },
   en: {
     description:
-      "Europe's trusted marketplace for buying and selling vehicles across selected European markets.",
+      'Autorell is a European marketplace for vehicle listings. Buyers can find listings and sellers can reach the right customers in a safe and clear way.',
     columns: [
       {
         title: 'Marketplace',
@@ -289,7 +289,23 @@ const footerCopy = {
   },
 } as const
 
+const footerDescriptions: Record<PublicLocale, string> = {
+  sv: 'Autorell är en europeisk marknadsplats för fordonsannonser. Köpare kan hitta annonser och säljare kan nå rätt kunder på ett tryggt och tydligt sätt.',
+  de: 'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
+  en: 'Autorell is a European marketplace for vehicle listings. Buyers can find listings and sellers can reach the right customers in a safe and clear way.',
+  at: 'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
+  be: 'Autorell is een Europese marktplaats voor voertuigadvertenties. Kopers kunnen advertenties vinden en verkopers kunnen de juiste klanten op een veilige en duidelijke manier bereiken.',
+  fr: 'Autorell est une place de marché européenne pour les annonces de véhicules. Les acheteurs peuvent trouver des annonces et les vendeurs peuvent atteindre les bons clients de manière sûre et claire.',
+  es: 'Autorell es un mercado europeo de anuncios de vehículos. Los compradores pueden encontrar anuncios y los vendedores pueden llegar a los clientes adecuados de forma segura y clara.',
+  it: 'Autorell è un marketplace europeo per annunci di veicoli. Gli acquirenti possono trovare annunci e i venditori possono raggiungere i clienti giusti in modo sicuro e chiaro.',
+  pl: 'Autorell to europejska platforma ogłoszeń pojazdów. Kupujący mogą znaleźć ogłoszenia, a sprzedający mogą dotrzeć do właściwych klientów w bezpieczny i przejrzysty sposób.',
+  nl: 'Autorell is een Europese marktplaats voor voertuigadvertenties. Kopers kunnen advertenties vinden en verkopers kunnen de juiste klanten op een veilige en duidelijke manier bereiken.',
+  fi: 'Autorell on eurooppalainen ajoneuvoilmoitusten markkinapaikka. Ostajat voivat löytää ilmoituksia ja myyjät tavoittaa oikeat asiakkaat turvallisella ja selkeällä tavalla.',
+  da: 'Autorell er en europæisk markedsplads for køretøjsannoncer. Købere kan finde annoncer, og sælgere kan nå de rette kunder på en sikker og tydelig måde.',
+}
+
 const allMarkets = [
+  ['EU', 'Europe', 'English'],
   ['AT', 'Austria', 'Deutsch'],
   ['BE', 'Belgique', 'Français'],
   ['BE', 'Belgie', 'Nederlands'],
@@ -364,7 +380,7 @@ export default function PublicFooter({
             <SocialLinks />
           </div>
           <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
-            <p>{t.description}</p>
+            <p>{footerDescriptions[locale]}</p>
             <p className="mt-5 text-[13px] text-[#344054]">{t.legalNotice}</p>
           </div>
         </div>
@@ -660,7 +676,6 @@ export function MarketSelectorModal({
   locale?: PublicLocale
 }) {
   const pathname = usePathname()
-  const router = useRouter()
   if (!isOpen) return null
   const copy =
     locale === 'sv'
@@ -671,7 +686,7 @@ export function MarketSelectorModal({
 
   function handleMarketNavigate(href: string) {
     onClose()
-    router.push(href)
+    window.location.assign(href)
   }
 
   return (
@@ -703,7 +718,7 @@ export function MarketSelectorModal({
           <h3 className="text-base font-semibold">{copy.allMarkets}</h3>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {allMarkets
-              .filter(([code]) => activeMarketCountryCodes.has(code))
+              .filter(([code]) => code === 'EU' || activeMarketCountryCodes.has(code))
               .map(([code, market, language], index) => (
                 <MarketCard
                   key={`${code}-${market}-${index}`}
@@ -787,7 +802,7 @@ function MarketCard({
 
 function marketHref(countryCode: string) {
   const normalizedCode = countryCode.toUpperCase()
-  if (normalizedCode === 'EU') return '/'
+  if (normalizedCode === 'EU') return '/?market=en'
   return `/${normalizedCode.toLowerCase()}`
 }
 

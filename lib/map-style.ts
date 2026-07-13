@@ -57,3 +57,7 @@ export function getMapStyle(layer: AutorellMapLayer = 'standard') {
 
   return process.env.NEXT_PUBLIC_MAP_STYLE_URL || fallbackMapStyle
 }
+
+export function getStandardFallbackTileUrl(zoom: number, x: number, y: number) {
+  return `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`
+}

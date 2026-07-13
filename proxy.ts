@@ -362,7 +362,7 @@ function redirectToMarket(request: NextRequest, market: string) {
       sameSite: 'lax',
       secure: true,
     })
-    return response
+    return market === 'en' ? withLanguageCookie(response, 'en') : response
   }
 
   url.searchParams.delete('market')
@@ -375,7 +375,7 @@ function redirectToMarket(request: NextRequest, market: string) {
     secure: true,
   })
 
-  return response
+  return market === 'en' ? withLanguageCookie(response, 'en') : response
 }
 
 function getPreferredMarket(request: NextRequest): string | null {

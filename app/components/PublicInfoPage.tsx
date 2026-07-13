@@ -531,7 +531,7 @@ const infoPageCopy = {
       eyebrow: 'Salj pa Autorell',
       title: 'Salj ditt fordon med en annons byggd for europeiska kopare.',
       intro:
-        'Autorell hjalper privatpersoner och foretag att presentera fordon tydligt, samla seriÃ¶sa forfragningar och halla processen organiserad.',
+        'Autorell hjalper privatpersoner och foretag att presentera fordon tydligt, samla seriösa forfragningar och halla processen organiserad.',
       primaryCta: 'Skapa annons',
       secondaryCta: 'Se priser',
       highlights: ['Bilar, transport och specialfordon', 'Land, stad och valuta visas tydligt', 'Tydligt kontaktflode'],
@@ -544,7 +544,7 @@ const infoPageCopy = {
       finalText: 'Skapa konto, forbered fordonsuppgifterna och publicera nar annonsen ar komplett.',
     },
     'how-selling-works': {
-      metaTitle: 'Sa fungerar forsÃ¤ljning | Autorell',
+      metaTitle: 'Sa fungerar forsäljning | Autorell',
       metaDescription: 'Se hur säljare skapar annonser, får förfrågningar och gör fordonsaffärer via Autorell.',
       eyebrow: 'Saljprocessen',
       title: 'Fran annons till koparforfragan i tydliga steg.',
@@ -638,12 +638,12 @@ const infoPageCopy = {
       secondaryCta: 'Sakerhetstips',
       highlights: ['Agande och registrering', 'Service och besiktning', 'Finans och skador'],
       sections: [
-        { title: 'Be om dokument', text: 'BegÃ¤r registreringsbevis, servicehistorik, besiktningspapper och bevis pa att saljaren far salja fordonet.' },
+        { title: 'Be om dokument', text: 'Begär registreringsbevis, servicehistorik, besiktningspapper och bevis pa att saljaren far salja fordonet.' },
         { title: 'Kontrollera externa register', text: 'Anvand officiella eller valrenommerade historiktjanster i registreringslandet.' },
         { title: 'Var vaksam pa stress', text: 'Undvik saljare som vagrar dokument, pressar betalning eller flyttar dialogen for tidigt.' },
       ],
       finalTitle: 'Historik skyddar bada parter',
-      finalText: 'Tydliga dokument gor affaren enklare for seriÃ¶sa kopare och saljare.',
+      finalText: 'Tydliga dokument gor affaren enklare for seriösa kopare och saljare.',
     },
     'buying-guide': {
       metaTitle: 'Köpguide | Autorell',
@@ -666,7 +666,7 @@ const infoPageCopy = {
       metaTitle: 'Om Autorell | Europeisk fordonsmarknadsplats',
       metaDescription: 'Autorell är en europeisk marknadsplats för köp och sälj av fordon mellan länder och kategorier.',
       eyebrow: 'Om Autorell',
-      title: 'En europeisk marknadsplats for seriÃ¶sa fordonsannonser.',
+      title: 'En europeisk marknadsplats for seriösa fordonsannonser.',
       intro: 'Autorell kopplar samman kopare och saljare med en tydlig marknadsplats byggd for lokala marknader och europeisk upptackt.',
       primaryCta: 'Utforska fordon',
       secondaryCta: 'Kontakta oss',
@@ -745,7 +745,7 @@ const infoPageCopy = {
         { title: 'Nar nagot kanns fel', text: 'Pausa affaren, spara meddelanden och betalningsreferenser och rapportera vid behov.' },
       ],
       finalTitle: 'Fortroende byggs i detaljer',
-      finalText: 'Noggrann dokumentation skyddar seriÃ¶sa kopare, saljare och marknadsplatsen.',
+      finalText: 'Noggrann dokumentation skyddar seriösa kopare, saljare och marknadsplatsen.',
     },
     payments: {
       metaTitle: 'Betalningar | Autorell',
@@ -785,257 +785,257 @@ const infoPageCopy = {
   de: {
     'sell-vehicle': {
       metaTitle: 'Fahrzeug verkaufen | Autorell',
-      metaDescription: 'Erstellen Sie eine klare Fahrzeuganzeige, erreichen Sie KÃ¤ufer in Europa und verwalten Sie Anfragen Ã¼ber Autorell.',
+      metaDescription: 'Erstellen Sie eine klare Fahrzeuganzeige, erreichen Sie Käufer in Europa und verwalten Sie Anfragen über Autorell.',
       eyebrow: 'Auf Autorell verkaufen',
-      title: 'Verkaufen Sie Ihr Fahrzeug mit einer Anzeige fÃ¼r europÃ¤ische KÃ¤ufer.',
-      intro: 'Autorell hilft privaten und professionellen VerkÃ¤ufern, Fahrzeuge klar zu prÃ¤sentieren und Anfragen geordnet zu bearbeiten.',
+      title: 'Verkaufen Sie Ihr Fahrzeug mit einer Anzeige für europäische Käufer.',
+      intro: 'Autorell hilft privaten und professionellen Verkäufern, Fahrzeuge klar zu präsentieren und Anfragen geordnet zu bearbeiten.',
       primaryCta: 'Anzeige erstellen',
       secondaryCta: 'Preise ansehen',
-      highlights: ['Autos, Transporter und Spezialfahrzeuge', 'Land, Stadt und WÃ¤hrung klar sichtbar', 'Klarer Kontaktprozess'],
+      highlights: ['Autos, Transporter und Spezialfahrzeuge', 'Land, Stadt und Währung klar sichtbar', 'Klarer Kontaktprozess'],
       sections: [
-        { title: 'Eine professionelle Anzeige', text: 'FÃ¼gen Sie Fotos, Preis, Standort, technische Daten und VerkÃ¤uferinformationen hinzu.' },
-        { title: 'Relevantere Reichweite', text: 'Das Fahrzeug kann Ã¼ber Suche, Kategorien und lokale Marktseiten gefunden werden.' },
-        { title: 'Sie behalten Kontrolle', text: 'Autorell stellt Marktplatz und Werkzeuge bereit. Der VerkÃ¤ufer verantwortet Fahrzeug und Abschluss.' },
+        { title: 'Eine professionelle Anzeige', text: 'Fügen Sie Fotos, Preis, Standort, technische Daten und Verkäuferinformationen hinzu.' },
+        { title: 'Relevantere Reichweite', text: 'Das Fahrzeug kann über Suche, Kategorien und lokale Marktseiten gefunden werden.' },
+        { title: 'Sie behalten Kontrolle', text: 'Autorell stellt Marktplatz und Werkzeuge bereit. Der Verkäufer verantwortet Fahrzeug und Abschluss.' },
       ],
-      finalTitle: 'Bereit zur VerÃ¶ffentlichung?',
-      finalText: 'Erstellen Sie ein Konto, bereiten Sie die Fahrzeugdaten vor und verÃ¶ffentlichen Sie die Anzeige.',
+      finalTitle: 'Bereit zur Veröffentlichung?',
+      finalText: 'Erstellen Sie ein Konto, bereiten Sie die Fahrzeugdaten vor und veröffentlichen Sie die Anzeige.',
     },
     'how-selling-works': {
       metaTitle: 'So funktioniert Verkaufen | Autorell',
-      metaDescription: 'So erstellen VerkÃ¤ufer Anzeigen, erhalten Anfragen und schlieÃŸen FahrzeuggeschÃ¤fte Ã¼ber Autorell ab.',
+      metaDescription: 'So erstellen Verkäufer Anzeigen, erhalten Anfragen und schließen Fahrzeuggeschäfte über Autorell ab.',
       eyebrow: 'Verkaufsprozess',
-      title: 'Von der Anzeige zur KÃ¤uferanfrage in klaren Schritten.',
-      intro: 'Der Prozess hÃ¤lt Informationen strukturiert und macht jede KÃ¤uferkommunikation leichter.',
+      title: 'Von der Anzeige zur Käuferanfrage in klaren Schritten.',
+      intro: 'Der Prozess hält Informationen strukturiert und macht jede Käuferkommunikation leichter.',
       primaryCta: 'Verkauf starten',
       secondaryCta: 'Support kontaktieren',
-      highlights: ['Konto erstellen', 'Anzeige verÃ¶ffentlichen', 'Anfragen verwalten'],
+      highlights: ['Konto erstellen', 'Anzeige veröffentlichen', 'Anfragen verwalten'],
       sections: [
         { title: 'Anzeige vorbereiten', text: 'Sammeln Sie Fotos, Dokumente, Kilometerstand, Zustand, Ausstattung und Preis.' },
-        { title: 'VerÃ¶ffentlichen', text: 'Nach der VerÃ¶ffentlichung kann die Anzeige in Suche, Kategorien und MÃ¤rkten erscheinen.' },
-        { title: 'Klare Vereinbarung', text: 'KÃ¤ufer und VerkÃ¤ufer vereinbaren Zahlung, Abholung, Dokumente und Transport direkt.' },
+        { title: 'Veröffentlichen', text: 'Nach der Veröffentlichung kann die Anzeige in Suche, Kategorien und Märkten erscheinen.' },
+        { title: 'Klare Vereinbarung', text: 'Käufer und Verkäufer vereinbaren Zahlung, Abholung, Dokumente und Transport direkt.' },
       ],
       finalTitle: 'Ein klarerer Verkaufsweg',
       finalText: 'Gute Anzeigen beantworten die wichtigsten Fragen vor der ersten Nachricht.',
     },
     pricing: {
       metaTitle: 'Anzeigenpreise | Autorell',
-      metaDescription: 'Verstehen Sie Autorells Optionen fÃ¼r private und geschÃ¤ftliche FahrzeugverkÃ¤ufer.',
+      metaDescription: 'Verstehen Sie Autorells Optionen für private und geschäftliche Fahrzeugverkäufer.',
       eyebrow: 'Preise',
-      title: 'Einfache Anzeigenoptionen fÃ¼r private VerkÃ¤ufer und Unternehmen.',
-      intro: 'WÃ¤hlen Sie den Weg, der zu VerkaufshÃ¤ufigkeit und gewÃ¼nschter Sichtbarkeit passt.',
+      title: 'Einfache Anzeigenoptionen für private Verkäufer und Unternehmen.',
+      intro: 'Wählen Sie den Weg, der zu Verkaufshäufigkeit und gewünschter Sichtbarkeit passt.',
       primaryCta: 'Anzeige erstellen',
-      secondaryCta: 'UnternehmenslÃ¶sungen',
-      highlights: ['Private Anzeigen', 'Unternehmenskonto', 'Sichtbarkeit Ã¼ber Kategorien'],
+      secondaryCta: 'Unternehmenslösungen',
+      highlights: ['Private Anzeigen', 'Unternehmenskonto', 'Sichtbarkeit über Kategorien'],
       sections: [
-        { title: 'Private VerkÃ¤ufer', text: 'Nutzen Sie eine Standardanzeige fÃ¼r ein Fahrzeug mit Bildern, Beschreibung und Kontaktoptionen.' },
-        { title: 'RegelmÃ¤ÃŸige VerkÃ¤ufer', text: 'Unternehmen kÃ¶nnen Werkzeuge fÃ¼r Bestand, Profile und strukturierte Anfragen nutzen.' },
-        { title: 'Klare Bedingungen', text: 'KÃ¤ufer sollten Endpreis, Zahlungsmethode und Ãœbergabe direkt mit dem VerkÃ¤ufer bestÃ¤tigen.' },
+        { title: 'Private Verkäufer', text: 'Nutzen Sie eine Standardanzeige für ein Fahrzeug mit Bildern, Beschreibung und Kontaktoptionen.' },
+        { title: 'Regelmäßige Verkäufer', text: 'Unternehmen können Werkzeuge für Bestand, Profile und strukturierte Anfragen nutzen.' },
+        { title: 'Klare Bedingungen', text: 'Käufer sollten Endpreis, Zahlungsmethode und Übergabe direkt mit dem Verkäufer bestätigen.' },
       ],
-      finalTitle: 'Den richtigen Weg wÃ¤hlen',
-      finalText: 'Starten Sie mit einer Anzeige oder erstellen Sie ein Unternehmenskonto fÃ¼r mehrere Fahrzeuge.',
+      finalTitle: 'Den richtigen Weg wählen',
+      finalText: 'Starten Sie mit einer Anzeige oder erstellen Sie ein Unternehmenskonto für mehrere Fahrzeuge.',
     },
     'dealer-solutions': {
       metaTitle: 'Dealer solutions | Autorell',
-      metaDescription: 'Autorell hilft professionellen VerkÃ¤ufern, Bestand zu verÃ¶ffentlichen und KÃ¤ufer in Europa zu erreichen.',
+      metaDescription: 'Autorell hilft professionellen Verkäufern, Bestand zu veröffentlichen und Käufer in Europa zu erreichen.',
       eyebrow: 'Dealer solutions',
-      title: 'Eine klarere Art, Fahrzeugbestand zu prÃ¤sentieren.',
-      intro: 'Autorell bietet professionellen VerkÃ¤ufern MarktplatzprÃ¤senz, strukturierte Bestandsseiten und Anfragewerkzeuge.',
+      title: 'Eine klarere Art, Fahrzeugbestand zu präsentieren.',
+      intro: 'Autorell bietet professionellen Verkäufern Marktplatzpräsenz, strukturierte Bestandsseiten und Anfragewerkzeuge.',
       primaryCta: 'Unternehmenskonto erstellen',
       secondaryCta: 'Vertrieb kontaktieren',
-      highlights: ['Unternehmensprofil', 'Bestandsanzeigen', 'EuropÃ¤ische Reichweite'],
+      highlights: ['Unternehmensprofil', 'Bestandsanzeigen', 'Europäische Reichweite'],
       sections: [
-        { title: 'BestandsprÃ¤sentation', text: 'Zeigen Sie Autos, Transporter, Lkw, Maschinen und weitere Kategorien mit schnell erfassbaren Daten.' },
-        { title: 'Anfragen', text: 'Halten Sie KÃ¤ufernachrichten mit der richtigen Anzeige verbunden.' },
-        { title: 'Marktstruktur', text: 'Land, WÃ¤hrung, Kategorie und VerkÃ¤uferinformationen erscheinen konsistent.' },
+        { title: 'Bestandspräsentation', text: 'Zeigen Sie Autos, Transporter, Lkw, Maschinen und weitere Kategorien mit schnell erfassbaren Daten.' },
+        { title: 'Anfragen', text: 'Halten Sie Käufernachrichten mit der richtigen Anzeige verbunden.' },
+        { title: 'Marktstruktur', text: 'Land, Währung, Kategorie und Verkäuferinformationen erscheinen konsistent.' },
       ],
-      finalTitle: 'FÃ¼r wiederkehrende VerkÃ¤ufer gebaut',
-      finalText: 'HÃ¤ndler kÃ¶nnen klein starten und ihre PrÃ¤senz auf Autorell ausbauen.',
+      finalTitle: 'Für wiederkehrende Verkäufer gebaut',
+      finalText: 'Händler können klein starten und ihre Präsenz auf Autorell ausbauen.',
     },
     'saved-searches': {
       metaTitle: 'Gespeicherte Suchen | Autorell',
       metaDescription: 'Speichern Sie Suchen und Anzeigen auf Autorell, um interessante Fahrzeuge wiederzufinden.',
-      eyebrow: 'KÃ¤uferwerkzeuge',
+      eyebrow: 'Käuferwerkzeuge',
       title: 'Behalten Sie wichtige Fahrzeuge und Suchen im Blick.',
-      intro: 'Gespeicherte Suchen helfen KÃ¤ufern, relevante Fahrzeuge erneut zu Ã¶ffnen und Optionen zu vergleichen.',
+      intro: 'Gespeicherte Suchen helfen Käufern, relevante Fahrzeuge erneut zu öffnen und Optionen zu vergleichen.',
       primaryCta: 'Fahrzeuge suchen',
       secondaryCta: 'Konto erstellen',
-      highlights: ['Interessante Fahrzeuge speichern', 'Von jedem GerÃ¤t zurÃ¼ckkehren', 'Suchen organisieren'],
+      highlights: ['Interessante Fahrzeuge speichern', 'Von jedem Gerät zurückkehren', 'Suchen organisieren'],
       sections: [
-        { title: 'Fahrzeuge vormerken', text: 'Sammeln Sie Fahrzeuge, die Sie spÃ¤ter erneut prÃ¼fen mÃ¶chten.' },
+        { title: 'Fahrzeuge vormerken', text: 'Sammeln Sie Fahrzeuge, die Sie später erneut prüfen möchten.' },
         { title: 'Markt folgen', text: 'Speichern Sie Kombinationen aus Kategorie, Land, Preisbereich und Suchbegriffen.' },
-        { title: 'Anmelden fÃ¼r KontinuitÃ¤t', text: 'Gespeicherte Objekte funktionieren am besten mit einem Autorell-Konto.' },
+        { title: 'Anmelden für Kontinuität', text: 'Gespeicherte Objekte funktionieren am besten mit einem Autorell-Konto.' },
       ],
       finalTitle: 'Ein ruhigerer Kaufprozess',
       finalText: 'Gute Organisation erleichtert den Vergleich vor der Kontaktaufnahme.',
     },
     'compare-vehicles': {
       metaTitle: 'Fahrzeuge vergleichen | Autorell',
-      metaDescription: 'Vergleichen Sie Autorell-Anzeigen nach Preis, Kilometerstand, Zustand, Standort und VerkÃ¤uferinformationen.',
+      metaDescription: 'Vergleichen Sie Autorell-Anzeigen nach Preis, Kilometerstand, Zustand, Standort und Verkäuferinformationen.',
       eyebrow: 'Vergleichen',
       title: 'Vergleichen Sie Fahrzeuge mit den wichtigsten Details zuerst.',
-      intro: 'Strukturierte Anzeigen zeigen praktische Unterschiede, bevor Sie einen VerkÃ¤ufer kontaktieren.',
+      intro: 'Strukturierte Anzeigen zeigen praktische Unterschiede, bevor Sie einen Verkäufer kontaktieren.',
       primaryCta: 'Anzeigen ansehen',
       secondaryCta: 'Kaufberatung',
-      highlights: ['Preis und WÃ¤hrung', 'Standort und VerkÃ¤ufertyp', 'Kilometer, Jahr und Ausstattung'],
+      highlights: ['Preis und Währung', 'Standort und Verkäufertyp', 'Kilometer, Jahr und Ausstattung'],
       sections: [
-        { title: 'Grundlagen prÃ¼fen', text: 'PrÃ¼fen Sie Preis, Baujahr, Kilometerstand, Antrieb, Getriebe, Zustand und Standort.' },
+        { title: 'Grundlagen prüfen', text: 'Prüfen Sie Preis, Baujahr, Kilometerstand, Antrieb, Getriebe, Zustand und Standort.' },
         { title: 'Mehr als Preis', text: 'Transport, Dokumente, Reaktionszeit und Historie beeinflussen den echten Wert.' },
-        { title: 'Gleiche Fragen stellen', text: 'Nutzen Sie dieselbe Checkliste fÃ¼r jedes Fahrzeug.' },
+        { title: 'Gleiche Fragen stellen', text: 'Nutzen Sie dieselbe Checkliste für jedes Fahrzeug.' },
       ],
       finalTitle: 'Vergleichen vor der Entscheidung',
-      finalText: 'Ein strukturierter Vergleich macht jede KÃ¤uferkommunikation fokussierter.',
+      finalText: 'Ein strukturierter Vergleich macht jede Käuferkommunikation fokussierter.',
     },
     'vehicle-history': {
       metaTitle: 'Fahrzeughistorie | Autorell',
-      metaDescription: 'Was Sie vor dem Kauf zur Fahrzeughistorie prÃ¼fen sollten.',
+      metaDescription: 'Was Sie vor dem Kauf zur Fahrzeughistorie prüfen sollten.',
       eyebrow: 'Fahrzeughistorie',
       title: 'Wissen, was Sie vor dem Kauf fragen sollten.',
-      intro: 'Die Historie ist bei grenzÃ¼berschreitenden KÃ¤ufen besonders wichtig.',
+      intro: 'Die Historie ist bei grenzüberschreitenden Käufen besonders wichtig.',
       primaryCta: 'Fahrzeuge suchen',
       secondaryCta: 'Sicherheitstipps',
-      highlights: ['Eigentum und Zulassung', 'Service und PrÃ¼fung', 'Finanzierung und SchÃ¤den'],
+      highlights: ['Eigentum und Zulassung', 'Service und Prüfung', 'Finanzierung und Schäden'],
       sections: [
-        { title: 'Dokumente anfordern', text: 'Bitten Sie um Zulassungspapiere, Serviceunterlagen, PrÃ¼fberichte und Verkaufsberechtigung.' },
-        { title: 'Externe Register prÃ¼fen', text: 'Nutzen Sie offizielle oder seriÃ¶se Historienanbieter im Zulassungsland.' },
-        { title: 'Bei Druck vorsichtig sein', text: 'Vermeiden Sie VerkÃ¤ufer, die Dokumente verweigern oder Zahlung Ã¼berstÃ¼rzen.' },
+        { title: 'Dokumente anfordern', text: 'Bitten Sie um Zulassungspapiere, Serviceunterlagen, Prüfberichte und Verkaufsberechtigung.' },
+        { title: 'Externe Register prüfen', text: 'Nutzen Sie offizielle oder seriöse Historienanbieter im Zulassungsland.' },
+        { title: 'Bei Druck vorsichtig sein', text: 'Vermeiden Sie Verkäufer, die Dokumente verweigern oder Zahlung überstürzen.' },
       ],
-      finalTitle: 'Historie schÃ¼tzt beide Seiten',
-      finalText: 'Klare Dokumentation erleichtert seriÃ¶sen KÃ¤ufern und VerkÃ¤ufern das GeschÃ¤ft.',
+      finalTitle: 'Historie schützt beide Seiten',
+      finalText: 'Klare Dokumentation erleichtert seriösen Käufern und Verkäufern das Geschäft.',
     },
     'buying-guide': {
       metaTitle: 'Kaufberatung | Autorell',
-      metaDescription: 'Praktische Autorell-Kaufberatung fÃ¼r Fahrzeuge in Europa.',
+      metaDescription: 'Praktische Autorell-Kaufberatung für Fahrzeuge in Europa.',
       eyebrow: 'Kaufberatung',
       title: 'Mit besserer Checkliste in Europa kaufen.',
-      intro: 'GrenzÃ¼berschreitender Fahrzeugkauf funktioniert am besten, wenn Preis, Dokumente, Zahlung und Transport frÃ¼h geklÃ¤rt sind.',
+      intro: 'Grenzüberschreitender Fahrzeugkauf funktioniert am besten, wenn Preis, Dokumente, Zahlung und Transport früh geklärt sind.',
       primaryCta: 'Fahrzeuge ansehen',
       secondaryCta: 'Sicherheitstipps',
-      highlights: ['VerkÃ¤ufer prÃ¼fen', 'Dokumente bestÃ¤tigen', 'Zahlung und Abholung planen'],
+      highlights: ['Verkäufer prüfen', 'Dokumente bestätigen', 'Zahlung und Abholung planen'],
       sections: [
-        { title: 'Vor der Kontaktaufnahme', text: 'Vergleichen Sie Ã¤hnliche Anzeigen und bereiten Sie Fragen zu Eigentum, Zustand, MwSt. und Service vor.' },
-        { title: 'Vor der Zahlung', text: 'BestÃ¤tigen Sie IdentitÃ¤t, Zahlungsweg, Beleg, Ãœbergabeort und Dokumente.' },
+        { title: 'Vor der Kontaktaufnahme', text: 'Vergleichen Sie ähnliche Anzeigen und bereiten Sie Fragen zu Eigentum, Zustand, MwSt. und Service vor.' },
+        { title: 'Vor der Zahlung', text: 'Bestätigen Sie Identität, Zahlungsweg, Beleg, Übergabeort und Dokumente.' },
         { title: 'Vor dem Transport', text: 'Planen Sie Abholung, Versicherung, Exportpapiere, Transportfirma und Zulassung.' },
       ],
       finalTitle: 'Vorbereitung schafft Vertrauen',
-      finalText: 'Die besten GeschÃ¤fte sind klar dokumentiert.',
+      finalText: 'Die besten Geschäfte sind klar dokumentiert.',
     },
     about: {
-      metaTitle: 'Ãœber Autorell | EuropÃ¤ischer Fahrzeugmarktplatz',
-      metaDescription: 'Autorell ist ein europÃ¤ischer Marktplatz fÃ¼r Kauf und Verkauf von Fahrzeugen.',
-      eyebrow: 'Ãœber Autorell',
-      title: 'Ein europÃ¤ischer Marktplatz fÃ¼r seriÃ¶se Fahrzeuganzeigen.',
-      intro: 'Autorell verbindet KÃ¤ufer und VerkÃ¤ufer Ã¼ber Kategorien, lokale MÃ¤rkte und grenzÃ¼berschreitende Suche.',
+      metaTitle: 'Über Autorell | Europäischer Fahrzeugmarktplatz',
+      metaDescription: 'Autorell ist ein europäischer Marktplatz für Kauf und Verkauf von Fahrzeugen.',
+      eyebrow: 'Über Autorell',
+      title: 'Ein europäischer Marktplatz für seriöse Fahrzeuganzeigen.',
+      intro: 'Autorell verbindet Käufer und Verkäufer über Kategorien, lokale Märkte und grenzüberschreitende Suche.',
       primaryCta: 'Fahrzeuge ansehen',
       secondaryCta: 'Kontakt',
-      highlights: ['Marktplatztechnologie', 'Viele Fahrzeugkategorien', 'FÃ¼r europÃ¤ische MÃ¤rkte gebaut'],
+      highlights: ['Marktplatztechnologie', 'Viele Fahrzeugkategorien', 'Für europäische Märkte gebaut'],
       sections: [
         { title: 'Was Autorell tut', text: 'Wir stellen Marktplatz, Konto-Werkzeuge und Anzeigeerlebnis bereit.' },
-        { title: 'Was Autorell nicht ist', text: 'Autorell ist bei normalen Anzeigen nicht automatisch KÃ¤ufer, VerkÃ¤ufer, HÃ¤ndler, Exporteur oder Finanzierer.' },
+        { title: 'Was Autorell nicht ist', text: 'Autorell ist bei normalen Anzeigen nicht automatisch Käufer, Verkäufer, Händler, Exporteur oder Finanzierer.' },
         { title: 'Warum es Autorell gibt', text: 'Fahrzeugkauf in Europa ist fragmentiert. Autorell macht Suche, Vergleich und Kontakt klarer.' },
       ],
-      finalTitle: 'Ein Ort fÃ¼r den europÃ¤ischen Markt',
-      finalText: 'Das Ziel: klarere Anzeigen, relevantere KÃ¤ufer und besser vorbereitete GesprÃ¤che.',
+      finalTitle: 'Ein Ort für den europäischen Markt',
+      finalText: 'Das Ziel: klarere Anzeigen, relevantere Käufer und besser vorbereitete Gespräche.',
     },
     careers: {
       metaTitle: 'Karriere | Autorell',
-      metaDescription: 'Karriere bei Autorell und den Teams hinter einem europÃ¤ischen Fahrzeugmarktplatz.',
+      metaDescription: 'Karriere bei Autorell und den Teams hinter einem europäischen Fahrzeugmarktplatz.',
       eyebrow: 'Karriere',
-      title: 'Bauen Sie am nÃ¤chsten europÃ¤ischen Fahrzeugmarktplatz mit.',
-      intro: 'Autorell wÃ¤chst mit einer praktischen Mission: Fahrzeughandel leichter verstÃ¤ndlich machen.',
+      title: 'Bauen Sie am nächsten europäischen Fahrzeugmarktplatz mit.',
+      intro: 'Autorell wächst mit einer praktischen Mission: Fahrzeughandel leichter verständlich machen.',
       primaryCta: 'Kontakt',
-      secondaryCta: 'Ãœber Autorell',
+      secondaryCta: 'Über Autorell',
       highlights: ['Produkt und Technik', 'Marketplace Operations', 'Kundensupport'],
       sections: [
-        { title: 'Wie wir arbeiten', text: 'Wir schÃ¤tzen klare Verantwortung, praktische Produktentscheidungen und NÃ¤he zu KÃ¤ufern und VerkÃ¤ufern.' },
-        { title: 'Wer gut passt', text: 'Menschen mit Interesse an MarktplÃ¤tzen, Fahrzeugen, internationalen Produkten und Vertrauen.' },
-        { title: 'Initiativkontakt', text: 'Auch ohne offene Rolle kÃ¶nnen relevante Kandidaten Autorell kontaktieren.' },
+        { title: 'Wie wir arbeiten', text: 'Wir schätzen klare Verantwortung, praktische Produktentscheidungen und Nähe zu Käufern und Verkäufern.' },
+        { title: 'Wer gut passt', text: 'Menschen mit Interesse an Marktplätzen, Fahrzeugen, internationalen Produkten und Vertrauen.' },
+        { title: 'Initiativkontakt', text: 'Auch ohne offene Rolle können relevante Kandidaten Autorell kontaktieren.' },
       ],
-      finalTitle: 'Etwas NÃ¼tzliches bauen',
-      finalText: 'Gute Marktplatzarbeit ist detailliert, bestÃ¤ndig und kundennah.',
+      finalTitle: 'Etwas Nützliches bauen',
+      finalText: 'Gute Marktplatzarbeit ist detailliert, beständig und kundennah.',
     },
     press: {
       metaTitle: 'Presse | Autorell',
       metaDescription: 'Presseinformationen zu Autorell, Hintergrund und Medienkontakt.',
       eyebrow: 'Presse',
-      title: 'Informationen fÃ¼r Medien und Branchenpartner.',
-      intro: 'Autorell kann Hintergrund zum Marktplatz, Kategorien, KÃ¤uferverhalten und Produktupdates liefern.',
+      title: 'Informationen für Medien und Branchenpartner.',
+      intro: 'Autorell kann Hintergrund zum Marktplatz, Kategorien, Käuferverhalten und Produktupdates liefern.',
       primaryCta: 'Presse kontaktieren',
-      secondaryCta: 'Ãœber Autorell',
+      secondaryCta: 'Über Autorell',
       highlights: ['Unternehmenshintergrund', 'Marktplatz-Updates', 'Medienanfragen'],
       sections: [
-        { title: 'Medienanfragen', text: 'Journalisten kÃ¶nnen Autorell fÃ¼r Unternehmensinformationen, Zitate und Kontext kontaktieren.' },
+        { title: 'Medienanfragen', text: 'Journalisten können Autorell für Unternehmensinformationen, Zitate und Kontext kontaktieren.' },
         { title: 'Markennutzung', text: 'Name, Logo und Screenshots sollten Autorell korrekt darstellen.' },
-        { title: 'Branchenkontext', text: 'Wir kÃ¶nnen digitale FahrzeugmÃ¤rkte, Vertrauen und grenzÃ¼berschreitende Suche einordnen.' },
+        { title: 'Branchenkontext', text: 'Wir können digitale Fahrzeugmärkte, Vertrauen und grenzüberschreitende Suche einordnen.' },
       ],
       finalTitle: 'Brauchen Sie Pressekontakt?',
-      finalText: 'Senden Sie Thema, Frist und VerÃ¶ffentlichungsdetails.',
+      finalText: 'Senden Sie Thema, Frist und Veröffentlichungsdetails.',
     },
     partners: {
       metaTitle: 'Partner | Autorell',
       metaDescription: 'Partnerschaften mit Autorell rund um Bestand, Distribution, Finanzierung, Zahlung, Transport oder Daten.',
       eyebrow: 'Partner',
       title: 'Partner von Autorell im Fahrzeugmarkt werden.',
-      intro: 'Autorell arbeitet mit Partnern, die KÃ¤ufern und VerkÃ¤ufern bessere Entscheidungen ermÃ¶glichen.',
+      intro: 'Autorell arbeitet mit Partnern, die Käufern und Verkäufern bessere Entscheidungen ermöglichen.',
       primaryCta: 'Partnerschaft kontaktieren',
       secondaryCta: 'Dealer solutions',
-      highlights: ['Bestandspartner', 'Transport und PrÃ¼fung', 'Zahlung und Daten'],
+      highlights: ['Bestandspartner', 'Transport und Prüfung', 'Zahlung und Daten'],
       sections: [
-        { title: 'Bestandspartnerschaften', text: 'Professionelle VerkÃ¤ufer und Plattformen kÃ¶nnen Bestand klarer auf Autorell prÃ¤sentieren.' },
-        { title: 'Servicepartner', text: 'Transport, PrÃ¼fung, Historie und Zahlung unterstÃ¼tzen sicherere Entscheidungen.' },
-        { title: 'Marktexpertise', text: 'Lokale Partner machen landesspezifische AblÃ¤ufe nÃ¼tzlicher.' },
+        { title: 'Bestandspartnerschaften', text: 'Professionelle Verkäufer und Plattformen können Bestand klarer auf Autorell präsentieren.' },
+        { title: 'Servicepartner', text: 'Transport, Prüfung, Historie und Zahlung unterstützen sicherere Entscheidungen.' },
+        { title: 'Marktexpertise', text: 'Lokale Partner machen landesspezifische Abläufe nützlicher.' },
       ],
       finalTitle: 'Gute Partnerschaften verringern Reibung',
-      finalText: 'Starke Partner machen den Fahrzeugweg fÃ¼r beide Seiten klarer.',
+      finalText: 'Starke Partner machen den Fahrzeugweg für beide Seiten klarer.',
     },
     'safety-tips': {
       metaTitle: 'Sicherheitstipps | Autorell',
-      metaDescription: 'Praktische Sicherheitstipps fÃ¼r KÃ¤ufer und VerkÃ¤ufer auf Autorell.',
+      metaDescription: 'Praktische Sicherheitstipps für Käufer und Verkäufer auf Autorell.',
       eyebrow: 'Sicherheit',
-      title: 'Sichere FahrzeuggeschÃ¤fte beginnen mit besseren PrÃ¼fungen.',
-      intro: 'Autorell empfiehlt IdentitÃ¤t, Dokumente, Zahlung und Ãœbergabe vor einer Zusage zu prÃ¼fen.',
+      title: 'Sichere Fahrzeuggeschäfte beginnen mit besseren Prüfungen.',
+      intro: 'Autorell empfiehlt Identität, Dokumente, Zahlung und Übergabe vor einer Zusage zu prüfen.',
       primaryCta: 'Problem melden',
       secondaryCta: 'Kaufberatung',
-      highlights: ['IdentitÃ¤t prÃ¼fen', 'Unterlagen behalten', 'Keine Ã¼bereilte Zahlung'],
+      highlights: ['Identität prüfen', 'Unterlagen behalten', 'Keine übereilte Zahlung'],
       sections: [
-        { title: 'FÃ¼r KÃ¤ufer', text: 'PrÃ¼fen Sie VerkÃ¤ufer, Fahrzeugdokumente, Historie, Zahlung und Abholung vor einer Ãœberweisung.' },
-        { title: 'FÃ¼r VerkÃ¤ufer', text: 'BestÃ¤tigen Sie KÃ¤uferidentitÃ¤t, vermeiden Sie verdÃ¤chtige Ãœberzahlungen und bewahren Sie Kommunikation auf.' },
+        { title: 'Für Käufer', text: 'Prüfen Sie Verkäufer, Fahrzeugdokumente, Historie, Zahlung und Abholung vor einer Überweisung.' },
+        { title: 'Für Verkäufer', text: 'Bestätigen Sie Käuferidentität, vermeiden Sie verdächtige Überzahlungen und bewahren Sie Kommunikation auf.' },
         { title: 'Wenn etwas falsch wirkt', text: 'Pausieren Sie den Deal, sichern Sie Nachrichten und Zahlungsreferenzen und melden Sie den Fall.' },
       ],
       finalTitle: 'Vertrauen entsteht im Detail',
-      finalText: 'SorgfÃ¤ltige Dokumentation schÃ¼tzt seriÃ¶se KÃ¤ufer, VerkÃ¤ufer und den Marktplatz.',
+      finalText: 'Sorgfältige Dokumentation schützt seriöse Käufer, Verkäufer und den Marktplatz.',
     },
     payments: {
       metaTitle: 'Zahlungen | Autorell',
-      metaDescription: 'Zahlungsplanung, Belege und sicherere Zahlungsgewohnheiten fÃ¼r FahrzeuggeschÃ¤fte.',
+      metaDescription: 'Zahlungsplanung, Belege und sicherere Zahlungsgewohnheiten für Fahrzeuggeschäfte.',
       eyebrow: 'Zahlungen',
-      title: 'Zahlung planen, bevor das Fahrzeug Ã¼bergeben wird.',
-      intro: 'Zahlungsbedingungen sollten klar zwischen KÃ¤ufer und VerkÃ¤ufer vereinbart und dokumentiert sein.',
+      title: 'Zahlung planen, bevor das Fahrzeug übergeben wird.',
+      intro: 'Zahlungsbedingungen sollten klar zwischen Käufer und Verkäufer vereinbart und dokumentiert sein.',
       primaryCta: 'Sicherheitstipps',
       secondaryCta: 'Support kontaktieren',
-      highlights: ['EmpfÃ¤nger prÃ¼fen', 'Nachverfolgbare Methoden', 'Belege speichern'],
+      highlights: ['Empfänger prüfen', 'Nachverfolgbare Methoden', 'Belege speichern'],
       sections: [
-        { title: 'Methode vereinbaren', text: 'WÃ¤hlen Sie eine Methode, die beide Seiten verstehen, und bestÃ¤tigen Sie Kontodaten.' },
+        { title: 'Methode vereinbaren', text: 'Wählen Sie eine Methode, die beide Seiten verstehen, und bestätigen Sie Kontodaten.' },
         { title: 'Transaktion dokumentieren', text: 'Bewahren Sie Rechnungen, Quittungen, Bankreferenzen und schriftliche Bedingungen auf.' },
-        { title: 'Druck vermeiden', text: 'Seien Sie vorsichtig bei Eile, geÃ¤nderten Kontodaten und ungewÃ¶hnlichen Zwischenpersonen.' },
+        { title: 'Druck vermeiden', text: 'Seien Sie vorsichtig bei Eile, geänderten Kontodaten und ungewöhnlichen Zwischenpersonen.' },
       ],
-      finalTitle: 'Klarheit schÃ¼tzt das GeschÃ¤ft',
-      finalText: 'Ein dokumentierter Zahlungsprozess hilft, Streit zu vermeiden und zu klÃ¤ren.',
+      finalTitle: 'Klarheit schützt das Geschäft',
+      finalText: 'Ein dokumentierter Zahlungsprozess hilft, Streit zu vermeiden und zu klären.',
     },
     'shipping-delivery': {
       metaTitle: 'Versand und Lieferung | Autorell',
       metaDescription: 'Planen Sie Abholung, Transport, Versicherung und Lieferung beim Fahrzeugkauf in Europa.',
       eyebrow: 'Versand und Lieferung',
       title: 'Abholung und Transport vor dem Abschluss planen.',
-      intro: 'GrenzÃ¼berschreitende Logistik wird einfacher, wenn KÃ¤ufer und VerkÃ¤ufer ZustÃ¤ndigkeit, Versicherung und Dokumente klÃ¤ren.',
+      intro: 'Grenzüberschreitende Logistik wird einfacher, wenn Käufer und Verkäufer Zuständigkeit, Versicherung und Dokumente klären.',
       primaryCta: 'Kaufberatung',
       secondaryCta: 'Support kontaktieren',
-      highlights: ['Abholort', 'Transportdokumente', 'Versicherung und Ãœbergabe'],
+      highlights: ['Abholort', 'Transportdokumente', 'Versicherung und Übergabe'],
       sections: [
-        { title: 'Vor der Abholung', text: 'BestÃ¤tigen Sie Adresse, Zustand, Zugang, SchlÃ¼ssel, Dokumente und Abholberechtigung.' },
-        { title: 'WÃ¤hrend des Transports', text: 'Nutzen Sie einen seriÃ¶sen Transporteur, prÃ¼fen Sie Versicherung und halten Sie Fotos fest.' },
-        { title: 'Bei Lieferung', text: 'PrÃ¼fen Sie Zustand, Kilometerstand, Dokumente und Ãœbergabeunterlagen.' },
+        { title: 'Vor der Abholung', text: 'Bestätigen Sie Adresse, Zustand, Zugang, Schlüssel, Dokumente und Abholberechtigung.' },
+        { title: 'Während des Transports', text: 'Nutzen Sie einen seriösen Transporteur, prüfen Sie Versicherung und halten Sie Fotos fest.' },
+        { title: 'Bei Lieferung', text: 'Prüfen Sie Zustand, Kilometerstand, Dokumente und Übergabeunterlagen.' },
       ],
-      finalTitle: 'Gute Logistik gehÃ¶rt zum Kauf',
+      finalTitle: 'Gute Logistik gehört zum Kauf',
       finalText: 'Transportplanung verdient dieselbe Sorgfalt wie Preis und Zahlung.',
     },
   },
@@ -1127,9 +1127,9 @@ export default async function PublicInfoPage({
     if (page === 'sell-vehicle') {
       const pillars = isSv
         ? [
-            ['01', 'Datadriven presentation', 'Kategori, marknad, valuta, skick och tekniska uppgifter byggs in i annonsen sÃ¥ att kÃ¶paren kan jÃ¤mfÃ¶ra utan friktion.'],
-            ['02', 'FÃ¶rtroende fÃ¶re kontakt', 'Verifierade sÃ¤ljare, tydliga kontaktvÃ¤gar och konsekvent fordonsdata hÃ¶jer kvaliteten pÃ¥ varje dialog.'],
-            ['03', 'Synlighet i rÃ¤tt marknad', 'Annonsen Ã¤r skapad fÃ¶r en europeisk kÃ¶pintention, inte bara en lokal listning som rÃ¥kar ligga online.'],
+            ['01', 'Datadriven presentation', 'Kategori, marknad, valuta, skick och tekniska uppgifter byggs in i annonsen så att köparen kan jämföra utan friktion.'],
+            ['02', 'Förtroende före kontakt', 'Verifierade säljare, tydliga kontaktvägar och konsekvent fordonsdata höjer kvaliteten på varje dialog.'],
+            ['03', 'Synlighet i rätt marknad', 'Annonsen är skapad för en europeisk köpintention, inte bara en lokal listning som råkar ligga online.'],
           ]
         : [
             ['01', 'Data-led presentation', 'Category, market, currency, condition and technical details are structured for fast comparison.'],
@@ -1137,7 +1137,7 @@ export default async function PublicInfoPage({
             ['03', 'Visibility in the right market', 'Listings are built for European buyer intent, not just a local post online.'],
           ]
       const signals = isSv
-        ? ['Fordonsdata', 'Marknad', 'SÃ¤ljarprofil', 'KontaktflÃ¶de']
+        ? ['Fordonsdata', 'Marknad', 'Säljarprofil', 'Kontaktflöde']
         : ['Vehicle data', 'Market', 'Seller profile', 'Contact flow']
 
       return (
@@ -1150,11 +1150,11 @@ export default async function PublicInfoPage({
                   {isSv ? 'Annonsera fordon' : 'Vehicle advertising'}
                 </p>
                 <h1 className="mt-5 max-w-4xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[70px]">
-                  {isSv ? 'Annonsera fordon pÃ¥ Autorell' : 'Advertise vehicles on Autorell'}
+                  {isSv ? 'Annonsera fordon på Autorell' : 'Advertise vehicles on Autorell'}
                 </h1>
                 <p className="mt-6 max-w-2xl text-lg leading-8 text-[#526071]">
                   {isSv
-                    ? 'En annons pÃ¥ Autorell ska kÃ¤nnas som ett professionellt beslutsunderlag: tydlig data, seriÃ¶s presentation och kontakt frÃ¥n kÃ¶pare som fÃ¶rstÃ¥r vad de tittar pÃ¥.'
+                    ? 'En annons på Autorell ska kännas som ett professionellt beslutsunderlag: tydlig data, seriös presentation och kontakt från köpare som förstår vad de tittar på.'
                     : 'An Autorell listing should feel like a professional decision layer: clear data, serious presentation and buyer contact with context.'}
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -1201,10 +1201,10 @@ export default async function PublicInfoPage({
     if (page === 'how-selling-works') {
       const flow = isSv
         ? [
-            ['01', 'Strukturera', 'Fordonstyp, plats, pris, valuta och skick sÃ¤tts i ett format som gÃ¥r att sÃ¶ka, filtrera och fÃ¶rstÃ¥.'],
-            ['02', 'Publicera', 'Annonsen gÃ¥r live med rÃ¤tt kategori och blir en del av Autorells marknadsplatsflÃ¶de.'],
-            ['03', 'Kvalificera', 'Intresse samlas kring annonsen, sÃ¥ att frÃ¥gor och svar fÃ¥r sammanhang i stÃ¤llet fÃ¶r att bli lÃ¶s dialog.'],
-            ['04', 'Avsluta affÃ¤ren', 'SÃ¤ljare och kÃ¶pare kommer Ã¶verens om dokument, betalning, upphÃ¤mtning och leverans direkt.'],
+            ['01', 'Strukturera', 'Fordonstyp, plats, pris, valuta och skick sätts i ett format som går att söka, filtrera och förstå.'],
+            ['02', 'Publicera', 'Annonsen går live med rätt kategori och blir en del av Autorells marknadsplatsflöde.'],
+            ['03', 'Kvalificera', 'Intresse samlas kring annonsen, så att frågor och svar får sammanhang i stället för att bli lös dialog.'],
+            ['04', 'Avsluta affären', 'Säljare och köpare kommer överens om dokument, betalning, upphämtning och leverans direkt.'],
           ]
         : [
             ['01', 'Structure', 'Vehicle type, location, price, currency and condition are prepared for search and filtering.'],
@@ -1219,14 +1219,14 @@ export default async function PublicInfoPage({
           <section className="bg-[#0b1220] text-white">
             <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-24">
               <p className="text-xs font-medium uppercase tracking-[.2em] text-[#93c5fd]">
-                {isSv ? 'SÃ¥ fungerar Autorell' : 'How Autorell works'}
+                {isSv ? 'Så fungerar Autorell' : 'How Autorell works'}
               </p>
               <h1 className="mt-5 max-w-5xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[68px]">
-                {isSv ? 'FrÃ¥n fordonsdata till kvalificerad kÃ¶parkontakt.' : 'From vehicle data to qualified buyer contact.'}
+                {isSv ? 'Från fordonsdata till kvalificerad köparkontakt.' : 'From vehicle data to qualified buyer contact.'}
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-[#cbd5e1]">
                 {isSv
-                  ? 'Autorell Ã¤r byggt fÃ¶r att skala fÃ¶rtroende. Varje steg i flÃ¶det gÃ¶r annonsen tydligare, sÃ¶kningen mer relevant och kontakten mer professionell.'
+                  ? 'Autorell är byggt för att skala förtroende. Varje steg i flödet gör annonsen tydligare, sökningen mer relevant och kontakten mer professionell.'
                   : 'Autorell is built to scale trust. Every step makes the listing clearer, search more relevant and contact more professional.'}
               </p>
             </div>
@@ -1248,7 +1248,7 @@ export default async function PublicInfoPage({
               <div>
                 <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">Marketplace operating model</p>
                 <h2 className="mt-3 max-w-2xl text-3xl font-medium tracking-[-.04em]">
-                  {isSv ? 'Ett flÃ¶de som kan vÃ¤xa frÃ¥n en annons till en europeisk fordonsmarknad.' : 'A flow that can grow from one listing to a European vehicle market.'}
+                  {isSv ? 'Ett flöde som kan växa från en annons till en europeisk fordonsmarknad.' : 'A flow that can grow from one listing to a European vehicle market.'}
                 </h2>
               </div>
               <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5] sm:mt-0">
@@ -1266,8 +1266,8 @@ export default async function PublicInfoPage({
     const packageCards = isSv
       ? [
           ['Start', '7 dagar', 'Publicera och kontrollera annonsens kvalitet utan startkostnad.'],
-          ['Standard', '15 dagar', 'FÃ¶r fordon som behÃ¶ver stabil synlighet Ã¶ver flera kÃ¶pbeslut.'],
-          ['Premium', '30 dagar', 'FÃ¶r annonser dÃ¤r exponering och prioritet ska kÃ¤nnas tydligt.'],
+          ['Standard', '15 dagar', 'För fordon som behöver stabil synlighet över flera köpbeslut.'],
+          ['Premium', '30 dagar', 'För annonser där exponering och prioritet ska kännas tydligt.'],
         ]
       : [
           ['Start', '7 days', 'Publish and check listing quality without starting cost.'],
@@ -1285,11 +1285,11 @@ export default async function PublicInfoPage({
                 {isSv ? 'Pris och synlighet' : 'Pricing and visibility'}
               </p>
               <h1 className="mt-5 max-w-4xl text-[42px] font-medium leading-[1.03] tracking-[-.05em] sm:text-[68px]">
-                {isSv ? 'Pris fÃ¶r att annonsera fordon' : 'Pricing for vehicle advertising'}
+                {isSv ? 'Pris för att annonsera fordon' : 'Pricing for vehicle advertising'}
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
                 {isSv
-                  ? 'PrissÃ¤ttningen ska vara enkel att granska innan publicering. Varje kategori har en gratis start, en standardperiod och premiumsynlighet fÃ¶r annonser som ska lyftas.'
+                  ? 'Prissättningen ska vara enkel att granska innan publicering. Varje kategori har en gratis start, en standardperiod och premiumsynlighet för annonser som ska lyftas.'
                   : 'Pricing should be easy to review before publishing. Each category has a free start, a standard period and premium visibility.'}
               </p>
             </div>
@@ -1350,9 +1350,9 @@ export default async function PublicInfoPage({
     if (page === 'sell-vehicle') {
       const steps = isSv
         ? [
-            ['01', 'Fordonskortet', 'Visa rÃ¤tt kategori, utrustning, miltal, skick, plats och valuta redan frÃ¥n fÃ¶rsta vyn.'],
-            ['02', 'FÃ¶rtroendet', 'Verifierad sÃ¤ljare, tydliga kontaktvÃ¤gar och ordnad information gÃ¶r kÃ¶paren tryggare.'],
-            ['03', 'Dialogen', 'Meddelanden samlas kring annonsen sÃ¥ att intresse, frÃ¥gor och nÃ¤sta steg hÃ¤nger ihop.'],
+            ['01', 'Fordonskortet', 'Visa rätt kategori, utrustning, miltal, skick, plats och valuta redan från första vyn.'],
+            ['02', 'Förtroendet', 'Verifierad säljare, tydliga kontaktvägar och ordnad information gör köparen tryggare.'],
+            ['03', 'Dialogen', 'Meddelanden samlas kring annonsen så att intresse, frågor och nästa steg hänger ihop.'],
           ]
         : [
             ['01', 'Vehicle card', 'Show category, equipment, mileage, condition, location and currency from the first view.'],
@@ -1370,14 +1370,14 @@ export default async function PublicInfoPage({
             <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:py-20">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[.18em] text-[#0866ff]">
-                  {isSv ? 'SÃ¤lja pÃ¥ Autorell' : copy.eyebrow}
+                  {isSv ? 'Sälja på Autorell' : copy.eyebrow}
                 </p>
                 <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[62px]">
-                  {isSv ? 'SÃ¤lj fordon med rÃ¤tt information frÃ¥n fÃ¶rsta klicket.' : copy.title}
+                  {isSv ? 'Sälj fordon med rätt information från första klicket.' : copy.title}
                 </h1>
                 <p className="mt-6 max-w-2xl text-lg font-normal leading-8 text-[#5f6b7a]">
                   {isSv
-                    ? 'Autorell hjÃ¤lper dig presentera fordonet tydligt, oavsett om det gÃ¤ller bil, transportbil, husbil eller maskin. KÃ¶paren ser det viktigaste direkt och kontakten blir enklare att fÃ¶lja.'
+                    ? 'Autorell hjälper dig presentera fordonet tydligt, oavsett om det gäller bil, transportbil, husbil eller maskin. Köparen ser det viktigaste direkt och kontakten blir enklare att följa.'
                     : copy.intro}
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -1424,10 +1424,10 @@ export default async function PublicInfoPage({
     if (page === 'how-selling-works') {
       const steps = isSv
         ? [
-            ['01', 'FÃ¶rbered', 'Samla bilder, servicehistorik, skick, utrustning och det kÃ¶paren behÃ¶ver veta innan kontakt.'],
-            ['02', 'Publicera', 'VÃ¤lj kategori, marknad och pris. Annonsen byggs sÃ¥ att jÃ¤mfÃ¶relse blir enkel.'],
-            ['03', 'FÃ¶lj dialogen', 'Spara svar, frÃ¥gor och intresse runt samma annons i stÃ¤llet fÃ¶r utspridda trÃ¥dar.'],
-            ['04', 'Kom Ã¶verens', 'KÃ¶pare och sÃ¤ljare gÃ¶r upp om dokument, betalning, leverans och hÃ¤mtning direkt.'],
+            ['01', 'Förbered', 'Samla bilder, servicehistorik, skick, utrustning och det köparen behöver veta innan kontakt.'],
+            ['02', 'Publicera', 'Välj kategori, marknad och pris. Annonsen byggs så att jämförelse blir enkel.'],
+            ['03', 'Följ dialogen', 'Spara svar, frågor och intresse runt samma annons i stället för utspridda trådar.'],
+            ['04', 'Kom överens', 'Köpare och säljare gör upp om dokument, betalning, leverans och hämtning direkt.'],
           ]
         : [
             ['01', 'Prepare', 'Collect photos, service history, condition, equipment and details buyers need.'],
@@ -1442,14 +1442,14 @@ export default async function PublicInfoPage({
           <section className="bg-[#101828] text-white">
             <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 lg:py-20">
               <p className="text-xs font-medium uppercase tracking-[.18em] text-[#93c5fd]">
-                {isSv ? 'SÃ¥ fungerar det' : copy.eyebrow}
+                {isSv ? 'Så fungerar det' : copy.eyebrow}
               </p>
               <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[60px]">
-                {isSv ? 'Ett tydligt flÃ¶de frÃ¥n annons till seriÃ¶s kontakt.' : copy.title}
+                {isSv ? 'Ett tydligt flöde från annons till seriös kontakt.' : copy.title}
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-[#cbd5e1]">
                 {isSv
-                  ? 'SÃ¤ljprocessen ska kÃ¤nnas kontrollerad. Autorell delar upp arbetet i logiska steg sÃ¥ att annonsen, kontakten och nÃ¤sta beslut blir lÃ¤ttare att hantera.'
+                  ? 'Säljprocessen ska kännas kontrollerad. Autorell delar upp arbetet i logiska steg så att annonsen, kontakten och nästa beslut blir lättare att hantera.'
                   : copy.intro}
               </p>
             </div>
@@ -1469,10 +1469,10 @@ export default async function PublicInfoPage({
             <div className="mt-8 rounded-[20px] border border-[#dce5f2] bg-white p-7 shadow-[0_18px_50px_rgba(16,24,40,.06)] sm:flex sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-3xl font-medium tracking-[-.04em]">
-                  {isSv ? 'BÃ¶rja med rÃ¤tt kategori och tydliga uppgifter.' : 'Start with the right category and clear details.'}
+                  {isSv ? 'Börja med rätt kategori och tydliga uppgifter.' : 'Start with the right category and clear details.'}
                 </h2>
                 <p className="mt-3 max-w-2xl text-[#667085]">
-                  {isSv ? 'DÃ¥ blir sÃ¶kningen, kartan och kontakten mer relevant frÃ¥n bÃ¶rjan.' : 'That makes search, map and contact more relevant from the start.'}
+                  {isSv ? 'Då blir sökningen, kartan och kontakten mer relevant från början.' : 'That makes search, map and contact more relevant from the start.'}
                 </p>
               </div>
               <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-[#0866ff] px-6 text-sm font-medium text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#075ce5] sm:mt-0">
@@ -1489,9 +1489,9 @@ export default async function PublicInfoPage({
     const freeLabel = isSv ? 'Gratis' : 'Free'
     const packageCards = isSv
       ? [
-          ['Start', '7 dagar', 'FÃ¶rsta publicering utan kostnad.'],
-          ['Standard', '15 dagar', 'Mer tid i marknaden fÃ¶r vanliga annonser.'],
-          ['Premium', '30 dagar', 'Extra synlighet fÃ¶r fordon som ska lyftas.'],
+          ['Start', '7 dagar', 'Första publicering utan kostnad.'],
+          ['Standard', '15 dagar', 'Mer tid i marknaden för vanliga annonser.'],
+          ['Premium', '30 dagar', 'Extra synlighet för fordon som ska lyftas.'],
         ]
       : [
           ['Start', '7 days', 'First publishing without cost.'],
@@ -1508,11 +1508,11 @@ export default async function PublicInfoPage({
               {isSv ? 'Priser' : copy.eyebrow}
             </p>
             <h1 className="mt-5 max-w-4xl text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-[60px]">
-              {isSv ? 'Annonspriser fÃ¶r varje fordonskategori.' : copy.title}
+              {isSv ? 'Annonspriser för varje fordonskategori.' : copy.title}
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
               {isSv
-                ? 'HÃ¤r redovisas priserna som gÃ¤ller per kategori. Start Ã¤r gratis, Standard ger lÃ¤ngre publicering och Premium ger mer synlighet.'
+                ? 'Här redovisas priserna som gäller per kategori. Start är gratis, Standard ger längre publicering och Premium ger mer synlighet.'
                 : copy.intro}
             </p>
           </div>
@@ -1546,10 +1546,10 @@ export default async function PublicInfoPage({
           <div className="mt-8 rounded-[20px] bg-[#101828] p-7 text-white sm:flex sm:items-center sm:justify-between">
             <div>
               <h2 className="text-3xl font-medium tracking-[-.04em]">
-                {isSv ? 'VÃ¤lj paket nÃ¤r annonsen Ã¤r redo.' : 'Choose a package when the listing is ready.'}
+                {isSv ? 'Välj paket när annonsen är redo.' : 'Choose a package when the listing is ready.'}
               </h2>
               <p className="mt-3 max-w-2xl text-[#cbd5e1]">
-                {isSv ? 'Priser visas innan publicering sÃ¥ att valet Ã¤r tydligt.' : 'Prices are shown before publishing so the choice is clear.'}
+                {isSv ? 'Priser visas innan publicering så att valet är tydligt.' : 'Prices are shown before publishing so the choice is clear.'}
               </p>
             </div>
             <Link href={primaryHref} className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[12px] bg-white px-6 text-sm font-medium text-[#101828] transition duration-200 hover:-translate-y-0.5 hover:bg-[#edf5ff] sm:mt-0">
@@ -1567,73 +1567,73 @@ export default async function PublicInfoPage({
     const isSv = locale === 'sv'
     const sellerPage = {
       'sell-vehicle': {
-        eyebrow: isSv ? 'SÃ¤lja pÃ¥ Autorell' : copy.eyebrow,
-        title: isSv ? 'SÃ¤lj fordon med bÃ¤ttre presentation och rÃ¤tt kÃ¶pare.' : copy.title,
+        eyebrow: isSv ? 'Sälja på Autorell' : copy.eyebrow,
+        title: isSv ? 'Sälj fordon med bättre presentation och rätt köpare.' : copy.title,
         intro: isSv
-          ? 'En tydlig annons gÃ¶r bilen, transportbilen eller maskinen enklare att fÃ¶rstÃ¥ innan fÃ¶rsta kontakten. Autorell samlar fordonsdata, plats, pris och sÃ¤ljartyp i ett lugnt flÃ¶de.'
+          ? 'En tydlig annons gör bilen, transportbilen eller maskinen enklare att förstå innan första kontakten. Autorell samlar fordonsdata, plats, pris och säljartyp i ett lugnt flöde.'
           : copy.intro,
-        sideTitle: isSv ? 'Bygg annonsen runt det kÃ¶paren faktiskt vill se.' : 'Build the listing around what buyers need first.',
+        sideTitle: isSv ? 'Bygg annonsen runt det köparen faktiskt vill se.' : 'Build the listing around what buyers need first.',
         sideItems: isSv
-          ? ['Bilder, skick och utrustning', 'Pris, valuta och plats', 'SÃ¤ljartyp och kontaktvÃ¤g']
+          ? ['Bilder, skick och utrustning', 'Pris, valuta och plats', 'Säljartyp och kontaktväg']
           : ['Photos, condition and equipment', 'Price, currency and location', 'Seller type and contact route'],
         cards: isSv
           ? [
-              ['1', 'FÃ¶rbered material', 'Samla bilder, servicehistorik, utrustning, miltal och eventuella kÃ¤nda fel.'],
-              ['2', 'Publicera tydligt', 'VÃ¤lj kategori, skriv sakligt och lÃ¥t kÃ¶paren se rÃ¤tt information direkt.'],
-              ['3', 'FÃ¶lj intresse', 'Spara dialogen, svara med sammanhang och hÃ¥ll affÃ¤ren organiserad.'],
+              ['1', 'Förbered material', 'Samla bilder, servicehistorik, utrustning, miltal och eventuella kända fel.'],
+              ['2', 'Publicera tydligt', 'Välj kategori, skriv sakligt och låt köparen se rätt information direkt.'],
+              ['3', 'Följ intresse', 'Spara dialogen, svara med sammanhang och håll affären organiserad.'],
             ]
           : [
               ['1', 'Prepare details', 'Collect photos, service history, equipment, mileage and known issues.'],
               ['2', 'Publish clearly', 'Choose category, write plainly and show buyers the right context.'],
               ['3', 'Follow interest', 'Keep conversations organised and respond with listing context.'],
             ],
-        lowerTitle: isSv ? 'Passar bÃ¥de privata sÃ¤ljare och fÃ¶retag.' : 'Made for private sellers and businesses.',
+        lowerTitle: isSv ? 'Passar både privata säljare och företag.' : 'Made for private sellers and businesses.',
       },
       'how-selling-works': {
-        eyebrow: isSv ? 'SÃ¥ fungerar det' : copy.eyebrow,
-        title: isSv ? 'Ett lugnt sÃ¤ljflÃ¶de frÃ¥n annons till seriÃ¶s kontakt.' : copy.title,
+        eyebrow: isSv ? 'Så fungerar det' : copy.eyebrow,
+        title: isSv ? 'Ett lugnt säljflöde från annons till seriös kontakt.' : copy.title,
         intro: isSv
-          ? 'Processen Ã¤r byggd fÃ¶r att varje steg ska kÃ¤nnas tydligt: skapa annons, fÃ¥ kontakt, kontrollera kÃ¶paren och komma Ã¶verens utanfÃ¶r annonsen.'
+          ? 'Processen är byggd för att varje steg ska kännas tydligt: skapa annons, få kontakt, kontrollera köparen och komma överens utanför annonsen.'
           : copy.intro,
-        sideTitle: isSv ? 'Inga onÃ¶diga steg. Bara rÃ¤tt ordning.' : 'No noisy steps. Just the right order.',
+        sideTitle: isSv ? 'Inga onödiga steg. Bara rätt ordning.' : 'No noisy steps. Just the right order.',
         sideItems: isSv
-          ? ['Skapa konto', 'Publicera annons', 'Hantera meddelanden', 'Kom Ã¶verens om betalning och hÃ¤mtning']
+          ? ['Skapa konto', 'Publicera annons', 'Hantera meddelanden', 'Kom överens om betalning och hämtning']
           : ['Create account', 'Publish listing', 'Manage messages', 'Agree payment and pickup'],
         cards: isSv
           ? [
-              ['01', 'Annonsen', 'Fyll i kategori, pris, plats och detaljer sÃ¥ kÃ¶paren kan jÃ¤mfÃ¶ra snabbt.'],
-              ['02', 'Kontakten', 'Meddelanden kopplas till annonsen sÃ¥ dialogen behÃ¥ller sammanhang.'],
-              ['03', 'AffÃ¤ren', 'KÃ¶pare och sÃ¤ljare bekrÃ¤ftar dokument, betalning och Ã¶verlÃ¤mning direkt.'],
+              ['01', 'Annonsen', 'Fyll i kategori, pris, plats och detaljer så köparen kan jämföra snabbt.'],
+              ['02', 'Kontakten', 'Meddelanden kopplas till annonsen så dialogen behåller sammanhang.'],
+              ['03', 'Affären', 'Köpare och säljare bekräftar dokument, betalning och överlämning direkt.'],
             ]
           : [
               ['01', 'Listing', 'Add category, price, location and details so buyers can compare quickly.'],
               ['02', 'Contact', 'Messages stay tied to the listing for cleaner context.'],
               ['03', 'Deal', 'Buyer and seller confirm documents, payment and handover directly.'],
             ],
-        lowerTitle: isSv ? 'Byggt fÃ¶r tydligare dialog, inte stressade affÃ¤rer.' : 'Built for clearer dialogue, not rushed deals.',
+        lowerTitle: isSv ? 'Byggt för tydligare dialog, inte stressade affärer.' : 'Built for clearer dialogue, not rushed deals.',
       },
       pricing: {
         eyebrow: isSv ? 'Pris' : copy.eyebrow,
-        title: isSv ? 'VÃ¤lj synlighet efter hur fordonet ska sÃ¤ljas.' : copy.title,
+        title: isSv ? 'Välj synlighet efter hur fordonet ska säljas.' : copy.title,
         intro: isSv
-          ? 'Autorell ska vara enkelt att fÃ¶rstÃ¥ innan du publicerar. VÃ¤lj en enkel start eller mer synlighet nÃ¤r annonsen behÃ¶ver lyftas.'
+          ? 'Autorell ska vara enkelt att förstå innan du publicerar. Välj en enkel start eller mer synlighet när annonsen behöver lyftas.'
           : copy.intro,
-        sideTitle: isSv ? 'Tydlig publicering utan Ã¶verraskningar.' : 'Clear publishing without surprises.',
+        sideTitle: isSv ? 'Tydlig publicering utan överraskningar.' : 'Clear publishing without surprises.',
         sideItems: isSv
           ? ['Gratis start', 'Standardperiod', 'Premiumsynlighet']
           : ['Free start', 'Standard period', 'Premium visibility'],
         cards: isSv
           ? [
-              ['Start', '7 dagar', 'Testa annonsen och se att allt ser rÃ¤tt ut innan du vÃ¤ljer mer synlighet.'],
-              ['Standard', '15 dagar', 'FÃ¶r vanliga annonser dÃ¤r du vill ligga ute lÃ¤ngre och fÃ¥ stabil exponering.'],
-              ['Premium', '30 dagar', 'FÃ¶r fordon som ska synas mer i rÃ¤tt kategori och marknad.'],
+              ['Start', '7 dagar', 'Testa annonsen och se att allt ser rätt ut innan du väljer mer synlighet.'],
+              ['Standard', '15 dagar', 'För vanliga annonser där du vill ligga ute längre och få stabil exponering.'],
+              ['Premium', '30 dagar', 'För fordon som ska synas mer i rätt kategori och marknad.'],
             ]
           : [
               ['Start', '7 days', 'Test the listing and make sure everything looks right.'],
               ['Standard', '15 days', 'For normal listings that need longer steady exposure.'],
               ['Premium', '30 days', 'For vehicles that need stronger category and market visibility.'],
             ],
-        lowerTitle: isSv ? 'Priset ska kÃ¤nnas tydligt innan publicering.' : 'Pricing should feel clear before publishing.',
+        lowerTitle: isSv ? 'Priset ska kännas tydligt innan publicering.' : 'Pricing should feel clear before publishing.',
       },
     }[page as 'sell-vehicle' | 'how-selling-works' | 'pricing']
 

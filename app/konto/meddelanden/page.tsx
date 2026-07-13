@@ -40,6 +40,8 @@ const copy = {
     choose: 'Välj en konversation för att läsa och svara.',
     unread: 'olästa',
     you: 'Du',
+    sent: 'Skickat',
+    read: 'LÃ¤st',
   },
   de: {
     title: 'Nachrichten',
@@ -55,6 +57,8 @@ const copy = {
     choose: 'Wählen Sie eine Unterhaltung zum Lesen und Antworten.',
     unread: 'ungelesen',
     you: 'Sie',
+    sent: 'Gesendet',
+    read: 'Gelesen',
   },
   en: {
     title: 'Messages',
@@ -70,6 +74,8 @@ const copy = {
     choose: 'Choose a conversation to read and reply.',
     unread: 'unread',
     you: 'You',
+    sent: 'Sent',
+    read: 'Read',
   },
 } as const
 
@@ -144,26 +150,40 @@ export default async function MessagesPage({
     ])
   const listings = listingData || []
   const profiles = profileData || []
-  const allMessages = messageData || []
+  let allMessages = messageData || []
+  const conversationsWithMessages = new Set(allMessages.map((message) => message.conversation_id))
+  const visibleConversations = conversations.filter(
+    (conversation) =>
+      conversation.buyer_user_id === user.id ||
+      conversationsWithMessages.has(conversation.id),
+  )
 
   const requestedId = (await searchParams).conversation
   const selectedId =
-    requestedId && conversations.some((item) => item.id === requestedId)
+    requestedId && visibleConversations.some((item) => item.id === requestedId)
       ? requestedId
-      : conversations[0]?.id
-  const selected = conversations.find((item) => item.id === selectedId)
-  const selectedMessages = allMessages.filter(
-    (message) => message.conversation_id === selectedId,
-  )
+      : visibleConversations[0]?.id
+  const selected = visibleConversations.find((item) => item.id === selectedId)
 
   if (selectedId) {
+    const readAt = new Date().toISOString()
     await admin
       .from('marketplace_messages')
-      .update({ read_at: new Date().toISOString() })
+      .update({ read_at: readAt })
       .eq('conversation_id', selectedId)
       .neq('sender_user_id', user.id)
       .is('read_at', null)
+    allMessages = allMessages.map((message) =>
+      message.conversation_id === selectedId &&
+      message.sender_user_id !== user.id &&
+      !message.read_at
+        ? { ...message, read_at: readAt }
+        : message,
+    )
   }
+  const selectedMessages = allMessages.filter(
+    (message) => message.conversation_id === selectedId,
+  )
 
   const listingsById = new Map(listings.map((listing) => [listing.id, listing]))
   const profilesById = new Map(profiles.map((profile) => [profile.user_id, profile]))
@@ -199,14 +219,14 @@ export default async function MessagesPage({
         </div>
       </section>
 
-      {conversations.length ? (
+      {visibleConversations.length ? (
         <div className="grid min-h-[640px] overflow-hidden rounded-[24px] border border-[#dde1e7] bg-white shadow-[0_18px_50px_rgba(16,24,40,.07)] lg:grid-cols-[360px_1fr]">
           <aside className="border-b border-[#e4e7ec] bg-[#fafaf9] lg:border-b-0 lg:border-r">
             <div className="border-b border-[#e4e7ec] px-5 py-4">
-              <p className="text-sm font-semibold">{conversations.length} {text.conversation.toLocaleLowerCase(locale)}</p>
+              <p className="text-sm font-semibold">{visibleConversations.length} {text.conversation.toLocaleLowerCase(locale)}</p>
             </div>
             <div className="max-h-[620px] overflow-y-auto p-2">
-              {conversations.map((conversation) => {
+              {visibleConversations.map((conversation) => {
                 const listing = listingsById.get(conversation.listing_id)
                 const otherId =
                   conversation.buyer_user_id === user.id
@@ -336,7 +356,13 @@ export default async function MessagesPage({
                               day: 'numeric',
                               month: 'short',
                             }).format(new Date(message.created_at))}
-                            {mine && message.read_at ? <CheckCheck className="h-3 w-3" /> : null}
+                            {mine ? (
+                              <>
+                                <span aria-hidden="true">Â·</span>
+                                <span>{message.read_at ? text.read : text.sent}</span>
+                                {message.read_at ? <CheckCheck className="h-3 w-3" /> : null}
+                              </>
+                            ) : null}
                           </span>
                         </div>
                       </div>

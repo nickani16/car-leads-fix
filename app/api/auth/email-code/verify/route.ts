@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     })
     if (verifyLimit.limited) {
       return NextResponse.json(
-        { error: 'FÃ¶r mÃ¥nga fÃ¶rsÃ¶k. VÃ¤nta en stund och fÃ¶rsÃ¶k igen.' },
+        { error: 'För många försök. Vänta en stund och försök igen.' },
         {
           status: 429,
           headers: { 'Retry-After': String(verifyLimit.retryAfter) },

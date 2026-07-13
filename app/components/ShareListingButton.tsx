@@ -9,12 +9,16 @@ export default function ShareListingButton({
   label = 'Dela annons',
   variant = 'button',
   className: extraClassName = '',
+  labelClassName = '',
+  iconClassName = 'h-4 w-4 text-[#0866ff]',
 }: {
   title: string
   url: string
   label?: string
   variant?: 'button' | 'plain'
   className?: string
+  labelClassName?: string
+  iconClassName?: string
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -44,8 +48,8 @@ export default function ShareListingButton({
       style={variant === 'plain' ? { fontWeight: 500 } : undefined}
       className={`${buttonClassName} ${extraClassName}`.trim()}
     >
-      <Share2 className="h-4 w-4 text-[#0866ff]" />
-      {copied ? 'Länk kopierad' : label}
+      <Share2 className={iconClassName} />
+      <span className={labelClassName}>{copied ? 'Länk kopierad' : label}</span>
     </button>
   )
 }

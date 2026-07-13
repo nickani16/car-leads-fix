@@ -5,7 +5,7 @@ import { Heart, ImageIcon, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { MarketplaceListing } from './MarketplaceCategoryBrowser'
 import SavedListingButton from './SavedListingButton'
-import CountryFlag from './CountryFlag'
+import { FlagIcon } from './PublicFooter'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import {
   SAVED_LISTINGS_EVENT,
@@ -119,7 +119,7 @@ export default function SavedListingsClient({
                 year: listing.year,
                 city: listing.city,
                 country_code: listing.country,
-              })
+              }, locale)
               const sellerLabel = listing.sellerIsTrader ? listing.sellerName : 'Privat'
 
               return (
@@ -165,9 +165,12 @@ export default function SavedListingsClient({
                       .filter(Boolean)
                       .join(' | ')}
                   </p>
-                  <p className="mt-3 text-xs font-semibold text-[#475467]">
-                    {sellerLabel}
-                  </p>
+                  <div className="mt-3 flex min-h-6 items-center justify-between gap-3">
+                    <p className="text-xs font-semibold text-[#475467]">
+                      {sellerLabel}
+                    </p>
+                    <FlagIcon code={(listing.country || 'EU').toUpperCase()} size="sm" />
+                  </div>
                   <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#eaecf0] pt-4">
                     <strong>{listing.priceLabel}</strong>
                     <Link href={detailHref} className="text-sm font-bold text-[#0866ff]">
@@ -175,10 +178,6 @@ export default function SavedListingsClient({
                     </Link>
                   </div>
                 </div>
-                <CountryFlag
-                  code={listing.country || 'eu'}
-                  className="absolute bottom-4 right-4 h-7 w-7 rounded-full shadow-[0_8px_18px_rgba(16,24,40,.18)] ring-2 ring-white"
-                />
               </article>
               )
             })}

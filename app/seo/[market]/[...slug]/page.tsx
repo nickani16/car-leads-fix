@@ -154,7 +154,7 @@ export default async function SeoLandingPage({ params, searchParams }: SeoPagePr
                   href={data.pagination.previousHref}
                   className="rounded-[8px] border border-[#dfe6f2] bg-white px-4 py-2 text-sm font-semibold text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]"
                 >
-                  FÃ¶regÃ¥ende sida
+                  Föregående sida
                 </Link>
               ) : null}
               <span className="text-sm font-medium text-[#667085]">
@@ -165,7 +165,7 @@ export default async function SeoLandingPage({ params, searchParams }: SeoPagePr
                   href={data.pagination.nextHref}
                   className="rounded-[8px] border border-[#dfe6f2] bg-white px-4 py-2 text-sm font-semibold text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]"
                 >
-                  NÃ¤sta sida
+                  Nästa sida
                 </Link>
               ) : null}
             </nav>

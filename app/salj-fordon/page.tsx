@@ -81,17 +81,17 @@ export default async function SellVehiclePage({
       <section className="border-b border-[#e4e7ec] bg-white">
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0866ff]">
-            Publicera pÃ¥ Autorell
+            Publicera på Autorell
           </span>
           <h1 className="mt-4 max-w-[330px] text-[42px] leading-[.98] tracking-[-0.055em] sm:max-w-3xl sm:text-6xl">
-            SÃ¤lj ett fordon till en stÃ¶rre marknad.
+            Sälj ett fordon till en större marknad.
           </h1>
           <p className="mt-6 max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-2xl sm:text-lg sm:leading-8">
-            Privatpersoner och fÃ¶retag publicerar per objekt. VÃ¤lj kategori,
-            skicka in underlaget och vÃ¤lj annonspaket nÃ¤r objektet Ã¤r godkÃ¤nt.
+            Privatpersoner och företag publicerar per objekt. Välj kategori,
+            skicka in underlaget och välj annonspaket när objektet är godkänt.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-[#475467]">
-            {['Betala per annons', 'Ingen prenumeration krÃ¤vs', 'Europeisk rÃ¤ckvidd'].map((item) => (
+            {['Betala per annons', 'Ingen prenumeration krävs', 'Europeisk räckvidd'].map((item) => (
               <span key={item} className="inline-flex items-center gap-2 rounded-[12px] bg-[#f0f4ff] px-4 py-2">
                 <Check className="h-4 w-4 text-[#0866ff]" />
                 {item}
@@ -131,13 +131,13 @@ export default async function SellVehiclePage({
           <div className="mt-8 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
             <article className="rounded-[28px] border border-[#dce3f2] bg-white p-8 sm:p-10">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0866ff]">
-                SÃ¥ fungerar publiceringen
+                Så fungerar publiceringen
               </p>
               <ol className="mt-7 grid gap-5">
                 {[
-                  ['01', 'Skicka in fordonet', 'LÃ¤gg till kategori, fordonsdata, plats och bilder.'],
-                  ['02', 'VÃ¤lj annonspaket', 'Betala per publicerat objekt efter att underlaget har godkÃ¤nts.'],
-                  ['03', 'NÃ¥ rÃ¤tt kÃ¶pare', 'Annonsen blir sÃ¶kbar pÃ¥ relevanta marknader i Europa.'],
+                  ['01', 'Skicka in fordonet', 'Lägg till kategori, fordonsdata, plats och bilder.'],
+                  ['02', 'Välj annonspaket', 'Betala per publicerat objekt efter att underlaget har godkänts.'],
+                  ['03', 'Nå rätt köpare', 'Annonsen blir sökbar på relevanta marknader i Europa.'],
                 ].map(([number, title, text]) => (
                   <li key={number} className="flex gap-4 border-b border-[#eaecf0] pb-5 last:border-0 last:pb-0">
                     <span className="text-sm font-bold text-[#0866ff]">{number}</span>
@@ -156,14 +156,14 @@ export default async function SellVehiclePage({
                   Annonspaket
                 </p>
                 <h2 className="mt-4 text-3xl tracking-[-0.045em]">
-                  Betala bara fÃ¶r objekten du publicerar.
+                  Betala bara för objekten du publicerar.
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-[#667085]">
-                  Inga fasta abonnemang krÃ¤vs. Standard- och premiumpaket vÃ¤ljs
-                  separat fÃ¶r varje godkÃ¤nt fordon.
+                  Inga fasta abonnemang krävs. Standard- och premiumpaket väljs
+                  separat för varje godkänt fordon.
                 </p>
                 <Link href={localizePublicHref(locale, '/contact')} className="mt-7 inline-flex items-center gap-2 font-bold text-[#0866ff]">
-                  FrÃ¥gor om stÃ¶rre volymer
+                  Frågor om större volymer
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -174,9 +174,9 @@ export default async function SellVehiclePage({
 
       <section id="priser" className="scroll-mt-28 border-y border-[#e4e7ec] bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">PrissÃ¤ttning per annons</p>
-          <h2 className="mt-4 text-4xl tracking-[-.045em]">Tydligt pris fÃ¶r varje kategori.</h2>
-          <p className="mt-3 max-w-2xl text-[#667085]">Samma tydliga kategoripris gÃ¤ller fÃ¶r privatpersoner och fÃ¶retag. Alla priser visas inklusive tillÃ¤mplig moms fÃ¶re betalning.</p>
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Prissättning per annons</p>
+          <h2 className="mt-4 text-4xl tracking-[-.045em]">Tydligt pris för varje kategori.</h2>
+          <p className="mt-3 max-w-2xl text-[#667085]">Samma tydliga kategoripris gäller för privatpersoner och företag. Alla priser visas inklusive tillämplig moms före betalning.</p>
           <div className="mt-8 overflow-x-auto rounded-[22px] border border-[#e1e5ec]">
             <table className="w-full min-w-[720px] border-collapse text-left text-sm">
               <thead className="bg-[#f4f7ff]"><tr><th className="p-4">Kategori</th><th className="p-4">7 dagar</th><th className="p-4">15 dagar</th><th className="p-4">Premium 30 dagar</th></tr></thead>

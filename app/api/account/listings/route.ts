@@ -25,7 +25,7 @@ import { euCountryCodes } from '@/lib/eu-countries'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { publicSellerName } from '@/lib/public-seller'
-import { inferSwedishLocation } from '@/lib/swedish-location-mapping'
+import { inferMarketplaceLocation } from '@/lib/marketplace-locations'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -41,6 +41,7 @@ import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 const MAX_IMAGES = 20
 const MAX_IMAGE_SIZE = 25 * 1024 * 1024
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
+type ListingFormStep = 0 | 1 | 2 | 3 | 4
 type UploadedMarketplaceImage = {
   avifUrl: string
   webpUrl: string
@@ -55,6 +56,15 @@ type UploadedMarketplaceImage = {
 
 function text(form: FormData, key: string) {
   return String(form.get(key) || '').trim()
+}
+
+function listingFormError(
+  error: string,
+  step: ListingFormStep,
+  field?: string,
+  status = 400,
+) {
+  return NextResponse.json({ error, step, field }, { status })
 }
 
 function numberOrNull(value: string) {
@@ -234,10 +244,7 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      return NextResponse.json(
-        { error: 'Sign in to create a listing.' },
-        { status: 401 },
-      )
+      return listingFormError('Logga in för att skapa en annons.', 4, 'account', 401)
     }
     const createLimit = checkRateLimit({
       key: `create-listing:${user.id}:${getClientIp(request)}`,
@@ -272,25 +279,16 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .maybeSingle()
     if (!profile) {
-      return NextResponse.json(
-        { error: 'Complete your account profile first.' },
-        { status: 403 },
-      )
+      return listingFormError('Komplettera din kontoprofil innan du skapar annonsen.', 4, 'account', 403)
     }
     if (profile.risk_status === 'blocked' || profile.risk_status === 'restricted') {
-      return NextResponse.json(
-        { error: 'Kontot är begränsat. Kontakta support innan du publicerar.' },
-        { status: 403 },
-      )
+      return listingFormError('Kontot är begränsat. Kontakta support innan du publicerar.', 4, 'account', 403)
     }
     if (
       profile.account_type === 'business' &&
       profile.business_verification_status === 'rejected'
     ) {
-      return NextResponse.json(
-        { error: 'Företaget behöver granskas av Autorell innan nya annonser kan publiceras.' },
-        { status: 403 },
-      )
+      return listingFormError('Företaget behöver granskas av Autorell innan nya annonser kan publiceras.', 4, 'account', 403)
     }
     if (
       !profile.first_name ||
@@ -303,10 +301,7 @@ export async function POST(request: Request) {
         (!profile.company_name || !(profile.registration_number || profile.vat_number) || !profile.phone)) ||
       (profile.account_type === 'private' && profile.identity_status === 'pending')
     ) {
-      return NextResponse.json(
-        { error: 'Komplettera och kontrollera din konto- och adressprofil först.' },
-        { status: 403 },
-      )
+      return listingFormError('Komplettera och kontrollera din konto- och adressprofil först.', 4, 'account', 403)
     }
 
     const form = await request.formData()
@@ -315,25 +310,16 @@ export async function POST(request: Request) {
     )
     const packageId = text(form, 'packageId')
     if (!(packageId in listingPackageDetails)) {
-      return NextResponse.json(
-        { error: 'Choose a valid listing package.' },
-        { status: 400 },
-      )
+      return listingFormError('Välj ett giltigt annonspaket.', 4, 'packageId')
     }
     if (form.get('listingTerms') !== 'on') {
-      return NextResponse.json(
-        { error: 'Accept the listing and payment terms.' },
-        { status: 400 },
-      )
+      return listingFormError('Godkänn annons- och betalningsvillkoren.', 4, 'listingTerms')
     }
     const missingConfirmation = sellerListingConfirmationKeys.find(
       (key) => form.get(key) !== 'on',
     )
     if (missingConfirmation) {
-      return NextResponse.json(
-        { error: 'Alla säljarbekräftelser måste godkännas innan annonsen kan skapas.' },
-        { status: 400 },
-      )
+      return listingFormError('Alla säljarbekräftelser måste godkännas innan annonsen kan skapas.', 4, missingConfirmation)
     }
 
     const make = text(form, 'make')
@@ -343,6 +329,7 @@ export async function POST(request: Request) {
       sellerNote ||
       `Strukturerad Autorell-annons: ${make} ${model}.`
     const city = text(form, 'city')
+    const rawRegion = text(form, 'county') || text(form, 'region')
     const rawMunicipality = text(form, 'municipality')
     const address = text(form, 'addressLine1')
     const postalCode = text(form, 'postalCode')
@@ -350,18 +337,17 @@ export async function POST(request: Request) {
     const listingCountryCode = euCountryCodes.has(requestedListingCountry)
       ? requestedListingCountry
       : profile.country_code
-    const swedishLocation =
-      inferSwedishLocation({
+    const normalizedLocation =
+      inferMarketplaceLocation({
         city,
+        region: rawRegion,
         municipality: rawMunicipality,
         countryCode: listingCountryCode,
       })
-    const municipality = swedishLocation.municipality || rawMunicipality || ''
+    const municipality = normalizedLocation.municipality || rawMunicipality || ''
+    const region = normalizedLocation.region || rawRegion || ''
     if (postalCode && !validatePostalCode(postalCode, listingCountryCode)) {
-      return NextResponse.json(
-        { error: 'Postnumret verkar inte vara giltigt för valt land.' },
-        { status: 400 },
-      )
+      return listingFormError('Postnumret verkar inte vara giltigt för valt land.', 0, 'postalCode')
     }
     const price = Number(text(form, 'price'))
     const colorChoice = text(form, 'colorChoice')
@@ -371,10 +357,7 @@ export async function POST(request: Request) {
         : colorChoice
     const knownColorValues = new Set(listingColorOptions.map((item) => item.value))
     if (!colorChoice || (!knownColorValues.has(colorChoice) && colorChoice !== 'other')) {
-      return NextResponse.json(
-        { error: 'Välj en giltig färg.' },
-        { status: 400 },
-      )
+      return listingFormError('Välj en giltig färg.', 1, 'colorChoice')
     }
     const requestedCurrency = text(form, 'currency').toUpperCase()
     const currency = isSupportedCurrency(requestedCurrency)
@@ -397,15 +380,12 @@ export async function POST(request: Request) {
     }
     const identifierValidation = validateRequiredIdentifiers(category, identifiers)
     if (!identifierValidation.valid) {
-      return NextResponse.json(
-        { error: identifierValidation.message },
-        { status: 400 },
-      )
+      return listingFormError(identifierValidation.message, 1, 'identifiers')
     }
     const { error: technicalError, technicalData } =
       collectStructuredTechnicalData(form, category)
     if (technicalError) {
-      return NextResponse.json({ error: technicalError }, { status: 400 })
+      return listingFormError(technicalError, 1, 'technical')
     }
     const equipmentKeys = parseEquipmentKeys(form)
     const equipmentText = equipmentTextFromKeys(equipmentKeys)
@@ -419,24 +399,13 @@ export async function POST(request: Request) {
       ['agriculture', 'construction'].includes(category) &&
       !Number(text(form, 'operatingHours'))
     ) {
-      return NextResponse.json(
-        { error: 'Drifttimmar krävs för maskiner.' },
-        { status: 400 },
-      )
+      return listingFormError('Drifttimmar krävs för maskiner.', 0, 'operatingHours')
     }
-    if (
-      !make ||
-      !model ||
-      !Number.isInteger(modelYear) ||
-      !city ||
-      !Number.isFinite(price) ||
-      price <= 0
-    ) {
-      return NextResponse.json(
-        { error: 'Complete vehicle, price and location.' },
-        { status: 400 },
-      )
-    }
+    if (!make) return listingFormError('Fyll i märke eller tillverkare.', 0, 'make')
+    if (!model) return listingFormError('Fyll i modell.', 0, 'model')
+    if (!Number.isInteger(modelYear)) return listingFormError('Fyll i en giltig årsmodell.', 0, 'modelYear')
+    if (!city) return listingFormError('Fyll i ort.', 0, 'city')
+    if (!Number.isFinite(price) || price <= 0) return listingFormError('Fyll i ett giltigt pris.', 0, 'price')
 
     const files = form
       .getAll('images')
@@ -450,10 +419,7 @@ export async function POST(request: Request) {
         (file) => !file.type.startsWith('image/') || file.size > MAX_IMAGE_SIZE,
       )
     ) {
-      return NextResponse.json(
-        { error: 'Upload 1-20 images, maximum 25 MB each.' },
-        { status: 400 },
-      )
+      return listingFormError('Ladda upp 1-20 bilder, max 25 MB per bild.', 2, 'images')
     }
     const serialPlateFile = form.get('serialPlateImage')
     if (
@@ -462,10 +428,7 @@ export async function POST(request: Request) {
       (!serialPlateFile.type.startsWith('image/') ||
         serialPlateFile.size > MAX_IMAGE_SIZE)
     ) {
-      return NextResponse.json(
-        { error: 'Ladda upp en giltig bild på serienummerskylten.' },
-        { status: 400 },
-      )
+      return listingFormError('Ladda upp en giltig bild på serienummerskylten.', 2, 'serialPlateImage')
     }
 
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -529,13 +492,24 @@ export async function POST(request: Request) {
     const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
     const longitude = geocoded?.longitude ?? parseCoordinate(text(form, 'longitude'))
 
-    const uploadedImages = await Promise.all(
-      files.map((file, index) => uploadImage(admin, file, user.id, index)),
-    )
-    const serialPlateImage =
-      serialPlateFile instanceof File && serialPlateFile.size > 0
-        ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
-        : null
+    let uploadedImages: UploadedMarketplaceImage[]
+    let serialPlateImage: UploadedMarketplaceImage | null
+    try {
+      uploadedImages = await Promise.all(
+        files.map((file, index) => uploadImage(admin, file, user.id, index)),
+      )
+      serialPlateImage =
+        serialPlateFile instanceof File && serialPlateFile.size > 0
+          ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
+          : null
+    } catch (imageError) {
+      console.error('Marketplace listing image processing failed', imageError)
+      return listingFormError(
+        'Bilderna kunde inte behandlas. Prova JPG, PNG eller WebP och ta bort eventuella skadade filer.',
+        2,
+        'images',
+      )
+    }
     const images = uploadedImages.map((image) => image.webpUrl)
     const duration =
       listingPackageDetails[packageId as keyof typeof listingPackageDetails]
@@ -642,7 +616,8 @@ export async function POST(request: Request) {
             address: address || null,
             city,
             municipality: municipality || null,
-            county: swedishLocation.county || null,
+            county: region || null,
+            region: region || null,
             country: listingCountryCode,
             latitude,
             longitude,
@@ -738,7 +713,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Marketplace listing creation failed', error)
     return NextResponse.json(
-      { error: 'The listing could not be created.' },
+      {
+        error: 'Annonsen kunde inte skapas just nu. Kontrollera uppgifterna och försök igen. Kontakta support om felet kvarstår.',
+        step: 4,
+      },
       { status: 500 },
     )
   }

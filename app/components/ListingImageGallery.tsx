@@ -1,11 +1,10 @@
 'use client'
 
 import {
-  Camera,
   ChevronLeft,
   ChevronRight,
-  Grid2X2,
   ImageIcon,
+  Maximize2,
   X,
 } from 'lucide-react'
 import {
@@ -15,23 +14,28 @@ import {
   useState,
   type TouchEvent,
 } from 'react'
+import SavedListingButton from '@/app/components/SavedListingButton'
 
 export default function ListingImageGallery({
   images,
   title,
+  listingId,
+  locale = 'en',
 }: {
   images: string[]
   title: string
+  listingId: string
+  locale?: string
 }) {
   const safeImages = images.filter(Boolean)
   const [active, setActive] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
-  const [showGrid, setShowGrid] = useState(false)
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
+  const fullscreenCopy = galleryCopy(locale)
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -109,8 +113,8 @@ export default function ListingImageGallery({
   }, [fullscreen, imageCount, showNext, showPrevious])
 
   return (
-    <section className="block">
-      <div className="group relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#edf4ff] shadow-sm lg:aspect-[4/3]">
+    <section className="-mx-4 block min-[430px]:-mx-5 sm:mx-0">
+      <div className="group relative aspect-[3/2] overflow-hidden bg-white shadow-sm sm:aspect-[16/10] sm:rounded-[12px] lg:aspect-[4/3]">
         {activeImage ? (
           <button
             type="button"
@@ -121,7 +125,7 @@ export default function ListingImageGallery({
               touchStartX.current = null
               touchStartY.current = null
             }}
-            className="block h-full w-full touch-pan-y"
+            className="block h-full w-full touch-pan-y select-none"
             aria-label="Open photos"
           >
             <div
@@ -149,12 +153,23 @@ export default function ListingImageGallery({
           </div>
         )}
 
+        {activeImage ? (
+          <button
+            type="button"
+            onClick={openFullscreen}
+            className="absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-[8px] bg-black/28 text-white backdrop-blur-[2px] transition hover:bg-black/38"
+            aria-label="Open fullscreen gallery"
+          >
+            <Maximize2 className="h-5 w-5 drop-shadow-[0_1px_4px_rgba(16,24,40,.55)]" strokeWidth={2.4} />
+          </button>
+        ) : null}
+
         {safeImages.length > 1 ? (
           <>
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-0 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/28 text-white backdrop-blur-[2px] transition hover:bg-black/38 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
@@ -162,7 +177,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-0 top-1/2 grid h-12 w-8 -translate-y-1/2 place-items-center text-white opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/28 text-white backdrop-blur-[2px] transition hover:bg-black/38 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
               <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
@@ -179,7 +194,7 @@ export default function ListingImageGallery({
         ) : null}
       </div>
       {safeImages.length > 1 ? (
-        <div className="mt-2 flex gap-3 overflow-x-auto pb-1 lg:hidden">
+        <div className="mt-2 hidden gap-3 overflow-x-auto pb-1 sm:flex lg:hidden">
           {safeImages.map((image, index) => (
             <button
               key={`${image}-${index}`}
@@ -209,95 +224,68 @@ export default function ListingImageGallery({
           aria-modal="true"
           aria-label="Photo gallery"
         >
-          <div className="flex min-h-16 items-center justify-between border-b border-white/10 px-4 pt-[env(safe-area-inset-top)] sm:px-6">
-            <button
-              type="button"
-              onClick={() => setShowGrid((current) => !current)}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/8 px-4 text-sm font-black text-white transition hover:bg-white/14"
-            >
-              {showGrid ? (
-                <Camera className="h-4 w-4" />
-              ) : (
-                <Grid2X2 className="h-4 w-4" />
-              )}
-              {showGrid ? 'View photo' : 'All photos'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFullscreen(false)}
-              className="grid h-11 w-11 place-items-center rounded-full bg-white/12 text-white shadow-[0_12px_32px_rgba(0,0,0,.28)] transition hover:bg-white/18"
-              aria-label="Close gallery"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          {showGrid ? (
-            <div className="h-[calc(100vh-64px)] overflow-y-auto p-3 sm:p-5">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-                {safeImages.map((image, index) => (
-                  <button
-                    key={`full-${image}-${index}`}
-                    type="button"
-                    onClick={() => {
-                      setActive(index)
-                      setShowGrid(false)
-                    }}
-                    className={`relative aspect-[4/3] overflow-hidden rounded-[8px] border bg-white/5 transition ${
-                      active === index
-                        ? 'border-[#0866ff] ring-2 ring-[#0866ff]/50'
-                        : 'border-white/10 hover:border-white/40'
-                    }`}
-                    aria-label={`Open photo ${index + 1}`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={image}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                    <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-1 text-xs font-black">
-                      {index + 1}/{safeImages.length}
-                    </span>
-                  </button>
-                ))}
+          <div className="pointer-events-none fixed inset-x-0 top-0 z-[190] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
+            <div className="mx-auto flex max-w-[1120px] items-start justify-between gap-3">
+              <div className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-[8px] bg-white px-4 text-base font-semibold text-[#101828] shadow-[0_10px_28px_rgba(0,0,0,.22)]">
+                <ImageIcon className="h-5 w-5" />
+                {fullscreenCopy.allImages}
+              </div>
+              <div className="pointer-events-auto flex items-center gap-2.5">
+                <SavedListingButton
+                  listingId={listingId}
+                  label={fullscreenCopy.save}
+                  savedLabel={fullscreenCopy.saved}
+                  variant="icon"
+                  className="h-12 w-12 rounded-[8px] text-[#101828] hover:text-[#101828]"
+                  iconClassName="h-6 w-6"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFullscreen(false)}
+                  className="grid h-12 w-12 place-items-center rounded-[8px] bg-white text-[#101828] shadow-[0_10px_28px_rgba(0,0,0,.22)] transition hover:bg-[#f2f4f7]"
+                  aria-label={fullscreenCopy.close}
+                >
+                  <X className="h-7 w-7" strokeWidth={2.3} />
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="relative flex h-[calc(100dvh-64px)] items-center justify-center px-3 py-4 sm:px-16">
-              {safeImages.length > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={showPrevious}
-                    className="absolute left-3 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white transition hover:bg-black sm:left-5"
-                    aria-label="Previous photo"
-                  >
-                    <ChevronLeft className="h-7 w-7" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={showNext}
-                    className="absolute right-3 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white transition hover:bg-black sm:right-5"
-                    aria-label="Next photo"
-                  >
-                    <ChevronRight className="h-7 w-7" />
-                  </button>
-                </>
-              ) : null}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeImage}
-                alt={title}
-                className="h-full w-full rounded-[10px] object-contain"
-              />
-              <span className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/72 px-3 py-1.5 text-sm font-black">
-                {active + 1}/{safeImages.length}
-              </span>
+          </div>
+
+          <div className="h-dvh overflow-y-auto px-4 pb-8 pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:px-8 sm:pb-12">
+            <div className="mx-auto grid max-w-[1120px] gap-5 sm:gap-7">
+              {safeImages.map((image, index) => (
+                <div key={`fullscreen-${image}-${index}`} className="overflow-hidden bg-[#181818]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image}
+                    alt={index === 0 ? title : ''}
+                    className="h-auto w-full object-contain"
+                  />
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       ) : null}
     </section>
   )
+}
+
+function galleryCopy(locale: string) {
+  const normalized = locale === 'at' ? 'de' : locale
+  const labels: Record<string, { allImages: string; save: string; saved: string; close: string }> = {
+    sv: { allImages: 'Alla bilder', save: 'Lägg till i favoriter', saved: 'Sparad i favoriter', close: 'Stäng galleri' },
+    en: { allImages: 'All images', save: 'Save', saved: 'Saved', close: 'Close gallery' },
+    de: { allImages: 'Alle Bilder', save: 'Speichern', saved: 'Gespeichert', close: 'Galerie schließen' },
+    fr: { allImages: 'Toutes les images', save: 'Enregistrer', saved: 'Enregistré', close: 'Fermer la galerie' },
+    es: { allImages: 'Todas las fotos', save: 'Guardar', saved: 'Guardado', close: 'Cerrar galería' },
+    it: { allImages: 'Tutte le immagini', save: 'Salva', saved: 'Salvato', close: 'Chiudi galleria' },
+    pl: { allImages: 'Wszystkie zdjęcia', save: 'Zapisz', saved: 'Zapisano', close: 'Zamknij galerię' },
+    nl: { allImages: "Alle foto's", save: 'Opslaan', saved: 'Opgeslagen', close: 'Galerij sluiten' },
+    be: { allImages: "Alle foto's", save: 'Opslaan', saved: 'Opgeslagen', close: 'Galerij sluiten' },
+    fi: { allImages: 'Kaikki kuvat', save: 'Tallenna', saved: 'Tallennettu', close: 'Sulje galleria' },
+    da: { allImages: 'Alle billeder', save: 'Gem', saved: 'Gemt', close: 'Luk galleri' },
+  }
+
+  return labels[normalized] || labels.en
 }

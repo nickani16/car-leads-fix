@@ -639,7 +639,18 @@ export default function PublicHeader({
   const isFindCarsPage = unprefixedPathname === '/find-cars'
   const isMarketplaceResults =
     unprefixedPathname === '/marketplace' || unprefixedPathname.startsWith('/marketplace/')
-  const isListingDetail = unprefixedPathname.startsWith('/listings/')
+  const firstPathSegment = unprefixedPathname.split('/').filter(Boolean)[0] || ''
+  const isListingDetail = new Set([
+    'listings',
+    'annons',
+    'anzeige',
+    'anuncio',
+    'annuncio',
+    'annonce',
+    'advertentie',
+    'ogloszenie',
+    'ilmoitus',
+  ]).has(firstPathSegment)
   const showTopCategoryNav = false
   const renderTopCategoryNav = showTopCategoryNav && atPageTop
   const showMobileCategoryNav =

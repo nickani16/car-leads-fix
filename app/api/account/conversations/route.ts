@@ -48,7 +48,6 @@ export async function POST(request: Request) {
     buyer_user_id: user.id,
     seller_user_id: listing.seller_user_id,
   }
-  const now = new Date().toISOString()
   const { data: existing, error: existingError } = await admin
     .from('marketplace_conversations')
     .select('id')
@@ -59,16 +58,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: existingError.message }, { status: 400 })
   }
   if (existing?.id) {
-    await admin
-      .from('marketplace_conversations')
-      .update({ last_message_at: now })
-      .eq('id', existing.id)
     return NextResponse.json({ id: existing.id })
   }
 
   const { data, error } = await admin
     .from('marketplace_conversations')
-    .insert({ ...participants, last_message_at: now })
+    .insert(participants)
     .select('id')
     .single()
 

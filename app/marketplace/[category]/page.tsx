@@ -227,8 +227,10 @@ export default async function MarketplaceCategoryPage({
         initialCategories={requestedCategories}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
         initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
+        initialSearchChips={getSearchParamList(resolvedSearchParams, 'chips')}
         initialMake={getSearchParam(resolvedSearchParams, 'make')}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
+        initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county')}
         initialCity={getSearchParam(resolvedSearchParams, 'city')}
         initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality')}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}

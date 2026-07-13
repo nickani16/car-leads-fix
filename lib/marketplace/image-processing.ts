@@ -1,4 +1,5 @@
 import 'server-only'
+import sharp from 'sharp'
 
 export type ProcessedMarketplaceImage = {
   avif: Buffer
@@ -22,11 +23,6 @@ export async function processMarketplaceImage(file: File): Promise<ProcessedMark
     throw new Error('Only image uploads are supported.')
   }
 
-  const sharpModule = (await Function(
-    'specifier',
-    'return import(specifier)',
-  )('sharp')) as typeof import('sharp')
-  const sharp = sharpModule.default || sharpModule
   const input = Buffer.from(await file.arrayBuffer())
   const pipeline = sharp(input, { limitInputPixels: MAX_INPUT_PIXELS })
     .rotate()

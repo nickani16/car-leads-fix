@@ -458,7 +458,7 @@ async function mapHomeListingCard(
   return {
     id: listing.id,
     title: listing.title,
-    href: buildListingPath(listing),
+    href: buildListingPath(listing, locale),
     imageUrl: listing.images?.[0] || null,
     imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
     priceLabel: Number.isFinite(price)

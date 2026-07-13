@@ -3,15 +3,22 @@ import 'server-only'
 import {
   marketplaceCategories,
   marketplaceLanguage,
+  normalizeMarketplaceCategory,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
+import {
+  marketplaceLocationEntries,
+  marketplaceRegionEntries,
+} from '@/lib/marketplace-locations'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import {
   isPublicLanguage,
   localizePublicHref,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { swedishCounties as swedishLocationCounties } from '@/lib/swedish-locations'
+import { buildListingPath } from '@/lib/listing-url'
+import { translateListingVehicleValue } from '@/lib/listing-display'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type PublicSearchEntry = {
   href: string
@@ -54,6 +61,23 @@ type VehicleMake = {
   models?: string[]
 }
 
+type SearchListingRow = {
+  id: string
+  category: MarketplaceCategorySlug | string | null
+  title: string | null
+  make: string | null
+  model: string | null
+  variant: string | null
+  model_year: number | string | null
+  fuel_type: string | null
+  gearbox: string | null
+  body_type: string | null
+  city: string | null
+  municipality: string | null
+  country_code: string | null
+  country: string | null
+}
+
 type DetectedVehicleQuery = {
   category?: MarketplaceCategorySlug
   make?: VehicleMake
@@ -62,7 +86,7 @@ type DetectedVehicleQuery = {
   usesAllEurope: boolean
 }
 
-const PUBLIC_SEARCH_CACHE_VERSION = 'vehicle-structured-v3'
+const PUBLIC_SEARCH_CACHE_VERSION = 'vehicle-live-listings-v1'
 const PUBLIC_SEARCH_CACHE_TTL_MS = 60_000
 
 const locationStopWords = new Set([
@@ -80,6 +104,8 @@ const locationStopWords = new Set([
   'stad',
   'ort',
   'region',
+  'lan',
+  'lans',
   'provins',
   'province',
 ])
@@ -138,72 +164,10 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
   },
 }
 
-const swedishVehicleLocations: VehicleLocation[] = swedishLocationCounties.flatMap((county) =>
-  county.municipalities.map((municipality) => ({
-    country: 'SE',
-    region: county.name,
-    municipality,
-    city: municipality,
-  })),
-)
-
-const vehicleLocationsByCountry: Record<string, VehicleLocation[]> = {
-  SE: swedishVehicleLocations,
-  ES: [
-    { country: 'ES', region: 'Comunidad de Madrid', city: 'Madrid' },
-    { country: 'ES', region: 'Cataluna', city: 'Barcelona' },
-    { country: 'ES', region: 'Comunitat Valenciana', city: 'Valencia' },
-    { country: 'ES', region: 'Andalucia', city: 'Sevilla' },
-    { country: 'ES', region: 'Aragon', city: 'Zaragoza' },
-  ],
-  DE: [
-    { country: 'DE', region: 'Berlin', city: 'Berlin' },
-    { country: 'DE', region: 'Bayern', city: 'Munchen' },
-    { country: 'DE', region: 'Hamburg', city: 'Hamburg' },
-    { country: 'DE', region: 'Nordrhein-Westfalen', city: 'Koln' },
-    { country: 'DE', region: 'Hessen', city: 'Frankfurt am Main' },
-  ],
-  PL: [
-    { country: 'PL', region: 'Mazowieckie', city: 'Warszawa' },
-    { country: 'PL', region: 'Malopolskie', city: 'Krakow' },
-    { country: 'PL', region: 'Dolnoslaskie', city: 'Wroclaw' },
-  ],
-  FR: [
-    { country: 'FR', region: 'Ile-de-France', city: 'Paris' },
-    { country: 'FR', region: 'Auvergne-Rhone-Alpes', city: 'Lyon' },
-    { country: 'FR', region: 'Provence-Alpes-Cote d Azur', city: 'Marseille' },
-  ],
-  IT: [
-    { country: 'IT', region: 'Lazio', city: 'Roma' },
-    { country: 'IT', region: 'Lombardia', city: 'Milano' },
-    { country: 'IT', region: 'Piemonte', city: 'Torino' },
-  ],
-  NL: [
-    { country: 'NL', region: 'Noord-Holland', city: 'Amsterdam' },
-    { country: 'NL', region: 'Zuid-Holland', city: 'Rotterdam' },
-    { country: 'NL', region: 'Utrecht', city: 'Utrecht' },
-  ],
-  BE: [
-    { country: 'BE', region: 'Brussels', city: 'Brussel' },
-    { country: 'BE', region: 'Vlaanderen', city: 'Antwerpen' },
-    { country: 'BE', region: 'Wallonie', city: 'Liege' },
-  ],
-  AT: [
-    { country: 'AT', region: 'Wien', city: 'Wien' },
-    { country: 'AT', region: 'Steiermark', city: 'Graz' },
-    { country: 'AT', region: 'Oberosterreich', city: 'Linz' },
-  ],
-  DK: [
-    { country: 'DK', region: 'Hovedstaden', city: 'Kobenhavn' },
-    { country: 'DK', region: 'Midtjylland', city: 'Aarhus' },
-    { country: 'DK', region: 'Syddanmark', city: 'Odense' },
-  ],
-  FI: [
-    { country: 'FI', region: 'Uusimaa', city: 'Helsinki' },
-    { country: 'FI', region: 'Pirkanmaa', city: 'Tampere' },
-    { country: 'FI', region: 'Varsinais-Suomi', city: 'Turku' },
-  ],
-}
+const vehicleLocations = [
+  ...marketplaceRegionEntries(),
+  ...marketplaceLocationEntries(),
+]
 
 const vehicleMakes: VehicleMake[] = [
   { make: 'Volvo', models: ['XC60', 'V60', 'XC90', 'V90'] },
@@ -217,6 +181,14 @@ const vehicleMakes: VehicleMake[] = [
   { make: 'Peugeot', models: ['Boxer', 'Partner', '308'] },
   { make: 'Scania', models: ['R-serie', 'S-serie', 'P-serie'] },
   { make: 'MAN', models: ['TGX', 'TGS', 'TGE'] },
+]
+
+const fuelSearchAliases: Array<{ value: string; aliases: string[] }> = [
+  { value: 'Bensin', aliases: ['bensin', 'petrol', 'gasolina', 'essence', 'benzina', 'benzin'] },
+  { value: 'Diesel', aliases: ['diesel', 'diésel', 'dieselolie'] },
+  { value: 'El', aliases: ['el', 'electric', 'elektrisk', 'eléctrico', 'electrico', 'elektro', 'elettrica'] },
+  { value: 'Hybrid', aliases: ['hybrid', 'híbrido', 'hibrido', 'hybride'] },
+  { value: 'Laddhybrid', aliases: ['laddhybrid', 'plug in hybrid', 'plug-in hybrid', 'phev'] },
 ]
 
 declare global {
@@ -295,6 +267,12 @@ async function searchWithSupabase({
 }) {
   if (query.length < 2) return []
 
+  const listingEntries = await searchPublishedListingEntries({ locale, query, limit, market })
+  if (listingEntries.length > 0) {
+    const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market })
+    return rankEntries(dedupeEntries([...listingEntries, ...structuredEntries]), query).slice(0, limit)
+  }
+
   const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market })
   if (structuredEntries.length > 0) {
     return structuredEntries.slice(0, limit)
@@ -302,6 +280,232 @@ async function searchWithSupabase({
 
   if (looksLikeSiteNavigationQuery(query)) return []
   return []
+}
+
+async function searchPublishedListingEntries({
+  locale,
+  query,
+  limit,
+  market,
+}: {
+  locale: PublicLocale
+  query: string
+  limit: number
+  market: string
+}) {
+  const normalizedQuery = normalizeForMatch(query)
+  const terms = normalizedQuery.split(' ').filter(Boolean)
+  const year = detectYear(terms)
+  const fuelValues = detectFuelValues(normalizedQuery)
+  const textTerms = terms.filter((term) => term.length >= 2 && !/^\d{4}$/.test(term))
+
+  if (!terms.length) return []
+
+  let request = createAdminClient()
+    .from('marketplace_listings')
+    .select('id,category,title,make,model,variant,model_year,fuel_type,gearbox,body_type,city,municipality,country_code,country')
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .is('sold_at', null)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .limit(Math.max(limit * 4, 20))
+
+  if (market && market !== 'EU') request = request.eq('country_code', market)
+
+  const orFilters: string[] = []
+  for (const term of textTerms.slice(0, 4)) {
+    const escaped = escapePostgrestLike(term)
+    orFilters.push(
+      `title.ilike.%${escaped}%`,
+      `make.ilike.%${escaped}%`,
+      `model.ilike.%${escaped}%`,
+      `variant.ilike.%${escaped}%`,
+      `fuel_type.ilike.%${escaped}%`,
+      `gearbox.ilike.%${escaped}%`,
+      `body_type.ilike.%${escaped}%`,
+      `city.ilike.%${escaped}%`,
+      `municipality.ilike.%${escaped}%`,
+    )
+  }
+  for (const fuel of fuelValues) {
+    orFilters.push(`fuel_type.ilike.%${escapePostgrestLike(fuel)}%`)
+  }
+  if (year) orFilters.push(`model_year.eq.${year}`)
+
+  if (!orFilters.length) return []
+
+  const { data, error } = await request.or(orFilters.join(','))
+  if (error) {
+    console.error('Public listing search failed', error)
+    return []
+  }
+
+  const listings = ((data || []) as SearchListingRow[])
+    .map((listing, index) => ({
+      listing,
+      score: scoreListingMatch(listing, normalizedQuery, terms, year, fuelValues),
+      index,
+    }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ listing }) => listing)
+
+  return dedupeEntries(listings.flatMap((listing) =>
+    createListingDerivedEntries({ locale, listing, query, year, fuelValues }),
+  )).slice(0, limit)
+}
+
+function detectYear(terms: string[]) {
+  const value = terms.find((term) => /^(19|20)\d{2}$/.test(term))
+  return value ? Number(value) : null
+}
+
+function detectFuelValues(normalizedQuery: string) {
+  return fuelSearchAliases
+    .filter((item) => item.aliases.some((alias) => normalizedQuery.includes(normalizeForMatch(alias))))
+    .map((item) => item.value)
+}
+
+function scoreListingMatch(
+  listing: SearchListingRow,
+  normalizedQuery: string,
+  terms: string[],
+  year: number | null,
+  fuelValues: string[],
+) {
+  const title = normalizeForMatch(listing.title || [listing.make, listing.model, listing.variant].filter(Boolean).join(' '))
+  const haystack = normalizeForMatch([
+    listing.title,
+    listing.make,
+    listing.model,
+    listing.variant,
+    listing.model_year,
+    listing.fuel_type,
+    listing.gearbox,
+    listing.body_type,
+    listing.city,
+    listing.municipality,
+    listing.country,
+    listing.country_code,
+  ].filter(Boolean).join(' '))
+  const base = terms.reduce((score, term) => {
+    if (title.startsWith(term)) return score + 18
+    if (title.includes(term)) return score + 12
+    if (haystack.includes(term)) return score + 7
+    return score - 3
+  }, 0)
+  const yearScore = year && Number(listing.model_year) === year ? 12 : 0
+  const fuelScore = fuelValues.some((fuel) => normalizeForMatch(listing.fuel_type || '') === normalizeForMatch(fuel)) ? 10 : 0
+  const wholeQueryScore = normalizedQuery && haystack.includes(normalizedQuery) ? 10 : 0
+  return base + yearScore + fuelScore + wholeQueryScore
+}
+
+function createListingDerivedEntries({
+  locale,
+  listing,
+  query,
+  year,
+  fuelValues,
+}: {
+  locale: PublicLocale
+  listing: SearchListingRow
+  query: string
+  year: number | null
+  fuelValues: string[]
+}) {
+  const entries: PublicSearchEntry[] = []
+  const market = normalizeMarket(listing.country_code) || ''
+  const category = normalizeMarketplaceCategory(String(listing.category || 'cars'))
+  const title = listingTitle(listing)
+  const description = listingDescription(locale, listing)
+
+  if (listing.make) {
+    const params = baseListingFilterParams(market, category)
+    params.set('make', listing.make)
+    if (listing.model) params.set('model', listing.model)
+    const label = [listing.make, listing.model].filter(Boolean).join(' ')
+    entries.push({
+      href: localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`),
+      title: label,
+      description,
+      keywords: `${label} ${title} ${listing.model_year || ''} ${listing.fuel_type || ''}`,
+      type: listing.model ? 'model' : 'make',
+    })
+  }
+
+  if (year && Number(listing.model_year) === year) {
+    const params = baseListingFilterParams(market, category)
+    params.set('minYear', String(year))
+    params.set('maxYear', String(year))
+    entries.push({
+      href: localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`),
+      title: String(year),
+      description,
+      keywords: `${title} ${year} ${listing.make || ''} ${listing.model || ''}`,
+      type: 'vehicle-query',
+    })
+  }
+
+  const fuelMatches = fuelValues.length
+    ? fuelValues.includes(listing.fuel_type || '')
+    : normalizeForMatch(listing.fuel_type || '').includes(normalizeForMatch(query))
+  if (listing.fuel_type && fuelMatches) {
+    const params = baseListingFilterParams(market, category)
+    params.set('fuel', listing.fuel_type)
+    entries.push({
+      href: localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`),
+      title: translateListingVehicleValue(locale, listing.fuel_type) || listing.fuel_type,
+      description,
+      keywords: `${title} ${listing.fuel_type} ${listing.make || ''} ${listing.model || ''}`,
+      type: 'vehicle-query',
+    })
+  }
+
+  entries.push({
+    href: buildListingPath({
+      id: listing.id,
+      title: listing.title,
+      make: listing.make,
+      model: listing.model,
+      model_year: listing.model_year,
+      city: listing.city,
+      country_code: listing.country_code,
+    }, locale),
+    title,
+    description,
+    keywords: `${title} ${listing.make || ''} ${listing.model || ''} ${listing.variant || ''} ${listing.model_year || ''} ${listing.fuel_type || ''} ${listing.city || ''} ${listing.country || ''}`,
+    type: 'listing',
+  })
+
+  return entries
+}
+
+function baseListingFilterParams(market: string, category: MarketplaceCategorySlug) {
+  const params = new URLSearchParams()
+  if (market) params.set('markets', market)
+  params.set('categories', category)
+  return params
+}
+
+function listingTitle(listing: SearchListingRow) {
+  return (
+    listing.title ||
+    [listing.make, listing.model, listing.variant, listing.model_year].filter(Boolean).join(' ') ||
+    'Vehicle listing'
+  )
+}
+
+function listingDescription(locale: PublicLocale, listing: SearchListingRow) {
+  return [
+    listing.model_year,
+    translateListingVehicleValue(locale, listing.fuel_type) || listing.fuel_type,
+    listing.city || listing.municipality,
+    listing.country_code ? countryDisplayName(listing.country_code, locale) : null,
+  ].filter(Boolean).join(' · ')
+}
+
+function escapePostgrestLike(value: string) {
+  return value.replace(/[%_,()]/g, '')
 }
 
 function looksLikeSiteNavigationQuery(query: string) {
@@ -385,9 +589,8 @@ function detectsEurope(query: string) {
 }
 
 function getLocationsForMarket(market: string) {
-  if (market === 'EU') return Object.values(vehicleLocationsByCountry).flat()
-  if (market) return vehicleLocationsByCountry[market] || []
-  return Object.values(vehicleLocationsByCountry).flat()
+  if (market === 'EU' || !market) return vehicleLocations
+  return vehicleLocations.filter((location) => location.country === market)
 }
 
 function detectCategory(normalizedQuery: string) {
@@ -447,9 +650,21 @@ function scoreLocationMatch(location: VehicleLocation, terms: string[]) {
   return terms
     .filter((term) => term.length >= 2 && !locationStopWords.has(term) && !europeTerms.has(term))
     .reduce((score, term) => {
-      const matched = locationParts.some((part) => part === term || part.startsWith(term) || (term.length >= 4 && part.includes(term)))
+      const matched = locationParts.some((part) => locationSearchPartMatches(part, term))
       return score + (matched ? (term.length >= 4 ? 5 : 3) : 0)
     }, 0)
+}
+
+function locationSearchPartMatches(part: string, term: string) {
+  const partBase = part.replace(/s$/, '')
+  const termBase = term.replace(/s$/, '')
+  return (
+    part === term ||
+    partBase === termBase ||
+    part.startsWith(term) ||
+    (term.length >= 4 && part.includes(term)) ||
+    (termBase.length >= 4 && partBase.includes(termBase))
+  )
 }
 
 function createCombinedEntry({
@@ -573,12 +788,14 @@ function categoryLabel(category: MarketplaceCategorySlug, locale: PublicLocale, 
 function formatLocationTitle(location: VehicleLocation, locale: PublicLocale, includeMunicipalitySuffix: boolean) {
   const city = formatLocationName(location.city || location.municipality || location.region || location.country)
   if (includeMunicipalitySuffix && locale === 'sv' && location.municipality) return `${city} kommun`
+  if (includeMunicipalitySuffix && locale === 'sv' && !location.municipality && location.region) return `${city} län`
   return city
 }
 
 function locationDescriptor(location: VehicleLocation, locale: PublicLocale) {
   const region = formatLocationName(location.region || '')
   if (locale === 'sv' && location.municipality) return 'Kommun'
+  if (locale === 'sv' && location.region && !location.municipality) return 'Län'
   if (region) return region
   return countryDisplayName(location.country, locale)
 }
@@ -592,6 +809,7 @@ function joinLocalized(subject: string, location: string, locale: PublicLocale) 
 
 function setLocationParams(params: URLSearchParams, location: VehicleLocation) {
   if (location.municipality) params.set('municipality', location.municipality)
+  else if (location.region) params.set('region', location.region)
   else if (location.city) params.set('city', location.city)
   if (location.postalCode) params.set('postalCode', location.postalCode)
 }

@@ -50,11 +50,14 @@ import {
 } from '@/lib/marketplace-security'
 import {
   normalizePostalCode,
-  postalCodeHelpText,
   validatePostalCode,
 } from '@/lib/postal-code-validation'
 import { activeMarketCountries, getEuCountryName } from '@/lib/eu-countries'
-import { swedishCounties } from '@/lib/swedish-locations'
+import {
+  getMarketplaceCountryLocations,
+  marketplaceMunicipalityLabel,
+  marketplaceRegionLabel,
+} from '@/lib/marketplace-locations'
 
 type StepId = 0 | 1 | 2 | 3 | 4
 type Values = Record<string, string>
@@ -78,6 +81,11 @@ type ListingCreationResult = {
   listingId: string
   requiresPayment?: boolean
   packageId?: string
+}
+type ListingCreationError = {
+  error?: string
+  step?: StepId
+  field?: string
 }
 
 const steps = [
@@ -148,13 +156,16 @@ export default function NewListingForm({
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
   const progress = Math.round(((step + 1) / steps.length) * 100)
-  const isSwedishListing = listingCountryCode === 'SE'
-  const swedishMunicipalityOptions = useMemo(() => {
-    const county = swedishCounties.find((item) => item.name === values.county)
-    return county
-      ? [...county.municipalities]
-      : swedishCounties.flatMap((item) => item.municipalities)
-  }, [values.county])
+  const locationMarket = useMemo(
+    () => getMarketplaceCountryLocations(listingCountryCode),
+    [listingCountryCode],
+  )
+  const municipalityOptions = useMemo(() => {
+    const region = locationMarket.regions.find((item) => item.name === values.county)
+    return region
+      ? [...region.municipalities]
+      : locationMarket.regions.flatMap((item) => item.municipalities)
+  }, [locationMarket, values.county])
   const orderedImages = useMemo(() => {
     if (!mainImageId) return images
     const main = images.find((image) => image.id === mainImageId)
@@ -186,26 +197,26 @@ export default function NewListingForm({
     }))
   }
 
-  function changeSwedishCounty(value: string) {
-    const county = swedishCounties.find((item) => item.name === value)
+  function changeLocationRegion(value: string) {
+    const region = locationMarket.regions.find((item) => item.name === value)
     setValues((current) => ({
       ...current,
       county: value,
       municipality:
-        county && current.municipality && !county.municipalities.includes(current.municipality as never)
+        region && current.municipality && !(region.municipalities as readonly string[]).includes(current.municipality)
           ? ''
           : current.municipality || '',
     }))
   }
 
-  function changeSwedishMunicipality(value: string) {
-    const county = swedishCounties.find((item) =>
-      item.municipalities.includes(value as never),
+  function changeLocationMunicipality(value: string) {
+    const region = locationMarket.regions.find((item) =>
+      (item.municipalities as readonly string[]).includes(value),
     )
     setValues((current) => ({
       ...current,
       municipality: value,
-      county: county?.name || current.county || '',
+      county: region?.name || current.county || '',
     }))
   }
 
@@ -282,6 +293,34 @@ export default function NewListingForm({
     return true
   }
 
+  function validateForSubmit() {
+    const submitSteps: StepId[] = [0, 1, 2, 4]
+    for (const targetStep of submitSteps) {
+      if (!validate(targetStep)) {
+        setStep(targetStep)
+        return false
+      }
+    }
+    return true
+  }
+
+  function applySubmissionError(
+    result: ListingCreationError,
+    fallback = 'Kunde inte skapa annonsen.',
+  ) {
+    const targetStep =
+      typeof result.step === 'number' && result.step >= 0 && result.step <= 4
+        ? (result.step as StepId)
+        : null
+    if (targetStep !== null) {
+      setStep(targetStep)
+    }
+    const message = result.error || fallback
+    const displayMessage = targetStep !== null ? `${copy.steps[targetStep]}: ${message}` : message
+    setError(displayMessage)
+    return displayMessage
+  }
+
   function nextStep() {
     if (!validate(step)) return
     setStep((current) => Math.min(4, current + 1) as StepId)
@@ -316,7 +355,7 @@ export default function NewListingForm({
   }
 
   function addCurrentToBatch() {
-    if (!validate(4)) return
+    if (!validateForSubmit()) return
     setBatchDrafts((current) => [...current, currentDraft()])
     resetCurrentListing()
     setError('')
@@ -336,7 +375,7 @@ export default function NewListingForm({
     })
     form.set(
       'color',
-      draft.values.colorChoice === 'other' ? 'Annan fÃ¤rg' : draft.values.colorChoice || '',
+      draft.values.colorChoice === 'other' ? 'Annan färg' : draft.values.colorChoice || '',
     )
     form.set('equipmentKeys', JSON.stringify(draft.equipment))
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
@@ -346,14 +385,13 @@ export default function NewListingForm({
       method: 'POST',
       body: form,
     })
-    const result = (await response.json()) as {
-      error?: string
+    const result = (await response.json().catch(() => ({}))) as ListingCreationError & {
       listingId?: string
       requiresPayment?: boolean
       packageId?: string
     }
     if (!response.ok || !result.listingId) {
-      throw new Error(result.error || 'Kunde inte skapa annonsen.')
+      throw new Error(applySubmissionError(result))
     }
     return {
       listingId: result.listingId,
@@ -397,14 +435,14 @@ export default function NewListingForm({
       }
       router.push('/account/listings')
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Kunde inte publicera annonskÃ¶n.')
+      setError(caught instanceof Error ? caught.message : 'Kunde inte publicera annonskön.')
       setLoading(false)
     }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!validate(4)) return
+    if (!validateForSubmit()) return
     setLoading(true)
     setError('')
 
@@ -426,14 +464,13 @@ export default function NewListingForm({
       method: 'POST',
       body: form,
     })
-    const result = (await response.json()) as {
-      error?: string
+    const result = (await response.json().catch(() => ({}))) as ListingCreationError & {
       listingId?: string
       requiresPayment?: boolean
       packageId?: string
     }
     if (!response.ok || !result.listingId) {
-      setError(result.error || 'Kunde inte skapa annonsen.')
+      applySubmissionError(result)
       setLoading(false)
       return
     }
@@ -573,52 +610,39 @@ export default function NewListingForm({
                 </option>
               ))}
             </SelectNative>
+            <SelectNative
+              name="county"
+              label={marketplaceRegionLabel(listingCountryCode, locale)}
+              value={values.county || ''}
+              onValueChange={(_, value) => changeLocationRegion(value)}
+            >
+              <option value="">{copy.choose}</option>
+              {locationMarket.regions.map((region) => (
+                <option key={region.name} value={region.name}>
+                  {region.name}
+                </option>
+              ))}
+            </SelectNative>
+            <SelectNative
+              name="municipality"
+              label={marketplaceMunicipalityLabel(listingCountryCode, locale)}
+              value={values.municipality || ''}
+              onValueChange={(_, value) => changeLocationMunicipality(value)}
+            >
+              <option value="">{copy.choose}</option>
+              {municipalityOptions.map((municipality) => (
+                <option key={municipality} value={municipality}>
+                  {municipality}
+                </option>
+              ))}
+            </SelectNative>
             <Field name="city" label={copy.city} value={values.city || ''} onValueChange={setValue} required />
-            {isSwedishListing ? (
-              <>
-                <SelectNative
-                  name="county"
-                  label={copy.county}
-                  value={values.county || ''}
-                  onValueChange={(_, value) => changeSwedishCounty(value)}
-                >
-                  <option value="">{copy.choose}</option>
-                  {swedishCounties.map((county) => (
-                    <option key={county.name} value={county.name}>
-                      {county.name}
-                    </option>
-                  ))}
-                </SelectNative>
-                <SelectNative
-                  name="municipality"
-                  label={copy.municipality}
-                  value={values.municipality || ''}
-                  onValueChange={(_, value) => changeSwedishMunicipality(value)}
-                >
-                  <option value="">{copy.choose}</option>
-                  {swedishMunicipalityOptions.map((municipality) => (
-                    <option key={municipality} value={municipality}>
-                      {municipality}
-                    </option>
-                  ))}
-                </SelectNative>
-              </>
-            ) : (
-              <Field
-                name="municipality"
-                label={copy.municipality}
-                value={values.municipality || ''}
-                onValueChange={setValue}
-                helper={copy.municipalityHelper}
-              />
-            )}
             <Field
               name="addressLine1"
               label={copy.streetAddress}
               value={values.addressLine1 || ''}
               onValueChange={setValue}
               autoComplete="street-address"
-              helper={copy.addressHelper}
             />
             <Field
               name="postalCode"
@@ -626,7 +650,6 @@ export default function NewListingForm({
               value={values.postalCode || ''}
               onValueChange={setValue}
               autoComplete="postal-code"
-              helper={postalCodeHelpText(listingCountryCode)}
             />
           </StepShell>
         ) : null}
@@ -1857,7 +1880,6 @@ function getListingFormCopy(locale: PublicLocale) {
     municipality: 'Municipality',
     municipalityHelper: 'Optional, but useful in Sweden and local markets.',
     streetAddress: 'Street address',
-    addressHelper: 'Prepared for address suggestions/autocomplete when the Places API is connected.',
     postalCode: 'Postal code',
     technicalTitle: 'Technical details and verification',
     technicalText: 'Choices are shown only when you open a question, keeping the flow clean on mobile.',
@@ -1931,12 +1953,11 @@ function getListingFormCopy(locale: PublicLocale) {
       price: 'Pris',
       currency: 'Valuta',
       country: 'Land',
-      county: 'LÃ¤n',
+      county: 'Län',
       city: 'Ort',
       municipality: 'Kommun',
       municipalityHelper: 'Frivilligt, men gör platsen tydligare för köpare.',
       streetAddress: 'Gatuadress',
-      addressHelper: 'Förberett för adressförslag/autocomplete när Places-API kopplas in.',
       postalCode: 'Postnummer',
       technicalTitle: 'Teknik och verifiering',
       technicalText: 'Valen visas bara när du öppnar en fråga, så flödet hålls rent även på mobil.',

@@ -5,6 +5,9 @@ import {
   BadgeCheck,
   CalendarDays,
   FileText,
+  Eye,
+  Heart,
+  MessageCircle,
   Pencil,
   Plus,
   ShieldCheck,
@@ -33,12 +36,14 @@ type ListingRow = {
   price: number
   currency: string
   created_at: string
+  published_at: string | null
   review_status: string | null
   reference_number: string | null
   sold_at: string | null
 }
 
 type ConversationRow = {
+  id: string
   listing_id: string
   buyer_user_id: string
 }
@@ -54,6 +59,7 @@ type ProfileRow = {
 export default async function AccountListingsPage() {
   const locale = await getRequestLocale()
   const copy = getListingsCopy(locale)
+  const statsCopy = getListingStatsCopy(locale)
   const supabase = await createClient()
   const {
     data: { user },
@@ -63,20 +69,48 @@ export default async function AccountListingsPage() {
   const admin = createAdminClient()
   const { data } = await admin
     .from('marketplace_listings')
-    .select('id,title,status,category,price,currency,created_at,review_status,reference_number,sold_at')
+    .select('id,title,status,category,price,currency,created_at,published_at,review_status,reference_number,sold_at')
     .eq('seller_user_id', user.id)
     .order('created_at', { ascending: false })
 
   const listings = (data || []) as ListingRow[]
   const listingIds = listings.map((listing) => listing.id)
-  const { data: conversationData } = listingIds.length
+  const [
+    { data: conversationData },
+    { data: savedListingData },
+    { data: viewEventData },
+  ] = listingIds.length
+    ? await Promise.all([
+        admin
+          .from('marketplace_conversations')
+          .select('id,listing_id,buyer_user_id')
+          .in('listing_id', listingIds)
+          .eq('seller_user_id', user.id),
+        admin
+          .from('marketplace_saved_listings')
+          .select('listing_id')
+          .in('listing_id', listingIds),
+        admin
+          .from('marketplace_listing_events')
+          .select('listing_id,created_at')
+          .in('listing_id', listingIds)
+          .eq('event_type', 'listing_view'),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }]
+  const conversationRows = (conversationData || []) as ConversationRow[]
+  const conversationIds = conversationRows.map((conversation) => conversation.id)
+  const { data: messageConversationData } = conversationIds.length
     ? await admin
-        .from('marketplace_conversations')
-        .select('listing_id,buyer_user_id')
-        .in('listing_id', listingIds)
-        .eq('seller_user_id', user.id)
+        .from('marketplace_messages')
+        .select('conversation_id,created_at')
+        .in('conversation_id', conversationIds)
     : { data: [] }
-  const conversations = (conversationData || []) as ConversationRow[]
+  const conversationsWithMessages = new Set(
+    (messageConversationData || []).map((message) => message.conversation_id),
+  )
+  const conversations = conversationRows.filter((conversation) =>
+    conversationsWithMessages.has(conversation.id),
+  )
   const buyerIds = [
     ...new Set(conversations.map((item) => item.buyer_user_id).filter(Boolean)),
   ]
@@ -92,6 +126,19 @@ export default async function AccountListingsPage() {
       profile,
     ]),
   )
+  const savedByListing = countByListing(savedListingData || [])
+  const viewsByListing = countByListing(viewEventData || [])
+  const conversationById = new Map(conversations.map((conversation) => [conversation.id, conversation]))
+  const messagesByListing = new Map<string, number>()
+  ;(messageConversationData || []).forEach((message) => {
+    const conversation = conversationById.get(message.conversation_id)
+    if (!conversation) return
+    messagesByListing.set(
+      conversation.listing_id,
+      (messagesByListing.get(conversation.listing_id) || 0) + 1,
+    )
+  })
+  const buyersByListingCount = new Map<string, number>()
   const buyersByListing = new Map<string, ListingBuyerOption[]>()
   conversations.forEach((conversation) => {
     const profile = profilesById.get(conversation.buyer_user_id)
@@ -108,7 +155,14 @@ export default async function AccountListingsPage() {
       ...(buyersByListing.get(conversation.listing_id) || []),
       buyer,
     ])
+    buyersByListingCount.set(
+      conversation.listing_id,
+      (buyersByListingCount.get(conversation.listing_id) || 0) + 1,
+    )
   })
+  const totalViews = sumMapValues(viewsByListing)
+  const totalSaved = sumMapValues(savedByListing)
+  const totalMessages = sumMapValues(messagesByListing)
 
   return (
     <main className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-12">
@@ -137,6 +191,11 @@ export default async function AccountListingsPage() {
           <SummaryTile icon={FileText} label={copy.totalListings} value={listings.length} />
           <SummaryTile icon={BadgeCheck} label={copy.published} value={listings.filter((item) => item.status === 'published').length} />
           <SummaryTile icon={ShieldCheck} label={copy.inReview} value={listings.filter((item) => (item.review_status || 'pending_review') === 'pending_review').length} />
+        </div>
+        <div className="grid gap-px bg-[#e6edf7] sm:grid-cols-3">
+          <SummaryTile icon={Eye} label={statsCopy.totalViews} value={totalViews} />
+          <SummaryTile icon={Heart} label={statsCopy.totalSaved} value={totalSaved} />
+          <SummaryTile icon={MessageCircle} label={statsCopy.totalMessages} value={totalMessages} />
         </div>
       </section>
 
@@ -190,6 +249,20 @@ export default async function AccountListingsPage() {
                   <div className="mt-4 rounded-[14px] bg-[#f6f8fc] px-4 py-3 text-xs leading-5 text-[#667085]">
                     <strong className="text-[#344054]">{copy.reference}:</strong>{' '}
                     {listing.reference_number || listing.id}
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <ListingStatCard icon={Eye} label={statsCopy.views} value={viewsByListing.get(listing.id) || 0} />
+                    <ListingStatCard icon={Heart} label={statsCopy.saved} value={savedByListing.get(listing.id) || 0} />
+                    <ListingStatCard icon={MessageCircle} label={statsCopy.messages} value={messagesByListing.get(listing.id) || 0} />
+                    <ListingStatCard
+                      icon={CalendarDays}
+                      label={statsCopy.daysLive}
+                      value={listing.status === 'published' ? daysLive(listing.published_at || listing.created_at) : 0}
+                    />
+                  </div>
+                  <div className="mt-3 rounded-[14px] border border-[#e5ecf6] bg-white px-4 py-3 text-xs leading-5 text-[#667085]">
+                    <strong className="text-[#344054]">{statsCopy.engagement}:</strong>{' '}
+                    {buyersByListingCount.get(listing.id) || 0} {statsCopy.interestedBuyers.toLocaleLowerCase(locale)}
                   </div>
                 </div>
                 <div className="flex flex-col justify-center gap-3 border-t border-[#eef1f6] bg-[#fbfcff] p-5 lg:min-w-[300px] lg:border-l lg:border-t-0">
@@ -258,6 +331,90 @@ function SummaryTile({
   )
 }
 
+function ListingStatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon
+  label: string
+  value: number
+}) {
+  return (
+    <div className="rounded-[14px] border border-[#e4ebf5] bg-white px-3 py-3">
+      <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[.08em] text-[#667085]">
+        <Icon className="h-3.5 w-3.5 text-[#0866ff]" />
+        {label}
+      </span>
+      <strong className="mt-2 block text-xl tracking-[-.035em] text-[#101828]">
+        {value.toLocaleString()}
+      </strong>
+    </div>
+  )
+}
+
+function countByListing(rows: Array<{ listing_id?: string | null }>) {
+  const counts = new Map<string, number>()
+  rows.forEach((row) => {
+    if (!row.listing_id) return
+    counts.set(row.listing_id, (counts.get(row.listing_id) || 0) + 1)
+  })
+  return counts
+}
+
+function sumMapValues(map: Map<string, number>) {
+  return Array.from(map.values()).reduce((sum, value) => sum + value, 0)
+}
+
+function daysLive(value: string | null) {
+  if (!value) return 0
+  const timestamp = new Date(value).getTime()
+  if (!Number.isFinite(timestamp)) return 0
+  return Math.max(1, Math.ceil((Date.now() - timestamp) / 86_400_000))
+}
+
+function getListingStatsCopy(locale: PublicLocale) {
+  const en = {
+    totalViews: 'Total views',
+    totalSaved: 'Total saves',
+    totalMessages: 'Messages',
+    views: 'Views',
+    saved: 'Saved',
+    messages: 'Messages',
+    daysLive: 'Days live',
+    engagement: 'Engagement',
+    interestedBuyers: 'Interested buyers',
+  }
+  if (locale === 'sv') {
+    return {
+      totalViews: 'Totala visningar',
+      totalSaved: 'Totalt sparade',
+      totalMessages: 'Meddelanden',
+      views: 'Visningar',
+      saved: 'Sparade',
+      messages: 'Meddelanden',
+      daysLive: 'Dagar live',
+      engagement: 'Engagemang',
+      interestedBuyers: 'Intresserade k\u00f6pare',
+    }
+  }
+  if (locale === 'es') {
+    return {
+      totalViews: 'Visualizaciones',
+      totalSaved: 'Guardados',
+      totalMessages: 'Mensajes',
+      views: 'Vistas',
+      saved: 'Guardados',
+      messages: 'Mensajes',
+      daysLive: 'Dias online',
+      engagement: 'Interes',
+      interestedBuyers: 'Compradores interesados',
+    }
+  }
+  if (locale === 'en') return en
+  return translatePublicObject(locale, en)
+}
+
 function StatusBadge({ status }: { status: string }) {
   const published = status === 'published'
   const sold = status === 'sold'
@@ -293,10 +450,19 @@ function getListingsCopy(locale: PublicLocale) {
     totalListings: 'Total listings',
     published: 'Published',
     inReview: 'In review',
+    totalViews: 'Total views',
+    totalSaved: 'Total saves',
+    totalMessages: 'Messages',
     inventory: 'Inventory',
     inventoryText: 'Your published, pending and sold marketplace listings in one place.',
     viewMarketplace: 'View marketplace',
     reference: 'Reference',
+    views: 'Views',
+    saved: 'Saved',
+    messages: 'Messages',
+    daysLive: 'Days live',
+    engagement: 'Engagement',
+    interestedBuyers: 'Interested buyers',
     empty: 'You do not have any listings yet.',
     emptyText: 'Create your first listing with structured vehicle data, photos and clear seller information.',
     markSold: 'Mark as sold',

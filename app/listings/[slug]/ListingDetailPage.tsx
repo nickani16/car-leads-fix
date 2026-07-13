@@ -9,6 +9,7 @@ import {
   Fuel,
   Gauge,
   Info,
+  Map as MapIcon,
   MapPin,
   ShieldCheck,
   Settings2,
@@ -29,6 +30,7 @@ import RevealPhoneButton from '@/app/components/RevealPhoneButton'
 import SavedListingButton from '@/app/components/SavedListingButton'
 import SellerDescriptionClamp from '@/app/components/SellerDescriptionClamp'
 import SellerDescriptionTranslationButton from '@/app/components/SellerDescriptionTranslationButton'
+import ListingViewTracker from '@/app/components/ListingViewTracker'
 import ShareListingButton from '@/app/components/ShareListingButton'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
@@ -198,7 +200,7 @@ export default async function ListingDetailPage({
     data: { user },
   } = await supabase.auth.getUser()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const canonicalPath = buildListingPath(listing)
+  const canonicalPath = buildListingPath(listing, locale)
   const requestPathname = requestHeaders.get('x-autorell-pathname') || ''
   if (
     slug !== buildListingSlug(listing) ||
@@ -350,40 +352,85 @@ export default async function ListingDetailPage({
   })
 
   return (
-    <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
+    <main className="min-h-screen bg-white text-[#101828]">
+      {listing.status === 'published' ? <ListingViewTracker listingId={listing.id} /> : null}
       <PublicHeader
         locale={locale}
         marketCode={marketCode}
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-3 sm:px-6 lg:px-10 lg:py-4">
+      <div className="mx-0 box-border w-full max-w-full px-4 py-3 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px] lg:py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ListingBackLink
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
           />
-          <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
-            <ShareListingButton
-              title={listing.title}
-              url={publicUrl}
-              label={copy.shareListing}
-              variant="plain"
-              className="!hidden lg:!inline-flex"
-            />
-            <SavedListingButton
-              listingId={listing.id}
-              label={copy.favoriteListing}
-              savedLabel={copy.favoriteSaved}
-              variant="plain"
-            />
-          </div>
+          <SavedListingButton
+            listingId={listing.id}
+            label={copy.favoriteListing}
+            savedLabel={copy.favoriteSaved}
+            variant="plain"
+            className="max-w-[56%] overflow-hidden whitespace-nowrap sm:hidden"
+            labelClassName="truncate"
+          />
         </div>
 
-        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px]">
-          <div className="min-w-0 space-y-6">
-            <ListingImageGallery images={listing.images || []} title={listing.title} />
+        <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
+          <div className="min-w-0 space-y-3 w-[calc(100vw-2rem)] sm:w-auto sm:space-y-6">
+            <ListingImageGallery
+              images={listing.images || []}
+              title={listing.title}
+              listingId={listing.id}
+              locale={locale}
+            />
 
-            <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
+            <div className="flex w-full items-center justify-between sm:hidden">
+              <a
+                href="#listing-location-map"
+                className="inline-flex min-h-12 w-12 items-center justify-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+              >
+                <MapIcon className="h-5 w-5" />
+                <span className="sr-only">{localizedLabel(locale, 'Karta', 'Map', 'Karte')}</span>
+              </a>
+              <ShareListingButton
+                title={listing.title}
+                url={publicUrl}
+                label={copy.shareAction}
+                variant="button"
+                className="min-h-12 w-12 rounded-[8px] px-0 shadow-sm"
+                labelClassName="sr-only"
+                iconClassName="h-5 w-5 text-[#101828]"
+              />
+            </div>
+
+            <div className="hidden items-center justify-between gap-3 sm:flex">
+              <a
+                href="#listing-location-map"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+              >
+                <MapIcon className="h-4 w-4" />
+                {localizedLabel(locale, 'Karta', 'Map', 'Karte')}
+              </a>
+              <div className="flex items-center gap-3">
+                <ShareListingButton
+                  title={listing.title}
+                  url={publicUrl}
+                  label={copy.shareAction}
+                  variant="button"
+                  className="rounded-[8px] shadow-sm"
+                />
+                <SavedListingButton
+                  listingId={listing.id}
+                  label={localizedLabel(locale, 'Spara', 'Save', 'Speichern')}
+                  savedLabel={localizedLabel(locale, 'Sparad', 'Saved', 'Gespeichert')}
+                  variant="button"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="min-w-0 space-y-4 sm:space-y-6">
+                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
               {isSold ? (
                 <div className="mb-5 rounded-[12px] border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm font-semibold text-[#9a3412]">
                   {localizedLabel(locale, 'Den här annonsen är såld', 'This listing is sold', 'Diese Anzeige ist verkauft')}
@@ -391,100 +438,102 @@ export default async function ListingDetailPage({
               ) : null}
               <div className="flex flex-col items-stretch gap-4">
                 <div className="min-w-0 flex-1">
-                  <h1 className="max-w-4xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
+                  <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-[-0.03em] sm:text-5xl sm:tracking-[-0.04em]">
                     {listing.title}
                   </h1>
                   {headlineSubtitle ? (
-                    <p className="mt-3 max-w-3xl text-base font-medium leading-7 text-[#475467] sm:text-lg">
+                    <p className="mt-2 max-w-3xl text-sm font-medium leading-5 text-[#475467] sm:mt-3 sm:text-lg sm:leading-7">
                       {headlineSubtitle}
                     </p>
                   ) : null}
-                  <p className="mt-4 flex flex-wrap items-center gap-3 text-sm font-medium text-[#667085]">
+                  <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-[#667085] sm:mt-4 sm:text-sm">
                     <span className="inline-flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4 text-[#0866ff]" />
+                      <MapPin className="h-3.5 w-3.5 text-[#0866ff] sm:h-4 sm:w-4" />
                       {location}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <CalendarDays className="h-4 w-4 text-[#0866ff]" />
+                      <CalendarDays className="h-3.5 w-3.5 text-[#0866ff] sm:h-4 sm:w-4" />
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
                 </div>
               </div>
               {headlineFacts.length ? (
-                <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-3 xl:grid-cols-4">
                   {headlineFacts.slice(0, 8).map((fact) => {
                     const Icon = fact.icon
                     return (
-                      <div key={fact.label} className="flex min-w-0 items-center gap-2.5 rounded-[14px] border border-[#edf1f6] bg-[#f8fbff] px-3 py-3 sm:gap-3 sm:px-4">
-                        <Icon className="h-5 w-5 shrink-0 text-[#202124]" />
+                      <div key={fact.label} className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#edf1f6] bg-[#f8fbff] px-2.5 py-2 sm:gap-3 sm:rounded-[14px] sm:px-4 sm:py-3">
+                        <Icon className="h-4 w-4 shrink-0 text-[#202124] sm:h-5 sm:w-5" />
                         <div className="min-w-0">
-                          <p className="break-words text-xs font-medium leading-4 text-[#667085]">{fact.label}</p>
-                          <p title={String(fact.value)} className="mt-0.5 break-words text-sm font-semibold leading-5 text-[#101828]">{fact.value}</p>
+                          <p className="break-words text-[11px] font-medium leading-3.5 text-[#667085] sm:text-xs sm:leading-4">{fact.label}</p>
+                          <p title={String(fact.value)} className="mt-0.5 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:text-sm sm:leading-5">{fact.value}</p>
                         </div>
                       </div>
                     )
                   })}
                 </div>
               ) : null}
-            </section>
+                </section>
 
-            <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">
+                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+              <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                 {localizedLabel(locale, 'Specifikationer', 'Specifications', 'Spezifikationen')}
               </h2>
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-2.5 xl:grid-cols-3">
                 {specs.map((spec) => (
-                  <div key={spec.label} className="rounded-[10px] border border-[#e4eaf3] bg-[#f8fbff] px-3.5 py-3">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.13em] text-[#667085]">
+                  <div key={spec.label} className="rounded-[9px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-2.5 sm:rounded-[10px] sm:px-3.5 sm:py-3">
+                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[#667085] sm:text-[10px] sm:tracking-[0.13em]">
                       {spec.label}
                     </p>
-                    <p className="mt-1.5 break-words text-[14px] font-semibold leading-5 text-[#101828]">
+                    <p className="mt-1 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:mt-1.5 sm:text-[14px] sm:leading-5">
                       {spec.value}
                     </p>
                   </div>
                 ))}
               </div>
-            </section>
+                </section>
 
-              <ListingEquipmentSection
+                <ListingEquipmentSection
               title={localizedLabel(locale, 'Utrustning', 'Equipment', 'Ausstattung')}
               groups={equipmentGroups}
               fallbackItems={fallbackEquipment}
               showMoreLabel={localizedLabel(locale, 'Läs mer', 'Show more', 'Mehr anzeigen')}
               showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
-            />
+                />
 
-            {listing.description ? (
-              <section className="rounded-[18px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-7">
-                <h2 className="text-2xl font-semibold tracking-[-0.03em]">
+                {listing.description ? (
+                  <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+                <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
-                <p className="mt-2 text-sm font-medium text-[#667085]">{copy.originalLanguage}</p>
+                <p className="mt-1.5 text-xs font-medium text-[#667085] sm:mt-2 sm:text-sm">{copy.originalLanguage}</p>
                 <SellerDescriptionClamp
                   text={listing.description}
                   readMoreLabel={localizedLabel(locale, 'Läs mer', 'Read more', 'Mehr anzeigen')}
                   showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
                 />
                 <SellerDescriptionTranslationButton text={listing.description} locale={locale} />
-              </section>
-            ) : null}
+                  </section>
+                ) : null}
 
-            <ListingLocationMap
-              title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
-              address={listing.address}
-              city={listing.city}
-              country={countryName || listing.country_code}
-              latitude={mapCoordinates?.latitude}
-              longitude={mapCoordinates?.longitude}
-              approximate={mapCoordinates?.approximate}
-            />
-          </div>
+                <div id="listing-location-map" className="scroll-mt-24">
+              <ListingLocationMap
+                title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
+                address={listing.address}
+                city={listing.city}
+                country={countryName || listing.country_code}
+                latitude={mapCoordinates?.latitude}
+                longitude={mapCoordinates?.longitude}
+                approximate={mapCoordinates?.approximate}
+              />
+                </div>
+            </div>
 
-          <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-1">
-            <div id="listing-contact-card" className="overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_22px_60px_rgba(16,24,40,.12)]">
-              <div className="border-b border-[#edf1f6] p-6">
-                <p className="text-sm font-medium uppercase tracking-[0.14em] text-[#667085]">
+              <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:self-start">
+            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_14px_36px_rgba(16,24,40,.10)] sm:rounded-[20px] sm:shadow-[0_22px_60px_rgba(16,24,40,.12)]">
+              <div className="border-b border-[#edf1f6] p-4 sm:p-6">
+                <p className="text-xs font-medium uppercase tracking-[0.13em] text-[#667085] sm:text-sm sm:tracking-[0.14em]">
                   {localizedLabel(locale, 'Pris', 'Price', 'Preis')}
                 </p>
                 {originalPriceDisplay ? (
@@ -498,22 +547,22 @@ export default async function ListingDetailPage({
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-2 text-4xl font-semibold tracking-[-0.035em]">
+                <div className="mt-1.5 text-3xl font-semibold tracking-[-0.03em] sm:mt-2 sm:text-4xl sm:tracking-[-0.035em]">
                   {price.original}
                 </div>
                 {price.approximate ? (
                   <p className="mt-2 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
-                <p className="mt-3 rounded-[12px] bg-[#f3f7ff] px-3 py-2 text-xs font-medium leading-5 text-[#475467]">
+                <p className="mt-2 rounded-[10px] bg-[#f3f7ff] px-3 py-2 text-[11px] font-medium leading-4 text-[#475467] sm:mt-3 sm:rounded-[12px] sm:text-xs sm:leading-5">
                   {localizedLabel(locale, 'Moms visas enligt säljarens uppgifter och landets regler.', "VAT is shown according to the seller's information and local rules.", 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.')}
                 </p>
               </div>
 
-              <div className="grid gap-3 p-6">
+              <div className="grid gap-2.5 p-4 sm:gap-3 sm:p-6">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
-                    className="inline-flex min-h-12 items-center justify-center rounded-[14px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
+                    className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#c9d7ec] bg-white px-3 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff] sm:min-h-12 sm:rounded-[14px] sm:px-4"
                   >
                     {localizedLabel(locale, 'Redigera annons', 'Edit listing', 'Anzeige bearbeiten')}
                   </Link>
@@ -521,7 +570,7 @@ export default async function ListingDetailPage({
                 {isSold ? (
                   <Link
                     href={localizePublicHref(locale, `/marketplace/${listing.category}`)}
-                    className="inline-flex h-12 items-center justify-center rounded-[12px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828]"
+                    className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] sm:h-12 sm:rounded-[12px] sm:px-4"
                   >
                     {localizedLabel(locale, 'Visa liknande annonser', 'View similar listings', 'Ähnliche Anzeigen ansehen')}
                   </Link>
@@ -546,7 +595,7 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              <div className="border-t border-[#edf1f6] p-6">
+              <div className="border-t border-[#edf1f6] p-4 sm:p-6">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -625,10 +674,12 @@ export default async function ListingDetailPage({
                 )}
               </div>
             </div>
-          </aside>
+              </section>
+            </div>
+          </div>
         </div>
 
-        <section className="mt-6 rounded-[16px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:p-5">
+        <section className="mt-6 w-[calc(100vw-2rem)] rounded-[16px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:w-auto sm:p-5">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#0866ff]">
@@ -1012,13 +1063,13 @@ function saleFormLabel(listing: ListingRow, locale: PublicLocale) {
 
   if (locale === 'sv') return isNew ? 'Nytt fordon till salu' : 'Begagnat fordon till salu'
   if (locale === 'de' || locale === 'at') return isNew ? 'Neues Fahrzeug zum Verkauf' : 'Gebrauchtes Fahrzeug zum Verkauf'
-  if (locale === 'es') return isNew ? 'VehÃ­culo nuevo en venta' : 'VehÃ­culo usado en venta'
-  if (locale === 'fr') return isNew ? 'VÃ©hicule neuf Ã  vendre' : "VÃ©hicule d'occasion Ã  vendre"
+  if (locale === 'es') return isNew ? 'Vehículo nuevo en venta' : 'Vehículo usado en venta'
+  if (locale === 'fr') return isNew ? 'Véhicule neuf à vendre' : "Véhicule d'occasion à vendre"
   if (locale === 'it') return isNew ? 'Veicolo nuovo in vendita' : 'Veicolo usato in vendita'
   if (locale === 'nl' || locale === 'be') return isNew ? 'Nieuw voertuig te koop' : 'Tweedehands voertuig te koop'
   if (locale === 'pl') return isNew ? 'Nowy pojazd na sprzedaÅ¼' : 'UÅ¼ywany pojazd na sprzedaÅ¼'
-  if (locale === 'da') return isNew ? 'Nyt kÃ¸retÃ¸j til salg' : 'Brugt kÃ¸retÃ¸j til salg'
-  if (locale === 'fi') return isNew ? 'Uusi ajoneuvo myytÃ¤vÃ¤nÃ¤' : 'KÃ¤ytetty ajoneuvo myytÃ¤vÃ¤nÃ¤'
+  if (locale === 'da') return isNew ? 'Nyt køretøj til salg' : 'Brugt køretøj til salg'
+  if (locale === 'fi') return isNew ? 'Uusi ajoneuvo myytävänä' : 'Käytetty ajoneuvo myytävänä'
   return isNew ? 'New vehicle for sale' : 'Used vehicle for sale'
 }
 

@@ -9,6 +9,8 @@ type ListingUrlSource = {
   country_code?: string | null
 }
 
+type ListingUrlLocale = 'sv' | 'de' | 'en' | 'at' | 'be' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da'
+
 const uuidPattern =
   /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i
 
@@ -31,10 +33,28 @@ export function buildListingSlug(listing: ListingUrlSource) {
   return `${readable}-${listing.id}`
 }
 
-export function buildListingPath(listing: ListingUrlSource) {
+export function buildListingPath(listing: ListingUrlSource, locale?: ListingUrlLocale | null) {
   const readableSlug = buildListingSlug(listing).replace(new RegExp(`-${listing.id}$`, 'i'), '')
-  const market = listingMarketPath(listing.country_code)
+  const market = locale ? listingLocalePath(locale) : listingMarketPath(listing.country_code)
   return `${market.prefix}/${market.adSegment}/${listing.id}/${readableSlug}`
+}
+
+export function listingLocalePath(locale: ListingUrlLocale) {
+  const markets: Record<ListingUrlLocale, { prefix: string; adSegment: string }> = {
+    sv: { prefix: '/se', adSegment: 'annons' },
+    de: { prefix: '/de', adSegment: 'anzeige' },
+    en: { prefix: '', adSegment: 'annons' },
+    at: { prefix: '/at', adSegment: 'anzeige' },
+    be: { prefix: '/be', adSegment: 'advertentie' },
+    fr: { prefix: '/fr', adSegment: 'annonce' },
+    es: { prefix: '/es', adSegment: 'anuncio' },
+    it: { prefix: '/it', adSegment: 'annuncio' },
+    pl: { prefix: '/pl', adSegment: 'ogloszenie' },
+    nl: { prefix: '/nl', adSegment: 'advertentie' },
+    fi: { prefix: '/fi', adSegment: 'ilmoitus' },
+    da: { prefix: '/dk', adSegment: 'annonce' },
+  }
+  return markets[locale] || markets.en
 }
 
 export function listingMarketPath(countryCode?: string | null) {

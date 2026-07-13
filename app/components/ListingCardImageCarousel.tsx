@@ -33,7 +33,7 @@ export default function ListingCardImageCarousel({
   const [imageIndex, setImageIndex] = useState(0)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const suppressClickRef = useRef(false)
-  const visibleImages = images.filter(Boolean)
+  const visibleImages = images.filter(Boolean).slice(0, 5)
   const safeImageIndex = visibleImages.length
     ? Math.min(imageIndex, visibleImages.length - 1)
     : 0
@@ -147,7 +147,7 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#101828]/58 px-2 py-1 shadow-[0_5px_16px_rgba(16,24,40,.2)] backdrop-blur-[2px] md:hidden">
+        <div className="absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[10px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] md:hidden">
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}

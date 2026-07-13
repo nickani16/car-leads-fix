@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { Mail, Send, X } from 'lucide-react'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 type ListingContactFormButtonProps = {
   listingId: string
@@ -10,7 +10,26 @@ type ListingContactFormButtonProps = {
   locale: PublicLocale
 }
 
-const copy = {
+type ContactCopy = {
+  open: string
+  title: string
+  intro: string
+  name: string
+  phone: string
+  email: string
+  offer: string
+  offerPlaceholder: string
+  message: string
+  messagePlaceholder: string
+  privacy: string
+  submit: string
+  sending: string
+  success: string
+  error: string
+  close: string
+}
+
+const copy: Record<string, ContactCopy> = {
   sv: {
     open: 'Kontaktformulär',
     title: 'Kontakta säljaren',
@@ -18,7 +37,7 @@ const copy = {
     name: 'Namn',
     phone: 'Telefonnummer',
     email: 'E-post',
-    offer: 'Vad vill du erbjuda?',
+    offer: 'Hur mycket vill du erbjuda?',
     offerPlaceholder: 'Exempel: 720 000 SEK',
     message: 'Meddelande',
     messagePlaceholder: 'Skriv vad du vill veta eller när du vill bli kontaktad.',
@@ -36,8 +55,8 @@ const copy = {
     name: 'Name',
     phone: 'Phone number',
     email: 'Email',
-    offer: 'Your offer',
-    offerPlaceholder: 'Example: 720,000 SEK',
+    offer: 'How much would you like to offer?',
+    offerPlaceholder: 'Example: 72,000 EUR',
     message: 'Message',
     messagePlaceholder: 'Write what you want to know or when you want to be contacted.',
     privacy: 'I agree that Autorell sends my contact details to the seller for this listing.',
@@ -54,8 +73,8 @@ const copy = {
     name: 'Name',
     phone: 'Telefonnummer',
     email: 'E-Mail',
-    offer: 'Ihr Angebot',
-    offerPlaceholder: 'Beispiel: 720.000 SEK',
+    offer: 'Wie viel möchten Sie anbieten?',
+    offerPlaceholder: 'Beispiel: 72.000 EUR',
     message: 'Nachricht',
     messagePlaceholder: 'Schreiben Sie, was Sie wissen möchten oder wann Sie kontaktiert werden möchten.',
     privacy: 'Ich stimme zu, dass Autorell meine Kontaktdaten für diese Anzeige an den Verkäufer sendet.',
@@ -65,7 +84,133 @@ const copy = {
     error: 'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
     close: 'Schließen',
   },
-} as const
+  fr: {
+    open: 'Formulaire de contact',
+    title: 'Contacter le vendeur',
+    intro: 'Envoyez une demande directement au vendeur. Le vendeur reçoit vos coordonnées par e-mail.',
+    name: 'Nom',
+    phone: 'Numéro de téléphone',
+    email: 'E-mail',
+    offer: 'Quel montant souhaitez-vous proposer ?',
+    offerPlaceholder: 'Exemple : 72 000 EUR',
+    message: 'Message',
+    messagePlaceholder: 'Écrivez ce que vous voulez savoir ou quand vous souhaitez être contacté.',
+    privacy: 'J’accepte qu’Autorell transmette mes coordonnées au vendeur pour cette annonce.',
+    submit: 'Envoyer la demande',
+    sending: 'Envoi...',
+    success: 'Votre demande a été envoyée au vendeur.',
+    error: 'Impossible d’envoyer la demande. Veuillez réessayer.',
+    close: 'Fermer',
+  },
+  es: {
+    open: 'Formulario de contacto',
+    title: 'Contactar con el vendedor',
+    intro: 'Envía una consulta directamente al vendedor. El vendedor recibe tus datos de contacto por correo electrónico.',
+    name: 'Nombre',
+    phone: 'Número de teléfono',
+    email: 'Correo electrónico',
+    offer: '¿Cuánto quieres ofrecer?',
+    offerPlaceholder: 'Ejemplo: 72.000 EUR',
+    message: 'Mensaje',
+    messagePlaceholder: 'Escribe qué quieres saber o cuándo quieres que te contacten.',
+    privacy: 'Acepto que Autorell envíe mis datos de contacto al vendedor para este anuncio.',
+    submit: 'Enviar consulta',
+    sending: 'Enviando...',
+    success: 'Tu consulta se ha enviado al vendedor.',
+    error: 'No se pudo enviar la consulta. Inténtalo de nuevo.',
+    close: 'Cerrar',
+  },
+  it: {
+    open: 'Modulo di contatto',
+    title: 'Contatta il venditore',
+    intro: 'Invia una richiesta direttamente al venditore. Il venditore riceve i tuoi dati di contatto via e-mail.',
+    name: 'Nome',
+    phone: 'Numero di telefono',
+    email: 'E-mail',
+    offer: 'Quanto vuoi offrire?',
+    offerPlaceholder: 'Esempio: 72.000 EUR',
+    message: 'Messaggio',
+    messagePlaceholder: 'Scrivi cosa vuoi sapere o quando desideri essere contattato.',
+    privacy: 'Accetto che Autorell invii i miei dati di contatto al venditore per questo annuncio.',
+    submit: 'Invia richiesta',
+    sending: 'Invio...',
+    success: 'La tua richiesta è stata inviata al venditore.',
+    error: 'Impossibile inviare la richiesta. Riprova.',
+    close: 'Chiudi',
+  },
+  pl: {
+    open: 'Formularz kontaktowy',
+    title: 'Skontaktuj się ze sprzedawcą',
+    intro: 'Wyślij zapytanie bezpośrednio do sprzedawcy. Sprzedawca otrzyma Twoje dane kontaktowe e-mailem.',
+    name: 'Imię i nazwisko',
+    phone: 'Numer telefonu',
+    email: 'E-mail',
+    offer: 'Ile chcesz zaoferować?',
+    offerPlaceholder: 'Przykład: 300 000 PLN',
+    message: 'Wiadomość',
+    messagePlaceholder: 'Napisz, czego chcesz się dowiedzieć albo kiedy sprzedawca ma się z Tobą skontaktować.',
+    privacy: 'Zgadzam się, aby Autorell przekazał moje dane kontaktowe sprzedawcy w sprawie tego ogłoszenia.',
+    submit: 'Wyślij zapytanie',
+    sending: 'Wysyłanie...',
+    success: 'Twoje zapytanie zostało wysłane do sprzedawcy.',
+    error: 'Nie udało się wysłać zapytania. Spróbuj ponownie.',
+    close: 'Zamknij',
+  },
+  nl: {
+    open: 'Contactformulier',
+    title: 'Neem contact op met de verkoper',
+    intro: 'Stuur rechtstreeks een aanvraag naar de verkoper. De verkoper ontvangt je contactgegevens per e-mail.',
+    name: 'Naam',
+    phone: 'Telefoonnummer',
+    email: 'E-mail',
+    offer: 'Hoeveel wil je bieden?',
+    offerPlaceholder: 'Voorbeeld: 72.000 EUR',
+    message: 'Bericht',
+    messagePlaceholder: 'Schrijf wat je wilt weten of wanneer je gecontacteerd wilt worden.',
+    privacy: 'Ik ga ermee akkoord dat Autorell mijn contactgegevens naar de verkoper stuurt voor deze advertentie.',
+    submit: 'Aanvraag verzenden',
+    sending: 'Verzenden...',
+    success: 'Je aanvraag is naar de verkoper verzonden.',
+    error: 'De aanvraag kon niet worden verzonden. Probeer het opnieuw.',
+    close: 'Sluiten',
+  },
+  fi: {
+    open: 'Yhteydenottolomake',
+    title: 'Ota yhteyttä myyjään',
+    intro: 'Lähetä kysely suoraan myyjälle. Myyjä saa yhteystietosi sähköpostitse.',
+    name: 'Nimi',
+    phone: 'Puhelinnumero',
+    email: 'Sähköposti',
+    offer: 'Kuinka paljon haluat tarjota?',
+    offerPlaceholder: 'Esimerkki: 72 000 EUR',
+    message: 'Viesti',
+    messagePlaceholder: 'Kirjoita, mitä haluat tietää tai milloin haluat, että sinuun otetaan yhteyttä.',
+    privacy: 'Hyväksyn, että Autorell lähettää yhteystietoni myyjälle tätä ilmoitusta varten.',
+    submit: 'Lähetä kysely',
+    sending: 'Lähetetään...',
+    success: 'Kyselysi on lähetetty myyjälle.',
+    error: 'Kyselyä ei voitu lähettää. Yritä uudelleen.',
+    close: 'Sulje',
+  },
+  da: {
+    open: 'Kontaktformular',
+    title: 'Kontakt sælgeren',
+    intro: 'Send en forespørgsel direkte til sælgeren. Sælgeren modtager dine kontaktoplysninger via e-mail.',
+    name: 'Navn',
+    phone: 'Telefonnummer',
+    email: 'E-mail',
+    offer: 'Hvor meget vil du tilbyde?',
+    offerPlaceholder: 'Eksempel: 540.000 DKK',
+    message: 'Besked',
+    messagePlaceholder: 'Skriv, hvad du vil vide, eller hvornår du vil kontaktes.',
+    privacy: 'Jeg accepterer, at Autorell sender mine kontaktoplysninger til sælgeren for denne annonce.',
+    submit: 'Send forespørgsel',
+    sending: 'Sender...',
+    success: 'Din forespørgsel er sendt til sælgeren.',
+    error: 'Forespørgslen kunne ikke sendes. Prøv igen.',
+    close: 'Luk',
+  },
+}
 
 export default function ListingContactFormButton({
   listingId,
@@ -75,14 +220,7 @@ export default function ListingContactFormButton({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const text =
-    locale === 'sv'
-      ? copy.sv
-      : locale === 'de' || locale === 'at'
-        ? copy.de
-        : locale === 'en'
-          ? copy.en
-          : translatePublicObject(locale, copy.en)
+  const text = getContactCopy(locale)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -208,6 +346,12 @@ export default function ListingContactFormButton({
       ) : null}
     </>
   )
+}
+
+function getContactCopy(locale: PublicLocale) {
+  if (locale === 'at') return copy.de
+  if (locale === 'be') return copy.nl
+  return copy[locale] || copy.en
 }
 
 function FormField({

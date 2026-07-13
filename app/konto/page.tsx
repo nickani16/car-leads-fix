@@ -97,7 +97,7 @@ export default async function AccountPage() {
   if (!profile) redirect(localizePublicHref(locale, '/register'))
 
   const admin = createAdminClient()
-  const [{ count: listings }, { count: conversations }, { count: reviews }] =
+  const [{ count: listings }, { data: conversationData }, { count: reviews }] =
     await Promise.all([
       admin
         .from('marketplace_listings')
@@ -105,7 +105,7 @@ export default async function AccountPage() {
         .eq('seller_user_id', user.id),
       admin
         .from('marketplace_conversations')
-        .select('id', { count: 'exact', head: true })
+        .select('id,buyer_user_id,seller_user_id')
         .or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`),
       admin
         .from('marketplace_reviews')
@@ -113,6 +113,22 @@ export default async function AccountPage() {
         .eq('reviewee_id', user.id)
         .eq('status', 'visible'),
     ])
+  const conversationRows = conversationData || []
+  const conversationIds = conversationRows.map((conversation) => conversation.id)
+  const { data: messageConversationData } = conversationIds.length
+    ? await admin
+        .from('marketplace_messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds)
+    : { data: [] }
+  const conversationsWithMessages = new Set(
+    (messageConversationData || []).map((message) => message.conversation_id),
+  )
+  const visibleConversationCount = conversationRows.filter(
+    (conversation) =>
+      conversation.buyer_user_id === user.id ||
+      conversationsWithMessages.has(conversation.id),
+  ).length
 
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
@@ -159,7 +175,7 @@ export default async function AccountPage() {
       text: copy.messagesText,
       href: localizePublicHref(locale, '/account/messages'),
       icon: MessageCircle,
-      badge: String(conversations || 0),
+      badge: String(visibleConversationCount),
     },
     {
       title: copy.savedSearches,
@@ -274,7 +290,7 @@ export default async function AccountPage() {
             <aside className="border-t border-[#e4eaf3] bg-[#f8fbff] p-6 sm:p-8 lg:border-l lg:border-t-0">
               <div className="grid gap-3">
                 <ProfileStat icon={FileText} label={copy.myListings} value={listings || 0} />
-                <ProfileStat icon={MessageCircle} label={copy.messages} value={conversations || 0} />
+                <ProfileStat icon={MessageCircle} label={copy.messages} value={visibleConversationCount} />
                 <ProfileStat icon={Star} label={copy.reviews} value={reviews || 0} />
               </div>
             </aside>
