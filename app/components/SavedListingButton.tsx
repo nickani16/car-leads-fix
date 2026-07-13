@@ -14,6 +14,7 @@ export default function SavedListingButton({
   listingId,
   label = 'Spara annons',
   savedLabel = 'Sparad',
+  removeLabel = 'Ta bort sparad annons',
   variant = 'icon',
   className: extraClassName = '',
   labelClassName = '',
@@ -22,6 +23,7 @@ export default function SavedListingButton({
   listingId: string
   label?: string
   savedLabel?: string
+  removeLabel?: string
   variant?: 'icon' | 'plain' | 'button'
   className?: string
   labelClassName?: string
@@ -124,7 +126,7 @@ export default function SavedListingButton({
       <button
         type="button"
         onClick={toggle}
-        aria-label={saved ? 'Ta bort sparad annons' : label}
+        aria-label={saved ? removeLabel : label}
         aria-pressed={saved}
         disabled={busy}
         style={{ fontWeight: 500 }}
@@ -143,7 +145,7 @@ export default function SavedListingButton({
       <button
         type="button"
         onClick={toggle}
-        aria-label={saved ? 'Ta bort sparad annons' : label}
+        aria-label={saved ? removeLabel : label}
         aria-pressed={saved}
         disabled={busy}
         className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed ${
@@ -160,7 +162,7 @@ export default function SavedListingButton({
     <button
       type="button"
       onClick={toggle}
-      aria-label={saved ? 'Ta bort sparad annons' : label}
+      aria-label={saved ? removeLabel : label}
       aria-pressed={saved}
       disabled={busy}
       className={`grid h-11 w-11 cursor-pointer place-items-center rounded-[14px] bg-white shadow-md transition disabled:cursor-not-allowed ${

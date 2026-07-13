@@ -7,6 +7,7 @@ export default function ShareListingButton({
   title,
   url,
   label = 'Dela annons',
+  copiedLabel = 'Länk kopierad',
   variant = 'button',
   className: extraClassName = '',
   labelClassName = '',
@@ -15,6 +16,7 @@ export default function ShareListingButton({
   title: string
   url: string
   label?: string
+  copiedLabel?: string
   variant?: 'button' | 'plain'
   className?: string
   labelClassName?: string
@@ -49,7 +51,7 @@ export default function ShareListingButton({
       className={`${buttonClassName} ${extraClassName}`.trim()}
     >
       <Share2 className={iconClassName} />
-      <span className={labelClassName}>{copied ? 'Länk kopierad' : label}</span>
+      <span className={labelClassName}>{copied ? copiedLabel : label}</span>
     </button>
   )
 }

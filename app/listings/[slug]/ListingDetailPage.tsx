@@ -379,6 +379,7 @@ export default async function ListingDetailPage({
             listingId={listing.id}
             label={copy.favoriteListing}
             savedLabel={copy.favoriteSaved}
+            removeLabel={copy.favoriteRemove}
             variant="plain"
             className="max-w-[56%] overflow-hidden whitespace-nowrap sm:hidden"
             labelClassName="truncate"
@@ -406,7 +407,8 @@ export default async function ListingDetailPage({
               <ShareListingButton
                 title={listing.title}
                 url={publicUrl}
-                label={copy.shareAction}
+                label={copy.shareListing}
+                copiedLabel={copy.shareCopied}
                 variant="button"
                 className="min-h-12 w-12 rounded-[8px] px-0 shadow-sm"
                 labelClassName="sr-only"
@@ -426,14 +428,16 @@ export default async function ListingDetailPage({
                 <ShareListingButton
                   title={listing.title}
                   url={publicUrl}
-                  label={copy.shareAction}
+                  label={copy.shareListing}
+                  copiedLabel={copy.shareCopied}
                   variant="button"
                   className="rounded-[8px] shadow-sm"
                 />
                 <SavedListingButton
                   listingId={listing.id}
-                  label={localizedLabel(locale, 'Spara', 'Save', 'Speichern')}
-                  savedLabel={localizedLabel(locale, 'Sparad', 'Saved', 'Gespeichert')}
+                  label={copy.favoriteListing}
+                  savedLabel={copy.favoriteSaved}
+                  removeLabel={copy.favoriteRemove}
                   variant="button"
                 />
               </div>
@@ -545,7 +549,7 @@ export default async function ListingDetailPage({
             <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_14px_36px_rgba(16,24,40,.10)] sm:rounded-[20px] sm:shadow-[0_22px_60px_rgba(16,24,40,.12)]">
               <div className="border-b border-[#edf1f6] p-4 sm:p-6">
                 <p className="text-xs font-medium uppercase tracking-[0.13em] text-[#667085] sm:text-sm sm:tracking-[0.14em]">
-                  {localizedLabel(locale, 'Pris', 'Price', 'Preis')}
+                  {copy.priceLabel}
                 </p>
                 {originalPriceDisplay ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -554,7 +558,7 @@ export default async function ListingDetailPage({
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-xs font-semibold text-[#027a48]">
                       <TrendingDown className="h-3.5 w-3.5" />
-                      {localizedLabel(locale, 'Sänkt', 'Reduced', 'Reduziert')} {priceDropPercent}%
+                      {copy.priceReduced} {priceDropPercent}%
                     </span>
                   </div>
                 ) : null}
@@ -565,7 +569,7 @@ export default async function ListingDetailPage({
                   <p className="mt-2 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
                 <p className="mt-2 rounded-[10px] bg-[#f3f7ff] px-3 py-2 text-[11px] font-medium leading-4 text-[#475467] sm:mt-3 sm:rounded-[12px] sm:text-xs sm:leading-5">
-                  {localizedLabel(locale, 'Moms visas enligt säljarens uppgifter och landets regler.', "VAT is shown according to the seller's information and local rules.", 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.')}
+                  {copy.vatInfo}
                 </p>
               </div>
 
@@ -601,6 +605,7 @@ export default async function ListingDetailPage({
                     title={listing.title}
                     url={publicUrl}
                     label={copy.shareListing}
+                    copiedLabel={copy.shareCopied}
                     variant="plain"
                   />
                 </div>
@@ -652,7 +657,9 @@ export default async function ListingDetailPage({
                           <span className="text-[#0866ff]">★</span>
                           {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
                         </p>
-                      ) : null}
+                      ) : (
+                        <p className="mt-3 text-sm font-semibold text-[#475467]">{copy.noReviewsYet}</p>
+                      )}
                       <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
                         {sellerDetails.address ? (
                           <p className="inline-flex min-w-0 items-start gap-2">
@@ -756,8 +763,9 @@ async function getSellerDetails(
   sellerType: 'private' | 'business',
   locale: PublicLocale,
 ): Promise<SellerDetails> {
+  const copy = getListingDetailCopy(locale)
   const empty: SellerDetails = {
-    label: localizedLabel(locale, 'Ej verifierad e-post', 'Unverified email', 'Nicht verifizierte E-Mail'),
+    label: copy.unverifiedEmail,
     tone: 'unverified',
     websiteUrl: null,
     logoUrl: null,
@@ -816,20 +824,20 @@ async function getSellerDetails(
     if (status === 'verified' || status === 'vat_validated') {
       return {
         ...base,
-        label: localizedLabel(locale, 'Verifierat företag', 'Verified company', 'Verifiziertes Unternehmen'),
+        label: copy.verifiedCompany,
         tone: 'verified',
       }
     }
     if (status === 'pending_review' || status === 'pending' || status === 'needs_review') {
       return {
         ...base,
-        label: localizedLabel(locale, 'Företag - verifiering pågår', 'Company verification in progress', 'Unternehmen wird geprüft'),
+        label: copy.companyVerificationPending,
         tone: 'pending',
       }
     }
     return {
       ...base,
-      label: localizedLabel(locale, 'Ej verifierat företag', 'Unverified company', 'Nicht verifiziertes Unternehmen'),
+      label: copy.unverifiedCompany,
       tone: 'unverified',
     }
   }
@@ -838,12 +846,12 @@ async function getSellerDetails(
   return verified
     ? {
         ...base,
-        label: localizedLabel(locale, 'Verifierad e-post', 'Verified email', 'Verifizierte E-Mail'),
+        label: copy.verifiedEmail,
         tone: 'verified',
       }
     : {
         ...base,
-        label: localizedLabel(locale, 'Ej verifierad e-post', 'Unverified email', 'Nicht verifizierte E-Mail'),
+        label: copy.unverifiedEmail,
         tone: 'unverified',
       }
 }
@@ -869,15 +877,16 @@ function PrivateSellerProfileCard({
   ratingCount: number
   memberSinceYear: number | null
 }) {
+  const copy = getListingDetailCopy(locale)
   const reviewLabel =
     ratingCount === 1
       ? localizedLabel(locale, '1 omdöme', '1 review', '1 Bewertung')
-      : ratingCount > 1
-        ? localizedLabel(locale, `${ratingCount} omdömen`, `${ratingCount} reviews`, `${ratingCount} Bewertungen`)
-        : localizedLabel(locale, 'Inga omdömen ännu', 'No reviews yet', 'Noch keine Bewertungen')
+    : ratingCount > 1
+      ? localizedLabel(locale, `${ratingCount} omdömen`, `${ratingCount} reviews`, `${ratingCount} Bewertungen`)
+        : copy.noReviewsYet
   const memberSince = memberSinceYear
     ? memberSinceLabel(locale, memberSinceYear)
-    : localizedLabel(locale, 'Privat säljare på Autorell', 'Private seller on Autorell', 'Privater Verkäufer bei Autorell')
+    : copy.privateSellerFallback
 
   return (
     <div className="flex items-center gap-4 border-y border-[#dfe6f2] py-5">
@@ -1161,10 +1170,22 @@ const listingDetailCopy = {
     updated: 'Uppdaterad',
     reference: 'Referens',
     country: 'Land',
+    priceLabel: 'Pris',
+    priceReduced: 'Sänkt',
+    vatInfo: 'Moms visas enligt säljarens uppgifter och landets regler.',
     shareListing: 'Dela annons',
     shareAction: 'Dela',
+    shareCopied: 'Länk kopierad',
     favoriteListing: 'Lägg till i favoriter',
     favoriteSaved: 'Sparad i favoriter',
+    favoriteRemove: 'Ta bort från favoriter',
+    verifiedEmail: 'Verifierad e-post',
+    unverifiedEmail: 'Ej verifierad e-post',
+    verifiedCompany: 'Verifierat företag',
+    unverifiedCompany: 'Ej verifierat företag',
+    companyVerificationPending: 'Företagsverifiering pågår',
+    noReviewsYet: 'Inga omdömen ännu',
+    privateSellerFallback: 'Privat säljare på Autorell',
     breadcrumbLabel: 'Brödsmulor',
     backToListings: 'Tillbaka',
     home: 'Hem',
@@ -1182,10 +1203,22 @@ const listingDetailCopy = {
     updated: 'Updated',
     reference: 'Reference',
     country: 'Country',
+    priceLabel: 'Price',
+    priceReduced: 'Reduced',
+    vatInfo: "VAT is shown according to the seller's information and local rules.",
     shareListing: 'Share listing',
     shareAction: 'Share',
+    shareCopied: 'Link copied',
     favoriteListing: 'Add to favourites',
     favoriteSaved: 'Saved to favourites',
+    favoriteRemove: 'Remove from favourites',
+    verifiedEmail: 'Verified email',
+    unverifiedEmail: 'Unverified email',
+    verifiedCompany: 'Verified company',
+    unverifiedCompany: 'Unverified company',
+    companyVerificationPending: 'Company verification in progress',
+    noReviewsYet: 'No reviews yet',
+    privateSellerFallback: 'Private seller on Autorell',
     breadcrumbLabel: 'Breadcrumb',
     backToListings: 'Back',
     home: 'Home',
@@ -1203,10 +1236,22 @@ const listingDetailCopy = {
     updated: 'Aktualisiert',
     reference: 'Referenz',
     country: 'Land',
+    priceLabel: 'Preis',
+    priceReduced: 'Reduziert',
+    vatInfo: 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.',
     shareListing: 'Anzeige teilen',
     shareAction: 'Teilen',
+    shareCopied: 'Link kopiert',
     favoriteListing: 'Zu Favoriten hinzufügen',
     favoriteSaved: 'In Favoriten gespeichert',
+    favoriteRemove: 'Aus Favoriten entfernen',
+    verifiedEmail: 'Verifizierte E-Mail',
+    unverifiedEmail: 'Nicht verifizierte E-Mail',
+    verifiedCompany: 'Verifiziertes Unternehmen',
+    unverifiedCompany: 'Nicht verifiziertes Unternehmen',
+    companyVerificationPending: 'Unternehmen wird geprüft',
+    noReviewsYet: 'Noch keine Bewertungen',
+    privateSellerFallback: 'Privater Verkäufer bei Autorell',
     breadcrumbLabel: 'Breadcrumb',
     backToListings: 'Zurück',
     home: 'Startseite',
