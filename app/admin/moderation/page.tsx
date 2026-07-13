@@ -65,6 +65,11 @@ export default async function AdminModerationPage({
         title="Modereringskö"
         description="Prioriterad serverbaserad kö för väntande, flaggade och riskklassade annonser. Äldsta och mest riskfyllda objekt visas först."
       />
+      <div className="mb-5 flex justify-end">
+        <Link href="/admin/moderation/cases" className="rounded-[10px] border border-[#d7deea] bg-white px-4 py-2 text-sm font-bold text-[#344054]">
+          Visa modereringsärenden
+        </Link>
+      </div>
 
       <AdminFilters search={q} searchPlaceholder="Sök annons eller säljare">
         <FilterSelect

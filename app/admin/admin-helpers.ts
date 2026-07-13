@@ -62,7 +62,7 @@ export function statusTone(
   if (['paused', 'waiting_customer', 'review', 'restricted', 'flagged'].includes(status)) {
     return 'amber'
   }
-  if (['rejected', 'blocked', 'removed', 'deleted', 'suspended'].includes(status)) {
+  if (['rejected', 'blocked', 'removed', 'deleted', 'suspended', 'critical', 'high'].includes(status)) {
     return 'red'
   }
   return 'gray'
