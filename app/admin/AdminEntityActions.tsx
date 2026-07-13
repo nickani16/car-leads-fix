@@ -34,9 +34,7 @@ export default function AdminEntityActions({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: action.action, reason: reasonText }),
     })
-    const result = (await response.json().catch(() => ({}))) as {
-      error?: string
-    }
+    const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     setBusy('')
     setActive(null)
     setReason('')
@@ -44,6 +42,7 @@ export default function AdminEntityActions({
       setMessage(result.error || 'Åtgärden kunde inte genomföras.')
       return
     }
+    if (result.url) window.open(result.url, '_blank', 'noopener,noreferrer')
     router.refresh()
   }
 

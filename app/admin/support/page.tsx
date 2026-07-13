@@ -14,7 +14,8 @@ import {
 } from '../admin-helpers'
 import SupportTicketDetail from '@/components/support/SupportTicketDetail'
 import SupportTicketList from '@/components/support/SupportTicketList'
-import { fetchTicketBundle, type SupportTicket } from '@/lib/support/tickets'
+import { fetchTicketBundle } from '@/lib/support/tickets'
+import { SUPPORT_STATUSES, type SupportTicket } from '@/lib/support/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,11 +80,7 @@ export default async function AdminSupportPage({
           value={status}
           label="Status"
           options={[
-            { value: 'open', label: 'Open' },
-            { value: 'waiting_customer', label: 'Väntar kund' },
-            { value: 'waiting_internal', label: 'Väntar internt' },
-            { value: 'resolved', label: 'Löst' },
-            { value: 'closed', label: 'Stängt' },
+            ...SUPPORT_STATUSES.map((value) => ({ value, label: value.replaceAll('_', ' ') })),
           ]}
         />
         <FilterSelect
@@ -161,6 +158,7 @@ export default async function AdminSupportPage({
                 metadata?: { attachment?: { name: string; dataUrl: string } }
               }[]}
               agents={(agents || []) as { user_id: string; display_name: string | null; role: string }[]}
+              events={bundle.events}
             />
           ) : (
             <AdminEmpty text="Välj ett ärende." />

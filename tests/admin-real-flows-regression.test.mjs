@@ -25,7 +25,7 @@ test('media upload validates file signatures and creates five server-side varian
   assert.match(route, /writeAdminAuditLog/)
   assert.match(route, /storage\.from\(BUCKET\)\.upload/)
   assert.match(processor, /IMAGE_SIGNATURE_MISMATCH/)
-  for (const variant of ['list', 'article', 'mobile', 'social', 'newsletter']) {
+  for (const variant of ['thumbnail', 'newsCard', 'mobile', 'article', 'social']) {
     assert.match(processor, new RegExp(`\\b${variant}\\b`))
   }
 })

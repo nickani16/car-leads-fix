@@ -36,8 +36,10 @@ export default function AdminContentPage({ searchParams }: { searchParams: Admin
         <AdminEntityActions
           endpoint={`/api/admin/content/${String(row.id)}`}
           actions={[
+            { action: 'preview', label: 'Förhandsgranska' },
             { action: 'review', label: 'Till granskning' },
             { action: 'publish', label: 'Publicera', requiresReason: true },
+            { action: 'unpublish', label: 'Avpublicera', tone: 'danger', requiresReason: true },
             { action: 'archive', label: 'Arkivera', tone: 'danger', requiresReason: true },
           ]}
         />

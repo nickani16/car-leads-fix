@@ -52,6 +52,9 @@ export async function PATCH(request: Request, context: TicketRouteContext) {
     if (!status) return NextResponse.json({ error: 'Invalid status.' }, { status: 400 })
     patch.status = status
     patch.closed_at = status === 'closed' ? new Date().toISOString() : null
+    patch.resolved_at = status === 'resolved' ? new Date().toISOString() : null
+    patch.escalated_at = status === 'escalated' ? new Date().toISOString() : null
+    patch.reopened_at = status === 'reopened' ? new Date().toISOString() : null
     eventType = 'status_changed'
     eventData.status = status
   }
@@ -64,6 +67,7 @@ export async function PATCH(request: Request, context: TicketRouteContext) {
   }
   if (body.assigned_to !== undefined) {
     patch.assigned_to = body.assigned_to || null
+    if (body.assigned_to) patch.status = 'assigned'
     eventType = 'assigned'
     eventData.assigned_to = body.assigned_to || null
   }
@@ -72,6 +76,7 @@ export async function PATCH(request: Request, context: TicketRouteContext) {
     return NextResponse.json({ error: 'No valid updates provided.' }, { status: 400 })
   }
 
+  patch.updated_at = new Date().toISOString()
   const { error } = await auth.adminClient.from('support_tickets').update(patch).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   await logSupportEvent({ admin: auth.adminClient, ticketId: id, actorId: auth.user.id, eventType, eventData })

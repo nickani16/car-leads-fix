@@ -48,7 +48,7 @@ export default async function AdminStatsPage() {
     adminClient.from('payment_orders').select('id', { count: 'estimated', head: true }).in('status', ['paid', 'fulfilled']),
     adminClient.from('business_subscriptions').select('id', { count: 'estimated', head: true }).in('status', ['active', 'trialing']),
     adminClient.from('newsletter_subscribers').select('id', { count: 'estimated', head: true }).eq('status', 'subscribed'),
-    adminClient.from('support_tickets').select('id', { count: 'estimated', head: true }).in('status', ['open', 'waiting_internal']),
+    adminClient.from('support_tickets').select('id', { count: 'estimated', head: true }).in('status', ['new', 'assigned', 'in_progress', 'reopened', 'escalated']),
     adminClient.from('security_events').select('id', { count: 'estimated', head: true }).in('severity', ['high', 'critical']),
     Promise.all(
       marketplaceCategories.map(async (category) => {

@@ -2,7 +2,7 @@ import 'server-only'
 import sharp from 'sharp'
 
 export type MediaVariant = { body: Buffer; contentType: 'image/webp' | 'image/avif'; extension: 'webp' | 'avif'; width: number; height: number; size: number }
-export type ProcessedMedia = { original: Buffer; width: number; height: number; variants: Record<'list' | 'article' | 'mobile' | 'social' | 'newsletter', MediaVariant> }
+export type ProcessedMedia = { original: Buffer; width: number; height: number; variants: Record<'thumbnail' | 'newsCard' | 'mobile' | 'article' | 'social', MediaVariant> }
 
 const MAX_BYTES = 15 * 1024 * 1024
 const TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
@@ -15,14 +15,14 @@ export async function processAdminMedia(file: File): Promise<ProcessedMedia> {
   const source = sharp(original, { failOn: 'error', limitInputPixels: 80_000_000, sequentialRead: true }).rotate()
   const metadata = await source.metadata()
   if (!metadata.width || !metadata.height) throw new Error('IMAGE_DIMENSIONS_INVALID')
-  const [list, article, mobile, social, newsletter] = await Promise.all([
+  const [thumbnail, newsCard, mobile, article, social] = await Promise.all([
+    encode(source, 320, 240, 'webp', 74, 'cover'),
     encode(source, 720, 480, 'webp', 76, 'cover'),
-    encode(source, 1600, 1000, 'avif', 62, 'inside'),
     encode(source, 720, 900, 'webp', 76, 'inside'),
+    encode(source, 1600, 1000, 'avif', 62, 'inside'),
     encode(source, 1200, 630, 'webp', 80, 'cover'),
-    encode(source, 800, 520, 'webp', 78, 'inside'),
   ])
-  return { original, width: metadata.width, height: metadata.height, variants: { list, article, mobile, social, newsletter } }
+  return { original, width: metadata.width, height: metadata.height, variants: { thumbnail, newsCard, mobile, article, social } }
 }
 
 async function encode(source: sharp.Sharp, width: number, height: number, format: 'webp' | 'avif', quality: number, fit: 'inside' | 'cover'): Promise<MediaVariant> {

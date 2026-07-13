@@ -9,6 +9,7 @@ import {
 } from '@/lib/admin/permissions'
 import { AdminPageHeader, AdminTable, Badge, DetailCard } from '../AdminUI'
 import { formatDate } from '../admin-helpers'
+import StaffInvitationForm from './StaffInvitationForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,6 +53,8 @@ export default async function AdminAdministratorsPage() {
         </div>
         <Badge label={permissions.includes('administrators.manage') ? 'Super Admin' : 'Endast läsning'} tone={permissions.includes('administrators.manage') ? 'green' : 'gray'} />
       </div>
+
+      {permissions.includes('administrators.manage') ? <StaffInvitationForm /> : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {ADMIN_ROLES.map((role) => (

@@ -73,7 +73,7 @@ function mapArticle(row: Record<string, unknown>, media: Record<string, unknown>
     readingTime: Number(row.reading_time_minutes || 1),
     category,
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
-    imageUrl: variants.article?.url || variants.list?.url || String(media?.public_url || '') || null,
+    imageUrl: variants.article?.url || variants.newsCard?.url || variants.thumbnail?.url || String(media?.public_url || '') || null,
     imageAlt: String(media?.alt_text || row.title),
     imageCaption: media?.caption ? String(media.caption) : null,
     seoTitle: row.seo_title ? String(row.seo_title) : null,

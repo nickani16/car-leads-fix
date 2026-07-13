@@ -16,6 +16,7 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
     label: 'Överblick',
     items: [
       { label: 'Dashboard', href: '/admin', icon: 'dashboard', permission: 'dashboard.view', available: true },
+      { label: 'Notiscenter', href: '/admin/notifications', icon: 'notifications', permission: 'dashboard.view', available: true },
     ],
   },
   {

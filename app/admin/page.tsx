@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import {
   AlertTriangle,
+  BellRing,
   ArrowRight,
   Building2,
   CheckCircle2,
@@ -58,6 +59,10 @@ export default async function AdminDashboardPage({
   const canReadSecurity = permissions.includes('security.read')
   const canReadSystem = permissions.includes('system.read')
   const emptyCount = () => Promise.resolve({ count: null, error: null })
+  const unreadNotifications = await adminClient
+    .from('admin_notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'unread')
 
   function listingCount() {
     let query = adminClient.from('marketplace_listings').select('id', { count: 'exact', head: true })
@@ -103,6 +108,7 @@ export default async function AdminDashboardPage({
   ])
 
   const metrics = [
+    { label: 'Olästa adminnotiser', value: unreadNotifications.count, helper: 'Gemensam operativ kö', href: '/admin/notifications', icon: BellRing, tone: unreadNotifications.count ? 'amber' as const : 'green' as const },
     ...(canReadListings ? [{ label: 'Aktiva annonser', value: activeListings.count, helper: 'Publicerade nu', href: '/admin/listings?status=published', icon: ListChecks, tone: 'blue' as const }] : []),
     ...(canReadModeration ? [{ label: 'Väntar granskning', value: pendingListings.count, helper: 'Moderationskö', href: '/admin/moderation', icon: Clock3, tone: pendingListings.count ? 'amber' as const : 'green' as const }] : []),
     ...(canReadUsers ? [{ label: 'Nya användare', value: newUsers.count, helper: range === 'today' ? 'I dag' : `Senaste ${range.replace('d', '')} dagarna`, href: '/admin/users', icon: UsersRound, tone: 'blue' as const }] : []),

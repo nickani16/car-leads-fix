@@ -61,6 +61,7 @@ const ICONS: Record<string, LucideIcon> = {
   audit: FileClock,
   settings: Settings,
   administrators: ShieldCheck,
+  notifications: BellRing,
   languages: Languages,
   packages: Boxes,
   documents: FileText,
@@ -274,14 +275,10 @@ export default function AdminShell({
                   MFA behöver aktiveras
                 </span>
               ) : null}
-              {permissions.includes('support.read') ? (
-                <span
-                  className="grid h-11 w-11 cursor-not-allowed place-items-center rounded-xl border border-[#d8e0eb] text-[#98a2b3]"
-                  aria-label="Support planeras till fas 3"
-                  title="Support planeras till fas 3"
-                >
+              {permissions.includes('dashboard.view') ? (
+                <Link href="/admin/notifications" className="grid h-11 w-11 place-items-center rounded-xl border border-[#d8e0eb] text-[#475467] hover:border-[#0866ff] hover:text-[#0866ff]" aria-label="Öppna notiscenter">
                   <BellRing className="h-[18px] w-[18px]" />
-                </span>
+                </Link>
               ) : null}
             </div>
           </div>

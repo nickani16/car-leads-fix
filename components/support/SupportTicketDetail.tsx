@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Badge } from '@/app/admin/AdminUI'
 import { formatDate, statusTone } from '@/app/admin/admin-helpers'
-import type { SupportMessage, SupportTicket } from '@/lib/support/tickets'
+import { SUPPORT_STATUSES, type SupportMessage, type SupportTicket, type SupportTicketEvent } from '@/lib/support/types'
 import InternalNoteBox from './InternalNoteBox'
 import SupportAiPanel from './SupportAiPanel'
 
@@ -19,6 +19,7 @@ export default function SupportTicketDetail({
   messages,
   chatMessages,
   agents,
+  events,
 }: {
   ticket: SupportTicket
   messages: SupportMessage[]
@@ -35,6 +36,7 @@ export default function SupportTicketDetail({
     }
   }[]
   agents: Agent[]
+  events: SupportTicketEvent[]
 }) {
   const router = useRouter()
   const [reply, setReply] = useState('')
@@ -88,7 +90,7 @@ export default function SupportTicketDetail({
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <select value={ticket.status} disabled={busy} onChange={(event) => void patch({ status: event.target.value })} className="h-10 rounded-[8px] border border-[#d7deea] px-3 text-sm">
-              {['open', 'waiting_customer', 'waiting_internal', 'resolved', 'closed'].map((status) => <option key={status}>{status}</option>)}
+              {SUPPORT_STATUSES.map((status) => <option key={status}>{status}</option>)}
             </select>
             <select value={ticket.priority} disabled={busy} onChange={(event) => void patch({ priority: event.target.value })} className="h-10 rounded-[8px] border border-[#d7deea] px-3 text-sm">
               {['low', 'normal', 'high', 'urgent'].map((priority) => <option key={priority}>{priority}</option>)}
@@ -163,6 +165,24 @@ export default function SupportTicketDetail({
           </div>
 
           <InternalNoteBox ticketId={ticket.id} onDone={refresh} />
+
+          <details className="rounded-[8px] border border-[#dce3ee] bg-[#f8fafc] p-4">
+            <summary className="cursor-pointer text-sm font-bold text-[#101828]">Full statushistorik ({events.length})</summary>
+            <ol className="mt-4 grid gap-3">
+              {events.map((event) => (
+                <li key={event.id} className="rounded-[8px] bg-white p-3 text-sm text-[#475467]">
+                  <div className="flex items-center justify-between gap-3">
+                    <strong className="text-[#101828]">{event.event_type.replaceAll('_', ' ')}</strong>
+                    <span className="text-xs">{formatDate(event.created_at)}</span>
+                  </div>
+                  <p className="mt-1 text-xs">Utförd av: {event.actor_id || 'system'}</p>
+                  {Object.keys(event.event_data).length ? (
+                    <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs">{JSON.stringify(event.event_data, null, 2)}</pre>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+          </details>
         </div>
       </section>
 
