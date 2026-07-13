@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminRoute } from '@/lib/admin-route-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
 
   if (!secret || authHeader !== `Bearer ${secret}`) {
-    await requireAdmin()
+    const auth = await requireAdminRoute('system.manage')
+    if ('error' in auth) return auth.error
   }
 
   const admin = createAdminClient()

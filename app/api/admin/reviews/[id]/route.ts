@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
 
@@ -26,7 +26,7 @@ export async function PATCH(
   request: Request,
   context: RouteContext<'/api/admin/reviews/[id]'>,
 ) {
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('moderation.manage')
   if ('error' in auth) return auth.error
 
   const { id } = await context.params
@@ -37,6 +37,9 @@ export async function PATCH(
   const action = String(body.action || '')
   if (!actions.has(action)) {
     return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
+  }
+  if ((action === 'hide' || action === 'remove') && String(body.note || '').trim().length < 8) {
+    return NextResponse.json({ error: 'A moderation note of at least 8 characters is required.' }, { status: 400 })
   }
 
   const { adminClient, user } = auth
@@ -71,6 +74,8 @@ export async function PATCH(
   await writeAdminAuditLog({
     adminClient,
     actorUserId: user.id,
+    actorRole: auth.primaryRole,
+    permission: 'moderation.manage',
     action: `marketplace_review_${action}`,
     targetType: 'marketplace_review',
     targetId: id,

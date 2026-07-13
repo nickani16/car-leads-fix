@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import AdminEntityActions from '../AdminEntityActions'
 import {
   AdminEmpty,
@@ -36,7 +36,25 @@ export default async function AdminListingsPage({
   const date = getParam(params, 'date')
   const page = getPage(params)
   const { from, to } = pageRange(page)
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission('listings.read')
+  const listingActions = [
+    ...(permissions.includes('moderation.manage')
+      ? [
+          { action: 'mark_suspicious', label: 'Misstänkt', requiresReason: true },
+          { action: 'unpublish', label: 'Avpublicera', tone: 'danger' as const, requiresReason: true },
+        ]
+      : []),
+    ...(permissions.includes('listings.delete')
+      ? [{
+          action: 'delete',
+          label: 'Radera',
+          tone: 'danger' as const,
+          requiresReason: true,
+          confirmTitle: 'Radera annons',
+          confirmText: 'Annonsen mjukraderas och döljs från publika sökresultat. Åtgärden loggas.',
+        }]
+      : []),
+  ]
   let matchingSellerIds: string[] = []
   if (q) {
     const escaped = q.replace(/[%_,]/g, '')
@@ -182,26 +200,10 @@ export default async function AdminListingsPage({
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <AdminEntityActions
+                  {listingActions.length ? <AdminEntityActions
                     endpoint={`/api/admin/marketplace-listings/${listing.id}`}
-                    actions={[
-                      { action: 'mark_suspicious', label: 'Misstänkt', requiresReason: true },
-                      {
-                        action: 'unpublish',
-                        label: 'Avpublicera',
-                        tone: 'danger',
-                        requiresReason: true,
-                      },
-                      {
-                        action: 'delete',
-                        label: 'Radera',
-                        tone: 'danger',
-                        requiresReason: true,
-                        confirmTitle: 'Radera annons',
-                        confirmText: 'Annonsen mjukraderas och döljs från publika sökresultat. Åtgärden loggas.',
-                      },
-                    ]}
-                  />
+                    actions={listingActions}
+                  /> : <span className="text-xs text-[#98a2b3]">Endast läsning</span>}
                 </td>
               </tr>
             ))}

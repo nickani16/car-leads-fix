@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import {
   AdminEmpty,
   AdminFilters,
@@ -33,7 +33,7 @@ export default async function AdminSupportPage({
   const selectedTicketId = getParam(params, 'ticket')
   const page = getPage(params)
   const { from, to } = pageRange(page)
-  const { adminClient } = await requireAdmin()
+  const { adminClient } = await requireAdminPermission('support.read')
 
   let query = adminClient
     .from('support_tickets')

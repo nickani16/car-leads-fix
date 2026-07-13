@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import { marketplaceCategories } from '@/lib/marketplace'
 import { AdminPageHeader, AdminStatCard, AdminTable, Badge } from '../AdminUI'
 import { categoryLabel, formatNumber, statusTone } from '../admin-helpers'
@@ -14,7 +14,7 @@ function readCount(result: CountResult) {
 }
 
 export default async function AdminStatsPage() {
-  const { adminClient } = await requireAdmin()
+  const { adminClient } = await requireAdminPermission('analytics.read')
   const [
     listingsTotalResult,
     businessResult,

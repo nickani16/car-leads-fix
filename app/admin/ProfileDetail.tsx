@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
+import type { AdminPermission } from '@/lib/admin/permissions'
 import AdminEntityActions from './AdminEntityActions'
 import { AdminPageHeader, AdminTable, Badge, DetailCard, DetailGrid } from './AdminUI'
 import { categoryLabel, formatDate, profileName, statusTone } from './admin-helpers'
@@ -8,11 +9,31 @@ import { categoryLabel, formatDate, profileName, statusTone } from './admin-help
 export default async function ProfileDetail({
   userId,
   backHref,
+  permission = 'users.read',
 }: {
   userId: string
   backHref: string
+  permission?: AdminPermission
 }) {
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission(permission)
+  const accountActions = [
+    ...(permissions.includes('users.manage')
+      ? [
+          { action: 'suspend', label: 'Pausa konto', requiresReason: true },
+          { action: 'activate', label: 'Aktivera konto' },
+        ]
+      : []),
+    ...(permissions.includes('users.delete')
+      ? [{
+          action: 'delete',
+          label: 'Radera konto',
+          tone: 'danger' as const,
+          requiresReason: true,
+          confirmTitle: 'Radera konto',
+          confirmText: 'Kontot mjukraderas/spärras. Alla åtgärder loggas i admin audit log.',
+        }]
+      : []),
+  ]
   const [{ data: profile }, { data: listings }] = await Promise.all([
     adminClient
       .from('marketplace_profiles')
@@ -115,11 +136,11 @@ export default async function ProfileDetail({
         </div>
 
         <aside className="space-y-6">
-          <DetailCard title="Admin actions">
+          {accountActions.length || (profile.account_type === 'business' && permissions.includes('companies.verify')) ? <DetailCard title="Admin actions">
             <AdminEntityActions
               endpoint={`/api/admin/users/${profile.user_id}`}
               actions={[
-                ...(profile.account_type === 'business'
+                ...(profile.account_type === 'business' && permissions.includes('companies.verify')
                   ? [
                       {
                         action: 'company_verified',
@@ -141,19 +162,10 @@ export default async function ProfileDetail({
                       },
                     ]
                   : []),
-                { action: 'suspend', label: 'Pausa konto', requiresReason: true },
-                { action: 'activate', label: 'Aktivera konto' },
-                {
-                  action: 'delete',
-                  label: 'Radera konto',
-                  tone: 'danger',
-                  requiresReason: true,
-                  confirmTitle: 'Radera konto',
-                  confirmText: 'Kontot mjukraderas/spärras. Alla åtgärder loggas i admin audit log.',
-                },
+                ...accountActions,
               ]}
             />
-          </DetailCard>
+          </DetailCard> : null}
         </aside>
       </div>
     </main>

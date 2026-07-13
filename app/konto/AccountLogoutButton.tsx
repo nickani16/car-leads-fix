@@ -37,6 +37,7 @@ export default function AccountLogoutButton({
     <button
       type="button"
       onClick={signOut}
+      aria-label={label || 'Logga ut'}
       className="inline-flex min-h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-semibold text-[#475467] hover:bg-[#fff1f1] hover:text-[#b42318]"
     >
       <LogOut className="h-4 w-4" />

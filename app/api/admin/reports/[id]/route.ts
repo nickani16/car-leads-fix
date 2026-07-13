@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
 
@@ -23,7 +23,7 @@ export async function PATCH(
   request: Request,
   context: RouteContext<'/api/admin/reports/[id]'>,
 ) {
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('reports.manage')
   if ('error' in auth) return auth.error
 
   const { id } = await context.params
@@ -31,6 +31,9 @@ export async function PATCH(
   const status = String(body.action || '')
   if (!statuses.has(status)) {
     return NextResponse.json({ error: 'Invalid status.' }, { status: 400 })
+  }
+  if ((status === 'actioned' || status === 'closed') && String(body.reason || '').trim().length < 8) {
+    return NextResponse.json({ error: 'A reason of at least 8 characters is required.' }, { status: 400 })
   }
 
   const { adminClient, user } = auth
@@ -68,6 +71,8 @@ export async function PATCH(
   await writeAdminAuditLog({
     adminClient,
     actorUserId: user.id,
+    actorRole: auth.primaryRole,
+    permission: 'reports.manage',
     action: `marketplace_report_${status}`,
     targetType: 'marketplace_report',
     targetId: id,

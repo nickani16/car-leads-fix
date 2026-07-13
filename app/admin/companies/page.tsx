@@ -20,6 +20,7 @@ export default function AdminCompaniesPage({
         searchParams={searchParams}
         accountType="business"
         basePath="/admin/companies"
+        permission="companies.read"
       />
     </main>
   )

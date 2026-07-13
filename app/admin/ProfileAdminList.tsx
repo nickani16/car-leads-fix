@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
+import type { AdminPermission } from '@/lib/admin/permissions'
 import AdminEntityActions from './AdminEntityActions'
 import {
   AdminEmpty,
@@ -24,12 +25,14 @@ type ProfileAdminListProps = {
   searchParams: AdminSearchParams
   accountType?: 'business' | 'private'
   basePath: string
+  permission?: AdminPermission
 }
 
 export default async function ProfileAdminList({
   searchParams,
   accountType,
   basePath,
+  permission = 'users.read',
 }: ProfileAdminListProps) {
   const params = await searchParams
   const q = getParam(params, 'q')
@@ -37,7 +40,25 @@ export default async function ProfileAdminList({
   const country = getParam(params, 'country').toUpperCase()
   const page = getPage(params)
   const { from, to } = pageRange(page)
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission(permission)
+  const userActions = [
+    ...(permissions.includes('users.manage')
+      ? [
+          { action: 'suspend', label: 'Pausa', requiresReason: true },
+          { action: 'activate', label: 'Aktivera' },
+        ]
+      : []),
+    ...(permissions.includes('users.delete')
+      ? [{
+          action: 'delete',
+          label: 'Radera',
+          tone: 'danger' as const,
+          requiresReason: true,
+          confirmTitle: 'Radera konto',
+          confirmText: 'Kontot mjukraderas/spärras och användaren kan inte fortsätta använda Autorell.',
+        }]
+      : []),
+  ]
 
   let query = adminClient
     .from('marketplace_profiles')
@@ -164,21 +185,10 @@ export default async function ProfileAdminList({
             </td>
             <td className="px-4 py-4 text-[#667085]">{formatDate(profile.created_at)}</td>
             <td className="px-4 py-4">
-              <AdminEntityActions
+              {userActions.length ? <AdminEntityActions
                 endpoint={`/api/admin/users/${profile.user_id}`}
-                actions={[
-                  { action: 'suspend', label: 'Pausa', requiresReason: true },
-                  { action: 'activate', label: 'Aktivera' },
-                  {
-                    action: 'delete',
-                    label: 'Radera',
-                    tone: 'danger',
-                    requiresReason: true,
-                    confirmTitle: 'Radera konto',
-                    confirmText: 'Kontot mjukraderas/spärras och användaren kan inte fortsätta använda Autorell.',
-                  },
-                ]}
-              />
+                actions={userActions}
+              /> : <span className="text-xs text-[#98a2b3]">Endast läsning</span>}
             </td>
           </tr>
         ))}

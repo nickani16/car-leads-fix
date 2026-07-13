@@ -1,18 +1,14 @@
 import { NextResponse } from 'next/server'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
-import {
-  isStrongPassword,
-  PASSWORD_REQUIREMENTS,
-} from '@/lib/password-policy'
 
 const allowedRoles = new Set(['sales', 'operations', 'support', 'legal'])
 const usernamePattern = /^[a-z0-9._-]{3,32}$/i
 
 export async function POST(request: Request) {
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('administrators.manage')
   if ('error' in auth) return auth.error
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -25,20 +21,25 @@ export async function POST(request: Request) {
   const displayName = body.displayName?.trim() || ''
   const email = body.email?.trim().toLowerCase() || ''
   const username = body.username?.trim().toLowerCase() || ''
-  const password = body.password || ''
   const role = body.role || ''
+
+  if (body.password) {
+    return NextResponse.json(
+      { error: 'Administratörer får inte sätta användarlösenord. Kontot skapas via en säker e-postinbjudan.' },
+      { status: 400 },
+    )
+  }
 
   if (
     !displayName ||
     !email.includes('@') ||
     !usernamePattern.test(username) ||
-    !isStrongPassword(password) ||
     !allowedRoles.has(role)
   ) {
     return NextResponse.json(
       {
         error:
-          `Name, valid email, username and role are required. Password: ${PASSWORD_REQUIREMENTS}`,
+          'Name, valid email, username and role are required.',
       },
       { status: 400 }
     )
@@ -58,11 +59,8 @@ export async function POST(request: Request) {
   }
 
   const { data: created, error: createError } =
-    await auth.adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      app_metadata: { portal_role: role },
+    await auth.adminClient.auth.admin.inviteUserByEmail(email, {
+      data: { display_name: displayName },
     })
 
   if (createError || !created.user) {
@@ -72,6 +70,15 @@ export async function POST(request: Request) {
     )
   }
 
+  const { error: metadataError } = await auth.adminClient.auth.admin.updateUserById(
+    created.user.id,
+    { app_metadata: { portal_role: role } },
+  )
+  if (metadataError) {
+    await auth.adminClient.auth.admin.deleteUser(created.user.id)
+    return NextResponse.json({ error: metadataError.message }, { status: 400 })
+  }
+
   const staffUser = {
     user_id: created.user.id,
     role,
@@ -79,7 +86,7 @@ export async function POST(request: Request) {
     email,
     username,
     is_active: true,
-    must_change_password: true,
+    must_change_password: false,
     updated_at: new Date().toISOString(),
   }
   const { error: profileError } = await auth.adminClient
@@ -94,10 +101,12 @@ export async function POST(request: Request) {
   await writeAdminAuditLog({
     adminClient: auth.adminClient,
     actorUserId: auth.user.id,
+    actorRole: auth.primaryRole,
+    permission: 'administrators.manage',
     action: 'staff_account_created',
     targetType: 'staff_user',
     targetId: created.user.id,
-    afterData: { ...staffUser, temporary_password: '[redacted]' },
+    afterData: { ...staffUser, invitation: 'email' },
   })
 
   return NextResponse.json({ success: true, userId: created.user.id })

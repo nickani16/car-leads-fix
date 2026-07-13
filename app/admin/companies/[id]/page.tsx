@@ -8,5 +8,5 @@ export default async function AdminCompanyDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  return <ProfileDetail userId={id} backHref="/admin/companies" />
+  return <ProfileDetail userId={id} backHref="/admin/companies" permission="companies.read" />
 }

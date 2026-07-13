@@ -71,19 +71,24 @@ export default function AdminEntityActions({
             {busy === action.action ? '...' : action.label}
           </button>
         ))}
-        {message ? <span className="text-xs font-semibold text-red-700">{message}</span> : null}
+        {message ? <span role="alert" className="text-xs font-semibold text-red-700">{message}</span> : null}
       </div>
 
       {active ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-[#0f172a]/45 p-4">
-          <section className="w-full max-w-[460px] rounded-[16px] bg-white p-5 shadow-[0_22px_60px_rgba(15,23,42,.28)]">
+          <section
+            className="w-full max-w-[460px] rounded-[16px] bg-white p-5 shadow-[0_22px_60px_rgba(15,23,42,.28)]"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="admin-action-title"
+          >
             <div className="flex items-start justify-between gap-4">
               <div className="flex gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-red-50 text-red-700">
                   <AlertTriangle className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="text-lg font-black text-[#101828]">
+                  <h2 id="admin-action-title" className="text-lg font-black text-[#101828]">
                     {active.confirmTitle || active.label}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#667085]">
@@ -121,7 +126,7 @@ export default function AdminEntityActions({
               </button>
               <button
                 type="button"
-                disabled={active.requiresReason && reason.trim().length < 3}
+                disabled={active.requiresReason && reason.trim().length < 8}
                 onClick={() => void run(active, reason.trim())}
                 className="rounded-[10px] bg-red-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
               >
