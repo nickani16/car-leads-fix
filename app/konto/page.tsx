@@ -222,7 +222,7 @@ export default async function AccountPage() {
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#0866ff]">
                 {copy.eyebrow}
               </p>
               <h1 className="mt-3 text-4xl tracking-[-0.055em] text-[#101828] sm:text-5xl">
@@ -235,7 +235,7 @@ export default async function AccountPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href={localizePublicHref(locale, '/')}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-bold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 {copy.home}
               </Link>
@@ -252,7 +252,7 @@ export default async function AccountPage() {
         <section className="overflow-hidden rounded-[28px] border border-[#dfe7f2] bg-white shadow-[0_20px_60px_rgba(16,24,40,.06)]">
           <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
             <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
-              <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full border border-[#c9d8ee] bg-[#eef5ff] text-3xl font-black text-[#0866ff] shadow-inner">
+              <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full border border-[#c9d8ee] bg-[#eef5ff] text-3xl font-semibold text-[#0866ff] shadow-inner">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
@@ -260,18 +260,18 @@ export default async function AccountPage() {
                   <h2 className="truncate text-3xl tracking-[-0.045em] text-[#101828]">
                     {name}
                   </h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
                     <BadgeCheck className="h-3.5 w-3.5" />
                     {verificationLabel}
                   </span>
                 </div>
                 <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-bold text-[#344054]">
+                  <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-semibold text-[#344054]">
                     {accountTypeLabel}
                   </span>
                   {profile.country_code ? (
-                    <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-bold text-[#344054]">
+                    <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-semibold text-[#344054]">
                       {profile.country_code}
                     </span>
                   ) : null}
@@ -279,7 +279,7 @@ export default async function AccountPage() {
                 <div className="mt-5">
                   <a
                     href="#profile-details"
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[13px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[13px] bg-[#101828] px-4 text-sm font-semibold text-white transition hover:bg-[#0866ff]"
                   >
                     {copy.editProfile}
                     <ArrowRight className="h-4 w-4" />
@@ -309,7 +309,7 @@ export default async function AccountPage() {
         >
           <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
                 {copy.profileEyebrow}
               </p>
               <h2 className="mt-2 text-3xl tracking-[-0.045em]">{copy.profileTitle}</h2>
@@ -317,7 +317,7 @@ export default async function AccountPage() {
                 {copy.profileText}
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-bold text-[#0866ff]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-semibold text-[#0866ff]">
               <ShieldCheck className="h-4 w-4" />
               {copy.secureAccount}
             </span>
@@ -371,7 +371,7 @@ function AccountCard({
         </span>
         {badge ? (
           <span
-            className={`rounded-full px-2.5 py-1 text-xs font-black ${
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
               cta ? 'bg-white/20 text-white' : 'bg-[#f2f6ff] text-[#0866ff]'
             }`}
           >
@@ -409,7 +409,7 @@ function ProfileStat({
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
           <Icon className="h-4 w-4" />
         </span>
-        <span className="truncate text-sm font-bold text-[#475467]">{label}</span>
+        <span className="truncate text-sm font-semibold text-[#475467]">{label}</span>
       </span>
       <strong className="text-lg tracking-[-0.03em]">{value}</strong>
     </div>

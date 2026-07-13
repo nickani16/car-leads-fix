@@ -202,7 +202,7 @@ export default async function MessagesPage({
       <section className="mb-7 overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="flex flex-col gap-5 bg-[#eef6ff] p-7 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0866ff]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">
               Autorell marketplace
             </p>
             <h1 className="mt-3 text-[40px] font-semibold leading-[1] tracking-[-0.05em] sm:text-5xl">
@@ -263,7 +263,7 @@ export default async function MessagesPage({
                           {listing?.title || text.listingRemoved}
                         </strong>
                         {unread ? (
-                          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[10px] font-bold text-white">
+                          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[10px] font-semibold text-white">
                             {unread}
                           </span>
                         ) : null}

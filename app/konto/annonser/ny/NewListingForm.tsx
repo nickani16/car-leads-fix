@@ -712,7 +712,6 @@ export default function NewListingForm({
             values={values}
             selectedPricing={selectedPricing}
             accountType={accountType}
-            loading={loading}
             onChange={setValue}
             locale={locale}
             marketCode={listingCountryCode}
@@ -1507,7 +1506,6 @@ function PublishStep({
   values,
   selectedPricing,
   accountType,
-  loading,
   onChange,
   locale,
   marketCode,
@@ -1516,7 +1514,6 @@ function PublishStep({
   values: Values
   selectedPricing: (typeof marketplaceCategories)[number]
   accountType: 'private' | 'business'
-  loading: boolean
   onChange: (name: string, value: string) => void
   locale: PublicLocale
   marketCode: string

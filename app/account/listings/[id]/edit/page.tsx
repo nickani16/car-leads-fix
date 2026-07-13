@@ -30,7 +30,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,status,seller_user_id,seller_type,phone_visibility,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history')
+    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,status,seller_user_id,seller_type,phone_visibility,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history,images')
     .eq('id', id)
     .maybeSingle()
 
@@ -111,6 +111,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             operatingHours: listing.operating_hours ? Number(listing.operating_hours) : null,
             technicalData,
             identifiers: identifierData,
+            images: Array.isArray(listing.images) ? listing.images : [],
           }}
           backHref={localizePublicHref(locale, '/account/listings')}
         />

@@ -163,7 +163,7 @@ export default function ReviewFlowPanel({
                 type="button"
                 onClick={submitReview}
                 disabled={loading}
-                className="inline-flex min-h-11 items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-sm font-bold text-white disabled:opacity-60"
+                className="inline-flex min-h-11 items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {loading ? copy.submitting : copy.submit}
               </button>

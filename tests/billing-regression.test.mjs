@@ -82,6 +82,9 @@ test('webhook handling is signature verified and idempotent', () => {
   assert.match(webhook, /stripe_webhook_events/)
   assert.match(webhook, /duplicate/)
   assert.match(migration, /stripe_event_id text primary key/)
+  assert.match(fulfillment, /Stripe session metadata mismatch/)
+  assert.match(fulfillment, /session\.amount_total !== order\.amount_minor/)
+  assert.match(fulfillment, /session\.currency[\s\S]*order\.currency/)
 })
 
 test('premium fulfillment starts 30-day listing and 7-day boost only when publishable', () => {

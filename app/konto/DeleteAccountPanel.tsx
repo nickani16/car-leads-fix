@@ -84,7 +84,7 @@ export default function DeleteAccountPanel({
         <button
           type="submit"
           disabled={!canSubmit || isSubmitting}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-[#d0d5dd]"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-red-600 px-5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-[#d0d5dd]"
         >
           <Trash2 className="h-4 w-4" />
           {isSubmitting ? copy.submitting : copy.button}

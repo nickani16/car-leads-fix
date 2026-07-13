@@ -1,8 +1,9 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import Image from 'next/image'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Search, X } from 'lucide-react'
+import { Check, ImagePlus, LoaderCircle, Search, X } from 'lucide-react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import {
   categoryTechnicalFields,
@@ -38,6 +39,7 @@ type EditableListing = {
   operatingHours: number | null
   technicalData: Record<string, unknown>
   identifiers: ListingIdentifierInput
+  images: string[]
 }
 
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
@@ -88,6 +90,8 @@ export default function EditListingForm({
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [listingImages, setListingImages] = useState(listing.images)
+  const [uploadingImages, setUploadingImages] = useState(false)
   const showMileage = mileageCategories.has(listing.category)
   const showOperatingHours = listing.category === 'agriculture' || listing.category === 'construction'
 
@@ -97,6 +101,22 @@ export default function EditListingForm({
 
   function setIdentifierValue(key: keyof ListingIdentifierInput, value: string) {
     setIdentifiers((current) => ({ ...current, [key]: value }))
+  }
+
+  async function addImages(event: ChangeEvent<HTMLInputElement>) {
+    const files = [...(event.target.files || [])]
+    event.target.value = ''
+    if (!files.length) return
+    setUploadingImages(true)
+    setError('')
+    const form = new FormData()
+    files.forEach((file) => form.append('images', file, file.name))
+    const response = await fetch(`/api/account/listings/${listing.id}/images`, { method: 'POST', body: form })
+    const result = (await response.json().catch(() => ({}))) as { error?: string; images?: string[] }
+    setUploadingImages(false)
+    if (!response.ok || !result.images) return setError(result.error || 'Bilderna kunde inte laddas upp.')
+    setListingImages(result.images)
+    router.refresh()
   }
 
   async function submit(event: FormEvent) {
@@ -135,6 +155,17 @@ export default function EditListingForm({
 
   return (
     <form onSubmit={submit} className="space-y-7 p-6 sm:p-8">
+      <section aria-labelledby="listing-images-title" className="rounded-[18px] border border-[#dfe6f1] bg-[#f8faff] p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div><h2 id="listing-images-title" className="text-lg font-semibold text-[#101828]">Bilder</h2><p className="mt-1 text-sm text-[#667085]">Lägg till JPG, PNG, WebP eller AVIF. Max 20 bilder och 25 MB per original.</p></div>
+          <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white outline-none focus-within:ring-4 focus-within:ring-[#0866ff]/25">
+            {uploadingImages ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+            {uploadingImages ? 'Laddar upp…' : 'Lägg till bilder'}
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple disabled={uploadingImages || listingImages.length >= 20} onChange={addImages} className="sr-only" />
+          </label>
+        </div>
+        {listingImages.length ? <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">{listingImages.slice(0, 20).map((src, index) => <div key={`${src}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-[#e8edf5]"><Image src={src} alt={`Annonsbild ${index + 1}`} fill sizes="160px" unoptimized className="object-cover" /></div>)}</div> : <p className="mt-4 rounded-[12px] border border-dashed border-[#b9c6d8] bg-white p-5 text-center text-sm text-[#667085]">Annonsen saknar bilder. Lägg till minst en bild.</p>}
+      </section>
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">Pris</span>

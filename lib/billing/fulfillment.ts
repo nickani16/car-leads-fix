@@ -35,6 +35,26 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session) {
   if (!order) throw new Error('Payment order not found')
   if (order.status === 'fulfilled' || order.status === 'refunded') return true
 
+  const expectedMetadata = {
+    user_id: order.user_id,
+    business_id: order.business_id || '',
+    listing_id: order.listing_id || '',
+    product_key: order.product_key,
+    market: order.market,
+    internal_order_id: order.id,
+  }
+  for (const [key, expected] of Object.entries(expectedMetadata)) {
+    if ((session.metadata?.[key] || '') !== expected) {
+      throw new Error(`Stripe session metadata mismatch: ${key}`)
+    }
+  }
+  if ((session.currency || '').toLowerCase() !== order.currency.toLowerCase()) {
+    throw new Error('Stripe session currency does not match payment order')
+  }
+  if (session.amount_total !== order.amount_minor) {
+    throw new Error('Stripe session amount does not match payment order')
+  }
+
   const paymentIntent =
     typeof session.payment_intent === 'string'
       ? session.payment_intent
@@ -183,6 +203,16 @@ async function fulfillListingPackage(order: PaymentOrderRow, product: BillingPro
 
 async function fulfillAddOn(order: PaymentOrderRow, product: BillingProduct) {
   if (product.addon?.startsWith('refresh')) {
+    if (product.addon === 'refresh_single' && order.listing_id) {
+      const { error: refreshError } = await createAdminClient().rpc('fulfill_listing_refresh_purchase', {
+        p_user_id: order.user_id,
+        p_listing_id: order.listing_id,
+        p_payment_order_id: order.id,
+      })
+      if (refreshError) throw refreshError
+      await finishOrder(order, 'fulfilled', { fulfillment: 'listing_refreshed', credits_used: 1 })
+      return true
+    }
     const credits = product.refreshCredits || 0
     if (!credits) throw new Error('Refresh product missing credits')
     const { error: creditError } = await createAdminClient().rpc('increment_refresh_credits', {

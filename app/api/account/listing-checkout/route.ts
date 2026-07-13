@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     body.listingId
       ? admin
           .from('marketplace_listings')
-          .select('id,seller_user_id,category,title,status,country_code,review_status,package_id')
+          .select('id,seller_user_id,category,title,status,country_code,review_status,package_id,last_refreshed_at')
           .eq('id', body.listingId)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -83,6 +83,16 @@ export async function POST(request: Request) {
     if (product.kind === 'addon' && listing.status !== 'published') {
       return NextResponse.json({ error: 'Add-ons can only be bought for published listings.' }, { status: 400 })
     }
+    if (
+      product.productKey === 'addon.refresh_single' &&
+      listing.last_refreshed_at &&
+      Date.now() - new Date(listing.last_refreshed_at).getTime() < 24 * 60 * 60 * 1000
+    ) {
+      return NextResponse.json(
+        { error: 'Annonsen kan lyftas igen tidigast 24 timmar efter senaste lyftet.' },
+        { status: 409 },
+      )
+    }
   }
 
   if (product.kind === 'listing_package' && listing) {
@@ -97,6 +107,7 @@ export async function POST(request: Request) {
 
     await expireOtherListingCheckouts(admin, listing.id, product.productKey, market)
 
+    // Free listings do not use Stripe checkout; the authoritative package state is saved directly.
     if (product.package === 'start') {
       const approved = listing.review_status === 'approved'
       const now = new Date()

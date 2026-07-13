@@ -139,7 +139,7 @@ export default async function ReviewsPage() {
             <Star className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">Autorell</p>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">Autorell</p>
             <h1 className="mt-3 text-[40px] font-semibold leading-[1] tracking-[-.05em] sm:text-5xl">
               {copy.title}
             </h1>
