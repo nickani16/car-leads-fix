@@ -55,6 +55,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' data:",
+              "worker-src 'self' blob:",
               "img-src 'self' data: blob: https://*.supabase.co https://*.cartocdn.com https://*.arcgisonline.com https://tiles.openfreemap.org https://demotiles.maplibre.org",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://*.arcgisonline.com https://tiles.openfreemap.org https://demotiles.maplibre.org",
               "upgrade-insecure-requests",

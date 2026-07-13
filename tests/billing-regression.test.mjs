@@ -10,6 +10,11 @@ const search = readFileSync(new URL('../lib/marketplace-search-v2.ts', import.me
 const publicData = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
 const migration = readFileSync(new URL('../supabase/migrations/20260712153000_billing_catalog_orders_and_visibility.sql', import.meta.url), 'utf8')
 const businessLimits = readFileSync(new URL('../lib/billing/business-limits.ts', import.meta.url), 'utf8')
+const proxy = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
+const home = readFileSync(new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url), 'utf8')
+const countryFlag = readFileSync(new URL('../app/components/CountryFlag.tsx', import.meta.url), 'utf8')
+const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
+const nextConfig = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8')
 
 test('market currencies follow URL market requirements', () => {
   for (const [market, currency] of Object.entries({
@@ -94,4 +99,22 @@ test('business listing limits are enforced at 25, 100 and 500 active listings', 
   assert.match(businessLimits, /professional: 500/)
   assert.match(businessLimits, /\.eq\('status', 'published'\)/)
   assert.match(businessLimits, /active_listing_limit_reached/)
+})
+
+test('canonical English pricing routes do not redirect to themselves', () => {
+  assert.match(proxy, /isPublicLanguage\(targetMarket \|\| ''\) &&\s*targetMarket !== 'en'/)
+  assert.match(proxy, /targetMarket === 'sv' \? 'se' : targetMarket/)
+  assert.doesNotMatch(proxy, /targetMarket === 'en' \? pathname/)
+})
+
+test('EU home sections and browser-only header state hydrate deterministically', () => {
+  assert.match(home, /localMarketCode === 'EU'[\s\S]*\? localListingSections/)
+  assert.match(home, /key=\{section\.id\}/)
+  assert.match(countryFlag, /\.toFixed\(4\)/)
+  assert.match(publicHeader, /useState<HeaderAccount>\(emptyHeaderAccount\)/)
+  assert.match(publicHeader, /useState\(true\)/)
+})
+
+test('content security policy allows the MapLibre blob worker', () => {
+  assert.match(nextConfig, /worker-src 'self' blob:/)
 })

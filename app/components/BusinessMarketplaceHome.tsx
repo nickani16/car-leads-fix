@@ -65,6 +65,7 @@ type HomeListingCardItem = {
 }
 
 type HomeListingSectionData = {
+  id: string
   title: string
   emptyText: string
   items: HomeListingCardItem[]
@@ -120,38 +121,50 @@ export default async function BusinessMarketplaceHome({
   )
   const toHomeCard = (listing: HomeListingSource) =>
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified')
-  const listingSections = [
+  const localListingSections: HomeListingSectionData[] = [
     {
+      id: 'local-featured',
       title: homeListingSectionTitle(locale, 'featured', localMarketLabel),
       emptyText: homeEmptyListingText(locale, 'country'),
       items: await Promise.all(localFeaturedListings.map(toHomeCard)),
     },
     {
+      id: 'local-top',
       title: homeListingSectionTitle(locale, 'top', localMarketLabel),
       emptyText: homeEmptyListingText(locale, 'country'),
       items: await Promise.all(localTopListings.map(toHomeCard)),
     },
     {
+      id: 'local-latest',
       title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
       emptyText: homeEmptyListingText(locale, 'country'),
       items: await Promise.all(localLatestListings.map(toHomeCard)),
     },
+  ]
+  const europeListingSections: HomeListingSectionData[] = [
     {
+      id: 'europe-featured',
       title: homeListingSectionTitle(locale, 'featured', homeEuropeLabel(locale)),
       emptyText: homeEmptyListingText(locale, 'europe'),
       items: await Promise.all(europeFeaturedListings.map(toHomeCard)),
     },
     {
+      id: 'europe-top',
       title: homeListingSectionTitle(locale, 'top', homeEuropeLabel(locale)),
       emptyText: homeEmptyListingText(locale, 'europe'),
       items: await Promise.all(europeTopListings.map(toHomeCard)),
     },
     {
+      id: 'europe-latest',
       title: homeListingSectionTitle(locale, 'latest', homeEuropeLabel(locale)),
       emptyText: homeEmptyListingText(locale, 'europe'),
       items: await Promise.all(europeLatestListings.map(toHomeCard)),
     },
   ]
+  const listingSections =
+    localMarketCode === 'EU'
+      ? localListingSections
+      : [...localListingSections, ...europeListingSections]
 
   return (
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
@@ -210,7 +223,7 @@ export default async function BusinessMarketplaceHome({
 
           <div className="mt-12 space-y-10 sm:mt-16">
             {listingSections.map((section) => (
-              <HomeListingSection key={section.title} section={section} locale={locale} />
+              <HomeListingSection key={section.id} section={section} locale={locale} />
             ))}
           </div>
         </div>

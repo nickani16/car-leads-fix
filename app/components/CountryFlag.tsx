@@ -63,8 +63,8 @@ export default function CountryFlag({
               key={index}
               className="absolute h-[2px] w-[2px] rounded-full bg-[#ffd83d]"
               style={{
-                left: `${50 + Math.cos(angle) * 27}%`,
-                top: `${50 + Math.sin(angle) * 32}%`,
+                left: `${(50 + Math.cos(angle) * 27).toFixed(4)}%`,
+                top: `${(50 + Math.sin(angle) * 32).toFixed(4)}%`,
               }}
             />
           )

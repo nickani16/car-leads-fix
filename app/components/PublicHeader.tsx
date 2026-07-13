@@ -375,7 +375,8 @@ export default function PublicHeader({
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
-  const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(() => readCachedHeaderAccount())
+  const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
+  const [activePathname, setActivePathname] = useState('')
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [savedSearchCount, setSavedSearchCount] = useState(0)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
@@ -386,7 +387,7 @@ export default function PublicHeader({
   const [mobileSellMenuOpen, setMobileSellMenuOpen] = useState(false)
   const [mobileHelpMenuOpen, setMobileHelpMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [atPageTop, setAtPageTop] = useState(() => typeof window === 'undefined' || window.scrollY < 8)
+  const [atPageTop, setAtPageTop] = useState(true)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
@@ -414,10 +415,24 @@ export default function PublicHeader({
       lastScrollY.current = currentScrollY
     }
 
-    lastScrollY.current = window.scrollY
+    handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setHeaderAccount(readCachedHeaderAccount())
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setActivePathname(unprefixedPathname)
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [unprefixedPathname])
 
   const refreshHeaderAccount = useCallback(async () => {
     try {
@@ -635,10 +650,10 @@ export default function PublicHeader({
   const savedHref = `${marketPathPrefix}/saved`
   const savedSearchesHref = `${marketPathPrefix}/saved-searches`
   const vehicleSearchHref = localizePublicHref(locale, '/marketplace')
-  const isHomePage = unprefixedPathname === '/'
-  const isFindCarsPage = unprefixedPathname === '/find-cars'
+  const isHomePage = activePathname === '/'
+  const isFindCarsPage = activePathname === '/find-cars'
   const isMarketplaceResults =
-    unprefixedPathname === '/marketplace' || unprefixedPathname.startsWith('/marketplace/')
+    activePathname === '/marketplace' || activePathname.startsWith('/marketplace/')
   const firstPathSegment = unprefixedPathname.split('/').filter(Boolean)[0] || ''
   const isListingDetail = new Set([
     'listings',
@@ -877,8 +892,8 @@ export default function PublicHeader({
                   {buyItems.map(({ href, label }, index) => {
                     const category = marketplaceCategories[index]
                     const isActive =
-                      pathname === href ||
-                      (category && unprefixedPathname === `/marketplace/${category.slug}`)
+                      activePathname === stripLocalePrefix(href) ||
+                      (category && activePathname === `/marketplace/${category.slug}`)
                     const topLabel =
                       category && topCategoryLabels[category.slug]
                         ? topCategoryLabels[category.slug]![language]
@@ -929,12 +944,12 @@ export default function PublicHeader({
                 const { href, label } = item
                 const targetPath = stripLocalePrefix(href.split('?')[0] || href)
                 const isActive =
-                  unprefixedPathname === targetPath ||
+                  activePathname === targetPath ||
                   (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage)) ||
                   (item.kind === 'sell' &&
-                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === unprefixedPathname)) ||
+                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === activePathname)) ||
                   (item.kind === 'help' &&
-                    helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === unprefixedPathname))
+                    helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === activePathname))
 
                 if (item.kind === 'sell') {
                   return (

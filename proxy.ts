@@ -761,14 +761,15 @@ export async function proxy(request: NextRequest) {
     if (
       methodCanRedirect &&
       isPublicLanguage(targetMarket || '') &&
+      targetMarket !== 'en' &&
       (pathname === '/find-cars' ||
         [...PUBLIC_LANGUAGE_PAGES.keys()].some(
           (pageName) => pathname === `/${pageName}`,
         ))
     ) {
       const url = request.nextUrl.clone()
-      url.pathname =
-        targetMarket === 'en' ? pathname : `/${targetMarket}${pathname}`
+      const marketPrefix = targetMarket === 'sv' ? 'se' : targetMarket
+      url.pathname = `/${marketPrefix}${pathname}`
       return NextResponse.redirect(url, 307)
     }
   }
