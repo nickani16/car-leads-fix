@@ -36,9 +36,12 @@ export async function GET(
   const normalizedName = name.replace(/\.xml$/i, '')
   const market = marketFromSitemapName(normalizedName)
   const listingCountry = listingCountryFromSitemapName(normalizedName)
-  if (!market && !listingCountry) notFound()
+  const vehicleNewsMarket = normalizedName.match(/^vehicle-news-(se|de|es|pl|fr)$/)?.[1]
+  if (!market && !listingCountry && !vehicleNewsMarket) notFound()
 
-  const urls = normalizedName.startsWith('listings-')
+  const urls = vehicleNewsMarket
+    ? await vehicleNewsUrls(vehicleNewsMarket)
+    : normalizedName.startsWith('listings-')
     ? await listingUrls(listingCountry!, pageFromSitemapName(normalizedName))
     : staticSeoUrls(market!, normalizedName)
 
@@ -58,6 +61,23 @@ export async function GET(
     '</urlset>',
     '',
   ].join('\n'))
+}
+
+async function vehicleNewsUrls(market: string) {
+  const language = market === 'se' ? 'sv' : market
+  const base = [sitemapUrl(`/${market}/vehicle-news`, undefined, 'daily', '0.8')]
+  const { data, error } = await createAdminClient()
+    .from('content_posts')
+    .select('slug,updated_at,published_at')
+    .eq('post_type', 'news')
+    .eq('status', 'published')
+    .eq('market', market.toUpperCase())
+    .eq('language', language)
+    .lte('published_at', new Date().toISOString())
+    .order('published_at', { ascending: false })
+    .limit(maxUrlsPerSitemap - 1)
+  if (error) return base
+  return [...base, ...(data || []).map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
 }
 
 function staticSeoUrls(market: SeoMarketCode, name: string) {

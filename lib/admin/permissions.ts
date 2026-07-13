@@ -11,6 +11,7 @@ export const ADMIN_ROLES = [
 export type AdminRole = (typeof ADMIN_ROLES)[number]
 
 export const ADMIN_PERMISSIONS = [
+  'platform.super_admin',
   'dashboard.view',
   'users.read',
   'users.manage',

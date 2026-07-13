@@ -595,6 +595,19 @@ export async function proxy(request: NextRequest) {
       requestHeaders.set('x-autorell-market', localeContext.marketHeader)
       requestHeaders.set('x-autorell-pathname', pathname)
 
+      // Vehicle news owns market-prefixed App Router routes because its CMS
+      // queries and canonical URLs are market-specific. Do not strip the
+      // market segment through the legacy localized-page rewrite below.
+      if (segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter') {
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.next({ request: { headers: requestHeaders } }),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
+
       if (isSeoVehiclePath(pathMarket, segments.slice(1))) {
         const seoUrl = request.nextUrl.clone()
         seoUrl.pathname = `/seo/${pathMarket}/${segments.slice(1).join('/')}`

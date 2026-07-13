@@ -28,8 +28,10 @@ export async function GET() {
     `locations-${market}`,
   ])
   const listingSitemapNames = await getListingSitemapNames()
+  const vehicleNewsSitemapNames = ['se', 'de', 'es', 'pl', 'fr'].map((market) => `vehicle-news-${market}`)
   const sitemapNames = [
     ...seoSitemapNames,
+    ...vehicleNewsSitemapNames,
     ...listingSitemapNames,
   ]
 

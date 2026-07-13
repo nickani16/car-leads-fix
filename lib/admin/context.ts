@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 import {
+  ADMIN_PERMISSIONS,
   hasAdminPermission,
   isAdminPermission,
   normalizeAdminRole,
@@ -93,7 +94,10 @@ async function readRbacAccess(
     ),
   )
 
-  return { roles, permissions }
+  return {
+    roles,
+    permissions: roles.includes('super_admin') ? [...ADMIN_PERMISSIONS] : permissions,
+  }
 }
 
 async function readLegacyAccess(

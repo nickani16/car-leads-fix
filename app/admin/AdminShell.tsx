@@ -175,6 +175,11 @@ export default function AdminShell({
                 </span>
               </div>
               <p className="mt-2 truncate text-xs text-slate-400">{email}</p>
+              {primaryRole === 'super_admin' ? (
+                <span className="mt-2 inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-amber-200">
+                  God Mode
+                </span>
+              ) : null}
               <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-slate-600">
                 {accessSource === 'rbac' ? 'RBAC aktiv' : 'Legacy-åtkomst'}
               </p>
@@ -258,6 +263,11 @@ export default function AdminShell({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {primaryRole === 'super_admin' ? (
+                <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-800 sm:inline-flex">
+                  God Mode
+                </span>
+              ) : null}
               {!mfaReady ? (
                 <span className="hidden items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 sm:flex">
                   <LockKeyhole className="h-4 w-4" />

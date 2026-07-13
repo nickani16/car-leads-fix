@@ -700,7 +700,7 @@ export default function PublicHeader({
       icon: CircleHelp,
     },
     {
-      href: localizePublicHref(locale, '/fordonsnyheter'),
+      href: localizePublicHref(locale, '/vehicle-news'),
       label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Fahrzeugnews'),
       description: publicLabel('Guides, updates and articles about vehicle markets.', 'Guider, uppdateringar och artiklar om fordonsmarknaden.', 'Ratgeber, Updates und Artikel zum Fahrzeugmarkt.'),
       icon: Newspaper,
