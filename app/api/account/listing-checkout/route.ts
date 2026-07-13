@@ -136,12 +136,6 @@ export async function POST(request: Request) {
       branding_settings: checkoutBranding,
       locale: stripeLocaleForMarket(market),
       submit_type: 'pay',
-      payment_method_types: ['card'],
-      consent_collection: {
-        payment_method_reuse_agreement: {
-          position: 'hidden',
-        },
-      },
       customer_email: profile.email,
       client_reference_id: order.id,
       line_items: [
