@@ -97,8 +97,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Product is not payable for this market.' }, { status: 400 })
   }
 
-  const stripePriceId = price.stripePriceId
-
   const { data: order, error: orderError } = await admin
     .from('payment_orders')
     .insert({
@@ -121,6 +119,8 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin
+  const checkoutBranding = createCheckoutBranding(origin)
+  const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title)
   const metadata = {
     user_id: user.id,
     business_id: body.businessId || '',
@@ -133,25 +133,33 @@ export async function POST(request: Request) {
   try {
     session = await getStripe().checkout.sessions.create({
       mode: product.billingType,
+      branding_settings: checkoutBranding,
+      locale: stripeLocaleForMarket(market),
+      submit_type: 'pay',
       customer_email: profile.email,
+      client_reference_id: order.id,
       line_items: [
-        stripePriceId
-          ? { price: stripePriceId, quantity: 1 }
-          : {
-              price_data: {
-                currency: price.currency,
-                unit_amount: price.amountMinor,
-                product_data: {
-                  name: checkoutProductName(product.productKey, listing?.title),
-                  metadata: {
-                    product_key: product.productKey,
-                    source: price.source,
-                    required_env: price.requiredEnv || '',
-                  },
-                },
+        {
+          price_data: {
+            currency: price.currency,
+            unit_amount: price.amountMinor,
+            recurring:
+              product.billingType === 'subscription'
+                ? { interval: product.billingInterval || 'month' }
+                : undefined,
+            product_data: {
+              name: checkoutProduct.name,
+              description: checkoutProduct.description,
+              images: [checkoutBranding.logo.url],
+              metadata: {
+                product_key: product.productKey,
+                source: price.source,
+                required_env: price.requiredEnv || '',
               },
-              quantity: 1,
             },
+          },
+          quantity: 1,
+        },
       ],
       metadata,
       payment_intent_data:
@@ -162,6 +170,11 @@ export async function POST(request: Request) {
         product.billingType === 'subscription'
           ? { metadata }
           : undefined,
+      custom_text: {
+        submit: {
+          message: checkoutProduct.submitText,
+        },
+      },
       success_url: `${origin}/account/listings?payment=processing&order=${order.id}`,
       cancel_url: `${origin}/account/listings?payment=cancelled&order=${order.id}`,
     })
@@ -195,11 +208,120 @@ export async function POST(request: Request) {
   return NextResponse.json({ url: session.url, orderId: order.id })
 }
 
-function checkoutProductName(productKey: string, listingTitle?: string | null) {
-  const label = productKey
-    .split('.')
-    .map((part) => part.replace(/_/g, ' '))
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' · ')
-  return listingTitle ? `${label}: ${listingTitle}` : label
+function createCheckoutBranding(origin: string) {
+  return {
+    display_name: 'Autorell',
+    background_color: '#ffffff',
+    button_color: '#0866ff',
+    border_style: 'rounded' as const,
+    font_family: 'inter' as const,
+    icon: {
+      type: 'url' as const,
+      url: `${origin}/favicon-96.png`,
+    },
+    logo: {
+      type: 'url' as const,
+      url: `${origin}/autorell-brand-logo-color.png`,
+    },
+  }
+}
+
+function createCheckoutProductCopy(productKey: string, listingTitle?: string | null) {
+  const listingSuffix = listingTitle ? ` · ${listingTitle}` : ''
+
+  if (productKey.startsWith('listing.')) {
+    const [, category, packageName] = productKey.split('.')
+    const categoryLabel = checkoutCategoryLabel(category)
+    const packageLabel = packageName === 'premium' ? 'Premiumannons' : 'Standardannons'
+    const duration = packageName === 'premium' ? '30 dagar' : '15 dagar'
+    return {
+      name: `Autorell ${packageLabel} · ${categoryLabel}${listingSuffix}`,
+      description:
+        packageName === 'premium'
+          ? `${duration} publicering med extra synlighet och inkluderad toppplacering på Autorell.`
+          : `${duration} publicering på Autorells europeiska fordonsmarknad.`,
+      submitText:
+        packageName === 'premium'
+          ? 'Betala tryggt via Stripe och ge annonsen högre synlighet på Autorell.'
+          : 'Betala tryggt via Stripe och publicera annonsen på Autorell.',
+    }
+  }
+
+  if (productKey.startsWith('addon.top_placement')) {
+    const days = productKey.includes('14') ? '14 dagar' : productKey.includes('7') ? '7 dagar' : '3 dagar'
+    return {
+      name: `Autorell Topplacering · ${days}${listingSuffix}`,
+      description: `Lyft annonsen högre i listningen under ${days}.`,
+      submitText: 'Betala tryggt via Stripe och aktivera topplaceringen.',
+    }
+  }
+
+  if (productKey.startsWith('addon.featured')) {
+    const days = productKey.includes('30') ? '30 dagar' : '7 dagar'
+    return {
+      name: `Autorell Utvald annons · ${days}${listingSuffix}`,
+      description: `Visa annonsen som utvald på Autorell under ${days}.`,
+      submitText: 'Betala tryggt via Stripe och aktivera utvald synlighet.',
+    }
+  }
+
+  if (productKey.startsWith('addon.refresh')) {
+    return {
+      name: `Autorell Annonsförnyelse${listingSuffix}`,
+      description: 'Förnya annonsens sorteringsdatum och få ny synlighet.',
+      submitText: 'Betala tryggt via Stripe och aktivera förnyelsen.',
+    }
+  }
+
+  if (productKey.startsWith('subscription.business.')) {
+    const plan = productKey.split('.')[2] || 'business'
+    return {
+      name: `Autorell Företag · ${capitalize(plan)}`,
+      description: 'Månadsabonnemang för företag som säljer fordon på Autorell.',
+      submitText: 'Betala tryggt via Stripe och aktivera företagskontot.',
+    }
+  }
+
+  return {
+    name: `Autorell Checkout${listingSuffix}`,
+    description: 'Betalning för Autorells fordonsmarknad.',
+    submitText: 'Betala tryggt via Stripe.',
+  }
+}
+
+function checkoutCategoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    cars: 'Bil',
+    vans: 'Transportbil',
+    motorcycles: 'Motorcykel',
+    motorhomes: 'Husbil',
+    caravans: 'Husvagn',
+    trucks: 'Lastbil',
+    agriculture: 'Lantbruksmaskin',
+    construction: 'Entreprenadmaskin',
+    'electric-bikes': 'Cykel',
+    'e-scooters': 'Elsparkcykel',
+  }
+  return labels[category] || capitalize(category.replace(/-/g, ' '))
+}
+
+function stripeLocaleForMarket(market: string) {
+  const locales: Record<string, 'sv' | 'da' | 'de' | 'fr' | 'it' | 'es' | 'nl' | 'pl' | 'fi'> = {
+    se: 'sv',
+    dk: 'da',
+    de: 'de',
+    fr: 'fr',
+    it: 'it',
+    es: 'es',
+    nl: 'nl',
+    be: 'nl',
+    at: 'de',
+    pl: 'pl',
+    fi: 'fi',
+  }
+  return locales[market] || 'sv'
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }

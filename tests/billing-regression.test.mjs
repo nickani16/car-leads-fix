@@ -57,6 +57,22 @@ test('checkout returns a JSON configuration error instead of a raw server crash'
   assert.match(checkout, /\{ status: 503 \}/)
 })
 
+test('checkout sessions use Autorell branding and product copy', () => {
+  assert.match(checkout, /branding_settings: checkoutBranding/)
+  assert.match(checkout, /display_name: 'Autorell'/)
+  assert.match(checkout, /button_color: '#0866ff'/)
+  assert.match(checkout, /url: `\$\{origin\}\/favicon-96\.png`/)
+  assert.match(checkout, /url: `\$\{origin\}\/autorell-brand-logo-color\.png`/)
+  assert.match(checkout, /name: checkoutProduct\.name/)
+  assert.match(checkout, /description: checkoutProduct\.description/)
+  assert.match(checkout, /packageLabel = packageName === 'premium' \? 'Premiumannons' : 'Standardannons'/)
+  assert.match(checkout, /name: `Autorell \$\{packageLabel\}/)
+  assert.match(checkout, /Autorell Topplacering/)
+  assert.match(checkout, /Autorell Företag/)
+  assert.match(checkout, /custom_text: \{[\s\S]*submitText/)
+  assert.match(checkout, /locale: stripeLocaleForMarket\(market\)/)
+})
+
 test('webhook handling is signature verified and idempotent', () => {
   assert.match(webhook, /request\.headers\.get\('stripe-signature'\)/)
   assert.match(webhook, /process\.env\.STRIPE_WEBHOOK_SECRET/)
