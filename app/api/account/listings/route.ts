@@ -534,9 +534,10 @@ export async function POST(request: Request) {
     const reviewStatus = riskScore >= 50 ? 'flagged' : 'approved'
     const geocoded = await geocodeListingLocation({
       address,
+      postalCode,
       city,
       municipality,
-      country: listingCountryCode,
+      countryCode: listingCountryCode,
     })
     const latitude = geocoded?.latitude ?? parseCoordinate(text(form, 'latitude'))
     const longitude = geocoded?.longitude ?? parseCoordinate(text(form, 'longitude'))

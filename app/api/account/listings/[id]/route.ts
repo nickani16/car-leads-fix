@@ -110,6 +110,7 @@ export async function PATCH(
     price?: number | string
     city?: string
     address?: string
+    postalCode?: string
     country?: string
     latitude?: number | string | null
     longitude?: number | string | null
@@ -129,7 +130,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,city,country_code,country,address,latitude,longitude,seller_type,phone_visibility,category')
+    .select('id,seller_user_id,status,review_status,title,price,currency,description,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category')
     .eq('id', id)
     .maybeSingle()
 
@@ -154,6 +155,7 @@ export async function PATCH(
     const nextPrice = normalizePrice(body.price)
     const city = clean(body.city)
     const address = clean(body.address)
+    const postalCode = clean(body.postalCode) || listing.postal_code
     const country = clean(body.country) || listing.country || listing.country_code
     const description = String(body.description || '').trim().slice(0, 5000)
     const equipmentKeys = normalizeEquipmentKeys(body.equipmentKeys || [])
@@ -208,7 +210,13 @@ export async function PATCH(
     const now = new Date().toISOString()
     const oldPrice = Number(listing.price)
     const priceChanged = oldPrice !== nextPrice
-    const geocoded = await geocodeListingLocation({ address, city, country })
+    const geocoded = await geocodeListingLocation({
+      address,
+      postalCode,
+      city,
+      country,
+      countryCode: listing.country_code,
+    })
     const latitude = geocoded?.latitude ?? parseCoordinate(body.latitude) ?? listing.latitude
     const longitude = geocoded?.longitude ?? parseCoordinate(body.longitude) ?? listing.longitude
     const patch: Record<string, unknown> = {

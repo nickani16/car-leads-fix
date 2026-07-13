@@ -23,7 +23,7 @@ export async function resolveListingMapLocation(
   input: ListingMapLocationInput,
 ): Promise<ListingMapLocation | null> {
   const listingCoordinates = parseListingCoordinates(input.latitude, input.longitude)
-  if (listingCoordinates) {
+  if (listingCoordinates && !isKnownGenericFallbackCoordinate(listingCoordinates, input)) {
     return {
       ...listingCoordinates,
       approximate: false,
@@ -92,6 +92,75 @@ function parseCoordinate(value: number | string | null | undefined) {
   const parsed = Number(value)
   if (!Number.isFinite(parsed)) return null
   return parsed
+}
+
+function isKnownGenericFallbackCoordinate(
+  coordinates: { latitude: number; longitude: number },
+  input: ListingMapLocationInput,
+) {
+  const countryKey = normalizeLocationName(input.countryCode || input.country || '').toUpperCase()
+  const cityKey = normalizeLocationName(input.city || '')
+  const fallbackCoordinates = [
+    countryKey ? legacyCountryFallbackCoordinates[countryKey] : null,
+    cityKey ? legacyCityFallbackCoordinates[cityKey] : null,
+  ].filter(Boolean) as Array<{ latitude: number; longitude: number }>
+
+  return fallbackCoordinates.some((fallback) => sameCoordinate(coordinates, fallback))
+}
+
+function sameCoordinate(
+  left: { latitude: number; longitude: number },
+  right: { latitude: number; longitude: number },
+) {
+  return (
+    Math.abs(left.latitude - right.latitude) < 0.000001 &&
+    Math.abs(left.longitude - right.longitude) < 0.000001
+  )
+}
+
+function normalizeLocationName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/Ã¥/g, 'a')
+    .replace(/Ã¤/g, 'a')
+    .replace(/Ã¶/g, 'o')
+}
+
+const legacyCityFallbackCoordinates: Record<string, { latitude: number; longitude: number }> = {
+  nacka: { latitude: 59.3105, longitude: 18.1637 },
+  taby: { latitude: 59.4439, longitude: 18.0687 },
+  stockholm: { latitude: 59.3293, longitude: 18.0686 },
+  goteborg: { latitude: 57.7089, longitude: 11.9746 },
+  malmo: { latitude: 55.605, longitude: 13.0038 },
+  uppsala: { latitude: 59.8586, longitude: 17.6389 },
+  vasteras: { latitude: 59.6099, longitude: 16.5448 },
+  orebro: { latitude: 59.2753, longitude: 15.2134 },
+  linkoping: { latitude: 58.4108, longitude: 15.6214 },
+  helsingborg: { latitude: 56.0465, longitude: 12.6945 },
+  jonkoping: { latitude: 57.7826, longitude: 14.1618 },
+  norrkoping: { latitude: 58.5877, longitude: 16.1924 },
+  lund: { latitude: 55.7047, longitude: 13.191 },
+  umea: { latitude: 63.8258, longitude: 20.263 },
+}
+
+const legacyCountryFallbackCoordinates: Record<string, { latitude: number; longitude: number }> = {
+  SE: { latitude: 57.8, longitude: 14.5 },
+  SWEDEN: { latitude: 57.8, longitude: 14.5 },
+  SVERIGE: { latitude: 57.8, longitude: 14.5 },
+  DK: { latitude: 56.0, longitude: 10.0 },
+  DE: { latitude: 51.16, longitude: 10.45 },
+  NO: { latitude: 60.47, longitude: 8.47 },
+  FI: { latitude: 61.92, longitude: 25.75 },
+  NL: { latitude: 52.13, longitude: 5.29 },
+  BE: { latitude: 50.5, longitude: 4.47 },
+  FR: { latitude: 46.23, longitude: 2.21 },
+  ES: { latitude: 40.46, longitude: -3.75 },
+  IT: { latitude: 41.87, longitude: 12.57 },
+  PL: { latitude: 51.92, longitude: 19.15 },
+  EU: { latitude: 52.0, longitude: 14.5 },
 }
 
 function buildLocationQuery(parts: Array<string | null | undefined>) {

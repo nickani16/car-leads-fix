@@ -24,7 +24,8 @@ test('listing map resolver rejects generic city and country fallback coordinates
   assert.match(mapResolver, /source: 'geocoded_full_address'/)
   assert.match(mapResolver, /source: 'geocoded_postal_city_country'/)
   assert.doesNotMatch(mapResolver, /resolveListingCoordinates/)
-  assert.doesNotMatch(mapResolver, /cityCoordinates|countryCoordinates/)
+  assert.match(mapResolver, /isKnownGenericFallbackCoordinate/)
+  assert.match(mapResolver, /legacyCountryFallbackCoordinates/)
   assert.match(mapResolver, /parsedLatitude === 0 && parsedLongitude === 0/)
 })
 
@@ -101,6 +102,17 @@ test('listing map resolver centers three listings from their own location data',
     longitude: null,
   })
   assert.equal(ambiguousLocalityListing, null)
+
+  const legacySwedenFallbackListing = await resolveListingMapLocation({
+    id: 'listing-with-legacy-country-fallback',
+    address: 'Saltsjo-boo',
+    postalCode: null,
+    city: 'Ekero',
+    countryCode: 'SE',
+    latitude: 57.8,
+    longitude: 14.5,
+  })
+  assert.equal(legacySwedenFallbackListing, null)
 })
 
 function loadListingMapResolver(fetchImpl) {

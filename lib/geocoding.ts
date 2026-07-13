@@ -1,10 +1,12 @@
-import { resolveListingCoordinates } from './location-coordinates'
+import { resolveListingMapLocation } from './listing-map-location'
 
 export type ListingGeocodeInput = {
   address?: string | null
+  postalCode?: string | null
   city?: string | null
   municipality?: string | null
   country?: string | null
+  countryCode?: string | null
 }
 
 export type ListingGeocodeResult = {
@@ -20,25 +22,18 @@ export function parseCoordinate(value: unknown) {
 export async function geocodeListingLocation(
   input: ListingGeocodeInput,
 ): Promise<ListingGeocodeResult | null> {
-  const provider = process.env.GEOCODING_PROVIDER || process.env.MAP_GEOCODING_PROVIDER
-  const endpoint = process.env.GEOCODING_API_URL || process.env.MAP_GEOCODING_API_URL
-
-  const fallback = resolveListingCoordinates({
+  const resolved = await resolveListingMapLocation({
+    id: 'listing-form-location',
+    address: input.address,
+    postalCode: input.postalCode,
     city: input.city,
-    municipality: input.municipality,
+    latitude: null,
+    longitude: null,
     country: input.country,
-    countryCode: input.country,
+    countryCode: input.countryCode || input.country,
   })
 
-  if (!provider || !endpoint) {
-    return fallback
-      ? { latitude: fallback.latitude, longitude: fallback.longitude }
-      : null
-  }
-
-  void provider
-  void endpoint
-  return fallback
-    ? { latitude: fallback.latitude, longitude: fallback.longitude }
+  return resolved
+    ? { latitude: resolved.latitude, longitude: resolved.longitude }
     : null
 }
