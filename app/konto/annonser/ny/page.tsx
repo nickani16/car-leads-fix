@@ -17,7 +17,19 @@ export default async function NewListingPage({
 }: {
   searchParams: Promise<{ category?: string }>
 }) {
-  const locale = await getRequestLocale()
+  return renderNewListingPage({ searchParams })
+}
+
+export async function renderNewListingPage({
+  searchParams,
+  marketCodeOverride,
+  localeOverride,
+}: {
+  searchParams: Promise<{ category?: string }>
+  marketCodeOverride?: string
+  localeOverride?: PublicLocale
+}) {
+  const locale = localeOverride || await getRequestLocale()
   const supabase = await createClient()
   const {
     data: { user },
@@ -33,7 +45,7 @@ export default async function NewListingPage({
 
   const { category = 'cars' } = await searchParams
   const requestHeaders = await headers()
-  const marketCode = (requestHeaders.get('x-autorell-market') || '').toUpperCase()
+  const marketCode = (marketCodeOverride || requestHeaders.get('x-autorell-market') || '').toUpperCase()
   const localeCountry = countryForLocale(locale)
   const listingCountryCode =
     euCountryCodes.has(marketCode)

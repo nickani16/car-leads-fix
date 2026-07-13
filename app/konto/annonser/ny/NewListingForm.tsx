@@ -69,20 +69,6 @@ type UploadImage = {
   name: string
   size: number
 }
-type ListingDraft = {
-  id: string
-  category: MarketplaceCategorySlug
-  countryCode: string
-  values: Values
-  equipment: string[]
-  images: UploadImage[]
-  mainImageId: string
-}
-type ListingCreationResult = {
-  listingId: string
-  requiresPayment?: boolean
-  packageId?: string
-}
 type ListingCreationError = {
   error?: string
   step?: StepId
@@ -100,6 +86,7 @@ const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 const swedishMileageFactor = 10
 const minModelYear = 1950
 const maxModelYear = 2027
+const listingRequestTimeoutMs = 45_000
 const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
@@ -154,7 +141,6 @@ export default function NewListingForm({
   const [draggedImageId, setDraggedImageId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [batchDrafts, setBatchDrafts] = useState<ListingDraft[]>([])
   const selectedPricing =
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
@@ -339,84 +325,15 @@ export default function NewListingForm({
     setStep((current) => Math.max(0, current - 1) as StepId)
   }
 
-  function currentDraft(): ListingDraft {
-    return {
-      id: crypto.randomUUID(),
-      category,
-      countryCode: listingCountryCode,
-      values: { ...values },
-      equipment: [...equipment],
-      images: orderedImages,
-      mainImageId,
-    }
-  }
-
-  function resetCurrentListing() {
-    setValues(createInitialValues())
-    setEquipment([])
-    setEquipmentSearch('')
-    setImages([])
-    setMainImageId('')
-    setOpenField(null)
-    setDraggedImageId('')
-    setStep(0)
-  }
-
-  function addCurrentToBatch() {
-    if (!validateForSubmit()) return
-    setBatchDrafts((current) => [...current, currentDraft()])
-    resetCurrentListing()
-    setError('')
-  }
-
-  function removeBatchDraft(id: string) {
-    setBatchDrafts((current) => current.filter((draft) => draft.id !== id))
-  }
-
-  async function createListingFromDraft(draft: ListingDraft): Promise<ListingCreationResult> {
-    const form = new FormData()
-    const draftUsesSwedishMileage = draft.countryCode.toUpperCase() === 'SE'
-    form.set('category', draft.category)
-    form.set('sellerCountryCode', draft.countryCode)
-    Object.entries(draft.values).forEach(([key, value]) => {
-      if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, draftUsesSwedishMileage) : value)
-    })
-    form.set(
-      'color',
-      draft.values.colorChoice === 'other' ? 'Annan färg' : draft.values.colorChoice || '',
-    )
-    form.set('equipmentKeys', JSON.stringify(draft.equipment))
-    sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
-    draft.images.forEach((image) => form.append('images', image.file, image.name))
-
-    const response = await fetch('/api/account/listings', {
-      method: 'POST',
-      body: form,
-    })
-    const result = (await response.json().catch(() => ({}))) as ListingCreationError & {
-      listingId?: string
-      requiresPayment?: boolean
-      packageId?: string
-    }
-    if (!response.ok || !result.listingId) {
-      throw new Error(applySubmissionError(result))
-    }
-    return {
-      listingId: result.listingId,
-      requiresPayment: result.requiresPayment,
-      packageId: result.packageId,
-    }
-  }
-
   async function startCheckout(listingId: string, packageId?: string) {
-    const checkout = await fetch('/api/account/listing-checkout', {
+    const checkout = await fetchWithTimeout('/api/account/listing-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        listingId,
-        packageId,
-        market: countryCode.toLowerCase(),
-      }),
+        body: JSON.stringify({
+          listingId,
+          packageId,
+          market: listingCountryCode.toLowerCase(),
+        }),
     })
     const checkoutResult = (await checkout.json()) as {
       url?: string
@@ -427,26 +344,6 @@ export default function NewListingForm({
       return
     }
     throw new Error(checkoutResult.error || 'Betalningen kunde inte startas.')
-  }
-
-  async function publishBatchDrafts() {
-    if (!batchDrafts.length) return
-    setLoading(true)
-    setError('')
-
-    try {
-      for (const draft of batchDrafts) {
-        const result = await createListingFromDraft(draft)
-        if (result.requiresPayment) {
-          await startCheckout(result.listingId, result.packageId)
-          return
-        }
-      }
-      router.push('/account/listings')
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Kunde inte publicera annonskön.')
-      setLoading(false)
-    }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -472,12 +369,16 @@ export default function NewListingForm({
 
     let response: Response
     try {
-      response = await fetch('/api/account/listings', {
+      response = await fetchWithTimeout('/api/account/listings', {
         method: 'POST',
         body: form,
       })
-    } catch {
-      setError('Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.')
+    } catch (caught) {
+      setError(
+        caught instanceof DOMException && caught.name === 'AbortError'
+          ? 'Publiceringen tog för lång tid och avbröts. Dina uppgifter finns kvar; försök igen eller ladda upp färre bilder.'
+          : 'Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.',
+      )
       setLoading(false)
       return
     }
@@ -494,17 +395,21 @@ export default function NewListingForm({
     if (result.requiresPayment) {
       let checkout: Response
       try {
-        checkout = await fetch('/api/account/listing-checkout', {
+        checkout = await fetchWithTimeout('/api/account/listing-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            listingId: result.listingId,
-            packageId: result.packageId,
-            market: countryCode.toLowerCase(),
-          }),
+            body: JSON.stringify({
+              listingId: result.listingId,
+              packageId: result.packageId,
+              market: listingCountryCode.toLowerCase(),
+            }),
         })
-      } catch {
-        setError('Annonsen sparades men betalningen kunde inte öppnas. Försök igen från Mina annonser.')
+      } catch (caught) {
+        setError(
+          caught instanceof DOMException && caught.name === 'AbortError'
+            ? 'Annonsen sparades men betalningen tog för lång tid att öppna. Försök igen från Mina annonser.'
+            : 'Annonsen sparades men betalningen kunde inte öppnas. Försök igen från Mina annonser.',
+        )
         setLoading(false)
         return
       }
@@ -799,14 +704,10 @@ export default function NewListingForm({
             values={values}
             selectedPricing={selectedPricing}
             accountType={accountType}
-            batchDrafts={batchDrafts}
             loading={loading}
             onChange={setValue}
-            onAddToBatch={addCurrentToBatch}
-            onPublishBatch={publishBatchDrafts}
-            onRemoveBatchDraft={removeBatchDraft}
             locale={locale}
-            marketCode={countryCode}
+            marketCode={listingCountryCode}
           />
         ) : null}
 
@@ -1598,12 +1499,8 @@ function PublishStep({
   values,
   selectedPricing,
   accountType,
-  batchDrafts,
   loading,
   onChange,
-  onAddToBatch,
-  onPublishBatch,
-  onRemoveBatchDraft,
   locale,
   marketCode,
 }: {
@@ -1611,12 +1508,8 @@ function PublishStep({
   values: Values
   selectedPricing: (typeof marketplaceCategories)[number]
   accountType: 'private' | 'business'
-  batchDrafts: ListingDraft[]
   loading: boolean
   onChange: (name: string, value: string) => void
-  onAddToBatch: () => void
-  onPublishBatch: () => void
-  onRemoveBatchDraft: (id: string) => void
   locale: PublicLocale
   marketCode: string
 }) {
@@ -1711,69 +1604,6 @@ function PublishStep({
           </div>
         </section>
       ) : null}
-      <section className="mt-6 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
-          <div>
-            <h4 className="text-sm font-semibold text-[#101828]">{copy.batchTitle}</h4>
-            <p className="mt-1 text-xs leading-5 text-[#667085]">{copy.batchText}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onAddToBatch}
-            disabled={loading}
-            className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] disabled:opacity-50"
-          >
-            {copy.addToBatch}
-          </button>
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {copy.volumeOffers.map((offer) => (
-            <div key={offer.title} className="rounded-[14px] border border-[#dfe6f2] bg-white p-3">
-              <strong className="block text-sm font-semibold text-[#101828]">{offer.title}</strong>
-              <span className="mt-1 block text-xs leading-5 text-[#667085]">{offer.text}</span>
-            </div>
-          ))}
-        </div>
-        {batchDrafts.length ? (
-          <div className="mt-4 rounded-[14px] border border-[#cfe0ff] bg-white p-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <strong className="text-sm font-semibold text-[#101828]">
-                {copy.batchCount.replace('{count}', String(batchDrafts.length))}
-              </strong>
-              <button
-                type="button"
-                onClick={onPublishBatch}
-                disabled={loading}
-                className="inline-flex min-h-10 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                {loading ? copy.publishing : copy.publishBatch}
-              </button>
-            </div>
-            <div className="mt-3 grid gap-2">
-              {batchDrafts.map((draft, index) => (
-                <div key={draft.id} className="flex items-center justify-between gap-3 rounded-[12px] border border-[#edf1f7] px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#101828]">
-                      {index + 1}. {draft.values.make || copy.listingTitle} {draft.values.model || ''}
-                    </p>
-                    <p className="text-xs text-[#667085]">
-                      {categoryLabelForLocale(draft.category, locale)} · {draft.images.length} {copy.image.toLowerCase()}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveBatchDraft(draft.id)}
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#667085] hover:bg-[#f2f4f7] hover:text-[#101828]"
-                    aria-label={copy.removeFromBatch}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </section>
       <label className="mt-6 flex gap-3 rounded-[18px] border border-[#d7deed] p-4 text-sm leading-6 text-[#475467]">
         <input
           type="checkbox"
@@ -1852,6 +1682,19 @@ function SelectNative({
 
 function labelFor(options: ListingOption[], value: string) {
   return options.find((option) => option.value === value)?.label || ''
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit) {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), listingRequestTimeoutMs)
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    })
+  } finally {
+    window.clearTimeout(timeout)
+  }
 }
 
 function mileageInputToKilometers(value: string, usesSwedishMileage: boolean) {
