@@ -150,7 +150,6 @@ export async function POST(request: Request) {
             product_data: {
               name: checkoutProduct.name,
               description: checkoutProduct.description,
-              images: [checkoutBranding.logo.url],
               metadata: {
                 product_key: product.productKey,
                 source: price.source,
@@ -173,6 +172,9 @@ export async function POST(request: Request) {
       custom_text: {
         submit: {
           message: checkoutProduct.submitText,
+        },
+        after_submit: {
+          message: 'Säker betalning via Stripe. Du skickas tillbaka till Autorell efter genomfört köp.',
         },
       },
       success_url: `${origin}/account/listings?payment=processing&order=${order.id}`,
@@ -215,19 +217,15 @@ function createCheckoutBranding(origin: string) {
     button_color: '#0866ff',
     border_style: 'rounded' as const,
     font_family: 'inter' as const,
-    icon: {
-      type: 'url' as const,
-      url: `${origin}/favicon-96.png`,
-    },
     logo: {
       type: 'url' as const,
-      url: `${origin}/autorell-brand-logo-color.png`,
+      url: `${origin}/autorell-logo-primary.png`,
     },
   }
 }
 
 function createCheckoutProductCopy(productKey: string, listingTitle?: string | null) {
-  const listingSuffix = listingTitle ? ` · ${listingTitle}` : ''
+  const listingContext = listingTitle ? `${listingTitle} · ` : ''
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
@@ -235,57 +233,57 @@ function createCheckoutProductCopy(productKey: string, listingTitle?: string | n
     const packageLabel = packageName === 'premium' ? 'Premiumannons' : 'Standardannons'
     const duration = packageName === 'premium' ? '30 dagar' : '15 dagar'
     return {
-      name: `Autorell ${packageLabel} · ${categoryLabel}${listingSuffix}`,
+      name: `${packageLabel} · ${categoryLabel}`,
       description:
         packageName === 'premium'
-          ? `${duration} publicering med extra synlighet och inkluderad toppplacering på Autorell.`
-          : `${duration} publicering på Autorells europeiska fordonsmarknad.`,
+          ? `${listingContext}${duration} publicering med extra synlighet och inkluderad toppplacering.`
+          : `${listingContext}${duration} publicering på Autorells europeiska fordonsmarknad.`,
       submitText:
         packageName === 'premium'
-          ? 'Betala tryggt via Stripe och ge annonsen högre synlighet på Autorell.'
-          : 'Betala tryggt via Stripe och publicera annonsen på Autorell.',
+          ? 'Annonsen får högre synlighet automatiskt när betalningen har bekräftats.'
+          : 'Annonsen publiceras automatiskt när betalningen har bekräftats.',
     }
   }
 
   if (productKey.startsWith('addon.top_placement')) {
     const days = productKey.includes('14') ? '14 dagar' : productKey.includes('7') ? '7 dagar' : '3 dagar'
     return {
-      name: `Autorell Topplacering · ${days}${listingSuffix}`,
-      description: `Lyft annonsen högre i listningen under ${days}.`,
-      submitText: 'Betala tryggt via Stripe och aktivera topplaceringen.',
+      name: `Topplacering · ${days}`,
+      description: `${listingContext}Lyft annonsen högre i listningen under ${days}.`,
+      submitText: 'Topplaceringen aktiveras automatiskt när betalningen har bekräftats.',
     }
   }
 
   if (productKey.startsWith('addon.featured')) {
     const days = productKey.includes('30') ? '30 dagar' : '7 dagar'
     return {
-      name: `Autorell Utvald annons · ${days}${listingSuffix}`,
-      description: `Visa annonsen som utvald på Autorell under ${days}.`,
-      submitText: 'Betala tryggt via Stripe och aktivera utvald synlighet.',
+      name: `Utvald annons · ${days}`,
+      description: `${listingContext}Visa annonsen som utvald på Autorell under ${days}.`,
+      submitText: 'Utvald synlighet aktiveras automatiskt när betalningen har bekräftats.',
     }
   }
 
   if (productKey.startsWith('addon.refresh')) {
     return {
-      name: `Autorell Annonsförnyelse${listingSuffix}`,
-      description: 'Förnya annonsens sorteringsdatum och få ny synlighet.',
-      submitText: 'Betala tryggt via Stripe och aktivera förnyelsen.',
+      name: 'Annonsförnyelse',
+      description: `${listingContext}Förnya annonsens sorteringsdatum och få ny synlighet.`,
+      submitText: 'Förnyelsen aktiveras automatiskt när betalningen har bekräftats.',
     }
   }
 
   if (productKey.startsWith('subscription.business.')) {
     const plan = productKey.split('.')[2] || 'business'
     return {
-      name: `Autorell Företag · ${capitalize(plan)}`,
+      name: `Företag · ${capitalize(plan)}`,
       description: 'Månadsabonnemang för företag som säljer fordon på Autorell.',
-      submitText: 'Betala tryggt via Stripe och aktivera företagskontot.',
+      submitText: 'Företagsabonnemanget aktiveras automatiskt när betalningen har bekräftats.',
     }
   }
 
   return {
-    name: `Autorell Checkout${listingSuffix}`,
-    description: 'Betalning för Autorells fordonsmarknad.',
-    submitText: 'Betala tryggt via Stripe.',
+    name: 'Köp på Autorell',
+    description: `${listingContext}Betalning för Autorells fordonsmarknad.`,
+    submitText: 'Köpet aktiveras automatiskt när betalningen har bekräftats.',
   }
 }
 
