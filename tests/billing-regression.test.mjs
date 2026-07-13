@@ -50,6 +50,13 @@ test('checkout uses server-side catalog/database price lookup and rejects client
   assert.match(checkout, /unit_amount: price\.amountMinor/)
 })
 
+test('checkout returns a JSON configuration error instead of a raw server crash', () => {
+  assert.match(checkout, /Could not create Stripe checkout session/)
+  assert.match(checkout, /Missing STRIPE_SECRET_KEY/)
+  assert.match(checkout, /Stripe checkout is not configured for this environment/)
+  assert.match(checkout, /\{ status: 503 \}/)
+})
+
 test('webhook handling is signature verified and idempotent', () => {
   assert.match(webhook, /request\.headers\.get\('stripe-signature'\)/)
   assert.match(webhook, /process\.env\.STRIPE_WEBHOOK_SECRET/)

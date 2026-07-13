@@ -335,10 +335,7 @@ export default function NewListingForm({
           market: listingCountryCode.toLowerCase(),
         }),
     })
-    const checkoutResult = (await checkout.json()) as {
-      url?: string
-      error?: string
-    }
+    const checkoutResult = await parseCheckoutResponse(checkout)
     if (checkoutResult.url) {
       window.location.assign(checkoutResult.url)
       return
@@ -413,10 +410,7 @@ export default function NewListingForm({
         setLoading(false)
         return
       }
-      const checkoutResult = (await checkout.json()) as {
-        url?: string
-        error?: string
-      }
+      const checkoutResult = await parseCheckoutResponse(checkout)
       if (checkoutResult.url) {
         window.location.assign(checkoutResult.url)
         return
@@ -1694,6 +1688,21 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
     })
   } finally {
     window.clearTimeout(timeout)
+  }
+}
+
+async function parseCheckoutResponse(response: Response): Promise<{ url?: string; error?: string }> {
+  const fallback = response.ok
+    ? 'Betalningen kunde inte startas.'
+    : `Betalningen kunde inte startas (${response.status}).`
+  try {
+    const result = (await response.json()) as { url?: string; error?: string }
+    return {
+      url: result.url,
+      error: result.error || fallback,
+    }
+  } catch {
+    return { error: fallback }
   }
 }
 

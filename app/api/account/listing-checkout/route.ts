@@ -129,40 +129,59 @@ export async function POST(request: Request) {
     market,
     internal_order_id: order.id,
   }
-  const session = await getStripe().checkout.sessions.create({
-    mode: product.billingType,
-    customer_email: profile.email,
-    line_items: [
-      stripePriceId
-        ? { price: stripePriceId, quantity: 1 }
-        : {
-            price_data: {
-              currency: price.currency,
-              unit_amount: price.amountMinor,
-              product_data: {
-                name: checkoutProductName(product.productKey, listing?.title),
-                metadata: {
-                  product_key: product.productKey,
-                  source: price.source,
-                  required_env: price.requiredEnv || '',
+  let session
+  try {
+    session = await getStripe().checkout.sessions.create({
+      mode: product.billingType,
+      customer_email: profile.email,
+      line_items: [
+        stripePriceId
+          ? { price: stripePriceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: price.currency,
+                unit_amount: price.amountMinor,
+                product_data: {
+                  name: checkoutProductName(product.productKey, listing?.title),
+                  metadata: {
+                    product_key: product.productKey,
+                    source: price.source,
+                    required_env: price.requiredEnv || '',
+                  },
                 },
               },
+              quantity: 1,
             },
-            quantity: 1,
-          },
-    ],
-    metadata,
-    payment_intent_data:
-      product.billingType === 'payment'
-        ? { metadata }
-        : undefined,
-    subscription_data:
-      product.billingType === 'subscription'
-        ? { metadata }
-        : undefined,
-    success_url: `${origin}/account/listings?payment=processing&order=${order.id}`,
-    cancel_url: `${origin}/account/listings?payment=cancelled&order=${order.id}`,
-  })
+      ],
+      metadata,
+      payment_intent_data:
+        product.billingType === 'payment'
+          ? { metadata }
+          : undefined,
+      subscription_data:
+        product.billingType === 'subscription'
+          ? { metadata }
+          : undefined,
+      success_url: `${origin}/account/listings?payment=processing&order=${order.id}`,
+      cancel_url: `${origin}/account/listings?payment=cancelled&order=${order.id}`,
+    })
+  } catch (error) {
+    console.error('[listing-checkout] Could not create Stripe checkout session', {
+      orderId: order.id,
+      productKey: product.productKey,
+      market,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error && error.message === 'Missing STRIPE_SECRET_KEY'
+            ? 'Stripe checkout is not configured for this environment.'
+            : 'Stripe checkout could not be started.',
+      },
+      { status: 503 },
+    )
+  }
 
   await admin
     .from('payment_orders')

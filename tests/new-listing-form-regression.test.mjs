@@ -47,6 +47,8 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.match(form, /const listingRequestTimeoutMs = 45_000/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listings'/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listing-checkout'/)
+  assert.match(form, /parseCheckoutResponse\(checkout\)/)
+  assert.match(form, /Betalningen kunde inte startas \(\$\{response\.status\}\)/)
   assert.match(form, /Publiceringen tog för lång tid och avbröts/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
   assert.doesNotMatch(form, /onAddToBatch/)
