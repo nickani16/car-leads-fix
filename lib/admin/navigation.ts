@@ -35,7 +35,7 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
       { label: 'Annonser', href: '/admin/listings', icon: 'listings', permission: 'listings.read', available: true },
       { label: 'Moderering', href: '/admin/moderation', icon: 'moderation', permission: 'moderation.read', available: true },
       { label: 'Rapporter', href: '/admin/reports', icon: 'reports', permission: 'reports.read', available: true },
-      { label: 'Support', href: '/admin/support', icon: 'support', permission: 'support.read', available: true },
+      { label: 'Support', href: '/admin/support', icon: 'support', permission: 'support.read', available: false, badge: 'Fas 3' },
     ],
   },
   {

@@ -264,13 +264,15 @@ export default function AdminShell({
                   MFA behöver aktiveras
                 </span>
               ) : null}
-              <Link
-                href="/admin/support"
-                className="grid h-11 w-11 place-items-center rounded-xl border border-[#d8e0eb] text-[#475467] hover:border-[#0866ff] hover:text-[#0866ff]"
-                aria-label="Öppna support"
-              >
-                <BellRing className="h-[18px] w-[18px]" />
-              </Link>
+              {permissions.includes('support.read') ? (
+                <span
+                  className="grid h-11 w-11 cursor-not-allowed place-items-center rounded-xl border border-[#d8e0eb] text-[#98a2b3]"
+                  aria-label="Support planeras till fas 3"
+                  title="Support planeras till fas 3"
+                >
+                  <BellRing className="h-[18px] w-[18px]" />
+                </span>
+              ) : null}
             </div>
           </div>
         </header>

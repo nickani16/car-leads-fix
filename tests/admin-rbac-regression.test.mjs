@@ -44,6 +44,19 @@ test('authorization is server-controlled and legacy access is only a migration b
   assert.match(routeAuth, /contextHasPermission/)
 })
 
+test('admin pages and APIs require an aal2 MFA session', () => {
+  const pageAuth = read('lib/admin-auth.ts')
+  const routeAuth = read('lib/admin-route-auth.ts')
+  const mfaPage = read('app/admin/mfa/AdminMfaSetup.tsx')
+
+  assert.match(pageAuth, /assuranceLevel !== 'aal2'/)
+  assert.match(pageAuth, /redirect\('\/admin\/mfa'\)/)
+  assert.match(routeAuth, /MFA_REQUIRED/)
+  assert.match(mfaPage, /auth\.mfa\.enroll/)
+  assert.match(mfaPage, /auth\.mfa\.challenge/)
+  assert.match(mfaPage, /auth\.mfa\.verify/)
+})
+
 test('sensitive routes enforce exact permissions instead of a shared super-admin boolean', () => {
   assert.match(userRoute, /companies\.verify/)
   assert.match(userRoute, /users\.delete/)

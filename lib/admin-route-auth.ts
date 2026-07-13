@@ -12,6 +12,15 @@ export async function requireAdminRoute(permission: AdminPermission) {
     }
   }
 
+  if (context.assuranceLevel !== 'aal2') {
+    return {
+      error: NextResponse.json(
+        { error: 'Multi-factor authentication is required.', code: 'MFA_REQUIRED' },
+        { status: 403 },
+      ),
+    }
+  }
+
   if (!contextHasPermission(context, permission)) {
     return {
       error: NextResponse.json(

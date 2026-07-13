@@ -17,6 +17,9 @@ export async function requireAdmin() {
 
 export async function requireAdminPermission(permission: AdminPermission) {
   const context = await requireAdmin()
+  if (context.assuranceLevel !== 'aal2') {
+    redirect('/admin/mfa')
+  }
   if (!contextHasPermission(context, permission)) {
     redirect('/admin?status=forbidden')
   }
