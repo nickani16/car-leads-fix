@@ -90,6 +90,17 @@ test('listing map resolver centers three listings from their own location data',
   assert.equal(postalListing?.approximate, true)
   assert.equal(postalListing?.latitude, 55.6099)
   assert.equal(postalListing?.longitude, 13.0038)
+
+  const ambiguousLocalityListing = await resolveListingMapLocation({
+    id: 'listing-saltsjo-boo-ekero',
+    address: 'Saltsjo-boo',
+    postalCode: null,
+    city: 'Ekero',
+    country: 'Sweden',
+    latitude: null,
+    longitude: null,
+  })
+  assert.equal(ambiguousLocalityListing, null)
 })
 
 function loadListingMapResolver(fetchImpl) {

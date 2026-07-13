@@ -38,7 +38,7 @@ export async function resolveListingMapLocation(
     input.city,
     input.country || input.countryCode,
   ])
-  if (fullAddressQuery && hasStreetAddress(input.address)) {
+  if (fullAddressQuery && hasFullStreetAddress(input)) {
     const geocoded = await geocodeSavedListingAddress(fullAddressQuery)
     if (geocoded) {
       return {
@@ -102,8 +102,15 @@ function buildLocationQuery(parts: Array<string | null | undefined>) {
   return query || null
 }
 
-function hasStreetAddress(address: string | null | undefined) {
-  return Boolean((address || '').trim())
+function hasFullStreetAddress(input: ListingMapLocationInput) {
+  const address = (input.address || '').trim()
+  const hasStreetNumber = /\d/.test(address)
+  return Boolean(
+    address &&
+      hasStreetNumber &&
+      (input.city || '').trim() &&
+      ((input.country || '').trim() || (input.countryCode || '').trim()),
+  )
 }
 
 function hasPostalCityCountry(input: ListingMapLocationInput) {
