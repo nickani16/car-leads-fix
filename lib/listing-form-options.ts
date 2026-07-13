@@ -89,7 +89,6 @@ export const categoryTechnicalFields: Record<
   cars: [
     numberField('powerHp', 'Effekt', 1, 3000, 'HK'),
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
-    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 10000, 'kg'),
     numberField('seats', 'Säten', 1, 12, 'st'),
     dateField('firstRegistrationDate', 'Registreringsdatum'),
     chips('bodyType', 'Kaross', ['Halvkombi', 'Sedan', 'SUV', 'Kombi', 'Coupé', 'Cabriolet', 'Pickup', 'Elbil'], true),
@@ -100,11 +99,11 @@ export const categoryTechnicalFields: Record<
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
+    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 10000, 'kg'),
   ],
   vans: [
     numberField('powerHp', 'Effekt', 1, 3000, 'HK'),
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
-    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
     numberField('payloadKg', 'Lastvikt', 1, 10000, 'kg', true),
     numberField('cargoVolumeM3', 'Lastvolym', 1, 80, 'm³'),
     numberField('loadLengthCm', 'Lastutrymme längd', 1, 800, 'cm'),
@@ -119,6 +118,7 @@ export const categoryTechnicalFields: Record<
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
+    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
   ],
   motorcycles: [
     chips('bodyType', 'Motorcykeltyp', ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross / enduro', 'Naked', 'Adventure', 'Moped', 'ATV'], true),
@@ -134,7 +134,6 @@ export const categoryTechnicalFields: Record<
   motorhomes: [
     numberField('powerHp', 'Effekt', 1, 3000, 'HK'),
     numberField('engineLiters', 'Motorvolym', 0.1, 20, 'L'),
-    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
     numberField('totalWeightKg', 'Totalvikt', 1, 12000, 'kg', true),
     numberField('seats', 'Säten', 1, 12, 'st'),
     chips('feeClass', 'Avgiftsklass', motorhomeFeeClassOptions),
@@ -149,6 +148,7 @@ export const categoryTechnicalFields: Record<
     chips('inspected', 'Besiktigad', yesNoUnknownOptions),
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
+    numberField('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'),
   ],
   caravans: [
     numberField('totalWeightKg', 'Totalvikt', 1, 5000, 'kg', true),

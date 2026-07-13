@@ -412,7 +412,8 @@ export async function POST(request: Request) {
     const currency = isSupportedCurrency(requestedCurrency)
       ? requestedCurrency
       : currencyForCountry(listingCountryCode)
-    const modelYear = Number(text(form, 'modelYear'))
+    const modelYearInput = text(form, 'modelYear')
+    const modelYear = modelYearInput === '1950+' ? 1950 : Number(modelYearInput)
     const mileage = Number(text(form, 'mileage'))
     const identifiers: ListingIdentifierInput = {
       registrationNumber:
@@ -441,9 +442,9 @@ export async function POST(request: Request) {
     const phoneVisibility =
       profile.account_type === 'business'
         ? 'public'
-        : text(form, 'phoneVisibility') === 'public'
-          ? 'public'
-          : 'registered_only'
+        : text(form, 'phoneVisibility') === 'registered_only'
+          ? 'registered_only'
+          : 'public'
     if (
       ['agriculture', 'construction'].includes(category) &&
       !Number(text(form, 'operatingHours'))
@@ -452,7 +453,9 @@ export async function POST(request: Request) {
     }
     if (!make) return listingFormError('Fyll i märke eller tillverkare.', 0, 'make')
     if (!model) return listingFormError('Fyll i modell.', 0, 'model')
-    if (!Number.isInteger(modelYear)) return listingFormError('Fyll i en giltig årsmodell.', 0, 'modelYear')
+    if (!Number.isInteger(modelYear) || modelYear < 1950 || modelYear > 2027) {
+      return listingFormError('Välj årsmodell mellan 1950+ och 2027.', 0, 'modelYear')
+    }
     if (!city) return listingFormError('Fyll i ort.', 0, 'city')
     if (!Number.isFinite(price) || price <= 0) return listingFormError('Fyll i ett giltigt pris.', 0, 'price')
 

@@ -46,6 +46,8 @@ test('checkout uses server-side catalog/database price lookup and rejects client
   assert.doesNotMatch(checkout, /body\.amount|body\.currency/)
   assert.match(checkout, /Product does not match listing category/)
   assert.match(checkout, /Free listings do not use Stripe checkout/)
+  assert.match(checkout, /price_data/)
+  assert.match(checkout, /unit_amount: price\.amountMinor/)
 })
 
 test('webhook handling is signature verified and idempotent', () => {

@@ -98,16 +98,6 @@ export async function POST(request: Request) {
   }
 
   const stripePriceId = price.stripePriceId
-  if (!stripePriceId) {
-    return NextResponse.json(
-      {
-        error: 'Stripe price is not configured for this product and market.',
-        requiredEnv: price.requiredEnv,
-        databaseTable: 'billing_product_prices',
-      },
-      { status: 503 },
-    )
-  }
 
   const { data: order, error: orderError } = await admin
     .from('payment_orders')
@@ -142,7 +132,25 @@ export async function POST(request: Request) {
   const session = await getStripe().checkout.sessions.create({
     mode: product.billingType,
     customer_email: profile.email,
-    line_items: [{ price: stripePriceId, quantity: 1 }],
+    line_items: [
+      stripePriceId
+        ? { price: stripePriceId, quantity: 1 }
+        : {
+            price_data: {
+              currency: price.currency,
+              unit_amount: price.amountMinor,
+              product_data: {
+                name: checkoutProductName(product.productKey, listing?.title),
+                metadata: {
+                  product_key: product.productKey,
+                  source: price.source,
+                  required_env: price.requiredEnv || '',
+                },
+              },
+            },
+            quantity: 1,
+          },
+    ],
     metadata,
     payment_intent_data:
       product.billingType === 'payment'
@@ -166,4 +174,13 @@ export async function POST(request: Request) {
     .eq('id', order.id)
 
   return NextResponse.json({ url: session.url, orderId: order.id })
+}
+
+function checkoutProductName(productKey: string, listingTitle?: string | null) {
+  const label = productKey
+    .split('.')
+    .map((part) => part.replace(/_/g, ' '))
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' · ')
+  return listingTitle ? `${label}: ${listingTitle}` : label
 }

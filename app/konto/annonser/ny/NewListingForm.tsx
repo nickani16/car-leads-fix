@@ -98,6 +98,12 @@ const steps = [
 ] as const
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 const swedishMileageFactor = 10
+const minModelYear = 1950
+const maxModelYear = 2027
+const modelYearOptions = Array.from(
+  { length: maxModelYear - minModelYear + 1 },
+  (_, index) => String(maxModelYear - index),
+)
 
 const packageCopy = {
   free_7d: {
@@ -137,7 +143,7 @@ export default function NewListingForm({
   const createInitialValues = () => ({
     packageId: 'free_7d',
     currency: currencyForCountry(countryCode),
-    phoneVisibility: accountType === 'private' ? 'registered_only' : 'public',
+    phoneVisibility: 'public',
   })
   const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
@@ -242,6 +248,7 @@ export default function NewListingForm({
       if (!values.make) return missing('Fyll i märke eller tillverkare.')
       if (!values.model) return missing('Fyll i modell.')
       if (!values.modelYear) return missing('Fyll i årsmodell.')
+      if (!isAllowedModelYear(values.modelYear)) return missing(`Välj årsmodell mellan ${minModelYear}+ och ${maxModelYear}.`)
       if (
         category !== 'agriculture' &&
         category !== 'construction' &&
@@ -589,11 +596,17 @@ export default function NewListingForm({
             <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} required />
             <Field name="model" label={copy.model} value={values.model || ''} onValueChange={setValue} required />
             <Field name="variant" label={copy.variant} value={values.variant || ''} onValueChange={setValue} />
-            <Field name="modelYear" label={copy.modelYear} type="number" value={values.modelYear || ''} onValueChange={setValue} required />
+            <SelectNative name="modelYear" label={copy.modelYear} value={values.modelYear || ''} onValueChange={setValue} required>
+              <option value="">{copy.choose}</option>
+              {modelYearOptions.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+              <option value="1950+">1950+</option>
+            </SelectNative>
             {category !== 'agriculture' && category !== 'construction' ? (
               <Field
                 name="mileage"
-                label={`${copy.kilometers} (${mileageUnit})`}
+                label={copy.mileageLabel || mileageUnit}
                 type="number"
                 value={values.mileage || ''}
                 onValueChange={setValue}
@@ -1544,9 +1557,6 @@ function PreviewStep({
             {values.price ? `${Number(values.price).toLocaleString(formNumberLocale(locale))} ${values.currency || 'EUR'}` : copy.priceMissing}
           </p>
           <p className="mt-1 text-sm text-[#667085]">{values.city || copy.city} | {values.postalCode || copy.postalCode}</p>
-          <p className="mt-1 text-sm font-semibold text-[#475467]">
-            {copy.package}: {packageCopy[(values.packageId || 'free_7d') as keyof typeof packageCopy]?.title || copy.notSelected}
-          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {specs.map((spec) => (
               <span key={String(spec)} className="rounded-full bg-[#f2f4f7] px-3 py-1 text-xs font-semibold text-[#475467]">
@@ -1688,7 +1698,7 @@ function PublishStep({
               type="button"
               onClick={() => onChange('phoneVisibility', 'registered_only')}
               className={`rounded-[14px] border px-4 py-3 text-left text-sm transition ${
-                (values.phoneVisibility || 'registered_only') === 'registered_only'
+                values.phoneVisibility === 'registered_only'
                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                   : 'border-[#d7deed] bg-white text-[#344054]'
               }`}
@@ -1813,6 +1823,7 @@ function SelectNative({
   value,
   onValueChange,
   children,
+  ...rest
 }: Omit<
   React.SelectHTMLAttributes<HTMLSelectElement>,
   'onChange' | 'value' | 'name'
@@ -1827,6 +1838,7 @@ function SelectNative({
     <label>
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <select
+        {...rest}
         name={name}
         value={value}
         onChange={(event) => onValueChange(name, event.target.value)}
@@ -1846,6 +1858,12 @@ function mileageInputToKilometers(value: string, usesSwedishMileage: boolean) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return value
   return String(Math.round(usesSwedishMileage ? numeric * swedishMileageFactor : numeric))
+}
+
+function isAllowedModelYear(value: string) {
+  if (value === '1950+') return true
+  const year = Number(value)
+  return Number.isInteger(year) && year >= minModelYear && year <= maxModelYear
 }
 
 function formatMileageInput(value: string, usesSwedishMileage: boolean) {
@@ -1929,6 +1947,7 @@ function getListingFormCopy(locale: PublicLocale) {
     variant: 'Version / variant',
     modelYear: 'Model year',
     kilometers: 'Kilometres',
+    mileageLabel: 'Kilometres',
     operatingHours: 'Operating hours',
     price: 'Price',
     currency: 'Currency',
@@ -2007,6 +2026,7 @@ function getListingFormCopy(locale: PublicLocale) {
       variant: 'Version / variant',
       modelYear: 'Årsmodell',
       kilometers: 'Kilometer',
+      mileageLabel: 'Mil',
       operatingHours: 'Drifttimmar',
       price: 'Pris',
       currency: 'Valuta',
@@ -2099,6 +2119,7 @@ function getListingFormCopy(locale: PublicLocale) {
       phoneVisibilityPublicText: 'Besucher können die Nummer ohne Autorell-Konto anzeigen und anrufen.',
       phoneVisibilityRegistered: 'Nur angemeldeten Nutzern anzeigen',
       phoneVisibilityRegisteredText: 'Käufer müssen sich anmelden, bevor die Nummer angezeigt wird.',
+      mileageLabel: 'Kilometer',
     }
     return de
     return { ...en, step: 'Schritt', of: 'von', complete: 'fertig', back: 'Zurück', next: 'Weiter', publish: 'Anzeige veröffentlichen', publishing: 'Wird veröffentlicht...' }
