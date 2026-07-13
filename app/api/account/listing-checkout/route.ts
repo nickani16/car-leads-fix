@@ -119,7 +119,7 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin
-  const checkoutBranding = createCheckoutBranding(origin)
+  const checkoutBranding = createCheckoutBranding()
   const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title)
   const metadata = {
     user_id: user.id,
@@ -210,7 +210,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ url: session.url, orderId: order.id })
 }
 
-function createCheckoutBranding(origin: string) {
+function createCheckoutBranding() {
   return {
     display_name: 'Autorell',
     background_color: '#ffffff',
@@ -219,7 +219,7 @@ function createCheckoutBranding(origin: string) {
     font_family: 'inter' as const,
     logo: {
       type: 'url' as const,
-      url: `${origin}/autorell-logo-primary.png`,
+      url: 'https://www.autorell.com/autorell-logo-primary.png',
     },
   }
 }

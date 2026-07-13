@@ -61,7 +61,7 @@ test('checkout sessions use Autorell branding and product copy', () => {
   assert.match(checkout, /branding_settings: checkoutBranding/)
   assert.match(checkout, /display_name: 'Autorell'/)
   assert.match(checkout, /button_color: '#0866ff'/)
-  assert.match(checkout, /url: `\$\{origin\}\/autorell-logo-primary\.png`/)
+  assert.match(checkout, /url: 'https:\/\/www\.autorell\.com\/autorell-logo-primary\.png'/)
   assert.doesNotMatch(checkout, /autorell-brand-logo-color\.png/)
   assert.doesNotMatch(checkout, /images: \[checkoutBranding\.logo\.url\]/)
   assert.match(checkout, /name: checkoutProduct\.name/)
