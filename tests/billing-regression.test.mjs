@@ -71,6 +71,8 @@ test('checkout sessions use Autorell branding and product copy', () => {
   assert.match(checkout, /Autorell Företag/)
   assert.match(checkout, /custom_text: \{[\s\S]*submitText/)
   assert.match(checkout, /locale: stripeLocaleForMarket\(market\)/)
+  assert.match(checkout, /payment_method_types: \['card'\]/)
+  assert.match(checkout, /payment_method_reuse_agreement: \{[\s\S]*position: 'hidden'/)
 })
 
 test('webhook handling is signature verified and idempotent', () => {
