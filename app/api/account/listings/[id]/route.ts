@@ -17,7 +17,9 @@ import {
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
 
-const actions = new Set(['mark_sold', 'update_listing'])
+const actions = new Set([
+  'mark_sold', 'update_listing', 'pause', 'resume', 'unpublish', 'delete', 'relist', 'duplicate',
+])
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 
 function clean(value: unknown) {
@@ -142,6 +144,64 @@ export async function PATCH(
   const isAdmin = await isActiveAdmin(admin, user.id, user.email)
   if (!isOwner && !isAdmin) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
+  }
+
+  if (action === 'duplicate') {
+    const { data: source, error: sourceError } = await admin
+      .from('marketplace_listings')
+      .select('category,title,description,make,model,variant,registration_reference,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,country_code,country,city,municipality,address,latitude,longitude,postal_code,price,currency,images,seller_name,seller_type,phone_visibility,vin,chassis_number,serial_number,frame_number,battery_serial_number,total_weight_kg,axle_configuration,machine_type,review_status,risk_score,risk_flags')
+      .eq('id', listing.id)
+      .single()
+    if (sourceError || !source) return NextResponse.json({ error: 'Annonsen kunde inte dupliceras.' }, { status: 400 })
+    const { data: duplicate, error } = await admin
+      .from('marketplace_listings')
+      .insert({
+        ...source,
+        seller_user_id: listing.seller_user_id,
+        title: `${source.title} (kopia)`,
+        status: 'draft',
+        package_id: 'free_7d',
+        priority: 0,
+        published_at: null,
+        expires_at: null,
+      })
+      .select('id')
+      .single()
+    if (error || !duplicate) return NextResponse.json({ error: error?.message || 'Annonsen kunde inte dupliceras.' }, { status: 400 })
+    return NextResponse.json({ success: true, listingId: duplicate.id, status: 'draft' })
+  }
+
+  if (['pause', 'resume', 'unpublish', 'delete', 'relist'].includes(action)) {
+    const transitions: Record<string, { allowed: string[]; status: string; patch?: Record<string, unknown> }> = {
+      pause: { allowed: ['published'], status: 'paused' },
+      resume: { allowed: ['paused'], status: 'published' },
+      unpublish: { allowed: ['pending_review', 'published'], status: 'draft', patch: { published_at: null, expires_at: null } },
+      delete: { allowed: ['draft', 'pending_payment', 'pending_review', 'paused', 'expired', 'sold', 'rejected'], status: 'deleted' },
+      relist: { allowed: ['sold', 'expired', 'deleted', 'removed'], status: 'draft', patch: { sold_at: null, sold_to_user_id: null, published_at: null, expires_at: null } },
+    }
+    const transition = transitions[action]
+    if (!transition.allowed.includes(listing.status)) {
+      return NextResponse.json({ error: 'Åtgärden är inte tillgänglig för annonsens nuvarande status.' }, { status: 409 })
+    }
+    const now = new Date().toISOString()
+    const { error } = await admin
+      .from('marketplace_listings')
+      .update({ status: transition.status, ...transition.patch, updated_at: now })
+      .eq('id', listing.id)
+      .eq('status', listing.status)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    await admin.from('marketplace_listing_events').insert({
+      listing_id: listing.id,
+      actor_user_id: user.id,
+      actor_role: isOwner ? 'seller' : 'admin',
+      event_type: `listing_${action}`,
+      from_status: listing.status,
+      to_status: transition.status,
+      from_review_status: listing.review_status,
+      to_review_status: listing.review_status,
+    })
+    revalidateTag('marketplace-listings', 'max')
+    return NextResponse.json({ success: true, status: transition.status })
   }
 
   if (action === 'update_listing') {

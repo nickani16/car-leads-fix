@@ -1,6 +1,6 @@
 'use client'
 
-import { DragEvent, FormEvent, useMemo, useState } from 'react'
+import { DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -141,6 +141,10 @@ export default function NewListingForm({
   const [draggedImageId, setDraggedImageId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [draftNotice, setDraftNotice] = useState(false)
+  const draftRestored = useRef(false)
+  const draftImagesRestored = useRef(false)
+  const draftKey = `autorell-listing-draft:${countryCode.toUpperCase()}`
   const selectedPricing =
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
@@ -166,6 +170,57 @@ export default function NewListingForm({
       ? [main, ...images.filter((image) => image.id !== mainImageId)]
       : images
   }, [images, mainImageId])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem(draftKey)
+        if (saved) {
+          const draft = JSON.parse(saved) as { step?: StepId; country?: string; category?: string; values?: Values; equipment?: string[] }
+          if (draft.values) setValues((current) => ({ ...current, ...draft.values }))
+          if (draft.country) setListingCountryCode(draft.country)
+          if (draft.category) setCategory(normalizeMarketplaceCategory(draft.category))
+          if (draft.equipment) setEquipment(draft.equipment)
+          if (typeof draft.step === 'number') setStep(Math.min(4, Math.max(0, draft.step)) as StepId)
+          setDraftNotice(true)
+        }
+      } catch {
+        // A corrupt browser draft must never block the form.
+      }
+      draftRestored.current = true
+    }, 0)
+    return () => window.clearTimeout(timeout)
+  }, [draftKey])
+
+  useEffect(() => {
+    let active = true
+    void loadDraftImages(draftKey).then((savedImages) => {
+      if (!active) return
+      if (savedImages.length) {
+        const restored = savedImages.map((item) => ({
+          id: item.id,
+          file: item.file,
+          name: item.file.name,
+          size: item.file.size,
+          preview: URL.createObjectURL(item.file),
+        }))
+        setImages(restored)
+        setMainImageId(restored[0]?.id || '')
+      }
+      draftImagesRestored.current = true
+    })
+    return () => { active = false }
+  }, [draftKey])
+
+  useEffect(() => {
+    if (!draftRestored.current) return
+    window.localStorage.setItem(draftKey, JSON.stringify({ step, country: listingCountryCode, category, values, equipment, savedAt: new Date().toISOString() }))
+  }, [category, draftKey, equipment, listingCountryCode, step, values])
+
+  useEffect(() => {
+    if (!draftImagesRestored.current) return
+    void saveDraftImages(draftKey, orderedImages)
+  }, [draftKey, orderedImages])
 
   function setValue(name: string, value: string) {
     const nextValue = identifierFieldNames.has(name)
@@ -325,24 +380,6 @@ export default function NewListingForm({
     setStep((current) => Math.max(0, current - 1) as StepId)
   }
 
-  async function startCheckout(listingId: string, packageId?: string) {
-    const checkout = await fetchWithTimeout('/api/account/listing-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          listingId,
-          packageId,
-          market: listingCountryCode.toLowerCase(),
-        }),
-    })
-    const checkoutResult = await parseCheckoutResponse(checkout)
-    if (checkoutResult.url) {
-      window.location.assign(checkoutResult.url)
-      return
-    }
-    throw new Error(checkoutResult.error || 'Betalningen kunde inte startas.')
-  }
-
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (loading) return
@@ -389,34 +426,10 @@ export default function NewListingForm({
       setLoading(false)
       return
     }
+    window.localStorage.removeItem(draftKey)
+    void deleteDraftImages(draftKey)
     if (result.requiresPayment) {
-      let checkout: Response
-      try {
-        checkout = await fetchWithTimeout('/api/account/listing-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              listingId: result.listingId,
-              packageId: result.packageId,
-              market: listingCountryCode.toLowerCase(),
-            }),
-        })
-      } catch (caught) {
-        setError(
-          caught instanceof DOMException && caught.name === 'AbortError'
-            ? 'Annonsen sparades men betalningen tog för lång tid att öppna. Försök igen från Mina annonser.'
-            : 'Annonsen sparades men betalningen kunde inte öppnas. Försök igen från Mina annonser.',
-        )
-        setLoading(false)
-        return
-      }
-      const checkoutResult = await parseCheckoutResponse(checkout)
-      if (checkoutResult.url) {
-        window.location.assign(checkoutResult.url)
-        return
-      }
-      setError(checkoutResult.error || 'Betalningen kunde inte startas.')
-      setLoading(false)
+      router.push(`/account/listings?choosePackage=1&listing=${encodeURIComponent(result.listingId)}`)
       return
     }
     router.push('/account/listings')
@@ -427,6 +440,7 @@ export default function NewListingForm({
       onSubmit={submit}
       className="overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
     >
+      {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>Ditt utkast har återställts.</strong> Uppgifter och bilder sparas automatiskt i den här webbläsaren medan du arbetar.</div> : null}
       <div className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -1691,21 +1705,6 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   }
 }
 
-async function parseCheckoutResponse(response: Response): Promise<{ url?: string; error?: string }> {
-  const fallback = response.ok
-    ? 'Betalningen kunde inte startas.'
-    : `Betalningen kunde inte startas (${response.status}).`
-  try {
-    const result = (await response.json()) as { url?: string; error?: string }
-    return {
-      url: result.url,
-      error: result.error || fallback,
-    }
-  } catch {
-    return { error: fallback }
-  }
-}
-
 function mileageInputToKilometers(value: string, usesSwedishMileage: boolean) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return value
@@ -2231,4 +2230,55 @@ function imageErrorText(error: unknown) {
   if (code === 'IMAGE_DECODE_FAILED') return 'Bilden kunde inte öppnas i den här webbläsaren.'
   if (code === 'IMAGE_DIMENSIONS_TOO_LARGE') return 'Bilden har för hög upplösning. Välj en bild under 80 megapixel.'
   return 'Bilden kunde inte bearbetas. Försök igen.'
+}
+
+type StoredDraftImage = { id: string; file: File }
+
+function openDraftDatabase() {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const request = window.indexedDB.open('autorell-listing-drafts', 1)
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('images')) request.result.createObjectStore('images')
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+}
+
+async function loadDraftImages(key: string): Promise<StoredDraftImage[]> {
+  try {
+    const database = await openDraftDatabase()
+    return await new Promise((resolve) => {
+      const request = database.transaction('images', 'readonly').objectStore('images').get(key)
+      request.onsuccess = () => resolve(Array.isArray(request.result) ? request.result : [])
+      request.onerror = () => resolve([])
+    })
+  } catch {
+    return []
+  }
+}
+
+async function saveDraftImages(key: string, images: UploadImage[]) {
+  try {
+    const database = await openDraftDatabase()
+    await new Promise<void>((resolve) => {
+      const request = database.transaction('images', 'readwrite').objectStore('images').put(
+        images.map(({ id, file }) => ({ id, file })),
+        key,
+      )
+      request.onsuccess = () => resolve()
+      request.onerror = () => resolve()
+    })
+  } catch {
+    // Browser storage can be unavailable or full; the in-memory form still remains intact.
+  }
+}
+
+async function deleteDraftImages(key: string) {
+  try {
+    const database = await openDraftDatabase()
+    database.transaction('images', 'readwrite').objectStore('images').delete(key)
+  } catch {
+    // Cleanup is best-effort.
+  }
 }

@@ -8,6 +8,7 @@ import {
   legacyListingPackageToProductKey,
   normalizeBillingMarket,
   normalizeListingCategory,
+  productToLegacyListingPackage,
 } from '@/lib/billing/product-catalog'
 import { resolveBillingPrice } from '@/lib/billing/price-lookup'
 
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
     body.listingId
       ? admin
           .from('marketplace_listings')
-          .select('id,seller_user_id,category,title,status,country_code')
+          .select('id,seller_user_id,category,title,status,country_code,review_status,package_id')
           .eq('id', body.listingId)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -84,8 +85,51 @@ export async function POST(request: Request) {
     }
   }
 
-  if (product.package === 'start') {
-    return NextResponse.json({ error: 'Free listings do not use Stripe checkout.' }, { status: 400 })
+  if (product.kind === 'listing_package' && listing) {
+    if (['sold', 'deleted', 'removed'].includes(listing.status)) {
+      return NextResponse.json({ error: 'Annonsen måste läggas ut igen innan du väljer paket.' }, { status: 409 })
+    }
+
+    const packageId = productToLegacyListingPackage(product)
+    if (!packageId) {
+      return NextResponse.json({ error: 'Ogiltigt annonspaket.' }, { status: 400 })
+    }
+
+    await expireOtherListingCheckouts(admin, listing.id, product.productKey, market)
+
+    if (product.package === 'start') {
+      const approved = listing.review_status === 'approved'
+      const now = new Date()
+      const { error: listingError } = await admin
+        .from('marketplace_listings')
+        .update({
+          package_id: packageId,
+          status: approved ? 'published' : 'pending_review',
+          priority: 0,
+          published_at: approved ? now.toISOString() : null,
+          expires_at: approved
+            ? new Date(now.getTime() + (product.durationDays || 7) * 86_400_000).toISOString()
+            : null,
+          updated_at: now.toISOString(),
+        })
+        .eq('id', listing.id)
+      if (listingError) {
+        return NextResponse.json({ error: 'Paketet kunde inte sparas.' }, { status: 400 })
+      }
+      return NextResponse.json({ success: true, free: true, status: approved ? 'published' : 'pending_review' })
+    }
+
+    const { error: listingError } = await admin
+      .from('marketplace_listings')
+      .update({
+        package_id: packageId,
+        status: listing.status === 'published' ? 'published' : 'pending_payment',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', listing.id)
+    if (listingError) {
+      return NextResponse.json({ error: 'Paketet kunde inte sparas.' }, { status: 400 })
+    }
   }
 
   if (product.kind === 'subscription' && profile.account_type !== 'business') {
@@ -95,6 +139,33 @@ export async function POST(request: Request) {
   const price = await resolveBillingPrice(product, market)
   if (!price || price.amountMinor <= 0) {
     return NextResponse.json({ error: 'Product is not payable for this market.' }, { status: 400 })
+  }
+
+  if (listing) {
+    const { data: reusable } = await admin
+      .from('payment_orders')
+      .select('id,stripe_checkout_session_id')
+      .eq('user_id', user.id)
+      .eq('listing_id', listing.id)
+      .eq('product_key', product.productKey)
+      .eq('market', market)
+      .eq('status', 'checkout_created')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (reusable?.stripe_checkout_session_id) {
+      try {
+        const previous = await getStripe().checkout.sessions.retrieve(reusable.stripe_checkout_session_id)
+        if (previous.status === 'open' && previous.url) {
+          return NextResponse.json({ url: previous.url, orderId: reusable.id, reused: true })
+        }
+        if (previous.status === 'expired') {
+          await admin.from('payment_orders').update({ status: 'expired', updated_at: new Date().toISOString() }).eq('id', reusable.id)
+        }
+      } catch {
+        console.warn('[listing-checkout] Stale checkout session replaced', { orderId: reusable.id })
+      }
+    }
   }
 
   const { data: order, error: orderError } = await admin
@@ -208,6 +279,35 @@ export async function POST(request: Request) {
     .eq('id', order.id)
 
   return NextResponse.json({ url: session.url, orderId: order.id })
+}
+
+async function expireOtherListingCheckouts(
+  admin: ReturnType<typeof createAdminClient>,
+  listingId: string,
+  selectedProductKey: string,
+  selectedMarket: string,
+) {
+  const { data: orders } = await admin
+    .from('payment_orders')
+    .select('id,product_key,market,stripe_checkout_session_id')
+    .eq('listing_id', listingId)
+    .eq('status', 'checkout_created')
+
+  for (const order of orders || []) {
+    if (order.product_key === selectedProductKey && order.market === selectedMarket) continue
+    if (order.stripe_checkout_session_id) {
+      try {
+        await getStripe().checkout.sessions.expire(order.stripe_checkout_session_id)
+      } catch {
+        // A completed or already expired session cannot be expired; fulfillment stays idempotent.
+      }
+    }
+    await admin
+      .from('payment_orders')
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+      .eq('id', order.id)
+      .eq('status', 'checkout_created')
+  }
 }
 
 function createCheckoutBranding() {

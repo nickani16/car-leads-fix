@@ -25,6 +25,14 @@ import {
 import ListingStatusActions, { type ListingBuyerOption } from './ListingStatusActions'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { publicSellerName } from '@/lib/public-seller'
+import { listingGroupCopy, listingGroupOrder, listingLifecycle } from '@/lib/listing-lifecycle'
+import {
+  formatMoneyMinor,
+  getBillingProduct,
+  getProductAmount,
+  legacyListingPackageToProductKey,
+  normalizeBillingMarket,
+} from '@/lib/billing/product-catalog'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -40,6 +48,8 @@ type ListingRow = {
   review_status: string | null
   reference_number: string | null
   sold_at: string | null
+  package_id: string | null
+  country_code: string | null
 }
 
 type ConversationRow = {
@@ -56,7 +66,8 @@ type ProfileRow = {
   company_name: string | null
 }
 
-export default async function AccountListingsPage() {
+export default async function AccountListingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const query = await searchParams
   const locale = await getRequestLocale()
   const copy = getListingsCopy(locale)
   const statsCopy = getListingStatsCopy(locale)
@@ -69,11 +80,12 @@ export default async function AccountListingsPage() {
   const admin = createAdminClient()
   const { data } = await admin
     .from('marketplace_listings')
-    .select('id,title,status,category,price,currency,created_at,published_at,review_status,reference_number,sold_at')
+    .select('id,title,status,category,price,currency,created_at,published_at,review_status,reference_number,sold_at,package_id,country_code')
     .eq('seller_user_id', user.id)
     .order('created_at', { ascending: false })
 
   const listings = (data || []) as ListingRow[]
+  const groupedListings = new Map(listingGroupOrder.map((group) => [group, listings.filter((listing) => listingLifecycle(listing.status, listing.review_status).group === group)]))
   const listingIds = listings.map((listing) => listing.id)
   const [
     { data: conversationData },
@@ -199,6 +211,9 @@ export default async function AccountListingsPage() {
         </div>
       </section>
 
+      {query.payment === 'cancelled' ? <div className="mt-6 rounded-[18px] border border-[#fed7aa] bg-[#fff7ed] px-5 py-4 text-sm leading-6 text-[#9a3412]"><strong>Betalningen avbröts – inget har publicerats.</strong> Annonsen är tryggt sparad nedan. Du kan slutföra betalningen eller byta paket när du vill.</div> : null}
+      {query.payment === 'processing' ? <div className="mt-6 rounded-[18px] border border-[#bfdbfe] bg-[#eff6ff] px-5 py-4 text-sm leading-6 text-[#1d4ed8]"><strong>Vi bekräftar betalningen.</strong> Statusen uppdateras automatiskt så snart Stripe har skickat bekräftelsen.</div> : null}
+
       <div className="mt-8 flex items-center justify-between gap-5">
         <div>
           <h2 className="text-2xl tracking-[-.035em]">{copy.inventory}</h2>
@@ -215,7 +230,16 @@ export default async function AccountListingsPage() {
 
       <div className="mt-5 grid gap-4">
         {listings.length ? (
-          listings.map((listing) => (
+          listingGroupOrder.map((group) => {
+            const groupListings = groupedListings.get(group) || []
+            if (!groupListings.length) return null
+            const groupText = listingGroupCopy[group]
+            return <section key={group} className="mt-4 first:mt-0">
+              <div className="mb-3 flex items-end justify-between gap-4 px-1">
+                <div><h3 className="text-lg font-black text-[#101828]">{groupText.title}</h3><p className="mt-1 text-sm text-[#667085]">{groupText.description}</p></div>
+                <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">{groupListings.length}</span>
+              </div>
+              <div className="grid gap-4">{groupListings.map((listing) => (
             <article
               key={listing.id}
               className="overflow-hidden rounded-[22px] border border-[#dfe6f1] bg-white shadow-[0_16px_45px_rgba(16,24,40,.045)]"
@@ -223,8 +247,7 @@ export default async function AccountListingsPage() {
               <div className="grid gap-0 lg:grid-cols-[1fr_auto]">
                 <div className="p-5 sm:p-6">
                   <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge status={listing.status} />
-                    <ReviewBadge status={listing.review_status || 'pending_review'} />
+                    <StatusBadge status={listing.status} reviewStatus={listing.review_status} />
                   </div>
                   <h3 className="mt-4 text-xl font-bold tracking-[-.025em]">
                     {listing.title}
@@ -250,6 +273,8 @@ export default async function AccountListingsPage() {
                     <strong className="text-[#344054]">{copy.reference}:</strong>{' '}
                     {listing.reference_number || listing.id}
                   </div>
+                  {listing.status === 'pending_payment' ? <div className="mt-3 rounded-[14px] border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm leading-6 text-[#9a3412]"><strong>Annonsen är sparad men inte publicerad.</strong> Slutför betalningen eller byt paket när det passar dig.</div> : null}
+                  {listing.status === 'pending_review' ? <div className="mt-3 rounded-[14px] border border-[#ddd6fe] bg-[#f5f3ff] px-4 py-3 text-sm leading-6 text-[#5b21b6]">Annonsen är sparad och granskas. Ingen ytterligare betalning behövs.</div> : null}
                   <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <ListingStatCard icon={Eye} label={statsCopy.views} value={viewsByListing.get(listing.id) || 0} />
                     <ListingStatCard icon={Heart} label={statsCopy.saved} value={savedByListing.get(listing.id) || 0} />
@@ -276,18 +301,18 @@ export default async function AccountListingsPage() {
                   <ListingStatusActions
                     listingId={listing.id}
                     status={listing.status}
+                    packageId={listing.package_id}
+                    market={(listing.country_code || 'se').toLowerCase()}
                     buyers={buyersByListing.get(listing.id) || []}
-                    copy={{
-                      markSold: copy.markSold,
-                      sold: copy.sold,
-                      chooseBuyer: copy.chooseBuyer,
-                      saving: copy.saving,
-                    }}
+                    packages={packageOptions(listing.category, listing.country_code || 'se', locale)}
+                    autoOpen={query.choosePackage === '1' && query.listing === listing.id}
                   />
                 </div>
               </div>
             </article>
-          ))
+              ))}</div>
+            </section>
+          })
         ) : (
           <div className="rounded-[26px] border border-dashed border-[#b8c5d8] bg-white p-10 text-center text-[#667085] shadow-[0_16px_45px_rgba(16,24,40,.045)]">
             <span className="mx-auto grid h-14 w-14 place-items-center rounded-[18px] bg-[#eef5ff] text-[#0866ff]">
@@ -415,30 +440,34 @@ function getListingStatsCopy(locale: PublicLocale) {
   return translatePublicObject(locale, en)
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const published = status === 'published'
-  const sold = status === 'sold'
+function StatusBadge({ status, reviewStatus }: { status: string; reviewStatus?: string | null }) {
+  const lifecycle = listingLifecycle(status, reviewStatus)
+  const colors: Record<string, string> = {
+    blue: 'bg-[#eef5ff] text-[#0866ff]', green: 'bg-[#ecfdf3] text-[#027a48]',
+    amber: 'bg-[#fff7ed] text-[#c2410c]', purple: 'bg-[#f5f3ff] text-[#6d28d9]',
+    red: 'bg-[#fef2f2] text-[#b42318]', slate: 'bg-[#f2f4f7] text-[#475467]',
+  }
   return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[.12em] ${
-        sold
-          ? 'bg-[#ecfdf3] text-[#027a48]'
-          : published
-            ? 'bg-[#eef5ff] text-[#0866ff]'
-            : 'bg-[#fff7ed] text-[#c2410c]'
-      }`}
-    >
-      {status}
+    <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[.1em] ${colors[lifecycle.tone]}`}>
+      {lifecycle.label}
     </span>
   )
 }
 
-function ReviewBadge({ status }: { status: string }) {
-  return (
-    <span className="inline-flex rounded-full bg-[#f3f5f7] px-3 py-1 text-[11px] font-bold uppercase tracking-[.12em] text-[#475467]">
-      Review: {status}
-    </span>
-  )
+function packageOptions(category: string, marketCode: string, locale: string) {
+  const market = normalizeBillingMarket(marketCode)
+  const ids = ['free_7d', 'standard_15d', 'premium_30d'] as const
+  const copy = {
+    free_7d: { title: 'Start', duration: '7 dagar', description: 'Kom igång kostnadsfritt med en vanlig annons.' },
+    standard_15d: { title: 'Standard', duration: '15 dagar', description: 'Längre annonstid för en seriös försäljning.' },
+    premium_30d: { title: 'Premium', duration: '30 dagar', description: 'Extra synlighet och inkluderad toppplacering.' },
+  }
+  return ids.map((id) => {
+    const key = legacyListingPackageToProductKey(category, id)
+    const product = key ? getBillingProduct(key) : null
+    const amount = product ? getProductAmount(product, market) : null
+    return { id, ...copy[id], price: !amount?.amountMinor ? 'Gratis' : formatMoneyMinor(amount.amountMinor, amount.currency, locale) }
+  })
 }
 
 function getListingsCopy(locale: PublicLocale) {

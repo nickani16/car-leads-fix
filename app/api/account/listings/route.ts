@@ -574,7 +574,8 @@ export async function POST(request: Request) {
     const duration =
       listingPackageDetails[packageId as keyof typeof listingPackageDetails]
         .durationDays
-    const startsAt = packageId === 'free_7d' ? new Date() : null
+    const publishFreeNow = packageId === 'free_7d' && reviewStatus === 'approved'
+    const startsAt = publishFreeNow ? new Date() : null
     const endsAt = startsAt
       ? new Date(startsAt.getTime() + duration * 86400000)
       : null
@@ -641,7 +642,9 @@ export async function POST(request: Request) {
               }),
         seller_type: profile.account_type,
         phone_visibility: phoneVisibility,
-        status: packageId === 'free_7d' ? 'published' : 'pending_payment',
+        status: packageId === 'free_7d'
+          ? publishFreeNow ? 'published' : 'pending_review'
+          : 'pending_payment',
         review_status: reviewStatus,
         risk_score: riskScore,
         risk_flags: riskFlags,

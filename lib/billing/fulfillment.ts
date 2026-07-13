@@ -124,7 +124,7 @@ async function fulfillListingPackage(order: PaymentOrderRow, product: BillingPro
   const admin = createAdminClient()
   const { data: listing, error: listingError } = await admin
     .from('marketplace_listings')
-    .select('id,status,review_status')
+    .select('id,status,review_status,published_at,expires_at')
     .eq('id', order.listing_id)
     .eq('seller_user_id', order.user_id)
     .maybeSingle()
@@ -135,10 +135,14 @@ async function fulfillListingPackage(order: PaymentOrderRow, product: BillingPro
   if (!legacyPackage) throw new Error('Paid product is not a listing package')
 
   const now = new Date()
-  const expiresAt = new Date(now.getTime() + product.durationDays * 86_400_000)
+  const currentExpiry = listing.expires_at ? new Date(listing.expires_at).getTime() : 0
+  const periodStartsAt = listing.status === 'published' && currentExpiry > now.getTime()
+    ? new Date(currentExpiry)
+    : now
+  const expiresAt = new Date(periodStartsAt.getTime() + product.durationDays * 86_400_000)
   const canPublishNow =
     listing.review_status === 'approved' &&
-    (listing.status === 'pending_payment' || listing.status === 'draft')
+    (listing.status === 'pending_payment' || listing.status === 'draft' || listing.status === 'published')
   const updates: Record<string, unknown> = {
     package_id: legacyPackage,
     priority: 0,
@@ -157,7 +161,7 @@ async function fulfillListingPackage(order: PaymentOrderRow, product: BillingPro
 
   if (canPublishNow) {
     updates.status = 'published'
-    updates.published_at = now.toISOString()
+    updates.published_at = listing.published_at || now.toISOString()
     updates.expires_at = expiresAt.toISOString()
   } else {
     updates.status = 'pending_review'
