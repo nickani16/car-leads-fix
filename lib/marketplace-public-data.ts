@@ -9,6 +9,59 @@ import { createAdminClient } from './supabase/admin'
 
 const publicListingTtl = 300
 
+type MarketplaceQuery = {
+  eq: (column: string, value: string | boolean) => MarketplaceQuery
+  not: (column: string, operator: string, value: unknown) => MarketplaceQuery
+  is: (column: string, value: null) => MarketplaceQuery
+  or: (filters: string) => MarketplaceQuery
+  lte: (column: string, value: string) => MarketplaceQuery
+  gt: (column: string, value: string) => MarketplaceQuery
+  order: (column: string, options?: Record<string, unknown>) => MarketplaceQuery
+  limit: (count: number) => Promise<{ data: MarketplacePublicRow[] | null; error: { message: string } | null }>
+}
+
+type MarketplacePublicRow = Record<string, unknown> & {
+  id: string
+  seller_user_id?: string | null
+  listing_number?: number | string | null
+  reference_number?: string | null
+  status?: string | null
+  review_status?: string | null
+  category?: string | null
+  title: string
+  description?: string | null
+  make: string | null
+  model: string | null
+  variant?: string | null
+  model_year: number | string | null
+  mileage_km: number | string | null
+  operating_hours?: number | string | null
+  fuel_type?: string | null
+  gearbox?: string | null
+  body_type?: string | null
+  condition?: string | null
+  country_code: string
+  country?: string | null
+  city: string | null
+  price: number | string | null
+  currency: string | null
+  images?: string[] | null
+  seller_type?: string | null
+  seller_name?: string | null
+  boost_status?: string | null
+  boost_started_at?: string | null
+  boost_expires_at?: string | null
+  featured_status?: string | null
+  featured_started_at?: string | null
+  featured_expires_at?: string | null
+  image_variants?: ListingImageVariant[]
+}
+
+export type ListingImageVariant = {
+  listingUrl: string
+  fullscreenUrl: string
+}
+
 export const publicSearchListingSelect =
   'id,category,title,make,model,variant,body_type,fuel_type,model_year,mileage_km,city,country_code,country,address,latitude,longitude,price,currency'
 
@@ -22,6 +75,7 @@ export const getPublishedMarketplaceListings = unstable_cache(
       .is('sold_at', null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
+      .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
 
@@ -43,18 +97,24 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
       .eq('status', 'published')
       .not('published_at', 'is', null)
       .is('sold_at', null)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`) as unknown as MarketplaceQuery
 
     const normalizedCountry = (countryCode || '').toUpperCase()
     if (normalizedCountry && normalizedCountry !== 'EU') {
       query = query.eq('country_code', normalizedCountry)
     }
 
+    const now = new Date().toISOString()
     if (sort === 'top') {
-      query = query.order('priority', { ascending: false })
+      query = query
+        .eq('boost_status', 'active')
+        .not('boost_started_at', 'is', null)
+        .lte('boost_started_at', now)
+        .gt('boost_expires_at', now)
     }
 
     const { data } = await query
+      .order(sort === 'top' ? 'boost_started_at' : 'sort_refreshed_at', { ascending: sort === 'top', nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
 
@@ -74,6 +134,7 @@ export const getPublishedMarketplaceCategoryListings = unstable_cache(
       .is('sold_at', null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
+      .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
 
@@ -107,14 +168,87 @@ export const getPublishedMarketplaceListingById = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
-export const getMarketplaceListingForPublicDetail = unstable_cache(
-  async (id: string) => {
-    const { data } = await createAdminClient()
+export const getFeaturedMarketplaceHomeListings = unstable_cache(
+  async (
+    countryCode: string | null,
+    limit = 8,
+  ) => {
+    const now = new Date().toISOString()
+    let query = createAdminClient()
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
-      .eq('id', id)
-      .in('status', ['published', 'sold'])
-      .maybeSingle()
+      .eq('status', 'published')
+      .eq('featured_status', 'active')
+      .not('featured_started_at', 'is', null)
+      .lte('featured_started_at', now)
+      .gt('featured_expires_at', now)
+      .not('published_at', 'is', null)
+      .is('sold_at', null)
+      .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+
+    const normalizedCountry = (countryCode || '').toUpperCase()
+    if (normalizedCountry && normalizedCountry !== 'EU') {
+      query = query.eq('country_code', normalizedCountry)
+    }
+
+    const { data } = await query
+      .order('featured_started_at', { ascending: true, nullsFirst: false })
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    return (data || []).map(sanitizePublicListingSellerName)
+  },
+  ['featured-marketplace-home-listings'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
+export const getFeaturedMarketplaceCategoryListings = unstable_cache(
+  async (category: MarketplaceCategorySlug | 'vehicles', limit = 12) => {
+    const now = new Date().toISOString()
+    let query = createAdminClient()
+      .from('marketplace_listings')
+      .select(marketplacePublicSelect)
+      .eq('status', 'published')
+      .eq('featured_status', 'active')
+      .not('featured_started_at', 'is', null)
+      .lte('featured_started_at', now)
+      .gt('featured_expires_at', now)
+      .not('published_at', 'is', null)
+      .is('sold_at', null)
+      .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+
+    if (category !== 'vehicles') {
+      query = query.eq('category', category)
+    }
+
+    const { data } = await query
+      .order('featured_started_at', { ascending: true, nullsFirst: false })
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    return (data || []).map(sanitizePublicListingSellerName)
+  },
+  ['featured-marketplace-category-listings'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
+export const getMarketplaceListingForPublicDetail = unstable_cache(
+  async (id: string) => {
+    const admin = createAdminClient()
+    const [{ data }, { data: imageRows }] = await Promise.all([
+      admin
+        .from('marketplace_listings')
+        .select(marketplacePublicSelect)
+        .eq('id', id)
+        .in('status', ['published', 'sold'])
+        .maybeSingle(),
+      admin
+        .from('marketplace_listing_images')
+        .select('webp_url,avif_url,position')
+        .eq('listing_id', id)
+        .is('deleted_at', null)
+        .order('position', { ascending: true }),
+    ])
 
     if (!data) return null
 
@@ -124,7 +258,13 @@ export const getMarketplaceListingForPublicDetail = unstable_cache(
       data.expires_at &&
       new Date(data.expires_at).getTime() <= Date.now()
 
-    return isExpiredPublished ? null : sanitizePublicListingSellerName(data)
+    if (isExpiredPublished) return null
+    const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
+    listing.image_variants = (imageRows || []).map((image) => ({
+      listingUrl: image.webp_url,
+      fullscreenUrl: image.avif_url,
+    }))
+    return listing
   },
   ['public-marketplace-listing-detail-by-id'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -175,6 +315,7 @@ export const getPublicSearchListings = unstable_cache(
       .is('sold_at', null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('priority', { ascending: false })
+      .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
 

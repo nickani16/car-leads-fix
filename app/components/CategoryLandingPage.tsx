@@ -32,7 +32,10 @@ import { activeMarketCountryCodes, getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { buildListingSpecChips, formatMileageAsMil } from '@/lib/listing-display'
 import { buildListingPath } from '@/lib/listing-url'
-import { getPublishedMarketplaceCategoryListings } from '@/lib/marketplace-public-data'
+import {
+  getFeaturedMarketplaceCategoryListings,
+  getPublishedMarketplaceCategoryListings,
+} from '@/lib/marketplace-public-data'
 import CategoryHeroSearch from './CategoryHeroSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -52,6 +55,8 @@ type LandingTopListing = {
   gearbox: string | null
   mileageKm: number | null
   modelYear: number | null
+  isFeatured: boolean
+  isTopPlacement: boolean
 }
 
 type TypeCard = {
@@ -344,10 +349,17 @@ async function getLandingListings(
   typeCards: TypeCard[],
   displayCurrency: string,
 ) {
-  const listings = await getPublishedMarketplaceCategoryListings(
-    normalizeMarketplaceCategory(slug),
-    120,
-  )
+  const normalizedSlug = normalizeMarketplaceCategory(slug)
+  const [featuredListings, regularListings] = await Promise.all([
+    getFeaturedMarketplaceCategoryListings(normalizedSlug, 12),
+    getPublishedMarketplaceCategoryListings(normalizedSlug, 120),
+  ])
+  const listings = [
+    ...featuredListings,
+    ...regularListings.filter((listing) =>
+      !featuredListings.some((featured: { id: string }) => featured.id === listing.id),
+    ),
+  ]
   const typeCounts: Record<string, number> = Object.fromEntries(
     typeCards.map((card) => [card.query, 0]),
   )
@@ -386,6 +398,8 @@ async function getLandingListings(
         gearbox: listing.gearbox,
         mileageKm: listing.mileage_km,
         modelYear: listing.model_year,
+        isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
+        isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
       }
     }),
   )
@@ -454,6 +468,15 @@ function ListingCard({
         <span className="absolute left-3 top-3 rounded-[5px] bg-white/94 px-2 py-1 text-[10px] font-bold uppercase text-[#344054]">
           {listing.tag}
         </span>
+        {listing.isFeatured ? (
+          <span className="absolute right-3 top-3 rounded-full bg-[#0866ff] px-2 py-1 text-[10px] font-bold uppercase text-white">
+            {featuredListingLabel(locale)}
+          </span>
+        ) : listing.isTopPlacement ? (
+          <span className="absolute right-3 top-3 rounded-full bg-[#101828] px-2 py-1 text-[10px] font-bold uppercase text-white">
+            {topListingLabel(locale)}
+          </span>
+        ) : null}
         <div className="absolute bottom-3 right-3 scale-[.78] origin-bottom-right">
           <SavedListingButton listingId={listing.id} />
         </div>
@@ -490,6 +513,29 @@ function ListingCard({
       />
     </article>
   )
+}
+
+function isActiveWindow(status?: string | null, startedAt?: string | null, expiresAt?: string | null) {
+  const now = Date.now()
+  return status === 'active' &&
+    Boolean(startedAt) &&
+    Boolean(expiresAt) &&
+    new Date(String(startedAt)).getTime() <= now &&
+    new Date(String(expiresAt)).getTime() > now
+}
+
+function featuredListingLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Utvald'
+  if (locale === 'de') return 'Ausgewählt'
+  if (locale === 'en') return 'Featured'
+  return translatePublic(locale, 'Featured')
+}
+
+function topListingLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Topp'
+  if (locale === 'de') return 'Top'
+  if (locale === 'en') return 'Sponsored'
+  return translatePublic(locale, 'Sponsored')
 }
 
 function EmptyListings({
@@ -553,7 +599,7 @@ function normalizeTypeMatch(value: string | null | undefined) {
 }
 
 function listingMatchesTypeCard(
-  listing: Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>[number],
+  listing: Record<string, unknown>,
   card: TypeCard,
 ) {
   const searchable = normalizeTypeMatch(

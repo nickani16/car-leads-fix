@@ -18,16 +18,21 @@ import SavedListingButton from '@/app/components/SavedListingButton'
 
 export default function ListingImageGallery({
   images,
+  fullscreenImages,
   title,
   listingId,
   locale = 'en',
 }: {
   images: string[]
+  fullscreenImages?: string[]
   title: string
   listingId: string
   locale?: string
 }) {
   const safeImages = images.filter(Boolean)
+  const safeFullscreenImages = safeImages.map((image, index) =>
+    fullscreenImages?.[index] || image,
+  )
   const [active, setActive] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
   const touchStartX = useRef<number | null>(null)
@@ -253,7 +258,7 @@ export default function ListingImageGallery({
 
           <div className="h-dvh overflow-y-auto px-4 pb-8 pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:px-8 sm:pb-12">
             <div className="mx-auto grid max-w-[1120px] gap-5 sm:gap-7">
-              {safeImages.map((image, index) => (
+              {safeFullscreenImages.map((image, index) => (
                 <div key={`fullscreen-${image}-${index}`} className="overflow-hidden bg-[#181818]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
