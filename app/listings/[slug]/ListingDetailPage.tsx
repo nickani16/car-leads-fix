@@ -399,13 +399,13 @@ export default async function ListingDetailPage({
               locale={locale}
             />
 
-            <div className="flex w-full items-center justify-between sm:hidden">
+            <div className="flex w-full items-center gap-3 sm:hidden">
               <a
                 href="#listing-location-map"
-                className="inline-flex min-h-12 w-12 items-center justify-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 <MapIcon className="h-5 w-5" />
-                <span className="sr-only">{localizedLabel(locale, 'Karta', 'Map', 'Karte')}</span>
+                <span>{copy.mapLabel}</span>
               </a>
               <ShareListingButton
                 title={listing.title}
@@ -413,8 +413,8 @@ export default async function ListingDetailPage({
                 label={copy.shareListing}
                 copiedLabel={copy.shareCopied}
                 variant="button"
-                className="min-h-12 w-12 rounded-[8px] px-0 shadow-sm"
-                labelClassName="sr-only"
+                className="min-h-12 flex-1 rounded-[8px] px-3 shadow-sm"
+                labelClassName="truncate"
                 iconClassName="h-5 w-5 text-[#101828]"
               />
             </div>
@@ -1180,6 +1180,7 @@ const listingDetailCopy = {
     priceLabel: 'Pris',
     priceReduced: 'Sänkt',
     vatInfo: 'Moms visas enligt säljarens uppgifter och landets regler.',
+    mapLabel: 'Karta',
     shareListing: 'Dela annons',
     shareAction: 'Dela',
     shareCopied: 'Länk kopierad',
@@ -1213,6 +1214,7 @@ const listingDetailCopy = {
     priceLabel: 'Price',
     priceReduced: 'Reduced',
     vatInfo: "VAT is shown according to the seller's information and local rules.",
+    mapLabel: 'Map',
     shareListing: 'Share listing',
     shareAction: 'Share',
     shareCopied: 'Link copied',
@@ -1246,6 +1248,7 @@ const listingDetailCopy = {
     priceLabel: 'Preis',
     priceReduced: 'Reduziert',
     vatInfo: 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.',
+    mapLabel: 'Karte',
     shareListing: 'Anzeige teilen',
     shareAction: 'Teilen',
     shareCopied: 'Link kopiert',
@@ -1272,7 +1275,25 @@ function getListingDetailCopy(locale: PublicLocale) {
     return listingDetailCopy[locale === 'at' ? 'de' : locale]
   }
 
-  return translatePublicObject(locale, listingDetailCopy.en)
+  return {
+    ...translatePublicObject(locale, listingDetailCopy.en),
+    mapLabel: localizedMapLabels[locale],
+  }
+}
+
+const localizedMapLabels: Record<PublicLocale, string> = {
+  sv: 'Karta',
+  de: 'Karte',
+  en: 'Map',
+  at: 'Karte',
+  be: 'Kaart',
+  fr: 'Carte',
+  es: 'Mapa',
+  it: 'Mappa',
+  pl: 'Mapa',
+  nl: 'Kaart',
+  fi: 'Kartta',
+  da: 'Kort',
 }
 
 function buildListingJsonLd({
