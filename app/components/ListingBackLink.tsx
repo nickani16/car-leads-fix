@@ -22,8 +22,8 @@ export default function ListingBackLink({
         }
         router.push(fallbackHref)
       }}
-      style={{ fontWeight: 600 }}
-      className="inline-flex cursor-pointer items-center gap-2 text-[17px] font-semibold text-[#101828] transition hover:text-[#0866ff] sm:text-[14px] sm:font-[500]"
+      style={{ fontWeight: 500 }}
+      className="inline-flex cursor-pointer items-center gap-2 text-[16px] font-[500] text-[#101828] transition hover:text-[#0866ff] sm:text-[14px]"
     >
       <ArrowLeft className="h-5 w-5 sm:h-4 sm:w-4" />
       <span className="underline decoration-[1px] underline-offset-3">{label}</span>
