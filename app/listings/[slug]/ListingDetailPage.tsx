@@ -387,8 +387,7 @@ export default async function ListingDetailPage({
               label={copy.shareListing}
               copiedLabel={copy.shareCopied}
               variant="plain"
-              className="max-w-[56%] overflow-hidden whitespace-nowrap text-[#101828] hover:text-[#101828] sm:max-w-none"
-              labelClassName="truncate"
+              className="shrink-0 whitespace-nowrap text-[#101828] hover:text-[#101828]"
               iconClassName="h-4 w-4 text-[#101828]"
             />
             <div className="hidden lg:inline-flex">
