@@ -380,20 +380,32 @@ export default async function ListingDetailPage({
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
           />
-          <ShareListingButton
-            title={listing.title}
-            url={publicUrl}
-            label={copy.shareListing}
-            copiedLabel={copy.shareCopied}
-            variant="plain"
-            className="max-w-[56%] overflow-hidden whitespace-nowrap sm:hidden"
-            labelClassName="truncate"
-            iconClassName="h-4 w-4 text-[#101828]"
-          />
+          <div className="flex min-w-0 items-center gap-4">
+            <ShareListingButton
+              title={listing.title}
+              url={publicUrl}
+              label={copy.shareListing}
+              copiedLabel={copy.shareCopied}
+              variant="plain"
+              className="max-w-[56%] overflow-hidden whitespace-nowrap text-[#101828] hover:text-[#101828] sm:max-w-none"
+              labelClassName="truncate"
+              iconClassName="h-4 w-4 text-[#101828]"
+            />
+            <SavedListingButton
+              listingId={listing.id}
+              label={copy.favoriteListing}
+              savedLabel={copy.favoriteSaved}
+              removeLabel={copy.favoriteRemove}
+              variant="plain"
+              className="hidden text-[#101828] hover:text-[#101828] sm:inline-flex"
+              iconClassName="h-4 w-4 text-[#101828]"
+            />
+          </div>
         </div>
 
         <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
-          <div className="min-w-0 space-y-3 w-[calc(100vw-2rem)] sm:w-auto sm:space-y-6">
+          <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="min-w-0 space-y-3 sm:space-y-6">
             <ListingImageGallery
               images={galleryImages}
               fullscreenImages={fullscreenImages}
@@ -422,7 +434,7 @@ export default async function ListingDetailPage({
               />
             </div>
 
-            <div className="hidden items-center justify-between gap-3 sm:flex">
+            <div className="hidden">
               <a
                 href="#listing-location-map"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
@@ -449,7 +461,6 @@ export default async function ListingDetailPage({
               </div>
             </div>
 
-            <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-w-0 space-y-4 sm:space-y-6">
                 <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
               {isSold ? (
@@ -553,6 +564,7 @@ export default async function ListingDetailPage({
                 mapQuery={mapCoordinates?.query}
               />
                 </div>
+            </div>
             </div>
 
               <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:self-start">
@@ -703,7 +715,6 @@ export default async function ListingDetailPage({
               </div>
             </div>
               </section>
-            </div>
           </div>
         </div>
 
