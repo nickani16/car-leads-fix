@@ -10,7 +10,6 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import {
   getMarketplaceSellerPublicProfiles,
-  getFeaturedMarketplaceHomeListings,
   getPublishedMarketplaceListingCount,
   getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
@@ -97,37 +96,27 @@ export default async function BusinessMarketplaceHome({
   const [
     localTopListings,
     localLatestListings,
-    localFeaturedListings,
     europeTopListings,
     europeLatestListings,
-    europeFeaturedListings,
     localListingCount,
     europeListingCount,
   ] =
     await Promise.all([
       getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
       getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
-      getFeaturedMarketplaceHomeListings(localMarketCode, 8),
       getPublishedMarketplaceHomeListings('EU', 'top', 8),
       getPublishedMarketplaceHomeListings('EU', 'latest', 8),
-      getFeaturedMarketplaceHomeListings('EU', 8),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
     ])
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
-    [...localTopListings, ...localLatestListings, ...localFeaturedListings, ...europeTopListings, ...europeLatestListings, ...europeFeaturedListings]
+    [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
       .map((listing) => listing.seller_user_id)
       .filter((id): id is string => typeof id === 'string' && Boolean(id)),
   )
   const toHomeCard = (listing: HomeListingSource) =>
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified')
   const localListingSections: HomeListingSectionData[] = [
-    {
-      id: 'local-featured',
-      title: homeListingSectionTitle(locale, 'featured', localMarketLabel),
-      emptyText: homeEmptyListingText(locale, 'country'),
-      items: await Promise.all(localFeaturedListings.map(toHomeCard)),
-    },
     {
       id: 'local-top',
       title: homeListingSectionTitle(locale, 'top', localMarketLabel),
@@ -142,12 +131,6 @@ export default async function BusinessMarketplaceHome({
     },
   ]
   const europeListingSections: HomeListingSectionData[] = [
-    {
-      id: 'europe-featured',
-      title: homeListingSectionTitle(locale, 'featured', homeEuropeLabel(locale)),
-      emptyText: homeEmptyListingText(locale, 'europe'),
-      items: await Promise.all(europeFeaturedListings.map(toHomeCard)),
-    },
     {
       id: 'europe-top',
       title: homeListingSectionTitle(locale, 'top', homeEuropeLabel(locale)),
@@ -194,7 +177,7 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-[#F2F7FF] py-14 sm:py-20">
         <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
             <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.035em] sm:text-[34px]">
@@ -220,8 +203,12 @@ export default async function BusinessMarketplaceHome({
               />
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 space-y-10 sm:mt-16">
+      <section className="bg-white py-12 sm:py-16">
+        <div className={homeContentContainerClass}>
+          <div className="space-y-10">
             {listingSections.map((section) => (
               <HomeListingSection key={section.id} section={section} locale={locale} />
             ))}
@@ -417,15 +404,9 @@ function homeEuropeLabel(locale: PublicLocale) {
 
 function homeListingSectionTitle(
   locale: PublicLocale,
-  kind: 'top' | 'latest' | 'featured',
+  kind: 'top' | 'latest',
   marketLabel: string,
 ) {
-  if (kind === 'featured') {
-    if (locale === 'sv') return `Utvalda annonser i ${marketLabel}`
-    if (locale === 'de') return `Ausgewählte Anzeigen in ${marketLabel}`
-    if (locale === 'en') return `Featured listings in ${marketLabel}`
-    return `${translatePublic(locale, 'Featured listings in')} ${marketLabel}`
-  }
   if (kind === 'latest') {
     if (locale === 'sv') return `Senaste annonser i ${marketLabel}`
     if (locale === 'de') return `Neueste Anzeigen in ${marketLabel}`
