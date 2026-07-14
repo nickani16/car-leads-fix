@@ -23,6 +23,7 @@ test('listing map resolver rejects generic city and country fallback coordinates
   assert.match(mapResolver, /source: 'listing_coordinates'/)
   assert.match(mapResolver, /source: 'geocoded_full_address'/)
   assert.match(mapResolver, /source: 'geocoded_postal_city_country'/)
+  assert.match(mapResolver, /source: 'geocoded_city_country'/)
   assert.doesNotMatch(mapResolver, /resolveListingCoordinates/)
   assert.match(mapResolver, /isKnownGenericFallbackCoordinate/)
   assert.match(mapResolver, /legacyCountryFallbackCoordinates/)
@@ -40,6 +41,7 @@ test('listing map exposes development-only debug fields for verification', () =>
 test('listing map resolver centers three listings from their own location data', async () => {
   const geocodeResults = new Map([
     ['Storgatan 1, 111 22, Stockholm, SE', [{ lat: '59.332100', lon: '18.064900' }]],
+    ['Barcelona, Spain', [{ lat: '41.387400', lon: '2.168600' }]],
     ['211 20, Malmö, SE', [{ lat: '55.609900', lon: '13.003800' }]],
   ])
   const { resolveListingMapLocation } = loadListingMapResolver(async (url) => {
@@ -91,6 +93,20 @@ test('listing map resolver centers three listings from their own location data',
   assert.equal(postalListing?.approximate, true)
   assert.equal(postalListing?.latitude, 55.6099)
   assert.equal(postalListing?.longitude, 13.0038)
+
+  const cityCountryListing = await resolveListingMapLocation({
+    id: 'listing-with-city-country-only',
+    address: null,
+    postalCode: null,
+    city: 'Barcelona',
+    country: 'Spain',
+    latitude: null,
+    longitude: null,
+  })
+  assert.equal(cityCountryListing?.source, 'geocoded_city_country')
+  assert.equal(cityCountryListing?.approximate, true)
+  assert.equal(cityCountryListing?.latitude, 41.3874)
+  assert.equal(cityCountryListing?.longitude, 2.1686)
 
   const ambiguousLocalityListing = await resolveListingMapLocation({
     id: 'listing-saltsjo-boo-ekero',

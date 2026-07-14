@@ -15,7 +15,7 @@ export type ListingMapLocation = {
   latitude: number
   longitude: number
   approximate: boolean
-  source: 'listing_coordinates' | 'geocoded_full_address' | 'geocoded_postal_city_country'
+  source: 'listing_coordinates' | 'geocoded_full_address' | 'geocoded_postal_city_country' | 'geocoded_city_country'
   query: string | null
 }
 
@@ -63,6 +63,22 @@ export async function resolveListingMapLocation(
         approximate: true,
         source: 'geocoded_postal_city_country',
         query: postalQuery,
+      }
+    }
+  }
+
+  const cityCountryQuery = buildLocationQuery([
+    input.city,
+    input.country || input.countryCode,
+  ])
+  if (cityCountryQuery && hasCityCountryOnly(input)) {
+    const geocoded = await geocodeSavedListingAddress(cityCountryQuery)
+    if (geocoded) {
+      return {
+        ...geocoded,
+        approximate: true,
+        source: 'geocoded_city_country',
+        query: cityCountryQuery,
       }
     }
   }
@@ -185,6 +201,15 @@ function hasFullStreetAddress(input: ListingMapLocationInput) {
 function hasPostalCityCountry(input: ListingMapLocationInput) {
   return Boolean(
     (input.postalCode || '').trim() &&
+      (input.city || '').trim() &&
+      ((input.country || '').trim() || (input.countryCode || '').trim()),
+  )
+}
+
+function hasCityCountryOnly(input: ListingMapLocationInput) {
+  return Boolean(
+    !(input.address || '').trim() &&
+      !(input.postalCode || '').trim() &&
       (input.city || '').trim() &&
       ((input.country || '').trim() || (input.countryCode || '').trim()),
   )
