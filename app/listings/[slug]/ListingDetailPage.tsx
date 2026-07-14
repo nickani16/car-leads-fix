@@ -403,7 +403,7 @@ export default async function ListingDetailPage({
             <div className="flex w-full items-center gap-3 sm:hidden">
               <a
                 href="#listing-location-map"
-                className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 <MapIcon className="h-4 w-4" />
                 <span className="truncate whitespace-nowrap">{copy.mapLabel}</span>
