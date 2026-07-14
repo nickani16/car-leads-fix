@@ -274,8 +274,11 @@ export default function ListingImageGallery({
         >
           <div className="pointer-events-none fixed inset-x-0 top-0 z-[190] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
             <div className="mx-auto flex max-w-[1120px] items-start justify-between gap-3">
-              <div className="pointer-events-auto inline-flex min-h-12 items-center gap-2 rounded-[8px] bg-white px-4 text-base font-semibold text-[#101828] shadow-[0_10px_28px_rgba(0,0,0,.22)]">
-                <ImageIcon className="h-5 w-5" />
+              <div
+                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-[9px] bg-white/96 px-4 text-[16px] font-[500] text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur"
+                style={{ fontWeight: 500 }}
+              >
+                <ImageIcon className="h-[19px] w-[19px]" strokeWidth={2.1} />
                 {fullscreenCopy.allImages}
               </div>
               <div className="pointer-events-auto flex items-center gap-2.5">
@@ -284,16 +287,16 @@ export default function ListingImageGallery({
                   label={fullscreenCopy.save}
                   savedLabel={fullscreenCopy.saved}
                   variant="icon"
-                  className="h-12 w-12 rounded-[8px] text-[#101828] hover:text-[#101828]"
-                  iconClassName="h-6 w-6"
+                  className="h-11 w-11 rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] hover:text-[#101828]"
+                  iconClassName="h-[23px] w-[23px]"
                 />
                 <button
                   type="button"
                   onClick={() => setFullscreen(false)}
-                  className="grid h-12 w-12 place-items-center rounded-[8px] bg-white text-[#101828] shadow-[0_10px_28px_rgba(0,0,0,.22)] transition hover:bg-[#f2f4f7]"
+                  className="grid h-11 w-11 place-items-center rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white"
                   aria-label={fullscreenCopy.close}
                 >
-                  <X className="h-7 w-7" strokeWidth={2.3} />
+                  <X className="h-6 w-6" strokeWidth={2.2} />
                 </button>
               </div>
             </div>
