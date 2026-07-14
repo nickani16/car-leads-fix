@@ -713,7 +713,7 @@ export default function HomeHeroVehicleSearch({
           >
             <span className="flex min-w-0 items-center gap-2">
               <SelectedCategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
-              <span className="truncate text-sm font-semibold text-[#101828]">
+              <span className="truncate text-sm font-medium text-[#101828]">
                 {selectedCategoryLabel}
               </span>
             </span>
@@ -726,14 +726,14 @@ export default function HomeHeroVehicleSearch({
                   key={slug}
                   type="button"
                   onClick={() => toggleCategory(slug)}
-                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
+                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm font-normal transition ${
                     selectedCategories.includes(slug)
                       ? 'bg-[#eef5ff] text-[#0866ff]'
                       : 'text-[#101828] hover:bg-[#f6f9ff]'
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
+                  <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
                 </button>
               ))}
             </div>
@@ -747,14 +747,14 @@ export default function HomeHeroVehicleSearch({
               type="button"
               onClick={() => toggleCategory(slug)}
               aria-pressed={selectedCategories.includes(slug)}
-              className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
+              className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] font-normal transition ${
                 selectedCategories.includes(slug)
                   ? 'border-[#0866ff] bg-white text-[#101828]'
                   : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
               }`}
             >
               <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-              <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
+              <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
             </button>
           ))}
         </div>
@@ -784,14 +784,14 @@ export default function HomeHeroVehicleSearch({
                 type="button"
                 onClick={() => toggleCategory(slug)}
                 aria-pressed={selectedCategories.includes(slug)}
-                className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] !font-normal transition [&_*]:!font-normal ${
+                className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] font-normal transition ${
                   selectedCategories.includes(slug)
                     ? 'border-[#0866ff] bg-white text-[#101828]'
                     : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
                 }`}
               >
                 <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-                <span className="truncate !font-normal">{categoryLabel(slug, locale)}</span>
+                <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
               </button>
             ))}
           </div>
