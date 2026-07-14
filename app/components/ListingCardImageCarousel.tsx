@@ -147,7 +147,7 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[10px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] md:hidden">
+        <div className="absolute bottom-1 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-[6px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] md:hidden">
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
