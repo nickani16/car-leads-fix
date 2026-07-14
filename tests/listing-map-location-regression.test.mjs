@@ -6,6 +6,7 @@ import ts from 'typescript'
 
 const detailPage = readFileSync('app/listings/[slug]/ListingDetailPage.tsx', 'utf8')
 const mapComponent = readFileSync('app/components/ListingLocationMap.tsx', 'utf8')
+const marketplaceBrowser = readFileSync('app/components/MarketplaceCategoryBrowser.tsx', 'utf8')
 const marketplace = readFileSync('lib/marketplace.ts', 'utf8')
 const mapResolver = readFileSync('lib/listing-map-location.ts', 'utf8')
 
@@ -36,6 +37,11 @@ test('listing map exposes development-only debug fields for verification', () =>
   assert.match(mapComponent, /listing id/)
   assert.match(mapComponent, /postal code/)
   assert.match(mapComponent, /actual map center/)
+})
+
+test('marketplace map uses the Barcelona city coordinate without offset', () => {
+  assert.match(marketplaceBrowser, /barcelona: \[2\.177073, 41\.3825802\]/)
+  assert.match(marketplaceBrowser, /if \(city\) return city/)
 })
 
 test('listing map resolver centers three listings from their own location data', async () => {

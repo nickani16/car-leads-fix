@@ -1464,13 +1464,14 @@ function listingCoordinates(listing: MarketplaceListing, index: number): [number
   }
   const key = normalizeLocationName(listing.city || listing.municipality || listing.country || '')
   const city = cityCoordinates[key]
+  if (city) return city
   const country = countryCoordinates[listing.country.toUpperCase()] || countryCoordinates.EU
-  const base = city || country
   const offset = ((index % 9) - 4) * 0.035
-  return [base[0] + offset, base[1] + offset * 0.7]
+  return [country[0] + offset, country[1] + offset * 0.7]
 }
 
 const cityCoordinates: Record<string, [number, number]> = {
+  barcelona: [2.177073, 41.3825802],
   stockholm: [18.0686, 59.3293],
   goteborg: [11.9746, 57.7089],
   malmo: [13.0038, 55.605],
