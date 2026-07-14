@@ -567,8 +567,8 @@ export default async function ListingDetailPage({
             </div>
             </div>
 
-              <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:self-start">
-            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_12px_32px_rgba(16,24,40,.09)] sm:rounded-[18px] sm:shadow-[0_18px_48px_rgba(16,24,40,.10)]">
+              <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start">
+            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_12px_32px_rgba(16,24,40,.09)] sm:rounded-[18px] sm:shadow-[0_18px_48px_rgba(16,24,40,.10)] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
               <div className="border-b border-[#edf1f6] p-4 sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
