@@ -199,7 +199,7 @@ export default function ListingImageGallery({
               type="button"
               onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 right-3 inline-flex min-h-9 items-center rounded-[9px] bg-white/84 px-3 text-[16px] font-normal text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur"
+              className="absolute bottom-3 right-3 inline-flex min-h-8 items-center rounded-[9px] bg-white/84 px-3 text-[14px] font-normal text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}
