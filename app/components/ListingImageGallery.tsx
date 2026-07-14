@@ -174,18 +174,18 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/28 text-white backdrop-blur-[2px] transition hover:bg-black/38 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/16 text-white backdrop-blur-[2px] transition hover:bg-black/24 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
-              <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
+              <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_3px_rgba(16,24,40,.45)]" strokeWidth={2.5} />
             </button>
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/28 text-white backdrop-blur-[2px] transition hover:bg-black/38 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-black/16 text-white backdrop-blur-[2px] transition hover:bg-black/24 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
-              <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_4px_rgba(16,24,40,.65)]" strokeWidth={2.5} />
+              <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_3px_rgba(16,24,40,.45)]" strokeWidth={2.5} />
             </button>
             <button
               type="button"
