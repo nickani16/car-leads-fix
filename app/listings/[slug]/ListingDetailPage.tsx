@@ -18,6 +18,7 @@ import {
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
 import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
+import ListingPageTopReset from '@/app/components/ListingPageTopReset'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingBackLink from '@/app/components/ListingBackLink'
@@ -366,6 +367,7 @@ export default async function ListingDetailPage({
 
   return (
     <main className="min-h-screen bg-white text-[#101828]">
+      <ListingPageTopReset />
       {listing.status === 'published' ? <ListingViewTracker listingId={listing.id} /> : null}
       <PublicHeader
         locale={locale}
