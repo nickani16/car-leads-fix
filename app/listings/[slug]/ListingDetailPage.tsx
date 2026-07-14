@@ -378,14 +378,15 @@ export default async function ListingDetailPage({
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
           />
-          <SavedListingButton
-            listingId={listing.id}
-            label={copy.favoriteListing}
-            savedLabel={copy.favoriteSaved}
-            removeLabel={copy.favoriteRemove}
+          <ShareListingButton
+            title={listing.title}
+            url={publicUrl}
+            label={copy.shareListing}
+            copiedLabel={copy.shareCopied}
             variant="plain"
             className="max-w-[56%] overflow-hidden whitespace-nowrap sm:hidden"
             labelClassName="truncate"
+            iconClassName="h-4 w-4 text-[#101828]"
           />
         </div>
 
@@ -402,20 +403,20 @@ export default async function ListingDetailPage({
             <div className="flex w-full items-center gap-3 sm:hidden">
               <a
                 href="#listing-location-map"
-                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
-                <MapIcon className="h-5 w-5" />
-                <span>{copy.mapLabel}</span>
+                <MapIcon className="h-4 w-4" />
+                <span className="truncate whitespace-nowrap">{copy.mapLabel}</span>
               </a>
-              <ShareListingButton
-                title={listing.title}
-                url={publicUrl}
-                label={copy.shareListing}
-                copiedLabel={copy.shareCopied}
+              <SavedListingButton
+                listingId={listing.id}
+                label={copy.favoriteListing}
+                savedLabel={copy.favoriteSaved}
+                removeLabel={copy.favoriteRemove}
                 variant="button"
-                className="min-h-12 flex-1 rounded-[8px] px-3 shadow-sm"
-                labelClassName="truncate"
-                iconClassName="h-5 w-5 text-[#101828]"
+                className="min-h-10 min-w-0 flex-1 rounded-[8px] px-2.5 text-[13px] shadow-sm"
+                labelClassName="truncate whitespace-nowrap"
+                iconClassName="h-4 w-4"
               />
             </div>
 
