@@ -48,6 +48,7 @@ export default function ListingImageGallery({
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
   const fullscreenCopy = galleryCopy(locale)
+  const imageCountText = imageCountLabel(locale, imageCount)
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -169,10 +170,10 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="absolute right-4 top-4 z-10 grid h-12 w-12 place-items-center rounded-[8px] bg-[#6f7378]/34 text-white backdrop-blur-[2px] transition hover:bg-[#6f7378]/46"
+            className="absolute right-3 top-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,.22)] backdrop-blur transition hover:bg-white sm:right-4 sm:top-4"
             aria-label="Open fullscreen gallery"
           >
-            <Maximize2 className="h-5 w-5 drop-shadow-[0_1px_3px_rgba(16,24,40,.42)]" strokeWidth={2.4} />
+            <Maximize2 className="h-5 w-5" strokeWidth={2.4} />
           </button>
         ) : null}
 
@@ -181,23 +182,23 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-[#6f7378]/34 text-white backdrop-blur-[2px] transition hover:bg-[#6f7378]/46 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,.22)] backdrop-blur transition hover:bg-white sm:left-4 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
-              <ChevronLeft className="h-8 w-8 drop-shadow-[0_1px_3px_rgba(16,24,40,.42)]" strokeWidth={2.5} />
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.4} />
             </button>
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-[8px] bg-[#6f7378]/34 text-white backdrop-blur-[2px] transition hover:bg-[#6f7378]/46 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,.22)] backdrop-blur transition hover:bg-white sm:right-4 lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
-              <ChevronRight className="h-8 w-8 drop-shadow-[0_1px_3px_rgba(16,24,40,.42)]" strokeWidth={2.5} />
+              <ChevronRight className="h-6 w-6" strokeWidth={2.4} />
             </button>
             <button
               type="button"
               onClick={openFullscreen}
-              className="absolute bottom-3 right-3 inline-flex min-h-8 items-center rounded-[8px] bg-white/92 px-3 text-[14px] font-[400] text-[#101828] shadow-[0_4px_14px_rgba(16,24,40,.18)] backdrop-blur"
+              className="absolute bottom-3 right-3 inline-flex min-h-9 items-center rounded-[9px] bg-white/94 px-3 text-[16px] font-[500] text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,.2)] backdrop-blur"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}
@@ -231,10 +232,10 @@ export default function ListingImageGallery({
             type="button"
             onClick={openFullscreen}
             className="ml-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-            aria-label={fullscreenCopy.allImages}
+            aria-label={imageCountText}
           >
-            <ImageIcon className="h-5 w-5" />
-            {fullscreenCopy.allImages}
+            {imageCountText}
+            <Maximize2 className="h-4 w-4" />
           </button>
         </div>
       ) : null}
@@ -334,4 +335,18 @@ function galleryCopy(locale: string) {
   }
 
   return labels[normalized] || labels.en
+}
+
+function imageCountLabel(locale: string, count: number) {
+  const normalized = locale === 'at' ? 'de' : locale
+  if (normalized === 'sv') return `${count} bilder`
+  if (normalized === 'de') return `${count} Bilder`
+  if (normalized === 'fr') return `${count} images`
+  if (normalized === 'es') return `${count} fotos`
+  if (normalized === 'it') return `${count} immagini`
+  if (normalized === 'pl') return `${count} zdjęć`
+  if (normalized === 'nl' || normalized === 'be') return `${count} foto's`
+  if (normalized === 'fi') return `${count} kuvaa`
+  if (normalized === 'da') return `${count} billeder`
+  return `${count} images`
 }
