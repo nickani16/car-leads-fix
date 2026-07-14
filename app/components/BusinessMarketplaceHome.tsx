@@ -177,7 +177,7 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-[#F2F7FF] py-9 sm:py-16">
+      <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
             <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px] sm:tracking-[-0.03em]">
