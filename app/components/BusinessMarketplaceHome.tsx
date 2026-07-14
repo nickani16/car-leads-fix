@@ -177,10 +177,10 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-[#F2F7FF] py-14 sm:py-20">
+      <section className="bg-[#F2F7FF] py-9 sm:py-20">
         <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
-            <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.035em] sm:text-[34px]">
+            <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px] sm:tracking-[-0.035em]">
               {t.vehicleNewsTitle}
             </h2>
             <Link
@@ -192,7 +192,7 @@ export default async function BusinessMarketplaceHome({
             </Link>
           </div>
 
-          <div className="mt-7 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
+          <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 sm:mt-7 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
             {newsCards.map((item) => (
               <VehicleNewsCard
                 key={item.title}
@@ -233,14 +233,19 @@ function VehicleNewsCard({
   locale: PublicLocale
 }) {
   return (
-    <Link href={item.href} className="group w-full flex-none snap-start sm:w-auto">
-      <NoPhotoFrame className="aspect-[16/10] rounded-[8px]" locale={locale} />
-      <div className="mt-2 text-[11px] font-medium text-[#667085]">
-        {category} | {readTime}
+    <Link
+      href={item.href}
+      className="group w-full flex-none snap-start overflow-hidden rounded-[10px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:shadow-none"
+    >
+      <NoPhotoFrame className="aspect-[16/9] rounded-t-[10px] border-0 sm:aspect-[16/10] sm:rounded-[8px] sm:border" compact locale={locale} />
+      <div className="px-4 pb-4 pt-3 sm:p-0">
+        <div className="text-[11px] font-medium text-[#667085] sm:mt-2">
+          {category} | {readTime}
+        </div>
+        <h3 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-[#101828] transition group-hover:text-[#0866ff] sm:text-[14px] sm:leading-5">
+          {item.title}
+        </h3>
       </div>
-      <h3 className="mt-1 line-clamp-2 text-[14px] font-semibold leading-5 text-[#101828] transition group-hover:text-[#0866ff]">
-        {item.title}
-      </h3>
     </Link>
   )
 }
