@@ -15,6 +15,7 @@ import {
   type TouchEvent,
 } from 'react'
 import SavedListingButton from '@/app/components/SavedListingButton'
+import ShareListingButton from '@/app/components/ShareListingButton'
 
 export default function ListingImageGallery({
   images,
@@ -22,12 +23,18 @@ export default function ListingImageGallery({
   title,
   listingId,
   locale = 'en',
+  shareUrl,
+  shareLabel = 'Share listing',
+  shareCopiedLabel = 'Link copied',
 }: {
   images: string[]
   fullscreenImages?: string[]
   title: string
   listingId: string
   locale?: string
+  shareUrl?: string
+  shareLabel?: string
+  shareCopiedLabel?: string
 }) {
   const safeImages = images.filter(Boolean)
   const safeFullscreenImages = safeImages.map((image, index) =>
@@ -198,6 +205,40 @@ export default function ListingImageGallery({
           </>
         ) : null}
       </div>
+      {safeImages.length > 1 ? (
+        <div className="mt-3 flex items-center justify-between gap-3 px-4 min-[430px]:px-5 sm:hidden">
+          <SavedListingButton
+            listingId={listingId}
+            label={fullscreenCopy.save}
+            savedLabel={fullscreenCopy.saved}
+            variant="icon"
+            className="h-12 w-12 rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
+            iconClassName="h-6 w-6"
+          />
+          {shareUrl ? (
+            <ShareListingButton
+              title={title}
+              url={shareUrl}
+              label={shareLabel}
+              copiedLabel={shareCopiedLabel}
+              variant="button"
+              className="h-12 w-12 rounded-[10px] !px-0 shadow-sm"
+              labelClassName="sr-only"
+              iconClassName="h-6 w-6 text-[#101828]"
+            />
+          ) : null}
+          <button
+            type="button"
+            onClick={openFullscreen}
+            className="ml-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            aria-label={fullscreenCopy.allImages}
+          >
+            <ImageIcon className="h-5 w-5" />
+            {fullscreenCopy.allImages}
+          </button>
+        </div>
+      ) : null}
+
       {safeImages.length > 1 ? (
         <div className="mt-2 hidden gap-3 overflow-x-auto pb-1 sm:flex lg:hidden">
           {safeImages.map((image, index) => (

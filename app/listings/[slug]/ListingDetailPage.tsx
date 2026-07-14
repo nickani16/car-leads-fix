@@ -374,13 +374,13 @@ export default async function ListingDetailPage({
         marketCode={marketCode}
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
-      <div className="mx-0 box-border w-full max-w-full px-4 py-3 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1010px] sm:px-8 xl:max-w-[1060px] lg:py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="mx-0 box-border w-full max-w-full px-4 py-5 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1010px] sm:px-8 sm:py-3 xl:max-w-[1060px] lg:py-4">
+        <div className="flex items-center justify-between gap-3">
           <ListingBackLink
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
           />
-          <div className="flex min-w-0 items-center gap-4">
+          <div className="hidden min-w-0 items-center gap-4 sm:flex">
             <ShareListingButton
               title={listing.title}
               url={publicUrl}
@@ -413,27 +413,10 @@ export default async function ListingDetailPage({
               title={listing.title}
               listingId={listing.id}
               locale={locale}
+              shareUrl={publicUrl}
+              shareLabel={copy.shareListing}
+              shareCopiedLabel={copy.shareCopied}
             />
-
-            <div className="flex w-full items-center gap-3 sm:hidden">
-              <a
-                href="#listing-location-map"
-                className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-              >
-                <MapIcon className="h-4 w-4" />
-                <span className="truncate whitespace-nowrap">{copy.mapLabel}</span>
-              </a>
-              <SavedListingButton
-                listingId={listing.id}
-                label={copy.favoriteListing}
-                savedLabel={copy.favoriteSaved}
-                removeLabel={copy.favoriteRemove}
-                variant="button"
-                className="!min-h-10 min-w-0 flex-1 !gap-1.5 rounded-[8px] !px-2.5 !text-[13px] shadow-sm"
-                labelClassName="truncate whitespace-nowrap text-[13px]"
-                iconClassName="h-4 w-4"
-              />
-            </div>
 
             <div className="hidden">
               <a
