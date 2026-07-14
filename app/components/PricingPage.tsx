@@ -5,7 +5,6 @@ import PublicHeader from '@/app/components/PublicHeader'
 import PricingAnchorScroll from '@/app/components/PricingAnchorScroll'
 import {
   billingProductCatalog,
-  currencyForMarket,
   formatMoneyMinor,
   getProductAmount,
   listingCategoryLabels,
@@ -39,7 +38,7 @@ const localeMap: Record<PublicLocale, string> = {
 const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
   sv: {
     title: 'Annonspriser',
-    intro: 'Fasta lokala priser. Samma belopp visas i Stripe Checkout.',
+    intro: 'Fasta lokala priser. Samma belopp visas i Checkout.',
     privateHeading: 'Privatannonser',
     addonsHeading: 'Synlighetstjänster',
     businessHeading: 'Företagsabonnemang',
@@ -68,7 +67,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
   },
   da: {
     title: 'Annoncepriser',
-    intro: 'Faste lokale priser. Samme beløb vises i Stripe Checkout.',
+    intro: 'Faste lokale priser. Samme beløb vises i Checkout.',
     privateHeading: 'Private annoncer',
     addonsHeading: 'Synlighedstjenester',
     businessHeading: 'Virksomhedsabonnementer',
@@ -97,7 +96,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
   },
   pl: {
     title: 'Cennik',
-    intro: 'Stale lokalne ceny. Ta sama kwota jest widoczna w Stripe Checkout.',
+    intro: 'Stale lokalne ceny. Ta sama kwota jest widoczna w Checkout.',
     privateHeading: 'Ogloszenia prywatne',
     addonsHeading: 'Uslugi widocznosci',
     businessHeading: 'Abonamenty firmowe',
@@ -128,7 +127,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
 
 const copyByLocaleBase = {
   title: 'Pricing',
-  intro: 'Fixed local prices. The same amount is shown in Stripe Checkout.',
+  intro: 'Fixed local prices. The same amount is shown in Checkout.',
   privateHeading: 'Private listings',
   addonsHeading: 'Visibility services',
   businessHeading: 'Business subscriptions',
@@ -183,7 +182,6 @@ const businessKeys = [
 export default function PricingPage({ locale, market, marketCode }: PricingPageProps) {
   const copy = copyByLocale[locale] || copyByLocaleBase
   const numberLocale = localeMap[locale] || 'en-GB'
-  const currency = currencyForMarket(market).toUpperCase()
   const categoryEntries = Object.entries(listingCategoryLabels) as Array<[ListingCategory, string]>
 
   return (
@@ -191,17 +189,16 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
       <PublicHeader locale={locale} marketCode={marketCode} />
       <PricingAnchorScroll />
       <section className="border-b border-[#e7ecf3] bg-[#fbfcfe]">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 sm:py-20 lg:py-24">
-          <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#0866ff]">{currency}</p>
-          <div className="mt-5 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-14 lg:py-16">
+          <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
             <div className="min-w-0">
-              <h1 className="max-w-full break-words text-[42px] font-semibold leading-[1.02] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[68px]">
+              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
                 {copy.title}
               </h1>
-              <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#596579] sm:text-[19px] sm:leading-9">
+              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[#596579] sm:text-[18px] sm:leading-8">
                 {copy.intro}
               </p>
-              <div className="mt-8 flex flex-wrap gap-2">
+              <div className="mt-6 flex flex-wrap gap-2">
                 <Link href="#private" className="rounded-full border border-[#d8e0ec] bg-white px-4 py-2 text-sm font-medium text-[#101828] transition hover:border-[#b8c4d6]">
                   {copy.privateHeading}
                 </Link>
@@ -254,7 +251,7 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
               {categoryEntries.map(([category, label]) => (
                 <tr key={category} className="border-t border-[#edf1f7] transition hover:bg-[#fbfcff]">
                   <th className="px-5 py-4 font-medium sm:px-6">{label}</th>
-                  <td className="px-5 py-4 text-[#667085] sm:px-6">{copy.free}</td>
+                  <td className="px-5 py-4 font-semibold text-[#15803d] sm:px-6">{copy.free}</td>
                   <td className="px-5 py-4 sm:px-6">{formatProduct(`listing.${category}.standard`, market, numberLocale)}</td>
                   <td className="px-5 py-4 font-semibold sm:px-6">{formatProduct(`listing.${category}.premium`, market, numberLocale)}</td>
                 </tr>
@@ -290,16 +287,31 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
             const product = findProduct(productKey)
             const enterprise = product?.businessPlan === 'enterprise'
             return (
-              <article key={productKey} className="rounded-[14px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_44px_rgba(16,24,40,.04)] transition hover:border-[#c8d4e5] hover:shadow-[0_22px_54px_rgba(16,24,40,.06)]">
+              <article
+                key={productKey}
+                className={`rounded-[14px] border p-6 shadow-[0_18px_44px_rgba(16,24,40,.04)] transition hover:shadow-[0_22px_54px_rgba(16,24,40,.06)] ${
+                  enterprise
+                    ? 'border-[#bfd0ea] bg-[#f7faff] hover:border-[#9fb7dd]'
+                    : 'border-[#d9e2ef] bg-white hover:border-[#c8d4e5]'
+                }`}
+              >
                 <h3 className="text-[19px] font-semibold capitalize tracking-[-.015em]">{enterprise ? copy.enterprise : product?.businessPlan}</h3>
                 <p className="mt-5 text-[32px] font-semibold tracking-[-.04em]">
                   {enterprise ? copy.contactUs : formatProduct(productKey, market, numberLocale)}
                 </p>
                 {!enterprise ? <p className="mt-1 text-sm text-[#667085]">{copy.perMonth}</p> : null}
                 <div className="mt-7 border-t border-[#edf1f7] pt-5 text-sm leading-6 text-[#4b5565]">
-                  {enterprise
-                    ? copy.contactUs
-                    : `${product?.activeListingLimit || 0} ${copy.activeListings}`}
+                  {enterprise ? (
+                    <Link
+                      href={localizePublicHref(locale, '/contact')}
+                      className="inline-flex items-center gap-2 font-semibold text-[#0866ff] transition hover:text-[#075ce5]"
+                    >
+                      {copy.contactUs}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    `${product?.activeListingLimit || 0} ${copy.activeListings}`
+                  )}
                 </div>
               </article>
             )
