@@ -1459,7 +1459,11 @@ function MarketplaceMapPanel({
 }
 
 function listingCoordinates(listing: MarketplaceListing, index: number): [number, number] {
-  if (typeof listing.longitude === 'number' && typeof listing.latitude === 'number') {
+  if (
+    typeof listing.longitude === 'number' &&
+    typeof listing.latitude === 'number' &&
+    !isGenericCountryCoordinate(listing.latitude, listing.longitude, listing.country)
+  ) {
     return [listing.longitude, listing.latitude]
   }
   const key = normalizeLocationName(listing.city || listing.municipality || listing.country || '')
@@ -1468,6 +1472,15 @@ function listingCoordinates(listing: MarketplaceListing, index: number): [number
   const country = countryCoordinates[listing.country.toUpperCase()] || countryCoordinates.EU
   const offset = ((index % 9) - 4) * 0.035
   return [country[0] + offset, country[1] + offset * 0.7]
+}
+
+function isGenericCountryCoordinate(latitude: number, longitude: number, countryCode: string) {
+  const country = countryCoordinates[countryCode.toUpperCase()]
+  return Boolean(
+    country &&
+      Math.abs(latitude - country[1]) < 0.000001 &&
+      Math.abs(longitude - country[0]) < 0.000001,
+  )
 }
 
 const cityCoordinates: Record<string, [number, number]> = {

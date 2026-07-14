@@ -42,6 +42,7 @@ test('listing map exposes development-only debug fields for verification', () =>
 test('marketplace map uses the Barcelona city coordinate without offset', () => {
   assert.match(marketplaceBrowser, /barcelona: \[2\.177073, 41\.3825802\]/)
   assert.match(marketplaceBrowser, /if \(city\) return city/)
+  assert.match(marketplaceBrowser, /isGenericCountryCoordinate\(listing\.latitude, listing\.longitude, listing\.country\)/)
 })
 
 test('listing map resolver centers three listings from their own location data', async () => {
