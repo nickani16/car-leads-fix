@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, BadgeCheck, BarChart3, RefreshCw, Rocket, Star } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import PricingAnchorScroll from '@/app/components/PricingAnchorScroll'
 import {
   billingProductCatalog,
   currencyForMarket,
@@ -188,21 +189,30 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
   return (
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
       <PublicHeader locale={locale} marketCode={marketCode} />
-      <section className="border-b border-[#e5eaf2] bg-white">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-12 sm:px-8 lg:py-18">
-          <p className="text-xs font-medium uppercase tracking-[.16em] text-[#0866ff]">{currency}</p>
-          <div className="mt-4 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+      <PricingAnchorScroll />
+      <section className="border-b border-[#e7ecf3] bg-[#fbfcfe]">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 sm:py-20 lg:py-24">
+          <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#0866ff]">{currency}</p>
+          <div className="mt-5 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
             <div className="min-w-0">
-              <h1 className="max-w-full break-words text-[38px] font-semibold leading-[1.05] tracking-[-.04em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[62px]">
+              <h1 className="max-w-full break-words text-[42px] font-semibold leading-[1.02] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[68px]">
                 {copy.title}
               </h1>
-              <p className="mt-5 max-w-3xl text-base leading-7 text-[#596579] sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#596579] sm:text-[19px] sm:leading-9">
                 {copy.intro}
               </p>
+              <div className="mt-8 flex flex-wrap gap-2">
+                <Link href="#private" className="rounded-full border border-[#d8e0ec] bg-white px-4 py-2 text-sm font-medium text-[#101828] transition hover:border-[#b8c4d6]">
+                  {copy.privateHeading}
+                </Link>
+                <Link href="#business" className="rounded-full border border-[#d8e0ec] bg-white px-4 py-2 text-sm font-medium text-[#101828] transition hover:border-[#b8c4d6]">
+                  {copy.businessHeading}
+                </Link>
+              </div>
             </div>
             <Link
               href={localizePublicHref(locale, '/konto/annonser/ny')}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-medium text-white shadow-[0_14px_34px_rgba(8,102,255,.20)] transition hover:bg-[#075ce5]"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(8,102,255,.16)] transition hover:bg-[#075ce5]"
             >
               {copy.sellCta}
               <ArrowRight className="h-4 w-4" />
@@ -211,42 +221,42 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
         </div>
       </section>
 
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-[-.02em]">{copy.privateHeading}</h2>
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
+      <section id="private" className="scroll-mt-28 mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
+        <h2 className="text-[28px] font-semibold leading-tight tracking-[-.03em] sm:text-[36px]">{copy.privateHeading}</h2>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
           {packageCards.map(({ key, icon: Icon, recommended }) => (
-            <article key={key} className="rounded-[12px] border border-[#d9e2ef] bg-white p-5 shadow-[0_10px_28px_rgba(16,24,40,.05)]">
+            <article key={key} className={`rounded-[14px] border bg-white p-6 shadow-[0_18px_44px_rgba(16,24,40,.045)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(16,24,40,.07)] sm:p-7 ${recommended ? 'border-[#aebed3]' : 'border-[#d9e2ef]'}`}>
               <div className="flex items-center justify-between gap-3">
-                <Icon className="h-5 w-5 text-[#0866ff]" />
+                <Icon className="h-4 w-4 text-[#0866ff]" />
                 {recommended ? (
-                  <span className="hidden rounded-full bg-[#eaf2ff] px-3 py-1 text-xs font-medium text-[#0866ff] sm:inline-flex">
+                  <span className="rounded-full border border-[#c9d8ef] bg-[#f7faff] px-3 py-1 text-[11px] font-semibold text-[#0756cf]">
                     {copy.recommended}
                   </span>
                 ) : null}
               </div>
-              <h3 className="mt-4 text-2xl font-semibold">{copy[key]}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#5f6b7a]">{copy[`${key}Text` as keyof typeof copy]}</p>
+              <h3 className="mt-7 text-[26px] font-semibold tracking-[-.025em]">{copy[key]}</h3>
+              <p className="mt-3 text-[15px] leading-7 text-[#5f6b7a]">{copy[`${key}Text` as keyof typeof copy]}</p>
             </article>
           ))}
         </div>
 
-        <div className="mt-6 overflow-x-auto rounded-[12px] border border-[#d9e2ef] bg-white shadow-[0_12px_34px_rgba(16,24,40,.05)]">
-          <table className="min-w-[720px] w-full border-collapse text-left text-sm">
-            <thead className="bg-[#f7f9fc] text-xs uppercase tracking-[.12em] text-[#667085]">
+        <div className="mt-9 overflow-x-auto rounded-[14px] border border-[#d9e2ef] bg-white shadow-[0_18px_46px_rgba(16,24,40,.045)]">
+          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+            <thead className="bg-[#f8fafc] text-[11px] uppercase tracking-[.14em] text-[#667085]">
               <tr>
-                <th className="px-4 py-3 font-semibold">{copy.category}</th>
-                <th className="px-4 py-3 font-semibold">{copy.start}</th>
-                <th className="px-4 py-3 font-semibold">{copy.standard}</th>
-                <th className="px-4 py-3 font-semibold">{copy.premium}</th>
+                <th className="px-5 py-4 font-semibold sm:px-6">{copy.category}</th>
+                <th className="px-5 py-4 font-semibold sm:px-6">{copy.start}</th>
+                <th className="px-5 py-4 font-semibold sm:px-6">{copy.standard}</th>
+                <th className="px-5 py-4 font-semibold sm:px-6">{copy.premium}</th>
               </tr>
             </thead>
             <tbody>
               {categoryEntries.map(([category, label]) => (
-                <tr key={category} className="border-t border-[#edf1f7]">
-                  <th className="px-4 py-3 font-medium">{label}</th>
-                  <td className="px-4 py-3 text-[#667085]">{copy.free}</td>
-                  <td className="px-4 py-3">{formatProduct(`listing.${category}.standard`, market, numberLocale)}</td>
-                  <td className="px-4 py-3 font-medium">{formatProduct(`listing.${category}.premium`, market, numberLocale)}</td>
+                <tr key={category} className="border-t border-[#edf1f7] transition hover:bg-[#fbfcff]">
+                  <th className="px-5 py-4 font-medium sm:px-6">{label}</th>
+                  <td className="px-5 py-4 text-[#667085] sm:px-6">{copy.free}</td>
+                  <td className="px-5 py-4 sm:px-6">{formatProduct(`listing.${category}.standard`, market, numberLocale)}</td>
+                  <td className="px-5 py-4 font-semibold sm:px-6">{formatProduct(`listing.${category}.premium`, market, numberLocale)}</td>
                 </tr>
               ))}
             </tbody>
@@ -254,18 +264,18 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
         </div>
       </section>
 
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-6 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-[-.02em]">{copy.addonsHeading}</h2>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
+        <h2 className="text-[26px] font-semibold tracking-[-.025em] sm:text-[32px]">{copy.addonsHeading}</h2>
+        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {addOnKeys.map((productKey) => {
             const product = findProduct(productKey)
             return (
-              <article key={productKey} className="rounded-[12px] border border-[#d9e2ef] bg-white p-4">
+              <article key={productKey} className="rounded-[14px] border border-[#d9e2ef] bg-white p-5 transition hover:border-[#c8d4e5] hover:shadow-[0_16px_38px_rgba(16,24,40,.045)]">
                 <div className="flex items-center justify-between gap-3">
-                  {product?.addon?.startsWith('featured') ? <Star className="h-5 w-5 text-[#0866ff]" /> : <RefreshCw className="h-5 w-5 text-[#0866ff]" />}
-                  <span className="text-sm font-semibold">{formatProduct(productKey, market, numberLocale)}</span>
+                  {product?.addon?.startsWith('featured') ? <Star className="h-4 w-4 text-[#0866ff]" /> : <RefreshCw className="h-4 w-4 text-[#0866ff]" />}
+                  <span className="text-[15px] font-semibold tracking-[-.01em]">{formatProduct(productKey, market, numberLocale)}</span>
                 </div>
-                <h3 className="mt-4 text-base font-semibold">{addOnTitle(product, copy)}</h3>
+                <h3 className="mt-5 text-base font-semibold">{addOnTitle(product, copy)}</h3>
                 <p className="mt-2 text-sm leading-6 text-[#667085]">{addOnDescription(product, copy)}</p>
               </article>
             )
@@ -273,20 +283,20 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
         </div>
       </section>
 
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-[-.02em]">{copy.businessHeading}</h2>
-        <div className="mt-5 grid gap-3 lg:grid-cols-4">
+      <section id="business" className="scroll-mt-28 mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
+        <h2 className="text-[28px] font-semibold leading-tight tracking-[-.03em] sm:text-[36px]">{copy.businessHeading}</h2>
+        <div className="mt-8 grid gap-4 lg:grid-cols-4">
           {businessKeys.map((productKey) => {
             const product = findProduct(productKey)
             const enterprise = product?.businessPlan === 'enterprise'
             return (
-              <article key={productKey} className="rounded-[12px] border border-[#d9e2ef] bg-white p-5 shadow-[0_10px_28px_rgba(16,24,40,.04)]">
-                <h3 className="text-xl font-semibold capitalize">{enterprise ? copy.enterprise : product?.businessPlan}</h3>
-                <p className="mt-3 text-3xl font-semibold tracking-[-.03em]">
+              <article key={productKey} className="rounded-[14px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_44px_rgba(16,24,40,.04)] transition hover:border-[#c8d4e5] hover:shadow-[0_22px_54px_rgba(16,24,40,.06)]">
+                <h3 className="text-[19px] font-semibold capitalize tracking-[-.015em]">{enterprise ? copy.enterprise : product?.businessPlan}</h3>
+                <p className="mt-5 text-[32px] font-semibold tracking-[-.04em]">
                   {enterprise ? copy.contactUs : formatProduct(productKey, market, numberLocale)}
                 </p>
                 {!enterprise ? <p className="mt-1 text-sm text-[#667085]">{copy.perMonth}</p> : null}
-                <div className="mt-5 border-t border-[#edf1f7] pt-4 text-sm leading-6 text-[#4b5565]">
+                <div className="mt-7 border-t border-[#edf1f7] pt-5 text-sm leading-6 text-[#4b5565]">
                   {enterprise
                     ? copy.contactUs
                     : `${product?.activeListingLimit || 0} ${copy.activeListings}`}

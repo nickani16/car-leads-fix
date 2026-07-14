@@ -731,7 +731,7 @@ export default function PublicHeader({
       icon: Plus,
       children: sellMenuLinks,
     },
-    { href: localizePublicHref(locale, '/business'), label: t.business, icon: Building2 },
+    { href: localizePublicHref(locale, '/pricing#business'), label: t.business, icon: Building2 },
     {
       href: localizePublicHref(locale, '/help-center'),
       label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
@@ -744,7 +744,7 @@ export default function PublicHeader({
   const desktopNavLinks = [
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
-    { kind: 'link' as const, href: localizePublicHref(locale, '/business'), label: t.business },
+    { kind: 'link' as const, href: localizePublicHref(locale, '/pricing#business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center') },
   ]
   const desktopAccountLinks = [
