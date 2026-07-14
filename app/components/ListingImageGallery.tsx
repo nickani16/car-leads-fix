@@ -214,8 +214,8 @@ export default function ListingImageGallery({
             label={fullscreenCopy.save}
             savedLabel={fullscreenCopy.saved}
             variant="icon"
-            className="h-12 w-12 rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
-            iconClassName="h-6 w-6"
+            className="h-11 w-11 rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
+            iconClassName="h-[22px] w-[22px]"
           />
           {shareUrl ? (
             <ShareListingButton
@@ -224,19 +224,19 @@ export default function ListingImageGallery({
               label={shareLabel}
               copiedLabel={shareCopiedLabel}
               variant="button"
-              className="h-12 w-12 rounded-[10px] !px-0 shadow-sm"
+              className="h-11 w-11 rounded-[10px] !px-0 shadow-sm"
               labelClassName="sr-only"
-              iconClassName="h-6 w-6 text-[#101828]"
+              iconClassName="h-[22px] w-[22px] text-[#101828]"
             />
           ) : null}
           <button
             type="button"
             onClick={openFullscreen}
-            className="ml-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            className="ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-3.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
             aria-label={imageCountText}
           >
             {imageCountText}
-            <Maximize2 className="h-4 w-4" />
+            <Maximize2 className="h-[15px] w-[15px]" />
           </button>
         </div>
       ) : null}
