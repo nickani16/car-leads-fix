@@ -245,9 +245,20 @@ function VehicleNewsCard({
         <h3 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-[#101828] transition group-hover:text-[#0866ff] sm:text-[16px] sm:leading-[1.35]">
           {item.title}
         </h3>
+        <span className="mt-3 inline-flex items-center gap-2 text-[14px] font-semibold text-[#0866ff] sm:mt-4">
+          {readMoreLabel(locale)}
+          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   )
+}
+
+function readMoreLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Läs mer'
+  if (locale === 'de') return 'Mehr lesen'
+  if (locale === 'en') return 'Read more'
+  return translatePublic(locale, 'Read more')
 }
 
 function NoPhotoFrame({
