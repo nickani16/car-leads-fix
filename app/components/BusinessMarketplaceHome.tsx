@@ -177,10 +177,10 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-[#F2F7FF] py-9 sm:py-20">
+      <section className="bg-[#F2F7FF] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
-            <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px] sm:tracking-[-0.035em]">
+            <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px] sm:tracking-[-0.03em]">
               {t.vehicleNewsTitle}
             </h2>
             <Link
@@ -235,14 +235,14 @@ function VehicleNewsCard({
   return (
     <Link
       href={item.href}
-      className="group w-full flex-none snap-start overflow-hidden rounded-[10px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:shadow-none"
+      className="group w-full flex-none snap-start overflow-hidden rounded-[10px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:rounded-[12px]"
     >
-      <NoPhotoFrame className="aspect-[16/9] rounded-t-[10px] border-0 sm:aspect-[16/10] sm:rounded-[8px] sm:border" compact locale={locale} />
-      <div className="px-4 pb-4 pt-3 sm:p-0">
-        <div className="text-[11px] font-medium text-[#667085] sm:mt-2">
+      <NoPhotoFrame className="aspect-[16/9] rounded-t-[10px] border-0 sm:aspect-[16/10] sm:rounded-none" compact locale={locale} />
+      <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+        <div className="text-[11px] font-medium text-[#667085]">
           {category} | {readTime}
         </div>
-        <h3 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-[#101828] transition group-hover:text-[#0866ff] sm:text-[14px] sm:leading-5">
+        <h3 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-[#101828] transition group-hover:text-[#0866ff] sm:text-[16px] sm:leading-[1.35]">
           {item.title}
         </h3>
       </div>
