@@ -37,8 +37,11 @@ export default function AdminMfaSetup() {
         return
       }
 
-      for (const factor of factors.data.totp.filter((item) => item.status !== 'verified')) {
-        await supabase.auth.mfa.unenroll({ factorId: factor.id })
+      for (const factor of factors.data.all.filter(
+        (item) => item.factor_type === 'totp' && item.status !== 'verified',
+      )) {
+        const unenrolled = await supabase.auth.mfa.unenroll({ factorId: factor.id })
+        if (unenrolled.error) throw unenrolled.error
       }
 
       const enrolled = await supabase.auth.mfa.enroll({
@@ -49,7 +52,7 @@ export default function AdminMfaSetup() {
       if (active) {
         setEnrollment({
           factorId: enrolled.data.id,
-          qrCode: enrolled.data.totp.qr_code,
+          qrCode: enrolled.data.totp.qr_code.trimEnd(),
           secret: enrolled.data.totp.secret,
           existing: false,
         })

@@ -58,3 +58,11 @@ test('CMS drafts can select media from the real media library', () => {
   assert.match(read('app/admin/AdminDraftForm.tsx'), /hero_media_id/)
   assert.match(read('app/api/admin/content/route.ts'), /content_post_media/)
 })
+
+test('admin MFA recovers interrupted enrollment and normalizes the QR source', () => {
+  const setup = read('app/admin/mfa/AdminMfaSetup.tsx')
+  assert.match(setup, /factors\.data\.all\.filter/)
+  assert.match(setup, /item\.factor_type === 'totp'/)
+  assert.match(setup, /if \(unenrolled\.error\) throw unenrolled\.error/)
+  assert.match(setup, /qr_code\.trimEnd\(\)/)
+})
