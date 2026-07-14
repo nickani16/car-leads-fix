@@ -22,11 +22,11 @@ export default function ListingBackLink({
         }
         router.push(fallbackHref)
       }}
-      style={{ fontWeight: 500 }}
-      className="inline-flex cursor-pointer items-center gap-1.5 text-[14px] font-[500] text-[#101828] transition hover:text-[#0866ff] sm:gap-2"
+      style={{ fontWeight: 600 }}
+      className="inline-flex cursor-pointer items-center gap-2 text-[17px] font-semibold text-[#101828] transition hover:text-[#0866ff] sm:text-[14px] sm:font-[500]"
     >
-      <ArrowLeft className="h-4 w-4" />
-      <span className="underline decoration-[1px] underline-offset-2">{label}</span>
+      <ArrowLeft className="h-5 w-5 sm:h-4 sm:w-4" />
+      <span className="underline decoration-[1px] underline-offset-3">{label}</span>
     </button>
   )
 }
