@@ -391,15 +391,17 @@ export default async function ListingDetailPage({
               labelClassName="truncate"
               iconClassName="h-4 w-4 text-[#101828]"
             />
-            <SavedListingButton
-              listingId={listing.id}
-              label={copy.favoriteListing}
-              savedLabel={copy.favoriteSaved}
-              removeLabel={copy.favoriteRemove}
-              variant="plain"
-              className="hidden text-[#101828] hover:text-[#101828] sm:inline-flex"
-              iconClassName="h-4 w-4 text-[#101828]"
-            />
+            <div className="hidden lg:inline-flex">
+              <SavedListingButton
+                listingId={listing.id}
+                label={copy.favoriteListing}
+                savedLabel={copy.favoriteSaved}
+                removeLabel={copy.favoriteRemove}
+                variant="plain"
+                className="text-[#101828] hover:text-[#101828]"
+                iconClassName="h-4 w-4 text-[#101828]"
+              />
+            </div>
           </div>
         </div>
 

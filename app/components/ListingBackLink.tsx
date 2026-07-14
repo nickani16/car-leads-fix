@@ -26,7 +26,7 @@ export default function ListingBackLink({
       className="inline-flex cursor-pointer items-center gap-1.5 text-[14px] font-[500] text-[#101828] transition hover:text-[#0866ff] sm:gap-2"
     >
       <ArrowLeft className="h-4 w-4" />
-      {label}
+      <span className="underline decoration-[1px] underline-offset-2">{label}</span>
     </button>
   )
 }
