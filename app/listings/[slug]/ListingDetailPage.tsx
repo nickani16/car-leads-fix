@@ -414,8 +414,8 @@ export default async function ListingDetailPage({
                 savedLabel={copy.favoriteSaved}
                 removeLabel={copy.favoriteRemove}
                 variant="button"
-                className="min-h-10 min-w-0 flex-1 rounded-[8px] px-2.5 text-[13px] shadow-sm"
-                labelClassName="truncate whitespace-nowrap"
+                className="!min-h-10 min-w-0 flex-1 !gap-1.5 rounded-[8px] !px-2.5 !text-[13px] shadow-sm"
+                labelClassName="truncate whitespace-nowrap text-[13px]"
                 iconClassName="h-4 w-4"
               />
             </div>
