@@ -2960,9 +2960,15 @@ function getTileCoordinate(latitude: number, longitude: number, zoom: number) {
 }
 
 function listingCoordinates(listing: VehicleSearchListing, country: string, index: number): [number, number] {
-  if (typeof listing.longitude === 'number' && typeof listing.latitude === 'number') {
+  if (
+    typeof listing.longitude === 'number' &&
+    typeof listing.latitude === 'number' &&
+    !isGenericCountryCoordinate(listing.latitude, listing.longitude, listing.country)
+  ) {
     return [listing.longitude, listing.latitude]
   }
+  const city = cityCenters[normalizeSearchMapLocationName(listing.city || listing.municipality || '')]
+  if (city) return city
   const base = countryCenters[listing.country] || countryCenters[country] || countryCenters.SE
   const ring = (index % 18) / 18
   const radius = 0.7 + (index % 5) * 0.28
@@ -2970,6 +2976,27 @@ function listingCoordinates(listing: VehicleSearchListing, country: string, inde
     base[0] + Math.cos(ring * Math.PI * 2) * radius,
     base[1] + Math.sin(ring * Math.PI * 2) * radius * 0.55,
   ]
+}
+
+function isGenericCountryCoordinate(latitude: number, longitude: number, countryCode: string) {
+  const country = countryCenters[countryCode.toUpperCase()]
+  return Boolean(
+    country &&
+      Math.abs(latitude - country[1]) < 0.000001 &&
+      Math.abs(longitude - country[0]) < 0.000001,
+  )
+}
+
+const cityCenters: Record<string, [number, number]> = {
+  barcelona: [2.177073, 41.3825802],
+}
+
+function normalizeSearchMapLocationName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 type VehicleFilterKey = 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'year' | 'mileage'
