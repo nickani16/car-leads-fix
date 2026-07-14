@@ -568,9 +568,9 @@ export default async function ListingDetailPage({
             </div>
 
               <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:self-start">
-            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_14px_36px_rgba(16,24,40,.10)] sm:rounded-[20px] sm:shadow-[0_22px_60px_rgba(16,24,40,.12)]">
-              <div className="border-b border-[#edf1f6] p-4 sm:p-6">
-                <p className="text-xs font-medium uppercase tracking-[0.13em] text-[#667085] sm:text-sm sm:tracking-[0.14em]">
+            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_12px_32px_rgba(16,24,40,.09)] sm:rounded-[18px] sm:shadow-[0_18px_48px_rgba(16,24,40,.10)]">
+              <div className="border-b border-[#edf1f6] p-4 sm:p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
                 </p>
                 {originalPriceDisplay ? (
@@ -584,18 +584,18 @@ export default async function ListingDetailPage({
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-1.5 text-3xl font-semibold tracking-[-0.03em] sm:mt-2 sm:text-4xl sm:tracking-[-0.035em]">
+                <div className="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-[34px]">
                   {price.original}
                 </div>
                 {price.approximate ? (
-                  <p className="mt-2 text-sm font-medium text-[#667085]">{price.approximate}</p>
+                  <p className="mt-1.5 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
-                <p className="mt-2 rounded-[10px] bg-[#f3f7ff] px-3 py-2 text-[11px] font-medium leading-4 text-[#475467] sm:mt-3 sm:rounded-[12px] sm:text-xs sm:leading-5">
+                <p className="mt-2 rounded-[10px] bg-[#f3f7ff] px-3 py-2 text-[11px] font-medium leading-4 text-[#475467]">
                   {copy.vatInfo}
                 </p>
               </div>
 
-              <div className="grid gap-2.5 p-4 sm:gap-3 sm:p-6">
+              <div className="grid gap-2.5 p-4 sm:p-5">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
@@ -622,7 +622,7 @@ export default async function ListingDetailPage({
                     />
                   </>
                 )}
-                <div className="flex justify-start py-1">
+                <div className="flex justify-start pt-0.5">
                   <ShareListingButton
                     title={listing.title}
                     url={publicUrl}
@@ -633,7 +633,7 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              <div className="border-t border-[#edf1f6] p-4 sm:p-6">
+              <div className="border-t border-[#edf1f6] p-4 sm:p-5">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -910,29 +910,34 @@ function PrivateSellerProfileCard({
     : copy.privateSellerFallback
 
   return (
-    <div className="flex items-center gap-4 border-y border-[#dfe6f2] py-5">
-      <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
-        <div className="absolute left-1/2 top-[16px] h-[40px] w-[40px] -translate-x-1/2 rounded-full border-[4px] border-[#b9c6d4] bg-[#f8fbff]" />
-        <div className="absolute left-1/2 top-[59px] h-[58px] w-[74px] -translate-x-1/2 rounded-t-full border-[4px] border-[#b9c6d4] bg-[#f8fbff]" />
+    <div className="flex items-start gap-3 border-y border-[#dfe6f2] py-4">
+      <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
+        <div className="absolute left-1/2 top-[12px] h-[28px] w-[28px] -translate-x-1/2 rounded-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
+        <div className="absolute left-1/2 top-[44px] h-[42px] w-[54px] -translate-x-1/2 rounded-t-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
       </div>
-      <div className="min-w-0">
-        <p className="flex min-w-0 items-center gap-2 text-lg font-semibold leading-6 text-[#0866ff]">
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="flex min-w-0 items-center gap-1.5 text-base font-semibold leading-5 text-[#0866ff]">
           <span className="truncate">{name}</span>
-          <Info className="h-4 w-4 shrink-0 text-[#344054]" />
-        </p>
-        <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-[#101828]">
-          <ShieldCheck className={`h-4 w-4 ${verification.tone === 'verified' ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} />
-          {verification.label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-[#101828]">{memberSince}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          {ratingAverage && ratingCount ? (
-            <span className="rounded-[8px] bg-[#eef5ff] px-2.5 py-1.5 text-base font-semibold leading-none text-[#0866ff]">
+          <Info className="h-3.5 w-3.5 shrink-0 text-[#344054]" />
+          </p>
+          <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sellerBadgeClass(verification.tone)}`}>
+            <ShieldCheck className="h-3 w-3" />
+            {verification.label}
+          </span>
+        </div>
+        <div className="mt-2 grid gap-1.5 text-[13px] font-medium leading-4 text-[#344054]">
+          <p>{memberSince}</p>
+          <p className="font-semibold text-[#101828]">{reviewLabel}</p>
+        </div>
+        {ratingAverage && ratingCount ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="rounded-[7px] bg-[#eef5ff] px-2 py-1 text-sm font-semibold leading-none text-[#0866ff]">
               {ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })}
             </span>
-          ) : null}
-          <span className="text-sm font-semibold text-[#101828]">{reviewLabel}</span>
-        </div>
+            <span className="text-xs font-semibold text-[#475467]">{reviewLabel}</span>
+          </div>
+        ) : null}
       </div>
     </div>
   )
