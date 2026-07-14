@@ -975,7 +975,7 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${sellMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[310px] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-max min-w-[18rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                           sellMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
@@ -989,14 +989,14 @@ export default function PublicHeader({
                               setSellMenuOpen(false)
                               handleInternalNavigation(event, sellHref)
                             }}
-                            className="group flex min-h-[58px] items-start gap-3 px-4 py-2.5 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                            className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
                           >
                             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
                               <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                             </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
-                              <span className="mt-0.5 block whitespace-normal text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                            <span className="min-w-0 max-w-[min(34rem,calc(100vw-8rem))]">
+                              <span className="block w-max max-w-full whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
+                              <span className="mt-0.5 block w-max max-w-full whitespace-normal text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
                                 {description}
                               </span>
                             </span>
@@ -1031,7 +1031,7 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${helpMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-1/2 top-full z-[150] mt-2 w-[460px] max-w-[calc(100vw-32px)] -translate-x-1/2 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-max min-w-[18rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                           helpMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
@@ -1045,14 +1045,14 @@ export default function PublicHeader({
                               setHelpMenuOpen(false)
                               handleInternalNavigation(event, helpHref)
                             }}
-                            className="group flex min-h-[58px] items-start gap-3 px-4 py-2.5 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                            className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
                           >
                             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
                               <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                             </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block whitespace-normal text-[14px] font-[500] leading-snug">{helpLabel}</span>
-                              <span className="mt-0.5 block whitespace-normal break-words text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                            <span className="min-w-0 max-w-[min(34rem,calc(100vw-8rem))]">
+                              <span className="block w-max max-w-full whitespace-normal text-[14px] font-[500] leading-snug">{helpLabel}</span>
+                              <span className="mt-0.5 block w-max max-w-full whitespace-normal break-words text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
                                 {description}
                               </span>
                             </span>
