@@ -170,10 +170,10 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="absolute right-3 top-3 z-10 grid h-[38px] w-[38px] place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_3px_12px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:right-4 sm:top-4 sm:h-10 sm:w-10"
+            className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/82 text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur transition hover:bg-white/94 sm:right-4 sm:top-4 sm:h-[38px] sm:w-[38px]"
             aria-label="Open fullscreen gallery"
           >
-            <Maximize2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2.1} />
+            <Maximize2 className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={1.9} />
           </button>
         ) : null}
 
@@ -182,23 +182,24 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-3 top-1/2 grid h-[38px] w-[38px] -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_3px_12px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:left-4 sm:h-10 sm:w-10 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/82 text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur transition hover:bg-white/94 sm:left-4 sm:h-[38px] sm:w-[38px] lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Previous photo"
             >
-              <ChevronLeft className="h-5 w-5" strokeWidth={2.05} />
+              <ChevronLeft className="h-[19px] w-[19px]" strokeWidth={1.9} />
             </button>
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-3 top-1/2 grid h-[38px] w-[38px] -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_3px_12px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:right-4 sm:h-10 sm:w-10 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/82 text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur transition hover:bg-white/94 sm:right-4 sm:h-[38px] sm:w-[38px] lg:opacity-0 lg:group-hover:opacity-100"
               aria-label="Next photo"
             >
-              <ChevronRight className="h-5 w-5" strokeWidth={2.05} />
+              <ChevronRight className="h-[19px] w-[19px]" strokeWidth={1.9} />
             </button>
             <button
               type="button"
               onClick={openFullscreen}
-              className="absolute bottom-3 right-3 inline-flex min-h-9 items-center rounded-[9px] bg-white/94 px-3 text-[16px] font-[400] text-[#101828] shadow-[0_3px_12px_rgba(16,24,40,.16)] backdrop-blur"
+              style={{ fontWeight: 400 }}
+              className="absolute bottom-3 right-3 inline-flex min-h-9 items-center rounded-[9px] bg-white/84 px-3 text-[16px] font-normal text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}
