@@ -214,8 +214,8 @@ export default function ListingImageGallery({
             label={fullscreenCopy.save}
             savedLabel={fullscreenCopy.saved}
             variant="icon"
-            className="h-11 w-11 rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
-            iconClassName="h-[22px] w-[22px]"
+            className="h-[42px] w-[42px] rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
+            iconClassName="h-5 w-5"
           />
           {shareUrl ? (
             <ShareListingButton
@@ -224,9 +224,9 @@ export default function ListingImageGallery({
               label={shareLabel}
               copiedLabel={shareCopiedLabel}
               variant="button"
-              className="h-11 w-11 rounded-[10px] !px-0 shadow-sm"
+              className="h-[42px] w-[42px] rounded-[10px] !px-0 shadow-sm"
               labelClassName="sr-only"
-              iconClassName="h-[22px] w-[22px] text-[#101828]"
+              iconClassName="h-5 w-5 text-[#101828]"
             />
           ) : null}
           <button
