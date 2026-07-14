@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { sendAdminNotificationEmail } from '@/lib/email/admin-notifications'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
   accountConfirmationKeys,
@@ -316,6 +317,18 @@ export async function POST(request: Request) {
           .single()
         if (companyError || !company) throw companyError
         companyId = company.id
+        try {
+          await sendAdminNotificationEmail({
+            admin,
+            notificationType: 'company_application',
+            title: 'Ny företagsansökan',
+            body: `${companyName} (${countryCode}) väntar på granskning.`,
+            actionUrl: `/admin/companies?company=${company.id}`,
+            origin: new URL(request.url).origin,
+          })
+        } catch (notificationError) {
+          console.error('Company application admin email failed', notificationError)
+        }
       }
     }
 

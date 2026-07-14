@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 const fieldClass = 'h-11 rounded-[10px] border border-[#d7deea] bg-white px-3 text-sm outline-none focus:border-[#0866ff]'
@@ -10,6 +10,16 @@ export default function AdminDraftForm({ mode }: { mode: 'content' | 'newsletter
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [mediaAssets, setMediaAssets] = useState<{ id: string; altText: string; url: string }[]>([])
+
+  useEffect(() => {
+    if (!open || mode !== 'content' || mediaAssets.length) return
+    const controller = new AbortController()
+    void fetch('/api/admin/media', { signal: controller.signal }).then((response) => response.json()).then((result: { assets?: { id: string; altText: string; url: string }[] }) => setMediaAssets(result.assets || [])).catch((loadError: unknown) => {
+      if (!(loadError instanceof DOMException && loadError.name === 'AbortError')) setMediaAssets([])
+    })
+    return () => controller.abort()
+  }, [open, mode, mediaAssets.length])
 
   async function submit(formData: FormData) {
     setBusy(true)
@@ -53,8 +63,10 @@ export default function AdminDraftForm({ mode }: { mode: 'content' | 'newsletter
               <option value="help_article">Hjälpartikel</option>
             </select>
           ) : null}
+          {mode === 'content' ? <select name="hero_media_id" className={fieldClass} defaultValue=""><option value="">Ingen huvudbild</option>{mediaAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.altText || asset.id}</option>)}</select> : null}
           <input name="market" className={fieldClass} required defaultValue="SE" maxLength={2} aria-label="Marknad" />
           <input name="language" className={fieldClass} required defaultValue="sv" maxLength={5} aria-label="Språk" />
+          {mode === 'newsletter' ? <input name="source_article_id" className={fieldClass} placeholder="Artikel-ID (valfritt – hämtar artikelns innehåll)" /> : null}
           <textarea name="content_text" rows={5} className="rounded-[10px] border border-[#d7deea] p-3 text-sm outline-none focus:border-[#0866ff] md:col-span-2" placeholder={mode === 'content' ? 'Brödtext för utkastet' : 'Kampanjinnehåll för utkastet'} />
           {error ? <p role="alert" className="text-sm font-bold text-red-700 md:col-span-2">{error}</p> : null}
           <button disabled={busy} className="rounded-[10px] bg-[#101828] px-4 py-2 text-sm font-bold text-white disabled:opacity-50 md:col-span-2">

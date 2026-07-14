@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { Resend } from 'resend'
 import { requireSupportAdminRoute } from '@/lib/support/permissions'
 import { logSupportEvent } from '@/lib/support/events'
 import { normalizeSupportPriority, normalizeSupportStatus } from '@/lib/support/tickets'
@@ -16,21 +17,43 @@ export async function POST(request: Request, context: TicketRouteContext) {
   if (!message) return NextResponse.json({ error: 'message is required.' }, { status: 400 })
 
   const isInternal = Boolean(body.is_internal)
-  const { error } = await auth.adminClient.from('support_messages').insert({
+  const { data: ticket } = await auth.adminClient.from('support_tickets').select('subject,customer_email').eq('id', id).maybeSingle()
+  if (!ticket) return NextResponse.json({ error: 'Ärendet hittades inte.' }, { status: 404 })
+  if (!isInternal && (!ticket.customer_email || !process.env.RESEND_API_KEY)) {
+    return NextResponse.json({ error: ticket.customer_email ? 'E-postleveransen är inte konfigurerad.' : 'Kunden saknar e-postadress.' }, { status: 409 })
+  }
+  const { data: inserted, error } = await auth.adminClient.from('support_messages').insert({
     ticket_id: id,
     author_id: auth.user.id,
     author_type: 'support',
     message,
     is_internal: isInternal,
-  })
+    delivery_status: isInternal ? 'not_applicable' : 'queued',
+  }).select('id').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (!isInternal) {
+    const { data: delivery, error: sendError } = await new Resend(process.env.RESEND_API_KEY!).emails.send({
+      from: 'Autorell Support <noreply@autorell.com>',
+      to: ticket.customer_email,
+      subject: `Re: ${ticket.subject}`,
+      text: `${message}\n\nÄrende: ${id}\nAutorell Support`,
+    })
+    await auth.adminClient.from('support_messages').update({
+      delivery_status: sendError ? 'failed' : 'sent',
+      provider_message_id: sendError ? null : delivery?.id || null,
+    }).eq('id', inserted.id)
+    if (sendError) {
+      await logSupportEvent({ admin: auth.adminClient, ticketId: id, actorId: auth.user.id, eventType: 'customer_reply_delivery_failed', eventData: { message_id: inserted.id } })
+      return NextResponse.json({ error: 'Svaret sparades men kunde inte levereras via e-post.' }, { status: 502 })
+    }
+  }
   await logSupportEvent({
     admin: auth.adminClient,
     ticketId: id,
     actorId: auth.user.id,
     eventType: isInternal ? 'internal_note_created' : 'customer_reply_sent',
   })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, delivered: !isInternal })
 }
 
 export async function PATCH(request: Request, context: TicketRouteContext) {

@@ -2,6 +2,7 @@ import AdminEntityActions from '../AdminEntityActions'
 import AdminDraftForm from '../AdminDraftForm'
 import AdminResourcePage from '../AdminResourcePage'
 import type { AdminSearchParams } from '../admin-helpers'
+import NewsletterTestButton from './NewsletterTestButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,13 +34,13 @@ export default function AdminNewslettersPage({ searchParams }: { searchParams: A
         { key: 'scheduled_at', label: 'Schemalagd', format: 'date' },
       ]}
       actions={(row) => (
-        <AdminEntityActions
+        <div><AdminEntityActions
           endpoint={`/api/admin/newsletters/${String(row.id)}`}
           actions={[
             { action: 'review', label: 'Till granskning' },
             { action: 'cancel', label: 'Avbryt', tone: 'danger', requiresReason: true },
           ]}
-        />
+        /><NewsletterTestButton id={String(row.id)} /></div>
       )}
       actionsPermission="newsletters.manage"
       emptyText="Inga nyhetsbrevskampanjer matchar filtret."

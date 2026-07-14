@@ -5,6 +5,17 @@ import { processAdminMedia } from '@/lib/content/media-processing'
 
 const BUCKET = 'autorell-media'
 
+export async function GET() {
+  const auth = await requireAdminRoute('media.read')
+  if ('error' in auth) return auth.error
+  const { data, error } = await auth.adminClient.from('media_assets').select('id,alt_text,public_url,variants').eq('status', 'active').order('created_at', { ascending: false }).limit(100)
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ assets: (data || []).map((asset) => {
+    const variants = (asset.variants || {}) as Record<string, { url?: string }>
+    return { id: asset.id, altText: asset.alt_text, url: variants.thumbnail?.url || asset.public_url }
+  }) })
+}
+
 export async function POST(request: Request) {
   const auth = await requireAdminRoute('media.manage')
   if ('error' in auth) return auth.error

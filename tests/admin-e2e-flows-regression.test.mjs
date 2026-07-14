@@ -33,3 +33,28 @@ test('company applications feed an actionable notification center', () => {
   assert.match(read('app/admin/notifications/page.tsx'), /item\.action_url/)
   assert.match(read('app/api/admin/notifications/[id]/route.ts'), /assigned_to: auth\.user\.id/)
 })
+
+test('newsletter test delivery stays private and has web and unsubscribe flows', () => {
+  const testRoute = read('app/api/admin/newsletters/[id]/test/route.ts')
+  const deliveryMigration = read('supabase/migrations/20260714044025_admin_delivery_flows.sql')
+  assert.match(testRoute, /is_test: true/)
+  assert.match(testRoute, /public: false/)
+  assert.doesNotMatch(testRoute, /newsletter_campaigns[^;]*update\([^)]*status/) // campaign status is never changed
+  assert.match(testRoute, /newsletter_preview_tokens/)
+  assert.match(read('app/api/newsletter/unsubscribe/route.ts'), /status: 'unsubscribed'/)
+  assert.match(deliveryMigration, /newsletter_preview_tokens/)
+})
+
+test('support and company notifications have outbound delivery while internal notes remain isolated', () => {
+  const support = read('app/api/admin/support/tickets/[id]/route.ts')
+  const registration = read('app/api/account/register/route.ts')
+  assert.match(support, /isInternal[\s\S]*delivery_status: isInternal \? 'not_applicable' : 'queued'/)
+  assert.match(support, /new Resend/)
+  assert.match(registration, /sendAdminNotificationEmail/)
+})
+
+test('CMS drafts can select media from the real media library', () => {
+  assert.match(read('app/api/admin/media/route.ts'), /export async function GET/)
+  assert.match(read('app/admin/AdminDraftForm.tsx'), /hero_media_id/)
+  assert.match(read('app/api/admin/content/route.ts'), /content_post_media/)
+})
