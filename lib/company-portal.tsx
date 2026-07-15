@@ -29,6 +29,7 @@ export type CompanyPortalContext = {
   profile: {
     company_name: string | null
     email: string | null
+    company_id: string | null
     country_code: string | null
     business_verification_status: string | null
     business_onboarding_status: string | null
@@ -98,7 +99,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   const [{ data: profile }, { data: subscription }, listingSummary] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('account_type,company_name,email,country_code,business_verification_status,business_onboarding_status')
+      .select('account_type,company_id,company_name,email,country_code,business_verification_status,business_onboarding_status')
       .eq('user_id', user.id)
       .maybeSingle(),
     admin

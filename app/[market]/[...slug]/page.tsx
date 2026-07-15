@@ -14,6 +14,7 @@ import CompanyOverviewPage from '@/app/account/company/page'
 import CompanyImportPage from '@/app/account/company/import/page'
 import CompanyAnalyticsPage from '@/app/account/company/analytics/page'
 import CompanyTeamPage from '@/app/account/company/team/page'
+import AcceptCompanyTeamInvitationPage from '@/app/account/company/team/accept/page'
 import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
@@ -73,6 +74,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/company/team') {
     return <CompanyTeamPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/team/accept') {
+    return <AcceptCompanyTeamInvitationPage searchParams={searchParams} />
   }
 
   if (slugPath === 'account/company/subscription') {
