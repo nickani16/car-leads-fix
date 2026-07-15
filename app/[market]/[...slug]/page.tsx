@@ -3,6 +3,8 @@ import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
+import AccountSavedListingsPage from '@/app/account/saved-listings/page'
+import AccountSavedSearchesPage from '@/app/account/saved-searches/page'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
@@ -110,6 +112,14 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/payments' || slugPath === 'konto/betalningar') {
     return <PaymentsPage />
+  }
+
+  if (slugPath === 'account/saved-listings' || slugPath === 'saved' || slugPath === 'sparade') {
+    return <AccountSavedListingsPage />
+  }
+
+  if (slugPath === 'account/saved-searches' || slugPath === 'saved-searches') {
+    return <AccountSavedSearchesPage />
   }
 
   if (slugPath === 'pricing') {

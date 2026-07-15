@@ -177,8 +177,11 @@ test('business subscription cards expose five tiered plans with Free kept listin
   assert.doesNotMatch(businessPlanChooser, /Sparkles/)
   assert.doesNotMatch(businessPlanChooser, /#10b981|#15803d|text-\[#15803d\]|bg-\[#10b981\]/)
   assert.match(publicHeader, /isBusinessAccount[\s\S]*account\/company\/subscription/)
-  assert.match(accountPage, /title: copy\.plan/)
+  assert.match(accountPage, /profile\.account_type === 'business'[\s\S]*redirectBusinessAccountFromLegacyAccount/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/saved-listings'\)/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/saved-searches'\)/)
   assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/payments'\)/)
+  assert.doesNotMatch(accountPage, /title: copy\.plan/)
 })
 
 test('business users have a dedicated company portal with localized account routes', () => {

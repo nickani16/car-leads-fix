@@ -3,28 +3,26 @@ import { redirect } from 'next/navigation'
 import {
   ArrowRight,
   BadgeCheck,
-  Building2,
+  Bell,
+  CalendarClock,
+  CheckCircle2,
   CreditCard,
   FileText,
   Heart,
+  HelpCircle,
   MessageCircle,
   Plus,
-  ReceiptText,
   Search,
   Settings,
   ShieldCheck,
-  Star,
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { getRequestLocale } from '@/lib/request-locale'
-import {
-  localizePublicHref,
-  translatePublicObject,
-  type PublicLocale,
-} from '@/lib/public-i18n'
+import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import AccountLogoutButton from './AccountLogoutButton'
 import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
@@ -58,9 +56,15 @@ type ProfileRow = {
   display_name?: string | null
 }
 
+type ConversationRow = {
+  id: string
+  buyer_user_id: string | null
+  seller_user_id: string | null
+}
+
 export default async function AccountPage() {
   const locale = await getRequestLocale()
-  const copy = getMyAutorellCopy(locale)
+  const copy = getPrivateAccountCopy(locale)
   const supabase = await createClient()
   const {
     data: { user },
@@ -68,6 +72,7 @@ export default async function AccountPage() {
 
   if (!user) redirect(localizePublicHref(locale, '/login'))
 
+  const admin = createAdminClient()
   const { data: profile } = await supabase
     .from('marketplace_profiles')
     .select(`
@@ -99,90 +104,77 @@ export default async function AccountPage() {
     .maybeSingle<ProfileRow>()
 
   if (!profile) redirect(localizePublicHref(locale, '/register'))
-
-  const admin = createAdminClient()
-  let businessSubscription: {
-    plan_key: string | null
-    status: string | null
-    payment_status: string | null
-    manually_activated: boolean | null
-    free_period_ends_at: string | null
-  } | null = null
   if (profile.account_type === 'business') {
-    businessSubscription = await redirectBusinessAccountFromLegacyAccount(admin, user.id, profile, locale)
+    await redirectBusinessAccountFromLegacyAccount(admin, user.id, profile, locale)
   }
-  const [{ count: listings }, { data: conversationData }, { count: reviews }] =
-    await Promise.all([
-      admin
-        .from('marketplace_listings')
-        .select('id', { count: 'exact', head: true })
-        .eq('seller_user_id', user.id),
-      admin
-        .from('marketplace_conversations')
-        .select('id,buyer_user_id,seller_user_id')
-        .or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`),
-      admin
-        .from('marketplace_reviews')
-        .select('id', { count: 'exact', head: true })
-        .eq('reviewee_id', user.id)
-        .eq('status', 'visible'),
-    ])
-  const conversationRows = conversationData || []
-  const conversationIds = conversationRows.map((conversation) => conversation.id)
-  const { data: messageConversationData } = conversationIds.length
-    ? await admin
-        .from('marketplace_messages')
-        .select('conversation_id')
-        .in('conversation_id', conversationIds)
-    : { data: [] }
-  const conversationsWithMessages = new Set(
-    (messageConversationData || []).map((message) => message.conversation_id),
-  )
-  const visibleConversationCount = conversationRows.filter(
-    (conversation) =>
-      conversation.buyer_user_id === user.id ||
-      conversationsWithMessages.has(conversation.id),
-  ).length
 
+  const [
+    listingSummary,
+    savedListingCount,
+    savedSearchCount,
+    conversationData,
+    pendingPaymentCount,
+  ] = await Promise.all([
+    getAccountListingSummary(admin, user.id).catch(() => emptyListingSummary()),
+    countRows(admin, 'marketplace_saved_listings', user.id),
+    countRows(admin, 'marketplace_saved_searches', user.id),
+    admin
+      .from('marketplace_conversations')
+      .select('id,buyer_user_id,seller_user_id')
+      .or(`buyer_user_id.eq.${user.id},seller_user_id.eq.${user.id}`),
+    admin
+      .from('payment_orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('status', ['created', 'checkout_created', 'pending', 'failed']),
+  ])
+
+  const conversations = (conversationData.data || []) as ConversationRow[]
+  const visibleConversationCount = await countVisibleConversations(admin, user.id, conversations)
+  const paymentCount = pendingPaymentCount.count || 0
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
-  const initials = name
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-  const accountTypeLabel =
-    profile.account_type === 'business' ? copy.businessAccount : copy.privateAccount
   const verificationLabel =
-    profile.account_type === 'business'
-      ? profile.business_verification_status === 'verified'
-        ? copy.verified
-        : copy.reviewPending
-      : profile.identity_status === 'verified' || profile.identity_status === 'basic_checked'
-        ? copy.verified
-        : copy.reviewPending
+    profile.identity_status === 'verified' || profile.identity_status === 'basic_checked'
+      ? copy.verified
+      : copy.reviewPending
+  const profileComplete = Boolean(
+    profile.first_name &&
+      profile.last_name &&
+      profile.email &&
+      profile.phone &&
+      profile.address_line_1 &&
+      profile.postal_code &&
+      profile.city,
+  )
 
-  const cards = [
-    {
-      title: copy.myAccount,
-      text: copy.myAccountText,
-      href: '#profile-details',
-      icon: UserRound,
-    },
-    {
-      title: copy.myListings,
-      text: copy.myListingsText,
-      href: localizePublicHref(locale, '/account/listings'),
-      icon: FileText,
-      badge: String(listings || 0),
-    },
+  const primaryActions = [
     {
       title: copy.createListing,
       text: copy.createListingText,
       href: localizePublicHref(locale, '/account/listings/new'),
       icon: Plus,
       cta: true,
+    },
+    {
+      title: copy.manageListings,
+      text: copy.manageListingsText,
+      href: localizePublicHref(locale, '/account/listings'),
+      icon: FileText,
+    },
+    {
+      title: copy.savedListings,
+      text: copy.savedListingsText,
+      href: localizePublicHref(locale, '/account/saved-listings'),
+      icon: Heart,
+      badge: String(savedListingCount),
+    },
+    {
+      title: copy.savedSearches,
+      text: copy.savedSearchesText,
+      href: localizePublicHref(locale, '/account/saved-searches'),
+      icon: Search,
+      badge: String(savedSearchCount),
     },
     {
       title: copy.messages,
@@ -192,61 +184,64 @@ export default async function AccountPage() {
       badge: String(visibleConversationCount),
     },
     {
-      title: copy.savedSearches,
-      text: copy.savedSearchesText,
-      href: localizePublicHref(locale, '/marketplace'),
-      icon: Search,
-    },
-    {
-      title: copy.favorites,
-      text: copy.favoritesText,
-      href: localizePublicHref(locale, '/sparade'),
-      icon: Heart,
-    },
-    {
-      title: copy.reviews,
-      text: copy.reviewsText,
-      href: localizePublicHref(locale, '/account/reviews'),
-      icon: Star,
-      badge: String(reviews || 0),
-    },
-    {
-      title: copy.business,
-      text:
-        profile.account_type === 'business'
-          ? copy.businessText
-          : copy.businessEntryText,
-      href:
-        profile.account_type === 'business'
-          ? localizePublicHref(locale, '/account/company')
-          : localizePublicHref(locale, '/foretag'),
-      icon: Building2,
-    },
-    ...(profile.account_type === 'business'
-      ? [
-          {
-            title: copy.plan,
-            text: businessSubscription?.plan_key
-              ? `${copy.currentPlan}: ${businessSubscription.plan_key}`
-              : copy.planText,
-            href: localizePublicHref(locale, '/account/company/subscription'),
-            icon: CreditCard,
-          },
-          {
-            title: copy.payments,
-            text: copy.paymentsText,
-            href: localizePublicHref(locale, '/account/payments'),
-            icon: ReceiptText,
-          },
-        ]
-      : []),
-    {
-      title: copy.settings,
-      text: copy.settingsText,
-      href: '#profile-details',
-      icon: Settings,
+      title: copy.payments,
+      text: copy.paymentsText,
+      href: localizePublicHref(locale, '/account/payments'),
+      icon: CreditCard,
+      badge: paymentCount ? String(paymentCount) : undefined,
     },
   ]
+
+  const secondaryNavigation = [
+    { label: copy.overview, href: localizePublicHref(locale, '/account'), icon: UserRound, active: true },
+    { label: copy.listings, href: localizePublicHref(locale, '/account/listings'), icon: FileText },
+    { label: copy.createListing, href: localizePublicHref(locale, '/account/listings/new'), icon: Plus },
+    { label: copy.savedListings, href: localizePublicHref(locale, '/account/saved-listings'), icon: Heart },
+    { label: copy.savedSearches, href: localizePublicHref(locale, '/account/saved-searches'), icon: Search },
+    { label: copy.messages, href: localizePublicHref(locale, '/account/messages'), icon: MessageCircle },
+    { label: copy.payments, href: localizePublicHref(locale, '/account/payments'), icon: CreditCard },
+    { label: copy.settings, href: '#profile-details', icon: Settings },
+    { label: copy.support, href: localizePublicHref(locale, '/help-center'), icon: HelpCircle },
+  ]
+
+  const attentionItems = [
+    !profileComplete
+      ? {
+          icon: UserRound,
+          title: copy.profileNeedsWork,
+          text: copy.profileNeedsWorkText,
+          href: '#profile-details',
+          label: copy.completeProfile,
+        }
+      : null,
+    listingSummary.counts.payment
+      ? {
+          icon: CreditCard,
+          title: `${listingSummary.counts.payment} ${copy.awaitingPayment}`,
+          text: copy.awaitingPaymentText,
+          href: localizePublicHref(locale, '/account/listings?status=payment'),
+          label: copy.continuePayment,
+        }
+      : null,
+    listingSummary.counts.draft
+      ? {
+          icon: FileText,
+          title: `${listingSummary.counts.draft} ${copy.drafts}`,
+          text: copy.draftsText,
+          href: localizePublicHref(locale, '/account/listings?status=draft'),
+          label: copy.continueDraft,
+        }
+      : null,
+    listingSummary.expiringSoon
+      ? {
+          icon: CalendarClock,
+          title: `${listingSummary.expiringSoon} ${copy.expiringSoon}`,
+          text: copy.expiringSoonText,
+          href: localizePublicHref(locale, '/account/listings?status=active&sort=expires_asc'),
+          label: copy.reviewListings,
+        }
+      : null,
+  ].filter(Boolean) as Array<AttentionItem>
 
   return (
     <main className="bg-[#f7f9fc]">
@@ -277,19 +272,37 @@ export default async function AccountPage() {
               />
             </div>
           </div>
+
+          <nav
+            aria-label={copy.accountNavigation}
+            className="mt-7 flex gap-2 overflow-x-auto rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-2"
+          >
+            {secondaryNavigation.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={item.active ? 'page' : undefined}
+                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] px-3 text-sm font-bold transition ${
+                  item.active
+                    ? 'bg-[#0866ff] text-white shadow-[0_10px_24px_rgba(8,102,255,.18)]'
+                    : 'text-[#475467] hover:bg-white hover:text-[#0866ff]'
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </section>
 
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-6 sm:px-8 lg:py-9">
-        <section className="overflow-hidden rounded-[28px] border border-[#dfe7f2] bg-white shadow-[0_20px_60px_rgba(16,24,40,.06)]">
-          <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
-            <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
-              <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full border border-[#c9d8ee] bg-[#eef5ff] text-3xl font-black text-[#0866ff] shadow-inner">
-                {initials}
-              </div>
-              <div className="min-w-0 flex-1">
+        <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
+          <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate text-3xl tracking-[-0.045em] text-[#101828]">
+                  <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
                     {name}
                   </h2>
                   <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
@@ -298,41 +311,74 @@ export default async function AccountPage() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-bold text-[#344054]">
-                    {accountTypeLabel}
-                  </span>
-                  {profile.country_code ? (
-                    <span className="rounded-full border border-[#dfe7f2] bg-white px-3 py-1 text-xs font-bold text-[#344054]">
-                      {profile.country_code}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="mt-5">
-                  <a
-                    href="#profile-details"
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[13px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
-                  >
-                    {copy.editProfile}
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </div>
+              </div>
+              <a
+                href="#profile-details"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
+              >
+                {copy.editProfile}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
+              <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
+              <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
+              <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
+            </div>
+          </div>
+
+          <aside className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef5ff] text-[#0866ff]">
+                <Bell className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{copy.nextSteps}</h2>
+                <p className="text-sm text-[#667085]">{copy.nextStepsText}</p>
               </div>
             </div>
-            <aside className="border-t border-[#e4eaf3] bg-[#f8fbff] p-6 sm:p-8 lg:border-l lg:border-t-0">
-              <div className="grid gap-3">
-                <ProfileStat icon={FileText} label={copy.myListings} value={listings || 0} />
-                <ProfileStat icon={MessageCircle} label={copy.messages} value={visibleConversationCount} />
-                <ProfileStat icon={Star} label={copy.reviews} value={reviews || 0} />
-              </div>
-            </aside>
-          </div>
+            <div className="mt-4 grid gap-2">
+              {attentionItems.length ? attentionItems.map((item) => (
+                <AttentionCard key={item.title} item={item} />
+              )) : (
+                <div className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+                    <div>
+                      <h3 className="text-sm font-bold text-[#101828]">{copy.noUrgentActions}</h3>
+                      <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {cards.map((card) => (
+          {primaryActions.map((card) => (
             <AccountCard key={card.title} {...card} />
           ))}
+        </section>
+
+        <section className="mt-6 grid gap-4 lg:grid-cols-3">
+          <SummaryPanel title={copy.buying} text={copy.buyingText} items={[
+            [copy.savedListings, savedListingCount, localizePublicHref(locale, '/account/saved-listings')],
+            [copy.savedSearches, savedSearchCount, localizePublicHref(locale, '/account/saved-searches')],
+            [copy.messages, visibleConversationCount, localizePublicHref(locale, '/account/messages')],
+          ]} />
+          <SummaryPanel title={copy.selling} text={copy.sellingText} items={[
+            [copy.activeListings, listingSummary.counts.active, localizePublicHref(locale, '/account/listings?status=active')],
+            [copy.soldListings, listingSummary.counts.sold, localizePublicHref(locale, '/account/listings?status=sold')],
+            [copy.expiredListings, listingSummary.counts.expired, localizePublicHref(locale, '/account/listings?status=expired')],
+          ]} />
+          <SummaryPanel title={copy.safety} text={copy.safetyText} items={[
+            [copy.profileStatus, profileComplete ? copy.complete : copy.needsUpdate, '#profile-details'],
+            [copy.accountType, copy.privateAccount, '#profile-details'],
+            [copy.country, profile.country_code || copy.notSet, '#profile-details'],
+          ]} />
         </section>
 
         <section
@@ -366,6 +412,68 @@ export default async function AccountPage() {
   )
 }
 
+async function countRows(
+  admin: ReturnType<typeof createAdminClient>,
+  table: 'marketplace_saved_listings' | 'marketplace_saved_searches',
+  userId: string,
+) {
+  const { count } = await admin
+    .from(table)
+    .select('user_id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  return count || 0
+}
+
+async function countVisibleConversations(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  conversations: ConversationRow[],
+) {
+  const conversationIds = conversations.map((conversation) => conversation.id)
+  const { data: messageConversationData } = conversationIds.length
+    ? await admin
+        .from('marketplace_messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds)
+    : { data: [] }
+  const conversationsWithMessages = new Set(
+    (messageConversationData || []).map((message) => message.conversation_id),
+  )
+  return conversations.filter(
+    (conversation) =>
+      conversation.buyer_user_id === userId ||
+      conversationsWithMessages.has(conversation.id),
+  ).length
+}
+
+async function redirectBusinessAccountFromLegacyAccount(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  profile: ProfileRow,
+  locale: PublicLocale,
+) {
+  const { data: subscription } = await admin
+    .from('business_subscriptions')
+    .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const onboarding = String((profile as ProfileRow & { business_onboarding_status?: string }).business_onboarding_status || '')
+  const status = onboarding || (subscription?.status === 'active' ? 'active' : 'subscription_pending')
+  if (status === 'under_review' || status === 'submitted' || status === 'draft') {
+    redirect(localizePublicHref(locale, '/account/business/status?state=under_review'))
+  }
+  if (
+    status !== 'active' ||
+    !subscription ||
+    (!['active', 'trialing'].includes(String(subscription.status)) && !subscription.manually_activated)
+  ) {
+    redirect(localizePublicHref(locale, '/account/business/subscription'))
+  }
+  redirect(localizePublicHref(locale, '/account/company'))
+}
+
 function AccountCard({
   href,
   icon: Icon,
@@ -384,18 +492,15 @@ function AccountCard({
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-[24px] border p-6 transition hover:-translate-y-0.5 ${
+      className={`group relative overflow-hidden rounded-[22px] border p-5 transition hover:-translate-y-0.5 ${
         cta
           ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_24px_60px_rgba(8,102,255,.22)]'
           : 'border-[#dfe7f2] bg-white shadow-[0_16px_46px_rgba(16,24,40,.045)] hover:border-[#b9cef4] hover:shadow-[0_22px_60px_rgba(16,24,40,.08)]'
       }`}
     >
-      {cta ? (
-        <div className="absolute -right-14 -top-14 h-36 w-36 rounded-full bg-white/15" />
-      ) : null}
       <div className="relative flex items-start justify-between gap-4">
         <span
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-[16px] ${
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] ${
             cta ? 'bg-white/18 text-white' : 'bg-[#eef5ff] text-[#0866ff]'
           }`}
         >
@@ -418,7 +523,7 @@ function AccountCard({
         </p>
       </div>
       <ArrowRight
-        className={`relative mt-6 h-5 w-5 transition group-hover:translate-x-1 ${
+        className={`relative mt-5 h-5 w-5 transition group-hover:translate-x-1 ${
           cta ? 'text-white' : 'text-[#98a2b3] group-hover:text-[#0866ff]'
         }`}
       />
@@ -426,149 +531,257 @@ function AccountCard({
   )
 }
 
-function ProfileStat({
+function OverviewMetric({
+  href,
   icon: Icon,
   label,
   value,
 }: {
+  href: string
   icon: LucideIcon
   label: string
   value: number
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[16px] border border-[#dfe7f2] bg-white px-4 py-3">
-      <span className="flex min-w-0 items-center gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
-          <Icon className="h-4 w-4" />
-        </span>
-        <span className="truncate text-sm font-bold text-[#475467]">{label}</span>
+    <Link
+      href={href}
+      className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
+    >
+      <Icon className="h-4 w-4 text-[#0866ff]" />
+      <strong className="mt-3 block text-2xl tracking-[-0.04em] text-[#101828]">
+        {value.toLocaleString()}
+      </strong>
+      <span className="mt-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#667085]">
+        {label}
       </span>
-      <strong className="text-lg tracking-[-0.03em]">{value}</strong>
-    </div>
+    </Link>
   )
 }
 
-async function redirectBusinessAccountFromLegacyAccount(
-  admin: ReturnType<typeof createAdminClient>,
-  userId: string,
-  profile: ProfileRow,
-  locale: PublicLocale,
-) {
-  const { data: subscription } = await admin
-    .from('business_subscriptions')
-    .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  const businessSubscription = subscription || null
-  const onboarding = String((profile as ProfileRow & { business_onboarding_status?: string }).business_onboarding_status || '')
-  const status = onboarding || (subscription?.status === 'active' ? 'active' : 'subscription_pending')
-  if (status === 'under_review' || status === 'submitted' || status === 'draft') {
-    redirect(localizePublicHref(locale, '/account/business/status?state=under_review'))
-  }
-  if (status !== 'active' || !subscription || !['active', 'trialing'].includes(String(subscription.status)) && !subscription.manually_activated) {
-    redirect(localizePublicHref(locale, '/account/business/subscription'))
-  }
-  redirect(localizePublicHref(locale, '/account/company'))
-  return businessSubscription
+type AttentionItem = {
+  icon: LucideIcon
+  title: string
+  text: string
+  href: string
+  label: string
+}
+
+function AttentionCard({ item }: { item: AttentionItem }) {
+  return (
+    <Link
+      href={item.href}
+      className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
+    >
+      <div className="flex items-start gap-3">
+        <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-[#101828]">{item.title}</h3>
+          <p className="mt-1 text-sm leading-6 text-[#667085]">{item.text}</p>
+          <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-[#0866ff]">
+            {item.label}
+            <ArrowRight className="h-4 w-4" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function SummaryPanel({
+  title,
+  text,
+  items,
+}: {
+  title: string
+  text: string
+  items: Array<[string, number | string, string]>
+}) {
+  return (
+    <section className="rounded-[22px] border border-[#dfe7f2] bg-white p-5 shadow-[0_16px_46px_rgba(16,24,40,.045)]">
+      <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
+      <div className="mt-4 grid gap-2">
+        {items.map(([label, value, href]) => (
+          <Link
+            key={label}
+            href={href}
+            className="flex items-center justify-between gap-3 rounded-[14px] border border-[#edf1f7] bg-[#fbfcff] px-4 py-3 text-sm transition hover:border-[#aac5ef] hover:bg-white"
+          >
+            <span className="font-semibold text-[#475467]">{label}</span>
+            <strong className="text-[#101828]">{typeof value === 'number' ? value.toLocaleString() : value}</strong>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 function displayName(profile: ProfileRow, fallback: string) {
-  if (profile.account_type === 'business' && profile.company_name) {
-    return profile.company_name
-  }
-
   const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
   return name || profile.display_name || fallback
 }
 
-function getMyAutorellCopy(locale: PublicLocale) {
+function emptyListingSummary(): AccountListingSummary {
+  return {
+    counts: {
+      all: 0,
+      active: 0,
+      payment: 0,
+      review: 0,
+      draft: 0,
+      paused: 0,
+      expired: 0,
+      sold: 0,
+      deleted: 0,
+    },
+    totalViews: 0,
+    totalFavorites: 0,
+    missingImages: 0,
+    firstMissingImageId: null,
+    flagged: 0,
+    expiringSoon: 0,
+    failedPayments: 0,
+    categories: [],
+    countries: [],
+  }
+}
+
+function getPrivateAccountCopy(locale: PublicLocale) {
   const en = {
-    eyebrow: 'Account area',
-    title: 'Welcome',
+    eyebrow: 'My Autorell',
     welcome: 'Welcome',
     intro:
-      'Your listings, messages, saved vehicles and account settings in the same Autorell marketplace.',
+      'A simple overview for buying, selling, saved vehicles, messages and payments on Autorell.',
     home: 'Home',
     signOut: 'Sign out',
     user: 'Autorell user',
     privateAccount: 'Private account',
-    businessAccount: 'Business account',
     verified: 'Verified',
     reviewPending: 'Review pending',
-    editProfile: 'View / edit profile',
-    myAccount: 'My account',
-    myAccountText: 'View and update your account details, contact details and security.',
-    myListings: 'My listings',
-    myListingsText: 'Manage your active, paused and completed listings.',
+    editProfile: 'Edit profile',
+    accountNavigation: 'Account navigation',
+    overview: 'Overview',
+    listings: 'Listings',
     createListing: 'Create listing',
-    createListingText: 'List a new vehicle on Autorell.',
-    messages: 'Messages',
-    messagesText: 'Read and reply to messages from buyers and sellers.',
+    createListingText: 'Start a new vehicle listing and save it as a draft while you work.',
+    manageListings: 'My listings',
+    manageListingsText: 'Continue drafts, complete payment, edit, pause or mark a vehicle as sold.',
+    savedListings: 'Saved listings',
+    savedListingsText: 'Vehicles you saved so you can compare and return later.',
     savedSearches: 'Saved searches',
-    savedSearchesText: 'View and manage your saved searches.',
-    favorites: 'Favorites',
-    favoritesText: 'Vehicles and listings you have saved.',
-    reviews: 'Reviews',
-    reviewsText: 'See reviews you have received and left.',
-    business: 'Business',
-    businessText: 'Manage company details, listings and team.',
-    businessEntryText: 'Explore business profiles, inventory tools and team features.',
-    settings: 'Settings',
-    settingsText: 'Language, currency, notifications and account settings.',
-    plan: 'Plan',
-    planText: 'Choose, upgrade or change the company subscription.',
-    currentPlan: 'Current plan',
+    savedSearchesText: 'Saved filters and searches for the vehicles you are watching.',
+    messages: 'Messages',
+    messagesText: 'Read and reply to enquiries from buyers and sellers.',
     payments: 'Payments',
-    paymentsText: 'View invoices, payment status and Stripe billing portal.',
+    paymentsText: 'See listing orders, payment status and receipts when available.',
+    settings: 'Settings',
+    support: 'Help',
+    activeListings: 'Active',
+    awaitingPaymentShort: 'Payment',
+    inReview: 'Review',
+    draftsShort: 'Drafts',
+    nextSteps: 'Next steps',
+    nextStepsText: 'Only the things that need your attention.',
+    profileNeedsWork: 'Complete your profile',
+    profileNeedsWorkText: 'Add contact and address details before publishing listings.',
+    completeProfile: 'Complete profile',
+    awaitingPayment: 'listings await payment',
+    awaitingPaymentText: 'Payment is required before the listing can continue.',
+    continuePayment: 'Continue payment',
+    drafts: 'saved drafts',
+    draftsText: 'You can continue from the last saved version.',
+    continueDraft: 'Continue draft',
+    expiringSoon: 'listings expire soon',
+    expiringSoonText: 'Review them before the listing period ends.',
+    reviewListings: 'Review listings',
+    noUrgentActions: 'Everything looks calm',
+    noUrgentActionsText: 'No draft, payment or profile action needs immediate attention.',
+    buying: 'Buying',
+    buyingText: 'Saved vehicles, searches and conversations stay connected to your account.',
+    selling: 'Selling',
+    sellingText: 'Follow your listings from draft to payment, review, active and sold.',
+    safety: 'Account',
+    safetyText: 'Your private account details stay separate from business and admin flows.',
+    soldListings: 'Sold',
+    expiredListings: 'Expired',
+    profileStatus: 'Profile status',
+    complete: 'Complete',
+    needsUpdate: 'Needs update',
+    accountType: 'Account type',
+    country: 'Country',
+    notSet: 'Not set',
     profileEyebrow: 'Profile and security',
     profileTitle: 'Account details',
     profileText:
-      'Keep your contact, address and account details updated so listings and messages work smoothly.',
+      'Keep contact, address and account details updated so listings and messages work smoothly.',
     secureAccount: 'Secure account',
   }
 
   if (locale === 'sv') {
     return {
       ...en,
-      eyebrow: 'Kontoyta',
-      title: 'Välkommen',
+      eyebrow: 'Mina sidor',
       welcome: 'Välkommen',
       intro:
-        'Dina annonser, meddelanden, sparade fordon och kontoinställningar inne på samma Autorell-marknadsplats.',
+        'En enkel översikt för köp, försäljning, sparade fordon, meddelanden och betalningar på Autorell.',
       home: 'Startsida',
       signOut: 'Logga ut',
       user: 'Autorell-användare',
       privateAccount: 'Privatkonto',
-      businessAccount: 'Företagskonto',
       verified: 'Verifierad',
       reviewPending: 'Granskning pågår',
-      editProfile: 'Visa / redigera profil',
-      myAccount: 'Mitt konto',
-      myAccountText: 'Se och ändra dina kontouppgifter, kontaktuppgifter och säkerhet.',
-      myListings: 'Mina annonser',
-      myListingsText: 'Hantera dina aktiva, pausade och avslutade annonser.',
+      editProfile: 'Redigera profil',
+      accountNavigation: 'Kontonavigation',
+      overview: 'Översikt',
+      listings: 'Annonser',
       createListing: 'Skapa annons',
-      createListingText: 'Lägg upp ett nytt fordon på Autorell.',
-      messages: 'Meddelanden',
-      messagesText: 'Läs och svara på meddelanden från köpare och säljare.',
+      createListingText: 'Starta en ny fordonsannons och spara den som utkast medan du arbetar.',
+      manageListings: 'Mina annonser',
+      manageListingsText: 'Fortsätt utkast, slutför betalning, redigera, pausa eller markera som såld.',
+      savedListings: 'Sparade annonser',
+      savedListingsText: 'Fordon du sparat för att kunna jämföra och återvända senare.',
       savedSearches: 'Sparade sökningar',
-      savedSearchesText: 'Se och hantera dina sparade sökningar.',
-      favorites: 'Favoriter',
-      favoritesText: 'Fordon och annonser du har sparat.',
-      reviews: 'Recensioner',
-      reviewsText: 'Se omdömen du fått och lämnat.',
-      business: 'Företag',
-      businessText: 'Hantera företagsuppgifter, annonser och team.',
-      businessEntryText: 'Utforska företagsprofil, lagerverktyg och teamfunktioner.',
-      settings: 'Inställningar',
-      settingsText: 'Språk, valuta, notiser och kontoinställningar.',
-      plan: 'Plan',
-      planText: 'Välj, uppgradera eller ändra företagets abonnemang.',
-      currentPlan: 'Nuvarande plan',
+      savedSearchesText: 'Sparade filter och sökningar för fordon du bevakar.',
+      messages: 'Meddelanden',
+      messagesText: 'Läs och svara på förfrågningar från köpare och säljare.',
       payments: 'Betalningar',
-      paymentsText: 'Se fakturor, betalningsstatus och Stripe-portalen.',
+      paymentsText: 'Se annonsordrar, betalningsstatus och kvitton när de finns.',
+      settings: 'Inställningar',
+      support: 'Hjälp',
+      activeListings: 'Aktiva',
+      awaitingPaymentShort: 'Betalning',
+      inReview: 'Granskning',
+      draftsShort: 'Utkast',
+      nextSteps: 'Nästa steg',
+      nextStepsText: 'Bara det som behöver din uppmärksamhet.',
+      profileNeedsWork: 'Komplettera profilen',
+      profileNeedsWorkText: 'Lägg till kontakt- och adressuppgifter innan du publicerar annonser.',
+      completeProfile: 'Komplettera profil',
+      awaitingPayment: 'annonser väntar på betalning',
+      awaitingPaymentText: 'Betalning krävs innan annonsen kan gå vidare.',
+      continuePayment: 'Fortsätt betalning',
+      drafts: 'sparade utkast',
+      draftsText: 'Du kan fortsätta från den senast sparade versionen.',
+      continueDraft: 'Fortsätt utkast',
+      expiringSoon: 'annonser går snart ut',
+      expiringSoonText: 'Se över dem innan annonsperioden tar slut.',
+      reviewListings: 'Se annonser',
+      noUrgentActions: 'Allt ser lugnt ut',
+      noUrgentActionsText: 'Inga utkast, betalningar eller profilåtgärder kräver direkt uppmärksamhet.',
+      buying: 'Köpa',
+      buyingText: 'Sparade fordon, sökningar och konversationer följer ditt konto.',
+      selling: 'Sälja',
+      sellingText: 'Följ dina annonser från utkast till betalning, granskning, aktiv och såld.',
+      safety: 'Konto',
+      safetyText: 'Ditt privatkonto hålls separerat från företag och adminflöden.',
+      soldListings: 'Sålda',
+      expiredListings: 'Utgångna',
+      profileStatus: 'Profilstatus',
+      complete: 'Komplett',
+      needsUpdate: 'Behöver uppdateras',
+      accountType: 'Kontotyp',
+      country: 'Land',
+      notSet: 'Ej valt',
       profileEyebrow: 'Profil och säkerhet',
       profileTitle: 'Kontouppgifter',
       profileText:
@@ -580,47 +793,49 @@ function getMyAutorellCopy(locale: PublicLocale) {
   if (locale === 'de') {
     return {
       ...en,
-      eyebrow: 'Kontobereich',
-      title: 'Willkommen',
+      eyebrow: 'Mein Autorell',
       welcome: 'Willkommen',
       intro:
-        'Ihre Anzeigen, Nachrichten, gespeicherten Fahrzeuge und Kontoeinstellungen auf demselben Autorell-Marktplatz.',
+        'Eine einfache Übersicht für Kauf, Verkauf, gespeicherte Fahrzeuge, Nachrichten und Zahlungen auf Autorell.',
       home: 'Startseite',
       signOut: 'Abmelden',
       user: 'Autorell-Nutzer',
       privateAccount: 'Privatkonto',
-      businessAccount: 'Unternehmenskonto',
       verified: 'Verifiziert',
       reviewPending: 'Prüfung läuft',
-      editProfile: 'Profil ansehen / bearbeiten',
-      myAccount: 'Mein Konto',
-      myAccountText: 'Kontodaten, Kontaktdaten und Sicherheit ansehen und ändern.',
-      myListings: 'Meine Anzeigen',
-      myListingsText: 'Aktive, pausierte und abgeschlossene Anzeigen verwalten.',
+      editProfile: 'Profil bearbeiten',
+      overview: 'Übersicht',
+      listings: 'Anzeigen',
       createListing: 'Anzeige erstellen',
-      createListingText: 'Ein neues Fahrzeug auf Autorell einstellen.',
-      messages: 'Nachrichten',
-      messagesText: 'Nachrichten von Käufern und Verkäufern lesen und beantworten.',
+      manageListings: 'Meine Anzeigen',
+      savedListings: 'Gespeicherte Anzeigen',
       savedSearches: 'Gespeicherte Suchen',
-      savedSearchesText: 'Gespeicherte Suchen ansehen und verwalten.',
-      favorites: 'Favoriten',
-      favoritesText: 'Fahrzeuge und Anzeigen, die Sie gespeichert haben.',
-      reviews: 'Bewertungen',
-      reviewsText: 'Erhaltene und abgegebene Bewertungen ansehen.',
-      business: 'Unternehmen',
-      businessText: 'Firmendaten, Anzeigen und Team verwalten.',
-      businessEntryText: 'Unternehmensprofil, Bestandstools und Teamfunktionen entdecken.',
-      settings: 'Einstellungen',
-      settingsText: 'Sprache, Währung, Benachrichtigungen und Kontoeinstellungen.',
-      plan: 'Tarif',
-      planText: 'Unternehmensabo auswählen, upgraden oder ändern.',
-      currentPlan: 'Aktueller Tarif',
+      messages: 'Nachrichten',
       payments: 'Zahlungen',
-      paymentsText: 'Rechnungen, Zahlungsstatus und Stripe-Portal anzeigen.',
+      settings: 'Einstellungen',
+      support: 'Hilfe',
+      activeListings: 'Aktiv',
+      awaitingPaymentShort: 'Zahlung',
+      inReview: 'Prüfung',
+      draftsShort: 'Entwürfe',
+      nextSteps: 'Nächste Schritte',
+      completeProfile: 'Profil vervollständigen',
+      continuePayment: 'Zahlung fortsetzen',
+      continueDraft: 'Entwurf fortsetzen',
+      reviewListings: 'Anzeigen prüfen',
+      buying: 'Kaufen',
+      selling: 'Verkaufen',
+      safety: 'Konto',
+      soldListings: 'Verkauft',
+      expiredListings: 'Abgelaufen',
+      profileStatus: 'Profilstatus',
+      complete: 'Vollständig',
+      needsUpdate: 'Aktualisieren',
+      accountType: 'Kontotyp',
+      country: 'Land',
+      notSet: 'Nicht gesetzt',
       profileEyebrow: 'Profil und Sicherheit',
       profileTitle: 'Kontodaten',
-      profileText:
-        'Halten Sie Kontakt-, Adress- und Kontodaten aktuell, damit Anzeigen und Nachrichten reibungslos funktionieren.',
       secureAccount: 'Sicheres Konto',
     }
   }
