@@ -33,7 +33,7 @@ export default async function AcceptCompanyTeamInvitationPage({
           <h1 className="mt-3 text-3xl font-semibold tracking-[-.045em] text-[#101828]">{copy.title}</h1>
           <p className="mt-3 text-sm leading-6 text-[#667085]">{copy.description}</p>
           <div className="mt-6">
-            <AcceptTeamInvitation token={token} copy={copy} />
+            <AcceptTeamInvitation locale={locale} token={token} copy={copy} />
           </div>
         </section>
       </main>

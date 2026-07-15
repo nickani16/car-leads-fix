@@ -109,22 +109,7 @@ export default async function AccountPage() {
     free_period_ends_at: string | null
   } | null = null
   if (profile.account_type === 'business') {
-    const { data: subscription } = await admin
-      .from('business_subscriptions')
-      .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    businessSubscription = subscription || null
-    const onboarding = String((profile as ProfileRow & { business_onboarding_status?: string }).business_onboarding_status || '')
-    const status = onboarding || (subscription?.status === 'active' ? 'active' : 'subscription_pending')
-    if (status === 'under_review' || status === 'submitted' || status === 'draft') {
-      redirect(localizePublicHref(locale, '/account/business/status?state=under_review'))
-    }
-    if (status !== 'active' || !subscription || !['active', 'trialing'].includes(String(subscription.status)) && !subscription.manually_activated) {
-      redirect(localizePublicHref(locale, '/account/business/subscription'))
-    }
+    businessSubscription = await redirectBusinessAccountFromLegacyAccount(admin, user.id, profile, locale)
   }
   const [{ count: listings }, { data: conversationData }, { count: reviews }] =
     await Promise.all([
@@ -461,6 +446,32 @@ function ProfileStat({
       <strong className="text-lg tracking-[-0.03em]">{value}</strong>
     </div>
   )
+}
+
+async function redirectBusinessAccountFromLegacyAccount(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  profile: ProfileRow,
+  locale: PublicLocale,
+) {
+  const { data: subscription } = await admin
+    .from('business_subscriptions')
+    .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const businessSubscription = subscription || null
+  const onboarding = String((profile as ProfileRow & { business_onboarding_status?: string }).business_onboarding_status || '')
+  const status = onboarding || (subscription?.status === 'active' ? 'active' : 'subscription_pending')
+  if (status === 'under_review' || status === 'submitted' || status === 'draft') {
+    redirect(localizePublicHref(locale, '/account/business/status?state=under_review'))
+  }
+  if (status !== 'active' || !subscription || !['active', 'trialing'].includes(String(subscription.status)) && !subscription.manually_activated) {
+    redirect(localizePublicHref(locale, '/account/business/subscription'))
+  }
+  redirect(localizePublicHref(locale, '/account/company'))
+  return businessSubscription
 }
 
 function displayName(profile: ProfileRow, fallback: string) {

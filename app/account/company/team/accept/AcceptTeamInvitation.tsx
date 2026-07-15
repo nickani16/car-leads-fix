@@ -2,11 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 export default function AcceptTeamInvitation({
+  locale,
   token,
   copy,
 }: {
+  locale: PublicLocale
   token: string
   copy: {
     accept: string
@@ -34,10 +37,14 @@ export default function AcceptTeamInvitation({
       const result = (await response.json()) as { error?: string; destination?: string }
       if (!response.ok) {
         setError(response.status === 401 ? copy.signInFirst : result.error || copy.failed)
+        if (response.status === 401) {
+          const next = `${window.location.pathname}${window.location.search}`
+          window.setTimeout(() => router.push(localizePublicHref(locale, `/login?next=${encodeURIComponent(next)}`)), 500)
+        }
         return
       }
       setMessage(copy.success)
-      window.setTimeout(() => router.push(result.destination || '/account/company'), 700)
+      window.setTimeout(() => router.push(localizePublicHref(locale, result.destination || '/account/company')), 700)
     } catch {
       setError(copy.failed)
     } finally {

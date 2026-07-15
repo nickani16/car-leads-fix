@@ -129,7 +129,7 @@ export default function AuthModal({
         body: JSON.stringify({
           email,
           code,
-          next: mode === 'register' ? registerDestination : accountDestination,
+          next: mode === 'register' ? registerDestination : postLoginDestination || accountDestination,
         }),
       })
       const result = (await response.json()) as {

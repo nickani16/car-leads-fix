@@ -96,18 +96,11 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   if (!user) redirect(localizePublicHref(locale, '/login'))
 
   const admin = createAdminClient()
-  const [{ data: profile }, { data: subscription }, listingSummary] = await Promise.all([
+  const [{ data: profile }, listingSummary] = await Promise.all([
     admin
       .from('marketplace_profiles')
       .select('account_type,company_id,company_name,email,country_code,business_verification_status,business_onboarding_status')
       .eq('user_id', user.id)
-      .maybeSingle(),
-    admin
-      .from('business_subscriptions')
-      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false })
-      .limit(1)
       .maybeSingle(),
     getAccountListingSummary(admin, user.id).catch(() => ({
       counts: { all: 0, active: 0, payment: 0, review: 0, draft: 0, paused: 0, expired: 0, sold: 0, deleted: 0 },
@@ -124,6 +117,22 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   ])
 
   if (profile?.account_type !== 'business') redirect(localizePublicHref(locale, '/account'))
+
+  const { data: company } = profile.company_id
+    ? await admin
+        .from('marketplace_companies')
+        .select('created_by')
+        .eq('id', profile.company_id)
+        .maybeSingle()
+    : { data: null }
+  const subscriptionOwnerId = company?.created_by || user.id
+  const { data: subscription } = await admin
+    .from('business_subscriptions')
+    .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
+    .eq('user_id', subscriptionOwnerId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
   return {
     locale,

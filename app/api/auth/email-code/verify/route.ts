@@ -42,11 +42,13 @@ function onboardingDestination(requested: string) {
     : `/register?onboarding=1${accountType}`
 }
 
-function accountDestination(requested: string) {
+function accountDestination(requested: string, accountType?: string | null) {
   const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
-  return firstSegment && marketPathPrefixes.has(firstSegment)
-    ? `/${firstSegment}/account`
-    : '/account'
+  const prefix = firstSegment && marketPathPrefixes.has(firstSegment) ? `/${firstSegment}` : ''
+  const requestedPath = requested.split('?')[0] || ''
+  if (requestedPath.includes('/company/team/accept')) return requested
+  if (requestedPath.includes('/account/company')) return requested
+  return accountType === 'business' ? `${prefix}/account/company` : `${prefix}/account`
 }
 
 export async function POST(request: Request) {
@@ -142,7 +144,7 @@ export async function POST(request: Request) {
     const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin
         .from('marketplace_profiles')
-        .select('user_id')
+        .select('user_id,account_type')
         .eq('user_id', data.user.id)
         .maybeSingle(),
       admin
@@ -189,13 +191,26 @@ export async function POST(request: Request) {
     }
 
     const requested = safeAuthDestination(body.next)
+    const { data: companyInvitation } = !profile
+      ? await admin
+          .from('marketplace_company_invitations')
+          .select('id')
+          .ilike('email', email)
+          .eq('status', 'pending')
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : { data: null }
     const adminRole = invitation?.role_key
     const destination = adminRole === 'support_admin'
       ? '/admin/support'
       : invitation || adminUser
         ? '/admin'
+        : companyInvitation && requested.includes('/company/team/accept')
+          ? requested
         : profile
-          ? accountDestination(requested)
+          ? accountDestination(requested, profile.account_type)
           : onboardingDestination(requested)
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })

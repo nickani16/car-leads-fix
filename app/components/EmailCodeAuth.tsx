@@ -95,6 +95,8 @@ export default function EmailCodeAuth({
     setError('')
     setLoading(true)
     try {
+      const params = new URLSearchParams(window.location.search)
+      const requestedNext = params.get('next')
       const registerDestination = localizePublicHref(
         locale,
         registerAccountType === 'business'
@@ -110,7 +112,7 @@ export default function EmailCodeAuth({
           next:
             mode === 'register'
               ? registerDestination
-              : localizePublicHref(locale, '/account'),
+              : requestedNext || localizePublicHref(locale, '/account'),
         }),
       })
       const result = (await response.json()) as {
