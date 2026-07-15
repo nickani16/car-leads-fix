@@ -657,7 +657,10 @@ export default function PublicHeader({
   const desktopMainRowHeightClass = showTopCategoryNav
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
-  const createListingHref = localizePublicHref(locale, '/account/listings/new')
+  const isBusinessAccount = headerAccount.accountType === 'business'
+  const createListingHref = isBusinessAccount
+    ? `${marketPathPrefix}/account/company/listings/create`
+    : localizePublicHref(locale, '/account/listings/new')
   const sellMenuLinks = sellerItems[language].map((item) => {
     const translatedItem =
       locale === 'sv' || locale === 'de' || locale === 'en'
@@ -716,7 +719,9 @@ export default function PublicHeader({
       menu: 'help' as const,
     },
   ]
-  const accountListingsHref = `${marketPathPrefix}/account/listings`
+  const accountListingsHref = isBusinessAccount
+    ? `${marketPathPrefix}/account/company/listings`
+    : `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
@@ -732,9 +737,12 @@ export default function PublicHeader({
   const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
   const profileMenuLinks = [
     { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
-    { href: accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
-    ...(headerAccount.accountType === 'business'
-      ? [{ href: `${marketPathPrefix}/account/business/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard }]
+    ...(isBusinessAccount
+      ? [{ href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 }]
+      : []),
+    { href: isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
+    ...(isBusinessAccount
+      ? [{ href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard }]
       : []),
     { href: accountListingsHref, label: publicLabel('My listings', 'Mina annonser', 'Meine Anzeigen'), icon: CarFront },
   ]

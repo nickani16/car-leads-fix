@@ -233,7 +233,7 @@ export default async function AccountPage() {
           : copy.businessEntryText,
       href:
         profile.account_type === 'business'
-          ? localizePublicHref(locale, '/account/listings')
+          ? localizePublicHref(locale, '/account/company')
           : localizePublicHref(locale, '/foretag'),
       icon: Building2,
     },
@@ -244,7 +244,7 @@ export default async function AccountPage() {
             text: businessSubscription?.plan_key
               ? `${copy.currentPlan}: ${businessSubscription.plan_key}`
               : copy.planText,
-            href: localizePublicHref(locale, '/account/business/subscription'),
+            href: localizePublicHref(locale, '/account/company/subscription'),
             icon: CreditCard,
           },
           {

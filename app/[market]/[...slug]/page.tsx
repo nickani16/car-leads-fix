@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
+import AccountListingsPage from '@/app/konto/annonser/page'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
@@ -9,13 +10,20 @@ import BusinessSubscriptionPage from '@/app/konto/business/subscription/page'
 import BusinessSubscriptionCancelPage from '@/app/konto/business/subscription/cancel/page'
 import BusinessStatusPage from '@/app/konto/business/status/page'
 import PaymentsPage from '@/app/konto/betalningar/page'
+import CompanyOverviewPage from '@/app/account/company/page'
+import CompanyImportPage from '@/app/account/company/import/page'
+import CompanyAnalyticsPage from '@/app/account/company/analytics/page'
+import CompanyTeamPage from '@/app/account/company/team/page'
+import CompanyProfilePage from '@/app/account/company/profile/page'
+import CompanySettingsPage from '@/app/account/company/settings/page'
+import CompanySupportPage from '@/app/account/company/support/page'
 
 export default async function LocalizedMarketPage({
   params,
   searchParams,
 }: {
   params: Promise<{ market: string; slug: string[] }>
-  searchParams: Promise<{ category?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { market: marketCode, slug } = await params
   const normalizedMarket = normalizeBillingMarket(marketCode)
@@ -37,6 +45,54 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/business/subscription/cancel' || slugPath === 'konto/business/subscription/avsluta') {
     return <BusinessSubscriptionCancelPage localeOverride={locale} marketOverride={normalizedMarket} />
+  }
+
+  if (slugPath === 'account/company') {
+    return <CompanyOverviewPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/listings') {
+    return <AccountListingsPage searchParams={searchParams} />
+  }
+
+  if (slugPath === 'account/company/listings/create') {
+    return renderNewListingPage({
+      searchParams,
+      marketCodeOverride: normalizedMarket.toUpperCase(),
+      localeOverride: locale,
+    })
+  }
+
+  if (slugPath === 'account/company/import') {
+    return <CompanyImportPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/analytics') {
+    return <CompanyAnalyticsPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/team') {
+    return <CompanyTeamPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/subscription') {
+    return <BusinessSubscriptionPage localeOverride={locale} marketOverride={normalizedMarket} />
+  }
+
+  if (slugPath === 'account/company/subscription/cancel') {
+    return <BusinessSubscriptionCancelPage localeOverride={locale} marketOverride={normalizedMarket} />
+  }
+
+  if (slugPath === 'account/company/profile') {
+    return <CompanyProfilePage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/settings') {
+    return <CompanySettingsPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/support') {
+    return <CompanySupportPage localeOverride={locale} />
   }
 
   if (slugPath === 'account/business/status' || slugPath === 'konto/business/status') {

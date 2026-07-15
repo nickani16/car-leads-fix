@@ -35,6 +35,14 @@ const files = [
   'app/konto/business/subscription/BusinessPlanChooser.tsx',
   'app/konto/business/subscription/cancel/page.tsx',
   'app/konto/business/subscription/cancel/CancelSubscriptionClient.tsx',
+  'app/account/company/page.tsx',
+  'app/account/company/import/page.tsx',
+  'app/account/company/analytics/page.tsx',
+  'app/account/company/team/page.tsx',
+  'app/account/company/profile/page.tsx',
+  'app/account/company/settings/page.tsx',
+  'app/account/company/support/page.tsx',
+  'lib/company-portal.tsx',
   'app/account/listings/[id]/edit/page.tsx',
   'lib/listing-equipment.ts',
 ]
@@ -215,6 +223,8 @@ function extractEnglishStrings() {
       file.endsWith('BusinessPlanChooser.tsx') ||
       file.endsWith('subscription/cancel/page.tsx') ||
       file.endsWith('CancelSubscriptionClient.tsx') ||
+      file.includes('account/company') ||
+      file.endsWith('company-portal.tsx') ||
       file.endsWith('account/listings/[id]/edit/page.tsx') ||
       file.endsWith('vanliga-fragor/page.tsx') ||
       file.endsWith('FaqPageClient.tsx') ||

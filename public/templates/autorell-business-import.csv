@@ -1,0 +1,2 @@
+reference_number,category,make,model,model_year,price,currency,country_code,city,mileage_km,registration_reference,description,image_1,image_2,image_3
+REF-1001,cars,Volvo,XC60,2022,349000,SEK,SE,Stockholm,42000,ABC123,"Well maintained company vehicle.",https://example.com/image-1.jpg,,
