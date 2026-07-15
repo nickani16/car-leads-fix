@@ -6,6 +6,7 @@ import {
   parseAccountListingFilters,
 } from '@/lib/account-listings-management'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -26,9 +27,12 @@ export async function GET(request: Request) {
     .eq('user_id', user.id)
     .maybeSingle()
   const filters = parseAccountListingFilters(new URL(request.url).searchParams, profile?.account_type)
+  const listingOwnerUserIds = profile?.account_type === 'business'
+    ? (await resolveBusinessAccountScope(user.id, admin)).listingOwnerUserIds
+    : [user.id]
 
   try {
-    const result = await getManagedListings(admin, user.id, filters)
+    const result = await getManagedListings(admin, listingOwnerUserIds, filters)
     return NextResponse.json(result, {
       headers: { 'Cache-Control': 'private, no-store' },
     })

@@ -9,10 +9,17 @@ const bulkApi = readFileSync(new URL('../app/api/account/listings/bulk/route.ts'
 const checkout = readFileSync(new URL('../app/api/account/listing-checkout/route.ts', import.meta.url), 'utf8')
 const imageUpload = readFileSync(new URL('../app/api/account/listings/[id]/images/route.ts', import.meta.url), 'utf8')
 const fulfillment = readFileSync(new URL('../lib/billing/fulfillment.ts', import.meta.url), 'utf8')
+const accountListingManagement = readFileSync(new URL('../lib/account-listings-management.ts', import.meta.url), 'utf8')
 const migration = readFileSync(new URL('../supabase/migrations/20260713194500_account_listing_management.sql', import.meta.url), 'utf8')
 
 test('listing management uses server-side filtering, aggregate counts and pagination', () => {
-  assert.match(manageApi, /getManagedListings\(admin, user\.id, filters\)/)
+  assert.match(page, /resolveBusinessAccountScope\(user\.id, admin\)/)
+  assert.match(page, /getManagedListings\(admin, listingOwnerUserIds, filters\)/)
+  assert.match(manageApi, /resolveBusinessAccountScope\(user\.id, admin\)/)
+  assert.match(manageApi, /getManagedListings\(admin, listingOwnerUserIds, filters\)/)
+  assert.match(accountListingManagement, /userId: string \| string\[\]/)
+  assert.match(accountListingManagement, /getManagedListingsForOwners\(admin, ownerIds, filters\)/)
+  assert.match(accountListingManagement, /\.in\('seller_user_id', ownerIds\)/)
   assert.match(manageApi, /'Cache-Control': 'private, no-store'/)
   assert.match(migration, /row_number\(\) over/i)
   assert.match(migration, /row_number_value > \(normalized\.requested_page - 1\)/i)
@@ -34,6 +41,9 @@ test('tabs, debounced search and filters use URL state', () => {
 
 test('bulk operations are business-only and atomic in a service-role RPC', () => {
   assert.match(bulkApi, /account_type !== 'business'/)
+  assert.match(bulkApi, /resolveBusinessAccountScope\(user\.id, admin\)/)
+  assert.match(bulkApi, /\.in\('seller_user_id', scope\.listingOwnerUserIds\)/)
+  assert.match(bulkApi, /idsByOwner/)
   assert.match(bulkApi, /bulk_manage_owned_listings/)
   assert.match(migration, /for update;/)
   assert.match(migration, /v_owned_count <> v_expected_count/)

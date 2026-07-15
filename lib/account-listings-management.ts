@@ -83,6 +83,13 @@ export type AccountListingSummary = {
 }
 
 type SearchParamsLike = Record<string, string | string[] | undefined> | URLSearchParams
+type ListingQueryBuilder = {
+  eq: (column: string, value: unknown) => ListingQueryBuilder
+  in: (column: string, values: unknown[]) => ListingQueryBuilder
+  or: (filters: string) => ListingQueryBuilder
+  order: (column: string, options?: Record<string, unknown>) => ListingQueryBuilder
+  range: (from: number, to: number) => Promise<{ data: unknown[] | null; error: unknown; count: number | null }>
+}
 
 export function parseAccountListingFilters(
   source: SearchParamsLike,
@@ -124,11 +131,14 @@ export function parseAccountListingFilters(
 
 export async function getManagedListings(
   admin: ReturnType<typeof createAdminClient>,
-  userId: string,
+  userId: string | string[],
   filters: AccountListingFilters,
 ) {
+  const ownerIds = normalizeOwnerIds(userId)
+  if (ownerIds.length !== 1) return getManagedListingsForOwners(admin, ownerIds, filters)
+
   const { data, error } = await admin.rpc('account_listing_management', {
-    p_user_id: userId,
+    p_user_id: ownerIds[0],
     p_status: filters.status,
     p_query: filters.query,
     p_category: filters.category,
@@ -146,11 +156,204 @@ export async function getManagedListings(
 
 export async function getAccountListingSummary(
   admin: ReturnType<typeof createAdminClient>,
-  userId: string,
+  userId: string | string[],
 ) {
+  const ownerIds = normalizeOwnerIds(userId)
+  if (ownerIds.length !== 1) return getAccountListingSummaryForOwners(admin, ownerIds)
+
   const { data, error } = await admin.rpc('account_listing_summary', { p_user_id: userId })
   if (error) throw error
   return normalizeSummary(data)
+}
+
+async function getManagedListingsForOwners(
+  admin: ReturnType<typeof createAdminClient>,
+  ownerIds: string[],
+  filters: AccountListingFilters,
+) {
+  let query = admin
+    .from('marketplace_listings')
+    .select('id,title,status,review_status,risk_flags,category,make,model,registration_reference,vin,chassis_number,price,currency,images,seller_type,country_code,package_id,listing_number,reference_number,created_at,updated_at,published_at,expires_at,last_refreshed_at,boost_started_at,boost_expires_at,boost_status,featured_started_at,featured_expires_at,featured_status', { count: 'exact' })
+    .in('seller_user_id', ownerIds) as unknown as ListingQueryBuilder
+
+  query = applyListingFilters(query, filters)
+  query = applyListingSort(query, filters)
+  const from = (filters.page - 1) * filters.pageSize
+  const to = from + filters.pageSize - 1
+  const { data, error, count } = await query.range(from, to)
+  if (error) throw error
+
+  const items = await attachListingActivityCounts(admin, (data || []) as Array<Record<string, unknown>>)
+  const totalCount = count || 0
+  const totalPages = totalCount ? Math.ceil(totalCount / filters.pageSize) : 0
+  return normalizeListingResult({
+    items,
+    totalCount,
+    page: filters.page,
+    pageSize: filters.pageSize,
+    totalPages,
+    hasNext: filters.page < totalPages,
+    hasPrevious: filters.page > 1,
+  }, filters)
+}
+
+async function getAccountListingSummaryForOwners(
+  admin: ReturnType<typeof createAdminClient>,
+  ownerIds: string[],
+) {
+  const { data, error } = await admin
+    .from('marketplace_listings')
+    .select('id,status,review_status,images,expires_at,category,country_code')
+    .in('seller_user_id', ownerIds)
+  if (error) throw error
+
+  const listings = (data || []) as Array<Record<string, unknown>>
+  const listingIds = listings.map((listing) => String(listing.id)).filter(Boolean)
+  const [viewCount, favoriteCount, failedPayments] = await Promise.all([
+    countListingEvents(admin, listingIds, 'listing_view'),
+    countSavedListings(admin, listingIds),
+    countFailedListingPayments(admin, listingIds),
+  ])
+  const now = Date.now()
+  const threeDays = now + 3 * 86400000
+  const counts = Object.fromEntries(accountListingTabs.map((key) => [key, 0])) as Record<AccountListingTab, number>
+  for (const listing of listings) {
+    const status = String(listing.status || '')
+    counts.all += 1
+    if (status === 'published') counts.active += 1
+    if (status === 'pending_payment') counts.payment += 1
+    if (status === 'pending_review' || status === 'rejected') counts.review += 1
+    if (status === 'draft') counts.draft += 1
+    if (status === 'paused') counts.paused += 1
+    if (status === 'expired') counts.expired += 1
+    if (status === 'sold') counts.sold += 1
+    if (status === 'deleted' || status === 'removed') counts.deleted += 1
+  }
+
+  return {
+    counts,
+    totalViews: viewCount,
+    totalFavorites: favoriteCount,
+    missingImages: listings.filter((listing) => !Array.isArray(listing.images) || listing.images.length === 0).length,
+    firstMissingImageId: String(listings.find((listing) => !Array.isArray(listing.images) || listing.images.length === 0)?.id || '') || null,
+    flagged: listings.filter((listing) => ['flagged', 'rejected'].includes(String(listing.review_status || '')) || listing.status === 'rejected').length,
+    expiringSoon: listings.filter((listing) => {
+      const expiresAt = listing.expires_at ? new Date(String(listing.expires_at)).getTime() : 0
+      return listing.status === 'published' && expiresAt > now && expiresAt <= threeDays
+    }).length,
+    failedPayments,
+    categories: [...new Set(listings.map((listing) => String(listing.category || '')).filter(Boolean))].sort(),
+    countries: [...new Set(listings.map((listing) => String(listing.country_code || '')).filter(Boolean))].sort(),
+  }
+}
+
+async function attachListingActivityCounts(
+  admin: ReturnType<typeof createAdminClient>,
+  listings: Array<Record<string, unknown>>,
+) {
+  const listingIds = listings.map((listing) => String(listing.id)).filter(Boolean)
+  if (!listingIds.length) return listings
+  const [{ data: events }, { data: saved }] = await Promise.all([
+    admin
+      .from('marketplace_listing_events')
+      .select('listing_id')
+      .in('listing_id', listingIds)
+      .eq('event_type', 'listing_view'),
+    admin
+      .from('marketplace_saved_listings')
+      .select('listing_id')
+      .in('listing_id', listingIds),
+  ])
+  const views = countByListing(events || [])
+  const favorites = countByListing(saved || [])
+  return listings.map((listing) => ({
+    ...listing,
+    view_count: views.get(String(listing.id)) || 0,
+    favorite_count: favorites.get(String(listing.id)) || 0,
+  }))
+}
+
+async function countListingEvents(admin: ReturnType<typeof createAdminClient>, listingIds: string[], eventType: string) {
+  if (!listingIds.length) return 0
+  const { count, error } = await admin
+    .from('marketplace_listing_events')
+    .select('id', { count: 'exact', head: true })
+    .in('listing_id', listingIds)
+    .eq('event_type', eventType)
+  if (error) throw error
+  return count || 0
+}
+
+async function countSavedListings(admin: ReturnType<typeof createAdminClient>, listingIds: string[]) {
+  if (!listingIds.length) return 0
+  const { count, error } = await admin
+    .from('marketplace_saved_listings')
+    .select('user_id', { count: 'exact', head: true })
+    .in('listing_id', listingIds)
+  if (error) throw error
+  return count || 0
+}
+
+async function countFailedListingPayments(admin: ReturnType<typeof createAdminClient>, listingIds: string[]) {
+  if (!listingIds.length) return 0
+  const { count, error } = await admin
+    .from('payment_orders')
+    .select('listing_id', { count: 'exact', head: true })
+    .in('listing_id', listingIds)
+    .eq('status', 'failed')
+  if (error) throw error
+  return count || 0
+}
+
+function applyListingFilters(
+  query: ListingQueryBuilder,
+  filters: AccountListingFilters,
+) {
+  if (filters.status === 'active') query = query.eq('status', 'published')
+  if (filters.status === 'payment') query = query.eq('status', 'pending_payment')
+  if (filters.status === 'review') query = query.in('status', ['pending_review', 'rejected'])
+  if (filters.status === 'draft') query = query.eq('status', 'draft')
+  if (filters.status === 'paused') query = query.eq('status', 'paused')
+  if (filters.status === 'expired') query = query.eq('status', 'expired')
+  if (filters.status === 'sold') query = query.eq('status', 'sold')
+  if (filters.status === 'deleted') query = query.in('status', ['deleted', 'removed'])
+  if (filters.category !== 'all') query = query.eq('category', filters.category)
+  if (filters.country !== 'all') query = query.eq('country_code', filters.country.toUpperCase())
+  if (filters.package !== 'all') query = query.eq('package_id', filters.package)
+  if (filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
+  if (filters.marketing === 'active') {
+    query = query.or(`boost_status.eq.active,featured_status.eq.active`)
+  } else if (filters.marketing === 'none') {
+    query = query.or(`boost_status.is.null,boost_status.neq.active`)
+  }
+  if (filters.query) {
+    const value = filters.query.replace(/[%_,]/g, ' ')
+    query = query.or(`title.ilike.%${value}%,make.ilike.%${value}%,model.ilike.%${value}%,registration_reference.ilike.%${value}%,vin.ilike.%${value}%,chassis_number.ilike.%${value}%,reference_number.ilike.%${value}%`)
+  }
+  return query
+}
+
+function applyListingSort(query: ListingQueryBuilder, filters: AccountListingFilters) {
+  if (filters.sort === 'created_asc') return query.order('created_at', { ascending: true }).order('id', { ascending: false })
+  if (filters.sort === 'created_desc') return query.order('created_at', { ascending: false }).order('id', { ascending: false })
+  if (filters.sort === 'price_asc') return query.order('price', { ascending: true }).order('updated_at', { ascending: false })
+  if (filters.sort === 'price_desc') return query.order('price', { ascending: false }).order('updated_at', { ascending: false })
+  if (filters.sort === 'expires_asc') return query.order('expires_at', { ascending: true, nullsFirst: false }).order('updated_at', { ascending: false })
+  return query.order('updated_at', { ascending: false }).order('id', { ascending: false })
+}
+
+function countByListing(rows: Array<{ listing_id?: unknown }>) {
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    const id = String(row.listing_id || '')
+    if (!id) continue
+    counts.set(id, (counts.get(id) || 0) + 1)
+  }
+  return counts
+}
+
+function normalizeOwnerIds(value: string | string[]) {
+  return Array.from(new Set((Array.isArray(value) ? value : [value]).map((id) => String(id || '')).filter(Boolean)))
 }
 
 function normalizeListingResult(value: unknown, filters: AccountListingFilters): ManagedListingResult {

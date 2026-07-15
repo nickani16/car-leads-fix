@@ -43,6 +43,7 @@ import ListingStatusActions, { type MarketingOption, type PackageOption } from '
 import ListingsFilters from './ListingsFilters'
 import BulkListingActions from './BulkListingActions'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -73,11 +74,14 @@ export default async function AccountListingsPage({
     .eq('user_id', user.id)
     .maybeSingle()
   const accountType = profile?.account_type || 'private'
+  let listingOwnerUserIds = [user.id]
   if (accountType === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)
     if (!entitlement.allowed && entitlement.code === 'BUSINESS_SUBSCRIPTION_REQUIRED') {
       redirect('/account/business/subscription')
     }
+    const scope = await resolveBusinessAccountScope(user.id, admin)
+    listingOwnerUserIds = scope.listingOwnerUserIds
   }
   const filters = parseAccountListingFilters(query, accountType)
 
@@ -85,8 +89,8 @@ export default async function AccountListingsPage({
   let summary
   try {
     ;[result, summary] = await Promise.all([
-      getManagedListings(admin, user.id, filters),
-      getAccountListingSummary(admin, user.id),
+      getManagedListings(admin, listingOwnerUserIds, filters),
+      getAccountListingSummary(admin, listingOwnerUserIds),
     ])
   } catch (error) {
     console.error('[account-listings] Management query failed', { userId: user.id, error })

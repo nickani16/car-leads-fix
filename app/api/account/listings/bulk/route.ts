@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -26,7 +27,7 @@ export async function PATCH(request: Request) {
     ),
   )].slice(0, 100)
   if (!allowedActions.has(action) || !listingIds.length) {
-    return NextResponse.json({ error: 'Välj annonser och en giltig åtgärd.' }, { status: 400 })
+    return NextResponse.json({ error: 'Choose listings and a valid action.' }, { status: 400 })
   }
 
   const admin = createAdminClient()
@@ -36,28 +37,54 @@ export async function PATCH(request: Request) {
     .eq('user_id', user.id)
     .maybeSingle()
   if (profile?.account_type !== 'business') {
-    return NextResponse.json({ error: 'Bulkhantering är endast tillgänglig för företagskonton.' }, { status: 403 })
+    return NextResponse.json({ error: 'Bulk management is only available for business accounts.' }, { status: 403 })
   }
 
-  const { data, error } = await admin.rpc('bulk_manage_owned_listings', {
-    p_user_id: user.id,
-    p_listing_ids: listingIds,
-    p_action: action,
-  })
-  if (error) {
-    console.warn('[bulk-listings] Transaction rejected', {
-      userId: user.id,
-      action,
-      count: listingIds.length,
-      error: error.message,
-    })
+  const scope = await resolveBusinessAccountScope(user.id, admin)
+  const { data: selectedListings, error: selectedError } = await admin
+    .from('marketplace_listings')
+    .select('id,seller_user_id')
+    .in('id', listingIds)
+    .in('seller_user_id', scope.listingOwnerUserIds)
+  if (selectedError) {
+    return NextResponse.json({ error: 'Listings could not be verified.' }, { status: 500 })
+  }
+  if ((selectedListings || []).length !== listingIds.length) {
     return NextResponse.json(
-      { error: 'Alla valda annonser måste tillhöra kontot och tillåta åtgärden. Inga annonser ändrades.' },
+      { error: 'All selected listings must belong to the company account. No listings were changed.' },
       { status: 409 },
     )
   }
 
+  const idsByOwner = new Map<string, string[]>()
+  for (const listing of selectedListings || []) {
+    const ownerId = String(listing.seller_user_id)
+    idsByOwner.set(ownerId, [...(idsByOwner.get(ownerId) || []), String(listing.id)])
+  }
+
+  let updatedCount = 0
+  for (const [ownerId, ownerListingIds] of idsByOwner) {
+    const { data, error } = await admin.rpc('bulk_manage_owned_listings', {
+      p_user_id: ownerId,
+      p_listing_ids: ownerListingIds,
+      p_action: action,
+    })
+    if (error) {
+      console.warn('[bulk-listings] Transaction rejected', {
+        userId: user.id,
+        ownerId,
+        action,
+        count: ownerListingIds.length,
+        error: error.message,
+      })
+      return NextResponse.json(
+        { error: 'All selected listings must belong to the company account and allow the action. No listings were changed.' },
+        { status: 409 },
+      )
+    }
+    updatedCount += Number((data as { updatedCount?: number } | null)?.updatedCount || ownerListingIds.length)
+  }
+
   revalidateTag('marketplace-listings', 'max')
-  const updatedCount = Number((data as { updatedCount?: number } | null)?.updatedCount || listingIds.length)
   return NextResponse.json({ success: true, updatedCount })
 }
