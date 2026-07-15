@@ -1,8 +1,9 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
-import { Mail, Send, X } from 'lucide-react'
-import type { PublicLocale } from '@/lib/public-i18n'
+import Link from 'next/link'
+import { Check, Mail, Send, X } from 'lucide-react'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingContactFormButtonProps = {
   listingId: string
@@ -310,14 +311,26 @@ export default function ListingContactFormButton({
                   className="autorell-contact-placeholder min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                 />
               </label>
-              <label className="flex items-start gap-3 rounded-[14px] bg-[#f8fbff] px-4 py-3 text-sm font-medium leading-6 text-[#475467]">
+              <label className="group flex cursor-pointer items-start gap-3 rounded-[14px] bg-[#f8fbff] px-4 py-3 text-sm font-medium leading-6 text-[#475467] transition hover:bg-[#f3f8ff]">
                 <input
                   name="privacy"
                   type="checkbox"
                   required
-                  className="mt-1 h-4 w-4 cursor-pointer rounded border-[#98a2b3] text-[#0866ff]"
+                  className="peer sr-only"
                 />
-                <span>{text.privacy}</span>
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[6px] border border-[#b8c4d4] bg-white text-white shadow-sm transition duration-200 group-hover:border-[#0866ff] peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 peer-checked:scale-[1.03] peer-checked:border-[#0866ff] peer-checked:bg-[#0866ff] peer-checked:[&>svg]:scale-100 peer-checked:[&>svg]:opacity-100">
+                  <Check className="h-3.5 w-3.5 scale-50 opacity-0 transition duration-200" strokeWidth={3} />
+                </span>
+                <span>
+                  {text.privacy}{' '}
+                  <Link
+                    href={localizePublicHref(locale, '/privacy')}
+                    target="_blank"
+                    className="font-semibold text-[#0866ff] underline underline-offset-2 transition hover:text-[#0057e6]"
+                  >
+                    {getPrivacyPolicyLabel(locale)}
+                  </Link>
+                </span>
               </label>
 
               {status === 'success' ? (
@@ -351,6 +364,25 @@ function getContactCopy(locale: PublicLocale) {
   if (locale === 'at') return copy.de
   if (locale === 'be') return copy.nl
   return copy[locale] || copy.en
+}
+
+function getPrivacyPolicyLabel(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Läs integritetspolicyn',
+    en: 'Read the privacy policy',
+    de: 'Datenschutzerklärung lesen',
+    at: 'Datenschutzerklärung lesen',
+    fr: 'Lire la politique de confidentialité',
+    es: 'Leer la política de privacidad',
+    it: 'Leggi l’informativa sulla privacy',
+    pl: 'Przeczytaj politykę prywatności',
+    nl: 'Lees het privacybeleid',
+    be: 'Lees het privacybeleid',
+    fi: 'Lue tietosuojaseloste',
+    da: 'Læs privatlivspolitikken',
+  }
+
+  return labels[locale] || labels.en || 'Read the privacy policy'
 }
 
 const currencyOptions = [
