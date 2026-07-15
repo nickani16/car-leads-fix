@@ -106,7 +106,7 @@ export async function PATCH(
     patch.business_onboarding_status = 'suspended'
   }
   if (action === 'company_pending_review') {
-    patch.business_verification_status = 'pending_review'
+    patch.business_verification_status = 'needs_review'
     patch.company_verification_note = body.reason || null
     patch.verification_updated_at = now
     patch.business_onboarding_status = 'under_review'

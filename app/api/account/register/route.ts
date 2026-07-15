@@ -278,8 +278,12 @@ export async function POST(request: Request) {
     const websiteDomain = domainFromWebsite(websiteUrl)
     const domainMatch = domainsMatch(emailDomain, websiteDomain)
     const identityStatus = accountType === 'private' ? 'verified' : 'pending'
+    // marketplace_profiles only accepts the verification states defined by the
+    // identity/safety schema (pending, needs_review, verified, ...). Keep the
+    // workflow state in business_onboarding_status; do not write the listing
+    // lifecycle value `pending_review` into this column.
     const businessVerificationStatus =
-      accountType === 'business' ? 'pending_review' : null
+      accountType === 'business' ? 'pending' : null
     const businessOnboardingStatus =
       accountType === 'business' ? 'under_review' : null
 
@@ -369,18 +373,25 @@ export async function POST(request: Request) {
     }
 
     if (accountType === 'business' && companyId) {
-      await createBusinessApplicationNotifications({
+      try {
+        await createBusinessApplicationNotifications({
         companyId,
         companyName,
         countryCode,
         contactName: displayName,
         email,
         registrationNumber: registrationNumber || vatNumber || null,
-      })
-      await notifyAutorellAdmins(
+        })
+        await notifyAutorellAdmins(
         `Ny företagsansökan: ${companyName}`,
         `<p>Ett nytt företagskonto har skickat in en ansökan.</p><p><strong>Företag:</strong> ${companyName}<br/><strong>E-post:</strong> ${email}<br/><strong>Status:</strong> under_review</p>`,
-      )
+        )
+      } catch (notificationError) {
+        console.error('[business-registration] notification delivery failed', {
+          companyId,
+          message: notificationError instanceof Error ? notificationError.message : String(notificationError),
+        })
+      }
     }
 
     await admin.from('marketplace_identity_checks').insert({
