@@ -301,6 +301,8 @@ async function fulfillBusinessSubscription(
     subscriptionId: subscription.id,
     planKey: product.businessPlan,
     activeListingLimit: product.activeListingLimit || null,
+    market: order.market,
+    currency: order.currency,
   })
   await finishOrder(order, 'fulfilled', { fulfillment: 'business_subscription_active' })
   return true

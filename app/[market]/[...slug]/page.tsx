@@ -6,6 +6,7 @@ import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
 import BusinessSubscriptionPage from '@/app/konto/business/subscription/page'
+import BusinessSubscriptionCancelPage from '@/app/konto/business/subscription/cancel/page'
 import BusinessStatusPage from '@/app/konto/business/status/page'
 import PaymentsPage from '@/app/konto/betalningar/page'
 
@@ -31,7 +32,11 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'account/business/subscription' || slugPath === 'konto/business/subscription') {
-    return <BusinessSubscriptionPage />
+    return <BusinessSubscriptionPage localeOverride={locale} marketOverride={normalizedMarket} />
+  }
+
+  if (slugPath === 'account/business/subscription/cancel' || slugPath === 'konto/business/subscription/avsluta') {
+    return <BusinessSubscriptionCancelPage localeOverride={locale} marketOverride={normalizedMarket} />
   }
 
   if (slugPath === 'account/business/status' || slugPath === 'konto/business/status') {

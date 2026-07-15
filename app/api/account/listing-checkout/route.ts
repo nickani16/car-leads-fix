@@ -122,6 +122,7 @@ export async function POST(request: Request) {
       subscriptionId: subscription.id,
       planKey: 'free',
       activeListingLimit: 5,
+      market,
     })
     return NextResponse.json({ activated: true, subscription })
   }
@@ -301,6 +302,7 @@ export async function POST(request: Request) {
       const customerId = existingSubscription?.stripe_customer_id || (await stripe.customers.create({
         email: profile.email || user.email || undefined,
         name: profile.company_name || profile.email || user.email || undefined,
+        preferred_locales: [stripeLocaleForMarket(market)],
         metadata: {
           user_id: user.id,
           business_id: body.businessId || '',
@@ -426,6 +428,8 @@ export async function POST(request: Request) {
         subscriptionId: businessSubscription.id,
         planKey: product.businessPlan,
         activeListingLimit: product.activeListingLimit || null,
+        market,
+        currency: price.currency,
       })
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-invoice-ready-${latestInvoice.id}`,
@@ -437,6 +441,7 @@ export async function POST(request: Request) {
         activeListingLimit: product.activeListingLimit || null,
         amountMinor: latestInvoice.amount_due || price.amountMinor,
         currency: latestInvoice.currency || price.currency,
+        market,
         invoiceNumber: latestInvoice.number || null,
         invoiceUrl: latestInvoice.hosted_invoice_url || null,
         pdfUrl: latestInvoice.invoice_pdf || null,

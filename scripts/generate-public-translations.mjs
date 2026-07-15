@@ -30,6 +30,11 @@ const files = [
   'app/registrera/RegisterForm.tsx',
   'app/konto/annonser/ny/page.tsx',
   'app/konto/annonser/ny/NewListingForm.tsx',
+  'app/konto/page.tsx',
+  'app/konto/betalningar/page.tsx',
+  'app/konto/business/subscription/BusinessPlanChooser.tsx',
+  'app/konto/business/subscription/cancel/page.tsx',
+  'app/konto/business/subscription/cancel/CancelSubscriptionClient.tsx',
   'app/account/listings/[id]/edit/page.tsx',
   'lib/listing-equipment.ts',
 ]
@@ -205,6 +210,11 @@ function extractEnglishStrings() {
       file.endsWith('RegisterForm.tsx') ||
       file.endsWith('konto/annonser/ny/page.tsx') ||
       file.endsWith('NewListingForm.tsx') ||
+      file.endsWith('konto/page.tsx') ||
+      file.endsWith('konto/betalningar/page.tsx') ||
+      file.endsWith('BusinessPlanChooser.tsx') ||
+      file.endsWith('subscription/cancel/page.tsx') ||
+      file.endsWith('CancelSubscriptionClient.tsx') ||
       file.endsWith('account/listings/[id]/edit/page.tsx') ||
       file.endsWith('vanliga-fragor/page.tsx') ||
       file.endsWith('FaqPageClient.tsx') ||

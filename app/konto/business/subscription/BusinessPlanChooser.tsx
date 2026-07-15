@@ -1,7 +1,21 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { Check, Info, X } from 'lucide-react'
+import {
+  billingProductCatalog,
+  currencyForMarket,
+  formatMoneyMinor,
+  type BillingMarket,
+  type BusinessPlan,
+} from '@/lib/billing/product-catalog'
+import {
+  localizePublicHref,
+  translatePublicObject,
+  translationLocale,
+  type PublicLocale,
+} from '@/lib/public-i18n'
 
 type BillingMethod = 'card' | 'invoice'
 type BillingPeriod = 'monthly' | 'annual'
@@ -13,11 +27,9 @@ type Feature = {
 }
 
 type Plan = {
-  key: 'free' | 'starter' | 'growth' | 'professional' | 'enterprise'
+  key: BusinessPlan
   name: string
   audience: string
-  monthlyPrice: number | null
-  annualPrice: number | null
   limit: string
   summary: string
   recommended?: boolean
@@ -27,114 +39,156 @@ type Plan = {
 
 const annualDiscount = 15
 
-const plans: Plan[] = [
+const basePlans: Plan[] = [
   {
     key: 'free',
     name: 'Free',
     audience: 'Start',
-    monthlyPrice: 0,
-    annualPrice: 0,
-    limit: '5 aktiva annonser',
-    summary: 'Endast en enkel annonspott. Ingen företagssida, inga teamkonton och inga rapporter.',
+    limit: '5 active listings',
+    summary: 'A simple listing allowance only. No company page, no team accounts and no reporting.',
     features: [
-      { label: '5 aktiva annonser', description: 'Publicera upp till fem aktiva annonser samtidigt.', included: true },
-      { label: 'Egen annonshantering', description: 'Skapa, pausa och uppdatera dina egna annonser.', included: true },
-      { label: 'Företagssida', description: 'Ingår inte. Free visar inte en separat publik företagssida.', included: false },
-      { label: 'Teamkonton', description: 'Ingår inte. Endast kontots ägare kan arbeta i Free.', included: false },
-      { label: 'Rapporter och export', description: 'Ingår inte i Free.', included: false },
+      { label: '5 active listings', description: 'Publish up to five active listings at the same time.', included: true },
+      { label: 'Own listing management', description: 'Create, pause and update your own listings.', included: true },
+      { label: 'Company page', description: 'Not included. Free does not show a separate public company page.', included: false },
+      { label: 'Team accounts', description: 'Not included. Only the account owner can work in Free.', included: false },
+      { label: 'Reports and export', description: 'Not included in Free.', included: false },
     ],
   },
   {
     key: 'starter',
     name: 'Starter',
-    audience: 'Mindre handlare',
-    monthlyPrice: 499,
-    annualPrice: 5090,
-    limit: '25 aktiva annonser',
-    summary: 'För mindre lager som behöver företagssida och ett mer professionellt säljflöde.',
+    audience: 'Small dealers',
+    limit: '25 active listings',
+    summary: 'For smaller inventories that need a company page and a more professional sales flow.',
     features: [
-      { label: '25 aktiva annonser', description: 'För mindre lager med återkommande publicering.', included: true },
-      { label: 'Företagssida Basic', description: 'Företagsnamn, logotyp och kontaktväg samlas tydligare.', included: true },
-      { label: 'Standardförfrågningar', description: 'Leads och meddelanden hanteras via Autorells vanliga flöde.', included: true },
-      { label: 'Teamkonton', description: 'Teamkonton börjar på Growth.', included: false },
-      { label: 'Rapporter och export', description: 'Rapporter och export börjar på Professional.', included: false },
+      { label: '25 active listings', description: 'For smaller inventories with recurring publishing.', included: true },
+      { label: 'Company page Basic', description: 'Company name, logo and contact route are presented more clearly.', included: true },
+      { label: 'Standard enquiries', description: 'Leads and messages are handled through Autorell’s standard flow.', included: true },
+      { label: 'Team accounts', description: 'Team accounts start with Growth.', included: false },
+      { label: 'Reports and export', description: 'Reports and export start with Professional.', included: false },
     ],
   },
   {
     key: 'growth',
     name: 'Growth',
-    audience: 'Växande team',
-    monthlyPrice: 999,
-    annualPrice: 10190,
-    limit: '100 aktiva annonser',
-    summary: 'För företag där flera personer ska arbeta i samma konto och publicera annonser löpande.',
+    audience: 'Growing team',
+    limit: '100 active listings',
+    summary: 'For companies where several people work in the same account and publish listings continuously.',
     recommended: true,
     features: [
-      { label: '100 aktiva annonser', description: 'För ett större aktivt lager.', included: true },
-      { label: 'Företagssida Plus', description: 'Utökad företagspresentation med samlad lageröversikt.', included: true },
-      { label: '10 teamkonton', description: 'Bjud in upp till 10 personer som kan arbeta i samma företagskonto och lägga upp annonser.', included: true },
-      { label: 'Roller för personal', description: 'Personal kan kopplas till företagets annonsflöde.', included: true },
-      { label: 'Prioriterad support', description: 'Ingår från Professional.', included: false },
+      { label: '100 active listings', description: 'For a larger active inventory.', included: true },
+      { label: 'Company page Plus', description: 'Extended company presentation with a shared inventory view.', included: true },
+      { label: '10 team accounts', description: 'Invite up to 10 people who can use the same company account and upload listings.', included: true },
+      { label: 'Staff roles', description: 'Staff can be connected to the company listing workflow.', included: true },
+      { label: 'Priority support', description: 'Included from Professional.', included: false },
     ],
   },
   {
     key: 'professional',
     name: 'Professional',
-    audience: 'Hög volym',
-    monthlyPrice: 1999,
-    annualPrice: 20390,
-    limit: '500 aktiva annonser',
-    summary: 'För större organisationer med många säljare, hög volym och bättre uppföljning.',
+    audience: 'High volume',
+    limit: '500 active listings',
+    summary: 'For larger organisations with many sellers, high volume and better follow-up.',
     features: [
-      { label: '500 aktiva annonser', description: 'För stora lager och hög publiceringstakt.', included: true },
-      { label: 'Företagssida Pro', description: 'Bästa standardpresentationen för företaget och lagret.', included: true },
-      { label: '50+ teamkonton', description: 'Byggt för större team där många kan publicera och hantera annonser.', included: true },
-      { label: 'Rapporter och export', description: 'Exportera lagerdata och följ aktivitet över tid.', included: true },
-      { label: 'Prioriterad support', description: 'Snabbare hjälp vid publicering, betalning och kontoärenden.', included: true },
+      { label: '500 active listings', description: 'For large inventories and a high publishing pace.', included: true },
+      { label: 'Company page Pro', description: 'The best standard presentation for the company and inventory.', included: true },
+      { label: '50+ team accounts', description: 'Built for larger teams where many people publish and manage listings.', included: true },
+      { label: 'Reports and export', description: 'Export inventory data and follow activity over time.', included: true },
+      { label: 'Priority support', description: 'Faster help with publishing, payments and account cases.', included: true },
     ],
   },
   {
     key: 'enterprise',
     name: 'Enterprise',
-    audience: 'Skräddarsytt',
-    monthlyPrice: null,
-    annualPrice: null,
-    limit: 'Individuell kvot',
-    summary: 'För importörer, kedjor och aktörer med egna krav på volym, team och process.',
+    audience: 'Tailored',
+    limit: 'Custom quota',
+    summary: 'For importers, chains and operators with custom needs for volume, team and process.',
     enterprise: true,
     features: [
-      { label: 'Skräddarsydd annonskvot', description: 'Kvot och upplägg sätts efter företagets faktiska behov.', included: true },
-      { label: 'Avancerad företagssida', description: 'Anpassad presentation för större varumärken eller flera lager.', included: true },
-      { label: 'Utökat team', description: 'Team, roller och behörigheter anpassas efter organisationen.', included: true },
-      { label: 'Dataexport och rådgivning', description: 'Djupare uppföljning, onboarding och praktisk hjälp.', included: true },
-      { label: 'Enterprise-support', description: 'Direktkontakt för större flöden och affärskritiska ärenden.', included: true },
+      { label: 'Custom listing quota', description: 'Quota and setup are based on the company’s actual needs.', included: true },
+      { label: 'Advanced company page', description: 'Custom presentation for larger brands or several inventories.', included: true },
+      { label: 'Expanded team', description: 'Team, roles and permissions are adapted to the organisation.', included: true },
+      { label: 'Data export and advisory', description: 'Deeper follow-up, onboarding and practical help.', included: true },
+      { label: 'Enterprise support', description: 'Direct contact for larger flows and business-critical cases.', included: true },
     ],
   },
 ]
 
+const baseCopy = {
+  eyebrow: 'Business subscription',
+  title: 'Choose a plan for the company',
+  intro:
+    'The current plan is marked with a blue border. Choose monthly or annual billing, and use 30-day invoice when the customer should be invoiced via Stripe.',
+  currentPlan: 'Current plan',
+  noActivePlan: 'No active plan',
+  activeListings: 'active listings',
+  nextBilling: 'Next billing',
+  cancellationScheduled: 'Cancellation scheduled',
+  monthly: 'Monthly',
+  annual: 'Annual - save 15%',
+  annualBadge: '-15%',
+  annualEquivalent: 'equals about',
+  perMonth: '/month',
+  perYear: '/year',
+  exclVat: 'excl. VAT',
+  included: 'Included',
+  yourPlan: 'Your plan',
+  recommended: 'Recommended',
+  openInvoice: 'Open invoice',
+  activateFree: 'Activate Free',
+  activating: 'Activating...',
+  payCard: 'Pay by card',
+  openingStripe: 'Opening Stripe...',
+  invoice30: 'Invoice 30 days',
+  sendingInvoice: 'Sending invoice...',
+  contactUs: 'Contact us',
+  currentPlanButton: 'Current plan',
+  cancelPlan: 'Cancel plan',
+  freeActivated: 'Free is activated. You can now use your 5 listing slots.',
+  invoiceCreated: 'The invoice has been created and sent to',
+  companyEmail: 'the company email address',
+  paymentTerms: 'Payment terms: 30 days.',
+  paymentError: 'Could not start the payment.',
+}
+
 export default function BusinessPlanChooser({
+  locale,
+  market,
+  subscriptionId,
   currentPlan,
   currentStatus,
   paymentStatus,
   currentProductKey,
   activeListingLimit,
   nextBillingAt,
+  cancelAtPeriodEnd,
+  cancellationRequestedAt,
+  cancellationEffectiveAt,
 }: {
+  locale: PublicLocale
+  market: BillingMarket
+  subscriptionId: string | null
   currentPlan: string | null
   currentStatus: string | null
   paymentStatus: string | null
   currentProductKey?: string | null
   activeListingLimit?: number | null
   nextBillingAt?: string | null
+  cancelAtPeriodEnd?: boolean
+  cancellationRequestedAt?: string | null
+  cancellationEffectiveAt?: string | null
 }) {
+  const copy = useMemo(() => translatePublicObject(locale, baseCopy), [locale])
+  const plans = useMemo(() => translatePublicObject(locale, basePlans), [locale])
   const currentPeriod = currentProductKey?.endsWith('.annual') ? 'annual' : 'monthly'
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>(currentPeriod)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState<{ message: string; invoiceUrl?: string | null } | null>(null)
   const [loading, setLoading] = useState('')
 
-  const currentPlanName = useMemo(() => plans.find((plan) => plan.key === currentPlan)?.name || null, [currentPlan])
-  const currentStatusText = planStatusText(currentStatus, paymentStatus)
+  const currentPlanName = useMemo(() => plans.find((plan) => plan.key === currentPlan)?.name || null, [currentPlan, plans])
+  const currentStatusText = planStatusText(currentStatus, paymentStatus, locale)
+  const localeTag = localeToIntl(locale)
 
   async function choose(key: Plan['key'], billingMethod: BillingMethod = 'card') {
     setLoading(`${key}:${billingMethod}:${billingPeriod}`)
@@ -146,19 +200,19 @@ export default function BusinessPlanChooser({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         productKey: `subscription.business.${key}.${productPeriod}`,
-        market: 'se',
+        market,
         billingMethod,
       }),
     })
     const result = await response.json().catch(() => ({}))
     if (result.activated) {
-      setSuccess({ message: 'Free är aktiverat. Du kan nu använda dina 5 annonsplatser.' })
+      setSuccess({ message: copy.freeActivated })
       setLoading('')
       return
     }
     if (result.invoice) {
       setSuccess({
-        message: `Fakturan är skapad och skickad till ${result.invoiceEmail || 'företagets e-postadress'}. Betalvillkor: 30 dagar.`,
+        message: `${copy.invoiceCreated} ${result.invoiceEmail || copy.companyEmail}. ${copy.paymentTerms}`,
         invoiceUrl: result.invoiceUrl || null,
       })
       setLoading('')
@@ -168,7 +222,7 @@ export default function BusinessPlanChooser({
       window.location.assign(result.url)
       return
     }
-    setError(result.error || 'Kunde inte starta betalningen.')
+    setError(result.error || copy.paymentError)
     setLoading('')
   }
 
@@ -177,24 +231,27 @@ export default function BusinessPlanChooser({
       <div className="mx-auto max-w-[1380px]">
         <section className="grid gap-6 border-b border-[#dde6f2] pb-7 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">Företagsabonnemang</p>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">{copy.eyebrow}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-.045em] text-[#101828] sm:text-5xl">
-              Välj plan för företaget
+              {copy.title}
             </h1>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-[#5f6b7a]">
-              Aktuell plan är markerad med blå ram. Välj månadsvis eller årsvis betalning, och använd faktura 30 dagar när kunden ska faktureras via Stripe.
-            </p>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-[#5f6b7a]">{copy.intro}</p>
           </div>
 
-          <div className="w-full rounded-[14px] border border-[#d8e2f0] bg-white p-2 shadow-[0_18px_46px_rgba(16,24,40,.06)] lg:w-[430px]">
+          <div className="w-full rounded-[14px] border border-[#d8e2f0] bg-white p-2 shadow-[0_18px_46px_rgba(16,24,40,.06)] lg:w-[450px]">
             <div className="rounded-[10px] border border-[#edf1f7] bg-[#f8fafc] px-4 py-3">
-              <p className="text-xs font-bold uppercase tracking-[.14em] text-[#667085]">Nuvarande plan</p>
+              <p className="text-xs font-bold uppercase tracking-[.14em] text-[#667085]">{copy.currentPlan}</p>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#475467]">
-                <strong className="text-base text-[#101828]">{currentPlanName || 'Ingen aktiv plan'}</strong>
-                {activeListingLimit ? <span>{activeListingLimit} aktiva annonser</span> : null}
+                <strong className="text-base text-[#101828]">{currentPlanName || copy.noActivePlan}</strong>
+                {activeListingLimit ? <span>{activeListingLimit} {copy.activeListings}</span> : null}
                 <span>{currentStatusText}</span>
               </div>
-              {nextBillingAt ? <p className="mt-1 text-xs text-[#667085]">Nästa debitering: {formatDate(nextBillingAt)}</p> : null}
+              {nextBillingAt ? <p className="mt-1 text-xs text-[#667085]">{copy.nextBilling}: {formatDate(nextBillingAt, localeTag)}</p> : null}
+              {cancelAtPeriodEnd || cancellationRequestedAt ? (
+                <p className="mt-1 text-xs font-bold text-[#b42318]">
+                  {copy.cancellationScheduled}{cancellationEffectiveAt ? `: ${formatDate(cancellationEffectiveAt, localeTag)}` : ''}
+                </p>
+              ) : null}
             </div>
             <div className="mt-2 grid grid-cols-2 rounded-[10px] bg-[#eef3f9] p-1">
               <button
@@ -204,7 +261,7 @@ export default function BusinessPlanChooser({
                   billingPeriod === 'monthly' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
                 }`}
               >
-                Månadsvis
+                {copy.monthly}
               </button>
               <button
                 type="button"
@@ -213,7 +270,7 @@ export default function BusinessPlanChooser({
                   billingPeriod === 'annual' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
                 }`}
               >
-                Årsvis - spara {annualDiscount}%
+                {copy.annual}
               </button>
             </div>
           </div>
@@ -223,11 +280,8 @@ export default function BusinessPlanChooser({
           <div className="mt-5 flex flex-col gap-3 rounded-[12px] border border-[#b8cff8] bg-[#eef5ff] p-4 text-sm text-[#18478f] sm:flex-row sm:items-center sm:justify-between">
             <p className="font-semibold">{success.message}</p>
             {success.invoiceUrl ? (
-              <a
-                href={success.invoiceUrl}
-                className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white"
-              >
-                Öppna faktura
+              <a href={success.invoiceUrl} className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white">
+                {copy.openInvoice}
               </a>
             ) : null}
           </div>
@@ -244,9 +298,23 @@ export default function BusinessPlanChooser({
               billingPeriod={billingPeriod}
               loading={loading}
               onChoose={choose}
+              market={market}
+              localeTag={localeTag}
+              copy={copy}
             />
           ))}
         </div>
+
+        {subscriptionId && currentPlan && currentPlan !== 'free' ? (
+          <div className="mt-6 flex justify-end">
+            <Link
+              href={localizePublicHref(locale, '/account/business/subscription/cancel')}
+              className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#d0d8e6] bg-white px-4 text-sm font-bold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            >
+              {copy.cancelPlan}
+            </Link>
+          </div>
+        ) : null}
       </div>
     </main>
   )
@@ -258,15 +326,24 @@ function PlanCard({
   billingPeriod,
   loading,
   onChoose,
+  market,
+  localeTag,
+  copy,
 }: {
   plan: Plan
   current: boolean
   billingPeriod: BillingPeriod
   loading: string
   onChoose: (key: Plan['key'], billingMethod?: BillingMethod) => void
+  market: BillingMarket
+  localeTag: string
+  copy: typeof baseCopy
 }) {
-  const price = billingPeriod === 'annual' ? plan.annualPrice : plan.monthlyPrice
-  const monthlyEquivalent = plan.annualPrice ? Math.round(plan.annualPrice / 12) : null
+  const product = getPlanProduct(plan.key, billingPeriod)
+  const price = product?.amountMinor[currencyForMarket(market)] ?? null
+  const annualProduct = getPlanProduct(plan.key, 'annual')
+  const annualPrice = annualProduct?.amountMinor[currencyForMarket(market)] ?? null
+  const monthlyEquivalent = annualPrice ? Math.round(annualPrice / 12) : null
   const showAnnualBadge = billingPeriod === 'annual' && !plan.enterprise && plan.key !== 'free'
 
   return (
@@ -280,19 +357,19 @@ function PlanCard({
       }`}
     >
       <div className="flex min-h-[258px] flex-col border-b border-[#edf1f7] p-5">
-        <div className="flex min-h-7 items-start justify-between gap-3">
-          <p className="min-w-0 truncate whitespace-nowrap text-[11px] font-bold uppercase tracking-[.14em] text-[#667085]">{plan.audience}</p>
+        <div className="flex min-h-8 items-start justify-between gap-3">
+          <p className="min-w-0 max-w-[135px] text-[11px] font-bold uppercase leading-4 tracking-[.14em] text-[#667085]">{plan.audience}</p>
           {current ? (
             <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0866ff] px-3 py-1 text-[10px] font-black uppercase tracking-[.06em] text-white">
-              Din plan
+              {copy.yourPlan}
             </span>
           ) : plan.recommended ? (
             <span className="shrink-0 whitespace-nowrap rounded-full border border-[#0866ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
-              Rekommenderad
+              {copy.recommended}
             </span>
           ) : showAnnualBadge ? (
             <span className="shrink-0 whitespace-nowrap rounded-full bg-[#eef5ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
-              -{annualDiscount}%
+              {copy.annualBadge}
             </span>
           ) : null}
         </div>
@@ -300,19 +377,21 @@ function PlanCard({
         <h2 className="mt-4 text-2xl font-semibold tracking-[-.035em] text-[#101828]">{plan.name}</h2>
         <div className="mt-5">
           {plan.enterprise ? (
-            <p className="text-[28px] font-semibold tracking-[-.045em] text-[#101828]">Kontakta oss</p>
+            <p className="text-[28px] font-semibold tracking-[-.045em] text-[#101828]">{copy.contactUs}</p>
           ) : (
             <>
               <p className="text-[30px] font-semibold tracking-[-.05em] text-[#101828]">
-                {formatSek(price || 0)}
+                {formatPrice(price || 0, currencyForMarket(market), localeTag)}
                 <span className="text-sm font-semibold tracking-normal text-[#667085]">
-                  {billingPeriod === 'annual' && plan.key !== 'free' ? '/år' : '/månad'}
+                  {billingPeriod === 'annual' && plan.key !== 'free' ? copy.perYear : copy.perMonth}
                 </span>
               </p>
               {billingPeriod === 'annual' && plan.key !== 'free' && monthlyEquivalent ? (
-                <p className="mt-1 text-xs font-semibold text-[#667085]">motsvarar ca {formatSek(monthlyEquivalent)}/månad</p>
+                <p className="mt-1 text-xs font-semibold text-[#667085]">
+                  {copy.annualEquivalent} {formatPrice(monthlyEquivalent, currencyForMarket(market), localeTag)}{copy.perMonth}
+                </p>
               ) : (
-                <p className="mt-1 text-xs text-[#667085]">exkl. moms</p>
+                <p className="mt-1 text-xs text-[#667085]">{copy.exclVat}</p>
               )}
             </>
           )}
@@ -324,15 +403,11 @@ function PlanCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-black uppercase tracking-[.14em] text-[#101828]">Ingår</p>
+        <p className="text-xs font-black uppercase tracking-[.14em] text-[#101828]">{copy.included}</p>
         <ul className="mt-4 space-y-3">
           {plan.features.map((feature) => (
             <li key={feature.label} className="flex items-start gap-2 text-sm">
-              <span
-                className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
-                  feature.included ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#98a2b3]'
-                }`}
-              >
+              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${feature.included ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#98a2b3]'}`}>
                 {feature.included ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
               </span>
               <span className={feature.included ? 'text-[#344054]' : 'text-[#98a2b3]'}>
@@ -340,7 +415,7 @@ function PlanCard({
                 <span className="group relative ml-1 inline-flex align-middle">
                   <button
                     type="button"
-                    aria-label={`Mer information om ${feature.label}`}
+                    aria-label={feature.description}
                     className="inline-grid h-4 w-4 place-items-center rounded-full text-[#98a2b3] outline-none transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus:bg-[#eef5ff] focus:text-[#0866ff]"
                   >
                     <Info className="h-3.5 w-3.5" />
@@ -357,38 +432,23 @@ function PlanCard({
         <div className="mt-auto pt-6">
           {current ? (
             <button disabled className="min-h-11 w-full rounded-[8px] bg-[#e8f1ff] px-4 text-sm font-bold text-[#0866ff]">
-              Nuvarande plan
+              {copy.currentPlanButton}
             </button>
           ) : plan.enterprise ? (
-            <a
-              href="mailto:nikolai.parkkila@hotmail.com?subject=Autorell Enterprise"
-              className="flex min-h-11 w-full items-center justify-center rounded-[8px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
-            >
-              Kontakta oss
+            <a href="mailto:info@autorell.com?subject=Autorell Enterprise" className="flex min-h-11 w-full items-center justify-center rounded-[8px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]">
+              {copy.contactUs}
             </a>
           ) : plan.key === 'free' ? (
-            <button
-              onClick={() => onChoose(plan.key)}
-              disabled={!!loading}
-              className="min-h-11 w-full rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white transition hover:bg-[#075ce5] disabled:opacity-50"
-            >
-              {loading.startsWith(`${plan.key}:card`) ? 'Aktiverar...' : 'Aktivera Free'}
+            <button onClick={() => onChoose(plan.key)} disabled={!!loading} className="min-h-11 w-full rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white transition hover:bg-[#075ce5] disabled:opacity-50">
+              {loading.startsWith(`${plan.key}:card`) ? copy.activating : copy.activateFree}
             </button>
           ) : (
             <div className="space-y-2">
-              <button
-                onClick={() => onChoose(plan.key, 'card')}
-                disabled={!!loading}
-                className="min-h-11 w-full rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white transition hover:bg-[#075ce5] disabled:opacity-50"
-              >
-                {loading.startsWith(`${plan.key}:card`) ? 'Öppnar Stripe...' : 'Betala med kort'}
+              <button onClick={() => onChoose(plan.key, 'card')} disabled={!!loading} className="min-h-11 w-full rounded-[8px] bg-[#0866ff] px-4 text-sm font-bold text-white transition hover:bg-[#075ce5] disabled:opacity-50">
+                {loading.startsWith(`${plan.key}:card`) ? copy.openingStripe : copy.payCard}
               </button>
-              <button
-                onClick={() => onChoose(plan.key, 'invoice')}
-                disabled={!!loading}
-                className="min-h-11 w-full rounded-[8px] border border-[#0866ff] bg-white px-4 text-sm font-bold text-[#0866ff] transition hover:bg-[#eef5ff] disabled:opacity-50"
-              >
-                {loading.startsWith(`${plan.key}:invoice`) ? 'Skickar faktura...' : 'Faktura 30 dagar'}
+              <button onClick={() => onChoose(plan.key, 'invoice')} disabled={!!loading} className="min-h-11 w-full rounded-[8px] border border-[#0866ff] bg-white px-4 text-sm font-bold text-[#0866ff] transition hover:bg-[#eef5ff] disabled:opacity-50">
+                {loading.startsWith(`${plan.key}:invoice`) ? copy.sendingInvoice : copy.invoice30}
               </button>
             </div>
           )}
@@ -398,21 +458,54 @@ function PlanCard({
   )
 }
 
-function planStatusText(status?: string | null, paymentStatus?: string | null) {
-  if (paymentStatus === 'pending') return 'Faktura skickad, inväntar betalning'
-  if (paymentStatus === 'failed') return 'Betalning misslyckades'
-  if (paymentStatus === 'paid') return 'Betald och aktiv'
-  if (paymentStatus === 'not_required') return 'Ingen betalning krävs'
-  if (status === 'active') return 'Aktiv'
-  if (status === 'past_due') return 'Förfallen betalning'
-  if (status === 'trialing') return 'Testperiod'
-  return 'Väntar på aktivering'
+function getPlanProduct(plan: BusinessPlan, billingPeriod: BillingPeriod) {
+  const interval = billingPeriod === 'annual' ? 'year' : 'month'
+  return billingProductCatalog.find((product) =>
+    product.kind === 'subscription' &&
+    product.businessPlan === plan &&
+    product.billingInterval === interval
+  ) || null
 }
 
-function formatSek(amount: number) {
-  return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(amount) + ' SEK'
+function planStatusText(status: string | null | undefined, paymentStatus: string | null | undefined, locale: PublicLocale) {
+  const copy = translatePublicObject(locale, {
+    pending: 'Invoice sent, awaiting payment',
+    failed: 'Payment failed',
+    paid: 'Paid and active',
+    notRequired: 'No payment required',
+    active: 'Active',
+    pastDue: 'Payment overdue',
+    trialing: 'Trial period',
+    waiting: 'Awaiting activation',
+  })
+  if (paymentStatus === 'pending') return copy.pending
+  if (paymentStatus === 'failed') return copy.failed
+  if (paymentStatus === 'paid') return copy.paid
+  if (paymentStatus === 'not_required') return copy.notRequired
+  if (status === 'active') return copy.active
+  if (status === 'past_due') return copy.pastDue
+  if (status === 'trialing') return copy.trialing
+  return copy.waiting
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(value))
+function formatPrice(amountMinor: number, currency: string, localeTag: string) {
+  return formatMoneyMinor(amountMinor, currency.toLowerCase() as Parameters<typeof formatMoneyMinor>[1], localeTag).replace(/\s+/g, ' ')
+}
+
+function formatDate(value: string, localeTag: string) {
+  return new Intl.DateTimeFormat(localeTag, { dateStyle: 'medium' }).format(new Date(value))
+}
+
+function localeToIntl(locale: PublicLocale) {
+  const translated = translationLocale(locale)
+  if (translated === 'sv') return 'sv-SE'
+  if (translated === 'de') return 'de-DE'
+  if (translated === 'da') return 'da-DK'
+  if (translated === 'fi') return 'fi-FI'
+  if (translated === 'fr') return 'fr-FR'
+  if (translated === 'it') return 'it-IT'
+  if (translated === 'es') return 'es-ES'
+  if (translated === 'nl') return 'nl-NL'
+  if (translated === 'pl') return 'pl-PL'
+  return 'en-GB'
 }

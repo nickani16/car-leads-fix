@@ -170,6 +170,12 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
   }
   if (typeof object.cancel_at_period_end === 'boolean') {
     updates.cancel_at_period_end = object.cancel_at_period_end
+    if (object.cancel_at_period_end) {
+      updates.cancellation_requested_at = new Date().toISOString()
+    }
+  }
+  if (typeof object.current_period_end === 'number' && object.cancel_at_period_end) {
+    updates.cancellation_effective_at = new Date(object.current_period_end * 1000).toISOString()
   }
   if (event.type === 'invoice.payment_failed') {
     const now = new Date()
@@ -188,6 +194,11 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
   if (['invoice.created', 'invoice.finalized', 'invoice.sent'].includes(event.type)) {
     updates.payment_status = 'pending'
   }
+  if (event.type === 'customer.subscription.deleted') {
+    updates.status = 'canceled'
+    updates.cancelled_at = new Date().toISOString()
+    updates.cancellation_effective_at ||= new Date().toISOString()
+  }
 
   await admin
     .from('business_subscriptions')
@@ -205,6 +216,7 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         invoiceId: invoice.id,
         planKey: subscription.plan_key,
         activeListingLimit: subscription.active_listing_limit,
+        market: subscription.market,
         amountMinor: invoice.amount_due || invoice.total || null,
         currency: invoice.currency,
         invoiceNumber: invoice.number || null,
@@ -222,6 +234,7 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         invoiceId: invoice.id,
         planKey: subscription.plan_key,
         activeListingLimit: subscription.active_listing_limit,
+        market: subscription.market,
         amountMinor: invoice.amount_paid || invoice.amount_due || invoice.total || null,
         currency: invoice.currency,
         invoiceNumber: invoice.number || null,
@@ -239,6 +252,7 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         invoiceId: invoice.id,
         planKey: subscription.plan_key,
         activeListingLimit: subscription.active_listing_limit,
+        market: subscription.market,
         amountMinor: invoice.amount_remaining || invoice.amount_due || invoice.total || null,
         currency: invoice.currency,
         invoiceNumber: invoice.number || null,
@@ -279,6 +293,15 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
       })
       .eq('stripe_subscription_id', subscriptionId)
       .in('status', ['created', 'pending', 'checkout_created'])
+  }
+  if (event.type === 'customer.subscription.deleted' && subscription) {
+    await admin
+      .from('marketplace_profiles')
+      .update({
+        business_onboarding_status: 'cancelled',
+        verification_updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', subscription.user_id)
   }
 }
 
@@ -322,7 +345,7 @@ async function upsertBusinessInvoice(
 async function getBusinessSubscriptionByStripeId(admin: ReturnType<typeof createAdminClient>, stripeSubscriptionId: string) {
   const { data } = await admin
     .from('business_subscriptions')
-    .select('id,user_id,plan_key,active_listing_limit')
+    .select('id,user_id,plan_key,active_listing_limit,market,currency')
     .eq('stripe_subscription_id', stripeSubscriptionId)
     .maybeSingle()
   return data

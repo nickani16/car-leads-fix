@@ -21,6 +21,8 @@ type SubscriptionRow = {
   plan_key: string | null
   active_listing_limit: number | null
   status: string | null
+  market: string | null
+  currency: string | null
 }
 
 export async function GET(request: Request) {
@@ -67,6 +69,7 @@ export async function GET(request: Request) {
         invoiceId: invoice.stripe_invoice_id,
         planKey: subscription.plan_key,
         activeListingLimit: subscription.active_listing_limit,
+        market: subscription.market,
         amountMinor: invoice.amount_minor,
         currency: invoice.currency,
         invoiceNumber: invoice.invoice_number,
@@ -104,6 +107,7 @@ export async function GET(request: Request) {
         invoiceId: invoice.stripe_invoice_id,
         planKey: subscription.plan_key,
         activeListingLimit: subscription.active_listing_limit,
+        market: subscription.market,
         amountMinor: invoice.amount_minor,
         currency: invoice.currency,
         invoiceNumber: invoice.invoice_number,
@@ -121,7 +125,7 @@ export async function GET(request: Request) {
 async function getSubscription(admin: ReturnType<typeof createAdminClient>, subscriptionId: string | null, userId: string): Promise<SubscriptionRow | null> {
   const query = admin
     .from('business_subscriptions')
-    .select('id,user_id,plan_key,active_listing_limit,status')
+    .select('id,user_id,plan_key,active_listing_limit,status,market,currency')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false })
     .limit(1)
