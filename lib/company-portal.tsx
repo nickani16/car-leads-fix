@@ -22,6 +22,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -96,13 +97,24 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   if (!user) redirect(localizePublicHref(locale, '/login'))
 
   const admin = createAdminClient()
-  const [{ data: profile }, listingSummary] = await Promise.all([
+  const { data: profile } = await admin
+    .from('marketplace_profiles')
+    .select('account_type,company_id,company_name,email,country_code,business_verification_status,business_onboarding_status')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profile?.account_type !== 'business') redirect(localizePublicHref(locale, '/account'))
+
+  const scope = await resolveBusinessAccountScope(user.id, admin)
+  const [{ data: subscription }, listingSummary] = await Promise.all([
     admin
-      .from('marketplace_profiles')
-      .select('account_type,company_id,company_name,email,country_code,business_verification_status,business_onboarding_status')
-      .eq('user_id', user.id)
+      .from('business_subscriptions')
+      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
+      .eq('user_id', scope.subscriptionUserId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle(),
-    getAccountListingSummary(admin, user.id).catch(() => ({
+    getAccountListingSummary(admin, scope.listingOwnerUserIds).catch(() => ({
       counts: { all: 0, active: 0, payment: 0, review: 0, draft: 0, paused: 0, expired: 0, sold: 0, deleted: 0 },
       totalViews: 0,
       totalFavorites: 0,
@@ -115,24 +127,6 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
       countries: [],
     })),
   ])
-
-  if (profile?.account_type !== 'business') redirect(localizePublicHref(locale, '/account'))
-
-  const { data: company } = profile.company_id
-    ? await admin
-        .from('marketplace_companies')
-        .select('created_by')
-        .eq('id', profile.company_id)
-        .maybeSingle()
-    : { data: null }
-  const subscriptionOwnerId = company?.created_by || user.id
-  const { data: subscription } = await admin
-    .from('business_subscriptions')
-    .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
-    .eq('user_id', subscriptionOwnerId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
 
   return {
     locale,
