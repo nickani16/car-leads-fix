@@ -180,7 +180,7 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
+            className="autorell-listing-gallery-control absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
             aria-label="Open fullscreen gallery"
           >
             <Maximize2 className="h-[14px] w-[14px] sm:h-4 sm:w-4" strokeWidth={1.8} />
@@ -253,7 +253,7 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-3.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            className="autorell-listing-gallery-control ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-3.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
             aria-label={imageCountText}
           >
             {imageCountText}

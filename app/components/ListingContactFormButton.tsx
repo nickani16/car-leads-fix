@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { Mail, Send, X } from 'lucide-react'
 import type { PublicLocale } from '@/lib/public-i18n'
 
@@ -213,6 +213,13 @@ export default function ListingContactFormButton({
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const text = getContactCopy(locale)
 
+  useEffect(() => {
+    document.body.classList.toggle('autorell-contact-modal-open', open)
+    return () => {
+      document.body.classList.remove('autorell-contact-modal-open')
+    }
+  }, [open])
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setLoading(true)
@@ -300,7 +307,7 @@ export default function ListingContactFormButton({
                   maxLength={3000}
                   rows={5}
                   placeholder={text.messagePlaceholder}
-                  className="min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                  className="autorell-contact-placeholder min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                 />
               </label>
               <label className="flex items-start gap-3 rounded-[14px] bg-[#f8fbff] px-4 py-3 text-sm font-medium leading-6 text-[#475467]">
@@ -376,7 +383,7 @@ function OfferField({ label, currency }: { label: string; currency: string }) {
         <input
           name="offer"
           inputMode="decimal"
-          className="h-12 min-w-0 border-0 bg-white px-4 text-base font-medium text-[#101828] outline-none"
+          className="autorell-contact-placeholder h-12 min-w-0 border-0 bg-white px-4 text-base font-medium text-[#101828] outline-none"
         />
         <select
           name="offerCurrency"
@@ -416,7 +423,7 @@ function FormField({
         type={type}
         required={required}
         placeholder={placeholder}
-        className="h-12 w-full min-w-0 rounded-[14px] border border-[#cfd8e6] bg-white px-4 text-base font-medium text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="autorell-contact-placeholder h-12 w-full min-w-0 rounded-[14px] border border-[#cfd8e6] bg-white px-4 text-base font-medium text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
     </label>
   )

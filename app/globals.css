@@ -167,6 +167,16 @@ label {
   color: #98a6ad;
 }
 
+.autorell-contact-modal-open .autorell-listing-gallery-control {
+  display: none !important;
+}
+
+.autorell-contact-placeholder::placeholder {
+  color: #98a2b3;
+  font-weight: 400;
+  opacity: 1;
+}
+
 .contact-control:focus {
   border-color: #8bbbd1;
   background: #ffffff;
