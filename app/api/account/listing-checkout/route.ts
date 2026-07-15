@@ -259,7 +259,7 @@ export async function POST(request: Request) {
       mode: product.billingType,
       branding_settings: checkoutBranding,
       locale: stripeLocaleForMarket(market),
-      submit_type: 'pay',
+      submit_type: product.billingType === 'payment' ? 'pay' : undefined,
       customer_email: profile.email,
       client_reference_id: order.id,
       line_items: [

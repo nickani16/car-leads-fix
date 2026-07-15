@@ -59,6 +59,8 @@ test('checkout returns a JSON configuration error instead of a raw server crash'
 
 test('checkout sessions use Autorell branding and product copy', () => {
   assert.match(checkout, /branding_settings: checkoutBranding/)
+  assert.match(checkout, /submit_type: product\.billingType === 'payment' \? 'pay' : undefined/)
+  assert.doesNotMatch(checkout, /submit_type: 'pay'/)
   assert.match(checkout, /display_name: 'Autorell'/)
   assert.match(checkout, /button_color: '#0866ff'/)
   assert.match(checkout, /url: 'https:\/\/www\.autorell\.com\/autorell-logo-primary\.png'/)
