@@ -306,7 +306,16 @@ export async function POST(request: Request) {
         metadata,
         expand: ['latest_invoice'],
       })
-      const latestInvoice = toStripeInvoice(subscription.latest_invoice)
+      let latestInvoice = toStripeInvoice(subscription.latest_invoice)
+      if (!latestInvoice) {
+        throw new Error('Stripe subscription did not return an invoice.')
+      }
+      if (latestInvoice.status === 'draft') {
+        latestInvoice = await stripe.invoices.finalizeInvoice(latestInvoice.id, { auto_advance: true })
+      }
+      if (latestInvoice.status === 'open') {
+        latestInvoice = await stripe.invoices.sendInvoice(latestInvoice.id)
+      }
       const periodSource = subscription as Stripe.Subscription & {
         current_period_start?: number | null
         current_period_end?: number | null
@@ -369,12 +378,14 @@ export async function POST(request: Request) {
           payment_order_id: order.id,
           stripe_subscription_id: subscription.id,
           stripe_invoice_id: latestInvoice?.id || null,
+          invoice_email_sent: true,
           days_until_due: 30,
         },
       })
       return NextResponse.json({
         invoice: true,
         invoiceUrl: latestInvoice?.hosted_invoice_url || null,
+        invoiceEmail: profile.email || user.email || null,
         orderId: order.id,
         subscriptionId: subscription.id,
       })
