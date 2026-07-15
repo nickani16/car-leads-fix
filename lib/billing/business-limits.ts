@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export const BUSINESS_PLAN_LIMITS = {
   free: 5,
@@ -71,8 +72,10 @@ function normalizeQuotaReservation(value: unknown): BusinessListingQuotaReservat
 
 export async function reserveBusinessListingQuota(userId: string): Promise<BusinessListingQuotaReservation> {
   const reservationKey = crypto.randomUUID()
-  const { data, error } = await createAdminClient().rpc('reserve_business_listing_quota', {
-    p_user_id: userId,
+  const admin = createAdminClient()
+  const scope = await resolveBusinessAccountScope(userId, admin)
+  const { data, error } = await admin.rpc('reserve_business_listing_quota', {
+    p_user_id: scope.subscriptionUserId,
     p_reservation_key: reservationKey,
   })
 
@@ -99,10 +102,11 @@ export async function releaseBusinessListingQuotaReservation(reservationKey: str
 
 export async function checkBusinessListingPublicationLimit(userId: string): Promise<BusinessPublicationLimitResult> {
   const admin = createAdminClient()
+  const scope = await resolveBusinessAccountScope(userId, admin)
   const { data: subscription, error: subscriptionError } = await admin
     .from('business_subscriptions')
     .select('plan_key,status,active_listing_limit,grace_period_ends_at,updated_at')
-    .eq('user_id', userId)
+    .eq('user_id', scope.subscriptionUserId)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -130,7 +134,7 @@ export async function checkBusinessListingPublicationLimit(userId: string): Prom
   const { count, error: countError } = await admin
     .from('marketplace_listings')
     .select('id', { count: 'exact', head: true })
-    .eq('seller_user_id', userId)
+    .in('seller_user_id', scope.listingOwnerUserIds.length ? scope.listingOwnerUserIds : [''])
     .eq('status', 'published')
     .is('sold_at', null)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
