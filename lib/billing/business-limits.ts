@@ -3,6 +3,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const BUSINESS_PLAN_LIMITS = {
+  free: 5,
   starter: 25,
   growth: 100,
   professional: 500,

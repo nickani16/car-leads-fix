@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { notifyAutorellAdmins } from '@/lib/admin-notifications'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
   accountConfirmationKeys,
@@ -279,6 +280,8 @@ export async function POST(request: Request) {
     const identityStatus = accountType === 'private' ? 'verified' : 'pending'
     const businessVerificationStatus =
       accountType === 'business' ? 'pending_review' : null
+    const businessOnboardingStatus =
+      accountType === 'business' ? 'under_review' : null
 
     let companyId: string | null = null
     if (accountType === 'business') {
@@ -346,6 +349,7 @@ export async function POST(request: Request) {
       national_id_last4: normalizedNationalId ? normalizedNationalId.slice(-4) : null,
       identity_status: identityStatus,
       business_verification_status: businessVerificationStatus,
+      business_onboarding_status: businessOnboardingStatus,
       vat_verified_at: vatCheck.status === 'passed' ? new Date().toISOString() : null,
       verified_at: user.email_confirmed_at || new Date().toISOString(),
       verification_updated_at: new Date().toISOString(),
@@ -362,6 +366,13 @@ export async function POST(request: Request) {
         user_id: user.id,
         role: 'contact_person',
       })
+    }
+
+    if (accountType === 'business') {
+      await notifyAutorellAdmins(
+        `Ny företagsansökan: ${companyName}`,
+        `<p>Ett nytt företagskonto har skickat in en ansökan.</p><p><strong>Företag:</strong> ${companyName}<br/><strong>E-post:</strong> ${email}<br/><strong>Status:</strong> under_review</p>`,
+      )
     }
 
     await admin.from('marketplace_identity_checks').insert({

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   const [{ data: profile }, { data: listing }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('user_id,account_type,email,company_name')
+      .select('user_id,account_type,email,company_name,business_verification_status,business_onboarding_status')
       .eq('user_id', user.id)
       .maybeSingle(),
     body.listingId
@@ -70,6 +70,48 @@ export async function POST(request: Request) {
   const product = getBillingProduct(productKey)
   if (!product || product.amountMinor === undefined) {
     return NextResponse.json({ error: 'Unknown product.' }, { status: 400 })
+  }
+
+  if (profile.account_type === 'business' && product.kind !== 'subscription') {
+    return NextResponse.json({ error: 'Företagskonton använder abonnemang och kan inte köpa privata annonspaket.' }, { status: 403 })
+  }
+
+  if (product.kind === 'subscription' && product.businessPlan === 'free') {
+    if (profile.account_type !== 'business' || profile.business_verification_status !== 'verified' || !['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
+      return NextResponse.json({ error: 'Företaget måste vara godkänt innan Free kan aktiveras.' }, { status: 403 })
+    }
+    const { data: existingSubscription } = await admin
+      .from('business_subscriptions')
+      .select('id,stripe_subscription_id,status')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (existingSubscription?.stripe_subscription_id && ['active', 'trialing', 'past_due'].includes(String(existingSubscription.status || ''))) {
+      return NextResponse.json({ error: 'Avsluta eller ändra det betalda abonnemanget innan Free kan väljas.' }, { status: 409 })
+    }
+    const freePayload = {
+      user_id: user.id,
+      business_id: body.businessId || null,
+      product_key: product.productKey,
+      market,
+      currency: 'sek',
+      plan_key: 'free',
+      active_listing_limit: 5,
+      status: 'active',
+      payment_status: 'not_required',
+      manually_activated: false,
+      updated_at: new Date().toISOString(),
+    }
+    const { data: subscription, error: subscriptionError } = existingSubscription?.id
+      ? await admin.from('business_subscriptions').update(freePayload).eq('id', existingSubscription.id).select('id,plan_key,status,active_listing_limit').single()
+      : await admin.from('business_subscriptions').insert(freePayload).select('id,plan_key,status,active_listing_limit').single()
+    if (subscriptionError || !subscription) {
+      return NextResponse.json({ error: subscriptionError?.message || 'Could not activate Free plan.' }, { status: 400 })
+    }
+    await admin.from('marketplace_profiles').update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: new Date().toISOString() }).eq('user_id', user.id)
+    await admin.from('business_subscription_events').insert({ subscription_id: subscription.id, user_id: user.id, event_type: 'activated', to_plan: 'free' })
+    return NextResponse.json({ activated: true, subscription })
   }
 
   if (product.kind === 'listing_package' || product.kind === 'addon') {

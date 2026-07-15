@@ -173,6 +173,7 @@ const addOnKeys = [
 ] as const
 
 const businessKeys = [
+  'subscription.business.free.monthly',
   'subscription.business.starter.monthly',
   'subscription.business.growth.monthly',
   'subscription.business.professional.monthly',

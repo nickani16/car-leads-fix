@@ -27,6 +27,7 @@ const profileAuditSelect = `
   registration_number,
   vat_number,
   business_verification_status,
+  business_onboarding_status,
   company_verification_note,
   verification_updated_at,
   risk_status,
@@ -81,16 +82,19 @@ export async function PATCH(
     patch.business_verification_status = 'verified'
     patch.company_verification_note = body.reason || null
     patch.verification_updated_at = now
+    patch.business_onboarding_status = 'subscription_pending'
   }
   if (action === 'company_rejected') {
     patch.business_verification_status = 'rejected'
     patch.company_verification_note = body.reason || null
     patch.verification_updated_at = now
+    patch.business_onboarding_status = 'suspended'
   }
   if (action === 'company_pending_review') {
     patch.business_verification_status = 'pending_review'
     patch.company_verification_note = body.reason || null
     patch.verification_updated_at = now
+    patch.business_onboarding_status = 'under_review'
   }
 
   let { error } = await adminClient

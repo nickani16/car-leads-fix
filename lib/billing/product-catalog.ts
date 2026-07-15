@@ -15,7 +15,7 @@ export const MARKET_CURRENCIES = {
 export type BillingMarket = keyof typeof MARKET_CURRENCIES
 export type BillingCurrency = (typeof MARKET_CURRENCIES)[BillingMarket]
 export type ListingPackage = 'start' | 'standard' | 'premium'
-export type BusinessPlan = 'starter' | 'growth' | 'professional' | 'enterprise'
+export type BusinessPlan = 'free' | 'starter' | 'growth' | 'professional' | 'enterprise'
 export type ListingCategory =
   | 'cars'
   | 'vans'
@@ -183,6 +183,12 @@ const products: BillingProduct[] = [
     eur: 1299,
     dkk: 9900,
     pln: 5900,
+  }),
+  subscriptionProduct('free', 5, {
+    sek: 0,
+    eur: 0,
+    dkk: 0,
+    pln: 0,
   }),
   subscriptionProduct('starter', 25, {
     sek: 49900,
