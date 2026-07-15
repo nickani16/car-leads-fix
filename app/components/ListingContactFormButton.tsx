@@ -21,7 +21,6 @@ type ContactCopy = {
   email: string
   offer: string
   message: string
-  messagePlaceholder: string
   privacy: string
   submit: string
   sending: string
@@ -40,7 +39,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-post',
     offer: 'Hur mycket vill du erbjuda?',
     message: 'Meddelande',
-    messagePlaceholder: 'Skriv vad du vill veta eller när du vill bli kontaktad.',
     privacy: 'Jag godkänner att Autorell skickar mina kontaktuppgifter till säljaren för den här annonsen.',
     submit: 'Skicka förfrågan',
     sending: 'Skickar...',
@@ -57,7 +55,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'Email',
     offer: 'How much would you like to offer?',
     message: 'Message',
-    messagePlaceholder: 'Write what you want to know or when you want to be contacted.',
     privacy: 'I agree that Autorell sends my contact details to the seller for this listing.',
     submit: 'Send enquiry',
     sending: 'Sending...',
@@ -74,7 +71,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-Mail',
     offer: 'Wie viel möchten Sie anbieten?',
     message: 'Nachricht',
-    messagePlaceholder: 'Schreiben Sie, was Sie wissen möchten oder wann Sie kontaktiert werden möchten.',
     privacy: 'Ich stimme zu, dass Autorell meine Kontaktdaten für diese Anzeige an den Verkäufer sendet.',
     submit: 'Anfrage senden',
     sending: 'Wird gesendet...',
@@ -91,7 +87,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-mail',
     offer: 'Quel montant souhaitez-vous proposer ?',
     message: 'Message',
-    messagePlaceholder: 'Écrivez ce que vous voulez savoir ou quand vous souhaitez être contacté.',
     privacy: 'J’accepte qu’Autorell transmette mes coordonnées au vendeur pour cette annonce.',
     submit: 'Envoyer la demande',
     sending: 'Envoi...',
@@ -108,7 +103,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'Correo electrónico',
     offer: '¿Cuánto quieres ofrecer?',
     message: 'Mensaje',
-    messagePlaceholder: 'Escribe qué quieres saber o cuándo quieres que te contacten.',
     privacy: 'Acepto que Autorell envíe mis datos de contacto al vendedor para este anuncio.',
     submit: 'Enviar consulta',
     sending: 'Enviando...',
@@ -125,7 +119,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-mail',
     offer: 'Quanto vuoi offrire?',
     message: 'Messaggio',
-    messagePlaceholder: 'Scrivi cosa vuoi sapere o quando desideri essere contattato.',
     privacy: 'Accetto che Autorell invii i miei dati di contatto al venditore per questo annuncio.',
     submit: 'Invia richiesta',
     sending: 'Invio...',
@@ -142,7 +135,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-mail',
     offer: 'Ile chcesz zaoferować?',
     message: 'Wiadomość',
-    messagePlaceholder: 'Napisz, czego chcesz się dowiedzieć albo kiedy sprzedawca ma się z Tobą skontaktować.',
     privacy: 'Zgadzam się, aby Autorell przekazał moje dane kontaktowe sprzedawcy w sprawie tego ogłoszenia.',
     submit: 'Wyślij zapytanie',
     sending: 'Wysyłanie...',
@@ -159,7 +151,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-mail',
     offer: 'Hoeveel wil je bieden?',
     message: 'Bericht',
-    messagePlaceholder: 'Schrijf wat je wilt weten of wanneer je gecontacteerd wilt worden.',
     privacy: 'Ik ga ermee akkoord dat Autorell mijn contactgegevens naar de verkoper stuurt voor deze advertentie.',
     submit: 'Aanvraag verzenden',
     sending: 'Verzenden...',
@@ -176,7 +167,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'Sähköposti',
     offer: 'Kuinka paljon haluat tarjota?',
     message: 'Viesti',
-    messagePlaceholder: 'Kirjoita, mitä haluat tietää tai milloin haluat, että sinuun otetaan yhteyttä.',
     privacy: 'Hyväksyn, että Autorell lähettää yhteystietoni myyjälle tätä ilmoitusta varten.',
     submit: 'Lähetä kysely',
     sending: 'Lähetetään...',
@@ -193,7 +183,6 @@ const copy: Record<string, ContactCopy> = {
     email: 'E-mail',
     offer: 'Hvor meget vil du tilbyde?',
     message: 'Besked',
-    messagePlaceholder: 'Skriv, hvad du vil vide, eller hvornår du vil kontaktes.',
     privacy: 'Jeg accepterer, at Autorell sender mine kontaktoplysninger til sælgeren for denne annonce.',
     submit: 'Send forespørgsel',
     sending: 'Sender...',
@@ -307,7 +296,6 @@ export default function ListingContactFormButton({
                   required
                   maxLength={3000}
                   rows={5}
-                  placeholder={text.messagePlaceholder}
                   className="autorell-contact-placeholder min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                 />
               </label>
