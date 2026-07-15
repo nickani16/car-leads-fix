@@ -1,104 +1,72 @@
+import { createHash, randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
-import {
-  requireSuperAdminRoute,
-  writeAdminAuditLog,
-} from '@/lib/admin-route-auth'
-import {
-  isStrongPassword,
-  PASSWORD_REQUIREMENTS,
-} from '@/lib/password-policy'
+import { requireAdminRoute, writeAdminAuditLog } from '@/lib/admin-route-auth'
 
-const allowedRoles = new Set(['sales', 'operations', 'support', 'legal'])
-const usernamePattern = /^[a-z0-9._-]{3,32}$/i
+const allowedRoles = new Set([
+  'operations_admin', 'moderator', 'support_admin', 'finance_admin',
+  'content_editor', 'analyst',
+])
 
 export async function POST(request: Request) {
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('administrators.manage')
   if ('error' in auth) return auth.error
-
   const body = (await request.json().catch(() => ({}))) as {
     displayName?: string
     email?: string
-    username?: string
-    password?: string
     role?: string
+    password?: string
   }
-  const displayName = body.displayName?.trim() || ''
-  const email = body.email?.trim().toLowerCase() || ''
-  const username = body.username?.trim().toLowerCase() || ''
-  const password = body.password || ''
-  const role = body.role || ''
-
-  if (
-    !displayName ||
-    !email.includes('@') ||
-    !usernamePattern.test(username) ||
-    !isStrongPassword(password) ||
-    !allowedRoles.has(role)
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          `Name, valid email, username and role are required. Password: ${PASSWORD_REQUIREMENTS}`,
-      },
-      { status: 400 }
-    )
+  if (body.password) {
+    return NextResponse.json({ error: 'Administratörer får inte sätta användarlösenord. Inloggning sker med e-postkod.' }, { status: 400 })
+  }
+  const displayName = String(body.displayName || '').trim()
+  const email = String(body.email || '').trim().toLowerCase()
+  const role = String(body.role || '')
+  if (displayName.length < 2 || !email.includes('@') || !allowedRoles.has(role)) {
+    return NextResponse.json({ error: 'Namn, giltig e-post och en tillåten roll krävs.' }, { status: 400 })
   }
 
-  const { data: existingUsername } = await auth.adminClient
-    .from('staff_users')
-    .select('user_id')
-    .ilike('username', username)
+  const { data: pending } = await auth.adminClient
+    .from('admin_staff_invitations')
+    .select('id')
+    .ilike('email', email)
+    .eq('status', 'pending')
     .maybeSingle()
+  if (pending) return NextResponse.json({ error: 'Det finns redan en aktiv inbjudan för adressen.' }, { status: 409 })
 
-  if (existingUsername) {
-    return NextResponse.json(
-      { error: 'That username is already in use.' },
-      { status: 409 }
-    )
-  }
-
-  const { data: created, error: createError } =
-    await auth.adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      app_metadata: { portal_role: role },
+  // Supabase reuses an existing Auth identity when possible. A new identity receives
+  // an email invitation; both existing and new users finish through Autorells OTP flow.
+  const { data: users } = await auth.adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const existing = users?.users.find((user) => user.email?.toLowerCase() === email)
+  if (!existing) {
+    const { error: inviteError } = await auth.adminClient.auth.admin.inviteUserByEmail(email, {
+      data: { display_name: displayName, autorell_staff_invitation: true },
     })
-
-  if (createError || !created.user) {
-    return NextResponse.json(
-      { error: createError?.message || 'The account could not be created.' },
-      { status: 400 }
-    )
+    if (inviteError) return NextResponse.json({ error: inviteError.message }, { status: 400 })
   }
 
-  const staffUser = {
-    user_id: created.user.id,
-    role,
-    display_name: displayName,
+  const rawToken = randomBytes(32).toString('base64url')
+  const invitation = {
     email,
-    username,
-    is_active: true,
-    must_change_password: true,
-    updated_at: new Date().toISOString(),
+    display_name: displayName,
+    role_key: role,
+    token_hash: createHash('sha256').update(rawToken).digest('hex'),
+    status: 'pending',
+    invited_by: auth.user.id,
+    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   }
-  const { error: profileError } = await auth.adminClient
-    .from('staff_users')
-    .insert(staffUser)
-
-  if (profileError) {
-    await auth.adminClient.auth.admin.deleteUser(created.user.id)
-    return NextResponse.json({ error: profileError.message }, { status: 400 })
-  }
+  const { data, error } = await auth.adminClient.from('admin_staff_invitations').insert(invitation).select('id').single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   await writeAdminAuditLog({
     adminClient: auth.adminClient,
     actorUserId: auth.user.id,
-    action: 'staff_account_created',
-    targetType: 'staff_user',
-    targetId: created.user.id,
-    afterData: { ...staffUser, temporary_password: '[redacted]' },
+    actorRole: auth.primaryRole,
+    permission: 'administrators.manage',
+    action: 'staff_invitation_created',
+    targetType: 'admin_staff_invitation',
+    targetId: data.id,
+    afterData: { email, display_name: displayName, role_key: role, expires_at: invitation.expires_at },
   })
-
-  return NextResponse.json({ success: true, userId: created.user.id })
+  return NextResponse.json({ success: true, invitationId: data.id }, { status: 201 })
 }

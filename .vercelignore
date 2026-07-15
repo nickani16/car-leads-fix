@@ -4,6 +4,7 @@ node_modules
 .next-dev.*.log
 .next-*.log
 .env*
+.worktrees
 browser-qa
 qa-*.png
 qa-*.txt

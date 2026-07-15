@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdminRoute } from '@/lib/admin-route-auth'
 
 type RequestBody = {
   legalName?: string
@@ -12,29 +11,10 @@ type RequestBody = {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireAdminRoute('system.manage')
+  if ('error' in auth) return auth.error
   const body = (await request.json()) as RequestBody
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
-  }
-
-  const adminClient = createAdminClient()
-  const { data: adminUser } = await adminClient
-    .from('admin_users')
-    .select('role')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .maybeSingle()
-
-  if (!adminUser || !['admin', 'super_admin'].includes(adminUser.role)) {
-    return NextResponse.json({ error: 'Admin access required.' }, { status: 403 })
-  }
-
-  const { data, error } = await adminClient.rpc(
+  const { data, error } = await auth.adminClient.rpc(
     'update_platform_legal_entity',
     {
       p_legal_name: body.legalName?.trim() || '',
@@ -43,7 +23,7 @@ export async function POST(request: Request) {
       p_registered_address: body.registeredAddress?.trim() || '',
       p_country_code: body.countryCode?.trim().toUpperCase() || '',
       p_email: body.email?.trim().toLowerCase() || null,
-      p_actor_role: adminUser.role,
+      p_actor_role: auth.primaryRole,
     }
   )
 

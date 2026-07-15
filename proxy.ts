@@ -595,6 +595,19 @@ export async function proxy(request: NextRequest) {
       requestHeaders.set('x-autorell-market', localeContext.marketHeader)
       requestHeaders.set('x-autorell-pathname', pathname)
 
+      // Vehicle news owns market-prefixed App Router routes because its CMS
+      // queries and canonical URLs are market-specific. Do not strip the
+      // market segment through the legacy localized-page rewrite below.
+      if (segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter') {
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.next({ request: { headers: requestHeaders } }),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
+
       if (isSeoVehiclePath(pathMarket, segments.slice(1))) {
         const seoUrl = request.nextUrl.clone()
         seoUrl.pathname = `/seo/${pathMarket}/${segments.slice(1).join('/')}`
@@ -677,6 +690,7 @@ export async function proxy(request: NextRequest) {
     pathname === '/account' ||
     pathname.startsWith('/account/') ||
     /^\/(se|de|[a-z]{2})\/account(\/|$)/.test(pathname)
+  const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/')
 
   if (
     hostname === MARKET_HOSTS.en ||
@@ -779,6 +793,7 @@ export async function proxy(request: NextRequest) {
     targetMarket &&
     EU_BUYER_MARKET_CODES.has(targetMarket) &&
     !isAccountRoute &&
+    !isAdminRoute &&
     (hostname !== MARKET_HOSTS.en ||
       !pathname.startsWith(`/${targetMarket}`))
   ) {

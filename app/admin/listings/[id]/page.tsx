@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import AdminEntityActions from '../../AdminEntityActions'
 import { AdminPageHeader, Badge, DetailCard, DetailGrid } from '../../AdminUI'
 import { categoryLabel, formatDate, formatNumber, statusTone } from '../../admin-helpers'
@@ -14,7 +14,7 @@ export default async function AdminListingDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission('listings.read')
   const [{ data: listing }, { data: identifiers }, { data: events }, { data: reports }] = await Promise.all([
     adminClient
       .from('marketplace_listings')
@@ -225,30 +225,27 @@ export default async function AdminListingDetailPage({
             <p className="mt-2 text-sm text-[#667085]">{listing.seller_type}</p>
           </DetailCard>
 
-          <DetailCard title="Admin actions">
+          {permissions.includes('moderation.manage') || permissions.includes('listings.delete') ? <DetailCard title="Admin actions">
             <AdminEntityActions
               endpoint={`/api/admin/marketplace-listings/${listing.id}`}
               actions={[
-                { action: 'approve', label: 'Godkänn' },
-                { action: 'mark_suspicious', label: 'Misstänkt', requiresReason: true },
-                { action: 'pause', label: 'Pausa', requiresReason: true },
-                {
-                  action: 'unpublish',
-                  label: 'Avpublicera',
-                  tone: 'danger',
-                  requiresReason: true,
-                },
-                {
+                ...(permissions.includes('moderation.manage') ? [
+                  { action: 'approve', label: 'Godkänn' },
+                  { action: 'mark_suspicious', label: 'Misstänkt', requiresReason: true },
+                  { action: 'pause', label: 'Pausa', requiresReason: true },
+                  { action: 'unpublish', label: 'Avpublicera', tone: 'danger' as const, requiresReason: true },
+                ] : []),
+                ...(permissions.includes('listings.delete') ? [{
                   action: 'delete',
                   label: 'Radera',
-                  tone: 'danger',
+                  tone: 'danger' as const,
                   requiresReason: true,
                   confirmTitle: 'Radera annons',
                   confirmText: 'Annonsen mjukraderas och döljs från publika sökresultat. Säljaren ansvarar fortsatt för lämnade uppgifter.',
-                },
+                }] : []),
               ]}
             />
-          </DetailCard>
+          </DetailCard> : null}
         </aside>
       </div>
     </main>

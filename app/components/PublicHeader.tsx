@@ -24,7 +24,6 @@ import {
   Store,
   UserPlus,
   UserRound,
-  Warehouse,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -325,30 +324,6 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
     { href: '/sell-vehicle', label: 'Fahrzeug verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
     { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
     { href: '/how-selling-works', label: 'So funktioniert es', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
-  ],
-}
-
-const businessItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
-  sv: [
-    { href: '/business', label: 'För företag', description: 'Översikt över Autorells företagslösningar.', icon: Building2 },
-    { href: '/register?account=business', label: 'Företagskonto', description: 'Skapa ett konto för organisationen.', icon: UserRound },
-    { href: '/konto/annonser/ny', label: 'Annonsera fordon', description: 'Publicera enstaka fordon eller hela lagret.', icon: FilePlus2 },
-    { href: '/konto/annonser', label: 'Hantera lager', description: 'Se och uppdatera företagets annonser.', icon: Warehouse },
-    { href: '/contact', label: 'Kontakta oss', description: 'Prata med oss om större volymer.', icon: CircleHelp },
-  ],
-  en: [
-    { href: '/business', label: 'For business', description: "Explore Autorell's business solutions.", icon: Building2 },
-    { href: '/register?account=business', label: 'Business account', description: 'Create an account for your organisation.', icon: UserRound },
-    { href: '/account/listings/new', label: 'Advertise vehicles', description: 'Publish one vehicle or your whole inventory.', icon: FilePlus2 },
-    { href: '/account/listings', label: 'Manage inventory', description: 'Review and update company listings.', icon: Warehouse },
-    { href: '/contact', label: 'Contact us', description: 'Talk to us about larger volumes.', icon: CircleHelp },
-  ],
-  de: [
-    { href: '/business', label: 'Für Unternehmen', description: 'Autorells Unternehmenslösungen entdecken.', icon: Building2 },
-    { href: '/register?account=business', label: 'Unternehmenskonto', description: 'Ein Konto für Ihr Unternehmen erstellen.', icon: UserRound },
-    { href: '/account/listings/new', label: 'Fahrzeuge inserieren', description: 'Ein Fahrzeug oder den gesamten Bestand veröffentlichen.', icon: FilePlus2 },
-    { href: '/account/listings', label: 'Bestand verwalten', description: 'Unternehmensanzeigen prüfen und aktualisieren.', icon: Warehouse },
-    { href: '/contact', label: 'Kontakt', description: 'Sprechen Sie mit uns über größere Volumen.', icon: CircleHelp },
   ],
 }
 
@@ -700,7 +675,7 @@ export default function PublicHeader({
       icon: CircleHelp,
     },
     {
-      href: localizePublicHref(locale, '/fordonsnyheter'),
+      href: localizePublicHref(locale, '/vehicle-news'),
       label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Fahrzeugnews'),
       description: publicLabel('Guides, updates and articles about vehicle markets.', 'Guider, uppdateringar och artiklar om fordonsmarknaden.', 'Ratgeber, Updates und Artikel zum Fahrzeugmarkt.'),
       icon: Newspaper,

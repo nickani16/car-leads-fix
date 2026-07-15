@@ -1,58 +1,8 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
-
-export const SUPPORT_STATUSES = ['open', 'waiting_customer', 'waiting_internal', 'resolved', 'closed'] as const
-export const SUPPORT_PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const
-export const SUPPORT_CATEGORIES = [
-  'listing',
-  'account',
-  'payment',
-  'business_account',
-  'report_listing',
-  'fraud',
-  'gdpr',
-  'technical',
-  'other',
-] as const
-
-export type SupportStatus = (typeof SUPPORT_STATUSES)[number]
-export type SupportPriority = (typeof SUPPORT_PRIORITIES)[number]
-export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number]
-
-export type SupportTicket = {
-  id: string
-  user_id: string | null
-  listing_id: string | null
-  chat_session_id: string | null
-  assigned_to: string | null
-  customer_name: string | null
-  customer_email: string | null
-  customer_phone: string | null
-  customer_country: string | null
-  subject: string
-  category: SupportCategory
-  priority: SupportPriority
-  status: SupportStatus
-  customer_language: string | null
-  ai_summary: string | null
-  ai_risk_level: string | null
-  ai_recommended_action: string | null
-  created_at: string
-  updated_at: string
-  closed_at: string | null
-}
-
-export type SupportMessage = {
-  id: string
-  ticket_id: string
-  author_id: string | null
-  author_type: 'customer' | 'support' | 'ai' | 'system'
-  message: string
-  is_internal: boolean
-  original_language: string | null
-  translated_message: string | null
-  created_at: string
-}
+import { SUPPORT_CATEGORIES, SUPPORT_PRIORITIES, SUPPORT_STATUSES, type SupportCategory, type SupportMessage, type SupportPriority, type SupportStatus, type SupportTicket, type SupportTicketEvent } from './types'
+export { SUPPORT_CATEGORIES, SUPPORT_PRIORITIES, SUPPORT_STATUSES }
+export type { SupportCategory, SupportMessage, SupportPriority, SupportStatus, SupportTicket, SupportTicketEvent }
 
 export function normalizeSupportStatus(value: unknown): SupportStatus | null {
   return SUPPORT_STATUSES.includes(value as SupportStatus) ? (value as SupportStatus) : null
@@ -89,6 +39,6 @@ export async function fetchTicketBundle(admin: SupabaseClient, ticketId: string)
     ticket: ticket as SupportTicket,
     messages: (messages || []) as SupportMessage[],
     chatMessages,
-    events: events || [],
+    events: (events || []) as SupportTicketEvent[],
   }
 }

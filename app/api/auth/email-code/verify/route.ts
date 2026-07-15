@@ -139,7 +139,7 @@ export async function POST(request: Request) {
     })
     if (error || !data.user) throw error || new Error('Session could not be created.')
 
-    const [{ data: profile }, { data: adminUser }] = await Promise.all([
+    const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin
         .from('marketplace_profiles')
         .select('user_id')
@@ -151,14 +151,52 @@ export async function POST(request: Request) {
         .eq('user_id', data.user.id)
         .eq('is_active', true)
         .maybeSingle(),
+      admin
+        .from('admin_staff_invitations')
+        .select('id,role_key,display_name,invited_by,expires_at')
+        .ilike('email', email)
+        .eq('status', 'pending')
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ])
 
+    if (invitation) {
+      const now = new Date().toISOString()
+      const { error: roleError } = await admin.from('user_admin_roles').upsert({
+        user_id: data.user.id,
+        role_key: invitation.role_key,
+        is_active: true,
+        assigned_by: invitation.invited_by,
+        assignment_reason: 'Accepted staff email-code invitation',
+        starts_at: now,
+        updated_at: now,
+      }, { onConflict: 'user_id,role_key' })
+      if (roleError) throw roleError
+      if (invitation.role_key === 'support_admin') {
+        await admin.from('support_agent_profiles').upsert({
+          user_id: data.user.id,
+          display_name: invitation.display_name,
+          role: 'support',
+          is_active: true,
+          updated_at: now,
+        })
+      }
+      await admin.from('admin_staff_invitations').update({
+        status: 'accepted', accepted_by: data.user.id, accepted_at: now, updated_at: now,
+      }).eq('id', invitation.id)
+    }
+
     const requested = safeAuthDestination(body.next)
-    const destination = profile
-      ? accountDestination(requested)
-      : adminUser
+    const adminRole = invitation?.role_key
+    const destination = adminRole === 'support_admin'
+      ? '/admin/support'
+      : invitation || adminUser
         ? '/admin'
-        : onboardingDestination(requested)
+        : profile
+          ? accountDestination(requested)
+          : onboardingDestination(requested)
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {

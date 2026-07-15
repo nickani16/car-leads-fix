@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
 import { listingPackageDetails } from '@/lib/marketplace-pricing'
@@ -23,9 +23,6 @@ export async function PATCH(
   request: Request,
   context: RouteContext<'/api/admin/marketplace-listings/[id]'>,
 ) {
-  const auth = await requireSuperAdminRoute()
-  if ('error' in auth) return auth.error
-
   const { id } = await context.params
   const body = (await request.json()) as {
     action?: string
@@ -34,6 +31,19 @@ export async function PATCH(
   const action = String(body.action || '')
   if (!actions.has(action)) {
     return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
+  }
+
+  const permission = action === 'delete'
+    ? 'listings.delete'
+    : action === 'close_account' || action === 'reopen_account'
+      ? 'users.manage'
+      : 'moderation.manage'
+  const auth = await requireAdminRoute(permission)
+  if ('error' in auth) return auth.error
+
+  const reason = String(body.reason || '').trim()
+  if (['pause', 'flag', 'mark_suspicious', 'unpublish', 'delete', 'reject', 'request_info', 'close_account', 'reopen_account'].includes(action) && reason.length < 8) {
+    return NextResponse.json({ error: 'Ange en tydlig anledning med minst 8 tecken.' }, { status: 400 })
   }
 
   const { adminClient, user } = auth
@@ -135,16 +145,18 @@ export async function PATCH(
     to_review_status: listingPatch.review_status
       ? String(listingPatch.review_status)
       : before.review_status,
-    metadata: { reason: body.reason || null },
+    metadata: { reason: reason || null },
   })
 
   await writeAdminAuditLog({
     adminClient,
     actorUserId: user.id,
+    actorRole: auth.primaryRole,
+    permission,
     action: `marketplace_listing_${action}`,
     targetType: 'marketplace_listing',
     targetId: id,
-    reason: body.reason || null,
+    reason: reason || null,
     beforeData: before,
     afterData: { ...before, ...listingPatch },
   })

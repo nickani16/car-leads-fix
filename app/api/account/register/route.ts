@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { createBusinessApplicationNotifications, notifyAutorellAdmins } from '@/lib/admin-notifications'
+import { sendAdminNotificationEmail } from '@/lib/email/admin-notifications'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
   accountConfirmationKeys,
@@ -323,6 +323,18 @@ export async function POST(request: Request) {
           .single()
         if (companyError || !company) throw companyError
         companyId = company.id
+        try {
+          await sendAdminNotificationEmail({
+            admin,
+            notificationType: 'company_application',
+            title: 'Ny företagsansökan',
+            body: `${companyName} (${countryCode}) väntar på granskning.`,
+            actionUrl: `/admin/companies?company=${company.id}`,
+            origin: new URL(request.url).origin,
+          })
+        } catch (notificationError) {
+          console.error('Company application admin email failed', notificationError)
+        }
       }
     }
 
@@ -370,28 +382,6 @@ export async function POST(request: Request) {
         user_id: user.id,
         role: 'contact_person',
       })
-    }
-
-    if (accountType === 'business' && companyId) {
-      try {
-        await createBusinessApplicationNotifications({
-        companyId,
-        companyName,
-        countryCode,
-        contactName: displayName,
-        email,
-        registrationNumber: registrationNumber || vatNumber || null,
-        })
-        await notifyAutorellAdmins(
-        `Ny företagsansökan: ${companyName}`,
-        `<p>Ett nytt företagskonto har skickat in en ansökan.</p><p><strong>Företag:</strong> ${companyName}<br/><strong>E-post:</strong> ${email}<br/><strong>Status:</strong> under_review</p>`,
-        )
-      } catch (notificationError) {
-        console.error('[business-registration] notification delivery failed', {
-          companyId,
-          message: notificationError instanceof Error ? notificationError.message : String(notificationError),
-        })
-      }
     }
 
     await admin.from('marketplace_identity_checks').insert({

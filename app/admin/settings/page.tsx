@@ -1,10 +1,10 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import { AdminPageHeader, DetailCard, DetailGrid } from '../AdminUI'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminSettingsPage() {
-  const { adminUser } = await requireAdmin()
+  const { adminUser } = await requireAdminPermission('settings.read')
 
   return (
     <main className="px-4 py-7 sm:px-6 lg:px-8">

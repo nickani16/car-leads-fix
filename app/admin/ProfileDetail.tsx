@@ -1,67 +1,89 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
+import type { AdminPermission } from '@/lib/admin/permissions'
 import AdminEntityActions from './AdminEntityActions'
 import { AdminPageHeader, AdminTable, Badge, DetailCard, DetailGrid } from './AdminUI'
 import { categoryLabel, formatDate, profileName, statusTone } from './admin-helpers'
 
+const profileSelect = `
+  user_id,
+  account_type,
+  email,
+  phone,
+  country_code,
+  city,
+  first_name,
+  last_name,
+  display_name,
+  company_name,
+  registration_number,
+  vat_number,
+  website_url,
+  company_id,
+  business_verification_status,
+  business_onboarding_status,
+  company_domain_match,
+  company_verification_note,
+  risk_status,
+  created_at,
+  updated_at
+`
+
 export default async function ProfileDetail({
   userId,
   backHref,
+  permission = 'users.read',
 }: {
   userId: string
   backHref: string
+  permission?: AdminPermission
 }) {
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission(permission)
+  const accountActions = [
+    ...(permissions.includes('users.manage')
+      ? [
+          { action: 'suspend', label: 'Pausa konto', requiresReason: true },
+          { action: 'activate', label: 'Aktivera konto' },
+        ]
+      : []),
+    ...(permissions.includes('users.delete')
+      ? [
+          {
+            action: 'delete',
+            label: 'Radera konto',
+            tone: 'danger' as const,
+            requiresReason: true,
+            confirmTitle: 'Radera konto',
+            confirmText: 'Kontot mjukraderas/spärras. Alla åtgärder loggas i admin audit log.',
+          },
+        ]
+      : []),
+  ]
+
   let { data: profile } = await adminClient
-      .from('marketplace_profiles')
-      .select(`
-        user_id,
-        account_type,
-        email,
-        phone,
-        country_code,
-        city,
-        first_name,
-        last_name,
-        display_name,
-        company_name,
-        registration_number,
-        vat_number,
-        website_url,
-        company_id,
-        business_verification_status,
-        company_domain_match,
-        company_verification_note,
-        risk_status,
-        created_at,
-        updated_at
-      `)
-      .eq('user_id', userId)
-      .maybeSingle()
+    .from('marketplace_profiles')
+    .select(profileSelect)
+    .eq('user_id', userId)
+    .maybeSingle()
+
   if (!profile) {
     const fallback = await adminClient
       .from('marketplace_profiles')
-      .select(`
-        user_id, account_type, email, phone, country_code, city, first_name, last_name,
-        display_name, company_name, registration_number, vat_number, website_url, company_id,
-        business_verification_status, company_domain_match, company_verification_note,
-        risk_status, created_at, updated_at
-      `)
+      .select(profileSelect)
       .eq('company_id', userId)
       .maybeSingle()
     profile = fallback.data
   }
-  const [{ data: listings }] = await Promise.all([
-    adminClient
-      .from('marketplace_listings')
-      .select('id,title,category,status,review_status,country_code,city,created_at')
-      .eq('seller_user_id', profile?.user_id || userId)
-      .order('created_at', { ascending: false })
-      .limit(40),
-  ])
 
   if (!profile) notFound()
+
+  const { data: listings } = await adminClient
+    .from('marketplace_listings')
+    .select('id,title,category,status,review_status,country_code,city,created_at')
+    .eq('seller_user_id', profile.user_id)
+    .order('created_at', { ascending: false })
+    .limit(40)
 
   return (
     <main className="px-4 py-7 sm:px-6 lg:px-8">
@@ -88,6 +110,7 @@ export default async function ProfileDetail({
                 { label: 'VAT', value: profile.vat_number },
                 { label: 'Webbplats', value: profile.website_url },
                 { label: 'Företagsverifiering', value: companyVerificationLabel(profile.business_verification_status) },
+                { label: 'Onboarding', value: profile.business_onboarding_status },
                 { label: 'Domänmatchning', value: profile.company_domain_match ? 'Ja' : 'Nej' },
                 { label: 'Intern verifieringsnotering', value: profile.company_verification_note },
                 { label: 'Riskstatus', value: profile.risk_status || 'standard' },
@@ -128,45 +151,38 @@ export default async function ProfileDetail({
         </div>
 
         <aside className="space-y-6">
-          <DetailCard title="Admin actions">
-            <AdminEntityActions
-              endpoint={`/api/admin/users/${profile.user_id}`}
-              actions={[
-                ...(profile.account_type === 'business'
-                  ? [
-                      {
-                        action: 'company_verified',
-                        label: 'Godkänn företag',
-                        requiresReason: true,
-                      },
-                      {
-                        action: 'company_pending_review',
-                        label: 'Sätt granskning',
-                        requiresReason: true,
-                      },
-                      {
-                        action: 'company_rejected',
-                        label: 'Neka företag',
-                        tone: 'danger' as const,
-                        requiresReason: true,
-                        confirmTitle: 'Neka företagsverifiering',
-                        confirmText: 'Företaget kan inte publicera nya annonser medan verifieringen är nekad.',
-                      },
-                    ]
-                  : []),
-                { action: 'suspend', label: 'Pausa konto', requiresReason: true },
-                { action: 'activate', label: 'Aktivera konto' },
-                {
-                  action: 'delete',
-                  label: 'Radera konto',
-                  tone: 'danger',
-                  requiresReason: true,
-                  confirmTitle: 'Radera konto',
-                  confirmText: 'Kontot mjukraderas/spärras. Alla åtgärder loggas i admin audit log.',
-                },
-              ]}
-            />
-          </DetailCard>
+          {accountActions.length || (profile.account_type === 'business' && permissions.includes('companies.verify')) ? (
+            <DetailCard title="Admin actions">
+              <AdminEntityActions
+                endpoint={`/api/admin/users/${profile.user_id}`}
+                actions={[
+                  ...(profile.account_type === 'business' && permissions.includes('companies.verify')
+                    ? [
+                        {
+                          action: 'company_verified',
+                          label: 'Godkänn företag',
+                          requiresReason: true,
+                        },
+                        {
+                          action: 'company_pending_review',
+                          label: 'Sätt granskning',
+                          requiresReason: true,
+                        },
+                        {
+                          action: 'company_rejected',
+                          label: 'Neka företag',
+                          tone: 'danger' as const,
+                          requiresReason: true,
+                          confirmTitle: 'Neka företagsverifiering',
+                          confirmText: 'Företaget kan inte publicera nya annonser medan verifieringen är nekad.',
+                        },
+                      ]
+                    : []),
+                  ...accountActions,
+                ]}
+              />
+            </DetailCard>
+          ) : null}
         </aside>
       </div>
     </main>

@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
-import {
-  isStrongPassword,
-  PASSWORD_REQUIREMENTS,
-} from '@/lib/password-policy'
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -31,12 +27,18 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid user.' }, { status: 400 })
   }
 
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('administrators.manage')
   if ('error' in auth) return auth.error
 
   const body = (await request.json().catch(() => ({}))) as {
     isActive?: boolean
     password?: string
+  }
+  if (body.password) {
+    return NextResponse.json(
+      { error: 'Administratörer får inte sätta eller återställa användarlösenord.' },
+      { status: 400 },
+    )
   }
   const { data: before } = await auth.adminClient
     .from('staff_users')
@@ -62,28 +64,6 @@ export async function PATCH(
     }
   }
 
-  if (body.password) {
-    if (!isStrongPassword(body.password)) {
-      return NextResponse.json(
-        { error: PASSWORD_REQUIREMENTS },
-        { status: 400 }
-      )
-    }
-    const { error } = await auth.adminClient.auth.admin.updateUserById(id, {
-      password: body.password,
-    })
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
-    await auth.adminClient
-      .from('staff_users')
-      .update({
-        must_change_password: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', id)
-  }
-
   const { data: after } = await auth.adminClient
     .from('staff_users')
     .select(staffAuditSelect)
@@ -93,7 +73,9 @@ export async function PATCH(
   await writeAdminAuditLog({
     adminClient: auth.adminClient,
     actorUserId: auth.user.id,
-    action: body.password ? 'staff_password_reset' : 'staff_account_updated',
+    actorRole: auth.primaryRole,
+    permission: 'administrators.manage',
+    action: 'staff_account_updated',
     targetType: 'staff_user',
     targetId: id,
     beforeData: before,
@@ -112,7 +94,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid user.' }, { status: 400 })
   }
 
-  const auth = await requireSuperAdminRoute()
+  const auth = await requireAdminRoute('administrators.manage')
   if ('error' in auth) return auth.error
   const body = (await request.json().catch(() => ({}))) as { reason?: string }
   const reason = body.reason?.trim() || ''
@@ -150,6 +132,8 @@ export async function DELETE(
   await writeAdminAuditLog({
     adminClient: auth.adminClient,
     actorUserId: auth.user.id,
+    actorRole: auth.primaryRole,
+    permission: 'administrators.manage',
     action: 'staff_account_deleted',
     targetType: 'staff_user',
     targetId: id,

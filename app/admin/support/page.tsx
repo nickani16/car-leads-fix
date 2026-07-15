@@ -1,8 +1,9 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import {
   AdminEmpty,
   AdminFilters,
   AdminPageHeader,
+  AdminStatCard,
   FilterSelect,
 } from '../AdminUI'
 import {
@@ -14,7 +15,8 @@ import {
 } from '../admin-helpers'
 import SupportTicketDetail from '@/components/support/SupportTicketDetail'
 import SupportTicketList from '@/components/support/SupportTicketList'
-import { fetchTicketBundle, type SupportTicket } from '@/lib/support/tickets'
+import { fetchTicketBundle } from '@/lib/support/tickets'
+import { SUPPORT_STATUSES, type SupportTicket } from '@/lib/support/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +35,7 @@ export default async function AdminSupportPage({
   const selectedTicketId = getParam(params, 'ticket')
   const page = getPage(params)
   const { from, to } = pageRange(page)
-  const { adminClient } = await requireAdmin()
+  const { adminClient, user } = await requireAdminPermission('support.read')
 
   let query = adminClient
     .from('support_tickets')
@@ -52,14 +54,20 @@ export default async function AdminSupportPage({
     query = query.or(`subject.ilike.%${escaped}%,customer_email.ilike.%${escaped}%,customer_name.ilike.%${escaped}%`)
   }
 
-  const [{ data: tickets }, { data: agents }] = await Promise.all([
+  const [{ data: tickets }, { data: agents }, { data: supportMetrics }] = await Promise.all([
     query,
     adminClient
       .from('support_agent_profiles')
       .select('user_id,display_name,role,languages,is_active')
       .eq('is_active', true)
       .order('display_name', { ascending: true }),
+    adminClient.from('support_tickets').select('status,assigned_to,created_at,first_response_at,resolved_at').limit(5000),
   ])
+
+  const metrics = supportMetrics || []
+  const resolvedDurations = metrics.flatMap((ticket) => ticket.resolved_at ? [new Date(ticket.resolved_at).getTime() - new Date(ticket.created_at).getTime()] : [])
+  const firstResponseDurations = metrics.flatMap((ticket) => ticket.first_response_at ? [new Date(ticket.first_response_at).getTime() - new Date(ticket.created_at).getTime()] : [])
+  const averageHours = (values: number[]) => values.length ? `${(values.reduce((sum, value) => sum + value, 0) / values.length / 3_600_000).toFixed(1)} h` : '–'
 
   const typedTickets = (tickets || []) as SupportTicket[]
   const selectedId = selectedTicketId || typedTickets[0]?.id
@@ -73,17 +81,25 @@ export default async function AdminSupportPage({
         title="Support"
         description="AI-eskalerade chatthistoriker, kundmeddelanden, interna anteckningar och manuella supportåtgärder."
       />
+      <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <AdminStatCard label="Mina aktiva ärenden" value={metrics.filter((ticket) => ticket.assigned_to === user.id && !['resolved', 'closed'].includes(ticket.status)).length} />
+        <AdminStatCard label="Otilldelade" value={metrics.filter((ticket) => !ticket.assigned_to && !['resolved', 'closed'].includes(ticket.status)).length} />
+        <AdminStatCard label="Snitt första svar" value={averageHours(firstResponseDurations)} />
+        <AdminStatCard label="Snitt handläggningstid" value={averageHours(resolvedDurations)} />
+      </section>
+      <nav className="mb-5 flex flex-wrap gap-2" aria-label="Supportköer">
+        {[
+          ['Mina ärenden', `?assigned_to=${user.id}`], ['Otilldelade', '?assigned_to=unassigned'], ['Pågående', '?status=in_progress'],
+          ['Väntar på kund', '?status=waiting_for_customer'], ['Eskalerade', '?status=escalated'], ['Lösta', '?status=resolved'], ['Stängda', '?status=closed'],
+        ].map(([label, href]) => <Link key={label} href={href} className="rounded-full border border-[#d7deea] bg-white px-3 py-2 text-xs font-bold text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]">{label}</Link>)}
+      </nav>
       <AdminFilters search={q} searchPlaceholder="Sök ämne, kund eller e-post">
         <FilterSelect
           name="status"
           value={status}
           label="Status"
           options={[
-            { value: 'open', label: 'Open' },
-            { value: 'waiting_customer', label: 'Väntar kund' },
-            { value: 'waiting_internal', label: 'Väntar internt' },
-            { value: 'resolved', label: 'Löst' },
-            { value: 'closed', label: 'Stängt' },
+            ...SUPPORT_STATUSES.map((value) => ({ value, label: value.replaceAll('_', ' ') })),
           ]}
         />
         <FilterSelect
@@ -161,6 +177,7 @@ export default async function AdminSupportPage({
                 metadata?: { attachment?: { name: string; dataUrl: string } }
               }[]}
               agents={(agents || []) as { user_id: string; display_name: string | null; role: string }[]}
+              events={bundle.events}
             />
           ) : (
             <AdminEmpty text="Välj ett ärende." />
@@ -170,3 +187,4 @@ export default async function AdminSupportPage({
     </main>
   )
 }
+import Link from 'next/link'

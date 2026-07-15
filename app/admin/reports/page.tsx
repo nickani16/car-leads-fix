@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import AdminEntityActions from '../AdminEntityActions'
 import {
   AdminEmpty,
@@ -32,7 +32,7 @@ export default async function AdminReportsPage({
   const status = getParam(params, 'status')
   const page = getPage(params)
   const { from, to } = pageRange(page)
-  const { adminClient } = await requireAdmin()
+  const { adminClient, permissions } = await requireAdminPermission('reports.read')
 
   let query = adminClient
     .from('marketplace_reports')
@@ -96,14 +96,14 @@ export default async function AdminReportsPage({
                 </td>
                 <td className="px-4 py-4 text-[#667085]">{formatDate(report.created_at)}</td>
                 <td className="px-4 py-4">
-                  <AdminEntityActions
+                  {permissions.includes('reports.manage') ? <AdminEntityActions
                     endpoint={`/api/admin/reports/${report.id}`}
                     actions={[
                       { action: 'reviewing', label: 'Granska' },
                       { action: 'actioned', label: 'Åtgärdad', requiresReason: true },
                       { action: 'closed', label: 'Stäng', requiresReason: true },
                     ]}
-                  />
+                  /> : <span className="text-xs text-[#98a2b3]">Endast läsning</span>}
                 </td>
               </tr>
             ))}

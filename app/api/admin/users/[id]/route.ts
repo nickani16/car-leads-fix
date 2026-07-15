@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import {
-  requireSuperAdminRoute,
+  requireAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
-import { sendBusinessApprovalEmail } from '@/lib/admin-notifications'
+import { sendBusinessApprovalEmail } from '@/lib/email/admin-notifications'
 
 const actions = new Set([
   'suspend',
@@ -44,14 +44,24 @@ export async function PATCH(
   request: Request,
   context: RouteContext<'/api/admin/users/[id]'>,
 ) {
-  const auth = await requireSuperAdminRoute()
-  if ('error' in auth) return auth.error
-
   const { id } = await context.params
   const body = (await request.json()) as { action?: string; reason?: string }
   const action = String(body.action || '')
   if (!actions.has(action)) {
     return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
+  }
+
+  const permission = action.startsWith('company_')
+    ? 'companies.verify'
+    : action === 'delete'
+      ? 'users.delete'
+      : 'users.manage'
+  const auth = await requireAdminRoute(permission)
+  if ('error' in auth) return auth.error
+
+  const reason = String(body.reason || '').trim()
+  if (['suspend', 'delete', 'company_verified', 'company_rejected', 'company_pending_review'].includes(action) && reason.length < 8) {
+    return NextResponse.json({ error: 'Ange en tydlig anledning med minst 8 tecken.' }, { status: 400 })
   }
 
   const { adminClient, user } = auth
@@ -176,10 +186,12 @@ export async function PATCH(
   await writeAdminAuditLog({
     adminClient,
     actorUserId: user.id,
+    actorRole: auth.primaryRole,
+    permission,
     action: `marketplace_user_${action}`,
     targetType: 'marketplace_profile',
     targetId: userId,
-    reason: body.reason || null,
+    reason: reason || null,
     beforeData: before,
     afterData: { ...before, ...patch },
   })

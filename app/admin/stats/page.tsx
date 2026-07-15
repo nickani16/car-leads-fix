@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/admin-auth'
+import { requireAdminPermission } from '@/lib/admin-auth'
 import { marketplaceCategories } from '@/lib/marketplace'
 import { AdminPageHeader, AdminStatCard, AdminTable, Badge } from '../AdminUI'
 import { categoryLabel, formatNumber, statusTone } from '../admin-helpers'
@@ -14,13 +14,18 @@ function readCount(result: CountResult) {
 }
 
 export default async function AdminStatsPage() {
-  const { adminClient } = await requireAdmin()
+  const { adminClient } = await requireAdminPermission('analytics.read')
   const [
     listingsTotalResult,
     businessResult,
     privateResult,
     blockedResult,
     openReportsResult,
+    paidOrdersResult,
+    activeSubscriptionsResult,
+    newsletterSubscribersResult,
+    openSupportResult,
+    highRiskEventsResult,
     categoryRows,
   ] = await Promise.all([
     adminClient.from('marketplace_listings').select('id', { count: 'estimated', head: true }),
@@ -40,6 +45,11 @@ export default async function AdminStatsPage() {
       .from('marketplace_reports')
       .select('id', { count: 'estimated', head: true })
       .in('status', ['new', 'reviewing']),
+    adminClient.from('payment_orders').select('id', { count: 'estimated', head: true }).in('status', ['paid', 'fulfilled']),
+    adminClient.from('business_subscriptions').select('id', { count: 'estimated', head: true }).in('status', ['active', 'trialing']),
+    adminClient.from('newsletter_subscribers').select('id', { count: 'estimated', head: true }).eq('status', 'subscribed'),
+    adminClient.from('support_tickets').select('id', { count: 'estimated', head: true }).in('status', ['new', 'assigned', 'in_progress', 'reopened', 'escalated']),
+    adminClient.from('security_events').select('id', { count: 'estimated', head: true }).in('severity', ['high', 'critical']),
     Promise.all(
       marketplaceCategories.map(async (category) => {
         const [totalResult, publishedResult, flaggedResult] = await Promise.all([
@@ -74,6 +84,11 @@ export default async function AdminStatsPage() {
   const privateCount = readCount(privateResult)
   const blocked = readCount(blockedResult)
   const openReports = readCount(openReportsResult)
+  const paidOrders = readCount(paidOrdersResult)
+  const activeSubscriptions = readCount(activeSubscriptionsResult)
+  const newsletterSubscribers = readCount(newsletterSubscribersResult)
+  const openSupport = readCount(openSupportResult)
+  const highRiskEvents = readCount(highRiskEventsResult)
   const visibleCategoryRows = categoryRows.filter(
     (row) => row.total > 0 || row.published > 0 || row.flagged > 0,
   )
@@ -91,6 +106,11 @@ export default async function AdminStatsPage() {
         <AdminStatCard label="Privatpersoner" value={formatNumber(privateCount)} />
         <AdminStatCard label="Öppna rapporter" value={formatNumber(openReports)} />
         <AdminStatCard label="Spärrade konton" value={formatNumber(blocked)} />
+        <AdminStatCard label="Betalda order" value={formatNumber(paidOrders)} />
+        <AdminStatCard label="Aktiva abonnemang" value={formatNumber(activeSubscriptions)} />
+        <AdminStatCard label="Nyhetsbrevsprenumeranter" value={formatNumber(newsletterSubscribers)} />
+        <AdminStatCard label="Öppna supportärenden" value={formatNumber(openSupport)} />
+        <AdminStatCard label="Högriskhändelser" value={formatNumber(highRiskEvents)} />
       </section>
 
       <section className="mt-8">
