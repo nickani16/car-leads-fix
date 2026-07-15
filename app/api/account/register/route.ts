@@ -174,6 +174,12 @@ export async function POST(request: Request) {
         { status: 401 },
       )
     }
+    if (!user.email_confirmed_at) {
+      return NextResponse.json(
+        { error: 'Bekräfta mejladressen med koden innan du skapar profilen.' },
+        { status: 403 },
+      )
+    }
     const body = (await request.json()) as Record<string, unknown>
     const email = user.email.toLowerCase()
     const firstName = clean(body.firstName)

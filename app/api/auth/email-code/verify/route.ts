@@ -110,10 +110,21 @@ export async function POST(request: Request) {
       )
     }
 
-    await admin
+    const consumedAt = new Date().toISOString()
+    const { data: consumedChallenge, error: consumeError } = await admin
       .from('auth_email_codes')
-      .update({ consumed_at: new Date().toISOString() })
+      .update({ consumed_at: consumedAt })
       .eq('id', challenge.id)
+      .is('consumed_at', null)
+      .select('id')
+      .maybeSingle()
+    if (consumeError) throw consumeError
+    if (!consumedChallenge) {
+      return NextResponse.json(
+        { error: 'Koden har redan använts. Begär en ny kod.' },
+        { status: 401 },
+      )
+    }
 
     let link = await admin.auth.admin.generateLink({
       type: 'magiclink',
