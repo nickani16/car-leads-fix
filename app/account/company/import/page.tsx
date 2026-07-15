@@ -1,18 +1,34 @@
-import Link from 'next/link'
-import { Download, Upload } from 'lucide-react'
-import { CompanyPortalShell, EmptyPanel, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
-import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { CompanyImportClient } from './CompanyImportClient'
 
 const baseCopy = {
   title: 'Import listings',
-  description: 'Prepare many listings at once with a structured template, validation and preview before publishing.',
+  description: 'Prepare many listings at once with a structured template. Valid rows become drafts and reserve the company quota for the current billing period.',
   lockedText: 'Bulk import is available from Growth because it can create many listings and must respect quota, moderation and image requirements.',
   templateTitle: 'Structured import template',
-  templateText: 'Download the CSV template, fill in the listing data and keep one row per vehicle. Image upload and row-level validation will be handled in the next import step.',
+  templateText: 'Download the CSV template, fill in one row per vehicle and keep the original reference number so your team can track the draft later.',
   downloadTemplate: 'Download CSV template',
   uploadTitle: 'Upload and validate',
-  uploadText: 'The importer is prepared as a separate company flow. The upload endpoint will validate each row, show field errors and allow valid rows to continue as drafts or publishing candidates.',
-  goToListings: 'Go to listings',
+  uploadText: 'Upload the file to preview every row before import. Drafts are created only when the full file passes validation.',
+  chooseFile: 'Choose CSV file',
+  validate: 'Validate file',
+  importDrafts: 'Import as drafts',
+  validating: 'Validating',
+  importing: 'Importing',
+  ready: 'Import preview',
+  fileErrors: 'File errors',
+  row: 'Row',
+  titleColumn: 'Listing',
+  category: 'Category',
+  price: 'Price',
+  location: 'Location',
+  status: 'Status',
+  valid: 'Valid',
+  invalid: 'Invalid',
+  quota: 'Period quota',
+  created: 'Drafts created',
+  openListings: 'Open listings',
 }
 
 export default async function CompanyImportPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
@@ -29,20 +45,7 @@ export default async function CompanyImportPage({ localeOverride }: { localeOver
 
   return (
     <CompanyPortalShell context={context} active="import" title={copy.title} description={copy.description}>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <EmptyPanel
-          icon={Download}
-          title={copy.templateTitle}
-          text={copy.templateText}
-          action={<a href="/templates/autorell-business-import.csv" className="inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white"><Download className="h-4 w-4" />{copy.downloadTemplate}</a>}
-        />
-        <EmptyPanel
-          icon={Upload}
-          title={copy.uploadTitle}
-          text={copy.uploadText}
-          action={<Link href={localizePublicHref(context.locale, '/account/company/listings')} className="inline-flex min-h-11 items-center rounded-[10px] border border-[#d0d8e6] bg-white px-4 text-sm font-bold text-[#344054]">{copy.goToListings}</Link>}
-        />
-      </div>
+      <CompanyImportClient locale={context.locale} copy={copy} />
     </CompanyPortalShell>
   )
 }
