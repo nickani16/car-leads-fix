@@ -6,7 +6,12 @@ import {
   getCategoryPricing,
   listingPackageDetails,
 } from '@/lib/marketplace-pricing'
-import { checkBusinessListingPublicationLimit } from '@/lib/billing/business-limits'
+import {
+  attachBusinessListingQuotaReservation,
+  releaseBusinessListingQuotaReservation,
+  reserveBusinessListingQuota,
+  type BusinessListingQuotaReservation,
+} from '@/lib/billing/business-limits'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import {
   currencyForCountry,
@@ -291,6 +296,21 @@ async function insertListingImageRows(
 }
 
 export async function POST(request: Request) {
+  let quotaReservation: Extract<BusinessListingQuotaReservation, { allowed: true }> | null = null
+  let quotaReservationAttached = false
+
+  async function releaseOpenQuotaReservation() {
+    if (!quotaReservation || quotaReservationAttached) return
+    try {
+      await releaseBusinessListingQuotaReservation(quotaReservation.reservationKey)
+    } catch (releaseError) {
+      console.error('Marketplace listing quota reservation release failed', {
+        reservationKey: quotaReservation.reservationKey,
+        error: releaseError instanceof Error ? releaseError.message : String(releaseError),
+      })
+    }
+  }
+
   try {
     const supabase = await createClient()
     const {
@@ -502,6 +522,24 @@ export async function POST(request: Request) {
       return listingFormError('Ladda upp en giltig bild på serienummerskylten.', 2, 'serialPlateImage')
     }
 
+    if (profile.account_type === 'business') {
+      const reservation = await reserveBusinessListingQuota(user.id)
+      if (!reservation.allowed) {
+        const periodReset = reservation.periodEnd
+          ? new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(reservation.periodEnd))
+          : null
+        return listingFormError(
+          reservation.reason === 'period_listing_limit_reached'
+            ? `Företagets annonskvot för perioden är nådd (${reservation.used}/${reservation.limit}). Nästa kvot startar ${periodReset || 'nästa period'}, eller uppgradera planen.`
+            : 'Företagsabonnemanget behöver vara aktivt innan fler annonser kan skapas.',
+          4,
+          'packageId',
+          403,
+        )
+      }
+      quotaReservation = reservation
+    }
+
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const [{ count: recentListings }, { count: samePhoneProfiles }] =
       await Promise.all([
@@ -575,6 +613,7 @@ export async function POST(request: Request) {
           ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
           : null
     } catch (imageError) {
+      await releaseOpenQuotaReservation()
       await cleanupUploadedImages(admin, uploadedImages)
       console.error('Marketplace listing image processing failed', {
         requestId: request.headers.get('x-request-id') || crypto.randomUUID(),
@@ -595,23 +634,6 @@ export async function POST(request: Request) {
     const endsAt = startsAt
       ? new Date(startsAt.getTime() + duration * 86400000)
       : null
-    if (profile.account_type === 'business' && startsAt) {
-      const limitCheck = await checkBusinessListingPublicationLimit(user.id)
-      if (!limitCheck.allowed) {
-        await cleanupUploadedImages(
-          admin,
-          serialPlateImage ? [...uploadedImages, serialPlateImage] : uploadedImages,
-        )
-        return listingFormError(
-          limitCheck.reason === 'active_listing_limit_reached'
-            ? `Företagets abonnemangsgräns är nådd (${limitCheck.activeCount}/${limitCheck.limit}). Spara som utkast eller uppgradera abonnemanget.`
-            : 'Företagsabonnemanget behöver vara aktivt innan fler annonser kan publiceras.',
-          4,
-          'packageId',
-          403,
-        )
-      }
-    }
 
     const { data: listing, error } = await admin
       .from('marketplace_listings')
@@ -683,11 +705,17 @@ export async function POST(request: Request) {
       .single()
 
     if (error || !listing) {
+      await releaseOpenQuotaReservation()
       await cleanupUploadedImages(
         admin,
         serialPlateImage ? [...uploadedImages, serialPlateImage] : uploadedImages,
       )
       throw error || new Error('Listing insert failed')
+    }
+
+    if (quotaReservation) {
+      await attachBusinessListingQuotaReservation(quotaReservation.reservationKey, listing.id)
+      quotaReservationAttached = true
     }
 
     await insertListingImageRows(admin, listing.id, user.id, uploadedImages, endsAt?.toISOString() || null)
@@ -816,6 +844,7 @@ export async function POST(request: Request) {
       packageId,
     })
   } catch (error) {
+    await releaseOpenQuotaReservation()
     console.error('Marketplace listing creation failed', error)
     return NextResponse.json(
       {

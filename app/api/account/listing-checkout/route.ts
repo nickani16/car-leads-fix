@@ -321,12 +321,14 @@ export async function POST(request: Request) {
               },
               quantity: 1,
             }
+      const bankTransferSettings = createInvoiceBankTransferSettings(price.currency)
 
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         collection_method: 'send_invoice',
         days_until_due: 30,
         items: [subscriptionItem],
+        ...(bankTransferSettings ? { payment_settings: bankTransferSettings } : {}),
         metadata,
         expand: ['latest_invoice'],
       })
@@ -382,6 +384,7 @@ export async function POST(request: Request) {
           metadata: {
             billing_method: 'invoice',
             stripe_invoice_id: latestInvoice?.id || null,
+            bank_transfer_enabled: Boolean(bankTransferSettings),
           },
           updated_at: new Date().toISOString(),
         })
@@ -404,12 +407,14 @@ export async function POST(request: Request) {
           stripe_invoice_id: latestInvoice?.id || null,
           invoice_email_sent: true,
           days_until_due: 30,
+          bank_transfer_enabled: Boolean(bankTransferSettings),
         },
       })
       return NextResponse.json({
         invoice: true,
         invoiceUrl: latestInvoice?.hosted_invoice_url || null,
         invoiceEmail: profile.email || user.email || null,
+        bankTransferEnabled: Boolean(bankTransferSettings),
         orderId: order.id,
         subscriptionId: subscription.id,
       })
@@ -669,6 +674,24 @@ function stripeTimestampToIso(value?: number | null) {
 
 function toStripeInvoice(invoice: Stripe.Subscription['latest_invoice']) {
   return invoice && typeof invoice === 'object' ? invoice as Stripe.Invoice : null
+}
+
+function createInvoiceBankTransferSettings(currency: string): Stripe.SubscriptionCreateParams.PaymentSettings | undefined {
+  if (currency.toLowerCase() !== 'eur') return undefined
+  const country = (process.env.STRIPE_EU_BANK_TRANSFER_COUNTRY || 'SE').toUpperCase()
+
+  return {
+    payment_method_types: ['customer_balance'],
+    payment_method_options: {
+      customer_balance: {
+        funding_type: 'bank_transfer',
+        bank_transfer: {
+          type: 'eu_bank_transfer',
+          eu_bank_transfer: { country },
+        },
+      },
+    },
+  } as Stripe.SubscriptionCreateParams.PaymentSettings
 }
 
 async function upsertBusinessInvoice(

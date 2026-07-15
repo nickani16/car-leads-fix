@@ -281,17 +281,17 @@ function PlanCard({
     >
       <div className="flex min-h-[258px] flex-col border-b border-[#edf1f7] p-5">
         <div className="flex min-h-7 items-start justify-between gap-3">
-          <p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#667085]">{plan.audience}</p>
+          <p className="min-w-0 truncate whitespace-nowrap text-[11px] font-bold uppercase tracking-[.14em] text-[#667085]">{plan.audience}</p>
           {current ? (
-            <span className="rounded-full bg-[#0866ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-white">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0866ff] px-3 py-1 text-[10px] font-black uppercase tracking-[.06em] text-white">
               Din plan
             </span>
           ) : plan.recommended ? (
-            <span className="rounded-full border border-[#0866ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-[#0866ff]">
+            <span className="shrink-0 whitespace-nowrap rounded-full border border-[#0866ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
               Rekommenderad
             </span>
           ) : showAnnualBadge ? (
-            <span className="rounded-full bg-[#eef5ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-[#0866ff]">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-[#eef5ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
               -{annualDiscount}%
             </span>
           ) : null}

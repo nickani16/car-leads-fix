@@ -16,6 +16,87 @@ export type BusinessPublicationLimitResult =
   | { allowed: true; limit: number; activeCount: number; planKey: string; status: string }
   | { allowed: false; limit: number | null; activeCount: number; planKey: string | null; status: string | null; reason: string }
 
+export type BusinessListingQuotaReservation =
+  | {
+      allowed: true
+      reservationKey: string
+      limit: number
+      used: number
+      remaining: number
+      planKey: string
+      status: string
+      periodStart: string
+      periodEnd: string
+    }
+  | {
+      allowed: false
+      reason: string
+      limit: number | null
+      used: number
+      remaining: number
+      planKey: string | null
+      status: string | null
+      periodStart: string | null
+      periodEnd: string | null
+    }
+
+function normalizeQuotaReservation(value: unknown): BusinessListingQuotaReservation {
+  const row = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
+  if (row.allowed === true) {
+    return {
+      allowed: true,
+      reservationKey: String(row.reservationKey || ''),
+      limit: Number(row.limit || 0),
+      used: Number(row.used || 0),
+      remaining: Number(row.remaining || 0),
+      planKey: String(row.planKey || ''),
+      status: String(row.status || ''),
+      periodStart: String(row.periodStart || ''),
+      periodEnd: String(row.periodEnd || ''),
+    }
+  }
+
+  return {
+    allowed: false,
+    reason: String(row.reason || 'quota_reservation_failed'),
+    limit: Number.isFinite(Number(row.limit)) ? Number(row.limit) : null,
+    used: Number(row.used || 0),
+    remaining: Number(row.remaining || 0),
+    planKey: row.planKey ? String(row.planKey) : null,
+    status: row.status ? String(row.status) : null,
+    periodStart: row.periodStart ? String(row.periodStart) : null,
+    periodEnd: row.periodEnd ? String(row.periodEnd) : null,
+  }
+}
+
+export async function reserveBusinessListingQuota(userId: string): Promise<BusinessListingQuotaReservation> {
+  const reservationKey = crypto.randomUUID()
+  const { data, error } = await createAdminClient().rpc('reserve_business_listing_quota', {
+    p_user_id: userId,
+    p_reservation_key: reservationKey,
+  })
+
+  if (error) throw error
+  return normalizeQuotaReservation(data)
+}
+
+export async function attachBusinessListingQuotaReservation(reservationKey: string, listingId: string): Promise<void> {
+  const { error } = await createAdminClient().rpc('attach_business_listing_quota_reservation', {
+    p_reservation_key: reservationKey,
+    p_listing_id: listingId,
+  })
+
+  if (error) throw error
+}
+
+export async function releaseBusinessListingQuotaReservation(reservationKey: string): Promise<void> {
+  const { error } = await createAdminClient().rpc('release_business_listing_quota_reservation', {
+    p_reservation_key: reservationKey,
+  })
+
+  if (error) throw error
+}
+
 export async function checkBusinessListingPublicationLimit(userId: string): Promise<BusinessPublicationLimitResult> {
   const admin = createAdminClient()
   const { data: subscription, error: subscriptionError } = await admin
