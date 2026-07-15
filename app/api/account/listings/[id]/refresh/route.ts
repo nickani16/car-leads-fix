@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export async function POST(request: Request, context: RouteContext<'/api/account/listings/[id]/refresh'>) {
   const { id } = await context.params
@@ -28,7 +29,13 @@ export async function POST(request: Request, context: RouteContext<'/api/account
   if (listingError) {
     return NextResponse.json({ error: 'Could not verify listing.' }, { status: 500 })
   }
-  if (!listing || listing.seller_user_id !== user.id) {
+  const scope = listing?.seller_type === 'business'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const canManageListing = Boolean(
+    listing && (listing.seller_user_id === user.id || scope?.listingOwnerUserIds.includes(String(listing.seller_user_id))),
+  )
+  if (!canManageListing || !listing) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
   }
   if (listing.seller_type === 'business') {
@@ -43,7 +50,7 @@ export async function POST(request: Request, context: RouteContext<'/api/account
 
   const { error } = await admin.rpc('use_refresh_credit', {
     p_owner_type: 'user',
-    p_owner_id: user.id,
+    p_owner_id: listing.seller_user_id,
     p_listing_id: id,
   })
   if (error) {

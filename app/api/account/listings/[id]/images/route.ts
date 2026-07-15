@@ -2,6 +2,7 @@ import { revalidateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -35,10 +36,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,images,expires_at')
+    .select('id,seller_user_id,seller_type,images,expires_at')
     .eq('id', id)
     .maybeSingle()
-  if (!listing || listing.seller_user_id !== user.id) {
+  const scope = listing?.seller_type === 'business'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const canManageListing = Boolean(
+    listing && (listing.seller_user_id === user.id || scope?.listingOwnerUserIds.includes(String(listing.seller_user_id))),
+  )
+  if (!canManageListing || !listing) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
   }
 
@@ -51,18 +58,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const uploaded: UploadedImage[] = []
   try {
-    for (const [index, file] of files.entries()) uploaded.push(await uploadImage(admin, file, user.id, existingImages.length + index))
+    const listingOwnerId = String(listing.seller_user_id)
+    for (const [index, file] of files.entries()) uploaded.push(await uploadImage(admin, file, listingOwnerId, existingImages.length + index))
     const nextImages = [...existingImages, ...uploaded.map((image) => image.cardUrl)]
     const { error: updateError } = await admin
       .from('marketplace_listings')
       .update({ images: nextImages, updated_at: new Date().toISOString() })
       .eq('id', listing.id)
-      .eq('seller_user_id', user.id)
+      .eq('seller_user_id', listingOwnerId)
     if (updateError) throw updateError
 
     const { error: metadataError } = await admin.from('marketplace_listing_images').insert(uploaded.map((image, index) => ({
       listing_id: listing.id,
-      seller_user_id: user.id,
+      seller_user_id: listingOwnerId,
       position: existingImages.length + index,
       avif_url: image.fullscreenUrl,
       webp_url: image.listingUrl,

@@ -17,6 +17,7 @@ import {
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 const actions = new Set([
   'mark_sold', 'update_listing', 'pause', 'resume', 'unpublish', 'delete', 'relist', 'duplicate',
@@ -141,7 +142,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
   }
 
-  const isOwner = listing.seller_user_id === user.id
+  const scope = listing.seller_type === 'business'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const isOwner = listing.seller_user_id === user.id || Boolean(scope?.listingOwnerUserIds.includes(String(listing.seller_user_id)))
   const isAdmin = await isActiveAdmin(admin, user.id, user.email)
   if (!isOwner && !isAdmin) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
@@ -422,7 +426,7 @@ export async function PATCH(
       .from('marketplace_conversations')
       .select('id')
       .eq('listing_id', listing.id)
-      .eq('seller_user_id', user.id)
+      .eq('seller_user_id', listing.seller_user_id)
       .eq('buyer_user_id', soldToUserId)
       .maybeSingle()
     if (!conversation) {

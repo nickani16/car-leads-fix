@@ -8,6 +8,7 @@ import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { normalizeMarketplaceCategory } from '@/lib/marketplace'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import type { ListingIdentifierInput } from '@/lib/marketplace-security'
 import EditListingForm from './EditListingForm'
 
@@ -36,7 +37,10 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   if (!listing) notFound()
 
-  const isOwner = listing.seller_user_id === user.id
+  const scope = listing.seller_type === 'business'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const isOwner = listing.seller_user_id === user.id || Boolean(scope?.listingOwnerUserIds.includes(String(listing.seller_user_id)))
   const isAdmin = await isActiveAdmin(admin, user.id, user.email)
   if (!isOwner && !isAdmin) notFound()
 
