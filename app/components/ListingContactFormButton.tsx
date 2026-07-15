@@ -294,7 +294,7 @@ export default function ListingContactFormButton({
             </div>
 
             <form onSubmit={submit} className="grid gap-4 px-5 py-5 sm:px-6">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 sm:[&>label]:min-w-0">
                 <FormField label={text.name} name="name" required />
                 <FormField label={text.phone} name="phone" type="tel" required />
               </div>
@@ -308,7 +308,7 @@ export default function ListingContactFormButton({
                   maxLength={3000}
                   rows={5}
                   placeholder={text.messagePlaceholder}
-                  className="min-h-[132px] resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                  className="min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                 />
               </label>
               <label className="flex items-start gap-3 rounded-[14px] bg-[#f8fbff] px-4 py-3 text-sm font-medium leading-6 text-[#475467]">
@@ -368,14 +368,14 @@ function FormField({
   required?: boolean
 }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-[#101828]">
+    <label className="grid min-w-0 gap-2 text-sm font-semibold text-[#101828]">
       {label}
       <input
         name={name}
         type={type}
         required={required}
         placeholder={placeholder}
-        className="h-12 rounded-[14px] border border-[#cfd8e6] bg-white px-4 text-base font-medium text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-12 w-full min-w-0 rounded-[14px] border border-[#cfd8e6] bg-white px-4 text-base font-medium text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
     </label>
   )

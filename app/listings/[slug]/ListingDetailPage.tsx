@@ -403,8 +403,8 @@ export default async function ListingDetailPage({
               label={copy.shareListing}
               copiedLabel={copy.shareCopied}
               variant="plain"
-              className="shrink-0 whitespace-nowrap text-[#101828] hover:text-[#101828]"
-              iconClassName="h-4 w-4 text-[#101828]"
+              className="shrink-0 whitespace-nowrap"
+              iconClassName="h-4 w-4"
             />
             <div className="hidden lg:inline-flex">
               <SavedListingButton
@@ -413,8 +413,7 @@ export default async function ListingDetailPage({
                 savedLabel={copy.favoriteSaved}
                 removeLabel={copy.favoriteRemove}
                 variant="plain"
-                className="text-[#101828] hover:text-[#101828]"
-                iconClassName="h-4 w-4 text-[#101828]"
+                iconClassName="h-4 w-4"
               />
             </div>
           </div>

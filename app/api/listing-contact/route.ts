@@ -37,7 +37,9 @@ function listingUrl(request: Request, listingId: string) {
   if (referer) {
     try {
       const url = new URL(referer)
-      if (url.pathname.includes('/listings/')) return url.toString()
+      if (url.origin === origin && (url.pathname.includes('/listings/') || url.pathname.includes('/annons/'))) {
+        return url.toString()
+      }
     } catch {
       // Ignore invalid referer.
     }
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
     (await admin.auth.admin.getUserById(listing.seller_user_id)).data.user?.email ||
     ''
 
-  if (!sellerEmail || sellerEmail === email) {
+  if (!sellerEmail) {
     return NextResponse.json({ error: 'Seller email is unavailable.' }, { status: 400 })
   }
 
@@ -109,9 +111,10 @@ export async function POST(request: Request) {
   }).format(new Date())
   const subject = `New enquiry about ${listing.title}`
   const resend = new Resend(apiKey)
+  const from = process.env.CONTACT_FROM_EMAIL || 'Autorell <noreply@autorell.com>'
 
   const { error } = await resend.emails.send({
-    from: process.env.CONTACT_FROM_EMAIL || 'Autorell <noreply@autorell.com>',
+    from,
     to: sellerEmail,
     replyTo: email,
     subject,
@@ -150,6 +153,37 @@ export async function POST(request: Request) {
   if (error) {
     console.error('Listing contact email failed', error)
     return NextResponse.json({ error: 'Could not send enquiry.' }, { status: 500 })
+  }
+
+  const { error: confirmationError } = await resend.emails.send({
+    from,
+    to: email,
+    subject: `We sent your enquiry about ${listing.title}`,
+    text: [
+      `Hi ${name},`,
+      '',
+      `We have sent your enquiry about ${listing.title} to the seller.`,
+      `Listing URL: ${url}`,
+      '',
+      'Your message:',
+      message,
+      '',
+      offer ? `Offer: ${offer}` : '',
+      '',
+      'The seller can reply directly to your email address.',
+      'Autorell',
+    ].filter(Boolean).join('\n'),
+    html: buildBuyerConfirmationHtml({
+      listingTitle: listing.title,
+      listingUrl: url,
+      name,
+      offer,
+      message,
+    }),
+  })
+
+  if (confirmationError) {
+    console.error('Listing contact confirmation email failed', confirmationError)
   }
 
   return NextResponse.json({ success: true })
@@ -231,5 +265,58 @@ function detailRow(label: string, value: string) {
       <td style="padding:14px 18px;border-bottom:1px solid #dce5f4;color:#667085;font-size:12px;width:110px;">${escapeHtml(label)}</td>
       <td style="padding:14px 18px;border-bottom:1px solid #dce5f4;color:#101828;font-size:14px;font-weight:700;">${escapeHtml(value)}</td>
     </tr>
+  `
+}
+
+function buildBuyerConfirmationHtml({
+  listingTitle,
+  listingUrl,
+  name,
+  offer,
+  message,
+}: {
+  listingTitle: string
+  listingUrl: string
+  name: string
+  offer: string
+  message: string
+}) {
+  const safeMessage = escapeHtml(message).replace(/\n/g, '<br />')
+
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="x-apple-disable-message-reformatting" />
+        <title>Autorell enquiry sent</title>
+      </head>
+      <body style="margin:0;background:#f3f7ff;color:#101828;font-family:Arial,Helvetica,sans-serif;">
+        <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">We sent your enquiry to the seller.</div>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f7ff;padding:36px 12px;">
+          <tr><td align="center">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;overflow:hidden;border:1px solid #dce5f4;border-radius:24px;background:#ffffff;box-shadow:0 22px 60px rgba(16,24,40,.10);">
+              <tr>
+                <td style="padding:28px 32px;border-bottom:1px solid #edf1f7;">
+                  <img src="https://www.autorell.com/autorell-logo-primary.png" width="138" alt="Autorell" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
+                </td>
+              </tr>
+              <tr><td style="padding:34px 32px 28px;text-align:left;">
+                <h1 style="margin:0;font-size:28px;line-height:1.18;letter-spacing:-1px;color:#101828;">Your enquiry has been sent</h1>
+                <p style="margin:12px 0 0;color:#475467;font-size:15px;line-height:1.7;">Hi ${escapeHtml(name)}, we sent your enquiry about <strong>${escapeHtml(listingTitle)}</strong> to the seller.</p>
+                ${offer ? `<p style="margin:18px 0 0;color:#101828;font-size:15px;line-height:1.7;"><strong>Offer:</strong> ${escapeHtml(offer)}</p>` : ''}
+                <div style="margin:24px 0 0;border-radius:18px;background:#ffffff;padding:20px;border:1px solid #dce5f4;">
+                  <div style="font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#0866ff;">Your message</div>
+                  <p style="margin:10px 0 0;color:#101828;font-size:15px;line-height:1.7;">${safeMessage}</p>
+                </div>
+                <p style="margin:18px 0 0;color:#667085;font-size:13px;line-height:1.6;">The seller can reply directly to your email address.</p>
+                <a href="${escapeHtml(listingUrl)}" style="display:inline-block;margin-top:24px;border-radius:14px;background:#0866ff;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 20px;">Open listing</a>
+              </td></tr>
+              <tr><td style="padding:20px 32px;border-top:1px solid #edf1f7;color:#98a2b3;font-size:12px;line-height:1.6;">Autorell marketplace</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </body>
+    </html>
   `
 }

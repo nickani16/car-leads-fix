@@ -11,7 +11,7 @@ export default function ShareListingButton({
   variant = 'button',
   className: extraClassName = '',
   labelClassName = '',
-  iconClassName = 'h-4 w-4 text-[#0866ff]',
+  iconClassName = 'h-4 w-4',
 }: {
   title: string
   url: string
