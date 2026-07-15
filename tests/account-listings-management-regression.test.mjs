@@ -9,6 +9,7 @@ const bulkApi = readFileSync(new URL('../app/api/account/listings/bulk/route.ts'
 const checkout = readFileSync(new URL('../app/api/account/listing-checkout/route.ts', import.meta.url), 'utf8')
 const imageUpload = readFileSync(new URL('../app/api/account/listings/[id]/images/route.ts', import.meta.url), 'utf8')
 const listingAction = readFileSync(new URL('../app/api/account/listings/[id]/route.ts', import.meta.url), 'utf8')
+const listingStatusActions = readFileSync(new URL('../app/konto/annonser/ListingStatusActions.tsx', import.meta.url), 'utf8')
 const listingRefresh = readFileSync(new URL('../app/api/account/listings/[id]/refresh/route.ts', import.meta.url), 'utf8')
 const editListingPage = readFileSync(new URL('../app/account/listings/[id]/edit/page.tsx', import.meta.url), 'utf8')
 const fulfillment = readFileSync(new URL('../lib/billing/fulfillment.ts', import.meta.url), 'utf8')
@@ -90,4 +91,14 @@ test('company team members can manage listings inside their company scope', () =
   assert.match(listingRefresh, /resolveBusinessAccountScope\(user\.id, admin\)/)
   assert.match(listingRefresh, /scope\?\.listingOwnerUserIds\.includes\(String\(listing\.seller_user_id\)\)/)
   assert.match(listingRefresh, /p_owner_id: listing\.seller_user_id/)
+})
+
+test('private sold action requires confirmation and server-side lifecycle checks', () => {
+  assert.match(listingStatusActions, /soldDialogRef/)
+  assert.match(listingStatusActions, /Markera annonsen som såld\?/)
+  assert.match(listingStatusActions, /mutate\('mark_sold'/)
+  assert.match(listingAction, /!\['published', 'paused'\]\.includes\(listing\.status\)/)
+  assert.match(listingAction, /\.eq\('id', listing\.id\)[\s\S]*\.eq\('status', listing\.status\)[\s\S]*\.select\('id'\)[\s\S]*\.maybeSingle\(\)/)
+  assert.match(listingAction, /The listing status changed\. Refresh and try again\./)
+  assert.match(listingAction, /event_type: 'marked_sold'/)
 })

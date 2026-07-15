@@ -61,6 +61,7 @@ export default function ListingStatusActions({
   const packageDialogRef = useRef<HTMLDialogElement>(null)
   const marketingDialogRef = useRef<HTMLDialogElement>(null)
   const reviewDialogRef = useRef<HTMLDialogElement>(null)
+  const soldDialogRef = useRef<HTMLDialogElement>(null)
   const [selectedPackage, setSelectedPackage] = useState(
     status === 'published' && packageId === 'free_7d' ? 'standard_15d' : packageId || 'free_7d',
   )
@@ -192,6 +193,7 @@ export default function ListingStatusActions({
             const handler = action === 'package' ? openPackage
               : action === 'review' ? () => reviewDialogRef.current?.showModal()
               : action === 'duplicate' ? duplicate
+              : action === 'mark_sold' ? () => soldDialogRef.current?.showModal()
               : action === 'delete' ? () => { if (window.confirm(text('Ta bort annonsen?', 'Delete this listing?'))) void mutate('delete') }
               : () => mutate(action)
             return <button key={action} type="button" role="menuitem" onClick={handler} className="rounded-[9px] px-3 py-2 text-left text-sm font-medium text-[#344054] outline-none hover:bg-[#f2f6ff] hover:text-[#0866ff] focus-visible:bg-[#f2f6ff]">{actionLabel(action, swedish)}</button>
@@ -236,6 +238,34 @@ export default function ListingStatusActions({
 
       <dialog ref={reviewDialogRef} aria-labelledby={`review-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
         <div className="p-6"><DialogHeader eyebrow={text('Annonsstatus', 'Listing status')} title={status === 'rejected' ? text('Åtgärd krävs', 'Action required') : text('Under granskning', 'In review')} description={reviewMessage || text('Autorell granskar annonsen. Ingen ytterligare betalning behövs.', 'Autorell is reviewing the listing. No further payment is required.')} titleId={`review-${listingId}`} close={() => reviewDialogRef.current?.close()} /></div>
+      </dialog>
+
+      <dialog ref={soldDialogRef} aria-labelledby={`sold-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
+        <div className="p-6">
+          <DialogHeader
+            eyebrow={text('Bekräfta status', 'Confirm status')}
+            title={text('Markera annonsen som såld?', 'Mark this listing as sold?')}
+            description={text(
+              'Annonsen tas bort från aktiva sökresultat men finns kvar under Sålda i Mina annonser. Du kan duplicera eller publicera igen senare.',
+              'The listing is removed from active search results but stays under Sold in My listings. You can duplicate or publish it again later.',
+            )}
+            titleId={`sold-${listingId}`}
+            close={() => soldDialogRef.current?.close()}
+          />
+          {message ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</p> : null}
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" className={button} onClick={() => soldDialogRef.current?.close()}>{text('Avbryt', 'Cancel')}</button>
+            <button
+              type="button"
+              className={primary}
+              disabled={Boolean(loading)}
+              onClick={() => void mutate('mark_sold', () => soldDialogRef.current?.close())}
+            >
+              {loading === 'mark_sold' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+              {text('Ja, markera som såld', 'Yes, mark as sold')}
+            </button>
+          </div>
+        </div>
       </dialog>
     </>
   )

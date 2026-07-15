@@ -413,9 +413,9 @@ export async function PATCH(
     return NextResponse.json({ success: true })
   }
 
-  if (['rejected', 'expired'].includes(listing.status)) {
+  if (!['published', 'paused'].includes(listing.status)) {
     return NextResponse.json(
-      { error: 'This listing cannot be marked as sold.' },
+      { error: 'Only active or paused listings can be marked as sold.' },
       { status: 409 },
     )
   }
@@ -438,7 +438,7 @@ export async function PATCH(
   }
 
   const now = new Date().toISOString()
-  const { error } = await admin
+  const { data: soldListing, error } = await admin
     .from('marketplace_listings')
     .update({
       status: 'sold',
@@ -447,9 +447,18 @@ export async function PATCH(
       updated_at: now,
     })
     .eq('id', listing.id)
+    .eq('status', listing.status)
+    .select('id')
+    .maybeSingle()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+  if (!soldListing) {
+    return NextResponse.json(
+      { error: 'The listing status changed. Refresh and try again.' },
+      { status: 409 },
+    )
   }
 
   await admin.from('marketplace_listing_events').insert({
