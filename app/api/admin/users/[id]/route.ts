@@ -3,6 +3,7 @@ import {
   requireSuperAdminRoute,
   writeAdminAuditLog,
 } from '@/lib/admin-route-auth'
+import { sendBusinessApprovalEmail } from '@/lib/admin-notifications'
 
 const actions = new Set([
   'suspend',
@@ -19,10 +20,12 @@ const profileAuditSelect = `
   email,
   phone,
   country_code,
+  locale,
   first_name,
   last_name,
   display_name,
   company_name,
+  legal_name,
   company_id,
   registration_number,
   vat_number,
@@ -52,11 +55,23 @@ export async function PATCH(
   }
 
   const { adminClient, user } = auth
-  const { data: before, error: beforeError } = await adminClient
+  let { data: before, error: beforeError } = await adminClient
     .from('marketplace_profiles')
     .select(profileAuditSelect)
     .eq('user_id', id)
     .maybeSingle()
+
+  // Company links and older admin notifications may carry company_id rather than user_id.
+  // Resolve the canonical profile first; all subsequent writes use before.user_id.
+  if (!before && !beforeError) {
+    const fallback = await adminClient
+      .from('marketplace_profiles')
+      .select(profileAuditSelect)
+      .eq('company_id', id)
+      .maybeSingle()
+    before = fallback.data
+    beforeError = fallback.error
+  }
 
   if (beforeError || !before) {
     return NextResponse.json({ error: 'User profile not found.' }, { status: 404 })
@@ -97,10 +112,11 @@ export async function PATCH(
     patch.business_onboarding_status = 'under_review'
   }
 
+  const userId = before.user_id
   let { error } = await adminClient
     .from('marketplace_profiles')
     .update(patch)
-    .eq('user_id', id)
+    .eq('user_id', userId)
 
   if (error && String(error.message).includes('column')) {
     const fallbackPatch: Record<string, unknown> = {
@@ -110,7 +126,7 @@ export async function PATCH(
     const fallback = await adminClient
       .from('marketplace_profiles')
       .update(fallbackPatch)
-      .eq('user_id', id)
+      .eq('user_id', userId)
     error = fallback.error
   }
 
@@ -139,11 +155,21 @@ export async function PATCH(
       .eq('id', before.company_id)
   }
 
+  if (before.account_type === 'business' && action === 'company_verified') {
+    void sendBusinessApprovalEmail({
+      email: before.email,
+      locale: before.locale || before.country_code || 'en',
+      companyName: before.company_name || before.legal_name || 'Autorell business account',
+    }).catch((error) => {
+      console.error('[business-approval-email] failed', { userId, error })
+    })
+  }
+
   if (action === 'delete' || action === 'suspend') {
     await adminClient
       .from('marketplace_listings')
       .update({ status: 'paused', updated_at: now })
-      .eq('seller_user_id', id)
+      .eq('seller_user_id', userId)
       .eq('status', 'published')
   }
 
@@ -152,7 +178,7 @@ export async function PATCH(
     actorUserId: user.id,
     action: `marketplace_user_${action}`,
     targetType: 'marketplace_profile',
-    targetId: id,
+    targetId: userId,
     reason: body.reason || null,
     beforeData: before,
     afterData: { ...before, ...patch },

@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { notifyAutorellAdmins } from '@/lib/admin-notifications'
+import { createBusinessApplicationNotifications, notifyAutorellAdmins } from '@/lib/admin-notifications'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
   accountConfirmationKeys,
@@ -368,7 +368,15 @@ export async function POST(request: Request) {
       })
     }
 
-    if (accountType === 'business') {
+    if (accountType === 'business' && companyId) {
+      await createBusinessApplicationNotifications({
+        companyId,
+        companyName,
+        countryCode,
+        contactName: displayName,
+        email,
+        registrationNumber: registrationNumber || vatNumber || null,
+      })
       await notifyAutorellAdmins(
         `Ny företagsansökan: ${companyName}`,
         `<p>Ett nytt företagskonto har skickat in en ansökan.</p><p><strong>Företag:</strong> ${companyName}<br/><strong>E-post:</strong> ${email}<br/><strong>Status:</strong> under_review</p>`,

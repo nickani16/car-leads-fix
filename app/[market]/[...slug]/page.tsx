@@ -5,6 +5,8 @@ import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
+import BusinessSubscriptionPage from '@/app/konto/business/subscription/page'
+import BusinessStatusPage from '@/app/konto/business/status/page'
 
 export default async function LocalizedMarketPage({
   params,
@@ -25,6 +27,14 @@ export default async function LocalizedMarketPage({
       marketCodeOverride: normalizedMarket.toUpperCase(),
       localeOverride: locale,
     })
+  }
+
+  if (slugPath === 'account/business/subscription' || slugPath === 'konto/business/subscription') {
+    return <BusinessSubscriptionPage />
+  }
+
+  if (slugPath === 'account/business/status' || slugPath === 'konto/business/status') {
+    return <BusinessStatusPage />
   }
 
   if (slugPath === 'pricing') {

@@ -13,8 +13,7 @@ export default async function ProfileDetail({
   backHref: string
 }) {
   const { adminClient } = await requireAdmin()
-  const [{ data: profile }, { data: listings }] = await Promise.all([
-    adminClient
+  let { data: profile } = await adminClient
       .from('marketplace_profiles')
       .select(`
         user_id,
@@ -39,11 +38,25 @@ export default async function ProfileDetail({
         updated_at
       `)
       .eq('user_id', userId)
-      .maybeSingle(),
+      .maybeSingle()
+  if (!profile) {
+    const fallback = await adminClient
+      .from('marketplace_profiles')
+      .select(`
+        user_id, account_type, email, phone, country_code, city, first_name, last_name,
+        display_name, company_name, registration_number, vat_number, website_url, company_id,
+        business_verification_status, company_domain_match, company_verification_note,
+        risk_status, created_at, updated_at
+      `)
+      .eq('company_id', userId)
+      .maybeSingle()
+    profile = fallback.data
+  }
+  const [{ data: listings }] = await Promise.all([
     adminClient
       .from('marketplace_listings')
       .select('id,title,category,status,review_status,country_code,city,created_at')
-      .eq('seller_user_id', userId)
+      .eq('seller_user_id', profile?.user_id || userId)
       .order('created_at', { ascending: false })
       .limit(40),
   ])
