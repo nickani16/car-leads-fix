@@ -103,3 +103,7 @@ test('RBAC tables are RLS protected and audit is append-only for service role', 
   assert.match(migration, /grant select, insert on table public\.admin_audit_log to service_role/i)
   assert.doesNotMatch(migration, /grant[^;]*update[^;]*admin_audit_log[^;]*service_role/i)
 })
+
+test('company verification is visible as its own admin destination', () => {
+  assert.match(read('lib/admin/navigation.ts'), /href: '\/admin\/companies\/verification'/)
+})

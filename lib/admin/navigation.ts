@@ -24,6 +24,7 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
     items: [
       { label: 'Användare', href: '/admin/users', icon: 'users', permission: 'users.read', available: true },
       { label: 'Företag', href: '/admin/companies', icon: 'companies', permission: 'companies.read', available: true },
+      { label: 'Företagsverifiering', href: '/admin/companies/verification', icon: 'verification', permission: 'companies.verify', available: true },
       { label: 'Annonser', href: '/admin/listings', icon: 'listings', permission: 'listings.read', available: true },
       { label: 'Moderering', href: '/admin/moderation', icon: 'moderation', permission: 'moderation.read', available: true },
       { label: 'Rapporter', href: '/admin/reports', icon: 'reports', permission: 'reports.read', available: true },

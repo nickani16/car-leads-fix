@@ -44,6 +44,7 @@ const ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   users: UsersRound,
   companies: Building2,
+  verification: ClipboardCheck,
   listings: ListChecks,
   moderation: ClipboardCheck,
   reports: Flag,
