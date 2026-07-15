@@ -15,6 +15,7 @@ const home = readFileSync(new URL('../app/components/BusinessMarketplaceHome.tsx
 const countryFlag = readFileSync(new URL('../app/components/CountryFlag.tsx', import.meta.url), 'utf8')
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const nextConfig = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8')
+const businessPlanChooser = readFileSync(new URL('../app/konto/business/subscription/BusinessPlanChooser.tsx', import.meta.url), 'utf8')
 
 test('market currencies follow URL market requirements', () => {
   for (const [market, currency] of Object.entries({
@@ -75,6 +76,21 @@ test('checkout sessions use Autorell branding and product copy', () => {
   assert.match(checkout, /custom_text: \{[\s\S]*submitText/)
   assert.match(checkout, /after_submit: \{[\s\S]*Säker betalning via Stripe/)
   assert.match(checkout, /locale: stripeLocaleForMarket\(market\)/)
+})
+
+test('business subscriptions support Stripe invoice terms for B2B customers', () => {
+  assert.match(businessPlanChooser, /billingMethod: BillingMethod = 'card'/)
+  assert.match(businessPlanChooser, /Faktura 30 dagar/)
+  assert.match(businessPlanChooser, /invoiceUrl/)
+  assert.match(checkout, /billingMethod = body\.billingMethod === 'invoice' \? 'invoice' : 'card'/)
+  assert.match(checkout, /collection_method: 'send_invoice'/)
+  assert.match(checkout, /days_until_due: 30/)
+  assert.match(checkout, /price\.stripePriceId/)
+  assert.match(checkout, /business_onboarding_status: 'active'/)
+  assert.match(webhook, /case 'invoice\.sent':/)
+  assert.match(webhook, /upsertBusinessInvoice/)
+  assert.match(webhook, /!isInvoiceEvent && object\.status/)
+  assert.match(fulfillment, /payment_status: 'paid'/)
 })
 
 test('webhook handling is signature verified and idempotent', () => {

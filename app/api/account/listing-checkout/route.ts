@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
@@ -34,10 +35,12 @@ export async function POST(request: Request) {
     productKey?: string
     packageId?: string
     market?: string
+    billingMethod?: 'card' | 'invoice'
   }
 
   const admin = createAdminClient()
   const market = normalizeBillingMarket(body.market)
+  const billingMethod = body.billingMethod === 'invoice' ? 'invoice' : 'card'
 
   const [{ data: profile }, { data: listing }] = await Promise.all([
     admin
@@ -188,6 +191,9 @@ export async function POST(request: Request) {
   if (product.kind === 'subscription' && profile.account_type !== 'business') {
     return NextResponse.json({ error: 'Business subscription requires a business account.' }, { status: 403 })
   }
+  if (billingMethod === 'invoice' && product.kind !== 'subscription') {
+    return NextResponse.json({ error: 'Faktura kan bara anvÃ¤ndas fÃ¶r fÃ¶retagsabonnemang.' }, { status: 400 })
+  }
 
   const price = await resolveBillingPrice(product, market)
   if (!price || price.amountMinor <= 0) {
@@ -234,6 +240,7 @@ export async function POST(request: Request) {
       status: 'created',
       metadata: {
         legacy_package_id: body.packageId || null,
+        billing_method: billingMethod,
       },
     })
     .select('id')
@@ -252,7 +259,144 @@ export async function POST(request: Request) {
     product_key: product.productKey,
     market,
     internal_order_id: order.id,
+    billing_method: billingMethod,
   }
+
+  if (billingMethod === 'invoice') {
+    if (!product.businessPlan || !price.stripePriceId) {
+      await admin
+        .from('payment_orders')
+        .update({
+          status: 'failed',
+          failure_reason: 'Stripe Price ID is required for invoice subscriptions.',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', order.id)
+      return NextResponse.json(
+        { error: 'Faktura Ã¤r inte konfigurerad fÃ¶r den hÃ¤r marknaden Ã¤n.' },
+        { status: 503 },
+      )
+    }
+
+    try {
+      const stripe = getStripe()
+      const { data: existingSubscription } = await admin
+        .from('business_subscriptions')
+        .select('stripe_customer_id')
+        .eq('user_id', user.id)
+        .not('stripe_customer_id', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const customerId = existingSubscription?.stripe_customer_id || (await stripe.customers.create({
+        email: profile.email || user.email || undefined,
+        name: profile.company_name || profile.email || user.email || undefined,
+        metadata: {
+          user_id: user.id,
+          business_id: body.businessId || '',
+        },
+      })).id
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        collection_method: 'send_invoice',
+        days_until_due: 30,
+        items: [{ price: price.stripePriceId, quantity: 1 }],
+        metadata,
+        expand: ['latest_invoice'],
+      })
+      const latestInvoice = toStripeInvoice(subscription.latest_invoice)
+      const periodSource = subscription as Stripe.Subscription & {
+        current_period_start?: number | null
+        current_period_end?: number | null
+      }
+      const subscriptionPayload = {
+        user_id: user.id,
+        business_id: body.businessId || null,
+        product_key: product.productKey,
+        market,
+        currency: price.currency,
+        plan_key: product.businessPlan,
+        active_listing_limit: product.activeListingLimit || null,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        status: subscription.status || 'active',
+        payment_status: latestInvoice?.status === 'paid' ? 'paid' : 'pending',
+        current_period_start: stripeTimestampToIso(periodSource.current_period_start),
+        current_period_end: stripeTimestampToIso(periodSource.current_period_end),
+        next_billing_at: stripeTimestampToIso(periodSource.current_period_end),
+        cancel_at_period_end: subscription.cancel_at_period_end || false,
+        updated_at: new Date().toISOString(),
+      }
+      const { data: businessSubscription, error: subscriptionError } = await admin
+        .from('business_subscriptions')
+        .upsert(subscriptionPayload, { onConflict: 'stripe_subscription_id' })
+        .select('id')
+        .single()
+      if (subscriptionError || !businessSubscription) {
+        throw new Error(subscriptionError?.message || 'Could not save invoice subscription.')
+      }
+
+      if (latestInvoice) {
+        await upsertBusinessInvoice(admin, latestInvoice, businessSubscription.id, user.id)
+      }
+      await admin
+        .from('payment_orders')
+        .update({
+          status: 'pending',
+          stripe_subscription_id: subscription.id,
+          metadata: {
+            billing_method: 'invoice',
+            stripe_invoice_id: latestInvoice?.id || null,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', order.id)
+      await admin
+        .from('marketplace_profiles')
+        .update({
+          business_onboarding_status: 'active',
+          verification_updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id)
+      await admin.from('business_subscription_events').insert({
+        subscription_id: businessSubscription.id,
+        user_id: user.id,
+        event_type: 'invoice_subscription_created',
+        to_plan: product.businessPlan,
+        metadata: {
+          payment_order_id: order.id,
+          stripe_subscription_id: subscription.id,
+          stripe_invoice_id: latestInvoice?.id || null,
+          days_until_due: 30,
+        },
+      })
+      return NextResponse.json({
+        invoice: true,
+        invoiceUrl: latestInvoice?.hosted_invoice_url || null,
+        orderId: order.id,
+        subscriptionId: subscription.id,
+      })
+    } catch (error) {
+      console.error('[listing-checkout] Could not create Stripe invoice subscription', {
+        orderId: order.id,
+        productKey: product.productKey,
+        market,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      await admin
+        .from('payment_orders')
+        .update({
+          status: 'failed',
+          failure_reason: error instanceof Error ? error.message : 'Invoice subscription failed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', order.id)
+      return NextResponse.json({ error: 'Fakturaabonnemanget kunde inte startas.' }, { status: 503 })
+    }
+  }
+
   let session
   try {
     session = await getStripe().checkout.sessions.create({
@@ -475,4 +619,33 @@ function stripeLocaleForMarket(market: string) {
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function stripeTimestampToIso(value?: number | null) {
+  return typeof value === 'number' ? new Date(value * 1000).toISOString() : null
+}
+
+function toStripeInvoice(invoice: Stripe.Subscription['latest_invoice']) {
+  return invoice && typeof invoice === 'object' ? invoice as Stripe.Invoice : null
+}
+
+async function upsertBusinessInvoice(
+  admin: ReturnType<typeof createAdminClient>,
+  invoice: Stripe.Invoice,
+  subscriptionId: string,
+  userId: string,
+) {
+  await admin.from('business_invoices').upsert({
+    subscription_id: subscriptionId,
+    user_id: userId,
+    stripe_invoice_id: invoice.id,
+    invoice_number: invoice.number || null,
+    hosted_invoice_url: invoice.hosted_invoice_url || null,
+    pdf_url: invoice.invoice_pdf || null,
+    amount_minor: invoice.amount_due || 0,
+    currency: invoice.currency || 'sek',
+    status: invoice.status || 'open',
+    issued_at: stripeTimestampToIso(invoice.created),
+    paid_at: stripeTimestampToIso(invoice.status_transitions?.paid_at || null),
+  }, { onConflict: 'stripe_invoice_id' })
 }

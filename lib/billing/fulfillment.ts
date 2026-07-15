@@ -279,8 +279,16 @@ async function fulfillBusinessSubscription(
       typeof session.customer === 'string' ? session.customer : session.customer?.id || null,
     stripe_subscription_id: subscriptionId,
     status: 'active',
+    payment_status: 'paid',
     updated_at: new Date().toISOString(),
   }, { onConflict: 'stripe_subscription_id' })
+  await createAdminClient()
+    .from('marketplace_profiles')
+    .update({
+      business_onboarding_status: 'active',
+      verification_updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', order.user_id)
   await finishOrder(order, 'fulfilled', { fulfillment: 'business_subscription_active' })
   return true
 }

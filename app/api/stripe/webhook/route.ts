@@ -118,6 +118,9 @@ async function handleStripeEvent(event: Stripe.Event) {
     case 'charge.refunded':
       await markOrderRefunded(event.data.object as Stripe.Charge)
       return
+    case 'invoice.created':
+    case 'invoice.finalized':
+    case 'invoice.sent':
     case 'invoice.payment_succeeded':
     case 'invoice.payment_failed':
     case 'customer.subscription.created':
@@ -132,26 +135,31 @@ async function handleStripeEvent(event: Stripe.Event) {
 
 async function syncSubscriptionEvent(event: Stripe.Event) {
   const admin = createAdminClient()
+  const isInvoiceEvent = event.type.startsWith('invoice.')
   const object = event.data.object as {
     id?: string
-    subscription?: string
+    subscription?: string | { id?: string } | null
     status?: string
     current_period_start?: number
     current_period_end?: number
     cancel_at_period_end?: boolean
   }
   const subscriptionId =
-    event.type.startsWith('invoice.')
+    isInvoiceEvent
       ? typeof object.subscription === 'string'
         ? object.subscription
-        : undefined
+        : object.subscription?.id
       : object.id
   if (!subscriptionId) return
+
+  if (isInvoiceEvent) {
+    await upsertBusinessInvoice(admin, event.data.object as Stripe.Invoice, subscriptionId)
+  }
 
   const updates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   }
-  if (object.status) updates.status = object.status
+  if (!isInvoiceEvent && object.status) updates.status = object.status
   if (typeof object.current_period_start === 'number') {
     updates.current_period_start = new Date(object.current_period_start * 1000).toISOString()
   }
@@ -165,17 +173,76 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
     const now = new Date()
     const graceDays = Number(process.env.SUBSCRIPTION_PAYMENT_GRACE_DAYS || 7)
     updates.status = 'past_due'
+    updates.payment_status = 'failed'
     updates.payment_warning_at = now.toISOString()
     updates.grace_period_ends_at = new Date(now.getTime() + Math.max(0, graceDays) * 86_400_000).toISOString()
   }
   if (event.type === 'invoice.payment_succeeded') {
     updates.status = 'active'
+    updates.payment_status = 'paid'
     updates.payment_warning_at = null
     updates.grace_period_ends_at = null
+  }
+  if (['invoice.created', 'invoice.finalized', 'invoice.sent'].includes(event.type)) {
+    updates.payment_status = 'pending'
   }
 
   await admin
     .from('business_subscriptions')
     .update(updates)
     .eq('stripe_subscription_id', subscriptionId)
+
+  if (event.type === 'invoice.payment_succeeded') {
+    await admin
+      .from('payment_orders')
+      .update({
+        status: 'paid',
+        paid_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_subscription_id', subscriptionId)
+      .in('status', ['created', 'pending', 'checkout_created'])
+  }
+  if (event.type === 'invoice.payment_failed') {
+    await admin
+      .from('payment_orders')
+      .update({
+        status: 'failed',
+        failure_reason: 'Stripe invoice payment failed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_subscription_id', subscriptionId)
+      .in('status', ['created', 'pending', 'checkout_created'])
+  }
+}
+
+async function upsertBusinessInvoice(
+  admin: ReturnType<typeof createAdminClient>,
+  invoice: Stripe.Invoice,
+  stripeSubscriptionId: string,
+) {
+  const { data: subscription } = await admin
+    .from('business_subscriptions')
+    .select('id,user_id')
+    .eq('stripe_subscription_id', stripeSubscriptionId)
+    .maybeSingle()
+  if (!subscription) return
+
+  await admin.from('business_invoices').upsert({
+    subscription_id: subscription.id,
+    user_id: subscription.user_id,
+    stripe_invoice_id: invoice.id,
+    invoice_number: invoice.number || null,
+    hosted_invoice_url: invoice.hosted_invoice_url || null,
+    pdf_url: invoice.invoice_pdf || null,
+    amount_minor: invoice.amount_due || 0,
+    currency: invoice.currency || 'sek',
+    status: invoice.status || 'open',
+    issued_at: stripeTimestampToIso(invoice.created),
+    paid_at: stripeTimestampToIso(invoice.status_transitions?.paid_at || null),
+  }, { onConflict: 'stripe_invoice_id' })
+}
+
+function stripeTimestampToIso(value?: number | null) {
+  return typeof value === 'number' ? new Date(value * 1000).toISOString() : null
 }
