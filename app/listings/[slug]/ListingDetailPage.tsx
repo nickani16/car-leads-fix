@@ -374,8 +374,8 @@ export default async function ListingDetailPage({
         marketCode={marketCode}
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
       />
-      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-8 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
-        <div className="flex items-center justify-between gap-3">
+      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
+        <div className="hidden items-center justify-between gap-3 sm:flex">
           <ListingBackLink
             fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
             label={copy.backToListings}
@@ -404,7 +404,7 @@ export default async function ListingDetailPage({
           </div>
         </div>
 
-        <div className="mt-3 space-y-4 sm:mt-4 sm:space-y-6">
+        <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
           <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
             <ListingImageGallery
