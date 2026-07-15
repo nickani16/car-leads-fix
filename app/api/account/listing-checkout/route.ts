@@ -61,6 +61,9 @@ export async function POST(request: Request) {
   if (!profile) {
     return NextResponse.json({ error: 'Account profile not found.' }, { status: 403 })
   }
+  if (billingMethod === 'invoice' && profile.account_type !== 'business') {
+    return NextResponse.json({ error: 'Faktura kan bara användas av företagskonton.' }, { status: 403 })
+  }
 
   const productKey =
     body.productKey ||
