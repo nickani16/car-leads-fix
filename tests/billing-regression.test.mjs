@@ -16,6 +16,7 @@ const countryFlag = readFileSync(new URL('../app/components/CountryFlag.tsx', im
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const nextConfig = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8')
 const businessPlanChooser = readFileSync(new URL('../app/konto/business/subscription/BusinessPlanChooser.tsx', import.meta.url), 'utf8')
+const accountPage = readFileSync(new URL('../app/konto/page.tsx', import.meta.url), 'utf8')
 
 test('market currencies follow URL market requirements', () => {
   for (const [market, currency] of Object.entries({
@@ -91,6 +92,24 @@ test('business subscriptions support Stripe invoice terms for B2B customers', ()
   assert.match(webhook, /upsertBusinessInvoice/)
   assert.match(webhook, /!isInvoiceEvent && object\.status/)
   assert.match(fulfillment, /payment_status: 'paid'/)
+})
+
+test('business subscription cards expose five tiered plans with Free kept listing-only', () => {
+  assert.match(businessPlanChooser, /key: 'free'/)
+  assert.match(businessPlanChooser, /key: 'starter'/)
+  assert.match(businessPlanChooser, /key: 'growth'/)
+  assert.match(businessPlanChooser, /key: 'professional'/)
+  assert.match(businessPlanChooser, /key: 'enterprise'/)
+  assert.match(businessPlanChooser, /Ingen fÃ¶retagsprofil|Ingen företagssida|Publik företagssida/)
+  assert.match(businessPlanChooser, /Företagssida Basic/)
+  assert.match(businessPlanChooser, /Företagssida Plus/)
+  assert.match(businessPlanChooser, /Företagssida Pro/)
+  assert.match(businessPlanChooser, /Teamkonto/)
+  assert.match(businessPlanChooser, /Rapporter och export/)
+  assert.match(businessPlanChooser, /Faktura 30 dagar/)
+  assert.doesNotMatch(businessPlanChooser, /#10b981|#15803d|text-\[#15803d\]|bg-\[#10b981\]/)
+  assert.match(publicHeader, /accountType === 'business'[\s\S]*account\/business\/subscription/)
+  assert.match(accountPage, /title: copy\.plan/)
 })
 
 test('webhook handling is signature verified and idempotent', () => {

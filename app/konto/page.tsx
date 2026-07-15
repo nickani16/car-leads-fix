@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Building2,
+  CreditCard,
   FileText,
   Heart,
   MessageCircle,
@@ -99,6 +100,13 @@ export default async function AccountPage() {
   if (!profile) redirect(localizePublicHref(locale, '/register'))
 
   const admin = createAdminClient()
+  let businessSubscription: {
+    plan_key: string | null
+    status: string | null
+    payment_status: string | null
+    manually_activated: boolean | null
+    free_period_ends_at: string | null
+  } | null = null
   if (profile.account_type === 'business') {
     const { data: subscription } = await admin
       .from('business_subscriptions')
@@ -107,6 +115,7 @@ export default async function AccountPage() {
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
+    businessSubscription = subscription || null
     const onboarding = String((profile as ProfileRow & { business_onboarding_status?: string }).business_onboarding_status || '')
     const status = onboarding || (subscription?.status === 'active' ? 'active' : 'subscription_pending')
     if (status === 'under_review' || status === 'submitted' || status === 'draft') {
@@ -227,6 +236,18 @@ export default async function AccountPage() {
           : localizePublicHref(locale, '/foretag'),
       icon: Building2,
     },
+    ...(profile.account_type === 'business'
+      ? [
+          {
+            title: copy.plan,
+            text: businessSubscription?.plan_key
+              ? `${copy.currentPlan}: ${businessSubscription.plan_key}`
+              : copy.planText,
+            href: localizePublicHref(locale, '/account/business/subscription'),
+            icon: CreditCard,
+          },
+        ]
+      : []),
     {
       title: copy.settings,
       text: copy.settingsText,
@@ -478,6 +499,9 @@ function getMyAutorellCopy(locale: PublicLocale) {
     businessEntryText: 'Explore business profiles, inventory tools and team features.',
     settings: 'Settings',
     settingsText: 'Language, currency, notifications and account settings.',
+    plan: 'Plan',
+    planText: 'Choose, upgrade or change the company subscription.',
+    currentPlan: 'Current plan',
     profileEyebrow: 'Profile and security',
     profileTitle: 'Account details',
     profileText:
@@ -520,6 +544,9 @@ function getMyAutorellCopy(locale: PublicLocale) {
       businessEntryText: 'Utforska företagsprofil, lagerverktyg och teamfunktioner.',
       settings: 'Inställningar',
       settingsText: 'Språk, valuta, notiser och kontoinställningar.',
+      plan: 'Plan',
+      planText: 'Välj, uppgradera eller ändra företagets abonnemang.',
+      currentPlan: 'Nuvarande plan',
       profileEyebrow: 'Profil och säkerhet',
       profileTitle: 'Kontouppgifter',
       profileText:
@@ -563,6 +590,9 @@ function getMyAutorellCopy(locale: PublicLocale) {
       businessEntryText: 'Unternehmensprofil, Bestandstools und Teamfunktionen entdecken.',
       settings: 'Einstellungen',
       settingsText: 'Sprache, Währung, Benachrichtigungen und Kontoeinstellungen.',
+      plan: 'Tarif',
+      planText: 'Unternehmensabo auswählen, upgraden oder ändern.',
+      currentPlan: 'Aktueller Tarif',
       profileEyebrow: 'Profil und Sicherheit',
       profileTitle: 'Kontodaten',
       profileText:

@@ -9,6 +9,7 @@ import {
   CarFront,
   ChevronDown,
   CircleHelp,
+  CreditCard,
   FilePlus2,
   Heart,
   Home,
@@ -732,6 +733,9 @@ export default function PublicHeader({
   const profileMenuLinks = [
     { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
     { href: accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
+    ...(headerAccount.accountType === 'business'
+      ? [{ href: `${marketPathPrefix}/account/business/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard }]
+      : []),
     { href: accountListingsHref, label: publicLabel('My listings', 'Mina annonser', 'Meine Anzeigen'), icon: CarFront },
   ]
   const mobileAccountName =
