@@ -224,7 +224,7 @@ export default function ListingImageGallery({
               label={shareLabel}
               copiedLabel={shareCopiedLabel}
               variant="button"
-              className="h-[42px] w-[42px] rounded-[10px] !px-0 shadow-sm"
+              className="!h-[42px] !min-h-[42px] !w-[42px] rounded-[10px] !px-0 shadow-sm"
               labelClassName="sr-only"
               iconClassName="h-5 w-5 text-[#101828]"
             />
