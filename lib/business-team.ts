@@ -197,7 +197,7 @@ function buildTeamInvitationMessage(
   locale: EmailLocale,
 ) {
   const copy = teamInviteCopy(locale)
-  const acceptUrl = localizedAccountUrl(`/account/company/team/accept?token=${encodeURIComponent(input.token)}`, locale)
+  const acceptUrl = localizedAccountUrl(`/company/team/accept?token=${encodeURIComponent(input.token)}`, locale)
   const subject = copy.subject(input.companyName)
   const body = copy.body(input.companyName, input.inviterName, roleLabel(input.role, locale))
   return {

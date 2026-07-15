@@ -80,6 +80,10 @@ export default async function LocalizedMarketPage({
     return <AcceptCompanyTeamInvitationPage searchParams={searchParams} />
   }
 
+  if (slugPath === 'company/team/accept') {
+    return <AcceptCompanyTeamInvitationPage searchParams={searchParams} />
+  }
+
   if (slugPath === 'account/company/subscription') {
     return <BusinessSubscriptionPage localeOverride={locale} marketOverride={normalizedMarket} />
   }

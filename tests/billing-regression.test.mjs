@@ -31,6 +31,7 @@ const companyAnalytics = readFileSync(new URL('../app/account/company/analytics/
 const companyTeam = readFileSync(new URL('../app/account/company/team/page.tsx', import.meta.url), 'utf8')
 const companyTeamInviteApi = readFileSync(new URL('../app/api/account/company/team/invitations/route.ts', import.meta.url), 'utf8')
 const companyTeamAcceptApi = readFileSync(new URL('../app/api/account/company/team/accept/route.ts', import.meta.url), 'utf8')
+const companyTeamPublicAcceptPage = readFileSync(new URL('../app/company/team/accept/page.tsx', import.meta.url), 'utf8')
 const businessTeam = readFileSync(new URL('../lib/business-team.ts', import.meta.url), 'utf8')
 const teamMigration = readFileSync(new URL('../supabase/migrations/20260715200000_business_team_invitations.sql', import.meta.url), 'utf8')
 
@@ -222,6 +223,10 @@ test('company team invitations are server-side, seat-limited and token accepted'
   assert.match(companyTeamInviteApi, /token_hash: tokenHash/)
   assert.match(companyTeamInviteApi, /sendCompanyTeamInvitationEmail/)
   assert.doesNotMatch(companyTeamInviteApi, /body\.companyId|body\.planKey|body\.seatLimit/)
+  assert.match(businessTeam, /\/company\/team\/accept\?token=/)
+  assert.doesNotMatch(businessTeam, /\/account\/company\/team\/accept\?token=/)
+  assert.match(companyTeamPublicAcceptPage, /account\/company\/team\/accept\/page/)
+  assert.match(marketCatchall, /slugPath === 'company\/team\/accept'/)
   assert.match(companyTeamAcceptApi, /hashTeamInvitationToken\(token\)/)
   assert.match(companyTeamAcceptApi, /user\.email/)
   assert.match(companyTeamAcceptApi, /from\('marketplace_company_members'\)[\s\S]*upsert\(\{/)
