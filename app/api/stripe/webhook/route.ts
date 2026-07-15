@@ -8,6 +8,7 @@ import {
   markOrderFailedByPaymentIntent,
   markOrderRefunded,
 } from '@/lib/billing/fulfillment'
+import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
 
 export async function POST(request: Request) {
   const signature = request.headers.get('stripe-signature')
@@ -152,8 +153,9 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
       : object.id
   if (!subscriptionId) return
 
-  if (isInvoiceEvent) {
-    await upsertBusinessInvoice(admin, event.data.object as Stripe.Invoice, subscriptionId)
+  const invoice = isInvoiceEvent ? event.data.object as Stripe.Invoice : null
+  if (invoice) {
+    await upsertBusinessInvoice(admin, invoice, subscriptionId)
   }
 
   const updates: Record<string, unknown> = {
@@ -192,6 +194,61 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
     .update(updates)
     .eq('stripe_subscription_id', subscriptionId)
 
+  const subscription = await getBusinessSubscriptionByStripeId(admin, subscriptionId)
+  if (subscription && invoice) {
+    if (event.type === 'invoice.sent' || event.type === 'invoice.finalized') {
+      await sendBusinessBillingEmail(admin, {
+        deliveryKey: `business-invoice-ready-${invoice.id}`,
+        kind: 'invoice_ready',
+        userId: subscription.user_id,
+        subscriptionId: subscription.id,
+        invoiceId: invoice.id,
+        planKey: subscription.plan_key,
+        activeListingLimit: subscription.active_listing_limit,
+        amountMinor: invoice.amount_due || invoice.total || null,
+        currency: invoice.currency,
+        invoiceNumber: invoice.number || null,
+        invoiceUrl: invoice.hosted_invoice_url || null,
+        pdfUrl: invoice.invoice_pdf || null,
+        dueAt: stripeTimestampToIso(invoice.due_date || null),
+      })
+    }
+    if (event.type === 'invoice.payment_succeeded') {
+      await sendBusinessBillingEmail(admin, {
+        deliveryKey: `business-payment-receipt-${invoice.id}`,
+        kind: 'payment_receipt',
+        userId: subscription.user_id,
+        subscriptionId: subscription.id,
+        invoiceId: invoice.id,
+        planKey: subscription.plan_key,
+        activeListingLimit: subscription.active_listing_limit,
+        amountMinor: invoice.amount_paid || invoice.amount_due || invoice.total || null,
+        currency: invoice.currency,
+        invoiceNumber: invoice.number || null,
+        invoiceUrl: invoice.hosted_invoice_url || null,
+        pdfUrl: invoice.invoice_pdf || null,
+        dueAt: stripeTimestampToIso(invoice.due_date || null),
+      })
+    }
+    if (event.type === 'invoice.payment_failed') {
+      await sendBusinessBillingEmail(admin, {
+        deliveryKey: `business-payment-failed-${invoice.id}`,
+        kind: 'payment_failed',
+        userId: subscription.user_id,
+        subscriptionId: subscription.id,
+        invoiceId: invoice.id,
+        planKey: subscription.plan_key,
+        activeListingLimit: subscription.active_listing_limit,
+        amountMinor: invoice.amount_remaining || invoice.amount_due || invoice.total || null,
+        currency: invoice.currency,
+        invoiceNumber: invoice.number || null,
+        invoiceUrl: invoice.hosted_invoice_url || null,
+        pdfUrl: invoice.invoice_pdf || null,
+        dueAt: stripeTimestampToIso(invoice.due_date || null),
+      })
+    }
+  }
+
   if (event.type === 'invoice.payment_succeeded') {
     await admin
       .from('payment_orders')
@@ -202,6 +259,15 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
       })
       .eq('stripe_subscription_id', subscriptionId)
       .in('status', ['created', 'pending', 'checkout_created'])
+    if (subscription) {
+      await admin
+        .from('marketplace_profiles')
+        .update({
+          business_onboarding_status: 'active',
+          verification_updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', subscription.user_id)
+    }
   }
   if (event.type === 'invoice.payment_failed') {
     await admin
@@ -226,7 +292,7 @@ async function upsertBusinessInvoice(
     .select('id,user_id')
     .eq('stripe_subscription_id', stripeSubscriptionId)
     .maybeSingle()
-  if (!subscription) return
+  if (!subscription) return null
 
   await admin.from('business_invoices').upsert({
     subscription_id: subscription.id,
@@ -240,7 +306,26 @@ async function upsertBusinessInvoice(
     status: invoice.status || 'open',
     issued_at: stripeTimestampToIso(invoice.created),
     paid_at: stripeTimestampToIso(invoice.status_transitions?.paid_at || null),
+    due_at: stripeTimestampToIso(invoice.due_date || null),
+    metadata: {
+      collection_method: invoice.collection_method || null,
+      amount_remaining: invoice.amount_remaining || 0,
+    },
   }, { onConflict: 'stripe_invoice_id' })
+
+  return {
+    stripeInvoiceId: invoice.id,
+    userId: subscription.user_id,
+  }
+}
+
+async function getBusinessSubscriptionByStripeId(admin: ReturnType<typeof createAdminClient>, stripeSubscriptionId: string) {
+  const { data } = await admin
+    .from('business_subscriptions')
+    .select('id,user_id,plan_key,active_listing_limit')
+    .eq('stripe_subscription_id', stripeSubscriptionId)
+    .maybeSingle()
+  return data
 }
 
 function stripeTimestampToIso(value?: number | null) {

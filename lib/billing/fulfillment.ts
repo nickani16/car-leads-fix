@@ -5,6 +5,7 @@ import {
   productToLegacyListingPackage,
   type BillingProduct,
 } from '@/lib/billing/product-catalog'
+import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
 
 type PaymentOrderRow = {
   id: string
@@ -267,7 +268,8 @@ async function fulfillBusinessSubscription(
   if (!subscriptionId || !product.businessPlan) {
     throw new Error('Subscription order missing Stripe subscription or business plan')
   }
-  await createAdminClient().from('business_subscriptions').upsert({
+  const admin = createAdminClient()
+  const { data: subscription, error: subscriptionError } = await admin.from('business_subscriptions').upsert({
     user_id: order.user_id,
     business_id: order.business_id,
     product_key: product.productKey,
@@ -281,14 +283,25 @@ async function fulfillBusinessSubscription(
     status: 'active',
     payment_status: 'paid',
     updated_at: new Date().toISOString(),
-  }, { onConflict: 'stripe_subscription_id' })
-  await createAdminClient()
+  }, { onConflict: 'stripe_subscription_id' }).select('id').single()
+  if (subscriptionError || !subscription) {
+    throw new Error(subscriptionError?.message || 'Could not save business subscription')
+  }
+  await admin
     .from('marketplace_profiles')
     .update({
       business_onboarding_status: 'active',
       verification_updated_at: new Date().toISOString(),
     })
     .eq('user_id', order.user_id)
+  await sendBusinessBillingEmail(admin, {
+    deliveryKey: `business-welcome-${subscription.id}`,
+    kind: 'welcome',
+    userId: order.user_id,
+    subscriptionId: subscription.id,
+    planKey: product.businessPlan,
+    activeListingLimit: product.activeListingLimit || null,
+  })
   await finishOrder(order, 'fulfilled', { fulfillment: 'business_subscription_active' })
   return true
 }

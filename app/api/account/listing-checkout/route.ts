@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
+import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
 import {
   getBillingProduct,
   legacyListingPackageToProductKey,
@@ -114,6 +115,14 @@ export async function POST(request: Request) {
     }
     await admin.from('marketplace_profiles').update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: new Date().toISOString() }).eq('user_id', user.id)
     await admin.from('business_subscription_events').insert({ subscription_id: subscription.id, user_id: user.id, event_type: 'activated', to_plan: 'free' })
+    await sendBusinessBillingEmail(admin, {
+      deliveryKey: `business-welcome-${subscription.id}`,
+      kind: 'welcome',
+      userId: user.id,
+      subscriptionId: subscription.id,
+      planKey: 'free',
+      activeListingLimit: 5,
+    })
     return NextResponse.json({ activated: true, subscription })
   }
 
@@ -409,6 +418,29 @@ export async function POST(request: Request) {
           days_until_due: 30,
           bank_transfer_enabled: Boolean(bankTransferSettings),
         },
+      })
+      await sendBusinessBillingEmail(admin, {
+        deliveryKey: `business-welcome-${businessSubscription.id}`,
+        kind: 'welcome',
+        userId: user.id,
+        subscriptionId: businessSubscription.id,
+        planKey: product.businessPlan,
+        activeListingLimit: product.activeListingLimit || null,
+      })
+      await sendBusinessBillingEmail(admin, {
+        deliveryKey: `business-invoice-ready-${latestInvoice.id}`,
+        kind: 'invoice_ready',
+        userId: user.id,
+        subscriptionId: businessSubscription.id,
+        invoiceId: latestInvoice.id,
+        planKey: product.businessPlan,
+        activeListingLimit: product.activeListingLimit || null,
+        amountMinor: latestInvoice.amount_due || price.amountMinor,
+        currency: latestInvoice.currency || price.currency,
+        invoiceNumber: latestInvoice.number || null,
+        invoiceUrl: latestInvoice.hosted_invoice_url || null,
+        pdfUrl: latestInvoice.invoice_pdf || null,
+        dueAt: stripeTimestampToIso(latestInvoice.due_date || null),
       })
       return NextResponse.json({
         invoice: true,
@@ -712,5 +744,10 @@ async function upsertBusinessInvoice(
     status: invoice.status || 'open',
     issued_at: stripeTimestampToIso(invoice.created),
     paid_at: stripeTimestampToIso(invoice.status_transitions?.paid_at || null),
+    due_at: stripeTimestampToIso(invoice.due_date || null),
+    metadata: {
+      collection_method: invoice.collection_method || null,
+      amount_remaining: invoice.amount_remaining || 0,
+    },
   }, { onConflict: 'stripe_invoice_id' })
 }
