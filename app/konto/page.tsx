@@ -9,6 +9,7 @@ import {
   Heart,
   MessageCircle,
   Plus,
+  ReceiptText,
   Search,
   Settings,
   ShieldCheck,
@@ -245,6 +246,12 @@ export default async function AccountPage() {
               : copy.planText,
             href: localizePublicHref(locale, '/account/business/subscription'),
             icon: CreditCard,
+          },
+          {
+            title: copy.payments,
+            text: copy.paymentsText,
+            href: localizePublicHref(locale, '/account/payments'),
+            icon: ReceiptText,
           },
         ]
       : []),
@@ -502,6 +509,8 @@ function getMyAutorellCopy(locale: PublicLocale) {
     plan: 'Plan',
     planText: 'Choose, upgrade or change the company subscription.',
     currentPlan: 'Current plan',
+    payments: 'Payments',
+    paymentsText: 'View invoices, payment status and Stripe billing portal.',
     profileEyebrow: 'Profile and security',
     profileTitle: 'Account details',
     profileText:
@@ -547,6 +556,8 @@ function getMyAutorellCopy(locale: PublicLocale) {
       plan: 'Plan',
       planText: 'Välj, uppgradera eller ändra företagets abonnemang.',
       currentPlan: 'Nuvarande plan',
+      payments: 'Betalningar',
+      paymentsText: 'Se fakturor, betalningsstatus och Stripe-portalen.',
       profileEyebrow: 'Profil och säkerhet',
       profileTitle: 'Kontouppgifter',
       profileText:
@@ -593,6 +604,8 @@ function getMyAutorellCopy(locale: PublicLocale) {
       plan: 'Tarif',
       planText: 'Unternehmensabo auswählen, upgraden oder ändern.',
       currentPlan: 'Aktueller Tarif',
+      payments: 'Zahlungen',
+      paymentsText: 'Rechnungen, Zahlungsstatus und Stripe-Portal anzeigen.',
       profileEyebrow: 'Profil und Sicherheit',
       profileTitle: 'Kontodaten',
       profileText:

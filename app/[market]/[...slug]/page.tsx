@@ -7,6 +7,7 @@ import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
 import BusinessSubscriptionPage from '@/app/konto/business/subscription/page'
 import BusinessStatusPage from '@/app/konto/business/status/page'
+import PaymentsPage from '@/app/konto/betalningar/page'
 
 export default async function LocalizedMarketPage({
   params,
@@ -35,6 +36,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/business/status' || slugPath === 'konto/business/status') {
     return <BusinessStatusPage />
+  }
+
+  if (slugPath === 'account/payments' || slugPath === 'konto/betalningar') {
+    return <PaymentsPage />
   }
 
   if (slugPath === 'pricing') {

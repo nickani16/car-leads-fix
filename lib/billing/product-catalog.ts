@@ -51,7 +51,7 @@ export type BillingProduct = {
   includedBoostDays?: number
   refreshCredits?: number
   activeListingLimit?: number
-  billingInterval?: 'month'
+  billingInterval?: 'month' | 'year'
   amountMinor: Record<BillingCurrency, number | null>
   taxBehavior: 'inclusive' | 'exclusive' | 'unspecified'
   priceDisplayMode: 'inclusive' | 'exclusive' | 'unspecified'
@@ -196,18 +196,36 @@ const products: BillingProduct[] = [
     dkk: 34900,
     pln: 19900,
   }),
+  subscriptionProduct('starter', 25, {
+    sek: 509000,
+    eur: 45890,
+    dkk: 356000,
+    pln: 203000,
+  }, 'year'),
   subscriptionProduct('growth', 100, {
     sek: 99900,
     eur: 8999,
     dkk: 69900,
     pln: 39900,
   }),
+  subscriptionProduct('growth', 100, {
+    sek: 1019000,
+    eur: 91790,
+    dkk: 713000,
+    pln: 407000,
+  }, 'year'),
   subscriptionProduct('professional', 500, {
     sek: 199900,
     eur: 17999,
     dkk: 139900,
     pln: 79900,
   }),
+  subscriptionProduct('professional', 500, {
+    sek: 2039000,
+    eur: 183590,
+    dkk: 1427000,
+    pln: 815000,
+  }, 'year'),
   {
     productKey: 'subscription.business.enterprise.monthly',
     kind: 'subscription',
@@ -351,13 +369,14 @@ function subscriptionProduct(
   businessPlan: Exclude<BusinessPlan, 'enterprise'>,
   activeListingLimit: number,
   amountMinor: Record<BillingCurrency, number>,
+  billingInterval: 'month' | 'year' = 'month',
 ): BillingProduct {
   return {
-    productKey: `subscription.business.${businessPlan}.monthly`,
+    productKey: `subscription.business.${businessPlan}.${billingInterval === 'year' ? 'annual' : 'monthly'}`,
     kind: 'subscription',
     billingType: 'subscription',
     businessPlan,
-    billingInterval: 'month',
+    billingInterval,
     activeListingLimit,
     amountMinor,
     taxBehavior: 'unspecified',

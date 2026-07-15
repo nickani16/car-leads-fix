@@ -113,10 +113,16 @@ test('business subscription cards expose five tiered plans with Free kept listin
   assert.match(businessPlanChooser, /Rapporter och export/)
   assert.match(businessPlanChooser, /Faktura 30 dagar/)
   assert.match(businessPlanChooser, /Fakturan är skapad och skickad/)
+  assert.match(businessPlanChooser, /Årsvis - spara/)
+  assert.match(businessPlanChooser, /current[\s\S]*border-\[#0866ff\]/)
+  assert.match(catalog, /subscriptionProduct\('starter', 25,[\s\S]*\}, 'year'\)/)
+  assert.match(catalog, /subscriptionProduct\('growth', 100,[\s\S]*\}, 'year'\)/)
+  assert.match(catalog, /subscriptionProduct\('professional', 500,[\s\S]*\}, 'year'\)/)
   assert.doesNotMatch(businessPlanChooser, /Sparkles/)
   assert.doesNotMatch(businessPlanChooser, /#10b981|#15803d|text-\[#15803d\]|bg-\[#10b981\]/)
   assert.match(publicHeader, /accountType === 'business'[\s\S]*account\/business\/subscription/)
   assert.match(accountPage, /title: copy\.plan/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/payments'\)/)
 })
 
 test('webhook handling is signature verified and idempotent', () => {

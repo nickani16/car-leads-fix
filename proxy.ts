@@ -232,6 +232,7 @@ const LEGACY_ACCOUNT_ROUTES = new Map([
   ['/konto/annonser', '/account/listings'],
   ['/konto/annonser/ny', '/account/listings/new'],
   ['/konto/meddelanden', '/account/messages'],
+  ['/konto/betalningar', '/account/payments'],
 ])
 
 function getLegacyAccountTarget(pathname: string) {

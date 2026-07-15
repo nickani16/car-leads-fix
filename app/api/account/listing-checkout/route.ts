@@ -263,17 +263,17 @@ export async function POST(request: Request) {
   }
 
   if (billingMethod === 'invoice') {
-    if (!product.businessPlan || !price.stripePriceId) {
+    if (!product.businessPlan) {
       await admin
         .from('payment_orders')
         .update({
           status: 'failed',
-          failure_reason: 'Stripe Price ID is required for invoice subscriptions.',
+          failure_reason: 'Business plan is required for invoice subscriptions.',
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id)
       return NextResponse.json(
-        { error: 'Faktura Ã¤r inte konfigurerad fÃ¶r den hÃ¤r marknaden Ã¤n.' },
+        { error: 'Faktura är inte konfigurerad för den här planen än.' },
         { status: 503 },
       )
     }
@@ -298,11 +298,35 @@ export async function POST(request: Request) {
         },
       })).id
 
+      const stripeProduct = price.stripePriceId
+        ? null
+        : await stripe.products.create({
+            name: checkoutProduct.name,
+            description: checkoutProduct.description,
+            metadata: {
+              product_key: product.productKey,
+              source: price.source,
+              required_env: price.requiredEnv || '',
+            },
+          })
+      const subscriptionItem: Stripe.SubscriptionCreateParams.Item =
+        price.stripePriceId
+          ? { price: price.stripePriceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: price.currency,
+                unit_amount: price.amountMinor,
+                recurring: { interval: product.billingInterval || 'month' },
+                product: stripeProduct!.id,
+              },
+              quantity: 1,
+            }
+
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         collection_method: 'send_invoice',
         days_until_due: 30,
-        items: [{ price: price.stripePriceId, quantity: 1 }],
+        items: [subscriptionItem],
         metadata,
         expand: ['latest_invoice'],
       })
@@ -456,8 +480,14 @@ export async function POST(request: Request) {
           message: 'Säker betalning via Stripe. Du skickas tillbaka till Autorell efter genomfört köp.',
         },
       },
-      success_url: `${origin}/account/listings?payment=processing&order=${order.id}`,
-      cancel_url: `${origin}/account/listings?payment=cancelled&order=${order.id}`,
+      success_url:
+        product.kind === 'subscription'
+          ? `${origin}/account/business/subscription?payment=processing&order=${order.id}`
+          : `${origin}/account/listings?payment=processing&order=${order.id}`,
+      cancel_url:
+        product.kind === 'subscription'
+          ? `${origin}/account/business/subscription?payment=cancelled&order=${order.id}`
+          : `${origin}/account/listings?payment=cancelled&order=${order.id}`,
     })
   } catch (error) {
     console.error('[listing-checkout] Could not create Stripe checkout session', {
@@ -581,9 +611,10 @@ function createCheckoutProductCopy(productKey: string, listingTitle?: string | n
 
   if (productKey.startsWith('subscription.business.')) {
     const plan = productKey.split('.')[2] || 'business'
+    const period = productKey.endsWith('.annual') ? 'Årsabonnemang' : 'Månadsabonnemang'
     return {
       name: `Företag · ${capitalize(plan)}`,
-      description: 'Månadsabonnemang för företag som säljer fordon på Autorell.',
+      description: `${period} för företag som säljer fordon på Autorell.`,
       submitText: 'Företagsabonnemanget aktiveras automatiskt när betalningen har bekräftats.',
     }
   }
