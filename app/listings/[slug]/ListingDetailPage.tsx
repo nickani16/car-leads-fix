@@ -618,6 +618,7 @@ export default async function ListingDetailPage({
                       listingId={listing.id}
                       listingTitle={listing.title}
                       locale={locale}
+                      defaultCurrency={displayCurrency}
                     />
                   </>
                 )}

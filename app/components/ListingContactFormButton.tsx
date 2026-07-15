@@ -8,6 +8,7 @@ type ListingContactFormButtonProps = {
   listingId: string
   listingTitle: string
   locale: PublicLocale
+  defaultCurrency?: string
 }
 
 type ContactCopy = {
@@ -18,7 +19,6 @@ type ContactCopy = {
   phone: string
   email: string
   offer: string
-  offerPlaceholder: string
   message: string
   messagePlaceholder: string
   privacy: string
@@ -38,7 +38,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Telefonnummer',
     email: 'E-post',
     offer: 'Hur mycket vill du erbjuda?',
-    offerPlaceholder: 'Exempel: 720 000 SEK',
     message: 'Meddelande',
     messagePlaceholder: 'Skriv vad du vill veta eller när du vill bli kontaktad.',
     privacy: 'Jag godkänner att Autorell skickar mina kontaktuppgifter till säljaren för den här annonsen.',
@@ -56,7 +55,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Phone number',
     email: 'Email',
     offer: 'How much would you like to offer?',
-    offerPlaceholder: 'Example: 72,000 EUR',
     message: 'Message',
     messagePlaceholder: 'Write what you want to know or when you want to be contacted.',
     privacy: 'I agree that Autorell sends my contact details to the seller for this listing.',
@@ -74,7 +72,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Telefonnummer',
     email: 'E-Mail',
     offer: 'Wie viel möchten Sie anbieten?',
-    offerPlaceholder: 'Beispiel: 72.000 EUR',
     message: 'Nachricht',
     messagePlaceholder: 'Schreiben Sie, was Sie wissen möchten oder wann Sie kontaktiert werden möchten.',
     privacy: 'Ich stimme zu, dass Autorell meine Kontaktdaten für diese Anzeige an den Verkäufer sendet.',
@@ -92,7 +89,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Numéro de téléphone',
     email: 'E-mail',
     offer: 'Quel montant souhaitez-vous proposer ?',
-    offerPlaceholder: 'Exemple : 72 000 EUR',
     message: 'Message',
     messagePlaceholder: 'Écrivez ce que vous voulez savoir ou quand vous souhaitez être contacté.',
     privacy: 'J’accepte qu’Autorell transmette mes coordonnées au vendeur pour cette annonce.',
@@ -110,7 +106,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Número de teléfono',
     email: 'Correo electrónico',
     offer: '¿Cuánto quieres ofrecer?',
-    offerPlaceholder: 'Ejemplo: 72.000 EUR',
     message: 'Mensaje',
     messagePlaceholder: 'Escribe qué quieres saber o cuándo quieres que te contacten.',
     privacy: 'Acepto que Autorell envíe mis datos de contacto al vendedor para este anuncio.',
@@ -128,7 +123,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Numero di telefono',
     email: 'E-mail',
     offer: 'Quanto vuoi offrire?',
-    offerPlaceholder: 'Esempio: 72.000 EUR',
     message: 'Messaggio',
     messagePlaceholder: 'Scrivi cosa vuoi sapere o quando desideri essere contattato.',
     privacy: 'Accetto che Autorell invii i miei dati di contatto al venditore per questo annuncio.',
@@ -146,7 +140,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Numer telefonu',
     email: 'E-mail',
     offer: 'Ile chcesz zaoferować?',
-    offerPlaceholder: 'Przykład: 300 000 PLN',
     message: 'Wiadomość',
     messagePlaceholder: 'Napisz, czego chcesz się dowiedzieć albo kiedy sprzedawca ma się z Tobą skontaktować.',
     privacy: 'Zgadzam się, aby Autorell przekazał moje dane kontaktowe sprzedawcy w sprawie tego ogłoszenia.',
@@ -164,7 +157,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Telefoonnummer',
     email: 'E-mail',
     offer: 'Hoeveel wil je bieden?',
-    offerPlaceholder: 'Voorbeeld: 72.000 EUR',
     message: 'Bericht',
     messagePlaceholder: 'Schrijf wat je wilt weten of wanneer je gecontacteerd wilt worden.',
     privacy: 'Ik ga ermee akkoord dat Autorell mijn contactgegevens naar de verkoper stuurt voor deze advertentie.',
@@ -182,7 +174,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Puhelinnumero',
     email: 'Sähköposti',
     offer: 'Kuinka paljon haluat tarjota?',
-    offerPlaceholder: 'Esimerkki: 72 000 EUR',
     message: 'Viesti',
     messagePlaceholder: 'Kirjoita, mitä haluat tietää tai milloin haluat, että sinuun otetaan yhteyttä.',
     privacy: 'Hyväksyn, että Autorell lähettää yhteystietoni myyjälle tätä ilmoitusta varten.',
@@ -200,7 +191,6 @@ const copy: Record<string, ContactCopy> = {
     phone: 'Telefonnummer',
     email: 'E-mail',
     offer: 'Hvor meget vil du tilbyde?',
-    offerPlaceholder: 'Eksempel: 540.000 DKK',
     message: 'Besked',
     messagePlaceholder: 'Skriv, hvad du vil vide, eller hvornår du vil kontaktes.',
     privacy: 'Jeg accepterer, at Autorell sender mine kontaktoplysninger til sælgeren for denne annonce.',
@@ -216,6 +206,7 @@ export default function ListingContactFormButton({
   listingId,
   listingTitle,
   locale,
+  defaultCurrency = 'EUR',
 }: ListingContactFormButtonProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -235,6 +226,7 @@ export default function ListingContactFormButton({
       phone: String(formData.get('phone') || ''),
       email: String(formData.get('email') || ''),
       offer: String(formData.get('offer') || ''),
+      offerCurrency: String(formData.get('offerCurrency') || defaultCurrency),
       message: String(formData.get('message') || ''),
       privacy: formData.get('privacy') === 'on',
       locale,
@@ -271,8 +263,8 @@ export default function ListingContactFormButton({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#101828]/35 px-4 py-6 backdrop-blur-md">
-          <div className="max-h-[calc(100vh-3rem)] w-full max-w-[560px] overflow-y-auto rounded-[22px] border border-[#dfe6f2] bg-white shadow-[0_30px_90px_rgba(16,24,40,.25)]">
+        <div className="fixed inset-0 z-[240] flex items-start justify-center overflow-y-auto bg-[#101828]/85 px-3 py-[calc(env(safe-area-inset-top)+1rem)] backdrop-blur-lg sm:items-center sm:px-4 sm:py-6">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-[560px] overflow-y-auto rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_30px_90px_rgba(16,24,40,.25)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
             <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] px-5 py-5 sm:px-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
@@ -299,7 +291,7 @@ export default function ListingContactFormButton({
                 <FormField label={text.phone} name="phone" type="tel" required />
               </div>
               <FormField label={text.email} name="email" type="email" required />
-              <FormField label={text.offer} name="offer" placeholder={text.offerPlaceholder} />
+              <OfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
               <label className="grid gap-2 text-sm font-semibold text-[#101828]">
                 {text.message}
                 <textarea
@@ -352,6 +344,55 @@ function getContactCopy(locale: PublicLocale) {
   if (locale === 'at') return copy.de
   if (locale === 'be') return copy.nl
   return copy[locale] || copy.en
+}
+
+const currencyOptions = [
+  'SEK',
+  'EUR',
+  'DKK',
+  'PLN',
+  'CZK',
+  'HUF',
+  'RON',
+  'BGN',
+  'NOK',
+  'CHF',
+  'GBP',
+  'USD',
+] as const
+
+function normalizeCurrency(value?: string) {
+  const normalized = (value || '').toUpperCase()
+  return currencyOptions.includes(normalized as (typeof currencyOptions)[number])
+    ? normalized
+    : 'EUR'
+}
+
+function OfferField({ label, currency }: { label: string; currency: string }) {
+  return (
+    <label className="grid min-w-0 gap-2 text-sm font-semibold text-[#101828]">
+      {label}
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_104px] overflow-hidden rounded-[14px] border border-[#cfd8e6] bg-white transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10 sm:grid-cols-[minmax(0,1fr)_118px]">
+        <input
+          name="offer"
+          inputMode="decimal"
+          className="h-12 min-w-0 border-0 bg-white px-4 text-base font-medium text-[#101828] outline-none"
+        />
+        <select
+          name="offerCurrency"
+          defaultValue={currency}
+          aria-label="Currency"
+          className="h-12 min-w-0 cursor-pointer border-0 border-l border-[#dfe6f2] bg-[#f8fbff] px-3 text-sm font-semibold text-[#101828] outline-none"
+        >
+          {currencyOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  )
 }
 
 function FormField({

@@ -9,6 +9,7 @@ type ContactPayload = {
   phone?: string
   email?: string
   offer?: string
+  offerCurrency?: string
   message?: string
   privacy?: boolean
   locale?: string
@@ -61,6 +62,8 @@ export async function POST(request: Request) {
   const phone = clean(body?.phone, 80)
   const email = clean(body?.email, 160).toLowerCase()
   const offer = clean(body?.offer, 120)
+  const offerCurrency = clean(body?.offerCurrency, 12).toUpperCase()
+  const offerDisplay = offer ? [offer, offerCurrency].filter(Boolean).join(' ') : ''
   const message = cleanMultiline(body?.message, 3000)
 
   if (!listingId || !name || !phone || !email || !message || !body?.privacy) {
@@ -128,7 +131,7 @@ export async function POST(request: Request) {
       `Name: ${name}`,
       `Email: ${email}`,
       `Phone: ${phone}`,
-      offer ? `Offer: ${offer}` : '',
+      offerDisplay ? `Offer: ${offerDisplay}` : '',
       '',
       'Message:',
       message,
@@ -144,7 +147,7 @@ export async function POST(request: Request) {
       name,
       email,
       phone,
-      offer,
+      offer: offerDisplay,
       message,
       submittedAt,
     }),
@@ -168,7 +171,7 @@ export async function POST(request: Request) {
       'Your message:',
       message,
       '',
-      offer ? `Offer: ${offer}` : '',
+      offerDisplay ? `Offer: ${offerDisplay}` : '',
       '',
       'The seller can reply directly to your email address.',
       'Autorell',
@@ -177,7 +180,7 @@ export async function POST(request: Request) {
       listingTitle: listing.title,
       listingUrl: url,
       name,
-      offer,
+      offer: offerDisplay,
       message,
     }),
   })
