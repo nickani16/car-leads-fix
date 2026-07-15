@@ -4,6 +4,9 @@ import { createHash } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 
 const MAX_SAVED_SEARCHES = 80
+const SAVED_SEARCH_SELECT =
+  'id,name,href,locale,market_code,filters,notification_frequency,last_notified_at,last_notified_listing_id,created_at,updated_at'
+const NOTIFICATION_FREQUENCIES = new Set(['off', 'daily', 'instant'])
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -21,6 +24,11 @@ function cleanText(value: unknown, fallback = '') {
 function cleanHref(value: unknown) {
   const href = cleanText(value, '/marketplace')
   return href.startsWith('/') ? href : '/marketplace'
+}
+
+function cleanNotificationFrequency(value: unknown) {
+  const frequency = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return NOTIFICATION_FREQUENCIES.has(frequency) ? frequency : 'off'
 }
 
 function normalizeForFingerprint(value: unknown): unknown {
@@ -60,7 +68,7 @@ export async function GET() {
 
   const { data, error } = await createAdminClient()
     .from('marketplace_saved_searches')
-    .select('id,name,href,locale,market_code,filters,created_at,updated_at')
+    .select(SAVED_SEARCH_SELECT)
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
     .limit(MAX_SAVED_SEARCHES)
@@ -88,6 +96,7 @@ export async function POST(request: NextRequest) {
     locale?: unknown
     marketCode?: unknown
     filters?: unknown
+    notificationFrequency?: unknown
   }
   const filters = body.filters && typeof body.filters === 'object' ? body.filters : {}
   const searchKey = savedSearchFingerprint(filters)
@@ -95,7 +104,7 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient()
   const { data: existing, error: existingError } = await admin
     .from('marketplace_saved_searches')
-    .select('id,name,href,locale,market_code,filters,created_at,updated_at')
+    .select(SAVED_SEARCH_SELECT)
     .eq('user_id', user.id)
     .eq('search_key', searchKey)
     .maybeSingle()
@@ -115,6 +124,7 @@ export async function POST(request: NextRequest) {
     locale: cleanText(body.locale, 'sv'),
     market_code: cleanText(body.marketCode) || null,
     filters,
+    notification_frequency: cleanNotificationFrequency(body.notificationFrequency),
     search_key: searchKey,
     created_at: now,
     updated_at: now,
@@ -123,14 +133,14 @@ export async function POST(request: NextRequest) {
   const { data, error } = await admin
     .from('marketplace_saved_searches')
     .insert(row)
-    .select('id,name,href,locale,market_code,filters,created_at,updated_at')
+    .select(SAVED_SEARCH_SELECT)
     .single()
 
   if (error) {
     if (error.code === '23505') {
       const { data: duplicate } = await admin
         .from('marketplace_saved_searches')
-        .select('id,name,href,locale,market_code,filters,created_at,updated_at')
+        .select(SAVED_SEARCH_SELECT)
         .eq('user_id', user.id)
         .eq('search_key', searchKey)
         .maybeSingle()
@@ -140,6 +150,46 @@ export async function POST(request: NextRequest) {
       }
     }
     return jsonResponse({ error: 'Could not save search' }, { status: 500 })
+  }
+
+  return jsonResponse({ search: data })
+}
+
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await request.json().catch(() => ({})) as {
+    id?: unknown
+    notificationFrequency?: unknown
+  }
+  const id = typeof body.id === 'string' ? body.id : ''
+  if (!UUID_PATTERN.test(id)) {
+    return jsonResponse({ error: 'Invalid search id' }, { status: 400 })
+  }
+
+  const { data, error } = await createAdminClient()
+    .from('marketplace_saved_searches')
+    .update({
+      notification_frequency: cleanNotificationFrequency(body.notificationFrequency),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', user.id)
+    .eq('id', id)
+    .select(SAVED_SEARCH_SELECT)
+    .maybeSingle()
+
+  if (error) {
+    return jsonResponse({ error: 'Could not update saved search' }, { status: 500 })
+  }
+  if (!data) {
+    return jsonResponse({ error: 'Saved search not found' }, { status: 404 })
   }
 
   return jsonResponse({ search: data })
