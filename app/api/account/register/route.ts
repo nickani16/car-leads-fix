@@ -11,47 +11,10 @@ import {
   MARKETPLACE_PURCHASE_TERMS_VERSION,
   MARKETPLACE_TERMS_VERSION,
 } from '@/lib/marketplace-security'
-
-const euDialCodes: Record<string, string> = {
-  AT: '+43',
-  BE: '+32',
-  BG: '+359',
-  HR: '+385',
-  CY: '+357',
-  CZ: '+420',
-  DE: '+49',
-  DK: '+45',
-  EE: '+372',
-  ES: '+34',
-  FI: '+358',
-  FR: '+33',
-  GR: '+30',
-  HU: '+36',
-  IE: '+353',
-  IT: '+39',
-  LT: '+370',
-  LU: '+352',
-  LV: '+371',
-  MT: '+356',
-  NL: '+31',
-  PL: '+48',
-  PT: '+351',
-  RO: '+40',
-  SE: '+46',
-  SI: '+386',
-  SK: '+421',
-}
+import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
 
 function clean(value: unknown) {
   return String(value || '').trim()
-}
-
-function normalizePhone(value: unknown, countryCode: string) {
-  let compact = clean(value).replace(/[\s()-]/g, '')
-  if (compact.startsWith('00')) compact = `+${compact.slice(2)}`
-  if (compact.startsWith('+')) return compact
-  const dialCode = euDialCodes[countryCode] || ''
-  return dialCode ? `${dialCode}${compact.replace(/^0+/, '')}` : compact
 }
 
 function normalizeIdentifier(value: string) {
@@ -187,7 +150,8 @@ export async function POST(request: Request) {
     const displayName = `${firstName} ${lastName}`.trim()
     const birthDate = clean(body.birthDate)
     const countryCode = clean(body.countryCode).toUpperCase()
-    const phone = normalizePhone(body.phone, countryCode)
+    const phoneValidation = validatePhoneForCountry(body.phone, countryCode)
+    const phone = phoneValidation.phone
     const addressLine1 = clean(body.addressLine1)
     const addressLine2 = clean(body.addressLine2)
     const postalCode = clean(body.postalCode)
@@ -226,7 +190,7 @@ export async function POST(request: Request) {
       lastName.length < 2 ||
       (accountType === 'private' && !isAdult(birthDate)) ||
       (accountType === 'business' && birthDate && !isAdult(birthDate)) ||
-      !/^\+[1-9]\d{7,14}$/.test(phone) ||
+      !phoneValidation.valid ||
       !euCountryCodes.has(countryCode) ||
       !addressLine1 ||
       !postalCode ||
@@ -284,6 +248,8 @@ export async function POST(request: Request) {
     const websiteDomain = domainFromWebsite(websiteUrl)
     const domainMatch = domainsMatch(emailDomain, websiteDomain)
     const identityStatus = accountType === 'private' ? 'verified' : 'pending'
+    const phoneFlags = phoneValidation.riskFlags
+    const profileRiskStatus = phoneRiskStatus(phoneFlags)
     // marketplace_profiles only accepts the verification states defined by the
     // identity/safety schema (pending, needs_review, verified, ...). Keep the
     // workflow state in business_onboarding_status; do not write the listing
@@ -354,6 +320,9 @@ export async function POST(request: Request) {
       birth_date: birthDate || null,
       email,
       phone,
+      phone_verified: false,
+      phone_verification_status: phoneValidation.status,
+      phone_risk_flags: phoneFlags,
       country_code: countryCode,
       company_name: accountType === 'business' ? companyName : null,
       registration_number: accountType === 'business' ? registrationNumber : null,
@@ -372,6 +341,7 @@ export async function POST(request: Request) {
       identity_status: identityStatus,
       business_verification_status: businessVerificationStatus,
       business_onboarding_status: businessOnboardingStatus,
+      risk_status: profileRiskStatus,
       vat_verified_at: vatCheck.status === 'passed' ? new Date().toISOString() : null,
       verified_at: user.email_confirmed_at || new Date().toISOString(),
       verification_updated_at: new Date().toISOString(),
@@ -404,6 +374,19 @@ export async function POST(request: Request) {
           ? normalizedNationalId.slice(-4)
           : vatCheck.reference,
       metadata: { raw_identifier_stored: false },
+    })
+
+    await admin.from('marketplace_identity_checks').insert({
+      user_id: user.id,
+      check_type: 'phone_format',
+      country_code: countryCode,
+      status: phoneValidation.valid ? 'passed' : 'failed',
+      provider: 'autorell-phone-format',
+      reference: phone.slice(-4),
+      metadata: {
+        phone_verified_with_code: false,
+        risk_flags: phoneFlags,
+      },
     })
 
     const ipAddress =

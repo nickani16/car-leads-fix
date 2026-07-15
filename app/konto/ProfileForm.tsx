@@ -15,6 +15,9 @@ type Profile = {
   birth_date: string | null
   email: string
   phone: string
+  phone_verified: boolean | null
+  phone_verification_status: string | null
+  phone_risk_flags: string[] | null
   country_code: string
   company_name: string | null
   registration_number: string | null
@@ -94,6 +97,8 @@ export default function ProfileForm({
         copy={copy}
         status={status || 'pending'}
         riskStatus={profile.risk_status}
+        phoneVerified={profile.phone_verified === true}
+        phoneStatus={profile.phone_verification_status || 'unverified'}
       />
       <form
         onSubmit={submit}
@@ -174,10 +179,14 @@ function VerificationCard({
   status,
   riskStatus,
   copy,
+  phoneVerified,
+  phoneStatus,
 }: {
   status: string
   riskStatus: string
   copy: ReturnType<typeof getProfileCopy>
+  phoneVerified: boolean
+  phoneStatus: string
 }) {
   const verified = status === 'verified' || status === 'vat_validated' || status === 'format_validated'
   const Icon = riskStatus !== 'standard' ? ShieldAlert : verified ? CheckCircle2 : Clock3
@@ -197,9 +206,27 @@ function VerificationCard({
         <p className="mt-1 text-sm leading-6 text-[#667085]">
           {copy.verificationText}
         </p>
+        <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+          <div className="rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
+            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
+            <strong className="mt-1 block text-[#101828]">{copy.verified}</strong>
+          </div>
+          <div className="rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
+            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.phoneVerification}</span>
+            <strong className="mt-1 block text-[#101828]">
+              {phoneVerified ? copy.verified : phoneStatusLabel(phoneStatus, copy)}
+            </strong>
+          </div>
+        </div>
       </div>
     </section>
   )
+}
+
+function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy>) {
+  if (status === 'format_valid') return copy.phoneFormatValid
+  if (status === 'country_mismatch' || status === 'invalid_format') return copy.phoneNeedsReview
+  return copy.phoneUnverified
 }
 
 const controlClass =
@@ -248,6 +275,12 @@ function getProfileCopy(locale: PublicLocale) {
     verificationPending: 'Verification in progress',
     verificationText:
       'Automated checks do not replace a full identity check. Autorell may request additional documents or e-identification if there is risk, a report or publication.',
+    emailVerification: 'Email',
+    phoneVerification: 'Phone',
+    verified: 'Verified',
+    phoneFormatValid: 'Format checked, not code verified',
+    phoneNeedsReview: 'Needs review',
+    phoneUnverified: 'Not verified',
   }
   if (locale === 'sv') {
     return {
@@ -277,6 +310,12 @@ function getProfileCopy(locale: PublicLocale) {
       city: 'Ort',
       region: 'Region eller delstat',
       email: 'E-post',
+      emailVerification: 'Mejl',
+      phoneVerification: 'Telefon',
+      verified: 'Verifierad',
+      phoneFormatValid: 'Format kontrollerat, ej kodverifierat',
+      phoneNeedsReview: 'Behöver granskas',
+      phoneUnverified: 'Ej verifierad',
       saveProfile: 'Spara profil',
       needsReview: 'Kontot behöver granskas',
       basicCheckDone: 'Grundkontrollen är genomförd',

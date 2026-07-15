@@ -21,6 +21,8 @@ type ProfileRow = {
   account_type: 'private' | 'business'
   email: string | null
   phone: string | null
+  phone_verified: boolean | null
+  phone_verification_status: string | null
   country_code: string | null
   locale: string | null
   identity_status: string | null
@@ -47,7 +49,7 @@ export default async function PrivateSettingsPage() {
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')
-    .select('account_type,email,phone,country_code,locale,identity_status,risk_status')
+    .select('account_type,email,phone,phone_verified,phone_verification_status,country_code,locale,identity_status,risk_status')
     .eq('user_id', user.id)
     .maybeSingle<ProfileRow>()
 
@@ -62,6 +64,8 @@ export default async function PrivateSettingsPage() {
       rows: [
         [copy.email, profile.email || user.email || copy.notSet],
         [copy.phone, profile.phone || copy.notSet],
+        [copy.emailVerification, copy.verified],
+        [copy.phoneVerification, profile.phone_verified ? copy.verified : phoneStatusLabel(profile.phone_verification_status, copy)],
         [copy.profileStatus, profile.identity_status || copy.notSet],
       ],
       href: localizePublicHref(locale, '/account/profile'),
@@ -206,6 +210,12 @@ function settingsCopy(locale: PublicLocale) {
     email: 'Email',
     phone: 'Phone',
     profileStatus: 'Profile status',
+    emailVerification: 'Email verification',
+    phoneVerification: 'Phone verification',
+    verified: 'Verified',
+    phoneFormatValid: 'Format checked, not code verified',
+    phoneNeedsReview: 'Needs review',
+    phoneUnverified: 'Not verified',
     editProfile: 'Edit profile',
     languageMarket: 'Language and market',
     languageMarketText: 'Autorell uses your selected market for language, currency and local content.',
@@ -247,6 +257,12 @@ function settingsCopy(locale: PublicLocale) {
       email: 'E-post',
       phone: 'Telefon',
       profileStatus: 'Profilstatus',
+      emailVerification: 'Mejlverifiering',
+      phoneVerification: 'Telefonverifiering',
+      verified: 'Verifierad',
+      phoneFormatValid: 'Format kontrollerat, ej kodverifierat',
+      phoneNeedsReview: 'Behöver granskas',
+      phoneUnverified: 'Ej verifierad',
       editProfile: 'Redigera profil',
       languageMarket: 'Språk och marknad',
       languageMarketText: 'Autorell använder vald marknad för språk, valuta och lokalt innehåll.',
@@ -289,6 +305,12 @@ function settingsCopy(locale: PublicLocale) {
       email: 'E-Mail',
       phone: 'Telefon',
       profileStatus: 'Profilstatus',
+      emailVerification: 'E-Mail-Verifizierung',
+      phoneVerification: 'Telefonverifizierung',
+      verified: 'Verifiziert',
+      phoneFormatValid: 'Format geprüft, nicht per Code verifiziert',
+      phoneNeedsReview: 'Prüfung erforderlich',
+      phoneUnverified: 'Nicht verifiziert',
       editProfile: 'Profil bearbeiten',
       languageMarket: 'Sprache und Markt',
       languageMarketText: 'Autorell nutzt den gewählten Markt für Sprache, Währung und lokale Inhalte.',
@@ -315,4 +337,10 @@ function settingsCopy(locale: PublicLocale) {
     }
   }
   return translatePublicObject(locale, en)
+}
+
+function phoneStatusLabel(status: string | null, copy: ReturnType<typeof settingsCopy>) {
+  if (status === 'format_valid') return copy.phoneFormatValid
+  if (status === 'country_mismatch' || status === 'invalid_format') return copy.phoneNeedsReview
+  return copy.phoneUnverified
 }

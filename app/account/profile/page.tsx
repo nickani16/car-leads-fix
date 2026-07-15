@@ -16,6 +16,9 @@ type ProfileRow = {
   birth_date: string | null
   email: string
   phone: string
+  phone_verified: boolean | null
+  phone_verification_status: string | null
+  phone_risk_flags: string[] | null
   country_code: string
   company_name: string | null
   registration_number: string | null
@@ -51,6 +54,9 @@ export default async function PrivateProfilePage() {
       birth_date,
       email,
       phone,
+      phone_verified,
+      phone_verification_status,
+      phone_risk_flags,
       country_code,
       company_name,
       registration_number,

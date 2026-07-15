@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { euCountryCodes } from '@/lib/eu-countries'
+import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
 
 function clean(value: unknown) {
   return String(value || '').trim()
@@ -15,7 +16,7 @@ export async function PATCH(request: Request) {
   const admin = createAdminClient()
   const { data: existingProfile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,company_id')
+    .select('account_type,company_id,phone')
     .eq('user_id', user.id)
     .maybeSingle()
   if (!existingProfile) return NextResponse.json({ error: 'Profilen hittades inte.' }, { status: 404 })
@@ -24,7 +25,12 @@ export async function PATCH(request: Request) {
   const firstName = clean(body.firstName)
   const lastName = clean(body.lastName)
   const countryCode = clean(body.countryCode).toUpperCase()
-  const phone = clean(body.phone).replace(/[\s()-]/g, '')
+  const phoneValidation = validatePhoneForCountry(body.phone, countryCode)
+  const phone = phoneValidation.phone
+  const phoneChanged = Boolean(existingProfile.phone && existingProfile.phone !== phone)
+  const phoneRiskFlags = phoneChanged
+    ? Array.from(new Set([...phoneValidation.riskFlags, 'phone_changed_recently']))
+    : phoneValidation.riskFlags
   const addressLine1 = clean(body.addressLine1)
   const addressLine2 = clean(body.addressLine2)
   const postalCode = clean(body.postalCode)
@@ -38,6 +44,9 @@ export async function PATCH(request: Request) {
     last_name: lastName,
     birth_date: birthDate,
     phone,
+    phone_verified: false,
+    phone_verification_status: phoneValidation.status,
+    phone_risk_flags: phoneRiskFlags,
     country_code: countryCode,
     company_name: clean(body.companyName) || null,
     registration_number: clean(body.registrationNumber) || null,
@@ -49,13 +58,14 @@ export async function PATCH(request: Request) {
     city,
     region: clean(body.region) || null,
     postal_code: postalCode,
+    risk_status: phoneRiskStatus(phoneRiskFlags),
     updated_at: new Date().toISOString(),
   }
 
   if (
     firstName.length < 2 ||
     lastName.length < 2 ||
-    !/^\+[1-9]\d{7,14}$/.test(phone) ||
+    !phoneValidation.valid ||
     !euCountryCodes.has(countryCode) ||
     !addressLine1 ||
     !postalCode ||
@@ -95,6 +105,22 @@ export async function PATCH(request: Request) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', existingProfile.company_id)
+  }
+
+  if (!error) {
+    await admin.from('marketplace_identity_checks').insert({
+      user_id: user.id,
+      check_type: 'phone_format',
+      country_code: countryCode,
+      status: phoneValidation.valid ? 'passed' : 'failed',
+      provider: 'autorell-phone-format',
+      reference: phone.slice(-4),
+      metadata: {
+        phone_verified_with_code: false,
+        phone_changed: phoneChanged,
+        risk_flags: phoneRiskFlags,
+      },
+    })
   }
 
   return error
