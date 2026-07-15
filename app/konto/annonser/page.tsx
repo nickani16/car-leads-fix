@@ -42,6 +42,7 @@ import {
 import ListingStatusActions, { type MarketingOption, type PackageOption } from './ListingStatusActions'
 import ListingsFilters from './ListingsFilters'
 import BulkListingActions from './BulkListingActions'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -72,6 +73,12 @@ export default async function AccountListingsPage({
     .eq('user_id', user.id)
     .maybeSingle()
   const accountType = profile?.account_type || 'private'
+  if (accountType === 'business') {
+    const entitlement = await requireBusinessListingEntitlement(user.id)
+    if (!entitlement.allowed && entitlement.code === 'BUSINESS_SUBSCRIPTION_REQUIRED') {
+      redirect('/account/business/subscription')
+    }
+  }
   const filters = parseAccountListingFilters(query, accountType)
 
   let result

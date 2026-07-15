@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 
 export async function POST(request: Request, context: RouteContext<'/api/account/listings/[id]/refresh'>) {
   const { id } = await context.params
@@ -21,7 +22,7 @@ export async function POST(request: Request, context: RouteContext<'/api/account
   const admin = createAdminClient()
   const { data: listing, error: listingError } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status')
+    .select('id,seller_user_id,status,seller_type')
     .eq('id', id)
     .maybeSingle()
   if (listingError) {
@@ -29,6 +30,12 @@ export async function POST(request: Request, context: RouteContext<'/api/account
   }
   if (!listing || listing.seller_user_id !== user.id) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
+  }
+  if (listing.seller_type === 'business') {
+    const entitlement = await requireBusinessListingEntitlement(user.id)
+    if (!entitlement.allowed) {
+      return NextResponse.json({ error: entitlement.code, code: entitlement.code, redirectTo: '/account/business/subscription' }, { status: 403 })
+    }
   }
   if (listing.status !== 'published') {
     return NextResponse.json({ error: 'Only published listings can be refreshed.' }, { status: 400 })

@@ -7,6 +7,7 @@ import {
   listingPackageDetails,
 } from '@/lib/marketplace-pricing'
 import { checkBusinessListingPublicationLimit } from '@/lib/billing/business-limits'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import {
   currencyForCountry,
   isSupportedCurrency,
@@ -332,6 +333,21 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (!profile) {
       return listingFormError('Komplettera din kontoprofil innan du skapar annonsen.', 4, 'account', 403)
+    }
+    if (profile.account_type === 'business') {
+      const entitlement = await requireBusinessListingEntitlement(user.id)
+      if (!entitlement.allowed) {
+        return NextResponse.json(
+          {
+            error: entitlement.code,
+            code: entitlement.code,
+            redirectTo: '/account/business/subscription',
+            activeListingCount: entitlement.activeListingCount,
+            activeListingLimit: entitlement.activeListingLimit,
+          },
+          { status: 403 },
+        )
+      }
     }
     if (profile.risk_status === 'blocked' || profile.risk_status === 'restricted') {
       return listingFormError('Kontot är begränsat. Kontakta support innan du publicerar.', 4, 'account', 403)

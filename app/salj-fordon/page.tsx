@@ -18,6 +18,10 @@ import PublicHeader from '@/app/components/PublicHeader'
 import { formatListingPrice, marketplaceCategories } from '@/lib/marketplace-pricing'
 import { isPublicLanguage, localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { redirect } from 'next/navigation'
 
 export async function generateMetadata(): Promise<Metadata> {
   const headerStore = await headers()
@@ -64,6 +68,15 @@ export default async function SellVehiclePage({
 }: {
   searchParams: Promise<{ category?: string }>
 }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await createAdminClient().from('marketplace_profiles').select('account_type').eq('user_id', user.id).maybeSingle()
+    if (profile?.account_type === 'business') {
+      const entitlement = await requireBusinessListingEntitlement(user.id)
+      if (!entitlement.allowed) redirect('/account/business/subscription')
+    }
+  }
   const { category } = await searchParams
   const headerStore = await headers()
   const requestedLocale = headerStore.get('x-autorell-language') || 'sv'

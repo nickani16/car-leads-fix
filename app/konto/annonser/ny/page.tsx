@@ -9,6 +9,7 @@ import { countryForLocale } from '@/lib/market-locale'
 import NewListingForm from './NewListingForm'
 import { headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 
 export const generateMetadata = generateAccountMetadata('new-listing')
 
@@ -36,12 +37,17 @@ export async function renderNewListingPage({
   } = await supabase.auth.getUser()
   if (!user) redirect(localizePublicHref(locale, '/'))
 
-  const { data: profile } = await createAdminClient()
+  const admin = createAdminClient()
+  const { data: profile } = await admin
     .from('marketplace_profiles')
     .select('account_type,country_code')
     .eq('user_id', user.id)
     .single()
   if (!profile) redirect(localizePublicHref(locale, '/register'))
+  if (profile.account_type === 'business') {
+    const entitlement = await requireBusinessListingEntitlement(user.id)
+    if (!entitlement.allowed) redirect('/account/business/subscription')
+  }
 
   const { category = 'cars' } = await searchParams
   const requestHeaders = await headers()

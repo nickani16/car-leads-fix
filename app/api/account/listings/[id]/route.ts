@@ -16,6 +16,7 @@ import {
   validateRequiredIdentifiers,
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
+import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 
 const actions = new Set([
   'mark_sold', 'update_listing', 'pause', 'resume', 'unpublish', 'delete', 'relist', 'duplicate',
@@ -144,6 +145,22 @@ export async function PATCH(
   const isAdmin = await isActiveAdmin(admin, user.id, user.email)
   if (!isOwner && !isAdmin) {
     return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
+  }
+
+  if (isOwner && listing.seller_type === 'business' && ['duplicate', 'pause', 'resume', 'relist', 'update_listing'].includes(action)) {
+    const entitlement = await requireBusinessListingEntitlement(user.id)
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        {
+          error: entitlement.code,
+          code: entitlement.code,
+          redirectTo: '/account/business/subscription',
+          activeListingCount: entitlement.activeListingCount,
+          activeListingLimit: entitlement.activeListingLimit,
+        },
+        { status: 403 },
+      )
+    }
   }
 
   if (action === 'duplicate') {
