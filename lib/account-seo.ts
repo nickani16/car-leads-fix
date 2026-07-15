@@ -13,6 +13,8 @@ type AccountSeoKey =
   | 'reviews'
   | 'saved-listings'
   | 'saved-searches'
+  | 'settings'
+  | 'support'
 
 type AccountSeoCopy = {
   title: string
@@ -53,6 +55,14 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
       title: 'Sparade sökningar | Autorell',
       description: 'Hitta tillbaka till dina sparade fordonssökningar och filter på Autorell.',
     },
+    settings: {
+      title: 'Inställningar | Autorell',
+      description: 'Hantera privata kontoinställningar, notiser, språk och säkerhet på Autorell.',
+    },
+    support: {
+      title: 'Support | Autorell',
+      description: 'Få hjälp med privata annonser, betalningar, meddelanden och konto på Autorell.',
+    },
   },
   de: {
     profile: {
@@ -87,6 +97,14 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
       title: 'Gespeicherte Suchen | Autorell',
       description: 'Gespeicherte Fahrzeugsuchen und Filter bei Autorell wieder öffnen.',
     },
+    settings: {
+      title: 'Einstellungen | Autorell',
+      description: 'Private Kontoeinstellungen, Benachrichtigungen, Sprache und Sicherheit bei Autorell verwalten.',
+    },
+    support: {
+      title: 'Support | Autorell',
+      description: 'Hilfe zu privaten Anzeigen, Zahlungen, Nachrichten und Konto bei Autorell erhalten.',
+    },
   },
   en: {
     profile: {
@@ -120,6 +138,14 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
     'saved-searches': {
       title: 'Saved searches | Autorell',
       description: 'Return to saved vehicle searches and filters on Autorell.',
+    },
+    settings: {
+      title: 'Settings | Autorell',
+      description: 'Manage private account settings, notifications, language and security on Autorell.',
+    },
+    support: {
+      title: 'Support | Autorell',
+      description: 'Get help with private listings, payments, messages and your Autorell account.',
     },
   },
 }
@@ -170,6 +196,8 @@ function fallbackAccountPath(page: AccountSeoKey, locale: PublicLocale) {
     reviews: '/account/reviews',
     'saved-listings': '/saved',
     'saved-searches': '/saved-searches',
+    settings: '/account/settings',
+    support: '/account/support',
   }
 
   return `${prefix}${paths[page]}`

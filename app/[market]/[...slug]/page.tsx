@@ -5,6 +5,9 @@ import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
 import AccountSavedListingsPage from '@/app/account/saved-listings/page'
 import AccountSavedSearchesPage from '@/app/account/saved-searches/page'
+import PrivateProfilePage from '@/app/account/profile/page'
+import PrivateSettingsPage from '@/app/account/settings/page'
+import PrivateSupportPage from '@/app/account/support/page'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
@@ -120,6 +123,18 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/saved-searches' || slugPath === 'saved-searches') {
     return <AccountSavedSearchesPage />
+  }
+
+  if (slugPath === 'account/profile') {
+    return <PrivateProfilePage />
+  }
+
+  if (slugPath === 'account/settings') {
+    return <PrivateSettingsPage />
+  }
+
+  if (slugPath === 'account/support') {
+    return <PrivateSupportPage />
   }
 
   if (slugPath === 'pricing') {

@@ -194,14 +194,15 @@ export default async function AccountPage() {
 
   const secondaryNavigation = [
     { label: copy.overview, href: localizePublicHref(locale, '/account'), icon: UserRound, active: true },
+    { label: copy.profile, href: localizePublicHref(locale, '/account/profile'), icon: UserRound },
     { label: copy.listings, href: localizePublicHref(locale, '/account/listings'), icon: FileText },
     { label: copy.createListing, href: localizePublicHref(locale, '/account/listings/new'), icon: Plus },
     { label: copy.savedListings, href: localizePublicHref(locale, '/account/saved-listings'), icon: Heart },
     { label: copy.savedSearches, href: localizePublicHref(locale, '/account/saved-searches'), icon: Search },
     { label: copy.messages, href: localizePublicHref(locale, '/account/messages'), icon: MessageCircle },
     { label: copy.payments, href: localizePublicHref(locale, '/account/payments'), icon: CreditCard },
-    { label: copy.settings, href: '#profile-details', icon: Settings },
-    { label: copy.support, href: localizePublicHref(locale, '/help-center'), icon: HelpCircle },
+    { label: copy.settings, href: localizePublicHref(locale, '/account/settings'), icon: Settings },
+    { label: copy.support, href: localizePublicHref(locale, '/account/support'), icon: HelpCircle },
   ]
 
   const attentionItems = [
@@ -661,6 +662,7 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     editProfile: 'Edit profile',
     accountNavigation: 'Account navigation',
     overview: 'Overview',
+    profile: 'Profile',
     listings: 'Listings',
     createListing: 'Create listing',
     createListingText: 'Start a new vehicle listing and save it as a draft while you work.',
@@ -733,6 +735,7 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       editProfile: 'Redigera profil',
       accountNavigation: 'Kontonavigation',
       overview: 'Översikt',
+      profile: 'Profil',
       listings: 'Annonser',
       createListing: 'Skapa annons',
       createListingText: 'Starta en ny fordonsannons och spara den som utkast medan du arbetar.',
@@ -805,6 +808,7 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       reviewPending: 'Prüfung läuft',
       editProfile: 'Profil bearbeiten',
       overview: 'Übersicht',
+      profile: 'Profil',
       listings: 'Anzeigen',
       createListing: 'Anzeige erstellen',
       manageListings: 'Meine Anzeigen',

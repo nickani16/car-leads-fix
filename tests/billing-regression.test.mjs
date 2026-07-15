@@ -181,6 +181,12 @@ test('business subscription cards expose five tiered plans with Free kept listin
   assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/saved-listings'\)/)
   assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/saved-searches'\)/)
   assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/payments'\)/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/profile'\)/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/settings'\)/)
+  assert.match(accountPage, /href: localizePublicHref\(locale, '\/account\/support'\)/)
+  assert.match(marketCatchall, /slugPath === 'account\/profile'/)
+  assert.match(marketCatchall, /slugPath === 'account\/settings'/)
+  assert.match(marketCatchall, /slugPath === 'account\/support'/)
   assert.doesNotMatch(accountPage, /title: copy\.plan/)
 })
 
