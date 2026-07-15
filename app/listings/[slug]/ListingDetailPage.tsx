@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import {
   CalendarDays,
+  ChevronRight,
   ExternalLink,
   Fuel,
   Gauge,
@@ -21,7 +22,6 @@ import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
-import ListingBackLink from '@/app/components/ListingBackLink'
 import ListingReportButton from '@/app/components/ListingReportButton'
 import ListingLocationMap from '@/app/components/ListingLocationMap'
 import MessageSellerButton from '@/app/components/MessageSellerButton'
@@ -335,6 +335,11 @@ export default async function ListingDetailPage({
   const copy = getListingDetailCopy(locale)
   const listingIdentity =
     listing.listing_number || listing.reference_number || listing.id.slice(0, 8).toUpperCase()
+  const breadcrumbItems = buildDesktopBreadcrumbItems({
+    listing,
+    locale,
+    categoryLabel,
+  })
   const listingJsonLd = buildListingJsonLd({
     listing,
     price: Number(listing.price),
@@ -343,8 +348,10 @@ export default async function ListingDetailPage({
     sellerLabel,
     includeOffer: !isSold,
     breadcrumbs: [
-      { label: copy.home, href: `https://www.autorell.com${localizePublicHref(locale, '/')}` },
-      { label: categoryLabel, href: `https://www.autorell.com${localizePublicHref(locale, `/marketplace/${listing.category}`)}` },
+      ...breadcrumbItems.map((item) => ({
+        label: item.label,
+        href: `https://www.autorell.com${item.href}`,
+      })),
       { label: listing.title, href: publicUrl },
     ],
   })
@@ -376,10 +383,19 @@ export default async function ListingDetailPage({
       />
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
         <div className="hidden items-center justify-between gap-3 sm:flex">
-          <ListingBackLink
-            fallbackHref={localizePublicHref(locale, `/marketplace/${listing.category}`)}
-            label={copy.backToListings}
-          />
+          <nav aria-label={copy.breadcrumbLabel} className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-[#475467]">
+            {breadcrumbItems.map((item, index) => (
+              <div key={`${item.href}-${item.label}`} className="flex min-w-0 items-center gap-1.5">
+                {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" strokeWidth={2} /> : null}
+                <Link
+                  href={item.href}
+                  className="truncate text-[#101828] underline underline-offset-4 transition hover:text-[#0866ff]"
+                >
+                  {item.label}
+                </Link>
+              </div>
+            ))}
+          </nav>
           <div className="hidden min-w-0 items-center gap-4 sm:flex">
             <ShareListingButton
               title={listing.title}
@@ -987,6 +1003,35 @@ function localizedLabel(
   if (locale === 'sv') return sv
   if (locale === 'de' || locale === 'at') return de
   return translatePublic(locale, en)
+}
+
+function buildDesktopBreadcrumbItems({
+  listing,
+  locale,
+  categoryLabel,
+}: {
+  listing: ListingRow
+  locale: PublicLocale
+  categoryLabel: string
+}) {
+  const categoryHref = localizePublicHref(locale, `/marketplace/${listing.category}`)
+  const items: Array<{ label: string; href: string }> = [
+    { label: categoryLabel, href: categoryHref },
+  ]
+  const bodyTypeLabel = translateSpecValue(locale, listing.body_type)?.trim()
+
+  if (
+    bodyTypeLabel &&
+    bodyTypeLabel.toLocaleLowerCase() !== categoryLabel.toLocaleLowerCase()
+  ) {
+    const params = new URLSearchParams({ body: listing.body_type!.trim() })
+    items.push({
+      label: bodyTypeLabel,
+      href: `${categoryHref}?${params.toString()}`,
+    })
+  }
+
+  return items
 }
 
 function buildSpecs(
