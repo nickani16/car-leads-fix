@@ -66,6 +66,8 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
 
+type AuthView = 'login' | 'register' | 'forgot' | 'reset'
+
 type PublicHeaderProps = {
   transparentAtTop?: boolean
   locale?: PublicLocale
@@ -350,6 +352,7 @@ export default function PublicHeader({
   const [marketSelectorOpen, setMarketSelectorOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login')
+  const [authInitialView, setAuthInitialView] = useState<AuthView>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
   const [activePathname, setActivePathname] = useState('')
@@ -454,7 +457,7 @@ export default function PublicHeader({
       void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
     }
     const openAuth = (event: Event) => {
-      const detail = (event as CustomEvent<{ mode?: 'login' | 'register'; destination?: string }>).detail
+      const detail = (event as CustomEvent<{ mode?: AuthView; destination?: string }>).detail
       openAuthModal(detail?.mode || 'login', detail?.destination)
     }
     const openMarket = () => {
@@ -519,6 +522,15 @@ export default function PublicHeader({
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [profileMenuOpen, sellMenuOpen, helpMenuOpen])
+
+  useEffect(() => {
+    const auth = new URLSearchParams(window.location.search).get('auth')
+    if (!auth) return
+    if (auth === 'login') openAuthModal('login')
+    if (auth === 'register' || auth === 'registrera') openAuthModal('register')
+    if (auth === 'forgot-password') openAuthModal('forgot')
+    if (auth === 'reset-password') openAuthModal('reset')
+  }, [pathname])
 
   const buyItems: MenuItem[] = marketplaceCategories.map((category) => {
     const label =
@@ -775,8 +787,10 @@ export default function PublicHeader({
     setProfileMenuOpen((current) => (menu === 'profile' ? !current : false))
   }
 
-  function openAuthModal(mode: 'login' | 'register', destination?: string) {
-    setAuthInitialMode(mode)
+  function openAuthModal(mode: AuthView, destination?: string) {
+    const nextMode = mode === 'register' ? 'register' : 'login'
+    setAuthInitialMode(nextMode)
+    setAuthInitialView(mode)
     setAuthDestination(destination)
     setAuthModalOpen(true)
     setOpen(false)
@@ -1777,9 +1791,10 @@ export default function PublicHeader({
       />
       {authModalOpen ? (
         <AuthModal
-          key={`${authInitialMode}:${authDestination || ''}`}
+          key={`${authInitialView}:${authDestination || ''}`}
           isOpen={authModalOpen}
           initialMode={authInitialMode}
+          initialView={authInitialView}
           postLoginDestination={authDestination}
           locale={locale}
           onClose={() => setAuthModalOpen(false)}

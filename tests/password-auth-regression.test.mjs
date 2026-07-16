@@ -4,6 +4,9 @@ import test from 'node:test'
 
 const authComponent = readFileSync(new URL('../app/components/EmailCodeAuth.tsx', import.meta.url), 'utf8')
 const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
+const loginPage = readFileSync(new URL('../app/login/page.tsx', import.meta.url), 'utf8')
+const forgotPage = readFileSync(new URL('../app/forgot-password/page.tsx', import.meta.url), 'utf8')
+const resetPage = readFileSync(new URL('../app/reset-password/page.tsx', import.meta.url), 'utf8')
 const signupRoute = readFileSync(new URL('../app/api/auth/password-signup/route.ts', import.meta.url), 'utf8')
 const otpRequestRoute = readFileSync(new URL('../app/api/auth/email-code/request/route.ts', import.meta.url), 'utf8')
 const recoveryRoute = readFileSync(new URL('../app/api/auth/password-recovery/route.ts', import.meta.url), 'utf8')
@@ -27,9 +30,19 @@ test('public header auth popup uses password first and keeps OTP fallback', () =
   assert.match(authModal, /\/api\/auth\/password-signup/)
   assert.match(authModal, /useCodeInstead/)
   assert.match(authModal, /usePasswordInstead/)
-  assert.match(authModal, /forgot-password/)
+  assert.match(authModal, /requestPasswordReset/)
+  assert.match(authModal, /updateRecoveredPassword/)
+  assert.match(authModal, /switchView\('forgot'\)/)
   assert.match(authModal, /\/api\/auth\/email-code\/request/)
   assert.match(authModal, /\/api\/auth\/email-code\/verify/)
+})
+
+test('legacy auth pages redirect into the public auth popup', () => {
+  assert.match(loginPage, /redirect\('\/\?auth=login'\)/)
+  assert.match(forgotPage, /redirect\('\/\?auth=forgot-password'\)/)
+  assert.match(resetPage, /redirect\('\/\?auth=reset-password'\)/)
+  assert.doesNotMatch(forgotPage, /<form|BrandLogo|login\.module\.css/)
+  assert.doesNotMatch(resetPage, /<form|BrandLogo|login\.module\.css/)
 })
 
 test('password registration uses Supabase Auth without a parallel password store', () => {
@@ -47,7 +60,7 @@ test('auth emails carry active locale and localized reset links', () => {
   assert.match(otpRequestRoute, /getOtpEmailCopy\(locale, code\)/)
   assert.match(recoveryRoute, /localeFromRequest\(request, body\.locale\)/)
   assert.match(recoveryRoute, /getPasswordResetEmailCopy\(locale\)/)
-  assert.match(recoveryRoute, /next'.*localizedAuthPath\(locale, '\/reset-password'\)/s)
+  assert.match(recoveryRoute, /next'.*localizedAuthPath\(locale, '\/\?auth=reset-password'\)/s)
   for (const marker of ['sv', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(authEmails, new RegExp(`${marker}: \\{`))
   }

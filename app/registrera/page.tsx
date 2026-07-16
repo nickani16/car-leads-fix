@@ -9,7 +9,6 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
-import EmailCodeAuth from '../components/EmailCodeAuth'
 import RegisterForm from './RegisterForm'
 
 export default async function RegisterPage({
@@ -29,7 +28,7 @@ export default async function RegisterPage({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) return <EmailCodeAuth locale={locale} mode="register" />
+  if (!user) redirect(localizePublicHref(locale, '/?auth=register'))
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')

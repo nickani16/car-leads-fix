@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     const recoveryUrl = new URL('/auth/callback', origin)
     recoveryUrl.searchParams.set('token_hash', tokenHash)
     recoveryUrl.searchParams.set('type', 'recovery')
-    recoveryUrl.searchParams.set('next', localizedAuthPath(locale, '/reset-password'))
+    recoveryUrl.searchParams.set('next', localizedAuthPath(locale, '/?auth=reset-password'))
 
     const copy = getPasswordResetEmailCopy(locale)
     const recoveryLink = recoveryUrl.toString()

@@ -31,6 +31,6 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(
-    new URL('/forgot-password?status=invalid-link', requestUrl.origin)
+    new URL('/?auth=forgot-password&status=invalid-link', requestUrl.origin)
   )
 }

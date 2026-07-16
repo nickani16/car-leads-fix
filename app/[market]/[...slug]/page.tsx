@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
@@ -23,10 +23,7 @@ import AcceptCompanyTeamInvitationPage from '@/app/account/company/team/accept/p
 import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
-import LoginPage from '@/app/login/page'
 import RegisterPage from '@/app/registrera/page'
-import ForgotPasswordPage from '@/app/forgot-password/page'
-import ResetPasswordPage from '@/app/reset-password/page'
 
 export default async function LocalizedMarketPage({
   params,
@@ -42,7 +39,7 @@ export default async function LocalizedMarketPage({
 
   const slugPath = slug.join('/')
   if (slugPath === 'login') {
-    return <LoginPage />
+    redirect(`/${marketCode}?auth=login`)
   }
 
   if (slugPath === 'register' || slugPath === 'registrera') {
@@ -50,11 +47,11 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'forgot-password') {
-    return <ForgotPasswordPage />
+    redirect(`/${marketCode}?auth=forgot-password`)
   }
 
   if (slugPath === 'reset-password') {
-    return <ResetPasswordPage />
+    redirect(`/${marketCode}?auth=reset-password`)
   }
 
   if (slugPath === 'account/listings/new' || slugPath === 'konto/annonser/ny') {
