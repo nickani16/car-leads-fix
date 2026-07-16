@@ -21,13 +21,14 @@ export default async function LocalizedVehicleNewsPage({
   searchParams,
 }: {
   params: Promise<{ market: string }>
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ category?: string; page?: string }>
 }) {
   const { market } = await params
   if (market !== 'se' && market !== 'de' && !getEuBuyerMarket(market)) notFound()
-  const page = Math.max(1, Number((await searchParams).page || '1') || 1)
+  const resolvedSearchParams = await searchParams
+  const page = Math.max(1, Number(resolvedSearchParams.page || '1') || 1)
   const data = await getVehicleNews(market, page)
-  return <VehicleNewsPage market={market} page={page} {...data} />
+  return <VehicleNewsPage market={market} page={page} activeCategory={resolvedSearchParams.category || 'all'} {...data} />
 }
 
 function vehicleNewsMetadataCopy(market: string) {

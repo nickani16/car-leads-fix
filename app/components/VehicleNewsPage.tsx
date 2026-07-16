@@ -9,6 +9,7 @@ import type { PublicNewsArticle, PublicNewsCategory } from '@/lib/content/vehicl
 export default function VehicleNewsPage({
   market,
   page,
+  activeCategory,
   articles,
   categories,
   count,
@@ -16,6 +17,7 @@ export default function VehicleNewsPage({
 }: {
   market: string
   page: number
+  activeCategory?: string
   articles: PublicNewsArticle[]
   categories: PublicNewsCategory[]
   count: number
@@ -25,10 +27,11 @@ export default function VehicleNewsPage({
   const copy = vehicleNewsPageCopy(market)
   const hasNext = page * 12 < count
   const baseHref = vehicleNewsBaseHref(market)
+  const safeActiveCategory = categories.some((category) => category.id === activeCategory) ? activeCategory || 'all' : 'all'
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={market.toUpperCase()} />
-      <VehicleNewsSubnav market={market} />
+      <VehicleNewsSubnav market={market} categories={categories} activeCategory={safeActiveCategory} />
       <section className="w-full max-w-full overflow-hidden border-b border-[#dbe4f0] bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)]">
         <div className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] px-5 py-12 sm:px-8 sm:py-18 lg:py-20">
           <div className="w-full min-w-0 max-w-[330px] sm:max-w-[860px]">
@@ -48,7 +51,7 @@ export default function VehicleNewsPage({
             <strong>{copy.preparing}</strong>
           </div>
         ) : null}
-        <VehicleNewsSearch market={market} categories={categories} articles={articles} />
+        <VehicleNewsSearch market={market} initialCategory={safeActiveCategory} articles={articles} />
         <nav className="mt-8 flex items-center justify-between" aria-label="Paginering">
           {page > 1 ? (
             <Link href={`${baseHref}?page=${page - 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
@@ -70,21 +73,39 @@ export default function VehicleNewsPage({
   )
 }
 
-function VehicleNewsSubnav({ market }: { market: string }) {
+function VehicleNewsSubnav({
+  market,
+  categories,
+  activeCategory,
+}: {
+  market: string
+  categories: PublicNewsCategory[]
+  activeCategory: string
+}) {
   const baseHref = vehicleNewsBaseHref(market)
   const copy = vehicleNewsSubnavCopy(market)
   const items = [
-    { label: copy.market, href: baseHref },
-    { label: copy.buySell, href: `${baseHref}#article-search` },
-    { label: copy.ownership, href: `${baseHref}#article-search` },
-    { label: copy.business, href: `${baseHref}#article-search` },
+    { id: 'all', label: copy.all, href: baseHref },
+    ...categories.map((category) => ({
+      id: category.id,
+      label: category.label,
+      href: `${baseHref}?category=${encodeURIComponent(category.id)}`,
+    })),
   ]
 
   return (
     <nav aria-label={copy.aria} className="w-full max-w-full overflow-hidden border-b border-[#e2e8f0] bg-white">
       <div className="mx-auto flex h-11 w-full max-w-[1920px] items-center gap-9 overflow-x-auto px-5 text-[15px] font-medium text-[#101828] [scrollbar-width:none] sm:px-8 min-[1120px]:h-12 min-[1120px]:px-8 [&::-webkit-scrollbar]:hidden">
         {items.map((item) => (
-          <Link key={item.label} href={item.href} className="shrink-0 whitespace-nowrap transition hover:text-[#0866ff]">
+          <Link
+            key={item.id}
+            href={item.href}
+            className={`relative flex h-full shrink-0 items-center whitespace-nowrap transition after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full ${
+              activeCategory === item.id
+                ? 'text-[#0866ff] after:bg-[#0866ff]'
+                : 'text-[#101828] after:bg-transparent hover:text-[#0866ff]'
+            }`}
+          >
             {item.label}
           </Link>
         ))}
@@ -122,16 +143,16 @@ function vehicleNewsPageCopy(market: string) {
 function vehicleNewsSubnavCopy(market: string) {
   const language = marketLanguage(market)
   const labels = {
-    sv: { aria: 'Fordonsnyheter meny', market: 'Fordonsmarknaden', buySell: 'Köpa och sälja fordon', ownership: 'Äga och jämföra', business: 'För företag' },
-    en: { aria: 'Vehicle news menu', market: 'Vehicle market', buySell: 'Buy and sell vehicles', ownership: 'Own and compare', business: 'For companies' },
-    de: { aria: 'Fahrzeugnews-Menü', market: 'Fahrzeugmarkt', buySell: 'Kaufen und verkaufen', ownership: 'Besitzen und vergleichen', business: 'Für Firmen' },
-    fr: { aria: 'Menu actualités véhicules', market: 'Marché automobile', buySell: 'Acheter et vendre', ownership: 'Posséder et comparer', business: 'Pour entreprises' },
-    es: { aria: 'Menú de noticias de vehículos', market: 'Mercado de vehículos', buySell: 'Comprar y vender', ownership: 'Tener y comparar', business: 'Para empresas' },
-    it: { aria: 'Menu notizie veicoli', market: 'Mercato veicoli', buySell: 'Comprare e vendere', ownership: 'Possedere e confrontare', business: 'Per aziende' },
-    nl: { aria: 'Voertuignieuws menu', market: 'Voertuigmarkt', buySell: 'Kopen en verkopen', ownership: 'Bezitten en vergelijken', business: 'Voor bedrijven' },
-    pl: { aria: 'Menu aktualności pojazdów', market: 'Rynek pojazdów', buySell: 'Kupno i sprzedaż', ownership: 'Posiadanie i porównanie', business: 'Dla firm' },
-    da: { aria: 'Køretøjsnyheder menu', market: 'Køretøjsmarkedet', buySell: 'Køb og salg', ownership: 'Eje og sammenligne', business: 'For virksomheder' },
-    fi: { aria: 'Ajoneuvouutisten valikko', market: 'Ajoneuvomarkkina', buySell: 'Osta ja myy', ownership: 'Omista ja vertaile', business: 'Yrityksille' },
+    sv: { aria: 'Fordonskategorier', all: 'Alla' },
+    en: { aria: 'Vehicle categories', all: 'All' },
+    de: { aria: 'Fahrzeugkategorien', all: 'Alle' },
+    fr: { aria: 'Catégories de véhicules', all: 'Tous' },
+    es: { aria: 'Categorías de vehículos', all: 'Todo' },
+    it: { aria: 'Categorie veicoli', all: 'Tutti' },
+    nl: { aria: 'Voertuigcategorieën', all: 'Alles' },
+    pl: { aria: 'Kategorie pojazdów', all: 'Wszystkie' },
+    da: { aria: 'Køretøjskategorier', all: 'Alle' },
+    fi: { aria: 'Ajoneuvoluokat', all: 'Kaikki' },
   }
   return labels[language]
 }

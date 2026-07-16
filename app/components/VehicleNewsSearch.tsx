@@ -3,13 +3,26 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import type { PublicNewsArticle, PublicNewsCategory } from '@/lib/content/vehicle-news'
+import { useEffect, useMemo, useState } from 'react'
+import type { PublicNewsArticle } from '@/lib/content/vehicle-news'
 
-export default function VehicleNewsSearch({ market, categories, articles }: { market: string; categories: PublicNewsCategory[]; articles: PublicNewsArticle[] }) {
-  const [activeCategory, setActiveCategory] = useState('all')
+export default function VehicleNewsSearch({
+  market,
+  initialCategory,
+  articles,
+}: {
+  market: string
+  initialCategory: string
+  articles: PublicNewsArticle[]
+}) {
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [query, setQuery] = useState('')
   const copy = vehicleNewsSearchCopy(market)
+
+  useEffect(() => {
+    setActiveCategory(initialCategory)
+  }, [initialCategory])
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return articles.filter((article) => {
@@ -21,20 +34,7 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
 
   return (
     <section id="article-search" className="w-full min-w-0 max-w-full">
-      <div className="sticky top-0 z-20 -mx-5 border-b border-[#e2e8f0] bg-white/96 px-5 backdrop-blur sm:static sm:mx-0 sm:border sm:border-x-0 sm:border-t-0 sm:px-0">
-        <div className="flex gap-8 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <button type="button" onClick={() => setActiveCategory('all')} className={tabClass(activeCategory === 'all')}>
-            {copy.all}
-          </button>
-          {categories.map((category) => (
-            <button key={category.id} type="button" onClick={() => setActiveCategory(category.id)} className={tabClass(activeCategory === category.id)}>
-              {category.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-7 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-[-.02em] text-[#101828]">{copy.heading}</h2>
           <p className="mt-2 max-w-[620px] text-sm leading-6 text-[#667085]">{copy.description}</p>
@@ -51,7 +51,7 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
           <div className="relative min-h-[260px] overflow-hidden bg-[#edf3fb] sm:min-h-[360px]">
             {featured.imageUrl ? <Image src={featured.imageUrl} alt={featured.imageAlt} fill sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.025]" /> : null}
           </div>
-          <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+          <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8 lg:p-10">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{featured.category?.label || copy.guide}</p>
             <h3 className="mt-4 max-w-full break-words text-3xl font-semibold leading-tight tracking-[-.035em] text-[#101828] [overflow-wrap:anywhere] sm:text-4xl">{featured.title}</h3>
             <p className="mt-4 max-w-full break-words text-base leading-7 text-[#475467] [overflow-wrap:anywhere]">{featured.excerpt}</p>
@@ -78,14 +78,6 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
   )
 }
 
-function tabClass(active: boolean) {
-  return `relative min-h-14 shrink-0 whitespace-nowrap text-[15px] font-semibold transition after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:transition ${
-    active
-      ? 'text-[#0866ff] after:bg-[#0866ff]'
-      : 'text-[#344054] after:bg-transparent hover:text-[#0866ff]'
-  }`
-}
-
 function vehicleNewsArticleHref(market: string, slug: string) {
   return market === 'en' ? `/vehicle-news/${slug}` : `/${market}/vehicle-news/${slug}`
 }
@@ -96,7 +88,7 @@ function NewsCard({ market, article, copy }: { market: string; article: PublicNe
       <div className="relative aspect-[16/10] overflow-hidden bg-[#edf3fb]">
         {article.imageUrl ? <Image src={article.imageUrl} alt={article.imageAlt} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.025]" /> : null}
       </div>
-      <div className="p-5">
+      <div className="min-w-0 p-5">
         <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">{article.category?.label || copy.guide}</p>
         <h3 className="mt-3 line-clamp-3 max-w-full break-words text-[22px] font-semibold leading-[1.12] tracking-[-.025em] text-[#101828] [overflow-wrap:anywhere] group-hover:text-[#0866ff] sm:text-xl">{article.title}</h3>
         <p className="mt-3 line-clamp-3 max-w-full break-words text-sm leading-6 text-[#475467] [overflow-wrap:anywhere]">{article.excerpt}</p>
