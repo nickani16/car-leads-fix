@@ -2,12 +2,14 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, CheckCircle2, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, X } from 'lucide-react'
 import {
   localizePublicHref,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { createClient } from '@/lib/supabase/client'
+import { isStrongPassword, PASSWORD_REQUIREMENTS } from '@/lib/password-policy'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
@@ -33,12 +35,17 @@ export default function AuthModal({
   const router = useRouter()
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const [step, setStep] = useState<'email' | 'code'>('email')
+  const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
   const [email, setEmail] = useState(() =>
     typeof window === 'undefined'
       ? ''
       : window.localStorage.getItem(REMEMBERED_LOGIN_KEY) || '',
   )
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [notice, setNotice] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -75,9 +82,106 @@ export default function AuthModal({
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode)
     setStep('email')
+    setAuthMethod('password')
     setError('')
+    setNotice('')
+    setPassword('')
+    setConfirmPassword('')
     setDigits(['', '', '', '', '', ''])
     window.setTimeout(() => emailInputRef.current?.focus(), 40)
+  }
+
+  function accountDestination() {
+    return localizePublicHref(locale, '/account')
+  }
+
+  function registerDestination() {
+    return localizePublicHref(
+      locale,
+      postLoginDestination?.includes('account=business')
+        ? '/register?onboarding=1&account=business'
+        : '/register?onboarding=1',
+    )
+  }
+
+  function completeAuth(destination: string) {
+    onAuthenticated?.()
+    window.dispatchEvent(new CustomEvent('autorell:auth-changed'))
+    onClose()
+    router.replace(destination)
+    router.refresh()
+  }
+
+  async function submitPassword(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+    setNotice('')
+    const cleanEmail = email.trim()
+    if (!cleanEmail || !password) {
+      setError(copy.invalidPassword)
+      return
+    }
+    if (mode === 'register') {
+      if (!isStrongPassword(password)) {
+        setError(copy.passwordRequirement)
+        return
+      }
+      if (password !== confirmPassword) {
+        setError(copy.passwordMismatch)
+        return
+      }
+    }
+    setLoading(true)
+    try {
+      if (remember) window.localStorage.setItem(REMEMBERED_LOGIN_KEY, cleanEmail)
+      else window.localStorage.removeItem(REMEMBERED_LOGIN_KEY)
+
+      if (mode === 'register') {
+        const destination = registerDestination()
+        const response = await fetch('/api/auth/password-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: cleanEmail,
+            password,
+            confirmPassword,
+            locale,
+            next: destination,
+          }),
+        })
+        const result = (await response.json()) as {
+          success?: boolean
+          sessionReady?: boolean
+          destination?: string
+          error?: string
+        }
+        if (!response.ok || !result.success) {
+          setError(result.error || copy.signupError)
+          return
+        }
+        if (result.sessionReady) {
+          completeAuth(result.destination || destination)
+          return
+        }
+        setNotice(copy.confirmEmailSent)
+        return
+      }
+
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      })
+      if (signInError) {
+        setError(copy.invalidPassword)
+        return
+      }
+      completeAuth(postLoginDestination || accountDestination())
+    } catch {
+      setError(copy.connectionError)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function requestCode(event?: FormEvent) {
@@ -88,7 +192,7 @@ export default function AuthModal({
       const response = await fetch('/api/auth/email-code/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, locale }),
       })
       const result = (await response.json()) as {
         error?: string
@@ -116,20 +220,15 @@ export default function AuthModal({
     setError('')
     setLoading(true)
     try {
-      const accountDestination = localizePublicHref(locale, '/account')
-      const registerDestination = localizePublicHref(
-        locale,
-        postLoginDestination?.includes('account=business')
-          ? '/register?onboarding=1&account=business'
-          : '/register?onboarding=1',
-      )
+      const destinationForAccount = accountDestination()
+      const destinationForRegister = registerDestination()
       const response = await fetch('/api/auth/email-code/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           code,
-          next: mode === 'register' ? registerDestination : postLoginDestination || accountDestination,
+          next: mode === 'register' ? destinationForRegister : postLoginDestination || destinationForAccount,
         }),
       })
       const result = (await response.json()) as {
@@ -141,12 +240,8 @@ export default function AuthModal({
         setError(result.error || copy.codeError)
         return
       }
-      onAuthenticated?.()
-      window.dispatchEvent(new CustomEvent('autorell:auth-changed'))
-      onClose()
-      const destination = result.destination || (mode === 'register' ? registerDestination : accountDestination)
-      router.replace(destination)
-      router.refresh()
+      const destination = result.destination || (mode === 'register' ? destinationForRegister : destinationForAccount)
+      completeAuth(destination)
     } catch {
       setError(copy.connectionError)
     } finally {
@@ -222,7 +317,7 @@ export default function AuthModal({
             {step === 'email' ? copy.title : copy.codeTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
-            {step === 'email' ? copy.description : `${copy.codeSent} ${email}`}
+            {step === 'email' ? (authMethod === 'password' ? copy.passwordDescription : copy.description) : `${copy.codeSent} ${email}`}
           </p>
           {step === 'code' ? (
             <p className="mt-3 rounded-[11px] border border-[#dbe7ff] bg-[#f5f9ff] px-3 py-2 text-xs leading-5 text-[#475467]">
@@ -231,7 +326,7 @@ export default function AuthModal({
           ) : null}
 
           {step === 'email' ? (
-            <form onSubmit={requestCode} className="mt-6">
+            <form onSubmit={authMethod === 'password' ? submitPassword : requestCode} className="mt-6">
               <label className="block text-xs font-bold text-[#344054]">
                 {copy.email}
                 <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
@@ -259,6 +354,59 @@ export default function AuthModal({
                 </div>
               </label>
 
+              {authMethod === 'password' ? (
+                <>
+                  <label className="mt-4 block text-xs font-bold text-[#344054]">
+                    {copy.password}
+                    <div className="mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                        required
+                        className="min-w-0 flex-1 bg-transparent text-sm font-normal text-[#101828] outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((current) => !current)}
+                        aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                        className="grid h-8 w-8 place-items-center rounded-full text-[#667085] transition hover:bg-[#f2f4f7] hover:text-[#101828]"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </label>
+
+                  {mode === 'register' ? (
+                    <>
+                      <label className="mt-4 block text-xs font-bold text-[#344054]">
+                        {copy.confirmPassword}
+                        <div className="mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={confirmPassword}
+                            onChange={(event) => setConfirmPassword(event.target.value)}
+                            autoComplete="new-password"
+                            required
+                            className="min-w-0 flex-1 bg-transparent text-sm font-normal text-[#101828] outline-none"
+                          />
+                        </div>
+                      </label>
+                      <p className="mt-3 text-xs leading-5 text-[#667085]">{copy.passwordRequirement}</p>
+                    </>
+                  ) : (
+                    <a
+                      href={localizePublicHref(locale, '/forgot-password')}
+                      onClick={onClose}
+                      className="mt-3 inline-block text-sm font-bold text-[#0866ff]"
+                    >
+                      {copy.forgotPassword}
+                    </a>
+                  )}
+                </>
+              ) : null}
+
               <label className="mt-4 flex items-center justify-between gap-4 text-sm text-[#475467]">
                 {copy.remember}
                 <input
@@ -270,13 +418,25 @@ export default function AuthModal({
               </label>
 
               {error ? <AuthError message={error} /> : null}
+              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
 
               <button
                 disabled={loading}
                 className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
               >
-                {loading ? copy.sending : copy.continue}
+                {loading ? (authMethod === 'password' ? copy.passwordLoading : copy.sending) : (authMethod === 'password' ? copy.passwordSubmit : copy.continue)}
                 {!loading ? <ArrowRight className="h-4 w-4" /> : null}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMethod((current) => (current === 'password' ? 'code' : 'password'))
+                  setError('')
+                  setNotice('')
+                }}
+                className="mt-4 w-full text-center text-sm font-bold text-[#0866ff]"
+              >
+                {authMethod === 'password' ? copy.useCodeInstead : copy.usePasswordInstead}
               </button>
             </form>
           ) : (
@@ -381,10 +541,22 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode) {
       mode === 'login'
         ? 'Enter your email and we will send you a one-time login code.'
         : 'Use your email to start. We will send a code before you continue.',
+    passwordDescription:
+      mode === 'login'
+        ? 'Log in with your email and password, or use a one-time code instead.'
+        : 'Create your Autorell account with email and password.',
     email: 'Email',
     emailPlaceholder: 'Enter your email',
+    password: 'Password',
+    confirmPassword: 'Confirm password',
+    forgotPassword: 'Forgot password?',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    passwordRequirement: PASSWORD_REQUIREMENTS,
     remember: 'Remember my email',
     continue: 'Send login code',
+    passwordSubmit: mode === 'login' ? 'Log in' : 'Create account',
+    passwordLoading: mode === 'login' ? 'Logging in...' : 'Creating account...',
     sending: 'Sending code...',
     codeTitle: 'Enter your code',
     codeSent: 'We sent a six-digit code to',
@@ -396,6 +568,12 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode) {
     back: 'Change email',
     newHere: 'New to Autorell?',
     haveAccount: 'Already have an account?',
+    useCodeInstead: 'Use one-time code instead',
+    usePasswordInstead: 'Use password instead',
+    invalidPassword: 'The email or password is incorrect.',
+    passwordMismatch: 'The passwords do not match.',
+    signupError: 'The account could not be created. Try password reset or one-time code.',
+    confirmEmailSent: 'If email confirmation is required, open the email we sent and then continue creating your profile.',
     sendError: 'The code could not be sent.',
     codeError: 'The code is incorrect or has expired.',
     connectionError: 'The connection was interrupted. Try again.',
@@ -442,10 +620,22 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode) {
         mode === 'login'
           ? 'E-Mail eingeben und wir senden einen einmaligen Anmeldecode.'
           : 'Mit Ihrer E-Mail starten. Wir senden einen Code, bevor es weitergeht.',
+      passwordDescription:
+        mode === 'login'
+          ? 'Melden Sie sich mit E-Mail und Passwort an oder verwenden Sie stattdessen einen Einmalcode.'
+          : 'Erstellen Sie Ihr Autorell-Konto mit E-Mail und Passwort.',
       email: 'E-Mail',
       emailPlaceholder: 'E-Mail eingeben',
+      password: 'Passwort',
+      confirmPassword: 'Passwort bestätigen',
+      forgotPassword: 'Passwort vergessen?',
+      showPassword: 'Passwort anzeigen',
+      hidePassword: 'Passwort ausblenden',
+      passwordRequirement: 'Mindestens 8 Zeichen mit Großbuchstaben, Kleinbuchstaben und Zahl.',
       remember: 'E-Mail merken',
       continue: 'Anmeldecode senden',
+      passwordSubmit: mode === 'login' ? 'Anmelden' : 'Konto erstellen',
+      passwordLoading: mode === 'login' ? 'Anmeldung...' : 'Konto wird erstellt...',
       sending: 'Code wird gesendet...',
       codeTitle: 'Code eingeben',
       codeSent: 'Wir haben einen sechsstelligen Code gesendet an',
@@ -456,6 +646,12 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode) {
       back: 'E-Mail ändern',
       newHere: 'Neu bei Autorell?',
       haveAccount: 'Bereits registriert?',
+      useCodeInstead: 'Stattdessen Einmalcode verwenden',
+      usePasswordInstead: 'Stattdessen Passwort verwenden',
+      invalidPassword: 'E-Mail oder Passwort ist falsch.',
+      passwordMismatch: 'Die Passwörter stimmen nicht überein.',
+      signupError: 'Das Konto konnte nicht erstellt werden. Versuchen Sie Passwort zurücksetzen oder Einmalcode.',
+      confirmEmailSent: 'Falls eine E-Mail-Bestätigung erforderlich ist, öffnen Sie die E-Mail und erstellen Sie danach Ihr Profil weiter.',
       sendError: 'Der Code konnte nicht gesendet werden.',
       codeError: 'Der Code ist falsch oder abgelaufen.',
       connectionError: 'Die Verbindung wurde unterbrochen. Erneut versuchen.',

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const authComponent = readFileSync(new URL('../app/components/EmailCodeAuth.tsx', import.meta.url), 'utf8')
+const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
 const signupRoute = readFileSync(new URL('../app/api/auth/password-signup/route.ts', import.meta.url), 'utf8')
 const otpRequestRoute = readFileSync(new URL('../app/api/auth/email-code/request/route.ts', import.meta.url), 'utf8')
 const recoveryRoute = readFileSync(new URL('../app/api/auth/password-recovery/route.ts', import.meta.url), 'utf8')
@@ -18,6 +19,17 @@ test('login UI offers password first while preserving one-time code login', () =
   assert.match(authComponent, /\/api\/auth\/email-code\/request/)
   assert.match(authComponent, /\/api\/auth\/email-code\/verify/)
   assert.match(authComponent, /forgot-password/)
+})
+
+test('public header auth popup uses password first and keeps OTP fallback', () => {
+  assert.match(authModal, /authMethod.*password/)
+  assert.match(authModal, /signInWithPassword/)
+  assert.match(authModal, /\/api\/auth\/password-signup/)
+  assert.match(authModal, /useCodeInstead/)
+  assert.match(authModal, /usePasswordInstead/)
+  assert.match(authModal, /forgot-password/)
+  assert.match(authModal, /\/api\/auth\/email-code\/request/)
+  assert.match(authModal, /\/api\/auth\/email-code\/verify/)
 })
 
 test('password registration uses Supabase Auth without a parallel password store', () => {
