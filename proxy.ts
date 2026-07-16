@@ -122,7 +122,7 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['find-cars', '/find-cars'],
   ['vehicles', '/dealer-market/__locale__/vehicles'],
   ['how-it-works', '/dealer-market/__locale__/process'],
-  ['benefits', '/dealer-market/__locale__/benefits'],
+  ['benefits', '/benefits'],
   ['about', '/about'],
   ['faq', '/dealer-market/__locale__/faq'],
   ['contact', '/contact'],
