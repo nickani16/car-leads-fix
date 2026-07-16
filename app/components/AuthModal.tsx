@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, EyeOff, X } from 'lucide-react'
 import {
   localizePublicHref,
-  translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/client'
-import { isStrongPassword, PASSWORD_REQUIREMENTS } from '@/lib/password-policy'
+import { isStrongPassword } from '@/lib/password-policy'
+import { getAuthSpamHintCopy, getLocalizedAuthModalCopy } from '@/lib/auth-copy'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
@@ -309,6 +309,7 @@ export default function AuthModal({
         body: JSON.stringify({
           email,
           code,
+          locale,
           next: mode === 'register' ? destinationForRegister : postLoginDestination || destinationForAccount,
         }),
       })
@@ -704,189 +705,9 @@ function AuthError({ message }: { message: string }) {
 }
 
 function getAuthModalCopy(locale: PublicLocale, mode: AuthMode, view: AuthView = mode) {
-  const en = {
-    loginTab: 'Log in',
-    registerTab: 'Create account',
-    close: 'Close',
-    title: view === 'forgot' ? 'Reset your password' : view === 'reset' ? 'Choose a new password' : mode === 'login' ? 'Welcome back' : 'Create your account',
-    description:
-      view === 'forgot'
-        ? 'Enter your email and we will send a secure reset link.'
-        : view === 'reset'
-          ? 'Choose a new password for your Autorell account.'
-          : mode === 'login'
-        ? 'Enter your email and we will send you a one-time login code.'
-        : 'Use your email to start. We will send a code before you continue.',
-    passwordDescription:
-      mode === 'login'
-        ? 'Log in with your email and password, or use a one-time code instead.'
-        : 'Create your Autorell account with email and password.',
-    email: 'Email',
-    emailPlaceholder: 'Enter your email',
-    password: 'Password',
-    confirmPassword: 'Confirm password',
-    forgotPassword: 'Forgot password?',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
-    passwordRequirement: PASSWORD_REQUIREMENTS,
-    remember: 'Remember my email',
-    continue: 'Send login code',
-    passwordSubmit: mode === 'login' ? 'Log in' : 'Create account',
-    passwordLoading: mode === 'login' ? 'Logging in...' : 'Creating account...',
-    sending: 'Sending code...',
-    codeTitle: 'Enter your code',
-    codeSent: 'We sent a six-digit code to',
-    digit: 'Code digit',
-    submitCode: mode === 'login' ? 'Log in' : 'Continue',
-    verifying: 'Checking code...',
-    resend: 'Send a new code',
-    resendIn: 'New code in',
-    back: 'Change email',
-    newHere: 'New to Autorell?',
-    haveAccount: 'Already have an account?',
-    useCodeInstead: 'Use one-time code instead',
-    usePasswordInstead: 'Use password instead',
-    invalidPassword: 'The email or password is incorrect.',
-    passwordMismatch: 'The passwords do not match.',
-    signupError: 'The account could not be created. Try password reset or one-time code.',
-    confirmEmailSent: 'If email confirmation is required, open the email we sent and then continue creating your profile.',
-    emailRequired: 'Enter your email address.',
-    sendReset: 'Send reset link',
-    sendingReset: 'Sending reset link...',
-    resetSent: 'If an account exists for this email, we have sent a reset link.',
-    backToLogin: 'Back to login',
-    savePassword: 'Save new password',
-    savingPassword: 'Saving password...',
-    passwordUpdated: 'Your password has been updated. Log in again with your new password.',
-    resetError: 'The password could not be updated. Open the latest reset link and try again.',
-    sendError: 'The code could not be sent.',
-    codeError: 'The code is incorrect or has expired.',
-    connectionError: 'The connection was interrupted. Try again.',
-    chooseMarket: 'Choose language and market',
-  }
-  if (locale === 'sv') {
-    return {
-      ...en,
-      loginTab: 'Logga in',
-      registerTab: 'Skapa konto',
-      close: 'Stäng',
-      title: mode === 'login' ? 'Välkommen tillbaka' : 'Skapa ditt konto',
-      description:
-        mode === 'login'
-          ? 'Ange din mejladress så skickar vi en engångskod.'
-          : 'Börja med din mejladress. Vi skickar en kod innan du fortsätter.',
-      email: 'Mejl',
-      emailPlaceholder: 'Ange din mejladress',
-      remember: 'Kom ihåg min mejladress',
-      continue: 'Skicka inloggningskod',
-      sending: 'Skickar kod...',
-      codeTitle: 'Ange din kod',
-      codeSent: 'Vi skickade en sexsiffrig kod till',
-      submitCode: mode === 'login' ? 'Logga in' : 'Fortsätt',
-      verifying: 'Kontrollerar kod...',
-      resend: 'Skicka en ny kod',
-      resendIn: 'Ny kod om',
-      back: 'Byt mejladress',
-      newHere: 'Ny på Autorell?',
-      haveAccount: 'Har du redan ett konto?',
-      sendError: 'Koden kunde inte skickas.',
-      codeError: 'Koden är felaktig eller har gått ut.',
-      connectionError: 'Anslutningen avbröts. Försök igen.',
-      chooseMarket: 'Välj språk och marknad',
-    }
-  }
-  if (locale === 'de') {
-    return {
-      ...en,
-      loginTab: 'Anmelden',
-      registerTab: 'Konto erstellen',
-      title: mode === 'login' ? 'Willkommen zurück' : 'Konto erstellen',
-      description:
-        mode === 'login'
-          ? 'E-Mail eingeben und wir senden einen einmaligen Anmeldecode.'
-          : 'Mit Ihrer E-Mail starten. Wir senden einen Code, bevor es weitergeht.',
-      passwordDescription:
-        mode === 'login'
-          ? 'Melden Sie sich mit E-Mail und Passwort an oder verwenden Sie stattdessen einen Einmalcode.'
-          : 'Erstellen Sie Ihr Autorell-Konto mit E-Mail und Passwort.',
-      email: 'E-Mail',
-      emailPlaceholder: 'E-Mail eingeben',
-      password: 'Passwort',
-      confirmPassword: 'Passwort bestätigen',
-      forgotPassword: 'Passwort vergessen?',
-      showPassword: 'Passwort anzeigen',
-      hidePassword: 'Passwort ausblenden',
-      passwordRequirement: 'Mindestens 8 Zeichen mit Großbuchstaben, Kleinbuchstaben und Zahl.',
-      remember: 'E-Mail merken',
-      continue: 'Anmeldecode senden',
-      passwordSubmit: mode === 'login' ? 'Anmelden' : 'Konto erstellen',
-      passwordLoading: mode === 'login' ? 'Anmeldung...' : 'Konto wird erstellt...',
-      sending: 'Code wird gesendet...',
-      codeTitle: 'Code eingeben',
-      codeSent: 'Wir haben einen sechsstelligen Code gesendet an',
-      submitCode: mode === 'login' ? 'Anmelden' : 'Weiter',
-      verifying: 'Code wird geprüft...',
-      resend: 'Neuen Code senden',
-      resendIn: 'Neuer Code in',
-      back: 'E-Mail ändern',
-      newHere: 'Neu bei Autorell?',
-      haveAccount: 'Bereits registriert?',
-      useCodeInstead: 'Stattdessen Einmalcode verwenden',
-      usePasswordInstead: 'Stattdessen Passwort verwenden',
-      invalidPassword: 'E-Mail oder Passwort ist falsch.',
-      passwordMismatch: 'Die Passwörter stimmen nicht überein.',
-      signupError: 'Das Konto konnte nicht erstellt werden. Versuchen Sie Passwort zurücksetzen oder Einmalcode.',
-      confirmEmailSent: 'Falls eine E-Mail-Bestätigung erforderlich ist, öffnen Sie die E-Mail und erstellen Sie danach Ihr Profil weiter.',
-      sendError: 'Der Code konnte nicht gesendet werden.',
-      codeError: 'Der Code ist falsch oder abgelaufen.',
-      connectionError: 'Die Verbindung wurde unterbrochen. Erneut versuchen.',
-      chooseMarket: 'Sprache und Markt wählen',
-    }
-  }
-  if (locale === 'es') {
-    return {
-      ...en,
-      loginTab: 'Iniciar sesión',
-      registerTab: 'Crear cuenta',
-      close: 'Cerrar',
-      title: mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta',
-      description:
-        mode === 'login'
-          ? 'Introduce tu correo electrónico y te enviaremos un código de inicio de sesión de un solo uso.'
-          : 'Empieza con tu correo electrónico. Te enviaremos un código antes de continuar.',
-      email: 'Correo electrónico',
-      emailPlaceholder: 'Introduce tu correo electrónico',
-      remember: 'Recordar mi correo electrónico',
-      continue: 'Enviar código',
-      sending: 'Enviando código...',
-      codeTitle: 'Introduce tu código',
-      codeSent: 'Hemos enviado un código de seis dígitos a',
-      digit: 'Dígito del código',
-      submitCode: mode === 'login' ? 'Iniciar sesión' : 'Continuar',
-      verifying: 'Comprobando código...',
-      resend: 'Enviar un nuevo código',
-      resendIn: 'Nuevo código en',
-      back: 'Cambiar correo electrónico',
-      newHere: '¿Nuevo en Autorell?',
-      haveAccount: '¿Ya tienes una cuenta?',
-      sendError: 'No se pudo enviar el código.',
-      codeError: 'El código es incorrecto o ha caducado.',
-      connectionError: 'La conexión se interrumpió. Inténtalo de nuevo.',
-      chooseMarket: 'Elegir idioma y mercado',
-    }
-  }
-  return locale === 'en' ? en : translatePublicObject(locale, en)
+  return getLocalizedAuthModalCopy(locale, mode, view)
 }
 
 function getAuthSpamHint(locale: PublicLocale) {
-  if (locale === 'sv') {
-    return 'Om mejlet inte syns, kontrollera skräppost eller skräpkorgen.'
-  }
-  if (locale === 'de') {
-    return 'Wenn die E-Mail nicht sichtbar ist, prüfen Sie bitte den Spam- oder Junk-Ordner.'
-  }
-  if (locale === 'es') {
-    return 'Si no encuentras el correo, revisa la carpeta de spam o correo no deseado.'
-  }
-  return 'If you cannot find the email, check your spam or junk folder.'
+  return getAuthSpamHintCopy(locale)
 }

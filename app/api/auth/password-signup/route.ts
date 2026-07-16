@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authOrigin, localeFromRequest, localizedAuthPath } from '@/lib/auth-locale'
-import { isStrongPassword, PASSWORD_REQUIREMENTS } from '@/lib/password-policy'
+import { getAuthApiCopy } from '@/lib/auth-copy'
+import { isStrongPassword } from '@/lib/password-policy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,15 +26,16 @@ export async function POST(request: Request) {
     const password = String(body.password || '')
     const confirmPassword = String(body.confirmPassword || '')
     const locale = localeFromRequest(request, body.locale)
+    const copy = getAuthApiCopy(locale)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
+      return NextResponse.json({ error: copy.emailRequired }, { status: 400 })
     }
     if (!isStrongPassword(password)) {
-      return NextResponse.json({ error: PASSWORD_REQUIREMENTS }, { status: 400 })
+      return NextResponse.json({ error: copy.passwordRequirement }, { status: 400 })
     }
     if (password !== confirmPassword) {
-      return NextResponse.json({ error: 'The passwords do not match.' }, { status: 400 })
+      return NextResponse.json({ error: copy.passwordMismatch }, { status: 400 })
     }
 
     const signupLimit = checkRateLimit({
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
     })
     if (signupLimit.limited) {
       return NextResponse.json(
-        { error: 'Too many attempts. Wait a while and try again.' },
+        { error: copy.tooManyAttempts },
         { status: 429, headers: { 'Retry-After': String(signupLimit.retryAfter) } },
       )
     }
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: 'The account could not be created. Try password reset or one-time code.' },
+        { error: copy.signupError },
         { status: 400 },
       )
     }

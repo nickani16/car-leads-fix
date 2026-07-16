@@ -1,4 +1,4 @@
-import type { PublicLocale } from '@/lib/public-i18n'
+import { translationLocale, type PublicLocale } from '@/lib/public-i18n'
 
 export type AuthEmailCopy = {
   subject: string
@@ -12,9 +12,13 @@ export type AuthEmailCopy = {
   footer: string
 }
 
-const otpCopy = {
+type EmailCopySource = Omit<AuthEmailCopy, 'subject'> & {
+  subject: (code: string) => string
+}
+
+const otpCopy: Record<string, EmailCopySource> = {
   en: {
-    subject: (code: string) => `${code} is your Autorell sign-in code`,
+    subject: (code) => `${code} is your Autorell sign-in code`,
     preheader: 'Use this one-time code to sign in to Autorell.',
     eyebrow: 'Secure sign-in',
     heading: 'Sign in to Autorell',
@@ -25,7 +29,7 @@ const otpCopy = {
     footer: "Europe's trusted marketplace for buying and selling vehicles.",
   },
   sv: {
-    subject: (code: string) => `${code} är din inloggningskod för Autorell`,
+    subject: (code) => `${code} är din inloggningskod för Autorell`,
     preheader: 'Använd engångskoden för att logga in på Autorell.',
     eyebrow: 'Säker inloggning',
     heading: 'Logga in på Autorell',
@@ -36,7 +40,7 @@ const otpCopy = {
     footer: 'Europas trygga marknadsplats för köp och försäljning av fordon.',
   },
   de: {
-    subject: (code: string) => `${code} ist Ihr Autorell-Anmeldecode`,
+    subject: (code) => `${code} ist Ihr Autorell-Anmeldecode`,
     preheader: 'Verwenden Sie diesen Einmalcode, um sich bei Autorell anzumelden.',
     eyebrow: 'Sichere Anmeldung',
     heading: 'Bei Autorell anmelden',
@@ -47,7 +51,7 @@ const otpCopy = {
     footer: 'Europas vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen.',
   },
   fr: {
-    subject: (code: string) => `${code} est votre code de connexion Autorell`,
+    subject: (code) => `${code} est votre code de connexion Autorell`,
     preheader: 'Utilisez ce code à usage unique pour vous connecter à Autorell.',
     eyebrow: 'Connexion sécurisée',
     heading: 'Connectez-vous à Autorell',
@@ -58,7 +62,7 @@ const otpCopy = {
     footer: 'La place de marché européenne de confiance pour acheter et vendre des véhicules.',
   },
   es: {
-    subject: (code: string) => `${code} es tu código de acceso a Autorell`,
+    subject: (code) => `${code} es tu código de acceso a Autorell`,
     preheader: 'Usa este código de un solo uso para iniciar sesión en Autorell.',
     eyebrow: 'Acceso seguro',
     heading: 'Inicia sesión en Autorell',
@@ -69,7 +73,7 @@ const otpCopy = {
     footer: 'El marketplace europeo de confianza para comprar y vender vehículos.',
   },
   it: {
-    subject: (code: string) => `${code} è il tuo codice di accesso Autorell`,
+    subject: (code) => `${code} è il tuo codice di accesso Autorell`,
     preheader: 'Usa questo codice monouso per accedere ad Autorell.',
     eyebrow: 'Accesso sicuro',
     heading: 'Accedi ad Autorell',
@@ -80,7 +84,7 @@ const otpCopy = {
     footer: 'Il marketplace europeo affidabile per comprare e vendere veicoli.',
   },
   pl: {
-    subject: (code: string) => `${code} to Twój kod logowania Autorell`,
+    subject: (code) => `${code} to Twój kod logowania Autorell`,
     preheader: 'Użyj tego jednorazowego kodu, aby zalogować się do Autorell.',
     eyebrow: 'Bezpieczne logowanie',
     heading: 'Zaloguj się do Autorell',
@@ -91,7 +95,7 @@ const otpCopy = {
     footer: 'Zaufany europejski marketplace do kupna i sprzedaży pojazdów.',
   },
   nl: {
-    subject: (code: string) => `${code} is je Autorell-inlogcode`,
+    subject: (code) => `${code} is je Autorell-inlogcode`,
     preheader: 'Gebruik deze eenmalige code om in te loggen bij Autorell.',
     eyebrow: 'Veilig inloggen',
     heading: 'Log in bij Autorell',
@@ -102,7 +106,7 @@ const otpCopy = {
     footer: 'De vertrouwde Europese marktplaats voor het kopen en verkopen van voertuigen.',
   },
   fi: {
-    subject: (code: string) => `${code} on Autorell-kirjautumiskoodisi`,
+    subject: (code) => `${code} on Autorell-kirjautumiskoodisi`,
     preheader: 'Käytä tätä kertakäyttökoodia kirjautuaksesi Autorelliin.',
     eyebrow: 'Turvallinen kirjautuminen',
     heading: 'Kirjaudu Autorelliin',
@@ -113,7 +117,7 @@ const otpCopy = {
     footer: 'Euroopan luotettu markkinapaikka ajoneuvojen ostoon ja myyntiin.',
   },
   da: {
-    subject: (code: string) => `${code} er din Autorell-login-kode`,
+    subject: (code) => `${code} er din Autorell-login-kode`,
     preheader: 'Brug denne engangskode til at logge ind på Autorell.',
     eyebrow: 'Sikker login',
     heading: 'Log ind på Autorell',
@@ -125,7 +129,7 @@ const otpCopy = {
   },
 }
 
-const resetCopy = {
+const resetCopy: Record<string, AuthEmailCopy> = {
   en: {
     subject: 'Reset your Autorell password',
     preheader: 'Use this secure link to reset your Autorell account password.',
@@ -238,46 +242,65 @@ const resetCopy = {
   },
 }
 
+function copyKey(locale: PublicLocale) {
+  const key = translationLocale(locale)
+  return key in otpCopy ? key : 'en'
+}
+
 export function getOtpEmailCopy(locale: PublicLocale, code: string): AuthEmailCopy {
-  const key = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
-  const copy = otpCopy[key as keyof typeof otpCopy] || otpCopy.en
-  return { ...copy, subject: copy.subject(code) }
+  const source = otpCopy[copyKey(locale)]
+  return { ...source, subject: source.subject(code) }
 }
 
 export function getPasswordResetEmailCopy(locale: PublicLocale): AuthEmailCopy {
-  const key = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
-  return resetCopy[key as keyof typeof resetCopy] || resetCopy.en
+  return resetCopy[copyKey(locale)] || resetCopy.en
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 export function authEmailHtml(copy: AuthEmailCopy, action?: { href: string; label: string }, code?: string) {
+  const safeCopy = Object.fromEntries(
+    Object.entries(copy).map(([key, value]) => [key, escapeHtml(value)]),
+  ) as AuthEmailCopy
+  const safeCode = code ? escapeHtml(code) : ''
+  const safeAction = action
+    ? { href: escapeHtml(action.href), label: escapeHtml(action.label) }
+    : null
+
   return `
     <!doctype html>
     <html>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="x-apple-disable-message-reformatting" />
-        <title>${copy.subject}</title>
+        <title>${safeCopy.subject}</title>
       </head>
       <body style="margin:0;background:#f3f7ff;color:#101828;font-family:Arial,Helvetica,sans-serif;">
-        <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${copy.preheader}</div>
+        <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${safeCopy.preheader}</div>
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f7ff;padding:36px 12px;">
           <tr><td align="center">
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;overflow:hidden;border:1px solid #dce5f4;border-radius:24px;background:#ffffff;box-shadow:0 22px 60px rgba(16,24,40,.10);">
               <tr>
                 <td style="padding:28px 32px;border-bottom:1px solid #edf1f7;">
                   <img src="https://www.autorell.com/autorell-logo-primary.png" width="138" alt="Autorell" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
-                  <div style="margin-top:12px;font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#667085;">${copy.eyebrow}</div>
+                  <div style="margin-top:12px;font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:#667085;">${safeCopy.eyebrow}</div>
                 </td>
               </tr>
               <tr><td style="padding:34px 32px 28px;text-align:left;">
-                <h1 style="margin:0;font-size:28px;line-height:1.18;letter-spacing:-1px;color:#101828;">${copy.heading}</h1>
-                <p style="margin:12px 0 0;color:#475467;font-size:15px;line-height:1.7;">${copy.intro}</p>
-                ${code ? `<div style="margin:26px 0 0;border-radius:18px;background:#eef5ff;padding:22px;text-align:center;border:1px solid #cfe0ff;"><div style="font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#0866ff;">${copy.cta}</div><div style="margin-top:10px;font-size:46px;font-weight:800;letter-spacing:10px;color:#101828;">${code}</div></div>` : ''}
-                ${action ? `<a href="${action.href}" style="display:inline-block;margin-top:26px;border-radius:14px;background:#0866ff;color:#ffffff;text-decoration:none;padding:15px 22px;font-size:14px;font-weight:800;">${action.label}</a>` : ''}
-                <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.7;">${copy.expiry}</p>
-                <p style="margin:18px 0 0;color:#98a2b3;font-size:12px;line-height:1.6;">${copy.ignore}</p>
+                <h1 style="margin:0;font-size:28px;line-height:1.18;letter-spacing:-1px;color:#101828;font-weight:600;">${safeCopy.heading}</h1>
+                <p style="margin:12px 0 0;color:#475467;font-size:15px;line-height:1.7;">${safeCopy.intro}</p>
+                ${safeCode ? `<div style="margin:26px 0 0;border-radius:18px;background:#eef5ff;padding:22px;text-align:center;border:1px solid #cfe0ff;"><div style="font-size:12px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#0866ff;">${safeCopy.cta}</div><div style="margin-top:10px;font-size:46px;font-weight:600;letter-spacing:10px;color:#101828;">${safeCode}</div></div>` : ''}
+                ${safeAction ? `<a href="${safeAction.href}" style="display:inline-block;margin-top:26px;border-radius:14px;background:#0866ff;color:#ffffff;text-decoration:none;padding:15px 22px;font-size:14px;font-weight:600;">${safeAction.label}</a>` : ''}
+                <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.7;">${safeCopy.expiry}</p>
+                <p style="margin:18px 0 0;color:#98a2b3;font-size:12px;line-height:1.6;">${safeCopy.ignore}</p>
               </td></tr>
-              <tr><td style="padding:20px 32px;border-top:1px solid #edf1f7;color:#98a2b3;font-size:12px;line-height:1.6;">Autorell marketplace<br />${copy.footer}</td></tr>
+              <tr><td style="padding:20px 32px;border-top:1px solid #edf1f7;color:#98a2b3;font-size:12px;line-height:1.6;">Autorell marketplace<br />${safeCopy.footer}</td></tr>
             </table>
           </td></tr>
         </table>

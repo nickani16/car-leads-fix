@@ -17,7 +17,7 @@ test('email login codes are consumed atomically before session creation', () => 
   assert.match(emailCodeVerifyApi, /\.eq\('id', challenge\.id\)/)
   assert.match(emailCodeVerifyApi, /\.is\('consumed_at', null\)/)
   assert.match(emailCodeVerifyApi, /\.select\('id'\)/)
-  assert.match(emailCodeVerifyApi, /Koden har redan anv/)
+  assert.match(emailCodeVerifyApi, /copy\.usedCode/)
   assert.match(emailCodeVerifyApi, /supabase\.auth\.verifyOtp/)
 })
 

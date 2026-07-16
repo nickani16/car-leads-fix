@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { authOrigin, localeFromRequest, localizedAuthPath } from '@/lib/auth-locale'
+import { getAuthApiCopy } from '@/lib/auth-copy'
 import { authEmailHtml, getPasswordResetEmailCopy } from '@/lib/email/auth-emails'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -39,9 +40,10 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { email?: string; locale?: string }
     const email = body.email?.trim().toLowerCase() || ''
     const locale = localeFromRequest(request, body.locale)
+    const apiCopy = getAuthApiCopy(locale)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
+      return NextResponse.json({ error: apiCopy.emailRequired }, { status: 400 })
     }
 
     const recoveryLimit = checkRateLimit({
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
     if (!resendKey) {
       console.error('Password recovery email is missing RESEND_API_KEY.')
       return NextResponse.json(
-        { error: 'Password recovery is temporarily unavailable.' },
+        { error: apiCopy.recoveryUnavailable },
         { status: 503 },
       )
     }

@@ -8,6 +8,8 @@ import {
   normalizeEmail,
   safeAuthDestination,
 } from '@/lib/email-code-auth'
+import { getAuthApiCopy } from '@/lib/auth-copy'
+import { localeFromRequest } from '@/lib/auth-locale'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 const marketPathPrefixes = new Set([
@@ -56,15 +58,15 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       email?: string
       code?: string
+      locale?: string
       next?: string
     }
+    const locale = localeFromRequest(request, body.locale)
+    const copy = getAuthApiCopy(locale)
     const email = normalizeEmail(body.email)
     const code = String(body.code || '').replace(/\D/g, '').slice(0, 6)
     if (!isValidEmail(email) || code.length !== 6) {
-      return NextResponse.json(
-        { error: 'Ange den sexsiffriga koden från mejlet.' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: copy.codeError }, { status: 400 })
     }
 
     const verifyLimit = checkRateLimit({
@@ -74,7 +76,7 @@ export async function POST(request: Request) {
     })
     if (verifyLimit.limited) {
       return NextResponse.json(
-        { error: 'För många försök. Vänta en stund och försök igen.' },
+        { error: copy.tooManyAttempts },
         {
           status: 429,
           headers: { 'Retry-After': String(verifyLimit.retryAfter) },
@@ -104,10 +106,7 @@ export async function POST(request: Request) {
           .update({ attempts: Math.min(challenge.attempts + 1, 10) })
           .eq('id', challenge.id)
       }
-      return NextResponse.json(
-        { error: 'Koden är felaktig eller har gått ut.' },
-        { status: 401 },
-      )
+      return NextResponse.json({ error: copy.codeError }, { status: 401 })
     }
 
     const consumedAt = new Date().toISOString()
@@ -120,10 +119,7 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (consumeError) throw consumeError
     if (!consumedChallenge) {
-      return NextResponse.json(
-        { error: 'Koden har redan använts. Begär en ny kod.' },
-        { status: 401 },
-      )
+      return NextResponse.json({ error: copy.usedCode }, { status: 401 })
     }
 
     let link = await admin.auth.admin.generateLink({
@@ -228,7 +224,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Email code verification failed', error)
     return NextResponse.json(
-      { error: 'Inloggningen kunde inte slutföras. Begär en ny kod.' },
+      { error: 'The sign-in could not be completed. Request a new code.' },
       { status: 500 },
     )
   }

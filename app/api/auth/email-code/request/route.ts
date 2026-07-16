@@ -9,6 +9,7 @@ import {
   isValidEmail,
   normalizeEmail,
 } from '@/lib/email-code-auth'
+import { getAuthApiCopy } from '@/lib/auth-copy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { localeFromRequest } from '@/lib/auth-locale'
 import { authEmailHtml, getOtpEmailCopy } from '@/lib/email/auth-emails'
@@ -37,11 +38,10 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { email?: string; locale?: string }
     const email = normalizeEmail(body.email)
     const locale = localeFromRequest(request, body.locale)
+    const copy = getAuthApiCopy(locale)
+
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { error: 'Ange en giltig e-postadress.' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: copy.emailRequired }, { status: 400 })
     }
 
     const requestLimit = checkRateLimit({
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     })
     if (requestLimit.limited) {
       return NextResponse.json(
-        { error: 'Vänta några minuter innan du begär fler koder.' },
+        { error: copy.rateLimited },
         {
           status: 429,
           headers: { 'Retry-After': String(requestLimit.retryAfter) },
@@ -60,18 +60,12 @@ export async function POST(request: Request) {
     }
 
     if (isRateLimited(clientKey(request, email))) {
-      return NextResponse.json(
-        { error: 'Vänta några sekunder innan du begär en ny kod.' },
-        { status: 429 },
-      )
+      return NextResponse.json({ error: copy.waitBeforeNewCode }, { status: 429 })
     }
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
-      return NextResponse.json(
-        { error: 'Inloggning via e-post är tillfälligt otillgänglig.' },
-        { status: 503 },
-      )
+      return NextResponse.json({ error: copy.emailUnavailable }, { status: 503 })
     }
 
     const admin = createAdminClient()
@@ -83,10 +77,7 @@ export async function POST(request: Request) {
       .eq('email_hash', hashedEmail)
       .gte('created_at', since)
     if (count) {
-      return NextResponse.json(
-        { error: 'Vänta några sekunder innan du begär en ny kod.' },
-        { status: 429 },
-      )
+      return NextResponse.json({ error: copy.waitBeforeNewCode }, { status: 429 })
     }
 
     const code = generateEmailCode()
@@ -98,24 +89,24 @@ export async function POST(request: Request) {
     })
     if (insertError) throw insertError
 
-    const copy = getOtpEmailCopy(locale, code)
+    const emailCopy = getOtpEmailCopy(locale, code)
     const resend = new Resend(resendKey)
     const { error: sendError } = await resend.emails.send({
       from: 'Autorell <noreply@autorell.com>',
       to: email,
-      subject: copy.subject,
+      subject: emailCopy.subject,
       text: [
-        copy.heading,
+        emailCopy.heading,
         '',
         code,
         '',
-        copy.intro,
-        copy.expiry,
-        copy.ignore,
+        emailCopy.intro,
+        emailCopy.expiry,
+        emailCopy.ignore,
         '',
         'Autorell marketplace',
       ].join('\n'),
-      html: authEmailHtml(copy, undefined, code),
+      html: authEmailHtml(emailCopy, undefined, code),
     })
     if (sendError) throw sendError
 
@@ -123,7 +114,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Email code request failed', error)
     return NextResponse.json(
-      { error: 'Koden kunde inte skickas. Försök igen om en stund.' },
+      { error: 'The code could not be sent. Try again in a moment.' },
       { status: 500 },
     )
   }
