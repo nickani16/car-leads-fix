@@ -537,7 +537,7 @@ export default function HomeHeroVehicleSearch({
   return (
     <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
       <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white px-5 py-5 text-center">
+        <div className="rounded-t-[12px] bg-white px-5 pb-3 pt-5 text-center">
           <h1 className="mx-auto max-w-[320px] text-[21px] !font-medium leading-[1.17] tracking-[-0.04em] text-[#101828]">
             {titleText ? (
               <>
@@ -635,7 +635,7 @@ export default function HomeHeroVehicleSearch({
             {query || selectedSearchSuggestions.length ? null : (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
+                className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:max-w-none lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:max-w-[calc(100%-64px)] lg:group-focus-within:translate-x-0"
               >
                 {searchPlaceholder}
               </span>
@@ -643,7 +643,7 @@ export default function HomeHeroVehicleSearch({
             <Search className={`h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 ${
               selectedSearchSuggestions.length
                 ? 'absolute right-4 top-1/2 -translate-y-1/2'
-                : 'lg:absolute lg:left-[calc(50%+124px)] lg:top-1/2 lg:-translate-y-1/2 lg:group-focus-within:left-auto lg:group-focus-within:right-4'
+                : 'absolute right-4 top-1/2 -translate-y-1/2 lg:right-auto lg:left-[calc(50%+124px)] lg:group-focus-within:left-auto lg:group-focus-within:right-4'
             }`} strokeWidth={2.1} />
           </div>
           <VehicleSmartSearchSuggestionPanel
