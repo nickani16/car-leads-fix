@@ -275,7 +275,6 @@ const DEALER_MARKET_ROUTES = {
   de: new Map([
     ['/fahrzeuge', 'vehicles'],
     ['/so-funktionierts', 'process'],
-    ['/vorteile', 'benefits'],
     ['/ueber-autorell', 'about'],
     ['/faq', 'faq'],
     ['/kontakt', 'contact'],
@@ -283,7 +282,6 @@ const DEALER_MARKET_ROUTES = {
   en: new Map([
     ['/vehicles', 'vehicles'],
     ['/how-it-works', 'process'],
-    ['/benefits', 'benefits'],
     ['/about', 'about'],
     ['/faq', 'faq'],
     ['/contact', 'contact'],
@@ -293,7 +291,8 @@ const DEALER_MARKET_ROUTES = {
 const LEGACY_DEALER_PATHS = {
   de: new Map([
     ['/salj-bil', '/fahrzeuge'],
-    ['/for-handlare', '/vorteile'],
+    ['/for-handlare', '/benefits'],
+    ['/vorteile', '/benefits'],
   ]),
   en: new Map([
     ['/salj-bil', '/vehicles'],
