@@ -56,11 +56,6 @@ type VehicleLocation = {
   postalCode?: string
 }
 
-type VehicleMake = {
-  make: string
-  models?: string[]
-}
-
 type SearchListingRow = {
   id: string
   category: MarketplaceCategorySlug | string | null
@@ -81,8 +76,6 @@ type SearchListingRow = {
 
 type DetectedVehicleQuery = {
   category?: MarketplaceCategorySlug
-  make?: VehicleMake
-  model?: string
   location?: VehicleLocation
   usesAllEurope: boolean
 }
@@ -168,20 +161,6 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
 const vehicleLocations = [
   ...marketplaceRegionEntries(),
   ...marketplaceLocationEntries(),
-]
-
-const vehicleMakes: VehicleMake[] = [
-  { make: 'Volvo', models: ['XC60', 'V60', 'XC90', 'V90'] },
-  { make: 'BMW', models: ['320', '520', 'X3', 'X5'] },
-  { make: 'Mercedes-Benz', models: ['C-Klass', 'E-Klass', 'Sprinter', 'Actros'] },
-  { make: 'Volkswagen', models: ['Golf', 'Passat', 'Transporter', 'Crafter'] },
-  { make: 'Audi', models: ['A4', 'A6', 'Q5'] },
-  { make: 'Toyota', models: ['Corolla', 'RAV4', 'Yaris'] },
-  { make: 'Ford', models: ['Transit', 'Focus', 'Ranger'] },
-  { make: 'Renault', models: ['Master', 'Trafic', 'Clio'] },
-  { make: 'Peugeot', models: ['Boxer', 'Partner', '308'] },
-  { make: 'Scania', models: ['R-serie', 'S-serie', 'P-serie'] },
-  { make: 'MAN', models: ['TGX', 'TGS', 'TGE'] },
 ]
 
 const fuelSearchAliases: Array<{ value: string; aliases: string[] }> = [
@@ -613,10 +592,8 @@ function buildStructuredVehicleEntries({
   const terms = normalizedQuery.split(' ').filter(Boolean)
   const detected: DetectedVehicleQuery = {
     category: detectCategory(normalizedQuery),
-    make: detectMake(normalizedQuery),
     usesAllEurope: detectsEurope(query),
   }
-  detected.model = detected.make ? detectModel(detected.make, normalizedQuery) : undefined
 
   const locations = getLocationsForMarket(market)
     .map((location) => ({ location, score: scoreLocationMatch(location, terms) }))
@@ -632,16 +609,8 @@ function buildStructuredVehicleEntries({
     entries.push(createCombinedEntry({ locale, language, detected, kind: 'category-location', market }))
   }
 
-  if (detected.make && detected.location) {
-    entries.push(createCombinedEntry({ locale, language, detected, kind: 'make-location', market }))
-  }
-
   if (detected.category && !detected.location) {
     entries.push(createCategoryEntry({ locale, language, category: detected.category, market: detected.usesAllEurope ? 'EU' : market }))
-  }
-
-  if (detected.make && !detected.location) {
-    entries.push(createMakeEntry({ locale, make: detected.make, model: detected.model, market: detected.usesAllEurope ? 'EU' : market }))
   }
 
   locations.slice(0, 4).forEach((location) => {
@@ -684,22 +653,6 @@ function detectCategory(normalizedQuery: string) {
         .some((part) => terms.some((term) => part === term || part.startsWith(term))),
     )
   })?.slug
-}
-
-function detectMake(normalizedQuery: string) {
-  const terms = normalizedQuery.split(' ').filter(Boolean)
-  return vehicleMakes.find((item) => {
-    const make = normalizeForMatch(item.make)
-    return terms.some((term) => make === term || make.startsWith(term))
-  })
-}
-
-function detectModel(make: VehicleMake, normalizedQuery: string) {
-  const terms = normalizedQuery.split(' ').filter(Boolean)
-  return make.models?.find((model) => {
-    const normalizedModel = normalizeForMatch(model)
-    return terms.some((term) => normalizedModel === term || normalizedModel.startsWith(term))
-  })
 }
 
 function scoreLocationMatch(location: VehicleLocation, terms: string[]) {
@@ -746,7 +699,7 @@ function createCombinedEntry({
   locale: PublicLocale
   language: 'sv' | 'en' | 'de'
   detected: DetectedVehicleQuery
-  kind: 'category-location' | 'make-location'
+  kind: 'category-location'
   market: string
 }) {
   const params = new URLSearchParams()
@@ -755,29 +708,15 @@ function createCombinedEntry({
   params.set('markets', market && market !== 'EU' ? market : location.country)
   setLocationParams(params, location)
 
-  if (kind === 'category-location') {
-    params.set('categories', detected.category!)
-    const label = categoryLabel(detected.category!, locale, language)
-    const titleLocation = formatLocationTitle(location, locale, true)
-    return {
-      href: localizePublicHref(locale, `/marketplace?${params.toString()}`),
-      title: joinLocalized(label, titleLocation, locale),
-      description: locationDescriptor(location, locale),
-      keywords: `${label} ${location.city || ''} ${location.municipality || ''} ${location.country}`,
-      type: 'vehicle-query' as const,
-    }
-  }
-
-  params.set('make', detected.make!.make)
-  if (detected.model) params.set('model', detected.model)
-  const makeTitle = [detected.make!.make, detected.model].filter(Boolean).join(' ')
-  const titleLocation = formatLocationTitle(location, locale, false)
+  params.set('categories', detected.category!)
+  const label = categoryLabel(detected.category!, locale, language)
+  const titleLocation = formatLocationTitle(location, locale, true)
   return {
     href: localizePublicHref(locale, `/marketplace?${params.toString()}`),
-    title: joinLocalized(makeTitle, titleLocation, locale),
+    title: joinLocalized(label, titleLocation, locale),
     description: locationDescriptor(location, locale),
-    keywords: `${makeTitle} ${location.city || ''} ${location.municipality || ''} ${location.country}`,
-    type: detected.model ? ('model' as const) : ('make' as const),
+    keywords: `${label} ${location.city || ''} ${location.municipality || ''} ${location.country}`,
+    type: 'vehicle-query' as const,
   }
 }
 
@@ -803,32 +742,6 @@ function createCategoryEntry({
     description: market === 'EU' ? 'Europe' : countryDisplayName(market, locale),
     keywords: `${label} ${category} ${market}`,
     type: 'category' as const,
-  }
-}
-
-function createMakeEntry({
-  locale,
-  make,
-  model,
-  market,
-}: {
-  locale: PublicLocale
-  make: VehicleMake
-  model?: string
-  market: string
-}) {
-  const params = new URLSearchParams()
-  if (market) params.set('markets', market)
-  params.set('make', make.make)
-  if (model) params.set('model', model)
-  const title = [make.make, model].filter(Boolean).join(' ')
-
-  return {
-    href: localizePublicHref(locale, `/marketplace?${params.toString()}`),
-    title,
-    description: market === 'EU' ? 'Europe' : countryDisplayName(market, locale),
-    keywords: `${title} ${(make.models || []).join(' ')}`,
-    type: model ? ('model' as const) : ('make' as const),
   }
 }
 
