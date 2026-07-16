@@ -577,6 +577,7 @@ export default function VehicleSearchExperience({
   const [mode, setMode] = useState<SearchMode>(initialMode === 'leasing' ? 'leasing' : 'sale')
   const [query, setQuery] = useState(initialChipQuery)
   const [searchInput, setSearchInput] = useState(initialQuery)
+  const [debouncedSearchInput, setDebouncedSearchInput] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
@@ -655,7 +656,7 @@ export default function VehicleSearchExperience({
       if (cleanValue) params.set(key, cleanValue)
     }
     if (mode !== 'sale') params.set('mode', mode)
-    setParam('q', searchInput)
+    setParam('q', debouncedSearchInput)
     if (selectedSearchSuggestions.length) {
       params.set('chips', selectedSearchSuggestions.map((suggestion) => suggestion.title).join(','))
     }
@@ -687,7 +688,15 @@ export default function VehicleSearchExperience({
     setParam('equipment', equipmentQuery)
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, searchInput, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchInput(searchInput.trim().replace(/\s+/g, ' '))
+    }, searchInput.trim() ? 700 : 250)
+
+    return () => window.clearTimeout(timer)
+  }, [searchInput])
 
   useEffect(() => {
     if (hasExplicitInitialFilters) {
@@ -706,6 +715,7 @@ export default function VehicleSearchExperience({
       setMode(restored.mode === 'leasing' ? 'leasing' : 'sale')
       setSelectedSearchSuggestions([])
       setSearchInput(restored.query || '')
+      setDebouncedSearchInput(restored.query || '')
       setQuery(restored.query || '')
       setSelectedCategories(normalizeSavedCategories(restored.categories))
       setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
@@ -786,13 +796,13 @@ export default function VehicleSearchExperience({
       } finally {
         if (!controller.signal.aborted) setSearchLoading(false)
       }
-    }, query.trim() || equipmentQuery.trim() ? 320 : 80)
+    }, debouncedSearchInput.trim() || equipmentQuery.trim() ? 420 : 120)
 
     return () => {
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [equipmentQuery, locale, marketplaceSearchParams, query, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
+  }, [debouncedSearchInput, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -923,6 +933,7 @@ export default function VehicleSearchExperience({
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
     setSelectedSearchSuggestions(initialSearchSuggestions)
     setSearchInput(initialQuery)
+    setDebouncedSearchInput(initialQuery)
     setQuery(initialChipQuery)
     setSelectedCategories(safeInitialCategories)
     setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
@@ -1140,7 +1151,7 @@ export default function VehicleSearchExperience({
     query: searchInput,
     locale,
     marketCode: smartSearchMarketCode,
-    active: mobileMapSearchFocused,
+    active: mobileMapOpen && mobileMapSearchFocused,
   })
 
   function selectMarketplaceSuggestion(suggestion: VehicleSmartSearchSuggestion) {

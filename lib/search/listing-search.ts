@@ -81,7 +81,8 @@ type DetectedVehicleQuery = {
 }
 
 const PUBLIC_SEARCH_CACHE_VERSION = 'vehicle-live-listings-v1'
-const PUBLIC_SEARCH_CACHE_TTL_MS = 60_000
+const PUBLIC_SEARCH_CACHE_TTL_MS = 5 * 60_000
+const PUBLIC_SEARCH_CACHE_MAX_ENTRIES = 1_000
 
 const locationStopWords = new Set([
   'i',
@@ -200,6 +201,10 @@ export async function searchPublicEntries(input: PublicSearchInput) {
   if (cached && cached.expiresAt > Date.now()) return cached.results
 
   const results = await searchWithSupabase({ locale, language, query, limit, market })
+  if (publicSearchCache.size >= PUBLIC_SEARCH_CACHE_MAX_ENTRIES) {
+    const firstKey = publicSearchCache.keys().next().value
+    if (firstKey) publicSearchCache.delete(firstKey)
+  }
   publicSearchCache.set(cacheKey, {
     expiresAt: Date.now() + PUBLIC_SEARCH_CACHE_TTL_MS,
     results,

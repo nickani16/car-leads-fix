@@ -23,14 +23,14 @@ const marketplaceSearchCache =
   globalThis.__autorellMarketplaceSearchCache ||
   (globalThis.__autorellMarketplaceSearchCache = new Map<string, SearchCacheEntry>())
 
-const SEARCH_CACHE_TTL_MS = 30_000
-const SEARCH_CACHE_MAX_ENTRIES = 250
+const SEARCH_CACHE_TTL_MS = 60_000
+const SEARCH_CACHE_MAX_ENTRIES = 1_000
 
 export async function GET(request: NextRequest) {
   const startedAt = Date.now()
   const rate = checkRateLimit({
     key: `marketplace-search-v2:${getClientIp(request)}`,
-    limit: 240,
+    limit: 180,
     windowMs: 60_000,
   })
   if (rate.limited) return rateLimitJson(rate.retryAfter)
@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
   if (markets.length > 1) input.markets = markets
   if (countries.length > 1) input.countries = countries
   if (categories.length > 1) input.categories = categories
+  input.limit = String(Math.min(Math.max(Number(input.limit || 48), 1), 48))
 
   try {
     const cacheKey = marketplaceSearchCacheKey(request)
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
       return new Response(cached.body, {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=30, s-maxage=180, stale-while-revalidate=900',
+          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
           'X-Autorell-Search-Cache': 'hit',
         },
       })
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
     return new Response(body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=30, s-maxage=180, stale-while-revalidate=900',
+        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
         'X-Autorell-Search-Cache': 'miss',
       },
     })

@@ -14,7 +14,26 @@ export type VehicleSmartSearchSuggestion = {
 }
 
 const smartSearchCache = new Map<string, { expiresAt: number; data: VehicleSmartSearchSuggestion[] }>()
-const SMART_SEARCH_CACHE_TTL_MS = 60_000
+const smartSearchInflight = new Map<string, Promise<VehicleSmartSearchSuggestion[]>>()
+const SMART_SEARCH_CACHE_TTL_MS = 5 * 60_000
+const SMART_SEARCH_CACHE_MAX_ENTRIES = 150
+const SMART_SEARCH_MIN_QUERY_LENGTH = 3
+const SMART_SEARCH_DEBOUNCE_MS = 650
+
+function normalizeSuggestionQuery(value: string) {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
+function setSmartSearchCache(key: string, data: VehicleSmartSearchSuggestion[]) {
+  if (smartSearchCache.size >= SMART_SEARCH_CACHE_MAX_ENTRIES) {
+    const firstKey = smartSearchCache.keys().next().value
+    if (firstKey) smartSearchCache.delete(firstKey)
+  }
+  smartSearchCache.set(key, {
+    expiresAt: Date.now() + SMART_SEARCH_CACHE_TTL_MS,
+    data,
+  })
+}
 
 export function useVehicleSmartSearchSuggestions({
   query,
@@ -34,8 +53,8 @@ export function useVehicleSmartSearchSuggestions({
   const [searchedQuery, setSearchedQuery] = useState('')
 
   useEffect(() => {
-    const trimmed = query.trim()
-    if (!active || trimmed.length < 2) {
+    const trimmed = normalizeSuggestionQuery(query)
+    if (!active || trimmed.length < SMART_SEARCH_MIN_QUERY_LENGTH) {
       return
     }
 
@@ -57,15 +76,19 @@ export function useVehicleSmartSearchSuggestions({
       }
 
       setLoading(true)
-      fetch(`/api/public-search?${params.toString()}`, { signal: controller.signal })
-        .then((response) => (response.ok ? response.json() : []))
+      const request =
+        smartSearchInflight.get(cacheKey) ||
+        fetch(`/api/public-search?${params.toString()}`)
+          .then((response) => (response.ok ? response.json() : []))
+          .then((data: VehicleSmartSearchSuggestion[]) => (Array.isArray(data) ? data : []))
+          .finally(() => smartSearchInflight.delete(cacheKey))
+
+      smartSearchInflight.set(cacheKey, request)
+      request
         .then((data: VehicleSmartSearchSuggestion[]) => {
           if (!controller.signal.aborted) {
-            const nextSuggestions = Array.isArray(data) ? data : []
-            smartSearchCache.set(cacheKey, {
-              expiresAt: Date.now() + SMART_SEARCH_CACHE_TTL_MS,
-              data: nextSuggestions,
-            })
+            const nextSuggestions = data
+            setSmartSearchCache(cacheKey, nextSuggestions)
             setSuggestions(nextSuggestions)
             setSearchedQuery(trimmed)
           }
@@ -79,7 +102,7 @@ export function useVehicleSmartSearchSuggestions({
         .finally(() => {
           if (!controller.signal.aborted) setLoading(false)
         })
-    }, 450)
+    }, SMART_SEARCH_DEBOUNCE_MS)
 
     return () => {
       window.clearTimeout(timer)
@@ -87,11 +110,11 @@ export function useVehicleSmartSearchSuggestions({
     }
   }, [active, limit, locale, marketCode, query])
 
-  const canSearch = active && query.trim().length >= 2
+  const canSearch = active && normalizeSuggestionQuery(query).length >= SMART_SEARCH_MIN_QUERY_LENGTH
   return {
     suggestions: canSearch ? suggestions : [],
     loading: canSearch ? loading : false,
-    searched: canSearch && searchedQuery === query.trim(),
+    searched: canSearch && searchedQuery === normalizeSuggestionQuery(query),
   }
 }
 
@@ -186,7 +209,7 @@ export function VehicleSmartSearchSuggestionPanel({
   active?: boolean
   className?: string
 }) {
-  const showPanel = active && query.trim().length >= 2
+  const showPanel = active && normalizeSuggestionQuery(query).length >= SMART_SEARCH_MIN_QUERY_LENGTH
   if (!showPanel) return null
 
   return (
