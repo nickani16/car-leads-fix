@@ -266,8 +266,8 @@ const copy = {
   de: {
     home: 'Start',
     buy: 'Kaufen',
-    sell: 'Fahrzeug verkaufen',
-    business: 'Unternehmenskonto',
+    sell: 'Verkaufen',
+    business: 'Firmen',
     about: 'Über Autorell',
     help: 'Hilfe',
     contact: 'Kontakt',
@@ -324,9 +324,9 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
     { href: '/how-selling-works', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
-    { href: '/sell-vehicle', label: 'Fahrzeug verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
+    { href: '/sell-vehicle', label: 'Verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
     { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
-    { href: '/how-selling-works', label: 'So funktioniert es', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
+    { href: '/how-selling-works', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
 }
 
@@ -686,25 +686,25 @@ export default function PublicHeader({
   const helpMenuLinks = [
     {
       href: localizePublicHref(locale, '/help-center'),
-      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
+      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe'),
       description: publicLabel('Answers, account help and marketplace support.', 'Svar, kontohjälp och support för marknadsplatsen.', 'Antworten, Kontohilfe und Marktplatz-Support.'),
       icon: CircleHelp,
     },
     {
       href: localizePublicHref(locale, '/vehicle-news'),
-      label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Fahrzeugnews'),
+      label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Auto-News'),
       description: publicLabel('Guides, updates and articles about vehicle markets.', 'Guider, uppdateringar och artiklar om fordonsmarknaden.', 'Ratgeber, Updates und Artikel zum Fahrzeugmarkt.'),
       icon: Newspaper,
     },
     {
       href: localizePublicHref(locale, '/safety-tips'),
-      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheitstipps'),
+      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheit'),
       description: publicLabel('Practical checks before you buy or sell.', 'Praktiska kontroller innan du köper eller säljer.', 'Praktische Checks vor Kauf oder Verkauf.'),
       icon: ShieldCheck,
     },
     {
       href: localizePublicHref(locale, '/report'),
-      label: publicLabel('Report a problem', 'Rapportera problem', 'Problem melden'),
+      label: publicLabel('Report a problem', 'Rapportera problem', 'Melden'),
       description: publicLabel('Tell Autorell if something does not look right.', 'Meddela Autorell om något inte ser rätt ut.', 'Melden Sie Autorell, wenn etwas nicht stimmt.'),
       icon: MessageSquareText,
     },
@@ -725,7 +725,7 @@ export default function PublicHeader({
     { href: localizePublicHref(locale, '/pricing#business'), label: t.business, icon: Building2 },
     {
       href: localizePublicHref(locale, '/help-center'),
-      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center'),
+      label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe'),
       icon: CircleHelp,
       children: helpMenuLinks,
       menu: 'help' as const,
@@ -738,7 +738,7 @@ export default function PublicHeader({
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'link' as const, href: localizePublicHref(locale, '/pricing#business'), label: t.business },
-    { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe-Center') },
+    { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
   ]
   const desktopAccountLinks = [
     { href: savedHref, label: publicLabel(t.saved, 'Sparade annonser', t.saved), icon: Heart },
