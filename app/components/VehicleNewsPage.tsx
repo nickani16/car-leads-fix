@@ -95,7 +95,7 @@ function VehicleNewsSubnav({
 
   return (
     <nav aria-label={copy.aria} className="w-full max-w-full overflow-hidden border-b border-[#e2e8f0] bg-white">
-      <div className="mx-auto flex h-11 w-full max-w-[1920px] items-center gap-9 overflow-x-auto px-5 text-[15px] font-[500] text-[#101828] [scrollbar-width:none] sm:px-8 min-[1120px]:h-12 min-[1120px]:justify-center min-[1120px]:px-8 [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex h-11 w-full max-w-[1920px] items-center gap-9 overflow-x-auto px-5 text-[15px] font-normal text-[#101828] [scrollbar-width:none] sm:px-8 min-[1120px]:h-12 min-[1120px]:justify-center min-[1120px]:px-8 [&::-webkit-scrollbar]:hidden">
         {items.map((item) => (
           <Link
             key={item.id}
