@@ -24,6 +24,23 @@ import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
 import RegisterPage from '@/app/registrera/page'
+import SellVehicleSeoPage, {
+  generateSellVehicleMetadata,
+} from '@/app/components/SellVehicleSeoPage'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ market: string; slug: string[] }>
+}) {
+  const { market: marketCode, slug } = await params
+  const locale = resolveMarketLocale(marketCode)
+  if (locale && slug.join('/') === 'sell-vehicle') {
+    return generateSellVehicleMetadata(locale)
+  }
+
+  return {}
+}
 
 export default async function LocalizedMarketPage({
   params,
@@ -156,6 +173,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'pricing') {
     return <PricingPage locale={locale} market={normalizedMarket} marketCode={normalizedMarket.toUpperCase()} />
+  }
+
+  if (slugPath === 'sell-vehicle') {
+    return <SellVehicleSeoPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
   }
 
   return <BusinessMarketplaceHome locale={locale} marketCode={normalizedMarket.toUpperCase()} />

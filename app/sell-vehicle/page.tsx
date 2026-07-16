@@ -1,7 +1,7 @@
-import PublicInfoPage, { generatePublicInfoMetadata } from '@/app/components/PublicInfoPage'
+import SellVehicleSeoPage, { generateSellVehicleMetadata } from '@/app/components/SellVehicleSeoPage'
 
-export const generateMetadata = generatePublicInfoMetadata('sell-vehicle')
+export const generateMetadata = generateSellVehicleMetadata
 
 export default function SellVehiclePage() {
-  return <PublicInfoPage page="sell-vehicle" />
+  return <SellVehicleSeoPage />
 }
