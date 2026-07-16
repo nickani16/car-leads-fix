@@ -21,8 +21,8 @@ export default function VehicleNewsPage({
   count: number
   unavailable: boolean
 }) {
-  const locale = market === 'se' ? 'sv' : market === 'de' ? 'de' : 'en'
-  const swedish = locale === 'sv'
+  const locale = publicLocale(market)
+  const copy = vehicleNewsPageCopy(market)
   const hasNext = page * 12 < count
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
@@ -32,12 +32,10 @@ export default function VehicleNewsPage({
           <div className="max-w-[860px]">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">Autorell insights</p>
             <h1 className="mt-4 break-words text-4xl font-semibold leading-[1.02] tracking-[-.045em] sm:text-6xl">
-              {swedish ? 'Fordonsnyheter och guider' : 'Vehicle news and guides'}
+              {copy.title}
             </h1>
             <p className="mt-5 max-w-[760px] break-words text-lg leading-8 text-[#475467]">
-              {swedish
-                ? 'Praktiska artiklar för dig som köper, säljer eller jämför bilar, lastbilar och lantbruksmaskiner i Europa.'
-                : 'Practical articles for buying, selling and comparing cars, trucks and machinery across Europe.'}
+              {copy.description}
             </p>
           </div>
         </div>
@@ -45,7 +43,7 @@ export default function VehicleNewsPage({
       <section className="mx-auto w-full min-w-0 max-w-[min(var(--autorell-page-max),calc(100vw-40px))] py-10 sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-14">
         {unavailable ? (
           <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            <strong>{swedish ? 'Innehållet förbereds.' : 'Content is being prepared.'}</strong>
+            <strong>{copy.preparing}</strong>
           </div>
         ) : null}
         <VehicleNewsSearch market={market} categories={categories} articles={articles} />
@@ -53,12 +51,12 @@ export default function VehicleNewsPage({
           {page > 1 ? (
             <Link href={`/${market}/vehicle-news?page=${page - 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
               <ArrowLeft className="h-4 w-4" />
-              {swedish ? 'Föregående' : 'Previous'}
+              {copy.previous}
             </Link>
           ) : <span />}
           {hasNext ? (
             <Link href={`/${market}/vehicle-news?page=${page + 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
-              {swedish ? 'Nästa' : 'Next'}
+              {copy.next}
               <ArrowRight className="h-4 w-4" />
             </Link>
           ) : null}
@@ -68,4 +66,40 @@ export default function VehicleNewsPage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function publicLocale(market: string): 'sv' | 'de' | 'fr' | 'es' | 'it' | 'nl' | 'pl' | 'da' | 'fi' | 'en' {
+  const language = marketLanguage(market)
+  return language === 'da' ? 'da' : language
+}
+
+function vehicleNewsPageCopy(market: string) {
+  const language = marketLanguage(market)
+  const labels = {
+    sv: { title: 'Fordonsnyheter och guider', description: 'Praktiska artiklar för dig som köper, säljer eller jämför bilar, lastbilar och lantbruksmaskiner i Europa.', preparing: 'Innehållet förbereds.', previous: 'Föregående', next: 'Nästa' },
+    en: { title: 'Vehicle news and guides', description: 'Practical articles for buying, selling and comparing cars, trucks and machinery across Europe.', preparing: 'Content is being prepared.', previous: 'Previous', next: 'Next' },
+    de: { title: 'Fahrzeugnews und Ratgeber', description: 'Praktische Artikel zum Kaufen, Verkaufen und Vergleichen von Autos, Lkw und Maschinen in Europa.', preparing: 'Inhalte werden vorbereitet.', previous: 'Zurück', next: 'Weiter' },
+    fr: { title: 'Actualités et guides véhicules', description: 'Des articles pratiques pour acheter, vendre et comparer voitures, camions et machines en Europe.', preparing: 'Le contenu est en préparation.', previous: 'Précédent', next: 'Suivant' },
+    es: { title: 'Noticias y guías de vehículos', description: 'Artículos prácticos para comprar, vender y comparar coches, camiones y maquinaria en Europa.', preparing: 'El contenido se está preparando.', previous: 'Anterior', next: 'Siguiente' },
+    it: { title: 'Notizie e guide sui veicoli', description: 'Articoli pratici per comprare, vendere e confrontare auto, camion e macchine in Europa.', preparing: 'Il contenuto è in preparazione.', previous: 'Precedente', next: 'Successivo' },
+    nl: { title: 'Voertuignieuws en gidsen', description: 'Praktische artikelen voor kopen, verkopen en vergelijken van auto’s, vrachtwagens en machines in Europa.', preparing: 'Content wordt voorbereid.', previous: 'Vorige', next: 'Volgende' },
+    pl: { title: 'Aktualności i poradniki pojazdów', description: 'Praktyczne artykuły o kupnie, sprzedaży i porównywaniu samochodów, ciężarówek i maszyn w Europie.', preparing: 'Treść jest przygotowywana.', previous: 'Poprzednia', next: 'Następna' },
+    da: { title: 'Køretøjsnyheder og guides', description: 'Praktiske artikler til køb, salg og sammenligning af biler, lastbiler og maskiner i Europa.', preparing: 'Indholdet forberedes.', previous: 'Forrige', next: 'Næste' },
+    fi: { title: 'Ajoneuvouutiset ja oppaat', description: 'Käytännön artikkeleita autojen, kuorma-autojen ja koneiden ostamiseen, myyntiin ja vertailuun Euroopassa.', preparing: 'Sisältöä valmistellaan.', previous: 'Edellinen', next: 'Seuraava' },
+  }
+  return labels[language]
+}
+
+function marketLanguage(market: string): 'sv' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'nl' | 'pl' | 'da' | 'fi' {
+  const normalized = market.toLowerCase()
+  if (normalized === 'se') return 'sv'
+  if (normalized === 'de' || normalized === 'at') return 'de'
+  if (normalized === 'fr') return 'fr'
+  if (normalized === 'es') return 'es'
+  if (normalized === 'it') return 'it'
+  if (normalized === 'nl' || normalized === 'be') return 'nl'
+  if (normalized === 'pl') return 'pl'
+  if (normalized === 'dk') return 'da'
+  if (normalized === 'fi') return 'fi'
+  return 'en'
 }
