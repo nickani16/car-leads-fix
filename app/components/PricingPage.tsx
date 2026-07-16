@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { ArrowRight, BadgeCheck, BarChart3, Check, Info, RefreshCw, Rocket, Star, X } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
@@ -206,7 +207,7 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
       <PricingAnchorScroll />
       <section className="border-b border-[#e7ecf3] bg-[#fbfcfe]">
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-14 lg:py-16">
-          <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
+          <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
             <div className="min-w-0">
               <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
                 {copy.title}
@@ -223,13 +224,16 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
                 </Link>
               </div>
             </div>
-            <Link
-              href={localizePublicHref(locale, '/konto/annonser/ny')}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(8,102,255,.16)] transition hover:bg-[#075ce5]"
-            >
-              {copy.sellCta}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="relative mx-auto h-[230px] w-full max-w-[360px] overflow-hidden rounded-[18px] border border-[#e3eaf4] bg-[#edf2f8] shadow-[0_18px_42px_rgba(16,24,40,.14)] sm:h-[270px] lg:mx-0">
+              <Image
+                src="/autorell-pricing-mobile-hero.jpg"
+                alt="Autorell mobile listing form"
+                fill
+                priority
+                sizes="(min-width: 1024px) 360px, calc(100vw - 40px)"
+                className="object-contain object-center"
+              />
+            </div>
           </div>
         </div>
       </section>
