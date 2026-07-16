@@ -1,10 +1,14 @@
+'use client'
+
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, BarChart3, RefreshCw, Rocket, Star } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowRight, BadgeCheck, BarChart3, Check, Info, RefreshCw, Rocket, Star, X } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import PricingAnchorScroll from '@/app/components/PricingAnchorScroll'
 import {
   billingProductCatalog,
+  currencyForMarket,
   formatMoneyMinor,
   getProductAmount,
   listingCategoryLabels,
@@ -12,7 +16,15 @@ import {
   type BillingProduct,
   type ListingCategory,
 } from '@/lib/billing/product-catalog'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import {
+  businessSubscriptionCopy,
+  businessSubscriptionPlans,
+  getBusinessPlanProduct,
+  localeToIntl,
+  type BillingPeriod,
+  type BusinessSubscriptionPlan,
+} from '@/lib/business-subscription-plans'
+import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type PricingPageProps = {
   locale: PublicLocale
@@ -172,18 +184,21 @@ const addOnKeys = [
   'addon.refresh.pack_10',
 ] as const
 
-const businessKeys = [
-  'subscription.business.free.monthly',
-  'subscription.business.starter.monthly',
-  'subscription.business.growth.monthly',
-  'subscription.business.professional.monthly',
-  'subscription.business.enterprise.monthly',
-] as const
-
 export default function PricingPage({ locale, market, marketCode }: PricingPageProps) {
   const copy = copyByLocale[locale] || copyByLocaleBase
   const numberLocale = localeMap[locale] || 'en-GB'
   const categoryEntries = Object.entries(listingCategoryLabels) as Array<[ListingCategory, string]>
+  const businessCopy = useMemo(() => translatePublicObject(locale, {
+    ...businessSubscriptionCopy,
+    eyebrow: 'Business subscriptions',
+    heading: 'Choose a plan for the company',
+    intro: 'Compare what is included in each company plan. Switch between monthly and annual pricing to see the yearly discount.',
+    adsOnly: 'Ads only',
+    noCheckout: 'Create a business account to activate a plan.',
+  }), [locale])
+  const businessPlans = useMemo(() => translatePublicObject(locale, businessSubscriptionPlans), [locale])
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly')
+  const businessLocaleTag = localeToIntl(locale)
 
   return (
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
@@ -281,47 +296,164 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
         </div>
       </section>
 
-      <section id="business" className="scroll-mt-28 mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
-        <h2 className="text-[28px] font-semibold leading-tight tracking-[-.03em] sm:text-[36px]">{copy.businessHeading}</h2>
-        <div className="mt-8 grid gap-4 lg:grid-cols-4">
-          {businessKeys.map((productKey) => {
-            const product = findProduct(productKey)
-            const enterprise = product?.businessPlan === 'enterprise'
-            return (
-              <article
-                key={productKey}
-                className={`rounded-[14px] border p-6 shadow-[0_18px_44px_rgba(16,24,40,.04)] transition hover:shadow-[0_22px_54px_rgba(16,24,40,.06)] ${
-                  enterprise
-                    ? 'border-[#bfd0ea] bg-[#f7faff] hover:border-[#9fb7dd]'
-                    : 'border-[#d9e2ef] bg-white hover:border-[#c8d4e5]'
-                }`}
-              >
-                <h3 className="text-[19px] font-semibold capitalize tracking-[-.015em]">{enterprise ? copy.enterprise : product?.businessPlan}</h3>
-                <p className="mt-5 text-[32px] font-semibold tracking-[-.04em]">
-                  {enterprise ? copy.contactUs : formatProduct(productKey, market, numberLocale)}
-                </p>
-                {!enterprise ? <p className="mt-1 text-sm text-[#667085]">{copy.perMonth}</p> : null}
-                <div className="mt-7 border-t border-[#edf1f7] pt-5 text-sm leading-6 text-[#4b5565]">
-                  {enterprise ? (
-                    <Link
-                      href={localizePublicHref(locale, '/contact')}
-                      className="inline-flex items-center gap-2 font-semibold text-[#0866ff] transition hover:text-[#075ce5]"
-                    >
-                      {copy.contactUs}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  ) : (
-                    `${product?.activeListingLimit || 0} ${copy.activeListings}`
-                  )}
-                </div>
-              </article>
-            )
-          })}
+      <section id="business" className="scroll-mt-28 bg-[#f5f7fb] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-[1380px]">
+          <div className="grid gap-6 border-b border-[#dde6f2] pb-7 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">{businessCopy.eyebrow}</p>
+              <h2 className="mt-3 text-[34px] font-semibold leading-tight tracking-[-.04em] text-[#101828] sm:text-[48px]">
+                {businessCopy.heading}
+              </h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[#5f6b7a]">{businessCopy.intro}</p>
+            </div>
+            <div className="w-full rounded-[14px] border border-[#d8e2f0] bg-white p-2 shadow-[0_18px_46px_rgba(16,24,40,.06)] lg:w-[430px]">
+              <div className="grid grid-cols-2 rounded-[10px] bg-[#eef3f9] p-1">
+                <button
+                  type="button"
+                  onClick={() => setBillingPeriod('monthly')}
+                  className={`min-h-11 rounded-[8px] text-sm font-bold transition ${
+                    billingPeriod === 'monthly' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
+                  }`}
+                >
+                  {businessCopy.monthly}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingPeriod('annual')}
+                  className={`min-h-11 rounded-[8px] text-sm font-bold transition ${
+                    billingPeriod === 'annual' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
+                  }`}
+                >
+                  {businessCopy.annual}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 xl:grid-cols-5">
+            {businessPlans.map((plan) => (
+              <PublicBusinessPlanCard
+                key={plan.key}
+                plan={plan}
+                billingPeriod={billingPeriod}
+                market={market}
+                localeTag={businessLocaleTag}
+                copy={businessCopy}
+              />
+            ))}
+          </div>
+          <p className="mt-6 text-sm font-medium text-[#667085]">{businessCopy.noCheckout}</p>
         </div>
       </section>
 
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+function PublicBusinessPlanCard({
+  plan,
+  billingPeriod,
+  market,
+  localeTag,
+  copy,
+}: {
+  plan: BusinessSubscriptionPlan
+  billingPeriod: BillingPeriod
+  market: BillingMarket
+  localeTag: string
+  copy: typeof businessSubscriptionCopy & {
+    adsOnly: string
+    noCheckout: string
+    eyebrow: string
+    heading: string
+    intro: string
+  }
+}) {
+  const product = getBusinessPlanProduct(plan.key, billingPeriod)
+  const annualProduct = getBusinessPlanProduct(plan.key, 'annual')
+  const currency = currencyForMarket(market)
+  const price = product?.amountMinor[currency] ?? null
+  const annualPrice = annualProduct?.amountMinor[currency] ?? null
+  const monthlyEquivalent = annualPrice ? Math.round(annualPrice / 12) : null
+  const showAnnualBadge = billingPeriod === 'annual' && !plan.enterprise && plan.key !== 'free'
+
+  return (
+    <article
+      className={`relative flex min-h-[590px] flex-col rounded-[12px] border bg-white shadow-[0_18px_50px_rgba(16,24,40,.055)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(16,24,40,.08)] ${
+        plan.recommended ? 'border-[#0866ff] ring-2 ring-[#0866ff]/10' : 'border-[#d9e2ef]'
+      }`}
+    >
+      <div className="flex min-h-[250px] flex-col border-b border-[#edf1f7] p-5">
+        <div className="flex min-h-8 items-start justify-between gap-3">
+          <p className="min-w-0 max-w-[135px] text-[11px] font-bold uppercase leading-4 tracking-[.14em] text-[#667085]">{plan.audience}</p>
+          {plan.recommended ? (
+            <span className="shrink-0 whitespace-nowrap rounded-full border border-[#0866ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
+              {copy.recommended}
+            </span>
+          ) : showAnnualBadge ? (
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-[#eef5ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.06em] text-[#0866ff]">
+              {copy.annualBadge}
+            </span>
+          ) : null}
+        </div>
+
+        <h3 className="mt-4 text-2xl font-semibold tracking-[-.035em] text-[#101828]">{plan.name}</h3>
+        <div className="mt-5">
+          {plan.enterprise ? (
+            <p className="text-[28px] font-semibold tracking-[-.045em] text-[#101828]">{copy.contactUs}</p>
+          ) : (
+            <>
+              <p className="text-[30px] font-semibold tracking-[-.05em] text-[#101828]">
+                {formatBusinessPrice(price || 0, currency, localeTag)}
+                <span className="text-sm font-semibold tracking-normal text-[#667085]">
+                  {billingPeriod === 'annual' && plan.key !== 'free' ? copy.perYear : copy.perMonth}
+                </span>
+              </p>
+              {billingPeriod === 'annual' && plan.key !== 'free' && monthlyEquivalent ? (
+                <p className="mt-1 text-xs font-semibold text-[#667085]">
+                  {copy.annualEquivalent} {formatBusinessPrice(monthlyEquivalent, currency, localeTag)}{copy.perMonth}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-[#667085]">{copy.exclVat}</p>
+              )}
+            </>
+          )}
+        </div>
+        <p className="mt-4 rounded-[8px] border border-[#dfe6f1] bg-[#f8fafc] px-3 py-2 text-sm font-bold text-[#344054]">
+          {plan.limit}
+        </p>
+        <p className="mt-4 text-sm leading-6 text-[#5f6b7a]">{plan.summary}</p>
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <p className="text-xs font-black uppercase tracking-[.14em] text-[#101828]">{copy.included}</p>
+        <ul className="mt-4 space-y-3">
+          {plan.features.map((feature) => (
+            <li key={feature.label} className="flex items-start gap-2 text-sm">
+              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${feature.included ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#98a2b3]'}`}>
+                {feature.included ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+              </span>
+              <span className={feature.included ? 'text-[#344054]' : 'text-[#98a2b3]'}>
+                {feature.label}
+                <span className="group relative ml-1 inline-flex align-middle">
+                  <button
+                    type="button"
+                    aria-label={feature.description}
+                    className="inline-grid h-4 w-4 place-items-center rounded-full text-[#98a2b3] outline-none transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus:bg-[#eef5ff] focus:text-[#0866ff]"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-64 -translate-x-1/2 rounded-[8px] border border-[#dbe4f0] bg-white p-3 text-xs leading-5 text-[#475467] shadow-[0_18px_44px_rgba(16,24,40,.16)] group-focus-within:block group-hover:block">
+                    {feature.description}
+                  </span>
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </article>
   )
 }
 
@@ -336,6 +468,10 @@ function formatProduct(productKey: string, market: BillingMarket, locale: string
   if (!amount) return ''
   if (amount.amountMinor === 0) return '0'
   return formatMoneyMinor(amount.amountMinor, amount.currency, locale)
+}
+
+function formatBusinessPrice(amountMinor: number, currency: ReturnType<typeof currencyForMarket>, locale: string) {
+  return formatMoneyMinor(amountMinor, currency, locale).replace(/\s+/g, ' ')
 }
 
 function addOnTitle(product: BillingProduct | null, copy: typeof copyByLocaleBase) {

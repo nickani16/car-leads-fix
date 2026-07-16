@@ -4,115 +4,25 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { Check, Info, X } from 'lucide-react'
 import {
-  billingProductCatalog,
   currencyForMarket,
   formatMoneyMinor,
   type BillingMarket,
-  type BusinessPlan,
 } from '@/lib/billing/product-catalog'
+import {
+  businessSubscriptionCopy,
+  businessSubscriptionPlans,
+  getBusinessPlanProduct,
+  localeToIntl,
+  type BillingPeriod,
+  type BusinessSubscriptionPlan,
+} from '@/lib/business-subscription-plans'
 import {
   localizePublicHref,
   translatePublicObject,
-  translationLocale,
   type PublicLocale,
 } from '@/lib/public-i18n'
 
 type BillingMethod = 'card' | 'invoice'
-type BillingPeriod = 'monthly' | 'annual'
-
-type Feature = {
-  label: string
-  description: string
-  included: boolean
-}
-
-type Plan = {
-  key: BusinessPlan
-  name: string
-  audience: string
-  limit: string
-  summary: string
-  recommended?: boolean
-  enterprise?: boolean
-  features: Feature[]
-}
-
-const annualDiscount = 15
-
-const basePlans: Plan[] = [
-  {
-    key: 'free',
-    name: 'Free',
-    audience: 'Start',
-    limit: '5 active listings',
-    summary: 'A simple listing allowance only. No company page, no team accounts and no reporting.',
-    features: [
-      { label: '5 active listings', description: 'Publish up to five active listings at the same time.', included: true },
-      { label: 'Own listing management', description: 'Create, pause and update your own listings.', included: true },
-      { label: 'Company page', description: 'Not included. Free does not show a separate public company page.', included: false },
-      { label: 'Team accounts', description: 'Not included. Only the account owner can work in Free.', included: false },
-      { label: 'Reports and export', description: 'Not included in Free.', included: false },
-    ],
-  },
-  {
-    key: 'starter',
-    name: 'Starter',
-    audience: 'Small dealers',
-    limit: '25 active listings',
-    summary: 'For smaller inventories that need a company page and a more professional sales flow.',
-    features: [
-      { label: '25 active listings', description: 'For smaller inventories with recurring publishing.', included: true },
-      { label: 'Company page Basic', description: 'Company name, logo and contact route are presented more clearly.', included: true },
-      { label: 'Standard enquiries', description: 'Leads and messages are handled through Autorell’s standard flow.', included: true },
-      { label: 'Team accounts', description: 'Team accounts start with Growth.', included: false },
-      { label: 'Reports and export', description: 'Reports and export start with Professional.', included: false },
-    ],
-  },
-  {
-    key: 'growth',
-    name: 'Growth',
-    audience: 'Growing team',
-    limit: '100 active listings',
-    summary: 'For companies where several people work in the same account and publish listings continuously.',
-    recommended: true,
-    features: [
-      { label: '100 active listings', description: 'For a larger active inventory.', included: true },
-      { label: 'Company page Plus', description: 'Extended company presentation with a shared inventory view.', included: true },
-      { label: '10 team accounts', description: 'Invite up to 10 people who can use the same company account and upload listings.', included: true },
-      { label: 'Staff roles', description: 'Staff can be connected to the company listing workflow.', included: true },
-      { label: 'Priority support', description: 'Included from Professional.', included: false },
-    ],
-  },
-  {
-    key: 'professional',
-    name: 'Professional',
-    audience: 'High volume',
-    limit: '500 active listings',
-    summary: 'For larger organisations with many sellers, high volume and better follow-up.',
-    features: [
-      { label: '500 active listings', description: 'For large inventories and a high publishing pace.', included: true },
-      { label: 'Company page Pro', description: 'The best standard presentation for the company and inventory.', included: true },
-      { label: '50+ team accounts', description: 'Built for larger teams where many people publish and manage listings.', included: true },
-      { label: 'Reports and export', description: 'Export inventory data and follow activity over time.', included: true },
-      { label: 'Priority support', description: 'Faster help with publishing, payments and account cases.', included: true },
-    ],
-  },
-  {
-    key: 'enterprise',
-    name: 'Enterprise',
-    audience: 'Tailored',
-    limit: 'Custom quota',
-    summary: 'For importers, chains and operators with custom needs for volume, team and process.',
-    enterprise: true,
-    features: [
-      { label: 'Custom listing quota', description: 'Quota and setup are based on the company’s actual needs.', included: true },
-      { label: 'Advanced company page', description: 'Custom presentation for larger brands or several inventories.', included: true },
-      { label: 'Expanded team', description: 'Team, roles and permissions are adapted to the organisation.', included: true },
-      { label: 'Data export and advisory', description: 'Deeper follow-up, onboarding and practical help.', included: true },
-      { label: 'Enterprise support', description: 'Direct contact for larger flows and business-critical cases.', included: true },
-    ],
-  },
-]
 
 const baseCopy = {
   eyebrow: 'Business subscription',
@@ -124,16 +34,7 @@ const baseCopy = {
   activeListings: 'active listings',
   nextBilling: 'Next billing',
   cancellationScheduled: 'Cancellation scheduled',
-  monthly: 'Monthly',
-  annual: 'Annual - save 15%',
-  annualBadge: '-15%',
-  annualEquivalent: 'equals about',
-  perMonth: '/month',
-  perYear: '/year',
-  exclVat: 'excl. VAT',
-  included: 'Included',
-  yourPlan: 'Your plan',
-  recommended: 'Recommended',
+  ...businessSubscriptionCopy,
   openInvoice: 'Open invoice',
   activateFree: 'Activate Free',
   activating: 'Activating...',
@@ -141,8 +42,6 @@ const baseCopy = {
   openingStripe: 'Opening Stripe...',
   invoice30: 'Invoice 30 days',
   sendingInvoice: 'Sending invoice...',
-  contactUs: 'Contact us',
-  currentPlanButton: 'Current plan',
   cancelPlan: 'Cancel plan',
   freeActivated: 'Free is activated. You can now use your 5 listing slots.',
   invoiceCreated: 'The invoice has been created and sent to',
@@ -179,7 +78,7 @@ export default function BusinessPlanChooser({
   cancellationEffectiveAt?: string | null
 }) {
   const copy = useMemo(() => translatePublicObject(locale, baseCopy), [locale])
-  const plans = useMemo(() => translatePublicObject(locale, basePlans), [locale])
+  const plans = useMemo(() => translatePublicObject(locale, businessSubscriptionPlans), [locale])
   const currentPeriod = currentProductKey?.endsWith('.annual') ? 'annual' : 'monthly'
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>(currentPeriod)
   const [error, setError] = useState('')
@@ -190,7 +89,7 @@ export default function BusinessPlanChooser({
   const currentStatusText = planStatusText(currentStatus, paymentStatus, locale)
   const localeTag = localeToIntl(locale)
 
-  async function choose(key: Plan['key'], billingMethod: BillingMethod = 'card') {
+  async function choose(key: BusinessSubscriptionPlan['key'], billingMethod: BillingMethod = 'card') {
     setLoading(`${key}:${billingMethod}:${billingPeriod}`)
     setError('')
     setSuccess(null)
@@ -330,18 +229,18 @@ function PlanCard({
   localeTag,
   copy,
 }: {
-  plan: Plan
+  plan: BusinessSubscriptionPlan
   current: boolean
   billingPeriod: BillingPeriod
   loading: string
-  onChoose: (key: Plan['key'], billingMethod?: BillingMethod) => void
+  onChoose: (key: BusinessSubscriptionPlan['key'], billingMethod?: BillingMethod) => void
   market: BillingMarket
   localeTag: string
   copy: typeof baseCopy
 }) {
-  const product = getPlanProduct(plan.key, billingPeriod)
+  const product = getBusinessPlanProduct(plan.key, billingPeriod)
   const price = product?.amountMinor[currencyForMarket(market)] ?? null
-  const annualProduct = getPlanProduct(plan.key, 'annual')
+  const annualProduct = getBusinessPlanProduct(plan.key, 'annual')
   const annualPrice = annualProduct?.amountMinor[currencyForMarket(market)] ?? null
   const monthlyEquivalent = annualPrice ? Math.round(annualPrice / 12) : null
   const showAnnualBadge = billingPeriod === 'annual' && !plan.enterprise && plan.key !== 'free'
@@ -458,15 +357,6 @@ function PlanCard({
   )
 }
 
-function getPlanProduct(plan: BusinessPlan, billingPeriod: BillingPeriod) {
-  const interval = billingPeriod === 'annual' ? 'year' : 'month'
-  return billingProductCatalog.find((product) =>
-    product.kind === 'subscription' &&
-    product.businessPlan === plan &&
-    product.billingInterval === interval
-  ) || null
-}
-
 function planStatusText(status: string | null | undefined, paymentStatus: string | null | undefined, locale: PublicLocale) {
   const copy = translatePublicObject(locale, {
     pending: 'Invoice sent, awaiting payment',
@@ -494,18 +384,4 @@ function formatPrice(amountMinor: number, currency: string, localeTag: string) {
 
 function formatDate(value: string, localeTag: string) {
   return new Intl.DateTimeFormat(localeTag, { dateStyle: 'medium' }).format(new Date(value))
-}
-
-function localeToIntl(locale: PublicLocale) {
-  const translated = translationLocale(locale)
-  if (translated === 'sv') return 'sv-SE'
-  if (translated === 'de') return 'de-DE'
-  if (translated === 'da') return 'da-DK'
-  if (translated === 'fi') return 'fi-FI'
-  if (translated === 'fr') return 'fr-FR'
-  if (translated === 'it') return 'it-IT'
-  if (translated === 'es') return 'es-ES'
-  if (translated === 'nl') return 'nl-NL'
-  if (translated === 'pl') return 'pl-PL'
-  return 'en-GB'
 }
