@@ -114,6 +114,24 @@ body {
   animation: hero-typing-caret 1s step-end infinite;
 }
 
+@keyframes autorell-hero-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.autorell-hero-marquee {
+  animation: autorell-hero-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.autorell-hero-marquee:hover {
+  animation-play-state: paused;
+}
+
 h1,
 h2,
 h3,
@@ -218,6 +236,7 @@ label {
 @media (prefers-reduced-motion: reduce) {
   .header-word-enter,
   .hero-word-rotate,
+  .autorell-hero-marquee,
   .hero-typing-caret,
   .testimonial-track {
     animation: none;

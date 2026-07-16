@@ -490,6 +490,7 @@ export default async function WhyChooseAutorellPage({
       <section className="relative w-full max-w-full overflow-hidden bg-[#0866ff] text-white">
         <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,0)_54%)] lg:block" />
         <div className="absolute -right-28 top-28 h-[520px] w-[520px] rotate-45 bg-white/8" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(8,102,255,0),rgba(3,34,91,.18))]" />
         <div className="mx-auto grid min-h-[620px] w-full max-w-[var(--autorell-page-max)] gap-10 px-5 pb-12 pt-16 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:pb-16 lg:pt-20">
           <div className="relative z-10">
             <p className="text-xs font-semibold uppercase tracking-[.22em] text-white/70">{copy.eyebrow}</p>
@@ -508,7 +509,7 @@ export default async function WhyChooseAutorellPage({
               </Link>
             </div>
           </div>
-          <TrustStrip locale={locale} />
+          <HeroMarquee locale={locale} />
         </div>
       </section>
 
@@ -623,28 +624,38 @@ export default async function WhyChooseAutorellPage({
   )
 }
 
-function TrustStrip({ locale }: { locale: PublicLocale }) {
+function HeroMarquee({ locale }: { locale: PublicLocale }) {
   const labels = getTrustLabels(locale)
+  const repeated = [...labels, ...labels]
   return (
-    <div className="relative z-10 col-span-full grid grid-cols-2 gap-3 pt-10 text-sm font-semibold text-[#05307a]/70 sm:grid-cols-4 lg:grid-cols-6">
-      {labels.map((label) => (
-        <div key={label} className="border-t border-white/20 pt-4 text-white/54">{label}</div>
-      ))}
+    <div className="relative z-10 col-span-full -mx-5 mt-2 overflow-hidden border-t border-white/18 pt-8 sm:-mx-8 lg:mt-10">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,#0866ff,rgba(8,102,255,0))] sm:w-16" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-[linear-gradient(270deg,#1d74ff,rgba(29,116,255,0))] sm:w-20" />
+      <div className="autorell-hero-marquee flex w-max items-center gap-12 pl-12 pr-5 pb-3 sm:gap-16 sm:pl-20 sm:pr-8">
+        {repeated.map((label, index) => (
+          <span
+            key={`${label}-${index}`}
+            className="whitespace-nowrap text-[24px] font-semibold tracking-[-.055em] text-[#04275f]/58 sm:text-[34px] lg:text-[42px]"
+          >
+            {label}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
 
 function getTrustLabels(locale: PublicLocale) {
-  if (locale === 'sv') return ['Privatpersoner', 'Handlare', 'Fordonslager', 'Importörer', 'Lokala marknader', 'Europa']
-  if (locale === 'de' || locale === 'at') return ['Privatverkäufer', 'Händler', 'Fuhrparks', 'Importeure', 'Lokale Märkte', 'Europa']
-  if (locale === 'fr') return ['Particuliers', 'Marchands', 'Flottes', 'Importateurs', 'Marchés locaux', 'Europe']
-  if (locale === 'es') return ['Particulares', 'Vendedores', 'Flotas', 'Importadores', 'Mercados locales', 'Europa']
-  if (locale === 'it') return ['Privati', 'Rivenditori', 'Flotte', 'Importatori', 'Mercati locali', 'Europa']
-  if (locale === 'nl' || locale === 'be') return ['Particulieren', 'Handelaars', 'Voorraden', 'Importeurs', 'Lokale markten', 'Europa']
-  if (locale === 'pl') return ['Prywatni', 'Dealerzy', 'Floty', 'Importerzy', 'Rynki lokalne', 'Europa']
-  if (locale === 'da') return ['Private', 'Forhandlere', 'Flåder', 'Importører', 'Lokale markeder', 'Europa']
-  if (locale === 'fi') return ['Yksityiset', 'Liikkeet', 'Kalustot', 'Maahantuojat', 'Paikalliset markkinat', 'Eurooppa']
-  return ['Private sellers', 'Dealers', 'Fleets', 'Importers', 'Local markets', 'Europe']
+  if (locale === 'sv') return ['Privatpersoner', 'Handlare', 'Fordonslager', 'Importörer', 'Sverige', 'Europa', 'Bilar', 'Lastbilar']
+  if (locale === 'de' || locale === 'at') return ['Privatverkäufer', 'Händler', 'Fuhrparks', 'Importeure', 'Deutschland', 'Europa', 'Autos', 'Lkw']
+  if (locale === 'fr') return ['Particuliers', 'Marchands', 'Flottes', 'Importateurs', 'France', 'Europe', 'Voitures', 'Camions']
+  if (locale === 'es') return ['Particulares', 'Vendedores', 'Flotas', 'Importadores', 'España', 'Europa', 'Coches', 'Camiones']
+  if (locale === 'it') return ['Privati', 'Rivenditori', 'Flotte', 'Importatori', 'Italia', 'Europa', 'Auto', 'Camion']
+  if (locale === 'nl' || locale === 'be') return ['Particulieren', 'Handelaars', 'Voorraden', 'Importeurs', 'Nederland', 'Europa', 'Auto’s', 'Trucks']
+  if (locale === 'pl') return ['Prywatni', 'Dealerzy', 'Floty', 'Importerzy', 'Polska', 'Europa', 'Samochody', 'Ciężarówki']
+  if (locale === 'da') return ['Private', 'Forhandlere', 'Flåder', 'Importører', 'Danmark', 'Europa', 'Biler', 'Lastbiler']
+  if (locale === 'fi') return ['Yksityiset', 'Liikkeet', 'Kalustot', 'Maahantuojat', 'Suomi', 'Eurooppa', 'Autot', 'Kuorma-autot']
+  return ['Private sellers', 'Dealers', 'Fleets', 'Importers', 'Europe', 'Cars', 'Trucks', 'Local markets']
 }
 
 function WorkflowRow({
