@@ -488,42 +488,57 @@ export default async function WhyChooseAutorellPage({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="relative w-full max-w-full overflow-hidden bg-[#0866ff] text-white">
-        <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,0)_54%)] lg:block" />
-        <div className="absolute -right-28 top-28 h-[520px] w-[520px] rotate-45 bg-white/8" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(8,102,255,0),rgba(3,34,91,.18))]" />
-        <div className="mx-auto grid min-h-[620px] w-full max-w-[var(--autorell-page-max)] gap-10 px-5 pb-12 pt-16 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:pb-16 lg:pt-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_-12%,rgba(173,255,111,.45),rgba(173,255,111,0)_18%),linear-gradient(132deg,#074bd6_0%,#0866ff_48%,#347dff_100%)]" />
+        <div className="absolute inset-y-0 right-0 hidden w-[54%] bg-[linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,0)_48%)] lg:block" />
+        <div className="absolute -right-24 top-16 h-[560px] w-[560px] rotate-45 bg-white/9" />
+        <div className="absolute left-1/2 top-0 hidden h-full w-px bg-white/12 lg:block" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,rgba(8,102,255,0),rgba(3,34,91,.18))]" />
+        <div className="mx-auto grid min-h-[720px] w-full max-w-[var(--autorell-page-max)] gap-10 px-5 pb-0 pt-14 sm:px-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(360px,.88fr)] lg:items-center lg:pt-20">
           <div className="relative z-10">
-            <p className="text-xs font-semibold uppercase tracking-[.22em] text-white/70">{copy.eyebrow}</p>
-            <h1 className="mt-7 max-w-[340px] break-words text-[42px] font-semibold leading-[.96] tracking-[-.055em] sm:max-w-[760px] sm:text-[72px] lg:text-[86px]">
+            <p className="text-xs font-semibold uppercase tracking-[.24em] text-white/68">{copy.eyebrow}</p>
+            <h1 className="mt-8 max-w-[350px] text-[46px] font-semibold leading-[.93] tracking-[-.06em] sm:max-w-[760px] sm:text-[78px] lg:text-[94px] xl:text-[104px]">
               {copy.title}
             </h1>
           </div>
-          <div className="relative z-10 max-w-xl lg:pt-24">
-            <p className="max-w-[340px] text-lg font-medium leading-8 text-white/88 sm:max-w-xl sm:text-xl sm:leading-9">{copy.intro}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={localizePublicHref(locale, '/sell-vehicle')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] bg-white px-6 text-xs font-semibold uppercase tracking-[.12em] text-[#075ce5] shadow-[0_20px_48px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5">
-                {copy.primaryCta}
+          <div className="relative z-10 min-w-0 max-w-xl lg:pt-20">
+            <p className="max-w-[360px] text-[21px] font-medium leading-8 tracking-[-.02em] text-white/92 sm:max-w-xl sm:text-[28px] sm:leading-[1.25]">{copy.intro}</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href={localizePublicHref(locale, '/sell-vehicle')} className="inline-flex min-h-14 items-center overflow-hidden rounded-[7px] bg-white text-xs font-semibold uppercase tracking-[.12em] text-[#101828] shadow-[0_24px_60px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5">
+                <span className="px-6">{copy.primaryCta}</span>
+                <span className="grid h-9 w-9 place-items-center border-l border-[#dbe4f0] text-[#0866ff]">›</span>
               </Link>
-              <Link href={localizePublicHref(locale, '/pricing')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] border border-white/35 px-6 text-xs font-semibold uppercase tracking-[.12em] text-white transition hover:-translate-y-0.5 hover:bg-white/10">
+              <Link href={localizePublicHref(locale, '/pricing')} className="inline-flex min-h-14 items-center justify-center rounded-[7px] border border-white/35 px-6 text-xs font-semibold uppercase tracking-[.12em] text-white transition hover:-translate-y-0.5 hover:bg-white/10">
                 {copy.secondaryCta}
               </Link>
+            </div>
+            <div className="mt-12 grid w-[calc(100vw-40px)] max-w-md grid-cols-3 overflow-hidden rounded-[8px] border border-white/16 bg-white/10 backdrop-blur sm:w-full">
+              {copy.europeStats.map((stat) => (
+                <div key={stat.label} className="min-w-0 border-r border-white/14 p-3 last:border-r-0 sm:p-4">
+                  <p className="text-3xl font-semibold tracking-[-.05em]">{stat.value}</p>
+                  <p className="mt-1 text-[10px] font-medium leading-4 text-white/68 sm:text-[11px]">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
           <HeroMarquee locale={locale} />
         </div>
       </section>
 
-      <section className="w-full max-w-full overflow-hidden bg-[linear-gradient(180deg,#eff5ff_0%,#ffffff_42%)] py-16 sm:py-24">
-        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 sm:px-8 lg:grid-cols-[230px_minmax(0,1fr)]">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Autorell</p>
-          <h2 className="max-w-[340px] break-words text-[34px] font-semibold leading-[1.06] tracking-[-.04em] sm:max-w-4xl sm:text-6xl">
-            {copy.comparisonTitle}
-          </h2>
+      <section className="w-full max-w-full overflow-hidden bg-[linear-gradient(180deg,#eef5ff_0%,#ffffff_46%)] py-16 sm:py-24">
+        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[230px_minmax(0,1fr)]">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Why Autorell</p>
+          <div>
+            <h2 className="max-w-[360px] break-words text-[36px] font-semibold leading-[1.02] tracking-[-.05em] sm:max-w-5xl sm:text-7xl">
+              {copy.comparisonTitle}
+            </h2>
+            <p className="mt-7 max-w-3xl text-lg leading-8 text-[#526071]">{copy.comparisonText}</p>
+          </div>
         </div>
       </section>
 
-      <section className="w-full max-w-full overflow-hidden bg-white">
+      <section className="w-full max-w-full overflow-hidden bg-white pb-10">
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
+          <PlatformSystem locale={locale} />
           <WorkflowRow
             number="01"
             title={copy.privateTitle}
@@ -555,16 +570,16 @@ export default async function WhyChooseAutorellPage({
       <section className="w-full max-w-full overflow-hidden border-y border-[#dfe7f2] bg-[#f5f8fd] py-16 sm:py-24">
         <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:items-start">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Platform</p>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Product quality</p>
             <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-.045em] sm:text-5xl">
               {copy.principleTitle}
             </h2>
             <p className="mt-6 max-w-2xl text-base leading-8 text-[#526071] [overflow-wrap:anywhere]">{copy.principleText}</p>
           </div>
-          <div className="grid gap-4">
+          <div className="grid gap-0 overflow-hidden rounded-[8px] border border-[#d8e2ef] bg-white shadow-[0_24px_80px_rgba(16,24,40,.06)]">
             {copy.principles.map((principle, index) => (
-              <article key={principle.title} className="grid gap-5 border-t border-[#d8e2ef] py-6 sm:grid-cols-[64px_minmax(0,1fr)]">
-                <p className="text-xs font-semibold text-[#7a8797]">{String(index + 1).padStart(2, '0')}</p>
+              <article key={principle.title} className="grid gap-5 border-b border-[#e7eef7] p-6 last:border-b-0 sm:grid-cols-[64px_minmax(0,1fr)]">
+                <p className="text-xs font-semibold text-[#0866ff]">{String(index + 1).padStart(2, '0')}</p>
                 <div>
                   <h3 className="text-2xl font-semibold tracking-[-.035em]">{principle.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-[#667085]">{principle.text}</p>
@@ -579,12 +594,20 @@ export default async function WhyChooseAutorellPage({
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Comparison</p>
-              <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-.045em] sm:text-5xl">
-                {copy.comparisonText}
+              <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Autorell vs traditional</p>
+              <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-.045em] sm:text-6xl">
+                {copy.comparisonTitle}
               </h2>
+              <p className="mt-6 max-w-xl text-base leading-8 text-[#526071]">{copy.comparisonText}</p>
             </div>
-            <div className="overflow-hidden border border-[#dce5f2] bg-white shadow-[0_22px_70px_rgba(16,24,40,.07)]">
+            <div className="overflow-hidden rounded-[8px] border border-[#dce5f2] bg-white shadow-[0_22px_70px_rgba(16,24,40,.07)]">
+              <div className="grid grid-cols-[minmax(0,.8fr)_minmax(0,1fr)] border-b border-[#edf2f7] bg-[#f7faff] p-5 text-xs font-semibold uppercase tracking-[.16em] text-[#7a8797]">
+                <p>Signal</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <p>{copy.autorellColumn}</p>
+                  <p>{copy.traditionalColumn}</p>
+                </div>
+              </div>
               {copy.comparisonRows.map((row) => (
                 <div key={row.label} className="grid gap-4 border-b border-[#edf2f7] p-5 last:border-b-0 sm:grid-cols-[minmax(0,.8fr)_minmax(0,1fr)]">
                   <p className="text-sm font-semibold text-[#101828]">{row.label}</p>
@@ -599,8 +622,9 @@ export default async function WhyChooseAutorellPage({
         </div>
       </section>
 
-      <section className="w-full max-w-full overflow-hidden bg-[#0866ff] py-16 text-white sm:py-24">
-        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+      <section className="relative w-full max-w-full overflow-hidden bg-[#0866ff] py-16 text-white sm:py-24">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,0)_42%)]" />
+        <div className="relative mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-white/65">Autorell</p>
             <h2 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.03] tracking-[-.05em] sm:text-6xl">
@@ -621,6 +645,41 @@ export default async function WhyChooseAutorellPage({
 
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+function PlatformSystem({ locale }: { locale: PublicLocale }) {
+  const labels = getSystemLabels(locale)
+
+  return (
+    <div className="relative mb-6 overflow-hidden rounded-[10px] border border-[#dce6f3] bg-[#f7faff] shadow-[0_28px_90px_rgba(16,24,40,.07)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_0%,rgba(8,102,255,.16),rgba(8,102,255,0)_34%)]" />
+      <div className="relative grid gap-8 p-5 sm:p-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:p-10">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{labels.eyebrow}</p>
+          <h3 className="mt-5 max-w-2xl text-[34px] font-semibold leading-[1.04] tracking-[-.045em] text-[#101828] sm:text-5xl">
+            {labels.title}
+          </h3>
+          <p className="mt-5 max-w-xl text-base leading-8 text-[#526071]">{labels.text}</p>
+        </div>
+        <div className="relative min-h-[360px] overflow-hidden rounded-[8px] border border-[#d8e2ef] bg-white p-4 shadow-[0_20px_70px_rgba(16,24,40,.06)] sm:p-6">
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(8,102,255,.07),rgba(255,255,255,0)_48%)]" />
+          <div className="relative grid h-full min-h-[310px] grid-cols-2 gap-3 sm:grid-cols-3">
+            {labels.nodes.map((node, index) => (
+              <div
+                key={node}
+                className={`rounded-[7px] border border-[#dce6f3] bg-white p-4 shadow-[0_12px_34px_rgba(16,24,40,.055)] ${index === 4 ? 'sm:scale-[1.07] sm:border-[#0866ff] sm:shadow-[0_22px_60px_rgba(8,102,255,.16)]' : ''}`}
+              >
+                <div className="mb-5 h-1.5 w-8 rounded-full bg-[#0866ff]" />
+                <p className="text-sm font-semibold leading-5 text-[#101828]">{node}</p>
+              </div>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-[72%] w-px -translate-y-1/2 bg-[#c8d7eb] sm:block" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-px w-[76%] -translate-x-1/2 bg-[#c8d7eb] sm:block" />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -656,6 +715,88 @@ function getTrustLabels(locale: PublicLocale) {
   if (locale === 'da') return ['Private', 'Forhandlere', 'Flåder', 'Importører', 'Danmark', 'Europa', 'Biler', 'Lastbiler']
   if (locale === 'fi') return ['Yksityiset', 'Liikkeet', 'Kalustot', 'Maahantuojat', 'Suomi', 'Eurooppa', 'Autot', 'Kuorma-autot']
   return ['Private sellers', 'Dealers', 'Fleets', 'Importers', 'Europe', 'Cars', 'Trucks', 'Local markets']
+}
+
+function getSystemLabels(locale: PublicLocale) {
+  if (locale === 'sv') {
+    return {
+      eyebrow: 'Marknadsplatsens operativsystem',
+      title: 'Allt viktigt samlas i ett tydligare säljflöde.',
+      text: 'Autorell kopplar ihop annons, sökning, marknad, trygghet och företagets arbetsflöde så att varje fordon blir enklare att publicera, hitta och följa upp.',
+      nodes: ['Annonsdata', 'Bilder', 'Pris', 'Plats', 'Sökning', 'Verifiering', 'Meddelanden', 'Statistik', 'Europa'],
+    }
+  }
+  if (locale === 'de' || locale === 'at') {
+    return {
+      eyebrow: 'Betriebssystem für den Markt',
+      title: 'Alles Wichtige läuft in einem klareren Verkaufsfluss zusammen.',
+      text: 'Autorell verbindet Anzeige, Suche, Markt, Vertrauen und Teamabläufe, damit jedes Fahrzeug einfacher veröffentlicht, gefunden und verfolgt werden kann.',
+      nodes: ['Anzeigendaten', 'Bilder', 'Preis', 'Ort', 'Suche', 'Verifizierung', 'Nachrichten', 'Statistik', 'Europa'],
+    }
+  }
+  if (locale === 'fr') {
+    return {
+      eyebrow: 'Système du marché',
+      title: 'L’essentiel est réuni dans un parcours de vente plus clair.',
+      text: 'Autorell relie annonce, recherche, marché, confiance et travail d’équipe pour rendre chaque véhicule plus simple à publier, trouver et suivre.',
+      nodes: ['Données', 'Images', 'Prix', 'Lieu', 'Recherche', 'Vérification', 'Messages', 'Statistiques', 'Europe'],
+    }
+  }
+  if (locale === 'es') {
+    return {
+      eyebrow: 'Sistema del marketplace',
+      title: 'Todo lo importante se une en un flujo de venta más claro.',
+      text: 'Autorell conecta anuncio, búsqueda, mercado, confianza y trabajo en equipo para que cada vehículo sea más fácil de publicar, encontrar y seguir.',
+      nodes: ['Datos', 'Imágenes', 'Precio', 'Ubicación', 'Búsqueda', 'Verificación', 'Mensajes', 'Estadísticas', 'Europa'],
+    }
+  }
+  if (locale === 'it') {
+    return {
+      eyebrow: 'Sistema del marketplace',
+      title: 'Tutto ciò che conta entra in un flusso di vendita più chiaro.',
+      text: 'Autorell collega annuncio, ricerca, mercato, fiducia e lavoro di squadra per rendere ogni veicolo più semplice da pubblicare, trovare e seguire.',
+      nodes: ['Dati', 'Immagini', 'Prezzo', 'Località', 'Ricerca', 'Verifica', 'Messaggi', 'Statistiche', 'Europa'],
+    }
+  }
+  if (locale === 'nl' || locale === 'be') {
+    return {
+      eyebrow: 'Besturingssysteem voor de markt',
+      title: 'Alles wat telt komt samen in een duidelijker verkoopproces.',
+      text: 'Autorell verbindt advertentie, zoeken, markt, vertrouwen en teamwerk zodat elk voertuig eenvoudiger te publiceren, vinden en volgen is.',
+      nodes: ['Advertentiedata', 'Afbeeldingen', 'Prijs', 'Plaats', 'Zoeken', 'Verificatie', 'Berichten', 'Statistiek', 'Europa'],
+    }
+  }
+  if (locale === 'pl') {
+    return {
+      eyebrow: 'System marketplace',
+      title: 'Wszystko, co ważne, łączy się w jaśniejszy proces sprzedaży.',
+      text: 'Autorell łączy ogłoszenie, wyszukiwanie, rynek, zaufanie i pracę zespołu, aby każdy pojazd łatwiej opublikować, znaleźć i monitorować.',
+      nodes: ['Dane', 'Zdjęcia', 'Cena', 'Lokalizacja', 'Wyszukiwanie', 'Weryfikacja', 'Wiadomości', 'Statystyki', 'Europa'],
+    }
+  }
+  if (locale === 'da') {
+    return {
+      eyebrow: 'Markedspladsens styresystem',
+      title: 'Alt det vigtige samles i et klarere salgsflow.',
+      text: 'Autorell forbinder annonce, søgning, marked, tillid og teamarbejde, så hvert køretøj bliver lettere at udgive, finde og følge.',
+      nodes: ['Annoncedata', 'Billeder', 'Pris', 'Placering', 'Søgning', 'Verificering', 'Beskeder', 'Statistik', 'Europa'],
+    }
+  }
+  if (locale === 'fi') {
+    return {
+      eyebrow: 'Markkinapaikan käyttöjärjestelmä',
+      title: 'Tärkeimmät asiat yhdistyvät selkeämpään myyntipolkuun.',
+      text: 'Autorell yhdistää ilmoituksen, haun, markkinan, luottamuksen ja tiimityön, jotta jokainen ajoneuvo on helpompi julkaista, löytää ja seurata.',
+      nodes: ['Ilmoitustiedot', 'Kuvat', 'Hinta', 'Sijainti', 'Haku', 'Varmennus', 'Viestit', 'Tilastot', 'Eurooppa'],
+    }
+  }
+
+  return {
+    eyebrow: 'Marketplace operating system',
+    title: 'Everything important moves through one clearer selling flow.',
+    text: 'Autorell connects listing data, search, market context, trust signals and business workflows so every vehicle becomes easier to publish, find and follow up.',
+    nodes: ['Listing data', 'Images', 'Price', 'Location', 'Search', 'Verification', 'Messages', 'Analytics', 'Europe'],
+  }
 }
 
 function WorkflowRow({
