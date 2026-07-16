@@ -339,7 +339,7 @@ function VerificationCard({
 function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy>) {
   if (status === 'format_valid') return copy.phoneFormatValid
   if (status === 'country_mismatch' || status === 'invalid_format') return copy.phoneNeedsReview
-  return copy.phoneNeedsReview
+  return copy.phoneNotChecked
 }
 
 const controlClass =
@@ -395,6 +395,7 @@ function getProfileCopy(locale: PublicLocale) {
     notVerified: 'Not verified',
     phoneFormatValid: 'Format approved',
     phoneNeedsReview: 'Check the number',
+    phoneNotChecked: 'Checked when saved',
     verifyEmailTitle: 'Verify your email',
     verifyEmailText: 'Send a one-time code to your email and enter it here. After that your seller profile can show as verified.',
     sendCode: 'Send code',
@@ -441,6 +442,7 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Ej verifierad',
       phoneFormatValid: 'Format godkänt',
       phoneNeedsReview: 'Kontrollera numret',
+      phoneNotChecked: 'Kontrolleras vid sparande',
       verifyEmailTitle: 'Verifiera mejladressen',
       verifyEmailText: 'Skicka en engångskod till mejlen och ange den här. Efter det kan säljarprofilen visas som verifierad.',
       sendCode: 'Skicka kod',

@@ -216,6 +216,7 @@ function settingsCopy(locale: PublicLocale) {
     notVerified: 'Not verified',
     phoneFormatValid: 'Format approved',
     phoneNeedsReview: 'Needs review',
+    phoneNotChecked: 'Checked when saved',
     editProfile: 'Edit profile',
     languageMarket: 'Language and market',
     languageMarketText: 'Autorell uses your selected market for language, currency and local content.',
@@ -263,6 +264,7 @@ function settingsCopy(locale: PublicLocale) {
       notVerified: 'Ej verifierad',
       phoneFormatValid: 'Format godkänt',
       phoneNeedsReview: 'Kontrollera numret',
+      phoneNotChecked: 'Kontrolleras vid sparande',
       editProfile: 'Redigera profil',
       languageMarket: 'Språk och marknad',
       languageMarketText: 'Autorell använder vald marknad för språk, valuta och lokalt innehåll.',
@@ -311,6 +313,7 @@ function settingsCopy(locale: PublicLocale) {
       notVerified: 'Nicht verifiziert',
       phoneFormatValid: 'Format bestätigt',
       phoneNeedsReview: 'Prüfung erforderlich',
+      phoneNotChecked: 'Wird beim Speichern geprüft',
       editProfile: 'Profil bearbeiten',
       languageMarket: 'Sprache und Markt',
       languageMarketText: 'Autorell nutzt den gewählten Markt für Sprache, Währung und lokale Inhalte.',
@@ -342,5 +345,5 @@ function settingsCopy(locale: PublicLocale) {
 function phoneStatusLabel(status: string | null, copy: ReturnType<typeof settingsCopy>) {
   if (status === 'format_valid') return copy.phoneFormatValid
   if (status === 'country_mismatch' || status === 'invalid_format') return copy.phoneNeedsReview
-  return copy.phoneNeedsReview
+  return copy.phoneNotChecked
 }

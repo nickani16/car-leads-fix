@@ -140,10 +140,11 @@ export default async function AccountPage() {
   const paymentCount = pendingPaymentCount.count || 0
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
-  const verificationLabel =
-    profile.identity_status === 'verified' || profile.identity_status === 'basic_checked'
-      ? copy.verified
-      : copy.reviewPending
+  const privateVerificationComplete =
+    Boolean(user.email_confirmed_at) &&
+    profile.risk_status === 'standard' &&
+    !['needs_review', 'rejected'].includes(String(profile.identity_status || ''))
+  const verificationLabel = privateVerificationComplete ? copy.verified : copy.reviewPending
   const profileComplete = Boolean(
     profile.first_name &&
       profile.last_name &&

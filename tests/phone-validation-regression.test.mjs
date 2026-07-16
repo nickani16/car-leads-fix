@@ -18,6 +18,10 @@ const profileForm = readFileSync(
   new URL('../app/konto/ProfileForm.tsx', import.meta.url),
   'utf8',
 )
+const accountPage = readFileSync(
+  new URL('../app/konto/page.tsx', import.meta.url),
+  'utf8',
+)
 const settingsPage = readFileSync(
   new URL('../app/account/settings/page.tsx', import.meta.url),
   'utf8',
@@ -60,6 +64,7 @@ test('my pages show email verification separately from phone format checks', () 
   assert.match(profileForm, /emailVerification/)
   assert.match(profileForm, /phoneCheck/)
   assert.match(profileForm, /Format approved/)
+  assert.match(profileForm, /Checked when saved/)
   assert.match(profileForm, /\/api\/auth\/email-code\/request/)
   assert.match(profileForm, /\/api\/auth\/email-code\/verify/)
   assert.doesNotMatch(profileForm, /phoneVerification/)
@@ -69,4 +74,11 @@ test('my pages show email verification separately from phone format checks', () 
   assert.match(settingsPage, /phone_verified/)
   assert.match(settingsPage, /phone_verification_status/)
   assert.doesNotMatch(settingsPage, /Phone verification/)
+})
+
+test('private account overview uses email and risk status for the visible verification badge', () => {
+  assert.match(accountPage, /privateVerificationComplete/)
+  assert.match(accountPage, /user\.email_confirmed_at/)
+  assert.match(accountPage, /profile\.risk_status === 'standard'/)
+  assert.match(accountPage, /copy\.verified : copy\.reviewPending/)
 })
