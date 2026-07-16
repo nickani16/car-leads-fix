@@ -47,7 +47,7 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
       </div>
 
       {featured ? (
-        <Link href={`/${market}/vehicle-news/${featured.slug}`} className="group mt-8 grid overflow-hidden rounded-[18px] border border-[#d7e1ee] bg-white shadow-[0_18px_55px_rgba(16,24,40,.08)] lg:grid-cols-[1.15fr_.85fr]">
+        <Link href={vehicleNewsArticleHref(market, featured.slug)} className="group mt-8 grid overflow-hidden rounded-[18px] border border-[#d7e1ee] bg-white shadow-[0_18px_55px_rgba(16,24,40,.08)] lg:grid-cols-[1.15fr_.85fr]">
           <div className="relative min-h-[260px] overflow-hidden bg-[#edf3fb] sm:min-h-[360px]">
             {featured.imageUrl ? <Image src={featured.imageUrl} alt={featured.imageAlt} fill sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.025]" /> : null}
           </div>
@@ -82,9 +82,13 @@ function tabClass(active: boolean) {
   return `shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${active ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]' : 'border-[#d4deeb] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'}`
 }
 
+function vehicleNewsArticleHref(market: string, slug: string) {
+  return market === 'en' ? `/vehicle-news/${slug}` : `/${market}/vehicle-news/${slug}`
+}
+
 function NewsCard({ market, article, copy }: { market: string; article: PublicNewsArticle; copy: ReturnType<typeof vehicleNewsSearchCopy> }) {
   return (
-    <Link href={`/${market}/vehicle-news/${article.slug}`} className="group overflow-hidden rounded-[16px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.08)]">
+    <Link href={vehicleNewsArticleHref(market, article.slug)} className="group overflow-hidden rounded-[16px] border border-[#d8e0ec] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(16,24,40,.08)]">
       <div className="relative aspect-[16/10] overflow-hidden bg-[#edf3fb]">
         {article.imageUrl ? <Image src={article.imageUrl} alt={article.imageAlt} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.025]" /> : null}
       </div>

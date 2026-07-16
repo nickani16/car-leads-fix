@@ -24,6 +24,7 @@ export default function VehicleNewsPage({
   const locale = publicLocale(market)
   const copy = vehicleNewsPageCopy(market)
   const hasNext = page * 12 < count
+  const baseHref = vehicleNewsBaseHref(market)
   return (
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={market.toUpperCase()} />
@@ -49,13 +50,13 @@ export default function VehicleNewsPage({
         <VehicleNewsSearch market={market} categories={categories} articles={articles} />
         <nav className="mt-8 flex items-center justify-between" aria-label="Paginering">
           {page > 1 ? (
-            <Link href={`/${market}/vehicle-news?page=${page - 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
+            <Link href={`${baseHref}?page=${page - 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
               <ArrowLeft className="h-4 w-4" />
               {copy.previous}
             </Link>
           ) : <span />}
           {hasNext ? (
-            <Link href={`/${market}/vehicle-news?page=${page + 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
+            <Link href={`${baseHref}?page=${page + 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">
               {copy.next}
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -66,6 +67,10 @@ export default function VehicleNewsPage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function vehicleNewsBaseHref(market: string) {
+  return market === 'en' ? '/vehicle-news' : `/${market}/vehicle-news`
 }
 
 function publicLocale(market: string): 'sv' | 'de' | 'fr' | 'es' | 'it' | 'nl' | 'pl' | 'da' | 'fi' | 'en' {

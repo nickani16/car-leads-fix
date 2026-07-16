@@ -119,15 +119,15 @@ export default async function NotFound() {
   const copy = getNotFoundCopy(locale)
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-[#111827]">
-      <header className="border-b border-[#dde5f2] bg-white">
+    <main className="min-h-screen bg-[#f7f9fc] text-[#111827]">
+      <header className="border-b border-[#dde5f2] bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-[1320px] items-center justify-between px-5 sm:px-8 lg:px-10">
           <Link href={localizePublicHref(locale, '/')} aria-label={copy.homeAria}>
             <BrandLogo />
           </Link>
           <Link
             href={localizePublicHref(locale, '/contact')}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cfd8e8] bg-white px-4 text-sm font-bold text-[#122033] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cfd8e8] bg-white px-4 text-sm font-semibold text-[#122033] transition hover:border-[#0866ff] hover:text-[#0866ff]"
           >
             <LifeBuoy className="h-4 w-4" />
             {copy.support}
@@ -135,57 +135,63 @@ export default async function NotFound() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-[1320px] gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_420px] lg:px-10 lg:py-16">
-        <div className="rounded-[28px] border border-[#dbe4f0] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,.08)] sm:p-10 lg:p-12">
-          <p className="text-xs font-black uppercase tracking-[.2em] text-[#0866ff]">
-            {copy.eyebrow}
-          </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-[-.055em] text-[#101828] sm:text-6xl lg:text-7xl">
-            {copy.heading}
-          </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-[#536176] sm:text-lg">
-            {copy.description}
-          </p>
+      <section className="mx-auto grid max-w-[1320px] gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-10 lg:py-16">
+        <div className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_24px_80px_rgba(15,23,42,.07)]">
+          <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_220px] lg:p-12">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[.2em] text-[#0866ff]">
+                {copy.eyebrow}
+              </p>
+              <h1 className="mt-5 max-w-3xl text-[clamp(2.5rem,6vw,5.75rem)] font-semibold leading-[.98] tracking-[-.055em] text-[#101828]">
+                {copy.heading}
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-[#536176] sm:text-lg">
+                {copy.description}
+              </p>
 
-          <div className="mt-8 grid gap-3 sm:flex">
-            <Link
-              href={localizePublicHref(locale, '/marketplace')}
-              className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[16px] bg-[#0866ff] px-6 text-sm font-black text-white shadow-[0_16px_35px_rgba(8,102,255,.25)]"
-            >
-              <Search className="h-5 w-5" />
-              {copy.marketplace}
-            </Link>
-            <Link
-              href={localizePublicHref(locale, '/')}
-              className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[16px] border border-[#cfd8e8] bg-white px-6 text-sm font-black text-[#122033]"
-            >
-              <Home className="h-5 w-5" />
-              {copy.home}
-            </Link>
-            <Link
-              href={localizePublicHref(locale, '/account')}
-              className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[16px] border border-[#cfd8e8] bg-white px-6 text-sm font-black text-[#122033]"
-            >
-              {copy.account}
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+              <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+                <Link
+                  href={localizePublicHref(locale, '/marketplace')}
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(8,102,255,.22)]"
+                >
+                  <Search className="h-5 w-5" />
+                  {copy.marketplace}
+                </Link>
+                <Link
+                  href={localizePublicHref(locale, '/')}
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e8] bg-white px-6 text-sm font-semibold text-[#122033]"
+                >
+                  <Home className="h-5 w-5" />
+                  {copy.home}
+                </Link>
+                <Link
+                  href={localizePublicHref(locale, '/account')}
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e8] bg-white px-6 text-sm font-semibold text-[#122033]"
+                >
+                  {copy.account}
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex items-start lg:justify-end">
+              <div className="rounded-[22px] border border-[#dce7f7] bg-[#f0f6ff] p-5">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-[#0866ff] shadow-sm">
+                  <Search className="h-6 w-6" />
+                </span>
+                <strong className="mt-5 block text-5xl font-semibold tracking-[-.07em]">
+                  404
+                </strong>
+                <p className="mt-2 text-sm font-medium text-[#64748b]">
+                  {copy.label}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <aside className="rounded-[28px] border border-[#dbe4f0] bg-white p-5 shadow-[0_24px_80px_rgba(15,23,42,.06)] sm:p-6">
-          <div className="rounded-[22px] bg-[#f0f5ff] p-5">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-[#0866ff] shadow-sm">
-              <Search className="h-6 w-6" />
-            </span>
-            <strong className="mt-5 block text-5xl font-black tracking-[-.07em]">
-              404
-            </strong>
-            <p className="mt-2 text-sm font-semibold text-[#64748b]">
-              {copy.label}
-            </p>
-          </div>
-
-          <h2 className="mt-6 text-lg font-black tracking-[-.03em]">
+        <aside className="rounded-[24px] border border-[#dbe4f0] bg-white p-5 shadow-[0_24px_80px_rgba(15,23,42,.05)] sm:p-6">
+          <h2 className="text-lg font-semibold tracking-[-.03em]">
             {copy.popularTitle}
           </h2>
           <div className="mt-4 grid gap-2">
@@ -196,7 +202,7 @@ export default async function NotFound() {
                 <Link
                   key={route.href}
                   href={localizePublicHref(locale, route.href)}
-                  className="group flex min-h-14 items-center justify-between rounded-[16px] border border-[#e2e8f0] bg-white px-4 text-sm font-bold text-[#122033] transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
+                  className="group flex min-h-14 items-center justify-between rounded-[14px] border border-[#e2e8f0] bg-white px-4 text-sm font-semibold text-[#122033] transition hover:border-[#0866ff] hover:bg-[#f8fbff]"
                 >
                   <span className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef5ff] text-[#0866ff]">

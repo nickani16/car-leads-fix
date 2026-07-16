@@ -789,6 +789,7 @@ export async function proxy(request: NextRequest) {
 
     if (
       methodCanRedirect &&
+      hostname !== MARKET_HOSTS.en &&
       isPublicLanguage(targetMarket || '') &&
       targetMarket !== 'en' &&
       (pathname === '/find-cars' ||
@@ -971,16 +972,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname !== '/') {
-    if (
-      hostname === MARKET_HOSTS.en &&
-      isPublicLanguage(preferredLanguage || '')
-    ) {
+    if (hostname === MARKET_HOSTS.en) {
       const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('x-autorell-language', preferredLanguage!)
+      requestHeaders.set('x-autorell-language', 'en')
+      requestHeaders.set('x-autorell-market', 'EU')
       requestHeaders.set('x-autorell-pathname', pathname)
-      if (preferredMarket && EU_BUYER_MARKET_CODES.has(preferredMarket)) {
-        requestHeaders.set('x-autorell-market', preferredMarket)
-      }
       return NextResponse.next({ request: { headers: requestHeaders } })
     }
     return NextResponse.next()
