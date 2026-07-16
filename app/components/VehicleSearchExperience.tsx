@@ -52,6 +52,7 @@ import { formatMileageAsMil } from '@/lib/listing-display'
 import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locations'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
+import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
@@ -1134,6 +1135,7 @@ export default function VehicleSearchExperience({
     marketCode: smartSearchMarketCode,
     active: searchFocused,
   })
+  const searchPlaceholder = getVehicleSearchPlaceholder(locale)
   const mobileMapSmartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
     locale,
@@ -1385,7 +1387,7 @@ export default function VehicleSearchExperience({
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
                     placeholder=""
-                    aria-label={uiText(locale, 'Search vehicle, city or area', 'Sök fordon, ort eller kommun', 'Fahrzeug, Ort oder Gemeinde suchen')}
+                    aria-label={searchPlaceholder}
                     className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
                   />
                   {searchInput || selectedSearchSuggestions.length ? null : (
@@ -1393,7 +1395,7 @@ export default function VehicleSearchExperience({
                       aria-hidden="true"
                       className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
                     >
-                      {uiText(locale, 'Search vehicle, city or area', 'Sök fordon, ort eller kommun', 'Fahrzeug, Ort oder Gemeinde suchen')}
+                      {searchPlaceholder}
                     </span>
                   )}
                   <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
@@ -1737,6 +1739,7 @@ export default function VehicleSearchExperience({
               listings={filteredListings}
               country={primaryMapCountry}
               locale={locale}
+              searchPlaceholder={searchPlaceholder}
               query={query}
               onQueryChange={(value) => {
                 setSearchInput(value)
@@ -2381,6 +2384,7 @@ function VehicleSearchMap({
   listings,
   country,
   locale,
+  searchPlaceholder,
   query,
   onQueryChange,
   searchInput,
@@ -2403,6 +2407,7 @@ function VehicleSearchMap({
   listings: VehicleSearchListing[]
   country: string
   locale: PublicLocale
+  searchPlaceholder: string
   query: string
   onQueryChange: (value: string) => void
   searchInput: string
@@ -2596,7 +2601,7 @@ function VehicleSearchMap({
                   onFocus={() => onSearchFocusChange(true)}
                   onBlur={() => window.setTimeout(() => onSearchFocusChange(false), 120)}
                   placeholder=""
-                  aria-label="Sök fordon, ort eller kommun"
+                  aria-label={searchPlaceholder}
                   className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
                 />
                 {searchInput || selectedSearchSuggestions.length ? null : (
@@ -2604,7 +2609,7 @@ function VehicleSearchMap({
                     aria-hidden="true"
                     className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
                   >
-                    Sök fordon, ort eller kommun
+                    {searchPlaceholder}
                   </span>
                 )}
                 <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
@@ -2651,8 +2656,8 @@ function VehicleSearchMap({
               <input
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
-                placeholder={uiText(locale, 'Search vehicle, city or area', 'Sök fordon, ort eller kommun', 'Fahrzeug, Ort oder Gemeinde suchen')}
-                aria-label={uiText(locale, 'Search vehicle, city or area', 'Sök fordon, ort eller kommun', 'Fahrzeug, Ort oder Gemeinde suchen')}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
                 className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
               />
               <Search className="h-5 w-5 shrink-0 text-[#101828]" />

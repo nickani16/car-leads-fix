@@ -43,6 +43,7 @@ import {
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
+import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import {
   useVehicleSmartSearchSuggestions,
   VehicleSmartSearchSuggestionPanel,
@@ -168,7 +169,6 @@ const copyByLocale = {
     searchAgain: 'Sök igen: Bilar',
     searchAgainSub: 'Fordon till salu',
     tabs: { sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
-    placeholder: 'Sök fordon, ort eller kommun',
     verified: 'Visa endast verifierade säljare',
     expandArea: 'Utöka sökområde',
     markets: 'Marknader',
@@ -198,7 +198,6 @@ const copyByLocale = {
     searchAgain: 'Search again: Cars',
     searchAgainSub: 'Vehicles for sale',
     tabs: { sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
-    placeholder: 'Search vehicle, city or area',
     verified: 'Show verified sellers only',
     expandArea: 'Expand search area',
     markets: 'Markets',
@@ -228,7 +227,6 @@ const copyByLocale = {
     searchAgain: 'Erneut suchen: Autos',
     searchAgainSub: 'Fahrzeuge kaufen',
     tabs: { sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
-    placeholder: 'Fahrzeug, Ort oder Gemeinde suchen',
     verified: 'Nur geprüfte Verkäufer anzeigen',
     expandArea: 'Suchgebiet erweitern',
     markets: 'Märkte',
@@ -301,6 +299,7 @@ export default function HomeHeroVehicleSearch({
         : locale === 'sv'
           ? copyByLocale.sv
           : translatePublicObject(locale, copyByLocale.en)
+  const searchPlaceholder = getVehicleSearchPlaceholder(locale)
   const [intent, setIntent] = useState<Intent>('sale')
   const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
   const [query, setQuery] = useState('')
@@ -626,7 +625,7 @@ export default function HomeHeroVehicleSearch({
               onFocus={() => setSearchFocused(true)}
               onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
               placeholder=""
-              aria-label={t.placeholder}
+              aria-label={searchPlaceholder}
               className={`h-7 min-w-0 basis-full appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:text-left lg:text-[14px] ${
                 selectedSearchSuggestions.length
                   ? 'lg:min-w-0'
@@ -638,7 +637,7 @@ export default function HomeHeroVehicleSearch({
                 aria-hidden="true"
                 className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:translate-x-0"
               >
-                {t.placeholder}
+                {searchPlaceholder}
               </span>
             )}
             <Search className={`h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 ${
