@@ -205,7 +205,7 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <PricingAnchorScroll />
-      <section className="relative min-h-[360px] overflow-hidden border-b border-[#d8e0ec] bg-[#101828] sm:min-h-[430px] lg:min-h-[460px]">
+      <section className="relative min-h-[360px] overflow-hidden border-b border-[#d8e0ec] bg-[#101828] sm:min-h-[430px] lg:min-h-[500px]">
         <Image
           src="/autorell-pricing-mobile-hero.jpg"
           alt="Autorell mobile listing form"
@@ -215,9 +215,9 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,12,24,.48)_0%,rgba(7,12,24,.30)_42%,rgba(7,12,24,.08)_76%,rgba(7,12,24,.02)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,12,24,.14)_0%,rgba(7,12,24,0)_42%)]" />
-        <div className="relative z-10 mx-auto flex min-h-[360px] max-w-[var(--autorell-page-max)] items-end px-5 py-9 sm:min-h-[430px] sm:px-8 sm:py-12 lg:min-h-[460px] lg:py-14">
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,12,24,.34)_0%,rgba(7,12,24,.20)_42%,rgba(7,12,24,.05)_76%,rgba(7,12,24,0)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,12,24,.08)_0%,rgba(7,12,24,0)_42%)]" />
+        <div className="relative z-10 mx-auto flex min-h-[360px] max-w-[var(--autorell-page-max)] items-end px-5 py-9 sm:min-h-[430px] sm:px-8 sm:py-12 lg:min-h-[500px] lg:py-14">
           <div className="min-w-0">
               <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-white [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
                 {copy.title}
