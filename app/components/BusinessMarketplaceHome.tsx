@@ -13,6 +13,7 @@ import {
   getPublishedMarketplaceListingCount,
   getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
+import { getVehicleNews, type PublicNewsArticle } from '@/lib/content/vehicle-news'
 import {
   localizePublicHref,
   translatePublic,
@@ -92,7 +93,6 @@ export default async function BusinessMarketplaceHome({
       ? 'Europe'
       : getEuCountryName(localMarketCode, locale)
   const displayCurrency = displayCurrencyForMarket(localMarketCode)
-  const newsCards = getVehicleNewsCards(locale)
   const [
     localTopListings,
     localLatestListings,
@@ -100,6 +100,7 @@ export default async function BusinessMarketplaceHome({
     europeLatestListings,
     localListingCount,
     europeListingCount,
+    vehicleNews,
   ] =
     await Promise.all([
       getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
@@ -108,7 +109,9 @@ export default async function BusinessMarketplaceHome({
       getPublishedMarketplaceHomeListings('EU', 'latest', 8),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
+      getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
     ])
+  const newsCards = vehicleNews.articles.slice(0, 3)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
       .map((listing) => listing.seller_user_id)
@@ -195,7 +198,7 @@ export default async function BusinessMarketplaceHome({
           <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 sm:mt-7 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
             {newsCards.map((item) => (
               <VehicleNewsCard
-                key={item.title}
+                key={item.id}
                 item={item}
                 category={t.newsCategory}
                 readTime={t.newsReadTime}
@@ -227,24 +230,38 @@ function VehicleNewsCard({
   readTime,
   locale,
 }: {
-  item: { title: string; href: string }
+  item: PublicNewsArticle
   category: string
   readTime: string
   locale: PublicLocale
 }) {
+  const href = localizePublicHref(locale, `/vehicle-news/${item.slug}`)
   return (
     <Link
-      href={item.href}
+      href={href}
       className="group w-full flex-none snap-start overflow-hidden rounded-[10px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:rounded-[12px]"
     >
-      <NoPhotoFrame className="aspect-[16/9] rounded-t-[10px] border-0 sm:aspect-[16/10] sm:rounded-none" compact locale={locale} />
+      <div className="relative aspect-[16/9] overflow-hidden rounded-t-[10px] bg-[#eef3f8] sm:aspect-[16/10] sm:rounded-none">
+        {item.imageUrl ? (
+          <Image
+            src={item.imageUrl}
+            alt={item.imageAlt}
+            fill
+            sizes="(max-width: 640px) 86vw, 33vw"
+            className="object-cover transition duration-500 group-hover:scale-[1.025]"
+          />
+        ) : (
+          <NoPhotoFrame className="h-full w-full border-0" compact locale={locale} />
+        )}
+      </div>
       <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
         <div className="text-[11px] font-medium text-[#667085]">
-          {category} | {readTime}
+          {item.category?.label || category} | {item.readingTime ? `${item.readingTime} min` : readTime}
         </div>
         <h3 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-[#101828] transition group-hover:text-[#0866ff] sm:text-[16px] sm:leading-[1.35]">
           {item.title}
         </h3>
+        <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-[#667085]">{item.excerpt}</p>
         <span className="mt-3 inline-flex items-center gap-2 text-[14px] font-semibold text-[#0866ff] sm:mt-4">
           {readMoreLabel(locale)}
           <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
