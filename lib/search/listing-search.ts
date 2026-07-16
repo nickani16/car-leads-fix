@@ -74,6 +74,7 @@ type SearchListingRow = {
   body_type: string | null
   city: string | null
   municipality: string | null
+  postal_code: string | null
   country_code: string | null
   country: string | null
 }
@@ -303,7 +304,7 @@ async function searchPublishedListingEntries({
 
   let request = createAdminClient()
     .from('marketplace_listings')
-    .select('id,category,title,make,model,variant,model_year,fuel_type,gearbox,body_type,city,municipality,country_code,country')
+    .select('id,category,title,make,model,variant,model_year,fuel_type,gearbox,body_type,city,municipality,postal_code,country_code,country')
     .eq('status', 'published')
     .not('published_at', 'is', null)
     .is('sold_at', null)
@@ -325,6 +326,9 @@ async function searchPublishedListingEntries({
       `body_type.ilike.%${escaped}%`,
       `city.ilike.%${escaped}%`,
       `municipality.ilike.%${escaped}%`,
+      `postal_code.ilike.%${escaped}%`,
+      `country.ilike.%${escaped}%`,
+      `country_code.ilike.%${escaped}%`,
     )
   }
   for (const fuel of fuelValues) {
@@ -385,6 +389,7 @@ function scoreListingMatch(
     listing.body_type,
     listing.city,
     listing.municipality,
+    listing.postal_code,
     listing.country,
     listing.country_code,
   ].filter(Boolean).join(' '))
@@ -418,19 +423,64 @@ function createListingDerivedEntries({
   const category = normalizeMarketplaceCategory(String(listing.category || 'cars'))
   const title = listingTitle(listing)
   const description = listingDescription(locale, listing)
+  const location = listingLocation(listing)
 
   if (listing.make) {
     const params = baseListingFilterParams(market, category)
     params.set('make', listing.make)
-    if (listing.model) params.set('model', listing.model)
-    const label = [listing.make, listing.model].filter(Boolean).join(' ')
     entries.push({
       href: localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`),
-      title: label,
+      title: listing.make,
       description,
-      keywords: `${label} ${title} ${listing.model_year || ''} ${listing.fuel_type || ''}`,
-      type: listing.model ? 'model' : 'make',
+      keywords: `${listing.make} ${listing.model || ''} ${title} ${listing.model_year || ''} ${listing.fuel_type || ''} ${listing.city || ''} ${listing.municipality || ''}`,
+      type: 'make',
     })
+
+    if (listing.model) {
+      const modelParams = baseListingFilterParams(market, category)
+      modelParams.set('make', listing.make)
+      modelParams.set('model', listing.model)
+      const label = [listing.make, listing.model].filter(Boolean).join(' ')
+      entries.push({
+        href: localizePublicHref(locale, `/marketplace/${category}?${modelParams.toString()}`),
+        title: label,
+        description,
+        keywords: `${label} ${title} ${listing.variant || ''} ${listing.model_year || ''} ${listing.fuel_type || ''} ${listing.city || ''} ${listing.municipality || ''}`,
+        type: 'model',
+      })
+    }
+
+    if (location) {
+      const makeLocationParams = baseListingFilterParams(market, category)
+      makeLocationParams.set('make', listing.make)
+      setLocationParams(makeLocationParams, location)
+      entries.push({
+        href: localizePublicHref(locale, `/marketplace/${category}?${makeLocationParams.toString()}`),
+        title: joinLocalized(listing.make, formatLocationTitle(location, locale, false), locale),
+        description: locationDescriptor(location, locale),
+        keywords: `${listing.make} ${listing.model || ''} ${listing.city || ''} ${listing.municipality || ''} ${listing.postal_code || ''} ${listing.country || ''}`,
+        type: 'vehicle-query',
+      })
+
+      if (listing.model) {
+        const modelLocationParams = baseListingFilterParams(market, category)
+        modelLocationParams.set('make', listing.make)
+        modelLocationParams.set('model', listing.model)
+        setLocationParams(modelLocationParams, location)
+        const label = [listing.make, listing.model].filter(Boolean).join(' ')
+        entries.push({
+          href: localizePublicHref(locale, `/marketplace/${category}?${modelLocationParams.toString()}`),
+          title: joinLocalized(label, formatLocationTitle(location, locale, false), locale),
+          description: locationDescriptor(location, locale),
+          keywords: `${label} ${listing.variant || ''} ${listing.city || ''} ${listing.municipality || ''} ${listing.postal_code || ''} ${listing.country || ''}`,
+          type: 'vehicle-query',
+        })
+      }
+    }
+  }
+
+  if (location) {
+    entries.push(createLocationEntry({ locale, location }))
   }
 
   if (year && Number(listing.model_year) === year) {
@@ -473,11 +523,30 @@ function createListingDerivedEntries({
     }, locale),
     title,
     description,
-    keywords: `${title} ${listing.make || ''} ${listing.model || ''} ${listing.variant || ''} ${listing.model_year || ''} ${listing.fuel_type || ''} ${listing.city || ''} ${listing.country || ''}`,
+    keywords: `${title} ${listing.make || ''} ${listing.model || ''} ${listing.variant || ''} ${listing.model_year || ''} ${listing.fuel_type || ''} ${listing.city || ''} ${listing.municipality || ''} ${listing.postal_code || ''} ${listing.country || ''}`,
     type: 'listing',
   })
 
   return entries
+}
+
+function listingLocation(listing: SearchListingRow): VehicleLocation | null {
+  const country = normalizeMarket(listing.country_code)
+  if (!country) return null
+  const city = cleanLocationValue(listing.city)
+  const municipality = cleanLocationValue(listing.municipality)
+  const postalCode = cleanLocationValue(listing.postal_code)
+  if (!city && !municipality && !postalCode) return { country }
+  return {
+    country,
+    city: city || municipality,
+    municipality: municipality || city,
+    postalCode,
+  }
+}
+
+function cleanLocationValue(value: string | null | undefined) {
+  return String(value || '').replace(/\s+/g, ' ').trim()
 }
 
 function baseListingFilterParams(market: string, category: MarketplaceCategorySlug) {

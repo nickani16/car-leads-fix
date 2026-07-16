@@ -29,6 +29,7 @@ export type MarketplaceSearchInput = {
   model?: string | null
   city?: string | null
   municipality?: string | null
+  postalCode?: string | null
   county?: string | null
   region?: string | null
   minPrice?: string | number | null
@@ -280,6 +281,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     model: clean(input.model).slice(0, 80),
     city: clean(input.city).slice(0, 80),
     municipality: clean(input.municipality).slice(0, 80),
+    postalCode: clean(input.postalCode).slice(0, 40),
     county: clean(input.county || input.region).slice(0, 80),
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
@@ -363,6 +365,7 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.make) query = query.eq('make', filters.make)
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
+  if (filters.postalCode) query = query.ilike('postal_code', filters.postalCode)
   if (filters.county) {
     const countyTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
       marketplaceRegionMunicipalitySearchTerms(country, filters.county),
@@ -416,27 +419,10 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
-    const escaped = escapeIlike(filters.q)
-    const locationTerms = marketplaceSearchLocationTermsForQuery(
-      filters.q,
-      locationFilterCountryScopes(filters.markets),
-    )
-    const locationFilters = locationTerms.municipalities.flatMap((term) => {
-      const escapedTerm = escapeIlike(term)
-      return [`municipality.ilike.%${escapedTerm}%`, `city.ilike.%${escapedTerm}%`]
-    })
-    query = query.or(
-      [
-        `title.ilike.%${escaped}%`,
-        `make.ilike.%${escaped}%`,
-        `model.ilike.%${escaped}%`,
-        `variant.ilike.%${escaped}%`,
-        `city.ilike.%${escaped}%`,
-        `municipality.ilike.%${escaped}%`,
-        `reference_number.ilike.%${escaped}%`,
-        ...locationFilters,
-      ].join(','),
-    )
+    for (const token of marketplaceSearchTokens(filters.q)) {
+      const tokenFilters = marketplaceSearchOrFiltersForToken(token, filters.markets)
+      if (tokenFilters.length) query = query.or(tokenFilters.join(','))
+    }
   } else if (filters.q) {
     const identifierQuery = filters.q.replace(/[%_,]/g, '')
     query = query.or(
@@ -451,6 +437,51 @@ function applyMarketplaceListingFilters<T extends {
   }
 
   return query
+}
+
+function marketplaceSearchTokens(query: string) {
+  const tokens = query
+    .split(/\s+/)
+    .map((token) => clean(token).replace(/[,%()]/g, ''))
+    .filter((token) => token.length >= MIN_FULLTEXT_QUERY_LENGTH)
+    .slice(0, 6)
+
+  return tokens.length ? tokens : [query]
+}
+
+function marketplaceSearchOrFiltersForToken(token: string, markets: string[]) {
+  const escaped = escapeIlike(token)
+  if (!escaped) return []
+  const filters = [
+    `title.ilike.%${escaped}%`,
+    `make.ilike.%${escaped}%`,
+    `model.ilike.%${escaped}%`,
+    `variant.ilike.%${escaped}%`,
+    `fuel_type.ilike.%${escaped}%`,
+    `gearbox.ilike.%${escaped}%`,
+    `body_type.ilike.%${escaped}%`,
+    `condition.ilike.%${escaped}%`,
+    `color.ilike.%${escaped}%`,
+    `equipment.ilike.%${escaped}%`,
+    `city.ilike.%${escaped}%`,
+    `municipality.ilike.%${escaped}%`,
+    `country.ilike.%${escaped}%`,
+    `country_code.ilike.%${escaped}%`,
+    `reference_number.ilike.%${escaped}%`,
+  ]
+
+  if (/^(19|20)\d{2}$/.test(token)) filters.push(`model_year.eq.${token}`)
+
+  const locationTerms = marketplaceSearchLocationTermsForQuery(
+    token,
+    locationFilterCountryScopes(markets),
+  )
+  for (const term of locationTerms.municipalities) {
+    const escapedTerm = escapeIlike(term)
+    filters.push(`municipality.ilike.%${escapedTerm}%`, `city.ilike.%${escapedTerm}%`)
+  }
+
+  return [...new Set(filters)]
 }
 
 function applyActiveTopPlacementFilter<T extends {
