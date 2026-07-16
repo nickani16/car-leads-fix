@@ -224,14 +224,15 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
                 </Link>
               </div>
             </div>
-            <div className="relative mx-auto h-[230px] w-full max-w-[360px] overflow-hidden rounded-[18px] border border-[#e3eaf4] bg-[#edf2f8] shadow-[0_18px_42px_rgba(16,24,40,.14)] sm:h-[270px] lg:mx-0">
+            <div className="relative mx-auto h-[230px] w-full max-w-[360px] overflow-hidden rounded-[18px] bg-[#edf2f8] shadow-[0_18px_42px_rgba(16,24,40,.16)] sm:h-[270px] lg:mx-0">
               <Image
                 src="/autorell-pricing-mobile-hero.jpg"
                 alt="Autorell mobile listing form"
                 fill
                 priority
+                quality={95}
                 sizes="(min-width: 1024px) 360px, calc(100vw - 40px)"
-                className="object-contain object-center"
+                className="object-cover object-center"
               />
             </div>
           </div>
