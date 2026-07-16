@@ -204,7 +204,7 @@ const countryCenters: Record<string, [number, number]> = {
 }
 
 const marketOptions = [
-  { value: '', label: 'Hela Europa' },
+  { value: '', label: 'All of Europe' },
   { value: 'AT', label: 'Austria' },
   { value: 'BE', label: 'Belgique / Belgie' },
   { value: 'DK', label: 'Danmark' },
@@ -220,7 +220,7 @@ const marketOptions = [
 
 const countryFilterOptions = marketOptions.map((option) => ({
   ...option,
-  label: option.value ? option.label : 'Hela Europa',
+  label: option.value ? option.label : 'All of Europe',
 }))
 
 const selectableMarketCodes = new Set(marketOptions.map((option) => option.value).filter(Boolean))
@@ -1945,7 +1945,7 @@ function MarketOptionGrid({
             }`}
           >
             <span className="min-w-0 truncate">
-              {option.value ? getEuCountryName(option.value, locale) : option.label}
+              {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
             </span>
             {selected ? <Check className="ml-1.5 h-4 w-4 shrink-0" /> : null}
           </button>

@@ -66,10 +66,11 @@ export const euCountryCodes = activeMarketCountryCodes
 
 export function getEuCountryName(code: string, locale = 'sv') {
   const normalizedCode = code.toUpperCase()
+  const displayLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
 
   try {
     return (
-      new Intl.DisplayNames([locale], { type: 'region' }).of(normalizedCode) ||
+      new Intl.DisplayNames([displayLocale], { type: 'region' }).of(normalizedCode) ||
       normalizedCode
     )
   } catch {

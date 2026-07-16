@@ -1,6 +1,7 @@
 const activeMarketUiTranslations = {
   sv: {
     'All vehicles': 'Alla fordon',
+    'Choose category': 'Välj kategori',
     'Vehicles for sale': 'Fordon till salu',
     'Vehicle leasing': 'Leasing',
     'Search vehicle, city or area': 'Sök efter märke, modell eller ort',
@@ -165,6 +166,7 @@ const activeMarketUiTranslations = {
   },
   de: {
     'All vehicles': 'Alle Fahrzeuge',
+    'Choose category': 'Kategorie wählen',
     'Vehicles for sale': 'Fahrzeuge kaufen',
     'Vehicle leasing': 'Fahrzeugleasing',
     'Search vehicle, city or area': 'Nach Marke, Modell oder Ort suchen',
@@ -334,6 +336,7 @@ const activeMarketUiTranslations = {
   },
   it: {
     'All vehicles': 'Tutti i veicoli',
+    'Choose category': 'Scegli categoria',
     'Vehicles for sale': 'Veicoli in vendita',
     'Vehicle leasing': 'Leasing veicoli',
     'Search vehicle, city or area': 'Cerca per marca, modello o località',
@@ -424,6 +427,7 @@ const activeMarketUiTranslations = {
   },
   es: {
     'All vehicles': 'Todos los vehículos',
+    'Choose category': 'Elegir categoría',
     'Vehicles for sale': 'Vehículos en venta',
     'Vehicle leasing': 'Leasing de vehículos',
     'Search vehicle, city or area': 'Buscar por marca, modelo o ubicación',
@@ -486,6 +490,7 @@ const activeMarketUiTranslations = {
   },
   fr: {
     'All vehicles': 'Tous les véhicules',
+    'Choose category': 'Choisir une catégorie',
     'Vehicles for sale': 'Véhicules à vendre',
     'Vehicle leasing': 'Leasing de véhicules',
     'Search vehicle, city or area': 'Rechercher une marque, un modèle ou une ville',
@@ -548,6 +553,7 @@ const activeMarketUiTranslations = {
   },
   nl: {
     'All vehicles': 'Alle voertuigen',
+    'Choose category': 'Kies categorie',
     'Vehicles for sale': 'Voertuigen te koop',
     'Vehicle leasing': 'Voertuigleasing',
     'Search vehicle, city or area': 'Zoek op merk, model of plaats',
@@ -602,6 +608,7 @@ const activeMarketUiTranslations = {
   },
   pl: {
     'All vehicles': 'Wszystkie pojazdy',
+    'Choose category': 'Wybierz kategorię',
     'Vehicles for sale': 'Pojazdy na sprzedaż',
     'Vehicle leasing': 'Leasing pojazdów',
     'Search vehicle, city or area': 'Marka, model lub lokalizacja',
@@ -656,6 +663,7 @@ const activeMarketUiTranslations = {
   },
   da: {
     'All vehicles': 'Alle køretøjer',
+    'Choose category': 'Vælg kategori',
     'Vehicles for sale': 'Køretøjer til salg',
     'Vehicle leasing': 'Køretøjsleasing',
     'Search vehicle, city or area': 'Søg efter mærke, model eller by',
@@ -696,6 +704,7 @@ const activeMarketUiTranslations = {
   },
   fi: {
     'All vehicles': 'Kaikki ajoneuvot',
+    'Choose category': 'Valitse kategoria',
     'Vehicles for sale': 'Myytävät ajoneuvot',
     'Vehicle leasing': 'Ajoneuvoleasing',
     'Search vehicle, city or area': 'Merkki, malli tai paikkakunta',

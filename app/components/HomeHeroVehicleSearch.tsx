@@ -42,6 +42,7 @@ import {
   marketplaceLanguage,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
+import { getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import {
@@ -256,6 +257,7 @@ function marketLabel(
   option: (typeof marketOptions)[number],
   locale: PublicLocale,
 ) {
+  if (option.code !== allMarketsCode) return getEuCountryName(option.code, locale)
   if (locale === 'sv') return option.sv
   if (locale === 'de') return option.de
   return locale === 'en' ? option.en : translatePublic(locale, option.en)
@@ -635,7 +637,7 @@ export default function HomeHeroVehicleSearch({
             {query || selectedSearchSuggestions.length ? null : (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:max-w-none lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:max-w-[calc(100%-64px)] lg:group-focus-within:translate-x-0"
+                className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:max-w-[calc(100%-88px)] lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:max-w-[calc(100%-64px)] lg:group-focus-within:translate-x-0"
               >
                 {searchPlaceholder}
               </span>
@@ -643,7 +645,7 @@ export default function HomeHeroVehicleSearch({
             <Search className={`h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 ${
               selectedSearchSuggestions.length
                 ? 'absolute right-4 top-1/2 -translate-y-1/2'
-                : 'absolute right-4 top-1/2 -translate-y-1/2 lg:right-auto lg:left-[calc(50%+124px)] lg:group-focus-within:left-auto lg:group-focus-within:right-4'
+                : 'absolute right-4 top-1/2 -translate-y-1/2'
             }`} strokeWidth={2.1} />
           </div>
           <VehicleSmartSearchSuggestionPanel
