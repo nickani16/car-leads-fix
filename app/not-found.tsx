@@ -6,11 +6,11 @@ import {
   Building2,
   CarFront,
   Home,
-  LifeBuoy,
   Search,
   Truck,
 } from 'lucide-react'
-import BrandLogo from './components/BrandLogo'
+import PublicFooter from './components/PublicFooter'
+import PublicHeader from './components/PublicHeader'
 import {
   getNotFoundCopy,
   type NotFoundLanguage,
@@ -49,6 +49,21 @@ const localeByPathPrefix: Record<string, PublicLocale> = {
   nl: 'nl',
   fi: 'fi',
   dk: 'da',
+}
+
+const marketCodeByLocale: Record<PublicLocale, string> = {
+  en: 'EU',
+  sv: 'SE',
+  de: 'DE',
+  at: 'AT',
+  be: 'BE',
+  fr: 'FR',
+  es: 'ES',
+  it: 'IT',
+  pl: 'PL',
+  nl: 'NL',
+  fi: 'FI',
+  da: 'DK',
 }
 
 function getLocaleFromPathname(pathname: string | null): PublicLocale | null {
@@ -120,20 +135,7 @@ export default async function NotFound() {
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#111827]">
-      <header className="border-b border-[#dde5f2] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-[1320px] items-center justify-between px-5 sm:px-8 lg:px-10">
-          <Link href={localizePublicHref(locale, '/')} aria-label={copy.homeAria}>
-            <BrandLogo />
-          </Link>
-          <Link
-            href={localizePublicHref(locale, '/contact')}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cfd8e8] bg-white px-4 text-sm font-semibold text-[#122033] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-          >
-            <LifeBuoy className="h-4 w-4" />
-            {copy.support}
-          </Link>
-        </div>
-      </header>
+      <PublicHeader locale={locale} marketCode={marketCodeByLocale[locale]} />
 
       <section className="mx-auto grid max-w-[1320px] gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-10 lg:py-16">
         <div className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_24px_80px_rgba(15,23,42,.07)]">
@@ -217,6 +219,7 @@ export default async function NotFound() {
           </div>
         </aside>
       </section>
+      <PublicFooter locale={locale} />
     </main>
   )
 }
