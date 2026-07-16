@@ -690,9 +690,25 @@ function SellerPanel({
 
 function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): PublicLocale {
   const requested = headerStore.get('x-autorell-language') || 'en'
-  return requested === 'sv' || requested === 'de' || isPublicLanguage(requested)
-    ? requested
-    : 'en'
+  if (requested === 'sv' || requested === 'de' || isPublicLanguage(requested)) {
+    return requested
+  }
+  const pathname = headerStore.get('x-autorell-pathname') || ''
+  const prefix = pathname.split('/').filter(Boolean)[0]
+  const localeByPrefix: Record<string, PublicLocale> = {
+    se: 'sv',
+    de: 'de',
+    at: 'at',
+    be: 'be',
+    fr: 'fr',
+    es: 'es',
+    it: 'it',
+    pl: 'pl',
+    nl: 'nl',
+    fi: 'fi',
+    dk: 'da',
+  }
+  return localeByPrefix[prefix] || 'en'
 }
 
 function marketCodeForLocale(locale: PublicLocale) {
