@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
+
+const authComponent = readFileSync(new URL('../app/components/EmailCodeAuth.tsx', import.meta.url), 'utf8')
+const signupRoute = readFileSync(new URL('../app/api/auth/password-signup/route.ts', import.meta.url), 'utf8')
+const otpRequestRoute = readFileSync(new URL('../app/api/auth/email-code/request/route.ts', import.meta.url), 'utf8')
+const recoveryRoute = readFileSync(new URL('../app/api/auth/password-recovery/route.ts', import.meta.url), 'utf8')
+const authLocale = readFileSync(new URL('../lib/auth-locale.ts', import.meta.url), 'utf8')
+const authEmails = readFileSync(new URL('../lib/email/auth-emails.ts', import.meta.url), 'utf8')
+const localizedCatchall = readFileSync(new URL('../app/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
+
+test('login UI offers password first while preserving one-time code login', () => {
+  assert.match(authComponent, /authMethod.*password/)
+  assert.match(authComponent, /signInWithPassword/)
+  assert.match(authComponent, /useCodeInstead/)
+  assert.match(authComponent, /usePasswordInstead/)
+  assert.match(authComponent, /\/api\/auth\/email-code\/request/)
+  assert.match(authComponent, /\/api\/auth\/email-code\/verify/)
+  assert.match(authComponent, /forgot-password/)
+})
+
+test('password registration uses Supabase Auth without a parallel password store', () => {
+  assert.match(signupRoute, /supabase\.auth\.signUp/)
+  assert.match(signupRoute, /emailRedirectTo/)
+  assert.match(signupRoute, /preferred_locale/)
+  assert.match(signupRoute, /isStrongPassword/)
+  assert.doesNotMatch(signupRoute, /from\('.*password|password_hash|create table/)
+})
+
+test('auth emails carry active locale and localized reset links', () => {
+  assert.match(authLocale, /localeFromRequest/)
+  assert.match(authLocale, /localizedAuthPath/)
+  assert.match(otpRequestRoute, /localeFromRequest\(request, body\.locale\)/)
+  assert.match(otpRequestRoute, /getOtpEmailCopy\(locale, code\)/)
+  assert.match(recoveryRoute, /localeFromRequest\(request, body\.locale\)/)
+  assert.match(recoveryRoute, /getPasswordResetEmailCopy\(locale\)/)
+  assert.match(recoveryRoute, /next'.*localizedAuthPath\(locale, '\/reset-password'\)/s)
+  for (const marker of ['sv', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(authEmails, new RegExp(`${marker}: \\{`))
+  }
+})
+
+test('market-prefixed auth pages resolve through localized catchall', () => {
+  assert.match(localizedCatchall, /slugPath === 'login'/)
+  assert.match(localizedCatchall, /slugPath === 'register'/)
+  assert.match(localizedCatchall, /slugPath === 'forgot-password'/)
+  assert.match(localizedCatchall, /slugPath === 'reset-password'/)
+})

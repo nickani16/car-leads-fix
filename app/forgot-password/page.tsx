@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import BrandLogo from '@/app/components/BrandLogo'
 import styles from '../login/login.module.css'
+import { localeFromPath } from '@/lib/auth-locale'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -21,7 +22,10 @@ export default function ForgotPasswordPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email: email.trim() }),
+      body: JSON.stringify({
+        email: email.trim(),
+        locale: localeFromPath(window.location.pathname),
+      }),
     })
     const result = (await response.json().catch(() => ({}))) as {
       error?: string

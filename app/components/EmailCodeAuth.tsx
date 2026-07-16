@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
+  Eye,
+  EyeOff,
   Heart,
   LockKeyhole,
   Mail,
@@ -18,6 +20,8 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { createClient } from '@/lib/supabase/client'
+import { isStrongPassword, PASSWORD_REQUIREMENTS } from '@/lib/password-policy'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
@@ -30,11 +34,16 @@ export default function EmailCodeAuth({
 }) {
   const router = useRouter()
   const copy = getCopy(locale, mode)
+  const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(true)
   const [retryAfter, setRetryAfter] = useState(0)
   const [registerAccountType, setRegisterAccountType] = useState<'private' | 'business'>('private')
@@ -67,7 +76,7 @@ export default function EmailCodeAuth({
       const response = await fetch('/api/auth/email-code/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, locale }),
       })
       const result = (await response.json()) as {
         error?: string
@@ -130,6 +139,80 @@ export default function EmailCodeAuth({
             ? registerDestination
             : localizePublicHref(locale, '/account')),
       )
+      router.refresh()
+    } catch {
+      setError(copy.connectionError)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function submitPassword(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+    setNotice('')
+    setLoading(true)
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const requestedNext = params.get('next')
+      const registerDestination = localizePublicHref(
+        locale,
+        registerAccountType === 'business'
+          ? '/register?onboarding=1&account=business'
+          : '/register?onboarding=1',
+      )
+      if (mode === 'register') {
+        if (!isStrongPassword(password)) {
+          setError(PASSWORD_REQUIREMENTS)
+          return
+        }
+        if (password !== confirmPassword) {
+          setError(copy.passwordMismatch)
+          return
+        }
+        const response = await fetch('/api/auth/password-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            confirmPassword,
+            locale,
+            next: registerDestination,
+          }),
+        })
+        const result = (await response.json()) as {
+          success?: boolean
+          sessionReady?: boolean
+          destination?: string
+          error?: string
+        }
+        if (!response.ok || !result.success) {
+          setError(result.error || copy.passwordSignupError)
+          return
+        }
+        if (remember) window.localStorage.setItem(REMEMBERED_LOGIN_KEY, email.trim())
+        if (result.sessionReady) {
+          router.replace(result.destination || registerDestination)
+          router.refresh()
+          return
+        }
+        setNotice(copy.confirmEmailSent)
+        return
+      }
+
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      if (signInError) {
+        setError(copy.invalidPassword)
+        return
+      }
+      if (remember) window.localStorage.setItem(REMEMBERED_LOGIN_KEY, email.trim())
+      else window.localStorage.removeItem(REMEMBERED_LOGIN_KEY)
+      router.replace(requestedNext || localizePublicHref(locale, '/account'))
       router.refresh()
     } catch {
       setError(copy.connectionError)
@@ -204,15 +287,109 @@ export default function EmailCodeAuth({
                 {copy.account}
               </p>
               <h2 className="mt-3 text-4xl tracking-[-.05em]">
-                {step === 'email' ? copy.signIn : copy.checkInbox}
+                {authMethod === 'password'
+                  ? copy.signIn
+                  : step === 'email'
+                    ? copy.codeSignIn
+                    : copy.checkInbox}
               </h2>
               <p className="mt-3 text-sm leading-6 text-[#667085]">
-                {step === 'email'
-                  ? copy.description
-                  : `${copy.codeSent} ${email}`}
+                {authMethod === 'password'
+                  ? copy.passwordDescription
+                  : step === 'email'
+                    ? copy.description
+                    : `${copy.codeSent} ${email}`}
               </p>
 
-              {step === 'email' ? (
+              {authMethod === 'password' ? (
+                <form onSubmit={submitPassword} className="mt-8">
+                  <label className="block text-sm font-semibold">
+                    {copy.email}
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="namn@exempel.se"
+                      required
+                      autoFocus
+                      className="mt-2 h-14 w-full rounded-[14px] border border-[#cfd5df] bg-white px-4 text-base outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                    />
+                  </label>
+                  <label className="mt-5 block text-sm font-semibold">
+                    {copy.password}
+                    <span className="mt-2 flex h-14 items-center rounded-[14px] border border-[#cfd5df] bg-white px-4 focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                        required
+                        className="h-full min-w-0 flex-1 bg-transparent text-base outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((current) => !current)}
+                        className="grid h-9 w-9 place-items-center text-[#667085]"
+                        aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </span>
+                  </label>
+                  {mode === 'register' ? (
+                    <label className="mt-5 block text-sm font-semibold">
+                      {copy.confirmPassword}
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        autoComplete="new-password"
+                        required
+                        className="mt-2 h-14 w-full rounded-[14px] border border-[#cfd5df] bg-white px-4 text-base outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                      />
+                    </label>
+                  ) : null}
+                  <label className="mt-5 flex items-center justify-between gap-4 text-sm text-[#475467]">
+                    {copy.remember}
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(event) => setRemember(event.target.checked)}
+                      className="h-5 w-5 accent-[#0866ff]"
+                    />
+                  </label>
+                  {mode === 'login' ? (
+                    <Link href={localizePublicHref(locale, '/forgot-password')} className="mt-4 inline-block text-sm font-bold text-[#0866ff]">
+                      {copy.forgotPassword}
+                    </Link>
+                  ) : (
+                    <p className="mt-4 text-xs leading-5 text-[#667085]">{PASSWORD_REQUIREMENTS}</p>
+                  )}
+                  {error ? <ErrorMessage message={error} /> : null}
+                  {notice ? <p role="status" className="mt-5 rounded-[13px] border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3 text-sm text-[#1d4ed8]">{notice}</p> : null}
+                  <button
+                    disabled={loading}
+                    className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[14px] bg-[#202124] px-6 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    {loading ? copy.signingIn : copy.signIn}
+                    {!loading ? <ArrowRight className="h-4 w-4" /> : null}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMethod('code')
+                      setStep('email')
+                      setError('')
+                      setNotice('')
+                    }}
+                    className="mt-5 w-full text-center text-sm font-bold text-[#0866ff]"
+                  >
+                    {copy.useCodeInstead}
+                  </button>
+                </form>
+              ) : step === 'email' ? (
                 <form onSubmit={requestCode} className="mt-8">
                   <label className="block text-sm font-semibold">
                     {copy.email}
@@ -244,6 +421,16 @@ export default function EmailCodeAuth({
                   >
                     {loading ? copy.sending : copy.continue}
                     {!loading ? <ArrowRight className="h-4 w-4" /> : null}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMethod('password')
+                      setError('')
+                    }}
+                    className="mt-5 w-full text-center text-sm font-bold text-[#0866ff]"
+                  >
+                    {copy.usePasswordInstead}
                   </button>
                 </form>
               ) : (
@@ -345,10 +532,20 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
     secure: 'Secure passwordless access',
     account: 'Autorell account',
     signIn: mode === 'login' ? 'Sign in' : 'Create account',
+    codeSignIn: 'Sign in with one-time code',
+    passwordDescription: mode === 'login'
+      ? 'Sign in with your email address and password, or use a one-time code instead.'
+      : 'Create your Autorell account with an email address and password.',
     description: 'Enter your email address and we will send you a six-digit sign-in code.',
     email: 'Email address',
+    password: 'Password',
+    confirmPassword: 'Confirm password',
+    forgotPassword: 'Forgot password?',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     remember: 'Remember my email',
     continue: 'Continue',
+    signingIn: mode === 'login' ? 'Signing in...' : 'Creating account...',
     sending: 'Sending code…',
     checkInbox: 'Check your inbox',
     codeSent: 'Enter the code we sent to',
@@ -360,6 +557,12 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
     newHere: 'New to Autorell?',
     haveAccount: 'Already have an account?',
     createAccount: 'Create account',
+    useCodeInstead: 'Sign in with one-time code instead',
+    usePasswordInstead: 'Use password instead',
+    invalidPassword: 'The email or password is incorrect.',
+    passwordMismatch: 'The passwords do not match.',
+    passwordSignupError: 'The account could not be created. Try password reset or one-time code.',
+    confirmEmailSent: 'If email confirmation is required, open the email we sent and then continue creating your profile.',
     sendError: 'The code could not be sent.',
     codeError: 'The code is incorrect or has expired.',
     connectionError: 'The connection was interrupted. Try again.',
@@ -375,10 +578,20 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       secure: 'Trygg inloggning utan lösenord',
       account: 'Autorell-konto',
       signIn: mode === 'login' ? 'Logga in' : 'Skapa konto',
+      codeSignIn: 'Logga in med engångskod',
+      passwordDescription: mode === 'login'
+        ? 'Logga in med mejladress och lösenord, eller använd en engångskod istället.'
+        : 'Skapa ditt Autorell-konto med mejladress och lösenord.',
       description: 'Ange din e-postadress så skickar vi en sexsiffrig inloggningskod.',
       email: 'Mejladress',
+      password: 'Lösenord',
+      confirmPassword: 'Bekräfta lösenord',
+      forgotPassword: 'Glömt lösenord?',
+      showPassword: 'Visa lösenord',
+      hidePassword: 'Dölj lösenord',
       remember: 'Kom ihåg min mejladress',
       continue: 'Fortsätt',
+      signingIn: mode === 'login' ? 'Loggar in...' : 'Skapar konto...',
       sending: 'Skickar kod…',
       checkInbox: 'Titta i din inkorg',
       codeSent: 'Ange koden vi skickade till',
@@ -390,6 +603,12 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       newHere: 'Inte registrerad ännu?',
       haveAccount: 'Har du redan ett konto?',
       createAccount: 'Skapa konto',
+      useCodeInstead: 'Logga in med engångskod istället',
+      usePasswordInstead: 'Använd lösenord istället',
+      invalidPassword: 'Mejladressen eller lösenordet är fel.',
+      passwordMismatch: 'Lösenorden matchar inte.',
+      passwordSignupError: 'Kontot kunde inte skapas. Prova lösenordsåterställning eller engångskod.',
+      confirmEmailSent: 'Om mejlbekräftelse krävs, öppna mejlet vi skickade och fortsätt sedan skapa din profil.',
       sendError: 'Koden kunde inte skickas.',
       codeError: 'Koden är felaktig eller har gått ut.',
       connectionError: 'Anslutningen avbröts. Försök igen.',
@@ -406,10 +625,20 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       secure: 'Sicherer Zugang ohne Passwort',
       account: 'Autorell-Konto',
       signIn: mode === 'login' ? 'Anmelden' : 'Konto erstellen',
+      codeSignIn: 'Mit Einmalcode anmelden',
+      passwordDescription: mode === 'login'
+        ? 'Melden Sie sich mit E-Mail-Adresse und Passwort an oder verwenden Sie stattdessen einen Einmalcode.'
+        : 'Erstellen Sie Ihr Autorell-Konto mit E-Mail-Adresse und Passwort.',
       description: 'E-Mail-Adresse eingeben und einen sechsstelligen Anmeldecode erhalten.',
       email: 'E-Mail-Adresse',
+      password: 'Passwort',
+      confirmPassword: 'Passwort bestätigen',
+      forgotPassword: 'Passwort vergessen?',
+      showPassword: 'Passwort anzeigen',
+      hidePassword: 'Passwort ausblenden',
       remember: 'E-Mail-Adresse merken',
       continue: 'Weiter',
+      signingIn: mode === 'login' ? 'Anmeldung...' : 'Konto wird erstellt...',
       sending: 'Code wird gesendet…',
       checkInbox: 'Posteingang prüfen',
       codeSent: 'Geben Sie den Code ein, den wir gesendet haben an',
@@ -421,6 +650,12 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       newHere: 'Noch nicht registriert?',
       haveAccount: 'Bereits registriert?',
       createAccount: 'Konto erstellen',
+      useCodeInstead: 'Stattdessen mit Einmalcode anmelden',
+      usePasswordInstead: 'Stattdessen Passwort verwenden',
+      invalidPassword: 'E-Mail-Adresse oder Passwort ist falsch.',
+      passwordMismatch: 'Die Passwörter stimmen nicht überein.',
+      passwordSignupError: 'Das Konto konnte nicht erstellt werden. Versuchen Sie Passwort zurücksetzen oder Einmalcode.',
+      confirmEmailSent: 'Falls eine E-Mail-Bestätigung erforderlich ist, öffnen Sie die E-Mail und erstellen Sie danach Ihr Profil weiter.',
       sendError: 'Der Code konnte nicht gesendet werden.',
       codeError: 'Der Code ist falsch oder abgelaufen.',
       connectionError: 'Die Verbindung wurde unterbrochen. Erneut versuchen.',

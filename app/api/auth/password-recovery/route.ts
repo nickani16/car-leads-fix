@@ -1,30 +1,12 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { authOrigin, localeFromRequest, localizedAuthPath } from '@/lib/auth-locale'
+import { authEmailHtml, getPasswordResetEmailCopy } from '@/lib/email/auth-emails'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const requestWindow = new Map<string, number>()
 const REQUEST_COOLDOWN_MS = 60_000
-
-function getHostname(request: Request) {
-  return (
-    request.headers.get('x-forwarded-host') ||
-    request.headers.get('host') ||
-    ''
-  )
-    .split(',')[0]
-    .trim()
-    .split(':')[0]
-    .toLowerCase()
-}
-
-function getOrigin(request: Request) {
-  const hostname = getHostname(request)
-
-  if (hostname.endsWith('autorell.de')) return 'https://www.autorell.com/de'
-  if (hostname.endsWith('autorell.se')) return 'https://www.autorell.com/se'
-  return 'https://www.autorell.com'
-}
 
 function getClientKey(request: Request, email: string) {
   const ip =
@@ -41,16 +23,11 @@ function isRateLimited(key: string) {
 
   if (requestWindow.size > 500) {
     for (const [storedKey, requestedAt] of requestWindow) {
-      if (now - requestedAt >= REQUEST_COOLDOWN_MS) {
-        requestWindow.delete(storedKey)
-      }
+      if (now - requestedAt >= REQUEST_COOLDOWN_MS) requestWindow.delete(storedKey)
     }
   }
 
-  if (previousRequest && now - previousRequest < REQUEST_COOLDOWN_MS) {
-    return true
-  }
-
+  if (previousRequest && now - previousRequest < REQUEST_COOLDOWN_MS) return true
   requestWindow.set(key, now)
   return false
 }
@@ -59,14 +36,12 @@ export async function POST(request: Request) {
   const genericResponse = NextResponse.json({ success: true })
 
   try {
-    const body = (await request.json()) as { email?: string }
+    const body = (await request.json()) as { email?: string; locale?: string }
     const email = body.email?.trim().toLowerCase() || ''
+    const locale = localeFromRequest(request, body.locale)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { error: 'Enter a valid email address.' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
     }
 
     const recoveryLimit = checkRateLimit({
@@ -74,11 +49,7 @@ export async function POST(request: Request) {
       limit: 5,
       windowMs: 15 * 60 * 1000,
     })
-    if (recoveryLimit.limited) {
-      return genericResponse
-    }
-
-    if (isRateLimited(getClientKey(request, email))) {
+    if (recoveryLimit.limited || isRateLimited(getClientKey(request, email))) {
       return genericResponse
     }
 
@@ -91,81 +62,39 @@ export async function POST(request: Request) {
       )
     }
 
-    const origin = getOrigin(request)
     const supabase = createAdminClient()
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email,
     })
-
     const tokenHash = data.properties?.hashed_token
+    if (error || !tokenHash) return genericResponse
 
-    if (error || !tokenHash) {
-      console.info('Password recovery requested for an unknown account.')
-      return genericResponse
-    }
-
+    const origin = authOrigin(request)
     const recoveryUrl = new URL('/auth/callback', origin)
     recoveryUrl.searchParams.set('token_hash', tokenHash)
     recoveryUrl.searchParams.set('type', 'recovery')
-    recoveryUrl.searchParams.set('next', '/reset-password')
-    const recoveryLink = recoveryUrl.toString()
+    recoveryUrl.searchParams.set('next', localizedAuthPath(locale, '/reset-password'))
 
+    const copy = getPasswordResetEmailCopy(locale)
+    const recoveryLink = recoveryUrl.toString()
     const resend = new Resend(resendKey)
     const { error: sendError } = await resend.emails.send({
       from: 'Autorell <noreply@autorell.com>',
       to: email,
-      subject: 'Reset your Autorell password',
+      subject: copy.subject,
       text: [
-        'Reset your Autorell password',
+        copy.heading,
         '',
-        'We received a request to reset the password for your Autorell marketplace account.',
-        `Open this secure link to choose a new password: ${recoveryLink}`,
+        copy.intro,
+        `${copy.cta}: ${recoveryLink}`,
         '',
-        'The link is temporary and can only be used once.',
-        'If you did not request this reset, you can ignore this email.',
+        copy.expiry,
+        copy.ignore,
         '',
         'Autorell marketplace',
       ].join('\n'),
-      html: `
-        <!doctype html>
-        <html>
-          <body style="margin:0;background:#f3f2ee;color:#202124;font-family:Arial,sans-serif;">
-            <div style="display:none;max-height:0;overflow:hidden;">
-              Use this secure link to reset your Autorell account password.
-            </div>
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f2ee;padding:28px 12px;">
-              <tr>
-                <td align="center">
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #deddd7;border-radius:24px;overflow:hidden;">
-                    <tr>
-                      <td style="background:#202427;padding:30px 34px;color:#ffffff;">
-                        <div style="font-size:30px;letter-spacing:-1px;">Autorell</div>
-                        <div style="margin-top:8px;color:#b4d9ef;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Marketplace · Secure account recovery</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:38px 34px;">
-                        <div style="display:inline-block;border-radius:999px;background:#e4f3fa;color:#315f74;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Password reset</div>
-                        <h1 style="margin:20px 0 0;font-size:32px;line-height:1.15;letter-spacing:-1px;">Choose a new password.</h1>
-                        <p style="margin:16px 0 0;color:#64747b;font-size:15px;line-height:1.75;">We received a request to reset the password for your Autorell marketplace account. Use the secure button below to continue.</p>
-                        <a href="${recoveryLink}" style="display:inline-block;margin-top:28px;border-radius:999px;background:#202427;color:#ffffff;text-decoration:none;padding:16px 25px;font-size:14px;font-weight:700;">Reset password</a>
-                        <div style="margin-top:28px;border-left:4px solid #b4d9ef;background:#edf6fa;border-radius:0 14px 14px 0;padding:18px 20px;color:#536b76;font-size:13px;line-height:1.7;">
-                          This link is temporary and can only be used once. If you did not request a password reset, no action is required.
-                        </div>
-                        <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e7e5df;color:#899196;font-size:11px;line-height:1.7;">
-                          Autorell AB · European vehicle marketplace<br />
-                          Security messages are sent from noreply@autorell.com.
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </body>
-        </html>
-      `,
+      html: authEmailHtml(copy, { href: recoveryLink, label: copy.cta }),
     })
 
     if (sendError) {

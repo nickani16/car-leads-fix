@@ -23,6 +23,10 @@ import AcceptCompanyTeamInvitationPage from '@/app/account/company/team/accept/p
 import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
+import LoginPage from '@/app/login/page'
+import RegisterPage from '@/app/registrera/page'
+import ForgotPasswordPage from '@/app/forgot-password/page'
+import ResetPasswordPage from '@/app/reset-password/page'
 
 export default async function LocalizedMarketPage({
   params,
@@ -37,6 +41,22 @@ export default async function LocalizedMarketPage({
   if (!locale) notFound()
 
   const slugPath = slug.join('/')
+  if (slugPath === 'login') {
+    return <LoginPage />
+  }
+
+  if (slugPath === 'register' || slugPath === 'registrera') {
+    return <RegisterPage searchParams={searchParams} />
+  }
+
+  if (slugPath === 'forgot-password') {
+    return <ForgotPasswordPage />
+  }
+
+  if (slugPath === 'reset-password') {
+    return <ResetPasswordPage />
+  }
+
   if (slugPath === 'account/listings/new' || slugPath === 'konto/annonser/ny') {
     return renderNewListingPage({
       searchParams,

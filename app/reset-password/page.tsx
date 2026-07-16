@@ -11,6 +11,7 @@ import {
   isStrongPassword,
   PASSWORD_REQUIREMENTS,
 } from '@/lib/password-policy'
+import { localeFromPath, localizedAuthPath } from '@/lib/auth-locale'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
       credentials: 'same-origin',
     })
     await supabase.auth.signOut()
-    router.replace('/se')
+    router.replace(localizedAuthPath(localeFromPath(window.location.pathname), '/login'))
     router.refresh()
   }
 
