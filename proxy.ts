@@ -634,6 +634,20 @@ export async function proxy(request: NextRequest) {
         )
       }
 
+      if (methodCanRedirect && ['login', 'forgot-password', 'reset-password'].includes(segments[1] || '')) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${pathMarket}`
+        url.search = ''
+        url.searchParams.set('auth', segments[1] === 'login' ? 'login' : segments[1])
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.redirect(url, 307),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
+
       const localizedUrl = request.nextUrl.clone()
       localizedUrl.pathname = internalPathFromLocalizedSegments(
         segments.slice(1),
