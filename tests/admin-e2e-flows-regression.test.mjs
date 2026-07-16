@@ -54,9 +54,18 @@ test('support and company notifications have outbound delivery while internal no
 })
 
 test('CMS drafts can select media from the real media library', () => {
+  const form = read('app/admin/AdminDraftForm.tsx')
+  const contentRoute = read('app/api/admin/content/route.ts')
   assert.match(read('app/api/admin/media/route.ts'), /export async function GET/)
-  assert.match(read('app/admin/AdminDraftForm.tsx'), /hero_media_id/)
-  assert.match(read('app/api/admin/content/route.ts'), /content_post_media/)
+  assert.match(form, /hero_media_id/)
+  assert.match(form, /hero_file/)
+  assert.match(form, /content_blocks/)
+  assert.match(form, /H\{level\}/)
+  assert.match(contentRoute, /parseContentBlocks/)
+  assert.match(contentRoute, /content_post_media/)
+  assert.match(contentRoute, /content_post_versions/)
+  assert.match(contentRoute, /reading_time_minutes/)
+  assert.match(read('app/[market]/vehicle-news/[slug]/page.tsx'), /ArticleBodyBlock/)
 })
 
 test('admin MFA recovers interrupted enrollment and normalizes the QR source', () => {

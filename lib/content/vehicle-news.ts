@@ -31,6 +31,13 @@ export type PublicNewsArticle = {
   relatedPostIds: string[]
 }
 
+export type PublicNewsBodyBlock = {
+  type: 'paragraph' | 'heading'
+  level: 1 | 2 | 3 | 4 | 5 | 6
+  text: string
+  bold: boolean
+}
+
 function languageForMarket(market: string) {
   const normalized = market.toLowerCase()
   if (normalized === 'se') return 'sv'
@@ -156,10 +163,23 @@ export async function getVehicleNewsArticle(market: string, slug: string, previe
 }
 
 export function articleBodyText(body: Record<string, unknown>) {
+  return articleBodyBlocks(body).map((block) => block.text)
+}
+
+export function articleBodyBlocks(body: Record<string, unknown>): PublicNewsBodyBlock[] {
   const content = Array.isArray(body.content) ? body.content : []
-  return content.map((block) => {
-    if (!block || typeof block !== 'object') return ''
+  return content.map((block): PublicNewsBodyBlock | null => {
+    if (!block || typeof block !== 'object') return null
     const value = block as Record<string, unknown>
-    return typeof value.text === 'string' ? value.text : ''
-  }).filter(Boolean)
+    const text = typeof value.text === 'string' ? value.text.trim() : ''
+    if (!text) return null
+    const type = value.type === 'heading' ? 'heading' : 'paragraph'
+    const level = Number(value.level)
+    return {
+      type,
+      level: type === 'heading' && level >= 1 && level <= 6 ? level as PublicNewsBodyBlock['level'] : 1,
+      text,
+      bold: Boolean(value.bold),
+    }
+  }).filter((block): block is PublicNewsBodyBlock => Boolean(block))
 }
