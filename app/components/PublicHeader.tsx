@@ -219,8 +219,8 @@ const copy = {
   en: {
     home: 'Home',
     buy: 'Buy',
-    sell: 'Sell vehicle',
-    business: 'Business account',
+    sell: 'Sell',
+    business: 'Business',
     about: 'About Autorell',
     help: 'Help',
     contact: 'Contact',
