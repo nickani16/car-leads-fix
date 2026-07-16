@@ -95,12 +95,12 @@ function VehicleNewsSubnav({
 
   return (
     <nav aria-label={copy.aria} className="w-full max-w-full overflow-hidden border-b border-[#e2e8f0] bg-white">
-      <div className="mx-auto flex h-11 w-full max-w-[1920px] items-center gap-9 overflow-x-auto px-5 text-[15px] font-normal text-[#101828] [scrollbar-width:none] sm:px-8 min-[1120px]:h-12 min-[1120px]:justify-center min-[1120px]:px-8 [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex h-10 w-full max-w-[1920px] items-center gap-8 overflow-x-auto px-5 text-[15px] font-normal text-[#101828] [scrollbar-width:none] sm:px-8 min-[1120px]:h-11 min-[1120px]:justify-center min-[1120px]:gap-9 min-[1120px]:px-8 [&::-webkit-scrollbar]:hidden">
         {items.map((item) => (
           <Link
             key={item.id}
             href={item.href}
-            className={`relative flex h-full shrink-0 items-center whitespace-nowrap transition after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full ${
+            className={`relative flex h-full shrink-0 items-center whitespace-nowrap transition after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:w-7 after:-translate-x-1/2 after:rounded-full ${
               activeCategory === item.id
                 ? 'text-[#0866ff] after:bg-[#0866ff]'
                 : 'text-[#101828] after:bg-transparent hover:text-[#0866ff]'
