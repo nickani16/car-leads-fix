@@ -21,8 +21,8 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
 
   return (
     <section id="article-search" className="w-full min-w-0 max-w-full">
-      <div className="sticky top-0 z-20 -mx-5 border-y border-[#dbe4f0] bg-white/95 px-5 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-[14px] sm:border sm:px-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="sticky top-0 z-20 -mx-5 border-b border-[#e2e8f0] bg-white/96 px-5 backdrop-blur sm:static sm:mx-0 sm:border sm:border-x-0 sm:border-t-0 sm:px-0">
+        <div className="flex gap-8 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button type="button" onClick={() => setActiveCategory('all')} className={tabClass(activeCategory === 'all')}>
             {copy.all}
           </button>
@@ -53,8 +53,8 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
           </div>
           <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{featured.category?.label || copy.guide}</p>
-            <h3 className="mt-4 text-3xl font-semibold leading-tight tracking-[-.035em] text-[#101828] sm:text-4xl">{featured.title}</h3>
-            <p className="mt-4 text-base leading-7 text-[#475467]">{featured.excerpt}</p>
+            <h3 className="mt-4 max-w-full break-words text-3xl font-semibold leading-tight tracking-[-.035em] text-[#101828] [overflow-wrap:anywhere] sm:text-4xl">{featured.title}</h3>
+            <p className="mt-4 max-w-full break-words text-base leading-7 text-[#475467] [overflow-wrap:anywhere]">{featured.excerpt}</p>
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-[#667085]">
               <time>{new Date(featured.publishedAt).toLocaleDateString(copy.dateLocale)}</time>
               <span>|</span>
@@ -79,7 +79,11 @@ export default function VehicleNewsSearch({ market, categories, articles }: { ma
 }
 
 function tabClass(active: boolean) {
-  return `shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${active ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]' : 'border-[#d4deeb] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'}`
+  return `relative min-h-14 shrink-0 whitespace-nowrap text-[15px] font-semibold transition after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:transition ${
+    active
+      ? 'text-[#0866ff] after:bg-[#0866ff]'
+      : 'text-[#344054] after:bg-transparent hover:text-[#0866ff]'
+  }`
 }
 
 function vehicleNewsArticleHref(market: string, slug: string) {
@@ -94,8 +98,8 @@ function NewsCard({ market, article, copy }: { market: string; article: PublicNe
       </div>
       <div className="p-5">
         <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">{article.category?.label || copy.guide}</p>
-        <h3 className="mt-3 line-clamp-2 text-xl font-semibold leading-tight tracking-[-.02em] text-[#101828] group-hover:text-[#0866ff]">{article.title}</h3>
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#475467]">{article.excerpt}</p>
+        <h3 className="mt-3 line-clamp-3 max-w-full break-words text-[22px] font-semibold leading-[1.12] tracking-[-.025em] text-[#101828] [overflow-wrap:anywhere] group-hover:text-[#0866ff] sm:text-xl">{article.title}</h3>
+        <p className="mt-3 line-clamp-3 max-w-full break-words text-sm leading-6 text-[#475467] [overflow-wrap:anywhere]">{article.excerpt}</p>
         <div className="mt-5 flex items-center justify-between gap-3 text-sm">
           <span className="text-[#667085]">{article.readingTime} min</span>
           <span className="inline-flex items-center gap-1 font-semibold text-[#0866ff]">{copy.readMore}<ArrowRight className="h-4 w-4" /></span>
