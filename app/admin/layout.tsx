@@ -1,4 +1,3 @@
-import InactivityLogout from '@/app/components/InactivityLogout'
 import { requireAdmin } from '@/lib/admin-auth'
 import AdminShell from './AdminShell'
 
@@ -11,7 +10,6 @@ export default async function AdminLayout({
 
   return (
     <>
-      <InactivityLogout />
       <AdminShell
         roles={auth.roles}
         permissions={auth.permissions}

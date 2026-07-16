@@ -1,6 +1,5 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import InactivityLogout from '@/app/components/InactivityLogout'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -24,7 +23,6 @@ export default async function AccountLayout({
 
   return (
     <div className="min-h-screen bg-white text-[#101828]">
-      <InactivityLogout />
       <PublicHeader locale={locale} marketCode={marketCode} />
       <div className="min-h-[70vh]">{children}</div>
       <PublicFooter locale={locale} />

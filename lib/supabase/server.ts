@@ -33,6 +33,11 @@ export async function createClient() {
           }
         },
       },
+      cookieOptions: {
+        path: '/',
+        sameSite: 'lax',
+        maxAge: 400 * 24 * 60 * 60,
+      },
     }
   )
 }

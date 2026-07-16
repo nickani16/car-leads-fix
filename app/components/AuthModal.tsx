@@ -577,18 +577,25 @@ export default function AuthModal({
                 </>
               ) : null}
 
-              <label className="mt-4 flex items-center justify-between gap-4 text-sm text-[#475467]">
-                {copy.remember}
-                <span className="relative grid h-5 w-5 place-items-center">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(event) => setRemember(event.target.checked)}
-                    className="peer h-5 w-5 appearance-none rounded-[6px] border border-[#b8c5d8] bg-white transition checked:border-[#0866ff] checked:bg-[#0866ff] focus:outline-none focus:ring-4 focus:ring-[#0866ff]/12"
-                  />
-                  <Check className="pointer-events-none absolute h-3.5 w-3.5 scale-75 text-white opacity-0 transition peer-checked:scale-100 peer-checked:opacity-100" />
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={remember}
+                onClick={() => setRemember((current) => !current)}
+                className="mt-4 flex min-h-11 w-full items-center justify-between gap-4 rounded-[11px] text-left text-sm text-[#475467] outline-none transition focus-visible:ring-4 focus-visible:ring-[#0866ff]/12"
+              >
+                <span>{copy.remember}</span>
+                <span
+                  aria-hidden="true"
+                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-[7px] border transition ${
+                    remember
+                      ? 'border-[#0866ff] bg-[#0866ff] text-white'
+                      : 'border-[#b8c5d8] bg-white text-transparent'
+                  }`}
+                >
+                  <Check className="h-3.5 w-3.5" />
                 </span>
-              </label>
+              </button>
 
               {error ? <AuthError message={error} /> : null}
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}

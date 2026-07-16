@@ -13,6 +13,10 @@ const recoveryRoute = readFileSync(new URL('../app/api/auth/password-recovery/ro
 const authLocale = readFileSync(new URL('../lib/auth-locale.ts', import.meta.url), 'utf8')
 const authEmails = readFileSync(new URL('../lib/email/auth-emails.ts', import.meta.url), 'utf8')
 const localizedCatchall = readFileSync(new URL('../app/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
+const supabaseBrowserClient = readFileSync(new URL('../lib/supabase/client.ts', import.meta.url), 'utf8')
+const supabaseServerClient = readFileSync(new URL('../lib/supabase/server.ts', import.meta.url), 'utf8')
+const accountLayout = readFileSync(new URL('../app/konto/layout.tsx', import.meta.url), 'utf8')
+const adminLayout = readFileSync(new URL('../app/admin/layout.tsx', import.meta.url), 'utf8')
 
 test('login UI offers password first while preserving one-time code login', () => {
   assert.match(authComponent, /authMethod.*password/)
@@ -35,6 +39,9 @@ test('public header auth popup uses password first and keeps OTP fallback', () =
   assert.match(authModal, /switchView\('forgot'\)/)
   assert.match(authModal, /\/api\/auth\/email-code\/request/)
   assert.match(authModal, /\/api\/auth\/email-code\/verify/)
+  assert.match(authModal, /role="checkbox"/)
+  assert.match(authModal, /aria-checked=\{remember\}/)
+  assert.match(authModal, /setRemember\(\(current\) => !current\)/)
 })
 
 test('legacy auth pages redirect into the public auth popup', () => {
@@ -71,4 +78,13 @@ test('market-prefixed auth pages resolve through localized catchall', () => {
   assert.match(localizedCatchall, /slugPath === 'register'/)
   assert.match(localizedCatchall, /slugPath === 'forgot-password'/)
   assert.match(localizedCatchall, /slugPath === 'reset-password'/)
+})
+
+test('auth sessions persist and are not cleared by inactivity logout', () => {
+  assert.match(supabaseBrowserClient, /persistSession:\s*true/)
+  assert.match(supabaseBrowserClient, /autoRefreshToken:\s*true/)
+  assert.match(supabaseBrowserClient, /maxAge:\s*400 \* 24 \* 60 \* 60/)
+  assert.match(supabaseServerClient, /maxAge:\s*400 \* 24 \* 60 \* 60/)
+  assert.doesNotMatch(accountLayout, /InactivityLogout/)
+  assert.doesNotMatch(adminLayout, /InactivityLogout/)
 })
