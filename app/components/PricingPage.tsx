@@ -205,37 +205,35 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <PricingAnchorScroll />
-      <section className="border-b border-[#e7ecf3] bg-[#fbfcfe]">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-14 lg:py-16">
-          <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-            <div className="min-w-0">
-              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
+      <section className="relative min-h-[520px] overflow-hidden border-b border-[#d8e0ec] bg-[#101828] sm:min-h-[560px]">
+        <Image
+          src="/autorell-pricing-mobile-hero.jpg"
+          alt="Autorell mobile listing form"
+          fill
+          priority
+          quality={95}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,12,24,.78)_0%,rgba(7,12,24,.58)_42%,rgba(7,12,24,.16)_76%,rgba(7,12,24,.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,12,24,.32)_0%,rgba(7,12,24,0)_42%)]" />
+        <div className="relative z-10 mx-auto flex min-h-[520px] max-w-[var(--autorell-page-max)] items-end px-5 py-10 sm:min-h-[560px] sm:px-8 sm:py-14 lg:py-16">
+          <div className="min-w-0">
+              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-white [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
                 {copy.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[#596579] sm:text-[18px] sm:leading-8">
+              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-white/82 sm:text-[18px] sm:leading-8">
                 {copy.intro}
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
-                <Link href="#private" className="rounded-full border border-[#d8e0ec] bg-white px-4 py-2 text-sm font-medium text-[#101828] transition hover:border-[#b8c4d6]">
+                <Link href="#private" className="rounded-full border border-white/55 bg-white px-4 py-2 text-sm font-medium text-[#101828] shadow-[0_12px_30px_rgba(7,12,24,.18)] transition hover:bg-[#f7faff]">
                   {copy.privateHeading}
                 </Link>
-                <Link href="#business" className="rounded-full border border-[#d8e0ec] bg-white px-4 py-2 text-sm font-medium text-[#101828] transition hover:border-[#b8c4d6]">
+                <Link href="#business" className="rounded-full border border-white/45 bg-white/12 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/18">
                   {copy.businessHeading}
                 </Link>
               </div>
             </div>
-            <div className="relative mx-auto h-[230px] w-full max-w-[360px] overflow-hidden rounded-[18px] bg-[#edf2f8] shadow-[0_18px_42px_rgba(16,24,40,.16)] sm:h-[270px] lg:mx-0">
-              <Image
-                src="/autorell-pricing-mobile-hero.jpg"
-                alt="Autorell mobile listing form"
-                fill
-                priority
-                quality={95}
-                sizes="(min-width: 1024px) 360px, calc(100vw - 40px)"
-                className="object-cover object-center"
-              />
-            </div>
-          </div>
         </div>
       </section>
 
