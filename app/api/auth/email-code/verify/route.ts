@@ -151,7 +151,7 @@ export async function POST(request: Request) {
     const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin
         .from('marketplace_profiles')
-        .select('user_id,account_type')
+        .select('user_id,account_type,identity_status')
         .eq('user_id', data.user.id)
         .maybeSingle(),
       admin
@@ -195,6 +195,21 @@ export async function POST(request: Request) {
       await admin.from('admin_staff_invitations').update({
         status: 'accepted', accepted_by: data.user.id, accepted_at: now, updated_at: now,
       }).eq('id', invitation.id)
+    }
+
+    if (
+      profile?.account_type === 'private' &&
+      !['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+    ) {
+      const now = new Date().toISOString()
+      await admin
+        .from('marketplace_profiles')
+        .update({
+          identity_status: 'basic_checked',
+          verified_at: now,
+          verification_updated_at: now,
+        })
+        .eq('user_id', data.user.id)
     }
 
     const requested = safeAuthDestination(body.next)

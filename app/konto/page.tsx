@@ -407,7 +407,7 @@ export default async function AccountPage() {
               {copy.secureAccount}
             </span>
           </div>
-          <ProfileForm profile={profile} locale={locale} />
+          <ProfileForm profile={profile} locale={locale} emailConfirmed={Boolean(user.email_confirmed_at)} />
         </section>
 
         <DeleteAccountPanel

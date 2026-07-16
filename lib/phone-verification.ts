@@ -62,15 +62,31 @@ export function validatePhoneForCountry(value: unknown, countryCodeValue: unknow
   const detectedCountry = detectPhoneCountry(phone)
   const riskFlags: string[] = []
   const validFormat = /^\+[1-9]\d{7,14}$/.test(phone)
+  const nationalDigits = detectedCountry && euDialCodes[detectedCountry]
+    ? phone.slice(euDialCodes[detectedCountry].length).replace(/\D/g, '')
+    : phone.replace(/^\+/, '')
+  const digitRuns = nationalDigits.replace(/^0+/, '')
+  const hasRepeatedDigits = /(\d)\1{5,}/.test(digitRuns)
+  const hasSequentialDigits =
+    digitRuns.length >= 7 &&
+    ('01234567890123456789'.includes(digitRuns.slice(0, 8)) ||
+      '98765432109876543210'.includes(digitRuns.slice(0, 8)))
+  const reservedTestNumber =
+    /^5550{2,}/.test(digitRuns) ||
+    /^12345/.test(digitRuns) ||
+    /^0{6,}$/.test(nationalDigits)
 
   if (!validFormat) riskFlags.push('phone_format_invalid')
   if (validFormat && detectedCountry && detectedCountry !== countryCode) {
     riskFlags.push('phone_country_mismatch')
   }
+  if (validFormat && hasRepeatedDigits) riskFlags.push('phone_repeated_digits')
+  if (validFormat && hasSequentialDigits) riskFlags.push('phone_sequential_digits')
+  if (validFormat && reservedTestNumber) riskFlags.push('phone_reserved_test_number')
 
   const status = !validFormat
     ? 'invalid_format'
-    : riskFlags.includes('phone_country_mismatch')
+    : riskFlags.length
       ? 'country_mismatch'
       : 'format_valid'
 

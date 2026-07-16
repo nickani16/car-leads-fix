@@ -2269,7 +2269,7 @@ function VehicleResultCard({
     ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
     : listing.sellerIsTrader
       ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
-      : uiText(locale, 'Unverified email', 'Ej verifierad e-post', 'Nicht verifizierte E-Mail')
+      : uiText(locale, 'Unverified', 'Ej verifierad', 'Nicht verifiziert')
   const sellerTrustClass = listing.sellerTrust === 'verified'
     ? 'bg-[#0866ff] text-white'
     : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'
@@ -2767,7 +2767,7 @@ function MapListingPreview({
     ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
     : listing.sellerIsTrader
       ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
-      : uiText(locale, 'Unverified email', 'Ej verifierad e-post', 'Nicht verifizierte E-Mail')
+      : uiText(locale, 'Unverified', 'Ej verifierad', 'Nicht verifiziert')
   const sellerTrustClass = listing.sellerTrust === 'verified'
     ? 'bg-[#0866ff] text-white'
     : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'

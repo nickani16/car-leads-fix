@@ -19,6 +19,8 @@ test('email login codes are consumed atomically before session creation', () => 
   assert.match(emailCodeVerifyApi, /\.select\('id'\)/)
   assert.match(emailCodeVerifyApi, /copy\.usedCode/)
   assert.match(emailCodeVerifyApi, /supabase\.auth\.verifyOtp/)
+  assert.match(emailCodeVerifyApi, /identity_status: 'basic_checked'/)
+  assert.match(emailCodeVerifyApi, /verification_updated_at/)
 })
 
 test('marketplace profile creation requires a confirmed email session', () => {

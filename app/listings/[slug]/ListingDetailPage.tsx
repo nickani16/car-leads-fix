@@ -867,12 +867,12 @@ async function getSellerDetails(
   return verified
     ? {
         ...base,
-        label: copy.verifiedEmail,
+        label: copy.verified,
         tone: 'verified',
       }
     : {
         ...base,
-        label: copy.unverifiedEmail,
+        label: copy.unverified,
         tone: 'unverified',
       }
 }
@@ -1235,8 +1235,10 @@ const listingDetailCopy = {
     favoriteListing: 'Lägg till i favoriter',
     favoriteSaved: 'Sparad i favoriter',
     favoriteRemove: 'Ta bort från favoriter',
-    verifiedEmail: 'Verifierad e-post',
-    unverifiedEmail: 'Ej verifierad e-post',
+    verified: 'Verifierad',
+    unverified: 'Ej verifierad',
+    verifiedEmail: 'Verifierad',
+    unverifiedEmail: 'Ej verifierad',
     verifiedCompany: 'Verifierat företag',
     unverifiedCompany: 'Ej verifierat företag',
     companyVerificationPending: 'Företagsverifiering pågår',
@@ -1269,8 +1271,10 @@ const listingDetailCopy = {
     favoriteListing: 'Add to favourites',
     favoriteSaved: 'Saved to favourites',
     favoriteRemove: 'Remove from favourites',
-    verifiedEmail: 'Verified email',
-    unverifiedEmail: 'Unverified email',
+    verified: 'Verified',
+    unverified: 'Unverified',
+    verifiedEmail: 'Verified',
+    unverifiedEmail: 'Unverified',
     verifiedCompany: 'Verified company',
     unverifiedCompany: 'Unverified company',
     companyVerificationPending: 'Company verification in progress',
@@ -1303,8 +1307,10 @@ const listingDetailCopy = {
     favoriteListing: 'Zu Favoriten hinzufügen',
     favoriteSaved: 'In Favoriten gespeichert',
     favoriteRemove: 'Aus Favoriten entfernen',
-    verifiedEmail: 'Verifizierte E-Mail',
-    unverifiedEmail: 'Nicht verifizierte E-Mail',
+    verified: 'Verifiziert',
+    unverified: 'Nicht verifiziert',
+    verifiedEmail: 'Verifiziert',
+    unverifiedEmail: 'Nicht verifiziert',
     verifiedCompany: 'Verifiziertes Unternehmen',
     unverifiedCompany: 'Nicht verifiziertes Unternehmen',
     companyVerificationPending: 'Unternehmen wird geprüft',

@@ -111,7 +111,7 @@ export default async function PrivateProfilePage() {
         </section>
 
         <section className="mt-6">
-          <ProfileForm profile={profile} locale={locale} />
+          <ProfileForm profile={profile} locale={locale} emailConfirmed={Boolean(user.email_confirmed_at)} />
         </section>
       </div>
     </main>
