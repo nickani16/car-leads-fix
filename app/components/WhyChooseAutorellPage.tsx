@@ -487,76 +487,110 @@ export default async function WhyChooseAutorellPage({
     <main className="w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="border-b border-[#e4ebf5] bg-white">
-        <div className="mx-auto w-full max-w-[var(--autorell-page-max)] px-5 pb-18 pt-14 sm:px-8 lg:pb-24 lg:pt-20">
-          <div className="w-full max-w-5xl">
-            <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#0866ff]">{copy.eyebrow}</p>
-            <h1 className="mt-6 w-full max-w-[300px] break-words text-[42px] font-semibold leading-[.98] tracking-[-.055em] sm:max-w-5xl sm:text-[72px] lg:text-[86px]">
+      <section className="relative w-full max-w-full overflow-hidden bg-[#0866ff] text-white">
+        <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,0)_54%)] lg:block" />
+        <div className="absolute -right-28 top-28 h-[520px] w-[520px] rotate-45 bg-white/8" />
+        <div className="mx-auto grid min-h-[620px] w-full max-w-[var(--autorell-page-max)] gap-10 px-5 pb-12 pt-16 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:pb-16 lg:pt-20">
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-[.22em] text-white/70">{copy.eyebrow}</p>
+            <h1 className="mt-7 max-w-[340px] break-words text-[42px] font-semibold leading-[.96] tracking-[-.055em] sm:max-w-[760px] sm:text-[72px] lg:text-[86px]">
               {copy.title}
             </h1>
-            <p className="mt-7 w-full max-w-[300px] text-lg leading-8 text-[#526071] sm:max-w-3xl sm:text-xl sm:leading-9">
-              {copy.intro}
-            </p>
           </div>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link href={localizePublicHref(locale, '/sell-vehicle')} className="inline-flex min-h-12 items-center justify-center rounded-[12px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(8,102,255,.22)] transition hover:bg-[#075ce5]">
-              {copy.primaryCta}
-            </Link>
-            <Link href={localizePublicHref(locale, '/pricing')} className="inline-flex min-h-12 items-center justify-center rounded-[12px] border border-[#cbd7e8] bg-white px-6 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]">
-              {copy.secondaryCta}
-            </Link>
+          <div className="relative z-10 max-w-xl lg:pt-24">
+            <p className="max-w-[340px] text-lg font-medium leading-8 text-white/88 sm:max-w-xl sm:text-xl sm:leading-9">{copy.intro}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={localizePublicHref(locale, '/sell-vehicle')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] bg-white px-6 text-xs font-semibold uppercase tracking-[.12em] text-[#075ce5] shadow-[0_20px_48px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5">
+                {copy.primaryCta}
+              </Link>
+              <Link href={localizePublicHref(locale, '/pricing')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] border border-white/35 px-6 text-xs font-semibold uppercase tracking-[.12em] text-white transition hover:-translate-y-0.5 hover:bg-white/10">
+                {copy.secondaryCta}
+              </Link>
+            </div>
+          </div>
+          <TrustStrip locale={locale} />
+        </div>
+      </section>
+
+      <section className="w-full max-w-full overflow-hidden bg-[linear-gradient(180deg,#eff5ff_0%,#ffffff_42%)] py-16 sm:py-24">
+        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 sm:px-8 lg:grid-cols-[230px_minmax(0,1fr)]">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Autorell</p>
+          <h2 className="max-w-[340px] break-words text-[34px] font-semibold leading-[1.06] tracking-[-.04em] sm:max-w-4xl sm:text-6xl">
+            {copy.comparisonTitle}
+          </h2>
+        </div>
+      </section>
+
+      <section className="w-full max-w-full overflow-hidden bg-white">
+        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
+          <WorkflowRow
+            number="01"
+            title={copy.privateTitle}
+            text={copy.privateText}
+            cta={copy.privateLabel}
+            href={localizePublicHref(locale, '/sell-vehicle')}
+            visual="listing"
+          />
+          <WorkflowRow
+            number="02"
+            title={copy.businessTitle}
+            text={copy.businessText}
+            cta={copy.businessLabel}
+            href={localizePublicHref(locale, '/business')}
+            visual="business"
+          />
+          <WorkflowRow
+            number="03"
+            title={copy.europeTitle}
+            text={copy.europeText}
+            cta={copy.secondaryCta}
+            href={localizePublicHref(locale, '/pricing')}
+            visual="europe"
+            stats={copy.europeStats}
+          />
+        </div>
+      </section>
+
+      <section className="w-full max-w-full overflow-hidden border-y border-[#dfe7f2] bg-[#f5f8fd] py-16 sm:py-24">
+        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:items-start">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Platform</p>
+            <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-.045em] sm:text-5xl">
+              {copy.principleTitle}
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[#526071] [overflow-wrap:anywhere]">{copy.principleText}</p>
+          </div>
+          <div className="grid gap-4">
+            {copy.principles.map((principle, index) => (
+              <article key={principle.title} className="grid gap-5 border-t border-[#d8e2ef] py-6 sm:grid-cols-[64px_minmax(0,1fr)]">
+                <p className="text-xs font-semibold text-[#7a8797]">{String(index + 1).padStart(2, '0')}</p>
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-[-.035em]">{principle.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-[#667085]">{principle.text}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-[var(--autorell-page-max)] gap-0 px-5 py-14 sm:px-8 lg:grid-cols-2 lg:py-20">
-        <StoryPanel label={copy.privateLabel} title={copy.privateTitle} text={copy.privateText} />
-        <StoryPanel label={copy.businessLabel} title={copy.businessTitle} text={copy.businessText} separated />
-      </section>
-
-      <section className="border-y border-[#e4ebf5] bg-[#f7f9fd] py-14 sm:py-18">
+      <section className="w-full max-w-full overflow-hidden bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
-          <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
-            <div className="min-w-0">
-              <h2 className="max-w-3xl text-4xl font-semibold tracking-[-.045em] sm:text-5xl">
-                {copy.comparisonTitle}
-              </h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[#526071]">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#7a8797]">Comparison</p>
+              <h2 className="mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-[-.045em] sm:text-5xl">
                 {copy.comparisonText}
-              </p>
+              </h2>
             </div>
-            <div className="min-w-0 overflow-x-auto rounded-[20px] border border-[#dce5f2] bg-white shadow-[0_18px_60px_rgba(16,24,40,.06)]">
-              <div className="min-w-[640px]">
-                <div className="grid grid-cols-[1fr_1fr_1fr] border-b border-[#e6edf6] bg-[#fbfdff] px-5 py-4 text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
-                  <span />
-                  <span>{copy.autorellColumn}</span>
-                  <span>{copy.traditionalColumn}</span>
-                </div>
-                {copy.comparisonRows.map((row) => (
-                  <div key={row.label} className="grid grid-cols-[1fr_1fr_1fr] gap-4 border-b border-[#edf2f7] px-5 py-5 last:border-b-0">
-                    <p className="text-sm font-semibold text-[#101828]">{row.label}</p>
+            <div className="overflow-hidden border border-[#dce5f2] bg-white shadow-[0_22px_70px_rgba(16,24,40,.07)]">
+              {copy.comparisonRows.map((row) => (
+                <div key={row.label} className="grid gap-4 border-b border-[#edf2f7] p-5 last:border-b-0 sm:grid-cols-[minmax(0,.8fr)_minmax(0,1fr)]">
+                  <p className="text-sm font-semibold text-[#101828]">{row.label}</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <p className="text-sm leading-6 text-[#0866ff]">{row.autorell}</p>
                     <p className="text-sm leading-6 text-[#667085]">{row.other}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 lg:py-20">
-        <div className="rounded-[28px] border border-[#dce5f2] bg-white p-6 shadow-[0_20px_70px_rgba(16,24,40,.055)] sm:p-10 lg:p-12">
-          <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
-            <div className="min-w-0">
-              <h2 className="text-4xl font-semibold tracking-[-.045em] sm:text-6xl">{copy.europeTitle}</h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[#526071]">{copy.europeText}</p>
-            </div>
-            <div className="grid min-w-0 grid-cols-3 gap-3">
-              {copy.europeStats.map((stat) => (
-                <div key={stat.label} className="rounded-[18px] border border-[#e2e9f3] bg-[#fbfdff] p-4">
-                  <p className="text-3xl font-semibold tracking-[-.04em] text-[#101828]">{stat.value}</p>
-                  <p className="mt-2 text-xs font-medium leading-5 text-[#667085]">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -564,28 +598,22 @@ export default async function WhyChooseAutorellPage({
         </div>
       </section>
 
-      <section className="border-y border-[#e4ebf5] bg-white py-14 sm:py-18">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 sm:px-8">
-          <div className="max-w-3xl">
-            <h2 className="text-4xl font-semibold tracking-[-.045em] sm:text-5xl">{copy.principleTitle}</h2>
-            <p className="mt-5 text-base leading-8 text-[#526071]">{copy.principleText}</p>
+      <section className="w-full max-w-full overflow-hidden bg-[#0866ff] py-16 text-white sm:py-24">
+        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-white/65">Autorell</p>
+            <h2 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.03] tracking-[-.05em] sm:text-6xl">
+              {copy.finalTitle}
+            </h2>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/78">{copy.finalText}</p>
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {copy.principles.map((principle) => (
-              <article key={principle.title} className="rounded-[18px] border border-[#dce5f2] bg-[#fbfdff] p-6">
-                <h3 className="text-xl font-semibold tracking-[-.03em]">{principle.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-[#667085]">{principle.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#f7f9fd]">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8 lg:py-24">
-          <div className="max-w-4xl">
-            <h2 className="text-4xl font-semibold tracking-[-.045em] sm:text-6xl">{copy.finalTitle}</h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#526071]">{copy.finalText}</p>
+          <div className="grid gap-3">
+            <Link href={localizePublicHref(locale, '/sell-vehicle')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] bg-white px-6 text-xs font-semibold uppercase tracking-[.12em] text-[#075ce5]">
+              {copy.primaryCta}
+            </Link>
+            <Link href={localizePublicHref(locale, '/pricing')} className="inline-flex min-h-12 items-center justify-center rounded-[8px] border border-white/35 px-6 text-xs font-semibold uppercase tracking-[.12em] text-white">
+              {copy.secondaryCta}
+            </Link>
           </div>
         </div>
       </section>
@@ -595,23 +623,112 @@ export default async function WhyChooseAutorellPage({
   )
 }
 
-function StoryPanel({
-  label,
+function TrustStrip({ locale }: { locale: PublicLocale }) {
+  const labels = getTrustLabels(locale)
+  return (
+    <div className="relative z-10 col-span-full grid grid-cols-2 gap-3 pt-10 text-sm font-semibold text-[#05307a]/70 sm:grid-cols-4 lg:grid-cols-6">
+      {labels.map((label) => (
+        <div key={label} className="border-t border-white/20 pt-4 text-white/54">{label}</div>
+      ))}
+    </div>
+  )
+}
+
+function getTrustLabels(locale: PublicLocale) {
+  if (locale === 'sv') return ['Privatpersoner', 'Handlare', 'Fordonslager', 'Importörer', 'Lokala marknader', 'Europa']
+  if (locale === 'de' || locale === 'at') return ['Privatverkäufer', 'Händler', 'Fuhrparks', 'Importeure', 'Lokale Märkte', 'Europa']
+  if (locale === 'fr') return ['Particuliers', 'Marchands', 'Flottes', 'Importateurs', 'Marchés locaux', 'Europe']
+  if (locale === 'es') return ['Particulares', 'Vendedores', 'Flotas', 'Importadores', 'Mercados locales', 'Europa']
+  if (locale === 'it') return ['Privati', 'Rivenditori', 'Flotte', 'Importatori', 'Mercati locali', 'Europa']
+  if (locale === 'nl' || locale === 'be') return ['Particulieren', 'Handelaars', 'Voorraden', 'Importeurs', 'Lokale markten', 'Europa']
+  if (locale === 'pl') return ['Prywatni', 'Dealerzy', 'Floty', 'Importerzy', 'Rynki lokalne', 'Europa']
+  if (locale === 'da') return ['Private', 'Forhandlere', 'Flåder', 'Importører', 'Lokale markeder', 'Europa']
+  if (locale === 'fi') return ['Yksityiset', 'Liikkeet', 'Kalustot', 'Maahantuojat', 'Paikalliset markkinat', 'Eurooppa']
+  return ['Private sellers', 'Dealers', 'Fleets', 'Importers', 'Local markets', 'Europe']
+}
+
+function WorkflowRow({
+  number,
   title,
   text,
-  separated = false,
+  cta,
+  href,
+  visual,
+  stats,
 }: {
-  label: string
+  number: string
   title: string
   text: string
-  separated?: boolean
+  cta: string
+  href: string
+  visual: 'listing' | 'business' | 'europe'
+  stats?: readonly { value: string; label: string }[]
 }) {
   return (
-    <article className={`min-w-0 py-8 lg:px-10 lg:py-4 ${separated ? 'border-t border-[#e4ebf5] lg:border-l lg:border-t-0' : ''}`}>
-      <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{label}</p>
-      <h2 className="mt-5 w-full max-w-[300px] break-words text-3xl font-semibold tracking-[-.04em] sm:max-w-2xl sm:text-5xl">{title}</h2>
-      <p className="mt-5 w-full max-w-[300px] text-base leading-8 text-[#526071] sm:max-w-xl">{text}</p>
+    <article className="grid w-full min-w-0 max-w-full gap-8 border-t border-[#d8e2ef] py-12 sm:py-16 lg:grid-cols-[230px_minmax(0,.85fr)_minmax(380px,1fr)] lg:items-center">
+      <p className="text-xs font-semibold text-[#8a96a6]">{number}</p>
+      <div className="min-w-0">
+        <h3 className="max-w-[340px] break-words text-[31px] font-semibold leading-[1.08] tracking-[-.035em] sm:max-w-xl sm:text-5xl">{title}</h3>
+        <p className="mt-6 max-w-[330px] text-base leading-8 text-[#526071] [overflow-wrap:anywhere] sm:max-w-xl">{text}</p>
+        <Link href={href} className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[8px] border border-[#d6e1ee] px-5 text-xs font-semibold uppercase tracking-[.12em] text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]">
+          {cta}
+        </Link>
+      </div>
+      <div className="min-w-0">
+        <PlatformVisual variant={visual} stats={stats} />
+      </div>
     </article>
+  )
+}
+
+function PlatformVisual({
+  variant,
+  stats,
+}: {
+  variant: 'listing' | 'business' | 'europe'
+  stats?: readonly { value: string; label: string }[]
+}) {
+  const sideLabels =
+    variant === 'listing'
+      ? ['Photos', 'Price', 'Location', 'Details']
+      : variant === 'business'
+        ? ['Inventory', 'Team', 'Stats', 'Leads']
+        : ['Markets', 'Languages', 'Currency', 'Search']
+
+  return (
+    <div className="relative w-full max-w-full min-h-[320px] overflow-hidden rounded-[6px] bg-[#0866ff] p-6 shadow-[0_24px_70px_rgba(8,102,255,.22)] sm:min-h-[420px] sm:p-8">
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,0)_56%)]" />
+      <div className="relative grid h-full min-h-[270px] place-items-center">
+        <div className="grid h-20 w-20 place-items-center rounded-[18px] bg-white text-3xl font-semibold tracking-[-.05em] text-[#0866ff] shadow-[0_18px_40px_rgba(5,48,122,.22)]">
+          A
+        </div>
+        {sideLabels.map((label, index) => {
+          const positions = [
+            'left-0 top-8',
+            'right-0 top-16',
+            'left-4 bottom-14',
+            'right-3 bottom-8',
+          ]
+          return (
+            <div key={label} className={`absolute ${positions[index]} rounded-[5px] bg-white/18 px-4 py-3 text-[11px] font-semibold uppercase tracking-[.12em] text-white/78`}>
+              {label}
+            </div>
+          )
+        })}
+        <div className="absolute left-1/2 top-1/2 h-px w-[76%] -translate-x-1/2 bg-white/18" />
+        <div className="absolute left-1/2 top-1/2 h-[76%] w-px -translate-y-1/2 bg-white/18" />
+        {stats ? (
+          <div className="absolute inset-x-4 bottom-4 grid grid-cols-3 gap-2">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-[5px] bg-white/14 p-3">
+                <p className="text-2xl font-semibold text-white">{stat.value}</p>
+                <p className="mt-1 text-[10px] font-medium leading-4 text-white/68">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
   )
 }
 
