@@ -76,8 +76,9 @@ function listingFormError(
   step: ListingFormStep,
   field?: string,
   status = 400,
+  code?: string,
 ) {
-  return NextResponse.json({ error, step, field }, { status })
+  return NextResponse.json({ error, step, field, code }, { status })
 }
 
 function numberOrNull(value: string) {

@@ -7,6 +7,7 @@ const localizedMarketRoute = readFileSync(new URL('../app/[market]/[...slug]/pag
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const createListingRoute = readFileSync(new URL('../app/api/account/listings/route.ts', import.meta.url), 'utf8')
 const options = readFileSync(new URL('../lib/listing-form-options.ts', import.meta.url), 'utf8')
+const accountSeo = readFileSync(new URL('../lib/account-seo.ts', import.meta.url), 'utf8')
 
 test('new listing model year is constrained to dropdown values from 2027 to 1950+', () => {
   assert.match(form, /const maxModelYear = 2027/)
@@ -46,6 +47,7 @@ test('preview does not show package before package step', () => {
 
 test('publishing never leaves the form in an endless spinner and bulk UI is hidden', () => {
   assert.match(form, /const listingRequestTimeoutMs = 240_000/)
+  assert.match(form, /values\.listingTerms === 'on'[\s\S]*form\.set\('listingTerms', 'on'\)/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listings'/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listing-checkout'/)
   assert.match(form, /market: billingMarketCode \|\| listingCountryCode/)
@@ -56,6 +58,19 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.doesNotMatch(form, /router\.push\(`\/account\/listings\?choosePackage=1&listing=/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
   assert.doesNotMatch(form, /onAddToBatch/)
+})
+
+test('create listing package copy and metadata are manually localized', () => {
+  assert.match(form, /days: '7 días'/)
+  assert.match(form, /days: '15 días'/)
+  assert.match(form, /days: '30 días'/)
+  assert.match(form, /periodo de anuncio/)
+  assert.doesNotMatch(form, /período de cotización/)
+
+  assert.match(accountSeo, /Crear anuncio \| Autorell/)
+  assert.match(accountSeo, /Crea un anuncio de vehículo/)
+  assert.match(accountSeo, /Luo ilmoitus \| Autorell/)
+  assert.match(accountSeo, /Utwórz ogłoszenie \| Autorell/)
 })
 
 test('technical max trailer weight remains optional and is placed last for common road vehicles', () => {

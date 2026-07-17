@@ -177,12 +177,59 @@ function getAccountSeoCopy(page: AccountSeoKey, locale: PublicLocale) {
   if (locale === 'sv' || locale === 'de' || locale === 'en') {
     return accountSeoCopy[locale][page]
   }
+  const localized = localizedAccountSeoCopy[locale]?.[page]
+  if (localized) return localized
 
   const english = accountSeoCopy.en[page]
   return {
     title: translatePublic(locale, english.title),
     description: translatePublic(locale, english.description),
   }
+}
+
+const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<AccountSeoKey, AccountSeoCopy>>>> = {
+  fi: {
+    'new-listing': {
+      title: 'Luo ilmoitus | Autorell',
+      description: 'Luo ajoneuvoilmoitus hinnalla, kuvilla, sijainnilla ja ajoneuvon tiedoilla.',
+    },
+  },
+  da: {
+    'new-listing': {
+      title: 'Opret annonce | Autorell',
+      description: 'Opret en køretøjsannonce med pris, billeder, placering og køretøjsdata.',
+    },
+  },
+  fr: {
+    'new-listing': {
+      title: 'Créer une annonce | Autorell',
+      description: 'Créez une annonce de véhicule avec prix, photos, localisation et données du véhicule.',
+    },
+  },
+  es: {
+    'new-listing': {
+      title: 'Crear anuncio | Autorell',
+      description: 'Crea un anuncio de vehículo con precio, fotos, ubicación y datos del vehículo.',
+    },
+  },
+  it: {
+    'new-listing': {
+      title: 'Crea annuncio | Autorell',
+      description: 'Crea un annuncio per un veicolo con prezzo, foto, posizione e dati del veicolo.',
+    },
+  },
+  nl: {
+    'new-listing': {
+      title: 'Advertentie maken | Autorell',
+      description: 'Maak een voertuigadvertentie met prijs, foto’s, locatie en voertuiggegevens.',
+    },
+  },
+  pl: {
+    'new-listing': {
+      title: 'Utwórz ogłoszenie | Autorell',
+      description: 'Utwórz ogłoszenie pojazdu z ceną, zdjęciami, lokalizacją i danymi pojazdu.',
+    },
+  },
 }
 
 function fallbackAccountPath(page: AccountSeoKey, locale: PublicLocale) {

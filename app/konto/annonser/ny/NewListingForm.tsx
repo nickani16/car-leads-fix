@@ -81,6 +81,7 @@ type UploadImage = {
 }
 type ListingCreationError = {
   error?: string
+  code?: string
   step?: StepId
   field?: string
 }
@@ -446,7 +447,7 @@ export default function NewListingForm({
     if (targetStep !== null) {
       setStep(targetStep)
     }
-    const message = result.error || fallback
+    const message = localizedSubmissionError(locale, result, fallback)
     const displayMessage = targetStep !== null ? `${copy.steps[targetStep]}: ${message}` : message
     setError(displayMessage)
     return displayMessage
@@ -482,6 +483,7 @@ export default function NewListingForm({
       values.colorChoice === 'other' ? 'Annan färg' : values.colorChoice || '',
     )
     form.set('equipmentKeys', JSON.stringify(equipment))
+    if (values.listingTerms === 'on') form.set('listingTerms', 'on')
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
     orderedImages.forEach((image) => form.append('images', image.file, image.name))
 
@@ -2367,6 +2369,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     previewTitle: 'Esikatselu',
     technicalTitle: 'Tekniset tiedot ja tarkistus',
     technicalText: 'Vaihtoehdot näytetään vasta, kun avaat kohdan. Näin lomake pysyy selkeänä myös mobiilissa.',
+    errors: {
+      submit: 'Ilmoitusta ei voitu luoda juuri nyt. Tarkista tiedot ja yritä uudelleen.',
+      checkout: 'Ilmoitus tallennettiin, mutta Stripe Checkoutia ei voitu avata. Avaa omat ilmoitukset ja yritä maksua uudelleen.',
+      checkoutTimeout: 'Ilmoitus tallennettiin, mutta Stripe Checkoutin avaaminen kesti liian kauan. Avaa omat ilmoitukset ja yritä maksua uudelleen.',
+    },
   },
   da: {
     steps: ['Kategori og basis', 'Tekniske oplysninger', 'Billeder', 'Forhåndsvisning', 'Pakke og publicering'],
@@ -2379,6 +2386,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     processingImages: 'Behandler billeder...',
     imagesTitle: 'Billeder',
     previewTitle: 'Forhåndsvisning',
+    errors: {
+      submit: 'Annoncen kunne ikke oprettes lige nu. Kontrollér oplysningerne, og prøv igen.',
+      checkout: 'Annoncen blev gemt, men Stripe Checkout kunne ikke åbnes. Gå til Mine annoncer, og prøv betalingen igen.',
+      checkoutTimeout: 'Annoncen blev gemt, men Stripe Checkout tog for lang tid om at åbne. Gå til Mine annoncer, og prøv betalingen igen.',
+    },
   },
   fr: {
     steps: ['Catégorie et base', 'Détails techniques', 'Images', 'Aperçu', 'Forfait et publication'],
@@ -2389,6 +2401,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Choisir la couleur',
     chooseEquipment: 'Choisir les équipements',
     processingImages: 'Traitement des images...',
+    errors: {
+      submit: 'L’annonce ne peut pas être créée pour le moment. Vérifiez les informations et réessayez.',
+      checkout: 'L’annonce a été enregistrée, mais Stripe Checkout n’a pas pu être ouvert. Ouvrez Mes annonces et réessayez le paiement.',
+      checkoutTimeout: 'L’annonce a été enregistrée, mais Stripe Checkout a mis trop de temps à s’ouvrir. Ouvrez Mes annonces et réessayez le paiement.',
+    },
   },
   es: {
     steps: ['Categoría y datos básicos', 'Datos técnicos', 'Imágenes', 'Vista previa', 'Paquete y publicación'],
@@ -2399,6 +2416,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Elegir color',
     chooseEquipment: 'Elegir equipamiento',
     processingImages: 'Procesando imágenes...',
+    errors: {
+      submit: 'El anuncio no se puede crear ahora mismo. Revisa los datos e inténtalo de nuevo.',
+      checkout: 'El anuncio se ha guardado, pero no se pudo abrir Stripe Checkout. Abre Mis anuncios e intenta pagar de nuevo.',
+      checkoutTimeout: 'El anuncio se ha guardado, pero Stripe Checkout tardó demasiado en abrirse. Abre Mis anuncios e intenta pagar de nuevo.',
+    },
   },
   it: {
     steps: ['Categoria e dati base', 'Dati tecnici', 'Immagini', 'Anteprima', 'Pacchetto e pubblicazione'],
@@ -2409,6 +2431,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Scegli colore',
     chooseEquipment: 'Scegli equipaggiamento',
     processingImages: 'Elaborazione immagini...',
+    errors: {
+      submit: 'Non è possibile creare l’annuncio in questo momento. Controlla i dati e riprova.',
+      checkout: 'L’annuncio è stato salvato, ma non è stato possibile aprire Stripe Checkout. Apri I miei annunci e riprova il pagamento.',
+      checkoutTimeout: 'L’annuncio è stato salvato, ma Stripe Checkout ha impiegato troppo tempo ad aprirsi. Apri I miei annunci e riprova il pagamento.',
+    },
   },
   nl: {
     steps: ['Categorie en basis', 'Technische gegevens', 'Afbeeldingen', 'Voorbeeld', 'Pakket en publiceren'],
@@ -2419,6 +2446,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Kies kleur',
     chooseEquipment: 'Kies uitrusting',
     processingImages: 'Afbeeldingen verwerken...',
+    errors: {
+      submit: 'De advertentie kan nu niet worden aangemaakt. Controleer de gegevens en probeer het opnieuw.',
+      checkout: 'De advertentie is opgeslagen, maar Stripe Checkout kon niet worden geopend. Open Mijn advertenties en probeer de betaling opnieuw.',
+      checkoutTimeout: 'De advertentie is opgeslagen, maar Stripe Checkout deed er te lang over om te openen. Open Mijn advertenties en probeer de betaling opnieuw.',
+    },
   },
   pl: {
     steps: ['Kategoria i podstawy', 'Dane techniczne', 'Zdjęcia', 'Podgląd', 'Pakiet i publikacja'],
@@ -2429,6 +2461,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Wybierz kolor',
     chooseEquipment: 'Wybierz wyposażenie',
     processingImages: 'Przetwarzanie zdjęć...',
+    errors: {
+      submit: 'Nie można teraz utworzyć ogłoszenia. Sprawdź dane i spróbuj ponownie.',
+      checkout: 'Ogłoszenie zostało zapisane, ale nie udało się otworzyć Stripe Checkout. Otwórz Moje ogłoszenia i spróbuj zapłacić ponownie.',
+      checkoutTimeout: 'Ogłoszenie zostało zapisane, ale Stripe Checkout otwierał się zbyt długo. Otwórz Moje ogłoszenia i spróbuj zapłacić ponownie.',
+    },
   },
 }
 
@@ -2830,6 +2867,128 @@ function getPackageCopy(locale: PublicLocale) {
       },
     }
   }
+  const localized: Partial<Record<PublicLocale, typeof en>> = {
+    fi: {
+      free_7d: {
+        title: 'Ilmainen',
+        days: '7 päivää',
+        text: 'Helppo tapa kokeilla Autorellia ja päästä nopeasti alkuun.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 päivää',
+        text: 'Enemmän näkyvyyttä ja pidempi ilmoitusaika tavoitteelliseen myyntiin.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 päivää',
+        text: 'Paras näkyvyys, etusija ja pisin ilmoitusaika.',
+      },
+    },
+    da: {
+      free_7d: {
+        title: 'Gratis',
+        days: '7 dage',
+        text: 'En enkel måde at prøve Autorell og komme hurtigt i gang.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 dage',
+        text: 'Mere synlighed og en længere annonceperiode til seriøst salg.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 dage',
+        text: 'Bedste synlighed, prioritet og den længste annonceperiode.',
+      },
+    },
+    fr: {
+      free_7d: {
+        title: 'Gratuit',
+        days: '7 jours',
+        text: 'Un moyen simple de tester Autorell et de commencer rapidement.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 jours',
+        text: 'Plus de visibilité et une durée d’annonce plus longue pour une vente sérieuse.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 jours',
+        text: 'La meilleure visibilité, la priorité et la durée d’annonce la plus longue.',
+      },
+    },
+    es: {
+      free_7d: {
+        title: 'Gratis',
+        days: '7 días',
+        text: 'Una forma sencilla de probar Autorell y empezar rápidamente.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 días',
+        text: 'Más visibilidad y un periodo de anuncio más largo para una venta seria.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 días',
+        text: 'La mayor visibilidad, prioridad y el periodo de anuncio más largo.',
+      },
+    },
+    it: {
+      free_7d: {
+        title: 'Gratis',
+        days: '7 giorni',
+        text: 'Un modo semplice per provare Autorell e iniziare rapidamente.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 giorni',
+        text: 'Più visibilità e un periodo di annuncio più lungo per una vendita seria.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 giorni',
+        text: 'Massima visibilità, priorità e il periodo di annuncio più lungo.',
+      },
+    },
+    nl: {
+      free_7d: {
+        title: 'Gratis',
+        days: '7 dagen',
+        text: 'Een eenvoudige manier om Autorell te proberen en snel te starten.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 dagen',
+        text: 'Meer zichtbaarheid en een langere advertentieperiode voor serieuze verkoop.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 dagen',
+        text: 'Beste zichtbaarheid, prioriteit en de langste advertentieperiode.',
+      },
+    },
+    pl: {
+      free_7d: {
+        title: 'Bezpłatnie',
+        days: '7 dni',
+        text: 'Prosty sposób, aby wypróbować Autorell i szybko rozpocząć.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 dni',
+        text: 'Większa widoczność i dłuższy czas publikacji dla poważnej sprzedaży.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 dni',
+        text: 'Najlepsza widoczność, priorytet i najdłuższy czas publikacji.',
+      },
+    },
+  }
+  if (localized[locale]) return localized[locale]
   return translateListingCopy(locale, en)
 }
 
@@ -2848,6 +3007,23 @@ function localizeVehicleText(locale: PublicLocale, value?: string | null) {
 
 function localizedListingText(locale: PublicLocale, english: string) {
   return listingTextOverrides[locale]?.[english] || translatePublic(locale, english)
+}
+
+function localizedSubmissionError(
+  locale: PublicLocale,
+  result: ListingCreationError,
+  fallback: string,
+) {
+  const raw = (result.error || '').trim()
+  if (!raw) return fallback
+  if (result.code === 'listing_create_failed') return fallback
+  if (/Annonsen kunde inte skapas|Listing could not be created/i.test(raw)) return fallback
+  if (locale !== 'sv' && looksLikeSwedishApiError(raw)) return fallback
+  return raw
+}
+
+function looksLikeSwedishApiError(value: string) {
+  return /annons|annonspaket|publicering|konto|Kontakta support|försök|fyll i|välj|godkänn|ladda upp/i.test(value)
 }
 
 function localizedVehicleTerm(locale: PublicLocale, english: string) {
