@@ -1,0 +1,3386 @@
+[
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11001",
+    "municipalityName": "Aartselaar"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11004",
+    "municipalityName": "Boechout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11005",
+    "municipalityName": "Boom"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11008",
+    "municipalityName": "Brasschaat"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11009",
+    "municipalityName": "Brecht"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11013",
+    "municipalityName": "Edegem"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11016",
+    "municipalityName": "Essen"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11018",
+    "municipalityName": "Hemiksem"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11021",
+    "municipalityName": "Hove (Antwerpen)"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11022",
+    "municipalityName": "Kalmthout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11023",
+    "municipalityName": "Kapellen (Antwerpen)"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11024",
+    "municipalityName": "Kontich"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11025",
+    "municipalityName": "Lint"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11029",
+    "municipalityName": "Mortsel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11030",
+    "municipalityName": "Niel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11035",
+    "municipalityName": "Ranst"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11037",
+    "municipalityName": "Rumst"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11038",
+    "municipalityName": "Schelle"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11039",
+    "municipalityName": "Schilde"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11040",
+    "municipalityName": "Schoten"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11044",
+    "municipalityName": "Stabroek"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11050",
+    "municipalityName": "Wijnegem"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11052",
+    "municipalityName": "Wommelgem"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11053",
+    "municipalityName": "Wuustwezel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11054",
+    "municipalityName": "Zandhoven"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11055",
+    "municipalityName": "Zoersel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "11057",
+    "municipalityName": "Malle"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12002",
+    "municipalityName": "Berlaar"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12005",
+    "municipalityName": "Bonheiden"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12007",
+    "municipalityName": "Bornem"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12009",
+    "municipalityName": "Duffel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12014",
+    "municipalityName": "Heist-op-den-Berg"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12021",
+    "municipalityName": "Lier"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12025",
+    "municipalityName": "Mechelen"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12026",
+    "municipalityName": "Nijlen"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12029",
+    "municipalityName": "Putte"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12035",
+    "municipalityName": "Sint-Katelijne-Waver"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12040",
+    "municipalityName": "Willebroek"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "12041",
+    "municipalityName": "Puurs-Sint-Amands"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13001",
+    "municipalityName": "Arendonk"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13002",
+    "municipalityName": "Baarle-Hertog"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13003",
+    "municipalityName": "Balen"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13004",
+    "municipalityName": "Beerse"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13006",
+    "municipalityName": "Dessel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13008",
+    "municipalityName": "Geel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13010",
+    "municipalityName": "Grobbendonk"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13011",
+    "municipalityName": "Herentals"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13012",
+    "municipalityName": "Herenthout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13013",
+    "municipalityName": "Herselt"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13014",
+    "municipalityName": "Hoogstraten"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13016",
+    "municipalityName": "Hulshout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13017",
+    "municipalityName": "Kasterlee"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13019",
+    "municipalityName": "Lille"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13021",
+    "municipalityName": "Meerhout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13023",
+    "municipalityName": "Merksplas"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13025",
+    "municipalityName": "Mol"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13029",
+    "municipalityName": "Olen"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13031",
+    "municipalityName": "Oud-Turnhout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13035",
+    "municipalityName": "Ravels"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13036",
+    "municipalityName": "Retie"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13037",
+    "municipalityName": "Rijkevorsel"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13040",
+    "municipalityName": "Turnhout"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13044",
+    "municipalityName": "Vorselaar"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13046",
+    "municipalityName": "Vosselaar"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13049",
+    "municipalityName": "Westerlo"
+  },
+  {
+    "regionCode": "10000",
+    "regionName": "Provincie Antwerpen",
+    "municipalityCode": "13053",
+    "municipalityName": "Laakdal"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21001",
+    "municipalityName": "Anderlecht"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21002",
+    "municipalityName": "Auderghem / Oudergem"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21003",
+    "municipalityName": "Berchem-Sainte-Agathe / Sint-Agatha-Berchem"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21004",
+    "municipalityName": "Bruxelles / Brussel"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21005",
+    "municipalityName": "Etterbeek"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21006",
+    "municipalityName": "Evere"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21007",
+    "municipalityName": "Forest (Bruxelles-Capitale) / Vorst (Brussel-Hoofdstad)"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21008",
+    "municipalityName": "Ganshoren"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21009",
+    "municipalityName": "Ixelles / Elsene"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21010",
+    "municipalityName": "Jette"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21011",
+    "municipalityName": "Koekelberg"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21012",
+    "municipalityName": "Molenbeek-Saint-Jean / Sint-Jans-Molenbeek"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21013",
+    "municipalityName": "Saint-Gilles / Sint-Gillis"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21014",
+    "municipalityName": "Saint-Josse-ten-Noode / Sint-Joost-ten-Node"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21015",
+    "municipalityName": "Schaerbeek / Schaarbeek"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21016",
+    "municipalityName": "Uccle / Ukkel"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21017",
+    "municipalityName": "Watermael-Boitsfort / Watermaal-Bosvoorde"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21018",
+    "municipalityName": "Woluwe-Saint-Lambert / Sint-Lambrechts-Woluwe"
+  },
+  {
+    "regionCode": "21000",
+    "regionName": "Arrondissement de Bruxelles-Capitale / Arrondissement Brussel-Hoofdstad",
+    "municipalityCode": "21019",
+    "municipalityName": "Woluwe-Saint-Pierre / Sint-Pieters-Woluwe"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23002",
+    "municipalityName": "Asse"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23003",
+    "municipalityName": "Beersel"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23009",
+    "municipalityName": "Bever"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23016",
+    "municipalityName": "Dilbeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23025",
+    "municipalityName": "Grimbergen"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23027",
+    "municipalityName": "Halle (Halle-Vilvoorde)"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23033",
+    "municipalityName": "Hoeilaart"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23038",
+    "municipalityName": "Kampenhout"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23039",
+    "municipalityName": "Kapelle-op-den-Bos"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23044",
+    "municipalityName": "Liedekerke"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23045",
+    "municipalityName": "Londerzeel"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23047",
+    "municipalityName": "Machelen (Halle-Vilvoorde)"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23050",
+    "municipalityName": "Meise"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23052",
+    "municipalityName": "Merchtem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23060",
+    "municipalityName": "Opwijk"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23062",
+    "municipalityName": "Overijse"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23064",
+    "municipalityName": "Pepingen"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23077",
+    "municipalityName": "Sint-Pieters-Leeuw"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23081",
+    "municipalityName": "Steenokkerzeel"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23086",
+    "municipalityName": "Ternat"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23088",
+    "municipalityName": "Vilvoorde"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23094",
+    "municipalityName": "Zaventem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23096",
+    "municipalityName": "Zemst"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23097",
+    "municipalityName": "Roosdaal"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23098",
+    "municipalityName": "Drogenbos"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23099",
+    "municipalityName": "Kraainem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23100",
+    "municipalityName": "Linkebeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23101",
+    "municipalityName": "Sint-Genesius-Rode"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23102",
+    "municipalityName": "Wemmel"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23103",
+    "municipalityName": "Wezembeek-Oppem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23104",
+    "municipalityName": "Lennik"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23105",
+    "municipalityName": "Affligem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "23106",
+    "municipalityName": "Pajottegem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24001",
+    "municipalityName": "Aarschot"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24007",
+    "municipalityName": "Begijnendijk"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24008",
+    "municipalityName": "Bekkevoort"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24009",
+    "municipalityName": "Bertem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24011",
+    "municipalityName": "Bierbeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24014",
+    "municipalityName": "Boortmeerbeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24016",
+    "municipalityName": "Boutersem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24020",
+    "municipalityName": "Diest"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24028",
+    "municipalityName": "Geetbets"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24033",
+    "municipalityName": "Haacht"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24038",
+    "municipalityName": "Herent"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24041",
+    "municipalityName": "Hoegaarden"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24043",
+    "municipalityName": "Holsbeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24045",
+    "municipalityName": "Huldenberg"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24048",
+    "municipalityName": "Keerbergen"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24054",
+    "municipalityName": "Kortenaken"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24055",
+    "municipalityName": "Kortenberg"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24059",
+    "municipalityName": "Landen"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24062",
+    "municipalityName": "Leuven"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24066",
+    "municipalityName": "Lubbeek"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24086",
+    "municipalityName": "Oud-Heverlee"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24094",
+    "municipalityName": "Rotselaar"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24104",
+    "municipalityName": "Tervuren"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24107",
+    "municipalityName": "Tienen"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24109",
+    "municipalityName": "Tremelo"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24130",
+    "municipalityName": "Zoutleeuw"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24133",
+    "municipalityName": "Linter"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24134",
+    "municipalityName": "Scherpenheuvel-Zichem"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24135",
+    "municipalityName": "Tielt-Winge"
+  },
+  {
+    "regionCode": "20001",
+    "regionName": "Provincie Vlaams-Brabant",
+    "municipalityCode": "24137",
+    "municipalityName": "Glabbeek"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25005",
+    "municipalityName": "Beauvechain"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25014",
+    "municipalityName": "Braine-l’Alleud"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25015",
+    "municipalityName": "Braine-le-Château"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25018",
+    "municipalityName": "Chaumont-Gistoux"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25023",
+    "municipalityName": "Court-Saint-Etienne"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25031",
+    "municipalityName": "Genappe"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25037",
+    "municipalityName": "Grez-Doiceau"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25043",
+    "municipalityName": "Incourt"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25044",
+    "municipalityName": "Ittre"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25048",
+    "municipalityName": "Jodoigne"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25050",
+    "municipalityName": "La Hulpe"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25068",
+    "municipalityName": "Mont-Saint-Guibert"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25072",
+    "municipalityName": "Nivelles"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25084",
+    "municipalityName": "Perwez (Nivelles)"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25091",
+    "municipalityName": "Rixensart"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25105",
+    "municipalityName": "Tubize"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25107",
+    "municipalityName": "Villers-la-Ville"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25110",
+    "municipalityName": "Waterloo"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25112",
+    "municipalityName": "Wavre"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25117",
+    "municipalityName": "Chastre"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25118",
+    "municipalityName": "Hélécine"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25119",
+    "municipalityName": "Lasne"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25120",
+    "municipalityName": "Orp-Jauche"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25121",
+    "municipalityName": "Ottignies-Louvain-la-Neuve"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25122",
+    "municipalityName": "Ramillies"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25123",
+    "municipalityName": "Rebecq"
+  },
+  {
+    "regionCode": "20002",
+    "regionName": "Province du Brabant wallon",
+    "municipalityCode": "25124",
+    "municipalityName": "Walhain"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31003",
+    "municipalityName": "Beernem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31004",
+    "municipalityName": "Blankenberge"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31005",
+    "municipalityName": "Brugge"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31006",
+    "municipalityName": "Damme"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31012",
+    "municipalityName": "Jabbeke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31022",
+    "municipalityName": "Oostkamp"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31033",
+    "municipalityName": "Torhout"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31040",
+    "municipalityName": "Zedelgem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31042",
+    "municipalityName": "Zuienkerke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "31043",
+    "municipalityName": "Knokke-Heist"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "32003",
+    "municipalityName": "Diksmuide"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "32006",
+    "municipalityName": "Houthulst"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "32010",
+    "municipalityName": "Koekelare"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "32011",
+    "municipalityName": "Kortemark"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "32030",
+    "municipalityName": "Lo-Reninge"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33011",
+    "municipalityName": "Ieper"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33016",
+    "municipalityName": "Mesen"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33021",
+    "municipalityName": "Poperinge"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33029",
+    "municipalityName": "Wervik"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33037",
+    "municipalityName": "Zonnebeke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33039",
+    "municipalityName": "Heuvelland"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33040",
+    "municipalityName": "Langemark-Poelkapelle"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "33041",
+    "municipalityName": "Vleteren"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34002",
+    "municipalityName": "Anzegem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34003",
+    "municipalityName": "Avelgem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34009",
+    "municipalityName": "Deerlijk"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34013",
+    "municipalityName": "Harelbeke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34022",
+    "municipalityName": "Kortrijk"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34023",
+    "municipalityName": "Kuurne"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34025",
+    "municipalityName": "Lendelede"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34027",
+    "municipalityName": "Menen"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34040",
+    "municipalityName": "Waregem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34041",
+    "municipalityName": "Wevelgem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34042",
+    "municipalityName": "Zwevegem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "34043",
+    "municipalityName": "Spiere-Helkijn"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35002",
+    "municipalityName": "Bredene"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35005",
+    "municipalityName": "Gistel"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35006",
+    "municipalityName": "Ichtegem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35011",
+    "municipalityName": "Middelkerke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35013",
+    "municipalityName": "Oostende"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35014",
+    "municipalityName": "Oudenburg"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "35029",
+    "municipalityName": "De Haan"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36006",
+    "municipalityName": "Hooglede"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36007",
+    "municipalityName": "Ingelmunster"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36008",
+    "municipalityName": "Izegem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36010",
+    "municipalityName": "Ledegem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36011",
+    "municipalityName": "Lichtervelde"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36012",
+    "municipalityName": "Moorslede"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36015",
+    "municipalityName": "Roeselare"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "36019",
+    "municipalityName": "Staden"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37002",
+    "municipalityName": "Dentergem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37010",
+    "municipalityName": "Oostrozebeke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37011",
+    "municipalityName": "Pittem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37017",
+    "municipalityName": "Wielsbeke"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37020",
+    "municipalityName": "Ardooie"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37021",
+    "municipalityName": "Wingene"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "37022",
+    "municipalityName": "Tielt (Tielt)"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "38002",
+    "municipalityName": "Alveringem"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "38008",
+    "municipalityName": "De Panne"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "38014",
+    "municipalityName": "Koksijde"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "38016",
+    "municipalityName": "Nieuwpoort"
+  },
+  {
+    "regionCode": "30000",
+    "regionName": "Provincie West-Vlaanderen",
+    "municipalityCode": "38025",
+    "municipalityName": "Veurne"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41002",
+    "municipalityName": "Aalst (Aalst)"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41011",
+    "municipalityName": "Denderleeuw"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41018",
+    "municipalityName": "Geraardsbergen"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41024",
+    "municipalityName": "Haaltert"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41027",
+    "municipalityName": "Herzele"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41034",
+    "municipalityName": "Lede"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41048",
+    "municipalityName": "Ninove"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41063",
+    "municipalityName": "Sint-Lievens-Houtem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41081",
+    "municipalityName": "Zottegem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "41082",
+    "municipalityName": "Erpe-Mere"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42003",
+    "municipalityName": "Berlare"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42004",
+    "municipalityName": "Buggenhout"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42006",
+    "municipalityName": "Dendermonde"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42008",
+    "municipalityName": "Hamme (Dendermonde)"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42010",
+    "municipalityName": "Laarne"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42011",
+    "municipalityName": "Lebbeke"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42023",
+    "municipalityName": "Waasmunster"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42025",
+    "municipalityName": "Wetteren"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42026",
+    "municipalityName": "Wichelen"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "42028",
+    "municipalityName": "Zele"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43002",
+    "municipalityName": "Assenede"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43005",
+    "municipalityName": "Eeklo"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43007",
+    "municipalityName": "Kaprijke"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43010",
+    "municipalityName": "Maldegem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43014",
+    "municipalityName": "Sint-Laureins"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "43018",
+    "municipalityName": "Zelzate"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44013",
+    "municipalityName": "Destelbergen"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44019",
+    "municipalityName": "Evergem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44020",
+    "municipalityName": "Gavere"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44021",
+    "municipalityName": "Gent"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44052",
+    "municipalityName": "Oosterzele"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44064",
+    "municipalityName": "Sint-Martens-Latem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44081",
+    "municipalityName": "Zulte"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44083",
+    "municipalityName": "Deinze"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44084",
+    "municipalityName": "Aalter"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44085",
+    "municipalityName": "Lievegem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44086",
+    "municipalityName": "Nazareth-De Pinte"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44087",
+    "municipalityName": "Lochristi"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "44088",
+    "municipalityName": "Merelbeke-Melle"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45035",
+    "municipalityName": "Oudenaarde"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45041",
+    "municipalityName": "Ronse"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45059",
+    "municipalityName": "Brakel"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45060",
+    "municipalityName": "Kluisbergen"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45061",
+    "municipalityName": "Wortegem-Petegem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45062",
+    "municipalityName": "Horebeke"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45063",
+    "municipalityName": "Lierde"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45064",
+    "municipalityName": "Maarkedal"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45065",
+    "municipalityName": "Zwalm"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "45068",
+    "municipalityName": "Kruisem"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46020",
+    "municipalityName": "Sint-Gillis-Waas"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46021",
+    "municipalityName": "Sint-Niklaas (Sint-Niklaas)"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46024",
+    "municipalityName": "Stekene"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46025",
+    "municipalityName": "Temse"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46029",
+    "municipalityName": "Lokeren"
+  },
+  {
+    "regionCode": "40000",
+    "regionName": "Provincie Oost-Vlaanderen",
+    "municipalityCode": "46030",
+    "municipalityName": "Beveren-Kruibeke-Zwijndrecht"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51004",
+    "municipalityName": "Ath"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51008",
+    "municipalityName": "Beloeil"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51009",
+    "municipalityName": "Bernissart"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51012",
+    "municipalityName": "Brugelette"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51014",
+    "municipalityName": "Chièvres"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51017",
+    "municipalityName": "Ellezelles"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51019",
+    "municipalityName": "Flobecq"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51065",
+    "municipalityName": "Frasnes-lez-Anvaing"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51067",
+    "municipalityName": "Enghien"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51068",
+    "municipalityName": "Silly"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "51069",
+    "municipalityName": "Lessines"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52010",
+    "municipalityName": "Chapelle-lez-Herlaimont"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52011",
+    "municipalityName": "Charleroi"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52012",
+    "municipalityName": "Châtelet"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52015",
+    "municipalityName": "Courcelles"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52018",
+    "municipalityName": "Farciennes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52021",
+    "municipalityName": "Fleurus"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52022",
+    "municipalityName": "Fontaine-l’Evêque"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52025",
+    "municipalityName": "Gerpinnes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52048",
+    "municipalityName": "Montigny-le-Tilleul"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52055",
+    "municipalityName": "Pont-à-Celles"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52074",
+    "municipalityName": "Aiseau-Presles"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "52075",
+    "municipalityName": "Les Bons Villers"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53014",
+    "municipalityName": "Boussu"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53020",
+    "municipalityName": "Dour"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53028",
+    "municipalityName": "Frameries"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53039",
+    "municipalityName": "Hensies"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53044",
+    "municipalityName": "Jurbise"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53046",
+    "municipalityName": "Lens"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53053",
+    "municipalityName": "Mons"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53065",
+    "municipalityName": "Quaregnon"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53068",
+    "municipalityName": "Quiévrain"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53070",
+    "municipalityName": "Saint-Ghislain"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53082",
+    "municipalityName": "Colfontaine"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53083",
+    "municipalityName": "Honnelles"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "53084",
+    "municipalityName": "Quévy"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55004",
+    "municipalityName": "Braine-le-Comte"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55035",
+    "municipalityName": "Le Roeulx"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55040",
+    "municipalityName": "Soignies"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55050",
+    "municipalityName": "Ecaussinnes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55085",
+    "municipalityName": "Seneffe"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "55086",
+    "municipalityName": "Manage"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56001",
+    "municipalityName": "Anderlues"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56005",
+    "municipalityName": "Beaumont"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56016",
+    "municipalityName": "Chimay"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56022",
+    "municipalityName": "Erquelinnes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56029",
+    "municipalityName": "Froidchapelle"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56044",
+    "municipalityName": "Lobbes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56049",
+    "municipalityName": "Merbes-le-Château"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56051",
+    "municipalityName": "Momignies"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56078",
+    "municipalityName": "Thuin"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56086",
+    "municipalityName": "Ham-sur-Heure-Nalinnes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "56088",
+    "municipalityName": "Sivry-Rance"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57003",
+    "municipalityName": "Antoing"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57018",
+    "municipalityName": "Celles (Tournai)"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57027",
+    "municipalityName": "Estaimpuis"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57062",
+    "municipalityName": "Pecq"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57064",
+    "municipalityName": "Péruwelz"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57072",
+    "municipalityName": "Rumes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57081",
+    "municipalityName": "Tournai"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57093",
+    "municipalityName": "Brunehaut"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57094",
+    "municipalityName": "Leuze-en-Hainaut"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57095",
+    "municipalityName": "Mont-de-l’Enclus"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57096",
+    "municipalityName": "Mouscron"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "57097",
+    "municipalityName": "Comines-Warneton"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "58001",
+    "municipalityName": "La Louvière"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "58002",
+    "municipalityName": "Binche"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "58003",
+    "municipalityName": "Estinnes"
+  },
+  {
+    "regionCode": "50000",
+    "regionName": "Province du Hainaut",
+    "municipalityCode": "58004",
+    "municipalityName": "Morlanwelz"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61003",
+    "municipalityName": "Amay"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61010",
+    "municipalityName": "Burdinne"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61012",
+    "municipalityName": "Clavier"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61019",
+    "municipalityName": "Ferrières"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61024",
+    "municipalityName": "Hamoir"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61028",
+    "municipalityName": "Héron"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61031",
+    "municipalityName": "Huy"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61039",
+    "municipalityName": "Marchin"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61041",
+    "municipalityName": "Modave"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61043",
+    "municipalityName": "Nandrin"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61048",
+    "municipalityName": "Ouffet"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61063",
+    "municipalityName": "Verlaine"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61068",
+    "municipalityName": "Villers-Le-Bouillet"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61072",
+    "municipalityName": "Wanze"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61079",
+    "municipalityName": "Anthisnes"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61080",
+    "municipalityName": "Engis"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "61081",
+    "municipalityName": "Tinlot"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62003",
+    "municipalityName": "Ans"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62006",
+    "municipalityName": "Awans"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62009",
+    "municipalityName": "Aywaille"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62011",
+    "municipalityName": "Bassenge"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62015",
+    "municipalityName": "Beyne-Heusay"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62022",
+    "municipalityName": "Chaudfontaine"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62026",
+    "municipalityName": "Comblain-au-Pont"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62027",
+    "municipalityName": "Dalhem"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62032",
+    "municipalityName": "Esneux"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62038",
+    "municipalityName": "Fléron"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62051",
+    "municipalityName": "Herstal"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62060",
+    "municipalityName": "Juprelle"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62063",
+    "municipalityName": "Liège"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62079",
+    "municipalityName": "Oupeye"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62093",
+    "municipalityName": "Saint-Nicolas (Liège)"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62096",
+    "municipalityName": "Seraing"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62099",
+    "municipalityName": "Soumagne"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62100",
+    "municipalityName": "Sprimont"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62108",
+    "municipalityName": "Visé"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62118",
+    "municipalityName": "Grâce-Hollogne"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62119",
+    "municipalityName": "Blegny"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62120",
+    "municipalityName": "Flémalle"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62121",
+    "municipalityName": "Neupré"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "62122",
+    "municipalityName": "Trooz"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63001",
+    "municipalityName": "Amblève"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63003",
+    "municipalityName": "Aubel"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63004",
+    "municipalityName": "Baelen"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63012",
+    "municipalityName": "Bullange"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63013",
+    "municipalityName": "Butgenbach"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63020",
+    "municipalityName": "Dison"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63023",
+    "municipalityName": "Eupen"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63035",
+    "municipalityName": "Herve"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63038",
+    "municipalityName": "Jalhay"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63040",
+    "municipalityName": "La Calamine"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63045",
+    "municipalityName": "Lierneux"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63046",
+    "municipalityName": "Limbourg"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63048",
+    "municipalityName": "Lontzen"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63049",
+    "municipalityName": "Malmedy"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63057",
+    "municipalityName": "Olne"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63058",
+    "municipalityName": "Pepinster"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63061",
+    "municipalityName": "Raeren"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63067",
+    "municipalityName": "Saint-Vith"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63072",
+    "municipalityName": "Spa"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63073",
+    "municipalityName": "Stavelot"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63075",
+    "municipalityName": "Stoumont"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63076",
+    "municipalityName": "Theux"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63079",
+    "municipalityName": "Verviers"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63080",
+    "municipalityName": "Waimes"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63084",
+    "municipalityName": "Welkenraedt"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63086",
+    "municipalityName": "Trois-Ponts"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63087",
+    "municipalityName": "Burg-Reuland"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63088",
+    "municipalityName": "Plombières"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "63089",
+    "municipalityName": "Thimister-Clermont"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64008",
+    "municipalityName": "Berloz"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64015",
+    "municipalityName": "Braives"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64021",
+    "municipalityName": "Crisnée"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64023",
+    "municipalityName": "Donceel"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64025",
+    "municipalityName": "Fexhe-le-Haut-Clocher"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64029",
+    "municipalityName": "Geer"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64034",
+    "municipalityName": "Hannut"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64047",
+    "municipalityName": "Lincent"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64056",
+    "municipalityName": "Oreye"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64063",
+    "municipalityName": "Remicourt"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64065",
+    "municipalityName": "Saint-Georges-sur-Meuse"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64074",
+    "municipalityName": "Waremme"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64075",
+    "municipalityName": "Wasseiges"
+  },
+  {
+    "regionCode": "60000",
+    "regionName": "Province de Liège",
+    "municipalityCode": "64076",
+    "municipalityName": "Faimes"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71002",
+    "municipalityName": "As"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71004",
+    "municipalityName": "Beringen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71011",
+    "municipalityName": "Diepenbeek"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71016",
+    "municipalityName": "Genk"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71017",
+    "municipalityName": "Gingelom"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71020",
+    "municipalityName": "Halen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71024",
+    "municipalityName": "Herk-de-Stad"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71034",
+    "municipalityName": "Leopoldsburg"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71037",
+    "municipalityName": "Lummen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71045",
+    "municipalityName": "Nieuwerkerken (Hasselt)"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71053",
+    "municipalityName": "Sint-Truiden"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71066",
+    "municipalityName": "Zonhoven"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71067",
+    "municipalityName": "Zutendaal"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71070",
+    "municipalityName": "Heusden-Zolder"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71071",
+    "municipalityName": "Tessenderlo-Ham"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "71072",
+    "municipalityName": "Hasselt"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72003",
+    "municipalityName": "Bocholt"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72004",
+    "municipalityName": "Bree"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72018",
+    "municipalityName": "Kinrooi"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72020",
+    "municipalityName": "Lommel"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72021",
+    "municipalityName": "Maaseik"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72030",
+    "municipalityName": "Peer"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72037",
+    "municipalityName": "Hamont-Achel"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72038",
+    "municipalityName": "Hechtel-Eksel"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72039",
+    "municipalityName": "Houthalen-Helchteren"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72041",
+    "municipalityName": "Dilsen-Stokkem"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72042",
+    "municipalityName": "Oudsbergen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "72043",
+    "municipalityName": "Pelt"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73001",
+    "municipalityName": "Alken"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73022",
+    "municipalityName": "Heers"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73028",
+    "municipalityName": "Herstappe"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73042",
+    "municipalityName": "Lanaken"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73066",
+    "municipalityName": "Riemst"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73098",
+    "municipalityName": "Wellen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73107",
+    "municipalityName": "Maasmechelen"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73109",
+    "municipalityName": "Voeren"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73110",
+    "municipalityName": "Bilzen-Hoeselt"
+  },
+  {
+    "regionCode": "70000",
+    "regionName": "Provincie Limburg",
+    "municipalityCode": "73111",
+    "municipalityName": "Tongeren-Borgloon"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "81001",
+    "municipalityName": "Arlon"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "81003",
+    "municipalityName": "Attert"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "81004",
+    "municipalityName": "Aubange"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "81013",
+    "municipalityName": "Martelange"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "81015",
+    "municipalityName": "Messancy"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82009",
+    "municipalityName": "Fauvillers"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82014",
+    "municipalityName": "Houffalize"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82032",
+    "municipalityName": "Vielsalm"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82036",
+    "municipalityName": "Vaux-sur-Sûre"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82037",
+    "municipalityName": "Gouvy"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82038",
+    "municipalityName": "Sainte-Ode"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "82039",
+    "municipalityName": "Bastogne"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83012",
+    "municipalityName": "Durbuy"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83013",
+    "municipalityName": "Erezée"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83028",
+    "municipalityName": "Hotton"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83031",
+    "municipalityName": "La Roche-en-Ardenne"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83034",
+    "municipalityName": "Marche-en-Famenne"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83040",
+    "municipalityName": "Nassogne"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83044",
+    "municipalityName": "Rendeux"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83049",
+    "municipalityName": "Tenneville"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "83055",
+    "municipalityName": "Manhay"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84009",
+    "municipalityName": "Bertrix"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84010",
+    "municipalityName": "Bouillon"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84016",
+    "municipalityName": "Daverdisse"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84029",
+    "municipalityName": "Herbeumont"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84033",
+    "municipalityName": "Léglise"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84035",
+    "municipalityName": "Libin"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84043",
+    "municipalityName": "Neufchâteau (Neufchâteau)"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84050",
+    "municipalityName": "Paliseul"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84059",
+    "municipalityName": "Saint-Hubert"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84068",
+    "municipalityName": "Tellin"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84075",
+    "municipalityName": "Wellin"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "84077",
+    "municipalityName": "Libramont-Chevigny"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85007",
+    "municipalityName": "Chiny"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85009",
+    "municipalityName": "Etalle"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85011",
+    "municipalityName": "Florenville"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85024",
+    "municipalityName": "Meix-devant-Virton"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85026",
+    "municipalityName": "Musson"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85034",
+    "municipalityName": "Saint-Léger (Virton)"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85039",
+    "municipalityName": "Tintigny"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85045",
+    "municipalityName": "Virton"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85046",
+    "municipalityName": "Habay"
+  },
+  {
+    "regionCode": "80000",
+    "regionName": "Province du Luxembourg",
+    "municipalityCode": "85047",
+    "municipalityName": "Rouvroy"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91005",
+    "municipalityName": "Anhée"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91013",
+    "municipalityName": "Beauraing"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91015",
+    "municipalityName": "Bièvre"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91030",
+    "municipalityName": "Ciney"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91034",
+    "municipalityName": "Dinant"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91054",
+    "municipalityName": "Gedinne"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91059",
+    "municipalityName": "Hamois"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91064",
+    "municipalityName": "Havelange"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91072",
+    "municipalityName": "Houyet"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91103",
+    "municipalityName": "Onhaye"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91114",
+    "municipalityName": "Rochefort"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91120",
+    "municipalityName": "Somme-Leuze"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91141",
+    "municipalityName": "Yvoir"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91142",
+    "municipalityName": "Hastière"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "91143",
+    "municipalityName": "Vresse-sur-Semois"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92003",
+    "municipalityName": "Andenne"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92006",
+    "municipalityName": "Assesse"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92035",
+    "municipalityName": "Eghezée"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92045",
+    "municipalityName": "Floreffe"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92048",
+    "municipalityName": "Fosses-la-Ville"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92054",
+    "municipalityName": "Gesves"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92087",
+    "municipalityName": "Mettet"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92094",
+    "municipalityName": "Namur"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92097",
+    "municipalityName": "Ohey"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92101",
+    "municipalityName": "Profondeville"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92114",
+    "municipalityName": "Sombreffe"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92137",
+    "municipalityName": "Sambreville"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92138",
+    "municipalityName": "Fernelmont"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92140",
+    "municipalityName": "Jemeppe-sur-Sambre"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92141",
+    "municipalityName": "La Bruyère"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "92142",
+    "municipalityName": "Gembloux"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93010",
+    "municipalityName": "Cerfontaine"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93014",
+    "municipalityName": "Couvin"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93018",
+    "municipalityName": "Doische"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93022",
+    "municipalityName": "Florennes"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93056",
+    "municipalityName": "Philippeville"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93088",
+    "municipalityName": "Walcourt"
+  },
+  {
+    "regionCode": "90000",
+    "regionName": "Province de Namur",
+    "municipalityCode": "93090",
+    "municipalityName": "Viroinval"
+  }
+]

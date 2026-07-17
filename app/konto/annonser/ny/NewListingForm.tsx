@@ -53,15 +53,26 @@ import {
   normalizePostalCode,
   validatePostalCode,
 } from '@/lib/postal-code-validation'
-import { activeMarketCountries, getEuCountryName } from '@/lib/eu-countries'
 import {
-  getMarketplaceCountryLocations,
   marketplaceMunicipalityLabel,
   marketplaceRegionLabel,
 } from '@/lib/marketplace-locations'
 
 type StepId = 0 | 1 | 2 | 3 | 4
 type Values = Record<string, string>
+type GeoRegionOption = {
+  code: string
+  name: string
+}
+type GeoPlaceOption = {
+  code: string
+  name: string
+  regionCode: string
+  regionName: string
+  city: string
+  postalCode: string | null
+  source?: 'verified'
+}
 type UploadImage = {
   id: string
   file: File
@@ -109,7 +120,7 @@ export default function NewListingForm({
 }) {
   const router = useRouter()
   const [step, setStep] = useState<StepId>(0)
-  const [listingCountryCode, setListingCountryCode] = useState(countryCode.toUpperCase())
+  const listingCountryCode = countryCode.toUpperCase()
   const [category, setCategory] = useState<MarketplaceCategorySlug>(
     normalizeMarketplaceCategory(defaultCategory),
   )
@@ -128,6 +139,12 @@ export default function NewListingForm({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [draftNotice, setDraftNotice] = useState(false)
+  const [regionOptions, setRegionOptions] = useState<GeoRegionOption[]>([])
+  const [placeOptions, setPlaceOptions] = useState<GeoPlaceOption[]>([])
+  const [placeQuery, setPlaceQuery] = useState('')
+  const [geoPlaceCode, setGeoPlaceCode] = useState('')
+  const [locationSource, setLocationSource] = useState<'verified' | 'manual' | ''>('')
+  const [geoLoading, setGeoLoading] = useState(false)
   const draftRestored = useRef(false)
   const draftImagesRestored = useRef(false)
   const draftKey = `autorell-listing-draft:${countryCode.toUpperCase()}:${defaultCurrency}`
@@ -139,16 +156,7 @@ export default function NewListingForm({
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
   const progress = Math.round(((step + 1) / steps.length) * 100)
-  const locationMarket = useMemo(
-    () => getMarketplaceCountryLocations(listingCountryCode),
-    [listingCountryCode],
-  )
-  const municipalityOptions = useMemo(() => {
-    const region = locationMarket.regions.find((item) => item.name === values.county)
-    return region
-      ? [...region.municipalities]
-      : locationMarket.regions.flatMap((item) => item.municipalities)
-  }, [locationMarket, values.county])
+  const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT'].includes(listingCountryCode)
   const orderedImages = useMemo(() => {
     if (!mainImageId) return images
     const main = images.find((image) => image.id === mainImageId)
@@ -162,9 +170,8 @@ export default function NewListingForm({
       try {
         const saved = window.localStorage.getItem(draftKey)
         if (saved) {
-          const draft = JSON.parse(saved) as { step?: StepId; country?: string; category?: string; values?: Values; equipment?: string[] }
+          const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[] }
           if (draft.values) setValues((current) => ({ ...current, ...draft.values }))
-          if (draft.country) setListingCountryCode(draft.country)
           if (draft.category) setCategory(normalizeMarketplaceCategory(draft.category))
           if (draft.equipment) setEquipment(draft.equipment)
           if (typeof draft.step === 'number') setStep(Math.min(4, Math.max(0, draft.step)) as StepId)
@@ -200,13 +207,74 @@ export default function NewListingForm({
 
   useEffect(() => {
     if (!draftRestored.current) return
-    window.localStorage.setItem(draftKey, JSON.stringify({ step, country: listingCountryCode, category, values, equipment, savedAt: new Date().toISOString() }))
-  }, [category, draftKey, equipment, listingCountryCode, step, values])
+    window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, savedAt: new Date().toISOString() }))
+  }, [category, draftKey, equipment, step, values])
 
   useEffect(() => {
     if (!draftImagesRestored.current) return
     void saveDraftImages(draftKey, orderedImages)
   }, [draftKey, orderedImages])
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+    setRegionOptions([])
+    setPlaceOptions([])
+    void fetch(`/api/geo/regions?country=${encodeURIComponent(listingCountryCode)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload: { regions?: GeoRegionOption[] } | null) => {
+        if (!active) return
+        setRegionOptions(Array.isArray(payload?.regions) ? payload.regions : [])
+      })
+      .catch(() => {
+        if (active) setRegionOptions([])
+      })
+
+    return () => {
+      active = false
+      controller.abort()
+    }
+  }, [listingCountryCode])
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => {
+      if (!usesMunicipalityDropdown || !values.county) {
+        setPlaceOptions([])
+        setGeoLoading(false)
+        return
+      }
+      const params = new URLSearchParams({
+        country: listingCountryCode,
+        limit: '500',
+      })
+      if (values.county) params.set('region', values.county)
+      setGeoLoading(true)
+      void fetch(`/api/geo/places?${params.toString()}`, {
+        signal: controller.signal,
+      })
+        .then((response) => response.ok ? response.json() : null)
+        .then((payload: { places?: GeoPlaceOption[] } | null) => {
+          if (!active) return
+          setPlaceOptions(Array.isArray(payload?.places) ? payload.places : [])
+        })
+        .catch(() => {
+          if (active) setPlaceOptions([])
+        })
+        .finally(() => {
+          if (active) setGeoLoading(false)
+        })
+    }, 180)
+
+    return () => {
+      active = false
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [usesMunicipalityDropdown, listingCountryCode, values.county])
 
   function setValue(name: string, value: string) {
     const nextValue = identifierFieldNames.has(name)
@@ -219,38 +287,61 @@ export default function NewListingForm({
     setValues((current) => ({ ...current, [name]: nextValue }))
   }
 
-  function changeListingCountry(value: string) {
-    const nextCountry = value.toUpperCase()
-    setListingCountryCode(nextCountry)
+  function changeLocationRegion(value: string) {
+    setPlaceQuery('')
+    setGeoPlaceCode('')
+    setLocationSource('')
     setValues((current) => ({
       ...current,
-      currency: currencyForCountry(nextCountry),
-      county: '',
+      county: value,
       municipality: '',
+      city: '',
       postalCode: '',
     }))
   }
 
-  function changeLocationRegion(value: string) {
-    const region = locationMarket.regions.find((item) => item.name === value)
+  function changeLocationPlace(place: GeoPlaceOption) {
+    setPlaceQuery(place.name)
+    setGeoPlaceCode(place.code)
+    setLocationSource('verified')
     setValues((current) => ({
       ...current,
-      county: value,
-      municipality:
-        region && current.municipality && !(region.municipalities as readonly string[]).includes(current.municipality)
-          ? ''
-          : current.municipality || '',
+      municipality: place.name,
+      county: place.regionName || place.regionCode || current.county || '',
+      city: place.city || place.name,
+      postalCode: place.postalCode || current.postalCode || '',
     }))
   }
 
-  function changeLocationMunicipality(value: string) {
-    const region = locationMarket.regions.find((item) =>
-      (item.municipalities as readonly string[]).includes(value),
-    )
+  function changeLocationPlaceQuery(value: string) {
+    setPlaceQuery(value)
+    setGeoPlaceCode('')
+    setLocationSource('')
     setValues((current) => ({
       ...current,
       municipality: value,
-      county: region?.name || current.county || '',
+      city: value,
+    }))
+  }
+
+  function changeManualMunicipality(value: string) {
+    setGeoPlaceCode('')
+    setLocationSource('manual')
+    setValues((current) => ({
+      ...current,
+      municipality: value,
+    }))
+  }
+
+  function useManualLocation(value: string) {
+    const next = value.trim()
+    setPlaceQuery(next)
+    setGeoPlaceCode('')
+    setLocationSource('manual')
+    setValues((current) => ({
+      ...current,
+      municipality: next,
+      city: current.city || next,
     }))
   }
 
@@ -290,7 +381,14 @@ export default function NewListingForm({
         return missing(copy.errors.operatingHours)
       }
       if (!values.price) return missing(copy.errors.price)
+      if (!values.county) return missing(copy.errors.chooseField.replace('{field}', marketplaceRegionLabel(listingCountryCode, locale).toLowerCase()))
+      if (usesMunicipalityDropdown && !values.municipality) {
+        return missing(copy.errors.chooseField.replace('{field}', marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()))
+      }
       if (!values.city) return missing(copy.errors.city)
+      if (usesMunicipalityDropdown && locationSource !== 'verified') {
+        return missing((copy.errors as Record<string, string>).location || 'Choose a verified place or use the manual fallback.')
+      }
       if (
         values.postalCode &&
         !validatePostalCode(values.postalCode, listingCountryCode)
@@ -378,6 +476,8 @@ export default function NewListingForm({
     const form = new FormData()
     form.set('category', category)
     form.set('sellerCountryCode', listingCountryCode)
+    form.set('geoPlaceCode', usesMunicipalityDropdown ? geoPlaceCode : '')
+    form.set('locationSource', usesMunicipalityDropdown ? locationSource || 'unverified' : 'manual')
     Object.entries(values).forEach(([key, value]) => {
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
@@ -534,43 +634,47 @@ export default function NewListingForm({
             />
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
             <SelectNative
-              name="sellerCountryCode"
-              label={copy.country}
-              value={listingCountryCode}
-              onValueChange={(_, value) => changeListingCountry(value)}
-            >
-              {activeMarketCountries.map(([code]) => (
-                <option key={code} value={code}>
-                  {getEuCountryName(code, locale)}
-                </option>
-              ))}
-            </SelectNative>
-            <SelectNative
               name="county"
               label={marketplaceRegionLabel(listingCountryCode, locale)}
               value={values.county || ''}
               onValueChange={(_, value) => changeLocationRegion(value)}
             >
               <option value="">{copy.choose}</option>
-              {locationMarket.regions.map((region) => (
-                <option key={region.name} value={region.name}>
+              {regionOptions.map((region) => (
+                <option key={region.code} value={region.name}>
                   {region.name}
                 </option>
               ))}
             </SelectNative>
-            <SelectNative
-              name="municipality"
-              label={marketplaceMunicipalityLabel(listingCountryCode, locale)}
-              value={values.municipality || ''}
-              onValueChange={(_, value) => changeLocationMunicipality(value)}
-            >
-              <option value="">{copy.choose}</option>
-              {municipalityOptions.map((municipality) => (
-                <option key={municipality} value={municipality}>
-                  {municipality}
-                </option>
-              ))}
-            </SelectNative>
+            {usesMunicipalityDropdown ? (
+              <GeoPlaceCombobox
+                name="municipality"
+                label={marketplaceMunicipalityLabel(listingCountryCode, locale)}
+                value={values.municipality || ''}
+                query={placeQuery}
+                options={placeOptions}
+                loading={geoLoading}
+                disabled={!values.county}
+                placeholder={values.county ? copy.choose : marketplaceRegionLabel(listingCountryCode, locale)}
+                helper={
+                  values.county && !geoLoading
+                    ? `${placeOptions.length} ${marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()}`
+                    : ''
+                }
+                manualLabel=""
+                allowManual={false}
+                onQueryChange={changeLocationPlaceQuery}
+                onSelect={changeLocationPlace}
+                onManual={() => {}}
+              />
+            ) : (
+              <Field
+                name="municipality"
+                label={marketplaceMunicipalityLabel(listingCountryCode, locale)}
+                value={values.municipality || ''}
+                onValueChange={(_, value) => changeManualMunicipality(value)}
+              />
+            )}
             <Field name="city" label={copy.city} value={values.city || ''} onValueChange={setValue} required />
             <Field
               name="addressLine1"
@@ -1681,6 +1785,114 @@ function PriceField({
   )
 }
 
+function GeoPlaceCombobox({
+  label,
+  name,
+  value,
+  query,
+  options,
+  loading,
+  placeholder,
+  helper,
+  manualLabel,
+  disabled,
+  allowManual = true,
+  onQueryChange,
+  onSelect,
+  onManual,
+}: {
+  label: string
+  name: string
+  value: string
+  query: string
+  options: GeoPlaceOption[]
+  loading: boolean
+  placeholder: string
+  helper?: string
+  manualLabel: string
+  disabled?: boolean
+  allowManual?: boolean
+  onQueryChange: (value: string) => void
+  onSelect: (place: GeoPlaceOption) => void
+  onManual: (value: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const searchKey = normalizeClientGeoName(query || '')
+  const visibleOptions = open
+    ? options.filter((place) => {
+        if (searchKey.length < 2) return true
+        return normalizeClientGeoName([place.name, place.city, place.regionName].join(' ')).includes(searchKey)
+      })
+    : []
+  const canUseManual = allowManual && (query || value).trim().length >= 2
+
+  return (
+    <label className="relative block">
+      <span className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold">
+        <span>{label}</span>
+        {helper ? <span className="text-xs font-medium text-[#667085]">{helper}</span> : null}
+      </span>
+      <input
+        name={name}
+        value={query || value}
+        autoComplete="off"
+        placeholder={placeholder}
+        disabled={disabled}
+        onFocus={() => {
+          if (!disabled) setOpen(true)
+        }}
+        onChange={(event) => {
+          if (disabled) return
+          setOpen(true)
+          onQueryChange(event.target.value)
+        }}
+        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-10 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10 disabled:bg-[#f8fafc] disabled:text-[#98a2b3]"
+      />
+      <Search className="pointer-events-none absolute bottom-3.5 right-3 h-5 w-5 text-[#667085]" />
+      {open && (visibleOptions.length || loading || canUseManual) ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-72 overflow-auto rounded-[14px] border border-[#d7deed] bg-white p-1 shadow-[0_16px_40px_rgba(16,24,40,.14)]">
+          {loading ? (
+            <div className="px-3 py-2 text-sm text-[#667085]">{placeholder}...</div>
+          ) : null}
+          {visibleOptions.map((place) => (
+            <button
+              key={place.code}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onSelect(place)
+                setOpen(false)
+              }}
+              className="flex w-full items-start justify-between gap-3 rounded-[10px] px-3 py-2 text-left text-sm transition hover:bg-[#f3f7ff]"
+            >
+              <span>
+                <span className="block font-semibold text-[#101828]">{place.name}</span>
+                <span className="block text-xs text-[#667085]">{place.regionName}</span>
+              </span>
+              {place.postalCode ? (
+                <span className="shrink-0 text-xs font-semibold text-[#667085]">{place.postalCode}</span>
+              ) : null}
+            </button>
+          ))}
+          {canUseManual ? (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onManual(query || value)
+                setOpen(false)
+              }}
+              className="mt-1 flex w-full items-start rounded-[10px] border-t border-[#edf1f6] px-3 py-2 text-left text-sm font-semibold text-[#0866ff] transition hover:bg-[#f3f7ff]"
+            >
+              {manualLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </label>
+  )
+}
+
 function SelectNative({
   label,
   name,
@@ -1899,6 +2111,7 @@ function getListingFormCopy(locale: PublicLocale) {
       operatingHours: 'Enter operating hours.',
       price: 'Enter price.',
       city: 'Enter city.',
+      location: 'Choose a verified place from the list, or use "My place is missing".',
       postalCode: 'The postal code does not look valid for the selected country.',
       requiredField: 'Enter {field}.',
       chooseField: 'Choose {field}.',
@@ -2000,6 +2213,7 @@ function getListingFormCopy(locale: PublicLocale) {
         operatingHours: 'Fyll i drifttimmar.',
         price: 'Fyll i pris.',
         city: 'Fyll i ort.',
+        location: 'Välj en verifierad ort i listan, eller använd "Min ort saknas".',
         postalCode: 'Postnumret verkar inte vara giltigt för valt land.',
         requiredField: 'Fyll i {field}.',
         chooseField: 'Välj {field}.',
@@ -2405,6 +2619,28 @@ function localizedUnitSuffix(locale: PublicLocale, suffix?: string) {
   if (locale === 'sv') return ` (${suffix})`
   const normalized = unitSuffixOverrides[locale]?.[suffix] ?? unitSuffixOverrides.en[suffix] ?? suffix
   return normalized ? ` (${normalized})` : ''
+}
+
+function normalizeClientGeoName(value: string) {
+  return value
+    .replaceAll('Æ', 'Ae')
+    .replaceAll('Ø', 'O')
+    .replaceAll('Å', 'A')
+    .replaceAll('æ', 'ae')
+    .replaceAll('ø', 'o')
+    .replaceAll('å', 'a')
+    .replaceAll('Ä', 'A')
+    .replaceAll('Ö', 'O')
+    .replaceAll('Ü', 'U')
+    .replaceAll('ä', 'a')
+    .replaceAll('ö', 'o')
+    .replaceAll('ü', 'u')
+    .replaceAll('ß', 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
 }
 
 function localizeOptions(locale: PublicLocale, options: ListingOption[]) {

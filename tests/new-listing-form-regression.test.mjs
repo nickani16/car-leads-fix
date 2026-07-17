@@ -31,7 +31,8 @@ test('market-prefixed create listing pages default to the active market country'
   assert.match(localizedMarketRoute, /slugPath === 'konto\/annonser\/ny'/)
   assert.match(localizedMarketRoute, /marketCodeOverride: normalizedMarket\.toUpperCase\(\)/)
   assert.match(newListingPage, /marketCodeOverride \|\| requestHeaders\.get\('x-autorell-market'\)/)
-  assert.match(form, /useState\(countryCode\.toUpperCase\(\)\)/)
+  assert.match(form, /const listingCountryCode = countryCode\.toUpperCase\(\)/)
+  assert.doesNotMatch(form, /name="sellerCountryCode"/)
 })
 
 test('phone number visibility defaults to public for new private listings', () => {

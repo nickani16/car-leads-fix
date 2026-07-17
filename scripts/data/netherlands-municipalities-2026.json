@@ -1,0 +1,2054 @@
+[
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1680",
+    "municipalityName": "Aa en Hunze"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0358",
+    "municipalityName": "Aalsmeer"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0197",
+    "municipalityName": "Aalten"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0059",
+    "municipalityName": "Achtkarspelen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0482",
+    "municipalityName": "Alblasserdam"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0613",
+    "municipalityName": "Albrandswaard"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0361",
+    "municipalityName": "Alkmaar"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0141",
+    "municipalityName": "Almelo"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0034",
+    "municipalityName": "Almere"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0484",
+    "municipalityName": "Alphen aan den Rijn"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1723",
+    "municipalityName": "Alphen-Chaam"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1959",
+    "municipalityName": "Altena"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0060",
+    "municipalityName": "Ameland"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0307",
+    "municipalityName": "Amersfoort"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0362",
+    "municipalityName": "Amstelveen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0363",
+    "municipalityName": "Amsterdam"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0200",
+    "municipalityName": "Apeldoorn"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0202",
+    "municipalityName": "Arnhem"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM0106",
+    "municipalityName": "Assen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0743",
+    "municipalityName": "Asten"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0744",
+    "municipalityName": "Baarle-Nassau"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0308",
+    "municipalityName": "Baarn"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0489",
+    "municipalityName": "Barendrecht"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0203",
+    "municipalityName": "Barneveld"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0888",
+    "municipalityName": "Beek (L.)"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1954",
+    "municipalityName": "Beekdaelen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0889",
+    "municipalityName": "Beesel"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1945",
+    "municipalityName": "Berg en Dal"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1724",
+    "municipalityName": "Bergeijk"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0893",
+    "municipalityName": "Bergen (L.)"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0373",
+    "municipalityName": "Bergen (NH.)"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0748",
+    "municipalityName": "Bergen op Zoom"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1859",
+    "municipalityName": "Berkelland"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1721",
+    "municipalityName": "Bernheze"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0753",
+    "municipalityName": "Best"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0209",
+    "municipalityName": "Beuningen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0375",
+    "municipalityName": "Beverwijk"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0310",
+    "municipalityName": "De Bilt"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1728",
+    "municipalityName": "Bladel"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0376",
+    "municipalityName": "Blaricum"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0377",
+    "municipalityName": "Bloemendaal"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1901",
+    "municipalityName": "Bodegraven-Reeuwijk"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0755",
+    "municipalityName": "Boekel"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1681",
+    "municipalityName": "Borger-Odoorn"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0147",
+    "municipalityName": "Borne"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0654",
+    "municipalityName": "Borsele"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0757",
+    "municipalityName": "Boxtel"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0758",
+    "municipalityName": "Breda"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1876",
+    "municipalityName": "Bronckhorst"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0213",
+    "municipalityName": "Brummen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0899",
+    "municipalityName": "Brunssum"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0312",
+    "municipalityName": "Bunnik"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0313",
+    "municipalityName": "Bunschoten"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0214",
+    "municipalityName": "Buren"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0502",
+    "municipalityName": "Capelle aan den IJssel"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0383",
+    "municipalityName": "Castricum"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM0109",
+    "municipalityName": "Coevorden"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1706",
+    "municipalityName": "Cranendonck"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0216",
+    "municipalityName": "Culemborg"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0148",
+    "municipalityName": "Dalfsen"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM1891",
+    "municipalityName": "Dantumadiel"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0503",
+    "municipalityName": "Delft"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0762",
+    "municipalityName": "Deurne"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0150",
+    "municipalityName": "Deventer"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0384",
+    "municipalityName": "Diemen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM1980",
+    "municipalityName": "Dijk en Waard"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1774",
+    "municipalityName": "Dinkelland"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0221",
+    "municipalityName": "Doesburg"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0222",
+    "municipalityName": "Doetinchem"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0766",
+    "municipalityName": "Dongen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0505",
+    "municipalityName": "Dordrecht"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0498",
+    "municipalityName": "Drechterland"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1719",
+    "municipalityName": "Drimmelen"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0303",
+    "municipalityName": "Dronten"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0225",
+    "municipalityName": "Druten"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0226",
+    "municipalityName": "Duiven"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1711",
+    "municipalityName": "Echt-Susteren"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0385",
+    "municipalityName": "Edam-Volendam"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0228",
+    "municipalityName": "Ede"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0317",
+    "municipalityName": "Eemnes"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1979",
+    "municipalityName": "Eemsdelta"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0770",
+    "municipalityName": "Eersel"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1903",
+    "municipalityName": "Eijsden-Margraten"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0772",
+    "municipalityName": "Eindhoven"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0230",
+    "municipalityName": "Elburg"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM0114",
+    "municipalityName": "Emmen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0388",
+    "municipalityName": "Enkhuizen"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0153",
+    "municipalityName": "Enschede"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0232",
+    "municipalityName": "Epe"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0233",
+    "municipalityName": "Ermelo"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0777",
+    "municipalityName": "Etten-Leur"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM1940",
+    "municipalityName": "De Fryske Marren"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0779",
+    "municipalityName": "Geertruidenberg"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1771",
+    "municipalityName": "Geldrop-Mierlo"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1652",
+    "municipalityName": "Gemert-Bakel"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0907",
+    "municipalityName": "Gennep"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0784",
+    "municipalityName": "Gilze en Rijen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1924",
+    "municipalityName": "Goeree-Overflakkee"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0664",
+    "municipalityName": "Goes"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0785",
+    "municipalityName": "Goirle"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM1942",
+    "municipalityName": "Gooise Meren"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0512",
+    "municipalityName": "Gorinchem"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0513",
+    "municipalityName": "Gouda"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0518",
+    "municipalityName": "'s-Gravenhage"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM0014",
+    "municipalityName": "Groningen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1729",
+    "municipalityName": "Gulpen-Wittem"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0158",
+    "municipalityName": "Haaksbergen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0392",
+    "municipalityName": "Haarlem"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0394",
+    "municipalityName": "Haarlemmermeer"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1655",
+    "municipalityName": "Halderberge"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0160",
+    "municipalityName": "Hardenberg"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0243",
+    "municipalityName": "Harderwijk"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0523",
+    "municipalityName": "Hardinxveld-Giessendam"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0072",
+    "municipalityName": "Harlingen"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0244",
+    "municipalityName": "Hattem"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0396",
+    "municipalityName": "Heemskerk"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0397",
+    "municipalityName": "Heemstede"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0246",
+    "municipalityName": "Heerde"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0074",
+    "municipalityName": "Heerenveen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0917",
+    "municipalityName": "Heerlen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1658",
+    "municipalityName": "Heeze-Leende"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0399",
+    "municipalityName": "Heiloo"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0400",
+    "municipalityName": "Den Helder"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0163",
+    "municipalityName": "Hellendoorn"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0794",
+    "municipalityName": "Helmond"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0531",
+    "municipalityName": "Hendrik-Ido-Ambacht"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0164",
+    "municipalityName": "Hengelo (O.)"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0796",
+    "municipalityName": "'s-Hertogenbosch"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0252",
+    "municipalityName": "Heumen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0797",
+    "municipalityName": "Heusden"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0534",
+    "municipalityName": "Hillegom"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0798",
+    "municipalityName": "Hilvarenbeek"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0402",
+    "municipalityName": "Hilversum"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1963",
+    "municipalityName": "Hoeksche Waard"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1735",
+    "municipalityName": "Hof van Twente"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1966",
+    "municipalityName": "Het Hogeland"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM1911",
+    "municipalityName": "Hollands Kroon"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM0118",
+    "municipalityName": "Hoogeveen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0405",
+    "municipalityName": "Hoorn"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1507",
+    "municipalityName": "Horst aan de Maas"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0321",
+    "municipalityName": "Houten"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0406",
+    "municipalityName": "Huizen"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0677",
+    "municipalityName": "Hulst"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0353",
+    "municipalityName": "IJsselstein"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1884",
+    "municipalityName": "Kaag en Braassem"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0166",
+    "municipalityName": "Kampen"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0678",
+    "municipalityName": "Kapelle"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0537",
+    "municipalityName": "Katwijk"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0928",
+    "municipalityName": "Kerkrade"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM1598",
+    "municipalityName": "Koggenland"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0542",
+    "municipalityName": "Krimpen aan den IJssel"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1931",
+    "municipalityName": "Krimpenerwaard"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1659",
+    "municipalityName": "Laarbeek"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1982",
+    "municipalityName": "Land van Cuijk"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0882",
+    "municipalityName": "Landgraaf"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0415",
+    "municipalityName": "Landsmeer"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1621",
+    "municipalityName": "Lansingerland"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0417",
+    "municipalityName": "Laren (NH.)"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0080",
+    "municipalityName": "Leeuwarden"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0546",
+    "municipalityName": "Leiden"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0547",
+    "municipalityName": "Leiderdorp"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1916",
+    "municipalityName": "Leidschendam-Voorburg"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0995",
+    "municipalityName": "Lelystad"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1640",
+    "municipalityName": "Leudal"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0327",
+    "municipalityName": "Leusden"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1705",
+    "municipalityName": "Lingewaard"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0553",
+    "municipalityName": "Lisse"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0262",
+    "municipalityName": "Lochem"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0809",
+    "municipalityName": "Loon op Zand"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0331",
+    "municipalityName": "Lopik"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0168",
+    "municipalityName": "Losser"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0263",
+    "municipalityName": "Maasdriel"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1641",
+    "municipalityName": "Maasgouw"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1991",
+    "municipalityName": "Maashorst"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0556",
+    "municipalityName": "Maassluis"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0935",
+    "municipalityName": "Maastricht"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0420",
+    "municipalityName": "Medemblik"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0938",
+    "municipalityName": "Meerssen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1948",
+    "municipalityName": "Meierijstad"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM0119",
+    "municipalityName": "Meppel"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0687",
+    "municipalityName": "Middelburg (Z.)"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1842",
+    "municipalityName": "Midden-Delfland"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1731",
+    "municipalityName": "Midden-Drenthe"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1952",
+    "municipalityName": "Midden-Groningen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1709",
+    "municipalityName": "Moerdijk"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1978",
+    "municipalityName": "Molenlanden"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1955",
+    "municipalityName": "Montferland"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0335",
+    "municipalityName": "Montfoort"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0944",
+    "municipalityName": "Mook en Middelaar"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1740",
+    "municipalityName": "Neder-Betuwe"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0946",
+    "municipalityName": "Nederweert"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0356",
+    "municipalityName": "Nieuwegein"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0569",
+    "municipalityName": "Nieuwkoop"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0267",
+    "municipalityName": "Nijkerk"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0268",
+    "municipalityName": "Nijmegen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1930",
+    "municipalityName": "Nissewaard"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM1970",
+    "municipalityName": "Noardeast-Fryslân"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM1695",
+    "municipalityName": "Noord-Beveland"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1699",
+    "municipalityName": "Noordenveld"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0171",
+    "municipalityName": "Noordoostpolder"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0575",
+    "municipalityName": "Noordwijk"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0820",
+    "municipalityName": "Nuenen, Gerwen en Nederwetten"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0302",
+    "municipalityName": "Nunspeet"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0579",
+    "municipalityName": "Oegstgeest"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0823",
+    "municipalityName": "Oirschot"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0824",
+    "municipalityName": "Oisterwijk"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1895",
+    "municipalityName": "Oldambt"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0269",
+    "municipalityName": "Oldebroek"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0173",
+    "municipalityName": "Oldenzaal"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1773",
+    "municipalityName": "Olst-Wijhe"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0175",
+    "municipalityName": "Ommen"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1586",
+    "municipalityName": "Oost Gelre"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0826",
+    "municipalityName": "Oosterhout"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0085",
+    "municipalityName": "Ooststellingwerf"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0431",
+    "municipalityName": "Oostzaan"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0432",
+    "municipalityName": "Opmeer"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0086",
+    "municipalityName": "Opsterland"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0828",
+    "municipalityName": "Oss"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1509",
+    "municipalityName": "Oude IJsselstreek"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0437",
+    "municipalityName": "Ouder-Amstel"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0589",
+    "municipalityName": "Oudewater"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1734",
+    "municipalityName": "Overbetuwe"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0590",
+    "municipalityName": "Papendrecht"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1894",
+    "municipalityName": "Peel en Maas"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM0765",
+    "municipalityName": "Pekela"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1926",
+    "municipalityName": "Pijnacker-Nootdorp"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0439",
+    "municipalityName": "Purmerend"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0273",
+    "municipalityName": "Putten"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0177",
+    "municipalityName": "Raalte"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0703",
+    "municipalityName": "Reimerswaal"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0274",
+    "municipalityName": "Renkum"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0339",
+    "municipalityName": "Renswoude"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1667",
+    "municipalityName": "Reusel-De Mierden"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0275",
+    "municipalityName": "Rheden"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0340",
+    "municipalityName": "Rhenen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0597",
+    "municipalityName": "Ridderkerk"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1742",
+    "municipalityName": "Rijssen-Holten"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0603",
+    "municipalityName": "Rijswijk (ZH.)"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1669",
+    "municipalityName": "Roerdalen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0957",
+    "municipalityName": "Roermond"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0736",
+    "municipalityName": "De Ronde Venen"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM1674",
+    "municipalityName": "Roosendaal"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0599",
+    "municipalityName": "Rotterdam"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0277",
+    "municipalityName": "Rozendaal"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0840",
+    "municipalityName": "Rucphen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0441",
+    "municipalityName": "Schagen"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0279",
+    "municipalityName": "Scherpenzeel"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0606",
+    "municipalityName": "Schiedam"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0088",
+    "municipalityName": "Schiermonnikoog"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM1676",
+    "municipalityName": "Schouwen-Duiveland"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0965",
+    "municipalityName": "Simpelveld"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0845",
+    "municipalityName": "Sint-Michielsgestel"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM1883",
+    "municipalityName": "Sittard-Geleen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0610",
+    "municipalityName": "Sliedrecht"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM1714",
+    "municipalityName": "Sluis"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0090",
+    "municipalityName": "Smallingerland"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0342",
+    "municipalityName": "Soest"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0847",
+    "municipalityName": "Someren"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0848",
+    "municipalityName": "Son en Breugel"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM0037",
+    "municipalityName": "Stadskanaal"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0180",
+    "municipalityName": "Staphorst"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0532",
+    "municipalityName": "Stede Broec"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0851",
+    "municipalityName": "Steenbergen"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1708",
+    "municipalityName": "Steenwijkerland"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0971",
+    "municipalityName": "Stein (L.)"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM1904",
+    "municipalityName": "Stichtse Vecht"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM1900",
+    "municipalityName": "Súdwest-Fryslân"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0715",
+    "municipalityName": "Terneuzen"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0093",
+    "municipalityName": "Terschelling"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0448",
+    "municipalityName": "Texel"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1525",
+    "municipalityName": "Teylingen"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0716",
+    "municipalityName": "Tholen"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0281",
+    "municipalityName": "Tiel"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0855",
+    "municipalityName": "Tilburg"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0183",
+    "municipalityName": "Tubbergen"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1700",
+    "municipalityName": "Twenterand"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1730",
+    "municipalityName": "Tynaarlo"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0737",
+    "municipalityName": "Tytsjerksteradiel"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0450",
+    "municipalityName": "Uitgeest"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0451",
+    "municipalityName": "Uithoorn"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0184",
+    "municipalityName": "Urk"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0344",
+    "municipalityName": "Utrecht"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM1581",
+    "municipalityName": "Utrechtse Heuvelrug"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0981",
+    "municipalityName": "Vaals"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0994",
+    "municipalityName": "Valkenburg aan de Geul"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0858",
+    "municipalityName": "Valkenswaard"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM0047",
+    "municipalityName": "Veendam"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0345",
+    "municipalityName": "Veenendaal"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0717",
+    "municipalityName": "Veere"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0861",
+    "municipalityName": "Veldhoven"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0453",
+    "municipalityName": "Velsen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0983",
+    "municipalityName": "Venlo"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0984",
+    "municipalityName": "Venray"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM1961",
+    "municipalityName": "Vijfheerenlanden"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0622",
+    "municipalityName": "Vlaardingen"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0096",
+    "municipalityName": "Vlieland"
+  },
+  {
+    "regionCode": "PV29",
+    "regionName": "Zeeland",
+    "municipalityCode": "GM0718",
+    "municipalityName": "Vlissingen"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0986",
+    "municipalityName": "Voerendaal"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1992",
+    "municipalityName": "Voorne aan Zee"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0626",
+    "municipalityName": "Voorschoten"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0285",
+    "municipalityName": "Voorst"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0865",
+    "municipalityName": "Vught"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM1949",
+    "municipalityName": "Waadhoeke"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0866",
+    "municipalityName": "Waalre"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0867",
+    "municipalityName": "Waalwijk"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0627",
+    "municipalityName": "Waddinxveen"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0289",
+    "municipalityName": "Wageningen"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0629",
+    "municipalityName": "Wassenaar"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0852",
+    "municipalityName": "Waterland"
+  },
+  {
+    "regionCode": "PV31",
+    "regionName": "Limburg",
+    "municipalityCode": "GM0988",
+    "municipalityName": "Weert"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM1960",
+    "municipalityName": "West Betuwe"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0668",
+    "municipalityName": "West Maas en Waal"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1969",
+    "municipalityName": "Westerkwartier"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1701",
+    "municipalityName": "Westerveld"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0293",
+    "municipalityName": "Westervoort"
+  },
+  {
+    "regionCode": "PV20",
+    "regionName": "Groningen",
+    "municipalityCode": "GM1950",
+    "municipalityName": "Westerwolde"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1783",
+    "municipalityName": "Westland"
+  },
+  {
+    "regionCode": "PV21",
+    "regionName": "Fryslân",
+    "municipalityCode": "GM0098",
+    "municipalityName": "Weststellingwerf"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0189",
+    "municipalityName": "Wierden"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0296",
+    "municipalityName": "Wijchen"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM1696",
+    "municipalityName": "Wijdemeren"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0352",
+    "municipalityName": "Wijk bij Duurstede"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0294",
+    "municipalityName": "Winterswijk"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0873",
+    "municipalityName": "Woensdrecht"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0632",
+    "municipalityName": "Woerden"
+  },
+  {
+    "regionCode": "PV22",
+    "regionName": "Drenthe",
+    "municipalityCode": "GM1690",
+    "municipalityName": "De Wolden"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0880",
+    "municipalityName": "Wormerland"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0351",
+    "municipalityName": "Woudenberg"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0479",
+    "municipalityName": "Zaanstad"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0297",
+    "municipalityName": "Zaltbommel"
+  },
+  {
+    "regionCode": "PV27",
+    "regionName": "Noord-Holland",
+    "municipalityCode": "GM0473",
+    "municipalityName": "Zandvoort"
+  },
+  {
+    "regionCode": "PV24",
+    "regionName": "Flevoland",
+    "municipalityCode": "GM0050",
+    "municipalityName": "Zeewolde"
+  },
+  {
+    "regionCode": "PV26",
+    "regionName": "Utrecht",
+    "municipalityCode": "GM0355",
+    "municipalityName": "Zeist"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0299",
+    "municipalityName": "Zevenaar"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0637",
+    "municipalityName": "Zoetermeer"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0638",
+    "municipalityName": "Zoeterwoude"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM1892",
+    "municipalityName": "Zuidplas"
+  },
+  {
+    "regionCode": "PV30",
+    "regionName": "Noord-Brabant",
+    "municipalityCode": "GM0879",
+    "municipalityName": "Zundert"
+  },
+  {
+    "regionCode": "PV25",
+    "regionName": "Gelderland",
+    "municipalityCode": "GM0301",
+    "municipalityName": "Zutphen"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM1896",
+    "municipalityName": "Zwartewaterland"
+  },
+  {
+    "regionCode": "PV28",
+    "regionName": "Zuid-Holland",
+    "municipalityCode": "GM0642",
+    "municipalityName": "Zwijndrecht"
+  },
+  {
+    "regionCode": "PV23",
+    "regionName": "Overijssel",
+    "municipalityCode": "GM0193",
+    "municipalityName": "Zwolle"
+  }
+]

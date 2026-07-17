@@ -32,7 +32,7 @@ import { euCountryCodes } from '@/lib/eu-countries'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { publicSellerName } from '@/lib/public-seller'
-import { inferMarketplaceLocation } from '@/lib/marketplace-locations'
+import { validateGeoListingLocation } from '@/lib/marketplace-geo'
 import {
   lowPriceThreshold,
   MARKETPLACE_PRIVACY_VERSION,
@@ -419,6 +419,8 @@ export async function POST(request: Request) {
     const city = text(form, 'city')
     const rawRegion = text(form, 'county') || text(form, 'region')
     const rawMunicipality = text(form, 'municipality')
+    const geoPlaceCode = text(form, 'geoPlaceCode')
+    const locationSource = text(form, 'locationSource')
     const address = text(form, 'addressLine1')
     const postalCode = text(form, 'postalCode')
     const requestedListingCountry = text(form, 'sellerCountryCode').toUpperCase()
@@ -426,12 +428,21 @@ export async function POST(request: Request) {
       ? requestedListingCountry
       : profile.country_code
     const normalizedLocation =
-      inferMarketplaceLocation({
+      await validateGeoListingLocation({
         city,
         region: rawRegion,
         municipality: rawMunicipality,
         countryCode: listingCountryCode,
+        geoPlaceCode,
+        locationSource,
       })
+    if (!normalizedLocation.valid) {
+      return listingFormError(
+        'Välj en verifierad ort från listan, eller använd "Min ort saknas" om orten saknas.',
+        0,
+        'municipality',
+      )
+    }
     const municipality = normalizedLocation.municipality || rawMunicipality || ''
     const region = normalizedLocation.region || rawRegion || ''
     if (postalCode && !validatePostalCode(postalCode, listingCountryCode)) {
@@ -663,6 +674,8 @@ export async function POST(request: Request) {
         country: listingCountryCode,
         city,
         municipality: municipality || null,
+        location_source: normalizedLocation.locationSource,
+        geo_place_code: normalizedLocation.geoPlaceCode,
         address: address || null,
         latitude,
         longitude,
@@ -749,6 +762,8 @@ export async function POST(request: Request) {
             county: region || null,
             region: region || null,
             country: listingCountryCode,
+            source: normalizedLocation.locationSource,
+            geo_place_code: normalizedLocation.geoPlaceCode,
             latitude,
             longitude,
             geocoding_provider: process.env.GEOCODING_PROVIDER || process.env.MAP_GEOCODING_PROVIDER || null,
