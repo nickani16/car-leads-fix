@@ -814,7 +814,7 @@ const publicSelect = 'id,slug,title,excerpt,body,language,market,author_name,pub
 export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
   const language = languageForMarket(market)
   const admin = createContentAdmin()
-  if (!admin) return { articles: [], categories: localizedFallbackCategories(language), count: 0, unavailable: false }
+  if (!admin) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
   const from = Math.max(0, page - 1) * pageSize
   const { data, count, error } = await admin
     .from('content_posts')
@@ -827,7 +827,7 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .order('published_at', { ascending: false })
     .range(from, from + pageSize - 1)
 
-  if (error) return { articles: [], categories: localizedFallbackCategories(language), count: 0, unavailable: false }
+  if (error) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
   const rows = (data || []) as unknown as Record<string, unknown>[]
   const mediaIds = rows.map((row) => String(row.hero_media_id || '')).filter(Boolean)
   const { data: mediaRows } = mediaIds.length
@@ -841,13 +841,13 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .order('sort_order')
 
   return {
-    articles: rows.map((row) => mapArticle(row, mediaById.get(String(row.hero_media_id)) || null)),
+    articles: rows.length ? rows.map((row) => mapArticle(row, mediaById.get(String(row.hero_media_id)) || null)) : fallbackNewsPage(language, page, pageSize),
     categories: rows.length && categoryRows?.length ? ((categoryRows || []) as Record<string, unknown>[]).map((row) => ({
       id: String(row.id),
       key: String(row.category_key),
       label: localizedCategory(row.translations, language, String(row.category_key)),
     })) : localizedFallbackCategories(language),
-    count: count || 0,
+    count: rows.length ? count || 0 : fallbackArticles.length,
     unavailable: false,
   }
 }
@@ -897,7 +897,10 @@ export async function getVehicleNewsFeaturedListings(market: string, limit = 3):
 export async function getVehicleNewsArticle(market: string, slug: string, previewToken?: string) {
   const language = languageForMarket(market)
   const admin = createContentAdmin()
-  if (!admin) return null
+  if (!admin) {
+    const fallback = localizedFallbackArticles(language).find((article) => article.slug === slug)
+    return fallback ? { article: fallback, preview: false } : null
+  }
   let previewPostId = ''
   if (previewToken) {
     const tokenHash = createHash('sha256').update(previewToken).digest('hex')
@@ -916,7 +919,10 @@ export async function getVehicleNewsArticle(market: string, slug: string, previe
     ? query.eq('id', previewPostId)
     : query.eq('status', 'published').lte('published_at', new Date().toISOString())
   const { data: row, error } = await query.maybeSingle()
-  if (error || !row) return null
+  if (error || !row) {
+    const fallback = localizedFallbackArticles(language).find((article) => article.slug === slug)
+    return fallback ? { article: fallback, preview: false } : null
+  }
   const typedRow = row as unknown as Record<string, unknown>
   const { data: media } = typedRow.hero_media_id
     ? await admin.from('media_assets').select('id,public_url,variants,alt_text,caption').eq('id', String(typedRow.hero_media_id)).maybeSingle()
