@@ -193,6 +193,6 @@ test('client accepts only supported formats and processes selected images withou
   assert.doesNotMatch(listingFormSource, /accept="[^"]*(?:heic|heif)/i)
   assert.match(listingFormSource, /for \(const file of selected\)[\s\S]*await compressImage\(file\)/)
   assert.match(listingFormSource, /Anslutningen avbröts\. Dina uppgifter finns kvar/)
-  assert.match(listingFormSource, /listingRequestTimeoutMs = 240_000/)
+  assert.match(listingFormSource, /listingRequestTimeoutMs = 60_000/)
   assert.match(listingFormSource, /180_000/)
 })

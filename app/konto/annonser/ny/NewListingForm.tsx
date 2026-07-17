@@ -1973,14 +1973,24 @@ function labelFor(options: ListingOption[], value: string) {
 
 async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = listingRequestTimeoutMs) {
   const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
+  let timeout: number | undefined
+  const timeoutError = new DOMException('Request timed out', 'AbortError')
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = window.setTimeout(() => {
+      controller.abort(timeoutError)
+      reject(timeoutError)
+    }, timeoutMs)
+  })
   try {
-    return await fetch(url, {
-      ...init,
-      signal: controller.signal,
-    })
+    return await Promise.race([
+      fetch(url, {
+        ...init,
+        signal: controller.signal,
+      }),
+      timeoutPromise,
+    ])
   } finally {
-    window.clearTimeout(timeout)
+    if (timeout) window.clearTimeout(timeout)
   }
 }
 
