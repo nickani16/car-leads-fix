@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { euCountryCodes } from '@/lib/eu-countries'
-import { countryForLocale } from '@/lib/market-locale'
+import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
+import { currencyForCountry } from '@/lib/marketplace'
 import NewListingForm from './NewListingForm'
 import { headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
@@ -53,12 +54,17 @@ export async function renderNewListingPage({
   const requestHeaders = await headers()
   const marketCode = (marketCodeOverride || requestHeaders.get('x-autorell-market') || '').toUpperCase()
   const localeCountry = countryForLocale(locale)
+  const marketCountryCode = euCountryCodes.has(marketCode) ? marketCode : ''
+  const localeCountryCode =
+    localeCountry !== 'EU' && euCountryCodes.has(localeCountry) ? localeCountry : ''
   const listingCountryCode =
-    euCountryCodes.has(marketCode)
-      ? marketCode
-      : localeCountry !== 'EU' && euCountryCodes.has(localeCountry)
-        ? localeCountry
-        : profile.country_code || 'SE'
+    marketCountryCode ||
+    localeCountryCode ||
+    (profile.country_code && euCountryCodes.has(profile.country_code) ? profile.country_code : 'SE')
+  const listingCurrency =
+    marketCountryCode || localeCountryCode
+      ? currencyForCountry(listingCountryCode)
+      : currencyForLocale(locale)
   const copy = getNewListingPageCopy(locale)
 
   return (
@@ -87,6 +93,7 @@ export async function renderNewListingPage({
             <NewListingForm
               accountType={profile.account_type}
               countryCode={listingCountryCode}
+              defaultCurrency={listingCurrency}
               defaultCategory={category}
               locale={locale}
             />

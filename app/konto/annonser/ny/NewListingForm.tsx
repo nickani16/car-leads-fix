@@ -24,11 +24,11 @@ import {
 } from '@/lib/marketplace-pricing'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import {
-  euCurrencies,
   currencyForCountry,
   getMarketplaceCategory,
   marketplaceLanguage,
   normalizeMarketplaceCategory,
+  type SupportedCurrency,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
@@ -113,11 +113,13 @@ const packageCopy = {
 export default function NewListingForm({
   accountType,
   countryCode,
+  defaultCurrency,
   defaultCategory,
   locale,
 }: {
   accountType: 'private' | 'business'
   countryCode: string
+  defaultCurrency: SupportedCurrency
   defaultCategory: string
   locale: PublicLocale
 }) {
@@ -129,7 +131,7 @@ export default function NewListingForm({
   )
   const createInitialValues = () => ({
     packageId: 'free_7d',
-    currency: currencyForCountry(countryCode),
+    currency: defaultCurrency,
     phoneVisibility: 'public',
   })
   const [values, setValues] = useState<Values>(createInitialValues)
@@ -144,7 +146,7 @@ export default function NewListingForm({
   const [draftNotice, setDraftNotice] = useState(false)
   const draftRestored = useRef(false)
   const draftImagesRestored = useRef(false)
-  const draftKey = `autorell-listing-draft:${countryCode.toUpperCase()}`
+  const draftKey = `autorell-listing-draft:${countryCode.toUpperCase()}:${defaultCurrency}`
   const selectedPricing =
     marketplaceCategories.find((item) => item.slug === category) ||
     marketplaceCategories[0]
@@ -536,12 +538,15 @@ export default function NewListingForm({
                 required
               />
             )}
-            <Field name="price" label={copy.price} type="number" value={values.price || ''} onValueChange={setValue} required />
-            <SelectNative name="currency" label={copy.currency} value={values.currency || 'EUR'} onValueChange={setValue}>
-              {euCurrencies.map((currency) => (
-                <option key={currency} value={currency}>{currency}</option>
-              ))}
-            </SelectNative>
+            <PriceField
+              name="price"
+              label={copy.price}
+              currency={values.currency || defaultCurrency}
+              value={values.price || ''}
+              onValueChange={setValue}
+              required
+            />
+            <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
             <SelectNative
               name="sellerCountryCode"
               label={copy.country}
@@ -1648,6 +1653,44 @@ function Field(
         className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
+    </label>
+  )
+}
+
+function PriceField({
+  label,
+  name,
+  value,
+  currency,
+  required,
+  onValueChange,
+}: {
+  label: string
+  name: string
+  value: string
+  currency: string
+  required?: boolean
+  onValueChange: (name: string, value: string) => void
+}) {
+  return (
+    <label>
+      <span className="mb-2 block text-sm font-semibold">{label}</span>
+      <span className="relative block">
+        <input
+          name={name}
+          type="number"
+          value={value}
+          required={required}
+          inputMode="numeric"
+          min="0"
+          step="1"
+          onChange={(event) => onValueChange(name, event.target.value)}
+          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        />
+        <span className="pointer-events-none absolute right-3 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[10px] border border-[#d7deed] bg-[#f7faff] px-3 text-sm font-semibold text-[#344054]">
+          {currency.toUpperCase()}
+        </span>
+      </span>
     </label>
   )
 }
