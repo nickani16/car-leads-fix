@@ -35,7 +35,7 @@ export default function VehicleNewsPage({
       <PublicHeader locale={locale} marketCode={market.toUpperCase()} />
       <VehicleNewsSubnav market={market} categories={categories} activeCategory={safeActiveCategory} />
       <section className="w-full max-w-full overflow-hidden border-b border-[#dbe4f0] bg-white">
-        <div className="mx-auto w-full min-w-0 max-w-[1120px] px-5 py-9 sm:px-8 sm:py-11">
+        <div className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] px-5 py-9 sm:px-8 sm:py-11">
           <div className="w-full min-w-0 max-w-[330px] sm:max-w-[860px]">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">Autorell insights</p>
             <h1 className="mt-4 max-w-[330px] break-words text-[34px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-full sm:text-[56px]">
@@ -47,7 +47,7 @@ export default function VehicleNewsPage({
           </div>
         </div>
       </section>
-      <section className="mx-auto w-full min-w-0 max-w-[1120px] overflow-hidden px-5 py-8 sm:px-8 sm:py-10">
+      <section className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] overflow-hidden px-5 py-8 sm:px-8 sm:py-10">
         {unavailable ? (
           <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
             <strong>{copy.preparing}</strong>

@@ -51,7 +51,7 @@ export default async function VehicleNewsArticlePage({
       {result.preview ? (
         <div className="bg-amber-100 px-4 py-3 text-center text-sm font-bold text-amber-900">{copy.preview}</div>
       ) : null}
-      <article className="mx-auto max-w-[900px] px-5 py-10 sm:px-8 sm:py-16">
+      <article className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-16">
         <nav className="text-sm text-[#667085]" aria-label={copy.breadcrumbLabel}>
           <Link href={`/${market}/vehicle-news`} className="hover:text-[#0866ff]">{copy.news}</Link>
           {article.category ? <> / <span>{article.category.label}</span></> : null}
@@ -69,7 +69,7 @@ export default async function VehicleNewsArticlePage({
         {article.imageUrl ? (
           <figure className="mt-9">
             <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-[#edf3fb]">
-              <Image src={article.imageUrl} alt={article.imageAlt} fill priority sizes="(min-width: 900px) 900px, 100vw" className="object-cover" />
+              <Image src={article.imageUrl} alt={article.imageAlt} fill priority sizes="(min-width: 1300px) 1300px, 100vw" className="object-cover" />
             </div>
             {article.imageCaption ? <figcaption className="mt-3 text-sm text-[#667085]">{article.imageCaption}</figcaption> : null}
           </figure>
