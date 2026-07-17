@@ -4,6 +4,8 @@ import test from 'node:test'
 
 const api = readFileSync(new URL('../app/api/saved-searches/route.ts', import.meta.url), 'utf8')
 const client = readFileSync(new URL('../app/components/SavedSearchesClient.tsx', import.meta.url), 'utf8')
+const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
+const helper = readFileSync(new URL('../lib/saved-searches.ts', import.meta.url), 'utf8')
 const migration = readFileSync(new URL('../supabase/migrations/20260715223000_saved_search_notification_preferences.sql', import.meta.url), 'utf8')
 
 test('saved searches expose owned notification preferences', () => {
@@ -20,4 +22,12 @@ test('saved searches expose owned notification preferences', () => {
   assert.match(client, /<option value="daily">/)
   assert.match(client, /<option value="instant">/)
   assert.match(client, /translatePublicObject\(locale, en\)/)
+})
+
+test('public header deduplicates saved search count requests', () => {
+  assert.match(helper, /let savedSearchCountRequest/)
+  assert.match(helper, /if \(savedSearchCountRequest\) return savedSearchCountRequest/)
+  assert.match(helper, /\.finally\(\(\) => \{\s*savedSearchCountRequest = null\s*\}\)/)
+  assert.match(header, /if \(headerAccount\.authenticated\) \{\s*void fetchSavedSearchCount/)
+  assert.equal((header.match(/fetchSavedSearchCount\(\)/g) || []).length, 1)
 })

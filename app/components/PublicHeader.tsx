@@ -454,7 +454,9 @@ export default function PublicHeader({
         setSavedListingCount(0)
       }
       setSavedSearchCount(readSavedSearchCount())
-      void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
+      if (headerAccount.authenticated) {
+        void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
+      }
     }
     const openAuth = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: AuthView; destination?: string }>).detail
@@ -467,7 +469,6 @@ export default function PublicHeader({
     const timer = window.setTimeout(() => {
       syncSaved()
       void fetchSavedListingIds().then((result) => setSavedListingCount(result.ids.length)).catch(() => undefined)
-      void fetchSavedSearchCount().then((result) => setSavedSearchCount(result.count)).catch(() => undefined)
     }, 0)
     window.addEventListener('autorell:saved-listings', syncSaved)
     window.addEventListener(SAVED_SEARCHES_EVENT, syncSaved)
@@ -484,7 +485,7 @@ export default function PublicHeader({
       window.removeEventListener('autorell:auth-changed', refreshHeaderAccount)
       window.clearTimeout(timer)
     }
-  }, [refreshHeaderAccount])
+  }, [headerAccount.authenticated, refreshHeaderAccount])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
