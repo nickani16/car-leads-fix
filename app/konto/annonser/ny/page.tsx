@@ -57,10 +57,17 @@ export async function renderNewListingPage({
   const marketCountryCode = euCountryCodes.has(marketCode) ? marketCode : ''
   const localeCountryCode =
     localeCountry !== 'EU' && euCountryCodes.has(localeCountry) ? localeCountry : ''
+  const profileCountryCode =
+    profile.country_code && euCountryCodes.has(profile.country_code) ? profile.country_code : ''
+  const fallbackCountryCode = locale === 'en' ? 'DE' : profileCountryCode || 'SE'
   const listingCountryCode =
     marketCountryCode ||
     localeCountryCode ||
-    (profile.country_code && euCountryCodes.has(profile.country_code) ? profile.country_code : 'SE')
+    fallbackCountryCode
+  const billingMarketCode =
+    marketCountryCode ||
+    localeCountryCode ||
+    (locale === 'en' ? 'DE' : listingCountryCode)
   const listingCurrency =
     marketCountryCode || localeCountryCode
       ? currencyForCountry(listingCountryCode)
@@ -93,6 +100,7 @@ export async function renderNewListingPage({
             <NewListingForm
               accountType={profile.account_type}
               countryCode={listingCountryCode}
+              billingMarketCode={billingMarketCode}
               defaultCurrency={listingCurrency}
               defaultCategory={category}
               locale={locale}

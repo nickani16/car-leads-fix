@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
+import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import {
   getBillingProduct,
   legacyListingPackageToProductKey,
@@ -40,7 +41,10 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient()
-  const market = normalizeBillingMarket(body.market)
+  const requestedMarket = String(body.market || '').trim().toLowerCase()
+  const market = normalizeBillingMarket(
+    requestedMarket === 'en' || requestedMarket === 'eu' ? 'de' : requestedMarket,
+  )
   const billingMethod = body.billingMethod === 'invoice' ? 'invoice' : 'card'
 
   const [{ data: profile }, { data: listing }] = await Promise.all([
@@ -264,7 +268,8 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin
   const checkoutBranding = createCheckoutBranding()
-  const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title)
+  const checkoutLocale = publicLocaleForMarket(market)
+  const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title, checkoutLocale)
   const metadata = {
     user_id: user.id,
     business_id: body.businessId || '',
@@ -522,7 +527,7 @@ export async function POST(request: Request) {
           message: checkoutProduct.submitText,
         },
         after_submit: {
-          message: 'Säker betalning via Stripe. Du skickas tillbaka till Autorell efter genomfört köp.',
+          message: checkoutProduct.afterSubmitText,
         },
       },
       success_url:
@@ -607,84 +612,109 @@ function createCheckoutBranding() {
   }
 }
 
-function createCheckoutProductCopy(productKey: string, listingTitle?: string | null) {
-  const listingContext = listingTitle ? `${listingTitle} · ` : ''
+function createCheckoutProductCopy(productKey: string, listingTitle: string | null | undefined, locale: PublicLocale) {
+  const t = (value: string) => translatePublic(locale, value)
+  const listingContext = listingTitle ? `${listingTitle} - ` : ''
+  const afterSubmitText = t('Secure payment via Stripe. You will be sent back to Autorell after the purchase is complete.')
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
-    const categoryLabel = checkoutCategoryLabel(category)
-    const packageLabel = packageName === 'premium' ? 'Premiumannons' : 'Standardannons'
-    const duration = packageName === 'premium' ? '30 dagar' : '15 dagar'
+    const categoryLabel = t(checkoutCategoryLabel(category))
+    const packageLabel = packageName === 'premium' ? t('Premium listing') : t('Standard listing')
+    const duration = packageName === 'premium' ? t('30 days') : t('15 days')
     return {
-      name: `${packageLabel} · ${categoryLabel}`,
+      name: `${packageLabel} - ${categoryLabel}`,
       description:
         packageName === 'premium'
-          ? `${listingContext}${duration} publicering med extra synlighet och inkluderad toppplacering.`
-          : `${listingContext}${duration} publicering på Autorells europeiska fordonsmarknad.`,
+          ? `${listingContext}${duration} ${t('publication with extra visibility and included top placement.')}`
+          : `${listingContext}${duration} ${t('publication on Autorells European vehicle marketplace.')}`,
       submitText:
         packageName === 'premium'
-          ? 'Annonsen får högre synlighet automatiskt när betalningen har bekräftats.'
-          : 'Annonsen publiceras automatiskt när betalningen har bekräftats.',
+          ? t('The listing gets higher visibility automatically when the payment has been confirmed.')
+          : t('The listing is published automatically when the payment has been confirmed.'),
+      afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.top_placement')) {
-    const days = productKey.includes('14') ? '14 dagar' : productKey.includes('7') ? '7 dagar' : '3 dagar'
+    const days = productKey.includes('14') ? t('14 days') : productKey.includes('7') ? t('7 days') : t('3 days')
     return {
-      name: `Topplacering · ${days}`,
-      description: `${listingContext}Lyft annonsen högre i listningen under ${days}.`,
-      submitText: 'Topplaceringen aktiveras automatiskt när betalningen har bekräftats.',
+      name: `${t('Top placement')} - ${days}`,
+      description: `${listingContext}${t('Move the listing higher in the results for')} ${days}.`,
+      submitText: t('The top placement is activated automatically when the payment has been confirmed.'),
+      afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.featured')) {
-    const days = productKey.includes('30') ? '30 dagar' : '7 dagar'
+    const days = productKey.includes('30') ? t('30 days') : t('7 days')
     return {
-      name: `Utvald annons · ${days}`,
-      description: `${listingContext}Visa annonsen som utvald på Autorell under ${days}.`,
-      submitText: 'Utvald synlighet aktiveras automatiskt när betalningen har bekräftats.',
+      name: `${t('Featured listing')} - ${days}`,
+      description: `${listingContext}${t('Show the listing as featured on Autorell for')} ${days}.`,
+      submitText: t('Featured visibility is activated automatically when the payment has been confirmed.'),
+      afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.refresh')) {
     return {
-      name: 'Annonsförnyelse',
-      description: `${listingContext}Förnya annonsens sorteringsdatum och få ny synlighet.`,
-      submitText: 'Förnyelsen aktiveras automatiskt när betalningen har bekräftats.',
+      name: t('Listing refresh'),
+      description: `${listingContext}${t('Refresh the listing sorting date and get new visibility.')}`,
+      submitText: t('The refresh is activated automatically when the payment has been confirmed.'),
+      afterSubmitText,
     }
   }
 
   if (productKey.startsWith('subscription.business.')) {
     const plan = productKey.split('.')[2] || 'business'
-    const period = productKey.endsWith('.annual') ? 'Årsabonnemang' : 'Månadsabonnemang'
+    const period = productKey.endsWith('.annual') ? t('Annual subscription') : t('Monthly subscription')
     return {
-      name: `Företag · ${capitalize(plan)}`,
-      description: `${period} för företag som säljer fordon på Autorell.`,
-      submitText: 'Företagsabonnemanget aktiveras automatiskt när betalningen har bekräftats.',
+      name: `${t('Business')} - ${capitalize(plan)}`,
+      description: `${period} ${t('for companies selling vehicles on Autorell.')}`,
+      submitText: t('The business subscription is activated automatically when the payment has been confirmed.'),
+      afterSubmitText,
     }
   }
 
   return {
-    name: 'Köp på Autorell',
-    description: `${listingContext}Betalning för Autorells fordonsmarknad.`,
-    submitText: 'Köpet aktiveras automatiskt när betalningen har bekräftats.',
+    name: 'Autorell',
+    description: t('Autorell payment'),
+    submitText: t('The payment is handled securely via Stripe.'),
+    afterSubmitText,
   }
 }
 
 function checkoutCategoryLabel(category: string) {
   const labels: Record<string, string> = {
-    cars: 'Bil',
-    vans: 'Transportbil',
-    motorcycles: 'Motorcykel',
-    motorhomes: 'Husbil',
-    caravans: 'Husvagn',
-    trucks: 'Lastbil',
-    agriculture: 'Lantbruksmaskin',
-    construction: 'Entreprenadmaskin',
-    'electric-bikes': 'Cykel',
-    'e-scooters': 'Elsparkcykel',
+    cars: 'Car',
+    vans: 'Van',
+    motorcycles: 'Motorcycle',
+    motorhomes: 'Motorhome',
+    caravans: 'Caravan',
+    trucks: 'Truck',
+    agriculture: 'Agricultural machine',
+    construction: 'Construction machine',
+    'electric-bikes': 'Electric bike',
+    'e-scooters': 'Electric scooter',
   }
   return labels[category] || capitalize(category.replace(/-/g, ' '))
+}
+
+function publicLocaleForMarket(market: string): PublicLocale {
+  const locales: Record<string, PublicLocale> = {
+    se: 'sv',
+    dk: 'da',
+    de: 'de',
+    fr: 'fr',
+    it: 'it',
+    es: 'es',
+    nl: 'nl',
+    be: 'be',
+    at: 'de',
+    pl: 'pl',
+    fi: 'fi',
+  }
+  return locales[market] || 'en'
 }
 
 function stripeLocaleForMarket(market: string) {

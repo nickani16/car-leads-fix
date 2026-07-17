@@ -92,33 +92,17 @@ const modelYearOptions = Array.from(
   (_, index) => String(maxModelYear - index),
 )
 
-const packageCopy = {
-  free_7d: {
-    title: 'Gratis',
-    days: '7 dagar',
-    text: 'Bra för att testa Autorell och komma igång snabbt.',
-  },
-  standard_15d: {
-    title: 'Standard',
-    days: '15 dagar',
-    text: 'Mer synlighet och längre annonsperiod för seriös försäljning.',
-  },
-  premium_30d: {
-    title: 'Premium',
-    days: '30 dagar',
-    text: 'Bästa synlighet, prioritet och längst annonsperiod.',
-  },
-}
-
 export default function NewListingForm({
   accountType,
   countryCode,
+  billingMarketCode,
   defaultCurrency,
   defaultCategory,
   locale,
 }: {
   accountType: 'private' | 'business'
   countryCode: string
+  billingMarketCode: string
   defaultCurrency: SupportedCurrency
   defaultCategory: string
   locale: PublicLocale
@@ -288,28 +272,30 @@ export default function NewListingForm({
     }
 
     if (targetStep === 0) {
-      if (!values.make) return missing('Fyll i märke eller tillverkare.')
-      if (!values.model) return missing('Fyll i modell.')
-      if (!values.modelYear) return missing('Fyll i årsmodell.')
-      if (!isAllowedModelYear(values.modelYear)) return missing(`Välj årsmodell mellan ${minModelYear}+ och ${maxModelYear}.`)
+      if (!values.make) return missing(copy.errors.make)
+      if (!values.model) return missing(copy.errors.model)
+      if (!values.modelYear) return missing(copy.errors.modelYear)
+      if (!isAllowedModelYear(values.modelYear)) {
+        return missing(copy.errors.modelYearRange.replace('{min}', `${minModelYear}+`).replace('{max}', String(maxModelYear)))
+      }
       if (
         category !== 'agriculture' &&
         category !== 'construction' &&
         !['caravans', 'electric-bikes', 'e-scooters'].includes(category) &&
         !values.mileage
       ) {
-        return missing('Fyll i kilometer.')
+        return missing(copy.errors.mileage)
       }
       if ((category === 'agriculture' || category === 'construction') && !values.operatingHours) {
-        return missing('Fyll i drifttimmar.')
+        return missing(copy.errors.operatingHours)
       }
-      if (!values.price) return missing('Fyll i pris.')
-      if (!values.city) return missing('Fyll i ort.')
+      if (!values.price) return missing(copy.errors.price)
+      if (!values.city) return missing(copy.errors.city)
       if (
         values.postalCode &&
         !validatePostalCode(values.postalCode, listingCountryCode)
       ) {
-        return missing('Postnumret verkar inte vara giltigt för valt land.')
+        return missing(copy.errors.postalCode)
       }
     }
 
@@ -318,25 +304,25 @@ export default function NewListingForm({
         (item) => item.required && !values[item.key],
       )
       if (missingIdentifier) {
-        return missing(`Fyll i ${missingIdentifier.label.toLowerCase()}.`)
+        return missing(copy.errors.requiredField.replace('{field}', localizeVehicleText(locale, missingIdentifier.label).toLowerCase()))
       }
       const missingTechnical = categoryTechnicalFields[category].find(
         (field) => field.required && !values[field.name],
       )
       if (missingTechnical) {
-        return missing(`Välj ${missingTechnical.label.toLowerCase()}.`)
+        return missing(copy.errors.chooseField.replace('{field}', localizeVehicleText(locale, missingTechnical.label).toLowerCase()))
       }
-      if (!values.colorChoice) return missing('Välj färg.')
+      if (!values.colorChoice) return missing(copy.errors.color)
     }
 
     if (targetStep === 2 && images.length < 1) {
-      return missing('Ladda upp minst en bild.')
+      return missing(copy.errors.images)
     }
 
     if (targetStep === 4) {
-      if (!values.packageId) return missing('Välj annonspaket.')
+      if (!values.packageId) return missing(copy.errors.package)
       if (values.listingTerms !== 'on') {
-        return missing('Godkänn bekräftelsen innan publicering.')
+        return missing(copy.errors.terms)
       }
     }
 
@@ -357,7 +343,7 @@ export default function NewListingForm({
 
   function applySubmissionError(
     result: ListingCreationError,
-    fallback = 'Kunde inte skapa annonsen.',
+    fallback = copy.errors.submit,
   ) {
     const targetStep =
       typeof result.step === 'number' && result.step >= 0 && result.step <= 4
@@ -412,8 +398,8 @@ export default function NewListingForm({
     } catch (caught) {
       setError(
         caught instanceof DOMException && caught.name === 'AbortError'
-          ? 'Publiceringen tog för lång tid och avbröts. Dina uppgifter finns kvar; försök igen eller ladda upp färre bilder.'
-          : 'Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.',
+          ? copy.errors.timeout
+          : copy.errors.connection,
       )
       setLoading(false)
       return
@@ -442,7 +428,7 @@ export default function NewListingForm({
       onSubmit={submit}
       className="overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
     >
-      {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>Ditt utkast har återställts.</strong> Uppgifter och bilder sparas automatiskt i den här webbläsaren medan du arbetar.</div> : null}
+      {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>{copy.draftRestoredTitle}</strong> {copy.draftRestoredText}</div> : null}
       <div className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -719,7 +705,7 @@ export default function NewListingForm({
             accountType={accountType}
             onChange={setValue}
             locale={locale}
-            marketCode={listingCountryCode}
+            marketCode={billingMarketCode || listingCountryCode}
           />
         ) : null}
 
@@ -1551,7 +1537,7 @@ function PublishStep({
       </div>
       <div className="grid gap-3 lg:grid-cols-3">
         {packages.map((item) => {
-          const packageItemCopy = packageCopy[item.id]
+          const packageItemCopy = getPackageCopy(locale)[item.id]
           const selected = values.packageId === item.id
           return (
             <button
@@ -1902,6 +1888,28 @@ function getListingFormCopy(locale: PublicLocale) {
     next: 'Next',
     publishing: 'Publishing...',
     publish: 'Publish listing',
+    draftRestoredTitle: 'Your draft has been restored.',
+    draftRestoredText: 'Details and images are saved automatically in this browser while you work.',
+    errors: {
+      make: 'Enter make or manufacturer.',
+      model: 'Enter model.',
+      modelYear: 'Enter model year.',
+      modelYearRange: 'Choose a model year between {min} and {max}.',
+      mileage: 'Enter kilometres.',
+      operatingHours: 'Enter operating hours.',
+      price: 'Enter price.',
+      city: 'Enter city.',
+      postalCode: 'The postal code does not look valid for the selected country.',
+      requiredField: 'Enter {field}.',
+      chooseField: 'Choose {field}.',
+      color: 'Choose colour.',
+      images: 'Upload at least one image.',
+      package: 'Choose a listing package.',
+      terms: 'Accept the confirmation before publishing.',
+      submit: 'Could not create the listing.',
+      timeout: 'Publishing took too long and was stopped. Your details are still saved; try again or upload fewer images.',
+      connection: 'The connection was interrupted. Your details are still saved; try again.',
+    },
   }
   if (locale === 'sv') {
     return {
@@ -1981,6 +1989,28 @@ function getListingFormCopy(locale: PublicLocale) {
       next: 'Nästa',
       publishing: 'Publicerar...',
       publish: 'Publicera annons',
+      draftRestoredTitle: 'Ditt utkast har återställts.',
+      draftRestoredText: 'Uppgifter och bilder sparas automatiskt i den här webbläsaren medan du arbetar.',
+      errors: {
+        make: 'Fyll i märke eller tillverkare.',
+        model: 'Fyll i modell.',
+        modelYear: 'Fyll i årsmodell.',
+        modelYearRange: 'Välj årsmodell mellan {min} och {max}.',
+        mileage: 'Fyll i kilometer.',
+        operatingHours: 'Fyll i drifttimmar.',
+        price: 'Fyll i pris.',
+        city: 'Fyll i ort.',
+        postalCode: 'Postnumret verkar inte vara giltigt för valt land.',
+        requiredField: 'Fyll i {field}.',
+        chooseField: 'Välj {field}.',
+        color: 'Välj färg.',
+        images: 'Ladda upp minst en bild.',
+        package: 'Välj annonspaket.',
+        terms: 'Godkänn bekräftelsen innan publicering.',
+        submit: 'Kunde inte skapa annonsen.',
+        timeout: 'Publiceringen tog för lång tid och avbröts. Dina uppgifter finns kvar; försök igen eller ladda upp färre bilder.',
+        connection: 'Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.',
+      },
     }
   }
   if (locale === 'de' || locale === 'at') {
@@ -2011,20 +2041,102 @@ function getListingFormCopy(locale: PublicLocale) {
       phoneVisibilityRegistered: 'Nur angemeldeten Nutzern anzeigen',
       phoneVisibilityRegisteredText: 'Käufer müssen sich anmelden, bevor die Nummer angezeigt wird.',
       mileageLabel: 'Kilometer',
+      draftRestoredTitle: 'Ihr Entwurf wurde wiederhergestellt.',
+      draftRestoredText: 'Angaben und Bilder werden automatisch in diesem Browser gespeichert, während Sie arbeiten.',
+      errors: {
+        make: 'Marke oder Hersteller eingeben.',
+        model: 'Modell eingeben.',
+        modelYear: 'Modelljahr eingeben.',
+        modelYearRange: 'Wählen Sie ein Modelljahr zwischen {min} und {max}.',
+        mileage: 'Kilometer eingeben.',
+        operatingHours: 'Betriebsstunden eingeben.',
+        price: 'Preis eingeben.',
+        city: 'Ort eingeben.',
+        postalCode: 'Die Postleitzahl scheint für das gewählte Land nicht gültig zu sein.',
+        requiredField: '{field} eingeben.',
+        chooseField: '{field} auswählen.',
+        color: 'Farbe auswählen.',
+        images: 'Mindestens ein Bild hochladen.',
+        package: 'Anzeigenpaket auswählen.',
+        terms: 'Bestätigung vor der Veröffentlichung akzeptieren.',
+        submit: 'Anzeige konnte nicht erstellt werden.',
+        timeout: 'Die Veröffentlichung hat zu lange gedauert und wurde gestoppt. Ihre Angaben bleiben gespeichert; versuchen Sie es erneut oder laden Sie weniger Bilder hoch.',
+        connection: 'Die Verbindung wurde unterbrochen. Ihre Angaben bleiben gespeichert; versuchen Sie es erneut.',
+      },
     }
     return de
-    return { ...en, step: 'Schritt', of: 'von', complete: 'fertig', back: 'Zurück', next: 'Weiter', publish: 'Anzeige veröffentlichen', publishing: 'Wird veröffentlicht...' }
   }
-  return Object.fromEntries(
-    Object.entries(en).map(([key, value]) => [
-      key,
-      key === 'volumeOffers'
-        ? value
-        : Array.isArray(value)
-          ? value.map((item) => (typeof item === 'string' ? translatePublic(locale, item) : item))
-          : translatePublic(locale, value),
-    ]),
-  ) as typeof en
+  return translateListingCopy(locale, en)
+}
+
+function translateListingCopy<T>(locale: PublicLocale, value: T): T {
+  if (typeof value === 'string') return translatePublic(locale, value) as T
+  if (Array.isArray(value)) return value.map((item) => translateListingCopy(locale, item)) as T
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, translateListingCopy(locale, item)]),
+    ) as T
+  }
+  return value
+}
+
+function getPackageCopy(locale: PublicLocale) {
+  const en = {
+    free_7d: {
+      title: 'Free',
+      days: '7 days',
+      text: 'A simple way to test Autorell and get started quickly.',
+    },
+    standard_15d: {
+      title: 'Standard',
+      days: '15 days',
+      text: 'More visibility and a longer listing period for serious selling.',
+    },
+    premium_30d: {
+      title: 'Premium',
+      days: '30 days',
+      text: 'Best visibility, priority and the longest listing period.',
+    },
+  }
+  if (locale === 'sv') {
+    return {
+      free_7d: {
+        title: 'Gratis',
+        days: '7 dagar',
+        text: 'Bra för att testa Autorell och komma igång snabbt.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 dagar',
+        text: 'Mer synlighet och längre annonsperiod för seriös försäljning.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 dagar',
+        text: 'Bästa synlighet, prioritet och längst annonsperiod.',
+      },
+    }
+  }
+  if (locale === 'de' || locale === 'at') {
+    return {
+      free_7d: {
+        title: 'Kostenlos',
+        days: '7 Tage',
+        text: 'Ein einfacher Weg, Autorell zu testen und schnell loszulegen.',
+      },
+      standard_15d: {
+        title: 'Standard',
+        days: '15 Tage',
+        text: 'Mehr Sichtbarkeit und längere Anzeigenlaufzeit für seriösen Verkauf.',
+      },
+      premium_30d: {
+        title: 'Premium',
+        days: '30 Tage',
+        text: 'Beste Sichtbarkeit, Priorität und die längste Anzeigenlaufzeit.',
+      },
+    }
+  }
+  return translateListingCopy(locale, en)
 }
 
 function localizeFormText(locale: PublicLocale, sv: string, en: string, de: string) {
