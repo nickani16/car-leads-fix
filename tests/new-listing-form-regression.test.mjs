@@ -79,3 +79,15 @@ test('create listing first step does not render a disabled back button', () => {
   assert.match(form, /\{step > 0 \? \(/)
   assert.doesNotMatch(form, /disabled=\{step === 0 \|\| loading\}/)
 })
+
+test('image upload status and colour names are localized in create listing', () => {
+  assert.match(form, /processingImages: 'Processing images\.\.\.'/)
+  assert.match(form, /processingImages: 'Bearbetar bilder\.\.\.'/)
+  assert.match(form, /processingImages \? copy\.processingImages : copy\.addImages/)
+  assert.doesNotMatch(form, /processingImages \? 'Bearbetar bilder/)
+
+  for (const locale of ['de', 'at', 'fi', 'da', 'fr', 'es', 'it', 'nl', 'pl']) {
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*White:`))
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*'Other colour':`))
+  }
+})
