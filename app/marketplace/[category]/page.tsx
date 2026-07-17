@@ -8,6 +8,7 @@ import VehicleSearchExperience, {
 import {
   displayCurrencyForMarket,
   formatMarketplacePriceDisplay,
+  getMarketplaceExchangeRates,
 } from '@/lib/currency-rates'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
@@ -164,6 +165,9 @@ export default async function MarketplaceCategoryPage({
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
+  const exchangeRates = (data || []).some((listing) => listing.currency !== displayCurrency)
+    ? await getMarketplaceExchangeRates()
+    : undefined
 
   const listings: VehicleSearchListing[] = await Promise.all(
     (data || []).map(async (listing) => {
@@ -173,6 +177,7 @@ export default async function MarketplaceCategoryPage({
         currency: listing.currency,
         locale,
         targetCurrency: displayCurrency,
+        exchangeRates,
       })
 
       return {

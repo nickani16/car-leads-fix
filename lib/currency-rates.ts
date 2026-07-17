@@ -11,6 +11,7 @@ import { createAdminClient } from './supabase/admin'
 
 const FRANKFURTER_URL = 'https://api.frankfurter.app/latest'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+const PROCESS_CACHE_TTL_MS = 5 * 60 * 1000
 
 type CurrencyRateCacheRow = {
   base_currency: string
@@ -32,6 +33,11 @@ export type PriceDisplay = {
   sourceCurrency: SupportedCurrency
 }
 
+export type ExchangeRates = Record<string, number>
+
+let processRatesCache: { rates: ExchangeRates; expiresAt: number } | null = null
+let exchangeRatesRequest: Promise<ExchangeRates> | null = null
+
 export function displayCurrencyForMarket(
   marketCode?: string | null,
 ): SupportedCurrency {
@@ -45,11 +51,13 @@ export async function formatMarketplacePriceDisplay({
   currency,
   locale,
   targetCurrency,
+  exchangeRates,
 }: {
   amount: number
   currency: string
   locale: PublicLocale
   targetCurrency?: string | null
+  exchangeRates?: ExchangeRates | null
 }): Promise<PriceDisplay> {
   const sourceCurrency = isSupportedCurrency(currency) ? currency : 'EUR'
   const displayCurrency = isSupportedCurrency(targetCurrency)
@@ -68,7 +76,7 @@ export async function formatMarketplacePriceDisplay({
     }
   }
 
-  const converted = await convertCurrency(amount, sourceCurrency, displayCurrency)
+  const converted = await convertCurrency(amount, sourceCurrency, displayCurrency, exchangeRates || undefined)
   if (converted === null) {
     return {
       original: sourcePrice,
@@ -93,9 +101,10 @@ export async function convertCurrency(
   amount: number,
   from: SupportedCurrency,
   to: SupportedCurrency,
+  exchangeRates?: ExchangeRates,
 ) {
   if (from === to) return amount
-  const rates = await getExchangeRates()
+  const rates = exchangeRates || await getMarketplaceExchangeRates()
   const fromRate = from === 'EUR' ? 1 : rates[from]
   const toRate = to === 'EUR' ? 1 : rates[to]
   if (!fromRate || !toRate) return null
@@ -106,7 +115,30 @@ function roundCurrencyUp(amount: number) {
   return Math.ceil(amount / 5) * 5
 }
 
-async function getExchangeRates() {
+export async function getMarketplaceExchangeRates(): Promise<ExchangeRates> {
+  if (processRatesCache && Date.now() < processRatesCache.expiresAt) {
+    return processRatesCache.rates
+  }
+  if (exchangeRatesRequest) return exchangeRatesRequest
+
+  exchangeRatesRequest = loadExchangeRates()
+    .then((rates) => {
+      if (Object.keys(rates).length > 1) {
+        processRatesCache = {
+          rates,
+          expiresAt: Date.now() + PROCESS_CACHE_TTL_MS,
+        }
+      }
+      return rates
+    })
+    .finally(() => {
+      exchangeRatesRequest = null
+    })
+
+  return exchangeRatesRequest
+}
+
+async function loadExchangeRates(): Promise<ExchangeRates> {
   const admin = createAdminClient()
   const cached = await readCachedRates(admin)
   const freshEnough =
@@ -136,7 +168,7 @@ async function getExchangeRates() {
     return rates
   } catch (error) {
     console.error('Currency rate fetch failed:', error)
-    return cached?.rates || {}
+    return cached?.rates || { EUR: 1 }
   }
 }
 
