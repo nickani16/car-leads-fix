@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from 'next'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Geist } from 'next/font/google'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
@@ -74,6 +76,8 @@ export default async function RootLayout({
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
         <CookieConsent />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
