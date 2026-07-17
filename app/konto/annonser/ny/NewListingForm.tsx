@@ -97,7 +97,7 @@ const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 const swedishMileageFactor = 10
 const minModelYear = 1950
 const maxModelYear = 2027
-const listingRequestTimeoutMs = 240_000
+const listingRequestTimeoutMs = 60_000
 const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
@@ -489,11 +489,19 @@ export default function NewListingForm({
 
     let response: Response
     try {
+      console.info('[autorell:create-listing] submit started', {
+        imageCount: orderedImages.length,
+        totalImageBytes: orderedImages.reduce((sum, image) => sum + image.size, 0),
+        packageId: values.packageId,
+        country: listingCountryCode,
+        locale,
+      })
       response = await fetchWithTimeout('/api/account/listings', {
         method: 'POST',
         body: form,
       })
     } catch (caught) {
+      console.error('[autorell:create-listing] submit failed before response', caught)
       setError(
         caught instanceof DOMException && caught.name === 'AbortError'
           ? copy.errors.timeout

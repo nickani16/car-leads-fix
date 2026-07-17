@@ -46,7 +46,9 @@ test('preview does not show package before package step', () => {
 })
 
 test('publishing never leaves the form in an endless spinner and bulk UI is hidden', () => {
-  assert.match(form, /const listingRequestTimeoutMs = 240_000/)
+  assert.match(form, /const listingRequestTimeoutMs = 60_000/)
+  assert.match(form, /\[autorell:create-listing\] submit started/)
+  assert.match(form, /\[autorell:create-listing\] submit failed before response/)
   assert.match(form, /values\.listingTerms === 'on'[\s\S]*form\.set\('listingTerms', 'on'\)/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listings'/)
   assert.match(form, /fetchWithTimeout\('\/api\/account\/listing-checkout'/)
