@@ -2814,7 +2814,7 @@ const unitSuffixOverrides: Record<string, Record<string, string>> = {
 function getPackageCopy(locale: PublicLocale) {
   const en = {
     free_7d: {
-      title: 'Free',
+      title: 'Start',
       days: '7 days',
       text: 'A simple way to test Autorell and get started quickly.',
     },
@@ -2832,7 +2832,7 @@ function getPackageCopy(locale: PublicLocale) {
   if (locale === 'sv') {
     return {
       free_7d: {
-        title: 'Gratis',
+        title: 'Start',
         days: '7 dagar',
         text: 'Bra för att testa Autorell och komma igång snabbt.',
       },
@@ -2851,7 +2851,7 @@ function getPackageCopy(locale: PublicLocale) {
   if (locale === 'de' || locale === 'at') {
     return {
       free_7d: {
-        title: 'Kostenlos',
+        title: 'Start',
         days: '7 Tage',
         text: 'Ein einfacher Weg, Autorell zu testen und schnell loszulegen.',
       },
@@ -2870,7 +2870,7 @@ function getPackageCopy(locale: PublicLocale) {
   const localized: Partial<Record<PublicLocale, typeof en>> = {
     fi: {
       free_7d: {
-        title: 'Ilmainen',
+        title: 'Aloitus',
         days: '7 päivää',
         text: 'Helppo tapa kokeilla Autorellia ja päästä nopeasti alkuun.',
       },
@@ -2887,7 +2887,7 @@ function getPackageCopy(locale: PublicLocale) {
     },
     da: {
       free_7d: {
-        title: 'Gratis',
+        title: 'Start',
         days: '7 dage',
         text: 'En enkel måde at prøve Autorell og komme hurtigt i gang.',
       },
@@ -2904,7 +2904,7 @@ function getPackageCopy(locale: PublicLocale) {
     },
     fr: {
       free_7d: {
-        title: 'Gratuit',
+        title: 'Essentiel',
         days: '7 jours',
         text: 'Un moyen simple de tester Autorell et de commencer rapidement.',
       },
@@ -2921,12 +2921,12 @@ function getPackageCopy(locale: PublicLocale) {
     },
     es: {
       free_7d: {
-        title: 'Gratis',
+        title: 'Inicio',
         days: '7 días',
         text: 'Una forma sencilla de probar Autorell y empezar rápidamente.',
       },
       standard_15d: {
-        title: 'Standard',
+        title: 'Estándar',
         days: '15 días',
         text: 'Más visibilidad y un periodo de anuncio más largo para una venta seria.',
       },
@@ -2938,7 +2938,7 @@ function getPackageCopy(locale: PublicLocale) {
     },
     it: {
       free_7d: {
-        title: 'Gratis',
+        title: 'Base',
         days: '7 giorni',
         text: 'Un modo semplice per provare Autorell e iniziare rapidamente.',
       },
@@ -2955,12 +2955,12 @@ function getPackageCopy(locale: PublicLocale) {
     },
     nl: {
       free_7d: {
-        title: 'Gratis',
+        title: 'Start',
         days: '7 dagen',
         text: 'Een eenvoudige manier om Autorell te proberen en snel te starten.',
       },
       standard_15d: {
-        title: 'Standard',
+        title: 'Standaard',
         days: '15 dagen',
         text: 'Meer zichtbaarheid en een langere advertentieperiode voor serieuze verkoop.',
       },
@@ -2972,7 +2972,7 @@ function getPackageCopy(locale: PublicLocale) {
     },
     pl: {
       free_7d: {
-        title: 'Bezpłatnie',
+        title: 'Start',
         days: '7 dni',
         text: 'Prosty sposób, aby wypróbować Autorell i szybko rozpocząć.',
       },

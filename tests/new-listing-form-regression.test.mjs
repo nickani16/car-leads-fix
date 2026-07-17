@@ -60,7 +60,16 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.doesNotMatch(form, /onAddToBatch/)
 })
 
+test('listing insert falls back when production schema lacks geo columns', () => {
+  assert.match(createListingRoute, /function isMissingGeoListingColumnError/)
+  assert.match(createListingRoute, /PGRST204/)
+  assert.match(createListingRoute, /delete \(listingInsert as Record<string, unknown>\)\.location_source/)
+  assert.match(createListingRoute, /delete \(listingInsert as Record<string, unknown>\)\.geo_place_code/)
+})
+
 test('create listing package copy and metadata are manually localized', () => {
+  assert.match(form, /title: 'Inicio'/)
+  assert.match(form, /title: 'Estándar'/)
   assert.match(form, /days: '7 días'/)
   assert.match(form, /days: '15 días'/)
   assert.match(form, /days: '30 días'/)

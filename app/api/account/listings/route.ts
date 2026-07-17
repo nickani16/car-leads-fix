@@ -81,6 +81,11 @@ function listingFormError(
   return NextResponse.json({ error, step, field, code }, { status })
 }
 
+function isMissingGeoListingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error || error.code !== 'PGRST204') return false
+  return /geo_place_code|location_source/i.test(error.message || '')
+}
+
 function numberOrNull(value: string) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
@@ -647,9 +652,7 @@ export async function POST(request: Request) {
       ? new Date(startsAt.getTime() + duration * 86400000)
       : null
 
-    const { data: listing, error } = await admin
-      .from('marketplace_listings')
-      .insert({
+    const listingInsert = {
         seller_user_id: user.id,
         category,
         title: `${make} ${model} ${text(form, 'variant')}`.trim(),
@@ -714,9 +717,24 @@ export async function POST(request: Request) {
         total_weight_kg: identifiers.totalWeightKg,
         axle_configuration: identifiers.axleConfiguration || null,
         machine_type: identifiers.machineType || null,
-      })
+      }
+    let { data: listing, error } = await admin
+      .from('marketplace_listings')
+      .insert(listingInsert)
       .select('id,status,review_status,reference_number,listing_number')
       .single()
+
+    if (isMissingGeoListingColumnError(error)) {
+      delete (listingInsert as Record<string, unknown>).location_source
+      delete (listingInsert as Record<string, unknown>).geo_place_code
+      const retry = await admin
+        .from('marketplace_listings')
+        .insert(listingInsert)
+        .select('id,status,review_status,reference_number,listing_number')
+        .single()
+      listing = retry.data
+      error = retry.error
+    }
 
     if (error || !listing) {
       await releaseOpenQuotaReservation()
