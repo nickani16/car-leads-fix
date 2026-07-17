@@ -122,7 +122,7 @@ export default async function AccountPage() {
     pendingPaymentCount,
   ] = await Promise.all([
     getAccountListingSummary(admin, user.id).catch(() => emptyListingSummary()),
-    countRows(admin, 'marketplace_saved_listings', user.id),
+    countActiveSavedListings(admin, user.id),
     countRows(admin, 'marketplace_saved_searches', user.id),
     admin
       .from('marketplace_conversations')
@@ -422,7 +422,7 @@ export default async function AccountPage() {
 
 async function countRows(
   admin: ReturnType<typeof createAdminClient>,
-  table: 'marketplace_saved_listings' | 'marketplace_saved_searches',
+  table: 'marketplace_saved_searches',
   userId: string,
 ) {
   const { count } = await admin
@@ -430,6 +430,43 @@ async function countRows(
     .select('user_id', { count: 'exact', head: true })
     .eq('user_id', userId)
   return count || 0
+}
+
+async function countActiveSavedListings(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+) {
+  const savedRows = await admin
+    .from('marketplace_saved_listings')
+    .select('listing_id')
+    .eq('user_id', userId)
+
+  const savedIds = (savedRows.data || [])
+    .map((row) => row.listing_id)
+    .filter((id): id is string => typeof id === 'string')
+
+  if (!savedIds.length) return 0
+
+  const { data } = await admin
+    .from('marketplace_listings')
+    .select('id')
+    .in('id', savedIds)
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .is('sold_at', null)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+
+  const activeIds = new Set((data || []).map((listing) => listing.id))
+  const staleIds = savedIds.filter((id) => !activeIds.has(id))
+  if (staleIds.length) {
+    await admin
+      .from('marketplace_saved_listings')
+      .delete()
+      .eq('user_id', userId)
+      .in('listing_id', staleIds)
+  }
+
+  return activeIds.size
 }
 
 async function countVisibleConversations(

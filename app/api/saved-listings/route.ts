@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams
-  const savedRows = await createAdminClient()
+  const admin = createAdminClient()
+  const savedRows = await admin
     .from('marketplace_saved_listings')
     .select('listing_id')
     .eq('user_id', user.id)
@@ -59,21 +60,34 @@ export async function GET(request: NextRequest) {
     : accountIds
 
   if (!ids.length) {
-    return jsonResponse({ listingIds: accountIds, listings: [] })
+    return jsonResponse({ listingIds: [], listings: [] })
   }
 
   const locale = (searchParams.get('locale') || 'sv') as PublicLocale
   const displayCurrency = displayCurrencyForMarket(searchParams.get('market'))
-  const { data, error } = await createAdminClient()
+  const { data, error } = await admin
     .from('marketplace_listings')
     .select(marketplacePublicSelect)
     .in('id', ids)
     .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .is('sold_at', null)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .limit(ids.length)
 
   if (error) {
     return jsonResponse({ error: 'Could not load saved listings' }, { status: 500 })
+  }
+
+  const activeIds = new Set((data || []).map((listing) => listing.id))
+  const filteredIds = ids.filter((id) => activeIds.has(id))
+  const staleAccountIds = accountIds.filter((id) => ids.includes(id) && !activeIds.has(id))
+  if (staleAccountIds.length) {
+    await admin
+      .from('marketplace_saved_listings')
+      .delete()
+      .eq('user_id', user.id)
+      .in('listing_id', staleAccountIds)
   }
 
   const sellerTrust = await getMarketplaceSellerTrustByUserIds(
@@ -123,8 +137,8 @@ export async function GET(request: NextRequest) {
   )
 
   return jsonResponse({
-    listingIds: accountIds,
-    listings: ids.map((id) => listingById.get(id)).filter(Boolean),
+    listingIds: filteredIds,
+    listings: filteredIds.map((id) => listingById.get(id)).filter(Boolean),
   })
 }
 
@@ -144,7 +158,31 @@ export async function POST(request: NextRequest) {
     return jsonResponse({ error: 'Invalid listing id' }, { status: 400 })
   }
 
-  const { error } = await createAdminClient()
+  const admin = createAdminClient()
+  const listing = await admin
+    .from('marketplace_listings')
+    .select('id')
+    .eq('id', listingId)
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .is('sold_at', null)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .maybeSingle()
+
+  if (listing.error) {
+    return jsonResponse({ error: 'Could not verify listing' }, { status: 500 })
+  }
+
+  if (!listing.data) {
+    await admin
+      .from('marketplace_saved_listings')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('listing_id', listingId)
+    return jsonResponse({ error: 'Listing is not available' }, { status: 404 })
+  }
+
+  const { error } = await admin
     .from('marketplace_saved_listings')
     .upsert({ user_id: user.id, listing_id: listingId, saved_at: new Date().toISOString() }, { onConflict: 'user_id,listing_id' })
 
