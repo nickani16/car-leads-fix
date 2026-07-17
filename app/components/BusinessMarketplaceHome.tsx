@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -183,9 +183,19 @@ export default async function BusinessMarketplaceHome({
       <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
           <div className="flex items-end justify-between gap-5">
-            <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px] sm:tracking-[-0.03em]">
-              {t.vehicleNewsTitle}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px] sm:tracking-[-0.03em]">
+                {t.vehicleNewsTitle}
+              </h2>
+              <div className="flex items-center gap-2 sm:hidden" aria-hidden="true">
+                <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d7e5ff] bg-white text-[#0866ff] shadow-[0_8px_20px_rgba(8,102,255,0.12)]">
+                  <ChevronLeft className="h-4 w-4" strokeWidth={2.2} />
+                </span>
+                <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d7e5ff] bg-white text-[#0866ff] shadow-[0_8px_20px_rgba(8,102,255,0.12)]">
+                  <ChevronRight className="h-4 w-4" strokeWidth={2.2} />
+                </span>
+              </div>
+            </div>
             <Link
               href={localizePublicHref(locale, '/vehicle-news')}
               className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
