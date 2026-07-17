@@ -31,6 +31,8 @@ import { cleanSeoText } from '@/lib/market-seo'
 import { swedishMunicipalities } from '@/lib/swedish-regions.generated'
 import { buildSeoPath, slugifySeoPart, type SeoLocation, type SeoMarketCode } from '@/lib/seo-routes'
 
+const initialMarketplaceCategoryLimit = 40
+
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
 }
@@ -160,7 +162,7 @@ export default async function MarketplaceCategoryPage({
 
   const data = await getPublishedMarketplaceCategoryListings(
     requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
-    requestedCategory === 'vehicles' ? 360 : 240,
+    initialMarketplaceCategoryLimit,
   )
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),

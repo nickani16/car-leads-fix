@@ -21,3 +21,9 @@ test('marketplace category render reuses one rates object for the listing list',
   assert.match(marketplaceCategory, /await getMarketplaceExchangeRates\(\)/)
   assert.match(marketplaceCategory, /exchangeRates,\s*\}\)/)
 })
+
+test('marketplace category server render keeps the initial listing set small', () => {
+  assert.match(marketplaceCategory, /const initialMarketplaceCategoryLimit = 40/)
+  assert.match(marketplaceCategory, /getPublishedMarketplaceCategoryListings\([\s\S]*initialMarketplaceCategoryLimit/)
+  assert.doesNotMatch(marketplaceCategory, /requestedCategory === 'vehicles' \? 360 : 240/)
+})
