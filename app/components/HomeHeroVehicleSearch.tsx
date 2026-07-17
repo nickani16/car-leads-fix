@@ -818,7 +818,7 @@ export default function HomeHeroVehicleSearch({
 
         <button
           type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-[0_14px_28px_rgba(8,102,255,.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] hover:shadow-[0_18px_34px_rgba(8,102,255,.26)] active:translate-y-0 lg:min-h-[48px] lg:shadow-none lg:hover:shadow-[0_10px_20px_rgba(8,102,255,.18)]"
+          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-none transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] active:translate-y-0 lg:min-h-[48px]"
         >
           {t.submit}
         </button>

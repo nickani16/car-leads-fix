@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
+import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
@@ -31,6 +32,7 @@ const homeCopy = {
     heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
     vehicleNewsTitle: 'Fordonsnyheter',
     allNews: 'Alla nyheter',
+    newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
   },
@@ -38,6 +40,7 @@ const homeCopy = {
     heroAlt: 'European vehicle marketplace for private and business sellers',
     vehicleNewsTitle: 'Vehicle news',
     allNews: 'All news',
+    newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
   },
@@ -45,6 +48,7 @@ const homeCopy = {
     heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
     vehicleNewsTitle: 'Fahrzeugnews',
     allNews: 'Alle News',
+    newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
   },
@@ -182,30 +186,12 @@ export default async function BusinessMarketplaceHome({
 
       <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
-          <div className="flex items-end justify-between gap-5">
-            <div className="flex items-center gap-3">
-              <h2 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px] sm:tracking-[-0.03em]">
-                {t.vehicleNewsTitle}
-              </h2>
-              <div className="flex items-center gap-2 sm:hidden" aria-hidden="true">
-                <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d7e5ff] bg-white text-[#0866ff] shadow-[0_8px_20px_rgba(8,102,255,0.12)]">
-                  <ChevronLeft className="h-4 w-4" strokeWidth={2.2} />
-                </span>
-                <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d7e5ff] bg-white text-[#0866ff] shadow-[0_8px_20px_rgba(8,102,255,0.12)]">
-                  <ChevronRight className="h-4 w-4" strokeWidth={2.2} />
-                </span>
-              </div>
-            </div>
-            <Link
-              href={localizePublicHref(locale, '/vehicle-news')}
-              className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
-            >
-              {t.allNews}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2 sm:mt-7 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
+          <HomeVehicleNewsScroller
+            title={t.vehicleNewsTitle}
+            allNewsHref={localizePublicHref(locale, '/vehicle-news')}
+            allNewsLabel={t.allNews}
+            scrollLabel={t.newsScrollLabel}
+          >
             {newsCards.map((item) => (
               <VehicleNewsCard
                 key={item.id}
@@ -215,7 +201,7 @@ export default async function BusinessMarketplaceHome({
                 locale={locale}
               />
             ))}
-          </div>
+          </HomeVehicleNewsScroller>
         </div>
       </section>
 
