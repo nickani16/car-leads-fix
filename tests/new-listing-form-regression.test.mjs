@@ -70,3 +70,8 @@ test('create listing customer-entered values use medium font weight', () => {
   assert.match(form, /<strong className="mt-1 block[\s\S]*text-sm font-medium/)
   assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*font-medium/)
 })
+
+test('create listing first step does not render a disabled back button', () => {
+  assert.match(form, /\{step > 0 \? \(/)
+  assert.doesNotMatch(form, /disabled=\{step === 0 \|\| loading\}/)
+})

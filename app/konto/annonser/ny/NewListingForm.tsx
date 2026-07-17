@@ -819,15 +819,19 @@ export default function NewListingForm({
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-[#e6ebf2] bg-[#fbfcff] p-5 sm:flex-row sm:justify-between sm:p-7">
-        <button
-          type="button"
-          onClick={previousStep}
-          disabled={step === 0 || loading}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d7deed] bg-white px-5 font-semibold text-[#344054] disabled:opacity-40"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {copy.back}
-        </button>
+        {step > 0 ? (
+          <button
+            type="button"
+            onClick={previousStep}
+            disabled={loading}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-[#d7deed] bg-white px-5 font-semibold text-[#344054] disabled:opacity-40"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {copy.back}
+          </button>
+        ) : (
+          <span aria-hidden="true" className="hidden sm:block" />
+        )}
         {step < 4 ? (
           <button
             type="button"
