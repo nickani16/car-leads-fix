@@ -620,7 +620,7 @@ export default function NewListingForm({
                   value={values[item.key] || ''}
                   onValueChange={setValue}
                   required={item.required}
-                  helper={identifierHelpText(category)}
+                  helper={identifierHelpText(category, locale)}
                 />
               )
             })}
@@ -827,7 +827,7 @@ function TechnicalCard({
     return (
       <Field
         name={field.name}
-        label={`${localizeVehicleText(locale, field.label)}${field.suffix ? ` (${field.suffix})` : ''}${field.name === 'maxTrailerWeightKg' && !field.required ? ` (${localizeFormText(locale, 'valfritt', 'optional', 'optional')})` : ''}`}
+        label={`${localizeVehicleText(locale, field.label)}${localizedUnitSuffix(locale, field.suffix)}${field.name === 'maxTrailerWeightKg' && !field.required ? ` (${localizedListingText(locale, 'optional')})` : ''}`}
         type="number"
         value={value}
         onValueChange={(_, next) => onChange(next)}
@@ -936,7 +936,7 @@ function DatePickerCard({
             {label}{required ? ' *' : ''}
           </span>
           <span className={`mt-1 block truncate text-sm font-semibold ${selectedDate ? 'text-[#101828]' : 'text-[#98a2b3]'}`}>
-            {selectedDate ? formatDateChoice(selectedDate, locale) : localizeFormText(locale, 'Välj datum', 'Choose date', 'Datum wählen')}
+            {selectedDate ? formatDateChoice(selectedDate, locale) : localizedListingText(locale, 'Choose date')}
           </span>
         </span>
         <CalendarDays className="h-5 w-5 shrink-0 text-[#667085]" />
@@ -2066,7 +2066,7 @@ function getListingFormCopy(locale: PublicLocale) {
     }
     return de
   }
-  return translateListingCopy(locale, en)
+  return mergeListingCopy(translateListingCopy(locale, en), listingCopyOverrides[locale])
 }
 
 function translateListingCopy<T>(locale: PublicLocale, value: T): T {
@@ -2078,6 +2078,246 @@ function translateListingCopy<T>(locale: PublicLocale, value: T): T {
     ) as T
   }
   return value
+}
+
+function mergeListingCopy<T extends { errors: Record<string, string> }>(
+  base: T,
+  override?: ListingCopyOverride,
+): T {
+  if (!override) return base
+  return {
+    ...base,
+    ...override,
+    errors: {
+      ...base.errors,
+      ...override.errors,
+    },
+  } as T
+}
+
+type ListingCopyOverride = Record<string, unknown> & {
+  errors?: Record<string, string>
+}
+
+const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> = {
+  fi: {
+    steps: ['Luokka ja perustiedot', 'Tekniset tiedot', 'Kuvat', 'Esikatselu', 'Paketti ja julkaisu'],
+    step: 'Vaihe',
+    of: '/',
+    complete: 'valmis',
+    choose: 'Valitse',
+    chooseColor: 'Valitse väri',
+    chooseEquipment: 'Valitse varusteet',
+    imagesTitle: 'Kuvat',
+    previewTitle: 'Esikatselu',
+    technicalTitle: 'Tekniset tiedot ja tarkistus',
+    technicalText: 'Vaihtoehdot näytetään vasta, kun avaat kohdan. Näin lomake pysyy selkeänä myös mobiilissa.',
+  },
+  da: {
+    steps: ['Kategori og basis', 'Tekniske oplysninger', 'Billeder', 'Forhåndsvisning', 'Pakke og publicering'],
+    step: 'Trin',
+    of: 'af',
+    complete: 'færdig',
+    choose: 'Vælg',
+    chooseColor: 'Vælg farve',
+    chooseEquipment: 'Vælg udstyr',
+    imagesTitle: 'Billeder',
+    previewTitle: 'Forhåndsvisning',
+  },
+  fr: {
+    steps: ['Catégorie et base', 'Détails techniques', 'Images', 'Aperçu', 'Forfait et publication'],
+    step: 'Étape',
+    of: 'sur',
+    complete: 'terminé',
+    choose: 'Choisir',
+    chooseColor: 'Choisir la couleur',
+    chooseEquipment: 'Choisir les équipements',
+  },
+  es: {
+    steps: ['Categoría y datos básicos', 'Datos técnicos', 'Imágenes', 'Vista previa', 'Paquete y publicación'],
+    step: 'Paso',
+    of: 'de',
+    complete: 'completo',
+    choose: 'Elegir',
+    chooseColor: 'Elegir color',
+    chooseEquipment: 'Elegir equipamiento',
+  },
+  it: {
+    steps: ['Categoria e dati base', 'Dati tecnici', 'Immagini', 'Anteprima', 'Pacchetto e pubblicazione'],
+    step: 'Passo',
+    of: 'di',
+    complete: 'completo',
+    choose: 'Scegli',
+    chooseColor: 'Scegli colore',
+    chooseEquipment: 'Scegli equipaggiamento',
+  },
+  nl: {
+    steps: ['Categorie en basis', 'Technische gegevens', 'Afbeeldingen', 'Voorbeeld', 'Pakket en publiceren'],
+    step: 'Stap',
+    of: 'van',
+    complete: 'voltooid',
+    choose: 'Kies',
+    chooseColor: 'Kies kleur',
+    chooseEquipment: 'Kies uitrusting',
+  },
+  pl: {
+    steps: ['Kategoria i podstawy', 'Dane techniczne', 'Zdjęcia', 'Podgląd', 'Pakiet i publikacja'],
+    step: 'Krok',
+    of: 'z',
+    complete: 'ukończono',
+    choose: 'Wybierz',
+    chooseColor: 'Wybierz kolor',
+    chooseEquipment: 'Wybierz wyposażenie',
+  },
+}
+
+const listingTextOverrides: Partial<Record<PublicLocale, Record<string, string>>> = {
+  fi: {
+    'Choose date': 'Valitse päivämäärä',
+    optional: 'valinnainen',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Anna rekisterinumero, jos ajoneuvolla on sellainen. Muussa tapauksessa anna VIN, valmistenumero tai sarjanumero.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Anna rekisterinumero, jos kohteella on sellainen. Muussa tapauksessa anna sarjanumero, VIN tai valmistenumero.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Anna runkonumero tai sarjanumero. Akun sarjanumeron voi lisätä, jos se on saatavilla.',
+  },
+  da: {
+    'Choose date': 'Vælg dato',
+    optional: 'valgfrit',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Angiv registreringsnummeret, hvis køretøjet har et. Ellers angiv VIN, stelnummer eller serienummer.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Angiv registreringsnummeret, hvis objektet har et. Ellers angiv serienummer, VIN eller stelnummer.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Angiv stelnummer eller serienummer. Batteriets serienummer kan angives, hvis det findes.',
+  },
+  fr: {
+    'Choose date': 'Choisir une date',
+    optional: 'facultatif',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Indiquez le numéro d’immatriculation si le véhicule en possède un. Sinon, indiquez le VIN, le numéro de châssis ou le numéro de série.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Indiquez le numéro d’immatriculation si l’objet en possède un. Sinon, indiquez le numéro de série, le VIN ou le numéro de châssis.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Indiquez le numéro de cadre ou le numéro de série. Le numéro de série de la batterie peut être ajouté s’il est disponible.',
+  },
+  es: {
+    'Choose date': 'Elegir fecha',
+    optional: 'opcional',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Introduce la matrícula si el vehículo la tiene. Si no, introduce el VIN, número de bastidor o número de serie.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Introduce la matrícula si el objeto la tiene. Si no, introduce el número de serie, VIN o número de bastidor.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Introduce el número de cuadro o número de serie. El número de serie de la batería puede añadirse si está disponible.',
+  },
+  it: {
+    'Choose date': 'Scegli data',
+    optional: 'facoltativo',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Inserisci il numero di targa se il veicolo ne ha uno. Altrimenti inserisci VIN, numero di telaio o numero di serie.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Inserisci il numero di targa se l’oggetto ne ha uno. Altrimenti inserisci numero di serie, VIN o numero di telaio.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Inserisci numero di telaio o numero di serie. Il numero di serie della batteria può essere inserito se disponibile.',
+  },
+  nl: {
+    'Choose date': 'Kies datum',
+    optional: 'optioneel',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Voer het kenteken in als het voertuig er een heeft. Voer anders VIN, chassisnummer of serienummer in.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Voer het kenteken in als het object er een heeft. Voer anders serienummer, VIN of chassisnummer in.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Voer framenummer of serienummer in. Het batterijserienummer kan worden ingevuld indien beschikbaar.',
+  },
+  pl: {
+    'Choose date': 'Wybierz datę',
+    optional: 'opcjonalnie',
+    'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.': 'Podaj numer rejestracyjny, jeśli pojazd go ma. W przeciwnym razie podaj VIN, numer podwozia lub numer seryjny.',
+    'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.': 'Podaj numer rejestracyjny, jeśli obiekt go ma. W przeciwnym razie podaj numer seryjny, VIN lub numer podwozia.',
+    'Enter frame number or serial number. Battery serial number can be entered if available.': 'Podaj numer ramy lub numer seryjny. Numer seryjny baterii można dodać, jeśli jest dostępny.',
+  },
+}
+
+const vehicleTermOverrides: Partial<Record<PublicLocale, Record<string, string>>> = {
+  fi: {
+    'Registration number, if relevant': 'Rekisterinumero, jos saatavilla',
+    'VIN / chassis number': 'VIN / valmistenumero',
+    Power: 'Teho',
+    'Engine size': 'Moottorin koko',
+    Seats: 'Istuimet',
+    'Registration date': 'Rekisteröintipäivä',
+    Body: 'Korimalli',
+    'Body type': 'Korimalli',
+    'Fuel / drivetrain': 'Polttoaine / voimansiirto',
+    Fuel: 'Polttoaine',
+    Gearbox: 'Vaihteisto',
+    Drivetrain: 'Voimansiirto',
+    Import: 'Tuonti',
+    'Service history': 'Huoltohistoria',
+    Condition: 'Kunto',
+    'Damage / faults': 'Vauriot / viat',
+    'Maximum trailer weight': 'Suurin perävaunupaino',
+    Colour: 'Väri',
+  },
+  da: {
+    Body: 'Karrosseri',
+    'Body type': 'Karrosseritype',
+    Drivetrain: 'Træk',
+    Condition: 'Stand',
+    'Damage / faults': 'Skader / fejl',
+    'Registration number, if relevant': 'Registreringsnummer, hvis relevant',
+    'VIN / chassis number': 'VIN / stelnummer',
+    'Maximum trailer weight': 'Maks. anhængervægt',
+  },
+  fr: {
+    Body: 'Carrosserie',
+    'Body type': 'Type de carrosserie',
+    Drivetrain: 'Transmission',
+    Condition: 'État',
+    'Damage / faults': 'Dommages / défauts',
+    'Registration number, if relevant': 'Numéro d’immatriculation, si pertinent',
+    'VIN / chassis number': 'VIN / numéro de châssis',
+    'Maximum trailer weight': 'Poids tractable maximal',
+  },
+  es: {
+    Body: 'Carrocería',
+    'Body type': 'Tipo de carrocería',
+    Drivetrain: 'Tracción',
+    Condition: 'Estado',
+    'Damage / faults': 'Daños / fallos',
+    'Registration number, if relevant': 'Matrícula, si corresponde',
+    'VIN / chassis number': 'VIN / número de bastidor',
+    'Maximum trailer weight': 'Peso máximo remolcable',
+  },
+  it: {
+    Body: 'Carrozzeria',
+    'Body type': 'Tipo di carrozzeria',
+    Drivetrain: 'Trazione',
+    Condition: 'Condizione',
+    'Damage / faults': 'Danni / difetti',
+    'Registration number, if relevant': 'Targa, se pertinente',
+    'VIN / chassis number': 'VIN / numero di telaio',
+    'Maximum trailer weight': 'Peso massimo rimorchiabile',
+  },
+  nl: {
+    Body: 'Carrosserie',
+    'Body type': 'Carrosserietype',
+    Drivetrain: 'Aandrijving',
+    Condition: 'Staat',
+    'Damage / faults': 'Schade / gebreken',
+    'Registration number, if relevant': 'Kenteken, indien relevant',
+    'VIN / chassis number': 'VIN / chassisnummer',
+    'Maximum trailer weight': 'Maximaal trekgewicht',
+  },
+  pl: {
+    Body: 'Nadwozie',
+    'Body type': 'Typ nadwozia',
+    Drivetrain: 'Napęd',
+    Condition: 'Stan',
+    'Damage / faults': 'Uszkodzenia / usterki',
+    'Registration number, if relevant': 'Numer rejestracyjny, jeśli dotyczy',
+    'VIN / chassis number': 'VIN / numer podwozia',
+    'Maximum trailer weight': 'Maksymalna masa przyczepy',
+  },
+}
+
+const unitSuffixOverrides: Record<string, Record<string, string>> = {
+  en: { HK: 'hp', st: '' },
+  fi: { HK: 'hv', st: '' },
+  da: { HK: 'hk', st: '' },
+  fr: { HK: 'ch', st: '' },
+  es: { HK: 'CV', st: '' },
+  it: { HK: 'CV', st: '' },
+  nl: { HK: 'pk', st: '' },
+  pl: { HK: 'KM', st: '' },
+  de: { HK: 'PS', st: '' },
+  at: { HK: 'PS', st: '' },
+  be: { HK: 'pk', st: '' },
 }
 
 function getPackageCopy(locale: PublicLocale) {
@@ -2149,7 +2389,22 @@ function localizeVehicleText(locale: PublicLocale, value?: string | null) {
   if (!value) return ''
   if (locale === 'sv') return value
   const english = vehicleValueInEnglish(value) || value
-  return translatePublic(locale, english)
+  return localizedVehicleTerm(locale, english) || translatePublic(locale, english)
+}
+
+function localizedListingText(locale: PublicLocale, english: string) {
+  return listingTextOverrides[locale]?.[english] || translatePublic(locale, english)
+}
+
+function localizedVehicleTerm(locale: PublicLocale, english: string) {
+  return vehicleTermOverrides[locale]?.[english] || null
+}
+
+function localizedUnitSuffix(locale: PublicLocale, suffix?: string) {
+  if (!suffix) return ''
+  if (locale === 'sv') return ` (${suffix})`
+  const normalized = unitSuffixOverrides[locale]?.[suffix] ?? unitSuffixOverrides.en[suffix] ?? suffix
+  return normalized ? ` (${normalized})` : ''
 }
 
 function localizeOptions(locale: PublicLocale, options: ListingOption[]) {
@@ -2248,14 +2503,17 @@ function formatSmartText(value: string) {
     .trimStart()
 }
 
-function identifierHelpText(category: MarketplaceCategorySlug) {
+function identifierHelpText(category: MarketplaceCategorySlug, locale: PublicLocale) {
   if (category === 'construction' || category === 'agriculture') {
-    return 'Ange registreringsnummer om objektet har ett. Annars ange serienummer, VIN eller chassinummer.'
+    if (locale === 'sv') return 'Ange registreringsnummer om objektet har ett. Annars ange serienummer, VIN eller chassinummer.'
+    return localizedListingText(locale, 'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.')
   }
   if (category === 'electric-bikes' || category === 'e-scooters') {
-    return 'Ange ramnummer eller serienummer. Batteriserienummer kan anges om det finns.'
+    if (locale === 'sv') return 'Ange ramnummer eller serienummer. Batteriserienummer kan anges om det finns.'
+    return localizedListingText(locale, 'Enter frame number or serial number. Battery serial number can be entered if available.')
   }
-  return 'Ange registreringsnummer om fordonet har ett. Annars ange VIN/chassinummer eller serienummer.'
+  if (locale === 'sv') return 'Ange registreringsnummer om fordonet har ett. Annars ange VIN/chassinummer eller serienummer.'
+  return localizedListingText(locale, 'Enter the registration number if the vehicle has one. Otherwise enter VIN, chassis number or serial number.')
 }
 
 async function compressImage(file: File): Promise<UploadImage> {
