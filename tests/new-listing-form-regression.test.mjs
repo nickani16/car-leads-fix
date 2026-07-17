@@ -61,3 +61,12 @@ test('technical max trailer weight remains optional and is placed last for commo
   assert.match(options, /vans: \[[\s\S]*chips\('damageStatus'[\s\S]*numberField\('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'\)/)
   assert.match(options, /motorhomes: \[[\s\S]*chips\('damageStatus'[\s\S]*numberField\('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'\)/)
 })
+
+test('create listing customer-entered values use medium font weight', () => {
+  assert.match(form, /function Field[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
+  assert.match(form, /function PriceField[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
+  assert.match(form, /function GeoPlaceCombobox[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
+  assert.match(form, /function SelectNative[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
+  assert.match(form, /<strong className="mt-1 block[\s\S]*text-sm font-medium/)
+  assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*font-medium/)
+})

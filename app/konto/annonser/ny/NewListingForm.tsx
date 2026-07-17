@@ -984,7 +984,7 @@ function SelectCard({
           <span className="block text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
             {label}{required ? ' *' : ''}
           </span>
-          <strong className="mt-1 block min-w-0 whitespace-normal break-words text-sm font-semibold leading-5 text-[#101828]">
+          <strong className="mt-1 block min-w-0 whitespace-normal break-words text-sm font-medium leading-5 text-[#101828]">
             {value}
           </strong>
         </span>
@@ -1037,7 +1037,7 @@ function DatePickerCard({
           <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">
             {label}{required ? ' *' : ''}
           </span>
-          <span className={`mt-1 block truncate text-sm font-semibold ${selectedDate ? 'text-[#101828]' : 'text-[#98a2b3]'}`}>
+          <span className={`mt-1 block truncate text-sm font-medium ${selectedDate ? 'text-[#101828]' : 'text-[#98a2b3]'}`}>
             {selectedDate ? formatDateChoice(selectedDate, locale) : localizedListingText(locale, 'Choose date')}
           </span>
         </span>
@@ -1054,7 +1054,7 @@ function DatePickerCard({
               <select
                 value={visibleMonth}
                 onChange={(event) => setVisibleMonth(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-semibold outline-none"
+                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
               >
                 {Array.from({ length: 12 }, (_, month) => (
                   <option key={month} value={month}>
@@ -1065,7 +1065,7 @@ function DatePickerCard({
               <select
                 value={visibleYear}
                 onChange={(event) => setVisibleYear(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-semibold outline-none"
+                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
               >
                 {years.map((year) => (
                   <option key={year} value={year}>{year}</option>
@@ -1534,7 +1534,7 @@ function PreviewStep({
             value={values.sellerNote || ''}
             onChange={(event) => onChange('sellerNote', event.target.value)}
             placeholder={copy.sellerNotePlaceholder}
-            className="min-h-28 w-full rounded-[16px] border border-[#d7deed] p-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            className="min-h-28 w-full rounded-[16px] border border-[#d7deed] p-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
           />
           <span className="mt-2 block text-xs leading-5 text-[#667085]">
             {copy.sellerNoteHelp}
@@ -1738,7 +1738,7 @@ function Field(
         name={name}
         value={value}
         onChange={(event) => onValueChange(String(name), event.target.value)}
-        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
@@ -1773,7 +1773,7 @@ function PriceField({
           min="0"
           step="1"
           onChange={(event) => onValueChange(name, event.target.value)}
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[10px] border border-[#d7deed] bg-[#f7faff] px-3 text-sm font-semibold text-[#344054]">
           {currency.toUpperCase()}
@@ -1844,7 +1844,7 @@ function GeoPlaceCombobox({
           setOpen(true)
           onQueryChange(event.target.value)
         }}
-        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-10 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10 disabled:bg-[#f8fafc] disabled:text-[#98a2b3]"
+        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-10 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10 disabled:bg-[#f8fafc] disabled:text-[#98a2b3]"
       />
       <Search className="pointer-events-none absolute bottom-3.5 right-3 h-5 w-5 text-[#667085]" />
       {open && (visibleOptions.length || loading || canUseManual) ? (
@@ -1916,7 +1916,7 @@ function SelectNative({
         name={name}
         value={value}
         onChange={(event) => onValueChange(name, event.target.value)}
-        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       >
         {children}
       </select>
