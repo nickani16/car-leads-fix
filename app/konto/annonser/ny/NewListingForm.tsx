@@ -308,7 +308,6 @@ export default function NewListingForm({
       ...current,
       municipality: place.name,
       county: place.regionName || place.regionCode || current.county || '',
-      city: place.city || place.name,
       postalCode: place.postalCode || current.postalCode || '',
     }))
   }
@@ -320,7 +319,6 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
-      city: value,
     }))
   }
 
@@ -658,7 +656,7 @@ export default function NewListingForm({
                 placeholder={values.county ? copy.choose : marketplaceRegionLabel(listingCountryCode, locale)}
                 helper={
                   values.county && !geoLoading
-                    ? `${placeOptions.length} ${marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()}`
+                    ? formatMunicipalityCount(placeOptions.length, listingCountryCode, locale)
                     : ''
                 }
                 manualLabel=""
@@ -2619,6 +2617,17 @@ function localizedUnitSuffix(locale: PublicLocale, suffix?: string) {
   if (locale === 'sv') return ` (${suffix})`
   const normalized = unitSuffixOverrides[locale]?.[suffix] ?? unitSuffixOverrides.en[suffix] ?? suffix
   return normalized ? ` (${normalized})` : ''
+}
+
+function formatMunicipalityCount(count: number, countryCode: string, locale: PublicLocale) {
+  const country = countryCode.toUpperCase()
+  if (locale === 'sv' || country === 'SE') return `${count} ${count === 1 ? 'kommun' : 'kommuner'}`
+  if (locale === 'da' || country === 'DK') return `${count} ${count === 1 ? 'kommune' : 'kommuner'}`
+  if (locale === 'fi' || country === 'FI') return `${count} ${count === 1 ? 'kunta' : 'kuntaa'}`
+  if (locale === 'nl' || country === 'NL') return `${count} ${count === 1 ? 'gemeente' : 'gemeenten'}`
+  if (locale === 'fr' || country === 'BE') return `${count} ${count === 1 ? 'commune' : 'communes'}`
+  if (locale === 'de' || locale === 'at' || country === 'AT') return `${count} ${count === 1 ? 'Gemeinde' : 'Gemeinden'}`
+  return `${count} ${count === 1 ? 'municipality' : 'municipalities'}`
 }
 
 function normalizeClientGeoName(value: string) {
