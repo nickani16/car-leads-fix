@@ -100,6 +100,7 @@ export default function BusinessPlanChooser({
       body: JSON.stringify({
         productKey: `subscription.business.${key}.${productPeriod}`,
         market,
+        locale,
         billingMethod,
       }),
     })

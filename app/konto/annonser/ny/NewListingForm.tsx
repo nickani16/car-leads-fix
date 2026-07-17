@@ -2,7 +2,6 @@
 
 import { DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,7 +30,7 @@ import {
   type SupportedCurrency,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
-import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 import {
   categoryTechnicalFields,
@@ -118,7 +117,6 @@ export default function NewListingForm({
   defaultCategory: string
   locale: PublicLocale
 }) {
-  const router = useRouter()
   const [step, setStep] = useState<StepId>(0)
   const listingCountryCode = countryCode.toUpperCase()
   const [category, setCategory] = useState<MarketplaceCategorySlug>(
@@ -515,10 +513,41 @@ export default function NewListingForm({
     window.localStorage.removeItem(draftKey)
     void deleteDraftImages(draftKey)
     if (result.requiresPayment) {
-      router.push(`/account/listings?choosePackage=1&listing=${encodeURIComponent(result.listingId)}`)
-      return
+      try {
+        const checkoutResponse = await fetchWithTimeout('/api/account/listing-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listingId: result.listingId,
+            packageId: result.packageId || values.packageId,
+            market: billingMarketCode || listingCountryCode,
+            locale,
+          }),
+        }, 45_000)
+        const checkout = (await checkoutResponse.json().catch(() => ({}))) as {
+          error?: string
+          url?: string
+        }
+        if (!checkoutResponse.ok || !checkout.url) {
+          setError(checkout.error || copy.errors.checkout)
+          setLoading(false)
+          return
+        }
+        window.location.assign(checkout.url)
+        return
+      } catch (caught) {
+        setError(
+          caught instanceof DOMException && caught.name === 'AbortError'
+            ? copy.errors.checkoutTimeout
+            : copy.errors.checkout,
+        )
+        setLoading(false)
+        return
+      }
     }
-    router.push('/account/listings')
+    window.location.assign(
+      localizePublicHref(locale, `/account/listings?published=1&listing=${encodeURIComponent(result.listingId)}`),
+    )
   }
 
   return (
@@ -1932,9 +1961,9 @@ function labelFor(options: ListingOption[], value: string) {
   return options.find((option) => option.value === value)?.label || ''
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit) {
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = listingRequestTimeoutMs) {
   const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), listingRequestTimeoutMs)
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
     return await fetch(url, {
       ...init,
@@ -2122,6 +2151,8 @@ function getListingFormCopy(locale: PublicLocale) {
       package: 'Choose a listing package.',
       terms: 'Accept the confirmation before publishing.',
       submit: 'Could not create the listing.',
+      checkout: 'The listing was saved, but Stripe checkout could not be started. Open My listings and try the payment again.',
+      checkoutTimeout: 'The listing was saved, but Stripe checkout took too long to open. Open My listings and try the payment again.',
       timeout: 'Publishing took too long and was stopped. Your details are still saved; try again or upload fewer images.',
       connection: 'The connection was interrupted. Your details are still saved; try again.',
     },
@@ -2224,6 +2255,8 @@ function getListingFormCopy(locale: PublicLocale) {
         package: 'Välj annonspaket.',
         terms: 'Godkänn bekräftelsen innan publicering.',
         submit: 'Kunde inte skapa annonsen.',
+        checkout: 'Annonsen sparades, men Stripe Checkout kunde inte startas. Öppna Mina annonser och försök betala igen.',
+        checkoutTimeout: 'Annonsen sparades, men Stripe Checkout tog för lång tid att öppna. Öppna Mina annonser och försök betala igen.',
         timeout: 'Publiceringen tog för lång tid och avbröts. Dina uppgifter finns kvar; försök igen eller ladda upp färre bilder.',
         connection: 'Anslutningen avbröts. Dina uppgifter finns kvar; försök igen.',
       },
@@ -2276,6 +2309,8 @@ function getListingFormCopy(locale: PublicLocale) {
         package: 'Anzeigenpaket auswählen.',
         terms: 'Bestätigung vor der Veröffentlichung akzeptieren.',
         submit: 'Anzeige konnte nicht erstellt werden.',
+        checkout: 'Die Anzeige wurde gespeichert, aber Stripe Checkout konnte nicht gestartet werden. Öffnen Sie Meine Anzeigen und versuchen Sie die Zahlung erneut.',
+        checkoutTimeout: 'Die Anzeige wurde gespeichert, aber Stripe Checkout hat zu lange gebraucht. Öffnen Sie Meine Anzeigen und versuchen Sie die Zahlung erneut.',
         timeout: 'Die Veröffentlichung hat zu lange gedauert und wurde gestoppt. Ihre Angaben bleiben gespeichert; versuchen Sie es erneut oder laden Sie weniger Bilder hoch.',
         connection: 'Die Verbindung wurde unterbrochen. Ihre Angaben bleiben gespeichert; versuchen Sie es erneut.',
       },

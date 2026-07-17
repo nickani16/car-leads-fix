@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
-import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import {
   getBillingProduct,
   legacyListingPackageToProductKey,
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     productKey?: string
     packageId?: string
     market?: string
+    locale?: string
     billingMethod?: 'card' | 'invoice'
   }
 
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
   const market = normalizeBillingMarket(
     requestedMarket === 'en' || requestedMarket === 'eu' ? 'de' : requestedMarket,
   )
+  const requestedLocale = normalizeCheckoutLocale(body.locale) || publicLocaleForMarket(market)
   const billingMethod = body.billingMethod === 'invoice' ? 'invoice' : 'card'
 
   const [{ data: profile }, { data: listing }] = await Promise.all([
@@ -268,7 +270,7 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin
   const checkoutBranding = createCheckoutBranding()
-  const checkoutLocale = publicLocaleForMarket(market)
+  const checkoutLocale = requestedLocale
   const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title, checkoutLocale)
   const metadata = {
     user_id: user.id,
@@ -310,7 +312,7 @@ export async function POST(request: Request) {
       const customerId = existingSubscription?.stripe_customer_id || (await stripe.customers.create({
         email: profile.email || user.email || undefined,
         name: profile.company_name || profile.email || user.email || undefined,
-        preferred_locales: [stripeLocaleForMarket(market)],
+        preferred_locales: [stripeLocaleForCheckout(checkoutLocale, market)],
         metadata: {
           user_id: user.id,
           business_id: body.businessId || '',
@@ -487,7 +489,7 @@ export async function POST(request: Request) {
     session = await getStripe().checkout.sessions.create({
       mode: product.billingType,
       branding_settings: checkoutBranding,
-      locale: stripeLocaleForMarket(market),
+      locale: stripeLocaleForCheckout(checkoutLocale, market),
       submit_type: product.billingType === 'payment' ? 'pay' : undefined,
       customer_email: profile.email,
       client_reference_id: order.id,
@@ -532,12 +534,12 @@ export async function POST(request: Request) {
       },
       success_url:
         product.kind === 'subscription'
-          ? `${origin}/account/business/subscription?payment=processing&order=${order.id}`
-          : `${origin}/account/listings?payment=processing&order=${order.id}`,
+          ? `${origin}${localizePublicHref(checkoutLocale, `/account/business/subscription?payment=processing&order=${order.id}`)}`
+          : `${origin}${localizePublicHref(checkoutLocale, `/account/listings?payment=processing&order=${order.id}`)}`,
       cancel_url:
         product.kind === 'subscription'
-          ? `${origin}/account/business/subscription?payment=cancelled&order=${order.id}`
-          : `${origin}/account/listings?payment=cancelled&order=${order.id}`,
+          ? `${origin}${localizePublicHref(checkoutLocale, `/account/business/subscription?payment=cancelled&order=${order.id}`)}`
+          : `${origin}${localizePublicHref(checkoutLocale, `/account/listings?payment=cancelled&order=${order.id}`)}`,
     })
   } catch (error) {
     console.error('[listing-checkout] Could not create Stripe checkout session', {
@@ -710,15 +712,48 @@ function publicLocaleForMarket(market: string): PublicLocale {
     es: 'es',
     nl: 'nl',
     be: 'be',
-    at: 'de',
+    at: 'at',
     pl: 'pl',
     fi: 'fi',
   }
   return locales[market] || 'en'
 }
 
-function stripeLocaleForMarket(market: string) {
-  const locales: Record<string, 'sv' | 'da' | 'de' | 'fr' | 'it' | 'es' | 'nl' | 'pl' | 'fi'> = {
+type StripeCheckoutLocale = 'auto' | 'en' | 'sv' | 'da' | 'de' | 'fr' | 'it' | 'es' | 'nl' | 'pl' | 'fi'
+
+function normalizeCheckoutLocale(value: string | null | undefined): PublicLocale | null {
+  const normalized = String(value || '').toLowerCase()
+  if (normalized === 'se' || normalized === 'sv') return 'sv'
+  if (normalized === 'dk' || normalized === 'da') return 'da'
+  if (normalized === 'de') return 'de'
+  if (normalized === 'at') return 'at'
+  if (normalized === 'be') return 'be'
+  if (normalized === 'fr') return 'fr'
+  if (normalized === 'it') return 'it'
+  if (normalized === 'es') return 'es'
+  if (normalized === 'nl') return 'nl'
+  if (normalized === 'pl') return 'pl'
+  if (normalized === 'fi') return 'fi'
+  if (normalized === 'en' || normalized === 'eu') return 'en'
+  return null
+}
+
+function stripeLocaleForCheckout(locale: PublicLocale, market: string): StripeCheckoutLocale {
+  if (locale === 'en') return 'en'
+  if (locale === 'sv') return 'sv'
+  if (locale === 'da') return 'da'
+  if (locale === 'de' || locale === 'at') return 'de'
+  if (locale === 'be' || locale === 'nl') return 'nl'
+  if (locale === 'fr') return 'fr'
+  if (locale === 'it') return 'it'
+  if (locale === 'es') return 'es'
+  if (locale === 'pl') return 'pl'
+  if (locale === 'fi') return 'fi'
+  return stripeLocaleForMarket(market)
+}
+
+function stripeLocaleForMarket(market: string): StripeCheckoutLocale {
+  const locales: Record<string, StripeCheckoutLocale> = {
     se: 'sv',
     dk: 'da',
     de: 'de',
@@ -731,7 +766,7 @@ function stripeLocaleForMarket(market: string) {
     pl: 'pl',
     fi: 'fi',
   }
-  return locales[market] || 'sv'
+  return locales[market] || 'en'
 }
 
 function capitalize(value: string) {

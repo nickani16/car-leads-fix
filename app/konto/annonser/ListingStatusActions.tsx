@@ -117,7 +117,7 @@ export default function ListingStatusActions({
     const response = await fetch('/api/account/listing-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listingId, packageId: selectedPackage, market }),
+      body: JSON.stringify({ listingId, packageId: selectedPackage, market, locale }),
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (!response.ok) {
@@ -138,7 +138,7 @@ export default function ListingStatusActions({
     const response = await fetch('/api/account/listing-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listingId, productKey, market }),
+      body: JSON.stringify({ listingId, productKey, market, locale }),
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (result.url) return window.location.assign(result.url)
