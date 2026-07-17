@@ -137,6 +137,13 @@ export async function generateListingMetadata({
   const { slug } = await params
   const listing = await fetchListingFromSlug(slug)
   if (!listing) {
+    const id = extractListingIdFromSlug(slug)
+    if (id && await isPermanentlyRemovedPublicListing(id)) {
+      return {
+        title: 'Annonsen är borttagen | Autorell',
+        robots: { index: false, follow: false },
+      }
+    }
     return {
       title: 'Annons hittades inte | Autorell',
       robots: { index: false, follow: false },
@@ -197,9 +204,15 @@ export default async function ListingDetailPage({
 }) {
   const { slug } = await params
   const listing = await fetchListingFromSlug(slug)
-  if (!listing) notFound()
-
   const locale = await getRequestLocale()
+  if (!listing) {
+    const id = extractListingIdFromSlug(slug)
+    if (id && await isPermanentlyRemovedPublicListing(id)) {
+      return <RemovedListingPage locale={locale} />
+    }
+    notFound()
+  }
+
   const requestHeaders = await headers()
   const supabase = await createClient()
   const {
@@ -777,6 +790,48 @@ async function fetchListingFromSlug(slug: string) {
   const data = await getMarketplaceListingForPublicDetail(id)
 
   return (data || null) as ListingRow | null
+}
+
+async function isPermanentlyRemovedPublicListing(id: string) {
+  const { data } = await createAdminClient()
+    .from('marketplace_listings')
+    .select('status,published_at,sold_at,deleted_at,removed_by_admin')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!data) return false
+  const wasPublic = Boolean(data.published_at || data.sold_at)
+  const permanentlyRemoved =
+    data.status === 'deleted' ||
+    Boolean(data.deleted_at) ||
+    data.removed_by_admin === true
+  return wasPublic && permanentlyRemoved
+}
+
+function RemovedListingPage({ locale }: { locale: PublicLocale }) {
+  const title = localizedLabel(locale, 'Annonsen är borttagen', 'The listing has been removed', 'Die Anzeige wurde entfernt')
+  const text = localizedLabel(
+    locale,
+    'Den här annonsen finns inte längre på Autorell.',
+    'This listing is no longer available on Autorell.',
+    'Diese Anzeige ist auf Autorell nicht mehr verfügbar.',
+  )
+  const cta = localizedLabel(locale, 'Visa aktuella annonser', 'Browse current listings', 'Aktuelle Anzeigen ansehen')
+
+  return (
+    <main className="min-h-screen bg-white text-[#101828]">
+      <PublicHeader locale={locale} />
+      <section className="mx-auto flex min-h-[55vh] max-w-[720px] flex-col justify-center px-6 py-16 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">Autorell</p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-[-.045em] text-[#101828] sm:text-5xl">{title}</h1>
+        <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-[#667085]">{text}</p>
+        <Link href={localizePublicHref(locale, '/marketplace')} className="mx-auto mt-8 inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[#0866ff] px-5 text-sm font-semibold text-white outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30">
+          {cta}
+        </Link>
+      </section>
+      <PublicFooter locale={locale} />
+    </main>
+  )
 }
 
 async function getSellerDetails(
