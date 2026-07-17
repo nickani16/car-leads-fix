@@ -1,6 +1,8 @@
 import 'server-only'
 
 import { createHash } from 'node:crypto'
+import { buildListingPath } from '@/lib/listing-url'
+import { getFeaturedMarketplaceHomeListings } from '@/lib/marketplace-public-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type PublicNewsCategory = {
@@ -29,6 +31,16 @@ export type PublicNewsArticle = {
   canonicalUrl: string | null
   viewCount: number
   relatedPostIds: string[]
+}
+
+export type PublicNewsListing = {
+  id: string
+  title: string
+  href: string
+  imageUrl: string | null
+  priceLabel: string
+  location: string
+  meta: string
 }
 
 export type PublicNewsBodyBlock = {
@@ -802,7 +814,7 @@ const publicSelect = 'id,slug,title,excerpt,body,language,market,author_name,pub
 export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
   const language = languageForMarket(market)
   const admin = createContentAdmin()
-  if (!admin) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
+  if (!admin) return { articles: [], categories: localizedFallbackCategories(language), count: 0, unavailable: false }
   const from = Math.max(0, page - 1) * pageSize
   const { data, count, error } = await admin
     .from('content_posts')
@@ -815,7 +827,7 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .order('published_at', { ascending: false })
     .range(from, from + pageSize - 1)
 
-  if (error) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
+  if (error) return { articles: [], categories: localizedFallbackCategories(language), count: 0, unavailable: false }
   const rows = (data || []) as unknown as Record<string, unknown>[]
   const mediaIds = rows.map((row) => String(row.hero_media_id || '')).filter(Boolean)
   const { data: mediaRows } = mediaIds.length
@@ -829,24 +841,63 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .order('sort_order')
 
   return {
-    articles: rows.length ? rows.map((row) => mapArticle(row, mediaById.get(String(row.hero_media_id)) || null)) : fallbackNewsPage(language, page, pageSize),
+    articles: rows.map((row) => mapArticle(row, mediaById.get(String(row.hero_media_id)) || null)),
     categories: rows.length && categoryRows?.length ? ((categoryRows || []) as Record<string, unknown>[]).map((row) => ({
       id: String(row.id),
       key: String(row.category_key),
       label: localizedCategory(row.translations, language, String(row.category_key)),
     })) : localizedFallbackCategories(language),
-    count: rows.length ? count || 0 : fallbackArticles.length,
+    count: count || 0,
     unavailable: false,
+  }
+}
+
+export async function getVehicleNewsFeaturedListings(market: string, limit = 3): Promise<PublicNewsListing[]> {
+  try {
+    const countryCode = market.toLowerCase() === 'en' ? null : market.toUpperCase()
+    const locale = listingLocaleForMarket(market)
+    const listings = await getFeaturedMarketplaceHomeListings(countryCode, limit)
+    return listings.map((listing) => {
+      const row = listing as Record<string, unknown>
+      const price = Number(row.price)
+      const currency = String(row.currency || 'EUR').toUpperCase()
+      const title = String(row.title || '')
+      const city = String(row.city || row.municipality || '').trim()
+      const country = String(row.country_code || '').toUpperCase()
+      const meta = [
+        row.model_year ? String(row.model_year) : null,
+        row.make ? String(row.make) : null,
+        row.model ? String(row.model) : null,
+      ].filter(Boolean).join(' | ')
+      return {
+        id: String(row.id),
+        title,
+        href: buildListingPath({
+          id: String(row.id),
+          title,
+          make: row.make ? String(row.make) : null,
+          model: row.model ? String(row.model) : null,
+          model_year: row.model_year ? String(row.model_year) : null,
+          city: city || null,
+          country_code: country || null,
+        }, locale),
+        imageUrl: Array.isArray(row.images) && typeof row.images[0] === 'string' ? row.images[0] : null,
+        priceLabel: Number.isFinite(price) && price > 0
+          ? `${price.toLocaleString(localeNumberTag(locale), { maximumFractionDigits: 0 })} ${currency}`
+          : vehicleNewsListingPriceOnRequest(market),
+        location: [city, country].filter(Boolean).join(', '),
+        meta,
+      }
+    })
+  } catch {
+    return []
   }
 }
 
 export async function getVehicleNewsArticle(market: string, slug: string, previewToken?: string) {
   const language = languageForMarket(market)
   const admin = createContentAdmin()
-  if (!admin) {
-    const fallback = localizedFallbackArticles(language).find((article) => article.slug === slug)
-    return fallback ? { article: fallback, preview: false } : null
-  }
+  if (!admin) return null
   let previewPostId = ''
   if (previewToken) {
     const tokenHash = createHash('sha256').update(previewToken).digest('hex')
@@ -865,15 +916,55 @@ export async function getVehicleNewsArticle(market: string, slug: string, previe
     ? query.eq('id', previewPostId)
     : query.eq('status', 'published').lte('published_at', new Date().toISOString())
   const { data: row, error } = await query.maybeSingle()
-  if (error || !row) {
-    const fallback = localizedFallbackArticles(language).find((article) => article.slug === slug)
-    return fallback ? { article: fallback, preview: false } : null
-  }
+  if (error || !row) return null
   const typedRow = row as unknown as Record<string, unknown>
   const { data: media } = typedRow.hero_media_id
     ? await admin.from('media_assets').select('id,public_url,variants,alt_text,caption').eq('id', String(typedRow.hero_media_id)).maybeSingle()
     : { data: null }
   return { article: mapArticle(typedRow, media as Record<string, unknown> | null), preview: Boolean(previewPostId) }
+}
+
+function listingLocaleForMarket(market: string): 'sv' | 'de' | 'en' | 'at' | 'be' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da' {
+  const normalized = market.toLowerCase()
+  if (normalized === 'se') return 'sv'
+  if (normalized === 'dk') return 'da'
+  if (normalized === 'de' || normalized === 'at' || normalized === 'be' || normalized === 'fr' || normalized === 'es' || normalized === 'it' || normalized === 'pl' || normalized === 'nl' || normalized === 'fi') return normalized
+  return 'en'
+}
+
+function localeNumberTag(locale: ReturnType<typeof listingLocaleForMarket>) {
+  const tags: Record<string, string> = {
+    sv: 'sv-SE',
+    de: 'de-DE',
+    at: 'de-AT',
+    be: 'nl-BE',
+    fr: 'fr-FR',
+    es: 'es-ES',
+    it: 'it-IT',
+    pl: 'pl-PL',
+    nl: 'nl-NL',
+    fi: 'fi-FI',
+    da: 'da-DK',
+    en: 'en-GB',
+  }
+  return tags[locale] || 'en-GB'
+}
+
+function vehicleNewsListingPriceOnRequest(market: string) {
+  const language = languageForMarket(market)
+  const labels = {
+    sv: 'Pris på begäran',
+    en: 'Price on request',
+    de: 'Preis auf Anfrage',
+    fr: 'Prix sur demande',
+    es: 'Precio a consultar',
+    it: 'Prezzo su richiesta',
+    nl: 'Prijs op aanvraag',
+    pl: 'Cena na zapytanie',
+    da: 'Pris efter aftale',
+    fi: 'Hinta pyynnöstä',
+  }
+  return labels[language]
 }
 
 function fallbackNewsPage(language: string, page: number, pageSize: number) {

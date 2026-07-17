@@ -4,7 +4,7 @@ import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
 import VehicleNewsSearch from '@/app/components/VehicleNewsSearch'
-import type { PublicNewsArticle, PublicNewsCategory } from '@/lib/content/vehicle-news'
+import type { PublicNewsArticle, PublicNewsCategory, PublicNewsListing } from '@/lib/content/vehicle-news'
 
 export default function VehicleNewsPage({
   market,
@@ -14,6 +14,7 @@ export default function VehicleNewsPage({
   categories,
   count,
   unavailable,
+  featuredListings,
 }: {
   market: string
   page: number
@@ -22,6 +23,7 @@ export default function VehicleNewsPage({
   categories: PublicNewsCategory[]
   count: number
   unavailable: boolean
+  featuredListings: PublicNewsListing[]
 }) {
   const locale = publicLocale(market)
   const copy = vehicleNewsPageCopy(market)
@@ -32,11 +34,11 @@ export default function VehicleNewsPage({
     <main className="min-h-screen overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={market.toUpperCase()} />
       <VehicleNewsSubnav market={market} categories={categories} activeCategory={safeActiveCategory} />
-      <section className="w-full max-w-full overflow-hidden border-b border-[#dbe4f0] bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)]">
-        <div className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] px-5 py-12 sm:px-8 sm:py-18 lg:py-20">
+      <section className="w-full max-w-full overflow-hidden border-b border-[#dbe4f0] bg-white">
+        <div className="mx-auto w-full min-w-0 max-w-[1120px] px-5 py-9 sm:px-8 sm:py-11">
           <div className="w-full min-w-0 max-w-[330px] sm:max-w-[860px]">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">Autorell insights</p>
-            <h1 className="mt-4 max-w-[330px] break-words text-[34px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-full sm:text-6xl">
+            <h1 className="mt-4 max-w-[330px] break-words text-[34px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-full sm:text-[56px]">
               {copy.title}
             </h1>
             <p className="mt-5 max-w-[330px] break-words text-[17px] leading-8 text-[#475467] [overflow-wrap:anywhere] sm:max-w-[760px] sm:text-lg">
@@ -45,13 +47,13 @@ export default function VehicleNewsPage({
           </div>
         </div>
       </section>
-      <section className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] overflow-hidden px-5 py-10 sm:px-8 sm:py-14">
+      <section className="mx-auto w-full min-w-0 max-w-[1120px] overflow-hidden px-5 py-8 sm:px-8 sm:py-10">
         {unavailable ? (
           <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
             <strong>{copy.preparing}</strong>
           </div>
         ) : null}
-        <VehicleNewsSearch market={market} initialCategory={safeActiveCategory} articles={articles} />
+        <VehicleNewsSearch market={market} initialCategory={safeActiveCategory} articles={articles} featuredListings={featuredListings} />
         <nav className="mt-8 flex items-center justify-between" aria-label="Paginering">
           {page > 1 ? (
             <Link href={`${baseHref}?page=${page - 1}`} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold">

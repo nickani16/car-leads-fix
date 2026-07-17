@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import VehicleNewsPage from '@/app/components/VehicleNewsPage'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
-import { getVehicleNews } from '@/lib/content/vehicle-news'
+import { getVehicleNews, getVehicleNewsFeaturedListings } from '@/lib/content/vehicle-news'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,8 +27,11 @@ export default async function LocalizedVehicleNewsPage({
   if (market !== 'se' && market !== 'de' && !getEuBuyerMarket(market)) notFound()
   const resolvedSearchParams = await searchParams
   const page = Math.max(1, Number(resolvedSearchParams.page || '1') || 1)
-  const data = await getVehicleNews(market, page)
-  return <VehicleNewsPage market={market} page={page} activeCategory={resolvedSearchParams.category || 'all'} {...data} />
+  const [data, featuredListings] = await Promise.all([
+    getVehicleNews(market, page),
+    getVehicleNewsFeaturedListings(market),
+  ])
+  return <VehicleNewsPage market={market} page={page} activeCategory={resolvedSearchParams.category || 'all'} featuredListings={featuredListings} {...data} />
 }
 
 function vehicleNewsMetadataCopy(market: string) {

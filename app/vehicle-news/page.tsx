@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import VehicleNewsPage from '@/app/components/VehicleNewsPage'
-import { getVehicleNews } from '@/lib/content/vehicle-news'
+import { getVehicleNews, getVehicleNewsFeaturedListings } from '@/lib/content/vehicle-news'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +17,9 @@ export default async function EnglishVehicleNewsPage({
 }) {
   const resolvedSearchParams = await searchParams
   const page = Math.max(1, Number(resolvedSearchParams.page || '1') || 1)
-  const data = await getVehicleNews('en', page)
-  return <VehicleNewsPage market="en" page={page} activeCategory={resolvedSearchParams.category || 'all'} {...data} />
+  const [data, featuredListings] = await Promise.all([
+    getVehicleNews('en', page),
+    getVehicleNewsFeaturedListings('en'),
+  ])
+  return <VehicleNewsPage market="en" page={page} activeCategory={resolvedSearchParams.category || 'all'} featuredListings={featuredListings} {...data} />
 }
