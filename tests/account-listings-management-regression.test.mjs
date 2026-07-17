@@ -33,6 +33,13 @@ test('listing management uses server-side filtering, aggregate counts and pagina
   assert.match(migration, /gin_trgm_ops/)
 })
 
+test('single-owner summary RPC receives a uuid string, not an owner id array', () => {
+  assert.match(accountListingManagement, /const ownerIds = normalizeOwnerIds\(userId\)/)
+  assert.match(accountListingManagement, /if \(ownerIds\.length !== 1\) return getAccountListingSummaryForOwners\(admin, ownerIds\)/)
+  assert.match(accountListingManagement, /admin\.rpc\('account_listing_summary', \{ p_user_id: ownerIds\[0\] \}\)/)
+  assert.doesNotMatch(accountListingManagement, /admin\.rpc\('account_listing_summary', \{ p_user_id: userId \}\)/)
+})
+
 test('tabs, debounced search and filters use URL state', () => {
   assert.match(filters, /role="tablist"/)
   assert.match(filters, /role="tab"/)
