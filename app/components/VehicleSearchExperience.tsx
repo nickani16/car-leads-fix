@@ -1637,18 +1637,16 @@ export default function VehicleSearchExperience({
                           </span>
                         ) : null}
                       </div>
-                      <div className="order-3 grid w-full min-w-0 grid-cols-[minmax(0,1fr)_44px] gap-2 sm:order-none sm:block sm:w-[min(420px,48%)]">
-                        <div className="min-w-0">
-                          {renderQuickFilterSelectors()}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setFiltersOpen(false)}
-                          className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
-                          aria-label="Stäng filter"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => setFiltersOpen(false)}
+                        className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
+                        aria-label="Stäng filter"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <div className="order-3 w-full min-w-0 sm:order-none sm:w-[min(420px,48%)]">
+                        {renderQuickFilterSelectors()}
                       </div>
                       <button
                         type="button"
@@ -1903,19 +1901,15 @@ export default function VehicleSearchExperience({
                     <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
                     <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
                   </div>
-                  <div className="grid w-full grid-cols-[minmax(0,1fr)_44px] gap-2">
-                    <div className="min-w-0">
-                      {renderQuickFilterSelectors()}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFiltersOpen(false)}
-                      className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
-                      aria-label="Stäng filter"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFiltersOpen(false)}
+                    className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
+                    aria-label="Stäng filter"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                  <div className="w-full min-w-0">{renderQuickFilterSelectors()}</div>
                 </div>
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   <CollapsibleFilterSection
