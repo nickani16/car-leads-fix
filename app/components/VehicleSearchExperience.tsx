@@ -1632,7 +1632,7 @@ export default function VehicleSearchExperience({
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 relative">
+                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pt-6 sm:px-6 sm:py-4 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[19px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
@@ -1901,7 +1901,7 @@ export default function VehicleSearchExperience({
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
-                <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 py-3 relative">
+                <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 pb-3 pt-6 relative">
                   <div>
                     <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
                     <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
