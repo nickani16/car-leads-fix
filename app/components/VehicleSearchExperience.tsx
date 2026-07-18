@@ -1344,11 +1344,13 @@ export default function VehicleSearchExperience({
       <div className={`grid min-w-0 gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-2'}`}>
         <label className="relative min-w-0">
           <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
-          <ActiveCategoryIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+          <span className="pointer-events-none absolute left-2.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+            <ActiveCategoryIcon className="h-4 w-4" />
+          </span>
           <select
             value={activeCategoryKey}
             onChange={(event) => toggleCategory(event.target.value)}
-            className="h-10 w-full min-w-0 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white py-0 pl-9 pr-8 text-[13px] font-medium text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-11 pr-9 text-[13px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
           >
             {selectableCategories.map((item) => (
               <option key={item.key} value={item.key}>
@@ -1356,17 +1358,17 @@ export default function VehicleSearchExperience({
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
         </label>
         <label className="relative min-w-0">
           <span className="sr-only">{uiText(locale, 'Market', 'Marknad', 'Markt')}</span>
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+          <span className="pointer-events-none absolute left-2.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#eef5ff]">
             <CountryFlag code={marketValue || 'eu'} className="h-4 w-4 rounded-full" />
           </span>
           <select
             value={marketValue}
             onChange={(event) => selectMarket(event.target.value)}
-            className="h-10 w-full min-w-0 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white py-0 pl-9 pr-8 text-[13px] font-medium text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-11 pr-9 text-[13px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
           >
             {countryFilterOptions.map((option) => (
               <option key={option.value || 'eu'} value={option.value}>
@@ -1374,7 +1376,7 @@ export default function VehicleSearchExperience({
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
         </label>
       </div>
     )
