@@ -35,7 +35,7 @@ const homeCopy = {
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
-    sellerCtaTitle: 'Få ditt fordon att synas på marknader med över 360 miljoner människor',
+    sellerCtaTitle: 'Nå över 360 miljoner människor med din fordonsannons.',
     privateTitle: 'Sälj som privatperson',
     privateText:
       'Skapa en gratis annons på några minuter. Betala bara när du vill annonsera längre eller få extra synlighet.',
@@ -52,7 +52,7 @@ const homeCopy = {
     newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
-    sellerCtaTitle: 'Get your vehicle seen in markets with over 360 million people',
+    sellerCtaTitle: 'Reach over 360 million people with your vehicle listing.',
     privateTitle: 'Sell as a private seller',
     privateText:
       'Create a free listing in minutes. Pay only when you want a longer listing period or extra visibility.',
@@ -69,7 +69,7 @@ const homeCopy = {
     newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
-    sellerCtaTitle: 'Machen Sie Ihr Fahrzeug in Märkten mit über 360 Millionen Menschen sichtbar',
+    sellerCtaTitle: 'Erreichen Sie über 360 Millionen Menschen mit Ihrer Fahrzeuganzeige.',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
       'Erstellen Sie in wenigen Minuten eine kostenlose Anzeige. Zahlen Sie nur für längere Laufzeit oder zusätzliche Sichtbarkeit.',
@@ -307,14 +307,14 @@ function HomeSellerAudienceSection({
                   </p>
                   <Link
                     href={card.href}
-                    className={`mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-[8px] px-4 text-sm font-semibold transition ${
+                    className={`group mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-[8px] px-4 text-sm font-semibold transition ${
                       card.variant === 'primary'
                         ? 'bg-[#0866ff] text-white hover:bg-[#075ce5]'
                         : 'border border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
                     }`}
                   >
                     {card.cta}
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
                   </Link>
                 </article>
               ))}
