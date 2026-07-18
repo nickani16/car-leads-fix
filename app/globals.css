@@ -57,6 +57,56 @@ body {
   box-shadow: 0 2px 8px rgba(8, 102, 255, .22);
 }
 
+.autorell-dual-range {
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.autorell-dual-range::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.autorell-dual-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -11.5px;
+  border-radius: 999px;
+  border: 0;
+  background: #0866ff;
+  box-shadow: 0 2px 8px rgba(8, 102, 255, .22);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.autorell-dual-range::-webkit-slider-thumb:active {
+  cursor: grabbing;
+}
+
+.autorell-dual-range::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.autorell-dual-range::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 0;
+  background: #0866ff;
+  box-shadow: 0 2px 8px rgba(8, 102, 255, .22);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.autorell-dual-range::-moz-range-thumb:active {
+  cursor: grabbing;
+}
+
 @keyframes header-word-enter {
   0% {
     opacity: 0;

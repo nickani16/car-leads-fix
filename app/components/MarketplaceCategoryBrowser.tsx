@@ -1896,26 +1896,60 @@ function RangeFilter({
   step: number
   startLabel?: string
 }) {
-  const rangeValue = Number(maxValue || maxLimit)
+  const parsedMin = parseFilterNumber(minValue)
+  const parsedMax = parseFilterNumber(maxValue)
+  const safeMinLimit = Math.min(minLimit, maxLimit)
+  const safeMaxLimit = Math.max(minLimit, maxLimit)
+  const minHandleValue = clampNumber(parsedMin ?? safeMinLimit, safeMinLimit, safeMaxLimit)
+  const maxHandleValue = clampNumber(parsedMax ?? safeMaxLimit, safeMinLimit, safeMaxLimit)
+  const lowerValue = Math.min(minHandleValue, maxHandleValue)
+  const upperValue = Math.max(minHandleValue, maxHandleValue)
+  const rangeSpan = Math.max(safeMaxLimit - safeMinLimit, 1)
+  const lowerPercent = ((lowerValue - safeMinLimit) / rangeSpan) * 100
+  const upperPercent = ((upperValue - safeMinLimit) / rangeSpan) * 100
+  const trackBackground = `linear-gradient(to right, #e8eef6 0%, #e8eef6 ${lowerPercent}%, #0866ff ${lowerPercent}%, #0866ff ${upperPercent}%, #e8eef6 ${upperPercent}%, #e8eef6 100%)`
   const plainNumber = !unit
   const formatRangeValue = (value: string | number) =>
     plainNumber ? String(value) : formatFilterNumber(Number(value), locale)
-  const minDisplay = startLabel || formatRangeValue(minValue || minLimit)
-  const maxDisplay = `${formatRangeValue(maxValue || maxLimit)}+`
+  const minDisplay = !minValue && startLabel ? startLabel : formatRangeValue(lowerValue)
+  const maxDisplay = `${formatRangeValue(upperValue)}${!maxValue ? '+' : ''}`
+
+  const normalizeMinChange = (nextValue: string) => {
+    const nextNumber = clampNumber(Number(nextValue), safeMinLimit, upperValue)
+    onMinChange(nextNumber <= safeMinLimit ? '' : String(nextNumber))
+  }
+
+  const normalizeMaxChange = (nextValue: string) => {
+    const nextNumber = clampNumber(Number(nextValue), lowerValue, safeMaxLimit)
+    onMaxChange(nextNumber >= safeMaxLimit ? '' : String(nextNumber))
+  }
 
   return (
     <FilterGroup title={title}>
       <div className="grid gap-3">
-        <input
-          type="range"
-          min={minLimit}
-          max={maxLimit}
-          step={step}
-          value={rangeValue}
-          onChange={(event) => onMaxChange(event.target.value)}
-          className="autorell-range h-7 w-full accent-[#0866ff]"
-          aria-label={title}
-        />
+        <div className="relative h-8">
+          <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
+          <input
+            type="range"
+            min={safeMinLimit}
+            max={safeMaxLimit}
+            step={step}
+            value={lowerValue}
+            onChange={(event) => normalizeMinChange(event.target.value)}
+            className="autorell-dual-range absolute inset-x-0 top-1/2 z-20 h-7 w-full -translate-y-1/2"
+            aria-label={`${title} min`}
+          />
+          <input
+            type="range"
+            min={safeMinLimit}
+            max={safeMaxLimit}
+            step={step}
+            value={upperValue}
+            onChange={(event) => normalizeMaxChange(event.target.value)}
+            className="autorell-dual-range absolute inset-x-0 top-1/2 z-30 h-7 w-full -translate-y-1/2"
+            aria-label={`${title} max`}
+          />
+        </div>
         <div className="flex items-center justify-between text-xs font-semibold text-[#667085]">
           <span>{minDisplay}</span>
           <span>{maxDisplay}</span>
@@ -2592,6 +2626,19 @@ function mileageRangeChipLabel(
   const min = minValue ? formatMileageAsMil(Number(minValue), locale) : minFallback
   const max = maxValue ? formatMileageAsMil(Number(maxValue), locale) : maxFallback
   return `${min}-${max}`
+}
+
+function parseFilterNumber(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === '') return null
+  const normalized = String(value).replace(/[^\d.-]/g, '')
+  if (!normalized) return null
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min
+  return Math.min(Math.max(value, min), max)
 }
 
 function secondarySearchLabel(slug: string, locale: PublicLocale) {

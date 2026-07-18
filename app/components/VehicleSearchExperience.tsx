@@ -100,7 +100,9 @@ type SavedVehicleSearch = {
     maxPrice: string
     minYear: string
     maxYear: string
+    minMileage: string
     maxMileage: string
+    minOperatingHours?: string
     maxOperatingHours?: string
     fuel: string
     gearbox: string
@@ -477,7 +479,9 @@ export default function VehicleSearchExperience({
   initialMode = 'sale',
   initialMinYear = '',
   initialMaxYear = '',
+  initialMinMileage = '',
   initialMaxMileage = '',
+  initialMinOperatingHours = '',
   initialMaxOperatingHours = '',
   initialFuel = '',
   initialGearbox = '',
@@ -510,7 +514,9 @@ export default function VehicleSearchExperience({
   initialMode?: SearchMode
   initialMinYear?: string
   initialMaxYear?: string
+  initialMinMileage?: string
   initialMaxMileage?: string
+  initialMinOperatingHours?: string
   initialMaxOperatingHours?: string
   initialFuel?: string
   initialGearbox?: string
@@ -564,7 +570,9 @@ export default function VehicleSearchExperience({
       initialMode !== 'sale' ||
       initialMinYear ||
       initialMaxYear ||
+      initialMinMileage ||
       initialMaxMileage ||
+      initialMinOperatingHours ||
       initialMaxOperatingHours ||
       initialFuel ||
       initialGearbox ||
@@ -597,7 +605,9 @@ export default function VehicleSearchExperience({
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
   const [maxYear, setMaxYear] = useState(initialMaxYear)
+  const [minMileage, setMinMileage] = useState(initialMinMileage)
   const [maxMileage, setMaxMileage] = useState(initialMaxMileage)
+  const [minOperatingHours, setMinOperatingHours] = useState(initialMinOperatingHours)
   const [maxOperatingHours, setMaxOperatingHours] = useState(initialMaxOperatingHours)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
@@ -642,7 +652,9 @@ export default function VehicleSearchExperience({
     maxPrice,
     minYear,
     maxYear,
+    minMileage,
     maxMileage,
+    minOperatingHours,
     maxOperatingHours,
     fuel,
     gearbox,
@@ -655,7 +667,7 @@ export default function VehicleSearchExperience({
     leasingPossible,
     equipmentQuery: equipmentQuery.trim(),
     sortBy,
-  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -683,7 +695,9 @@ export default function VehicleSearchExperience({
     setParam('maxPrice', maxPrice)
     setParam('minYear', minYear)
     setParam('maxYear', maxYear)
+    setParam('minMileage', minMileage)
     setParam('maxMileage', maxMileage)
+    setParam('minOperatingHours', minOperatingHours)
     setParam('maxOperatingHours', maxOperatingHours)
     setParam('fuel', fuel)
     setParam('gearbox', gearbox)
@@ -697,7 +711,7 @@ export default function VehicleSearchExperience({
     setParam('equipment', equipmentQuery)
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -733,7 +747,9 @@ export default function VehicleSearchExperience({
       setMaxPrice(restored.maxPrice || '')
       setMinYear(restored.minYear || '')
       setMaxYear(restored.maxYear || '')
+      setMinMileage(restored.minMileage || '')
       setMaxMileage(restored.maxMileage || '')
+      setMinOperatingHours(restored.minOperatingHours || '')
       setMaxOperatingHours(restored.maxOperatingHours || '')
       setMake(restored.make || '')
       setModel(restored.model || '')
@@ -870,7 +886,9 @@ export default function VehicleSearchExperience({
     const maxPriceValue = parseOptionalNumber(maxPrice)
     const minYearValue = parseOptionalNumber(minYear)
     const maxYearValue = parseOptionalNumber(maxYear)
+    const minMileageValue = parseOptionalNumber(minMileage)
     const maxMileageValue = parseOptionalNumber(maxMileage)
+    const minOperatingHoursValue = parseOptionalNumber(minOperatingHours)
     const maxOperatingHoursValue = parseOptionalNumber(maxOperatingHours)
     const matches = searchListings.filter((listing) => {
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
@@ -903,7 +921,9 @@ export default function VehicleSearchExperience({
       const listingYear = parseOptionalNumber(listing.year)
       if (minYearValue !== null && (listingYear === null || listingYear < minYearValue)) return false
       if (maxYearValue !== null && (listingYear === null || listingYear > maxYearValue)) return false
+      if (minMileageValue !== null && (listing.mileageKm === null || listing.mileageKm < minMileageValue)) return false
       if (maxMileageValue !== null && (listing.mileageKm === null || listing.mileageKm > maxMileageValue)) return false
+      if (minOperatingHoursValue !== null && (listing.operatingHours === null || listing.operatingHours < minOperatingHoursValue)) return false
       if (maxOperatingHoursValue !== null && (listing.operatingHours === null || listing.operatingHours > maxOperatingHoursValue)) return false
       if (!normalizedQuery) return true
       const searchableMatches = [
@@ -942,7 +962,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -957,7 +977,9 @@ export default function VehicleSearchExperience({
     setMaxPrice(initialMaxPrice)
     setMinYear(initialMinYear)
     setMaxYear(initialMaxYear)
+    setMinMileage(initialMinMileage)
     setMaxMileage(initialMaxMileage)
+    setMinOperatingHours(initialMinOperatingHours)
     setMaxOperatingHours(initialMaxOperatingHours)
     setMake(initialMake)
     setModel(initialModel)
@@ -1091,7 +1113,10 @@ export default function VehicleSearchExperience({
         maxPrice,
         minYear,
         maxYear,
+        minMileage,
         maxMileage,
+        minOperatingHours,
+        maxOperatingHours,
         fuel,
         gearbox,
         bodyType,
@@ -1191,6 +1216,10 @@ export default function VehicleSearchExperience({
       if (params.has('fuel') || params.has('fuelType')) setFuel(params.get('fuel') || params.get('fuelType') || '')
       if (params.has('minYear')) setMinYear(params.get('minYear') || '')
       if (params.has('maxYear')) setMaxYear(params.get('maxYear') || '')
+      if (params.has('minMileage')) setMinMileage(params.get('minMileage') || '')
+      if (params.has('maxMileage')) setMaxMileage(params.get('maxMileage') || '')
+      if (params.has('minOperatingHours')) setMinOperatingHours(params.get('minOperatingHours') || '')
+      if (params.has('maxOperatingHours')) setMaxOperatingHours(params.get('maxOperatingHours') || '')
       if (params.has('region') || params.has('county')) setRegion(params.get('region') || params.get('county') || '')
       if (params.has('city')) setCity(params.get('city') || '')
       if (params.has('municipality')) setMunicipality(params.get('municipality') || '')
@@ -1238,8 +1267,8 @@ export default function VehicleSearchExperience({
   }
 
   function isTechnicalFilterActive(key: VehicleFilterKey) {
-    if (key === 'mileage') return Boolean(maxMileage)
-    if (key === 'operatingHours') return Boolean(maxOperatingHours)
+    if (key === 'mileage') return Boolean(minMileage || maxMileage)
+    if (key === 'operatingHours') return Boolean(minOperatingHours || maxOperatingHours)
     if (key === 'fuel') return Boolean(fuel)
     if (key === 'gearbox') return Boolean(gearbox)
     if (key === 'bodyType') return Boolean(bodyType)
@@ -1257,9 +1286,9 @@ export default function VehicleSearchExperience({
         <RangeFilter
           key={filter.key}
           title={filterLabel(filter, locale)}
-          minValue=""
+          minValue={minMileage}
           maxValue={maxMileage}
-          onMinChange={() => undefined}
+          onMinChange={setMinMileage}
           onMaxChange={setMaxMileage}
           minLimit={mileageBounds.min}
           maxLimit={mileageBounds.max}
@@ -1273,9 +1302,9 @@ export default function VehicleSearchExperience({
         <RangeFilter
           key={filter.key}
           title={filterLabel(filter, locale)}
-          minValue=""
+          minValue={minOperatingHours}
           maxValue={maxOperatingHours}
-          onMinChange={() => undefined}
+          onMinChange={setMinOperatingHours}
           onMaxChange={setMaxOperatingHours}
           minLimit={0}
           maxLimit={20000}
@@ -1446,8 +1475,14 @@ export default function VehicleSearchExperience({
         setMaxYear('')
       } }
       : null,
-    maxMileage ? { key: 'mileage', label: `Max ${formatMileageAsMil(Number(maxMileage), locale)}`, onRemove: () => setMaxMileage('') } : null,
-    maxOperatingHours ? { key: 'operatingHours', label: `${uiText(locale, 'Max operating hours', 'Max drifttimmar', 'Max. Betriebsstunden')} ${Number(maxOperatingHours).toLocaleString(countNumberLocale(locale))} h`, onRemove: () => setMaxOperatingHours('') } : null,
+    minMileage || maxMileage ? { key: 'mileage', label: `${uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')} ${formatMileageRangeLabel(minMileage, maxMileage, locale)}`, onRemove: () => {
+      setMinMileage('')
+      setMaxMileage('')
+    } } : null,
+    minOperatingHours || maxOperatingHours ? { key: 'operatingHours', label: `${uiText(locale, 'Operating hours', 'Drifttimmar', 'Betriebsstunden')} ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}`, onRemove: () => {
+      setMinOperatingHours('')
+      setMaxOperatingHours('')
+    } } : null,
     verifiedOnly ? { key: 'verified', label: uiText(locale, 'Verified', 'Verifierade', 'Verifiziert'), onRemove: () => setVerifiedOnly(false) } : null,
     fourWheelDrive ? { key: 'fourWheelDrive', label: uiText(locale, 'Four-wheel drive', 'Fyrhjulsdrift', 'Allrad'), onRemove: () => setFourWheelDrive(false) } : null,
     leasingPossible ? { key: 'leasingPossible', label: uiText(locale, 'Leasing possible', 'Leasing möjlig', 'Leasing möglich'), onRemove: () => setLeasingPossible(false) } : null,
@@ -2194,7 +2229,28 @@ function RangeFilter({
   step: number
   startLabel?: string
 }) {
-  const rangeValue = Number(maxValue || maxLimit)
+  const parsedMin = parseOptionalNumber(minValue)
+  const parsedMax = parseOptionalNumber(maxValue)
+  const safeMinLimit = Math.min(minLimit, maxLimit)
+  const safeMaxLimit = Math.max(minLimit, maxLimit)
+  const minHandleValue = clampNumber(parsedMin ?? safeMinLimit, safeMinLimit, safeMaxLimit)
+  const maxHandleValue = clampNumber(parsedMax ?? safeMaxLimit, safeMinLimit, safeMaxLimit)
+  const lowerValue = Math.min(minHandleValue, maxHandleValue)
+  const upperValue = Math.max(minHandleValue, maxHandleValue)
+  const rangeSpan = Math.max(safeMaxLimit - safeMinLimit, 1)
+  const lowerPercent = ((lowerValue - safeMinLimit) / rangeSpan) * 100
+  const upperPercent = ((upperValue - safeMinLimit) / rangeSpan) * 100
+  const trackBackground = `linear-gradient(to right, #e8eef6 0%, #e8eef6 ${lowerPercent}%, #0866ff ${lowerPercent}%, #0866ff ${upperPercent}%, #e8eef6 ${upperPercent}%, #e8eef6 100%)`
+
+  const normalizeMinChange = (nextValue: string) => {
+    const nextNumber = clampNumber(Number(nextValue), safeMinLimit, upperValue)
+    onMinChange(nextNumber <= safeMinLimit ? '' : String(nextNumber))
+  }
+
+  const normalizeMaxChange = (nextValue: string) => {
+    const nextNumber = clampNumber(Number(nextValue), lowerValue, safeMaxLimit)
+    onMaxChange(nextNumber >= safeMaxLimit ? '' : String(nextNumber))
+  }
 
   return (
     <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
@@ -2213,18 +2269,32 @@ function RangeFilter({
           </button>
         ) : null}
       </div>
-      <input
-        type="range"
-        min={minLimit}
-        max={maxLimit}
-        step={step}
-        value={rangeValue}
-        onChange={(event) => onMaxChange(event.target.value)}
-        className="autorell-range h-7 w-full accent-[#0866ff]"
-      />
+      <div className="relative h-8">
+        <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
+        <input
+          type="range"
+          min={safeMinLimit}
+          max={safeMaxLimit}
+          step={step}
+          value={lowerValue}
+          onChange={(event) => normalizeMinChange(event.target.value)}
+          className="autorell-dual-range absolute inset-x-0 top-1/2 z-20 h-7 w-full -translate-y-1/2"
+          aria-label={`${title} min`}
+        />
+        <input
+          type="range"
+          min={safeMinLimit}
+          max={safeMaxLimit}
+          step={step}
+          value={upperValue}
+          onChange={(event) => normalizeMaxChange(event.target.value)}
+          className="autorell-dual-range absolute inset-x-0 top-1/2 z-30 h-7 w-full -translate-y-1/2"
+          aria-label={`${title} max`}
+        />
+      </div>
       <div className="mt-1 flex items-center justify-between text-[13px] font-semibold text-[#101828]">
-        <span>{startLabel || formatFilterNumber(Number(minValue || minLimit))}</span>
-        <span>{formatFilterNumber(Number(maxValue || maxLimit))}{unit ? ` ${unit}` : ''}+</span>
+        <span>{!minValue && startLabel ? startLabel : formatFilterNumber(lowerValue)}</span>
+        <span>{formatFilterNumber(upperValue)}{unit ? ` ${unit}` : ''}{!maxValue ? '+' : ''}</span>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <FilterInput label="Min" value={minValue} onChange={onMinChange} suffix={unit} />
@@ -3401,6 +3471,23 @@ function parseOptionalNumber(value: string | number | null | undefined) {
   if (!normalized) return null
   const parsed = Number(normalized)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min
+  return Math.min(Math.max(value, min), max)
+}
+
+function formatNumberRangeLabel(minValue: string, maxValue: string, unit: string, locale: PublicLocale) {
+  const minText = minValue ? Number(minValue).toLocaleString(countNumberLocale(locale)) : '0'
+  const maxText = maxValue ? Number(maxValue).toLocaleString(countNumberLocale(locale)) : 'max'
+  return `${minText}-${maxText}${unit ? ` ${unit}` : ''}`
+}
+
+function formatMileageRangeLabel(minValue: string, maxValue: string, locale: PublicLocale) {
+  const minText = minValue ? formatMileageAsMil(Number(minValue), locale) : '0'
+  const maxText = maxValue ? formatMileageAsMil(Number(maxValue), locale) : 'max'
+  return `${minText}-${maxText}`
 }
 
 function formatFilterNumber(value: number) {

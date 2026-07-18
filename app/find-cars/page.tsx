@@ -120,7 +120,9 @@ export default async function FindCarsPage({
         initialMode={getSearchMode(resolvedSearchParams)}
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear') || ''}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear') || ''}
+        initialMinMileage={getSearchParam(resolvedSearchParams, 'minMileage') || ''}
         initialMaxMileage={getSearchParam(resolvedSearchParams, 'maxMileage') || ''}
+        initialMinOperatingHours={getSearchParam(resolvedSearchParams, 'minOperatingHours') || ''}
         initialMaxOperatingHours={getSearchParam(resolvedSearchParams, 'maxOperatingHours') || ''}
         initialFuel={getSearchParam(resolvedSearchParams, 'fuel') || ''}
         initialGearbox={getSearchParam(resolvedSearchParams, 'gearbox') || ''}
