@@ -777,6 +777,18 @@ export default function VehicleSearchExperience({
   }, [marketplaceSearchParams])
 
   useEffect(() => {
+    if (!filtersOpen) return undefined
+    const previousBodyOverflow = document.body.style.overflow
+    const previousHtmlOverscroll = document.documentElement.style.overscrollBehavior
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overscrollBehavior = 'none'
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overscrollBehavior = previousHtmlOverscroll
+    }
+  }, [filtersOpen])
+
+  useEffect(() => {
     if (!searchStateReady) return
     const controller = new AbortController()
     const timer = window.setTimeout(async () => {
@@ -1337,20 +1349,16 @@ export default function VehicleSearchExperience({
   }
 
   function renderQuickFilterSelectors(compact = false) {
-    const ActiveCategoryIcon = activeCategoryItem.icon
     const marketValue = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''
 
     return (
       <div className={`grid min-w-0 gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-2'}`}>
         <label className="relative min-w-0">
           <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
-          <span className="pointer-events-none absolute left-2.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">
-            <ActiveCategoryIcon className="h-4 w-4" />
-          </span>
           <select
             value={activeCategoryKey}
             onChange={(event) => toggleCategory(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-11 pr-9 text-[13px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
+            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
           >
             {selectableCategories.map((item) => (
               <option key={item.key} value={item.key}>
@@ -1362,13 +1370,10 @@ export default function VehicleSearchExperience({
         </label>
         <label className="relative min-w-0">
           <span className="sr-only">{uiText(locale, 'Market', 'Marknad', 'Markt')}</span>
-          <span className="pointer-events-none absolute left-2.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#eef5ff]">
-            <CountryFlag code={marketValue || 'eu'} className="h-4 w-4 rounded-full" />
-          </span>
           <select
             value={marketValue}
             onChange={(event) => selectMarket(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-11 pr-9 text-[13px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
+            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
           >
             {countryFilterOptions.map((option) => (
               <option key={option.value || 'eu'} value={option.value}>
