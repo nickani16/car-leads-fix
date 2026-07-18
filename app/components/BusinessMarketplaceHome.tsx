@@ -35,6 +35,15 @@ const homeCopy = {
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
+    sellerCtaTitle: 'Få ditt fordon att synas på marknader med över 360 miljoner människor',
+    privateTitle: 'Sälj som privatperson',
+    privateText:
+      'Kom igång kostnadsfritt och skapa din fordonsannons på några minuter. Betala bara när du vill annonsera längre eller ge annonsen extra synlighet.',
+    privateCta: 'Skapa gratis annons',
+    businessTitle: 'Sälj som företag',
+    businessText:
+      'Samla annonser, fordon och team på en och samma plattform. Skapa annonser manuellt direkt i Autorell eller importera hela fordonslagret smidigt via CSV. Hantera stora annonsvolymer och få full kontroll över ert lager.',
+    businessCta: 'Kom igång som företag',
   },
   en: {
     heroAlt: 'European vehicle marketplace for private and business sellers',
@@ -43,6 +52,15 @@ const homeCopy = {
     newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
+    sellerCtaTitle: 'Get your vehicle seen in markets with over 360 million people',
+    privateTitle: 'Sell as a private seller',
+    privateText:
+      'Start for free and create your vehicle listing in a few minutes. Pay only when you want to advertise for longer or give the listing extra visibility.',
+    privateCta: 'Create free listing',
+    businessTitle: 'Sell as a business',
+    businessText:
+      'Keep listings, vehicles and team workflows in one platform. Create listings manually in Autorell or import your full inventory smoothly via CSV. Manage large listing volumes and keep full control of your stock.',
+    businessCta: 'Get started as a business',
   },
   de: {
     heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
@@ -51,6 +69,15 @@ const homeCopy = {
     newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
+    sellerCtaTitle: 'Machen Sie Ihr Fahrzeug in Märkten mit über 360 Millionen Menschen sichtbar',
+    privateTitle: 'Als Privatperson verkaufen',
+    privateText:
+      'Starten Sie kostenlos und erstellen Sie Ihre Fahrzeuganzeige in wenigen Minuten. Zahlen Sie nur, wenn Sie länger inserieren oder Ihrer Anzeige zusätzliche Sichtbarkeit geben möchten.',
+    privateCta: 'Kostenlose Anzeige erstellen',
+    businessTitle: 'Als Unternehmen verkaufen',
+    businessText:
+      'Bündeln Sie Anzeigen, Fahrzeuge und Teamabläufe auf einer Plattform. Erstellen Sie Anzeigen manuell direkt in Autorell oder importieren Sie Ihren gesamten Fahrzeugbestand bequem per CSV. Verwalten Sie große Anzeigenvolumen und behalten Sie die volle Kontrolle über Ihren Bestand.',
+    businessCta: 'Als Unternehmen starten',
   },
 } as const
 
@@ -215,8 +242,62 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
+      <HomeSellerAudienceSection copy={t} locale={locale} />
+
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+function HomeSellerAudienceSection({
+  copy,
+  locale,
+}: {
+  copy: Record<keyof typeof homeCopy.en, string>
+  locale: PublicLocale
+}) {
+  return (
+    <section className="border-t border-[#e5eaf2] bg-white py-14 sm:py-20">
+      <div className={homeContentContainerClass}>
+        <div className="mx-auto max-w-[1050px]">
+          <h2 className="max-w-[780px] text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-[#101828] sm:text-[46px]">
+            {copy.sellerCtaTitle}
+          </h2>
+
+          <div className="mt-10 grid gap-10 sm:mt-14 md:grid-cols-2 md:gap-20">
+            <div>
+              <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-[#101828] sm:text-[26px]">
+                {copy.privateTitle}
+              </h3>
+              <p className="mt-4 max-w-[480px] text-[16px] leading-7 text-[#344054]">
+                {copy.privateText}
+              </p>
+              <Link
+                href={localizePublicHref(locale, '/account/listings/new')}
+                className="mt-7 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-[#101828] px-5 text-sm font-semibold text-white transition hover:bg-[#1d2939]"
+              >
+                {copy.privateCta}
+              </Link>
+            </div>
+
+            <div>
+              <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-[#101828] sm:text-[26px]">
+                {copy.businessTitle}
+              </h3>
+              <p className="mt-4 max-w-[520px] text-[16px] leading-7 text-[#344054]">
+                {copy.businessText}
+              </p>
+              <Link
+                href={localizePublicHref(locale, '/register?onboarding=1&account=business')}
+                className="mt-7 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-[#101828] px-5 text-sm font-semibold text-white transition hover:bg-[#1d2939]"
+              >
+                {copy.businessCta}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
