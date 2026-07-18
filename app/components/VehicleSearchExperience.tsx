@@ -588,7 +588,7 @@ export default function VehicleSearchExperience({
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const [marketLocationOpen, setMarketLocationOpen] = useState(true)
+  const [marketLocationOpen, setMarketLocationOpen] = useState(false)
   const [priceYearOpen, setPriceYearOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
@@ -1712,7 +1712,7 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                     <CollapsibleFilterSection
-                      title={uiText(locale, 'Market and location', 'Marknad och plats', 'Markt und Standort')}
+                      title={uiText(locale, 'Market', 'Marknad', 'Markt')}
                       summary={marketSummary}
                       open={marketLocationOpen}
                       onToggle={() => setMarketLocationOpen((open) => !open)}
@@ -1991,7 +1991,7 @@ export default function VehicleSearchExperience({
                     </div>
                   </CollapsibleFilterSection>
                   <CollapsibleFilterSection
-                    title={uiText(locale, 'Market and location', 'Marknad och plats', 'Markt und Standort')}
+                    title={uiText(locale, 'Market', 'Marknad', 'Markt')}
                     summary={marketSummary}
                     open={marketLocationOpen}
                     onToggle={() => setMarketLocationOpen((open) => !open)}
@@ -2114,7 +2114,7 @@ function CollapsibleFilterSection({
           <span className="block text-[14px] font-semibold text-[#101828]">{title}</span>
           <span className="mt-0.5 block text-xs font-normal text-[#667085]">{summary}</span>
         </span>
-        <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[#f3f6fb] text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
+        <span className={`grid h-8 w-8 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
           <ChevronDown className="h-4 w-4" />
         </span>
       </button>
@@ -3541,4 +3541,3 @@ function titleCaseLocation(value: string) {
     )
     .join(' ')
 }
-
