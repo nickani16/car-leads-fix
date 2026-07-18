@@ -1330,6 +1330,30 @@ export default function VehicleSearchExperience({
             setModel('')
           }} />
           <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+          <div className="grid gap-3 sm:hidden sm:col-span-2">
+            <RangeFilter
+              title={uiText(locale, 'Price', 'Pris', 'Preis')}
+              minValue={minPrice}
+              maxValue={maxPrice}
+              onMinChange={setMinPrice}
+              onMaxChange={setMaxPrice}
+              minLimit={priceBounds.min}
+              maxLimit={priceBounds.max}
+              unit="SEK"
+              step={1000}
+            />
+            <RangeFilter
+              title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+              minValue={minYear}
+              maxValue={maxYear}
+              onMinChange={setMinYear}
+              onMaxChange={setMaxYear}
+              minLimit={1950}
+              maxLimit={new Date().getFullYear() + 1}
+              step={1}
+              startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
+            />
+          </div>
           {primaryFilters.map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
         </div>
         {moreFilters.length ? (
@@ -1687,37 +1711,39 @@ export default function VehicleSearchExperience({
                     >
                       {renderCategoryFilterSections()}
                     </CollapsibleFilterSection>
-                    <CollapsibleFilterSection
-                      title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
-                      summary={priceYearSummary}
-                      open={priceYearOpen}
-                      onToggle={() => setPriceYearOpen((open) => !open)}
-                    >
-                      <div className="grid gap-3">
-                        <RangeFilter
-                          title={uiText(locale, 'Price', 'Pris', 'Preis')}
-                          minValue={minPrice}
-                          maxValue={maxPrice}
-                          onMinChange={setMinPrice}
-                          onMaxChange={setMaxPrice}
-                          minLimit={priceBounds.min}
-                          maxLimit={priceBounds.max}
-                          unit="SEK"
-                          step={1000}
-                        />
-                        <RangeFilter
-                          title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
-                          minValue={minYear}
-                          maxValue={maxYear}
-                          onMinChange={setMinYear}
-                          onMaxChange={setMaxYear}
-                          minLimit={1950}
-                          maxLimit={new Date().getFullYear() + 1}
-                          step={1}
-                          startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
-                        />
-                      </div>
-                    </CollapsibleFilterSection>
+                    <div className="hidden sm:block">
+                      <CollapsibleFilterSection
+                        title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
+                        summary={priceYearSummary}
+                        open={priceYearOpen}
+                        onToggle={() => setPriceYearOpen((open) => !open)}
+                      >
+                        <div className="grid gap-3">
+                          <RangeFilter
+                            title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                            minValue={minPrice}
+                            maxValue={maxPrice}
+                            onMinChange={setMinPrice}
+                            onMaxChange={setMaxPrice}
+                            minLimit={priceBounds.min}
+                            maxLimit={priceBounds.max}
+                            unit="SEK"
+                            step={1000}
+                          />
+                          <RangeFilter
+                            title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                            minValue={minYear}
+                            maxValue={maxYear}
+                            onMinChange={setMinYear}
+                            onMaxChange={setMaxYear}
+                            minLimit={1950}
+                            maxLimit={new Date().getFullYear() + 1}
+                            step={1}
+                            startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
+                          />
+                        </div>
+                      </CollapsibleFilterSection>
+                    </div>
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Condition, seller type and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')}
                       summary={sellerSummary}
@@ -1925,37 +1951,39 @@ export default function VehicleSearchExperience({
                   >
                     {renderCategoryFilterSections()}
                   </CollapsibleFilterSection>
-                  <CollapsibleFilterSection
-                    title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
-                    summary={priceYearSummary}
-                    open={priceYearOpen}
-                    onToggle={() => setPriceYearOpen((open) => !open)}
-                  >
-                    <div className="grid gap-3">
-                      <RangeFilter
-                        title={uiText(locale, 'Price', 'Pris', 'Preis')}
-                        minValue={minPrice}
-                        maxValue={maxPrice}
-                        onMinChange={setMinPrice}
-                        onMaxChange={setMaxPrice}
-                        minLimit={priceBounds.min}
-                        maxLimit={priceBounds.max}
-                        unit="SEK"
-                        step={1000}
-                      />
-                      <RangeFilter
-                        title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
-                        minValue={minYear}
-                        maxValue={maxYear}
-                        onMinChange={setMinYear}
-                        onMaxChange={setMaxYear}
-                        minLimit={1950}
-                        maxLimit={new Date().getFullYear() + 1}
-                        step={1}
-                        startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
-                      />
-                    </div>
-                  </CollapsibleFilterSection>
+                  <div className="hidden sm:block">
+                    <CollapsibleFilterSection
+                      title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
+                      summary={priceYearSummary}
+                      open={priceYearOpen}
+                      onToggle={() => setPriceYearOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        <RangeFilter
+                          title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                          minValue={minPrice}
+                          maxValue={maxPrice}
+                          onMinChange={setMinPrice}
+                          onMaxChange={setMaxPrice}
+                          minLimit={priceBounds.min}
+                          maxLimit={priceBounds.max}
+                          unit="SEK"
+                          step={1000}
+                        />
+                        <RangeFilter
+                          title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                          minValue={minYear}
+                          maxValue={maxYear}
+                          onMinChange={setMinYear}
+                          onMaxChange={setMaxYear}
+                          minLimit={1950}
+                          maxLimit={new Date().getFullYear() + 1}
+                          step={1}
+                          startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
+                        />
+                      </div>
+                    </CollapsibleFilterSection>
+                  </div>
                   <CollapsibleFilterSection
                     title={uiText(locale, 'Condition, seller type and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')}
                     summary={sellerSummary}
@@ -2103,7 +2131,7 @@ function FilterInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{label}</span>
+      <span className="mb-1.5 hidden text-[13px] font-semibold text-[#101828] sm:block">{label}</span>
       <span className="flex h-11 items-center rounded-[8px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
         <input
           value={value}
