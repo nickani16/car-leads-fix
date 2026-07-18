@@ -257,13 +257,14 @@ function matchesSelectedMarkets(country: string, markets: string[]) {
 
 function normalizeSavedCategories(values: unknown) {
   const rawValues = Array.isArray(values) ? values : []
-  return [
+  const normalized = [
     ...new Set(
       rawValues
         .map((value) => String(value || '').trim())
         .filter((value) => categories.some((category) => category.key === value && value !== 'all')),
     ),
   ]
+  return normalized.slice(0, 1)
 }
 
 function readMarketplaceReturnSearchState(locale: PublicLocale) {
@@ -524,10 +525,9 @@ export default function VehicleSearchExperience({
   initialEquipmentQuery?: string
   initialSortBy?: string
 }) {
-  const safeInitialCategory = categories.some((item) => item.key === initialCategory) ? initialCategory : 'all'
-  const safeInitialCategories = initialCategories.length
-    ? [...new Set(initialCategories.filter((item) => categories.some((category) => category.key === item && item !== 'all')))]
-    : safeInitialCategory === 'all' ? [] : [safeInitialCategory]
+  const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
+  const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
+  const safeInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
   const safeInitialMarkets = normalizeMarketSelection(
@@ -587,10 +587,11 @@ export default function VehicleSearchExperience({
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [marketOpen, setMarketOpen] = useState(false)
   const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const [commonFiltersOpen, setCommonFiltersOpen] = useState(true)
-  const [openCategoryFilters, setOpenCategoryFilters] = useState<string[]>([])
+  const [marketLocationOpen, setMarketLocationOpen] = useState(true)
+  const [priceYearOpen, setPriceYearOpen] = useState(true)
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
+  const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileDockVisible, setMobileDockVisible] = useState(true)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
@@ -728,7 +729,7 @@ export default function VehicleSearchExperience({
       setSearchInput(restored.query || '')
       setDebouncedSearchInput(restored.query || '')
       setQuery(restored.query || '')
-      setSelectedCategories(normalizeSavedCategories(restored.categories))
+      setSelectedCategories(normalizeSavedCategories(restored.categories).length ? normalizeSavedCategories(restored.categories) : ['cars'])
       setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
       setMarketOverride(true)
       setMinPrice(restored.minPrice || '')
@@ -818,12 +819,12 @@ export default function VehicleSearchExperience({
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
-  const categorySummary = selectedCategoryItems.length
-    ? selectedCategoryItems.map((item) => categoryText(item, locale)).join(', ')
-    : uiText(locale, 'All categories', 'Alla kategorier', 'Alle Kategorien')
-  const selectedTechnicalCategoryItems = selectedCategoryItems.filter((item) => item.key !== 'all')
+  const selectableCategories = categories.filter((item) => item.key !== 'all')
+  const activeCategoryItem = selectedCategoryItems[0] || categories.find((item) => item.key === 'cars')!
+  const activeCategoryKey = activeCategoryItem.key
+  const categorySummary = categoryText(activeCategoryItem, locale)
   const filterProfile = [
-    ...new Set((selectedCategories.length ? selectedCategories : ['all']).flatMap((category) => categoryFilterProfile(category).map((filter) => filter.key))),
+    ...new Set(categoryFilterProfile(activeCategoryKey).map((filter) => filter.key)),
   ]
 
   const optionListings = useMemo(
@@ -961,10 +962,6 @@ export default function VehicleSearchExperience({
     setSavedSearchMessage('')
   }
 
-  function isSmallViewport() {
-    return typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
-  }
-
   function clearUnsupportedCategoryFilters(nextCategories: string[]) {
     const supported = new Set(nextCategories.flatMap((category) => categoryFilterProfile(category).map((filter) => filter.key)))
     const clearAllTechnical = nextCategories.length === 0
@@ -976,22 +973,31 @@ export default function VehicleSearchExperience({
     if (clearAllTechnical || !supported.has('color')) setColor('')
     if (clearAllTechnical || !supported.has('fourWheelDrive')) setFourWheelDrive(false)
     if (clearAllTechnical || !supported.has('leasingPossible')) setLeasingPossible(false)
+    if (clearAllTechnical || !supported.has('equipment')) setEquipmentQuery('')
   }
 
   function toggleCategory(nextCategory: string) {
+    if (nextCategory === 'all') return
+    if (nextCategory === activeCategoryKey) {
+      setCategoriesOpen(false)
+      return
+    }
     setMake('')
     setModel('')
-    setSelectedCategories((current) => {
-      const next = nextCategory === 'all'
-        ? []
-        : current.includes(nextCategory)
-        ? current.filter((item) => item !== nextCategory)
-        : [...current, nextCategory]
-      clearUnsupportedCategoryFilters(next)
-      setOpenCategoryFilters((open) => open.filter((category) => next.includes(category)))
-      if (next.length === 1 && !isSmallViewport()) setOpenCategoryFilters(next)
-      return next
-    })
+    setMaxMileage('')
+    setMaxOperatingHours('')
+    setFuel('')
+    setGearbox('')
+    setBodyType('')
+    setColor('')
+    setFourWheelDrive(false)
+    setLeasingPossible(false)
+    setEquipmentQuery('')
+    const next = [nextCategory]
+    clearUnsupportedCategoryFilters(next)
+    setSelectedCategories(next)
+    setMoreFiltersOpen(false)
+    setCategoriesOpen(false)
   }
 
   function toggleMarket(value: string) {
@@ -1199,7 +1205,7 @@ export default function VehicleSearchExperience({
       if (params.has('city')) setCity(params.get('city') || '')
       if (params.has('municipality')) setMunicipality(params.get('municipality') || '')
       const nextCategories = params.get('categories')
-      if (nextCategories !== null) setSelectedCategories(normalizeSavedCategories(nextCategories.split(',')))
+      if (nextCategories !== null) setSelectedCategories(normalizeSavedCategories(nextCategories.split(',')).length ? normalizeSavedCategories(nextCategories.split(',')) : ['cars'])
       const nextMarkets = params.get('markets')
       if (nextMarkets !== null) {
         setSelectedMarkets(normalizeMarketSelection(nextMarkets.split(','), safeAutomaticCountry))
@@ -1218,17 +1224,18 @@ export default function VehicleSearchExperience({
     return false
   }
 
-  const commonSummary = [
+  const priceYearSummary = [
     minPrice || maxPrice ? uiText(locale, 'Price', 'Pris', 'Preis') : '',
     minYear || maxYear ? uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') : '',
+  ].filter(Boolean).join(' · ') || uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')
+
+  const sellerSummary = [
     condition ? uiText(locale, 'Condition', 'Skick', 'Zustand') : '',
     sellerType !== 'all' ? uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp') : '',
     verifiedOnly ? uiText(locale, 'Verified', 'Verifierade', 'Verifiziert') : '',
-  ].filter(Boolean).join(' · ') || uiText(locale, 'Price, year, condition and seller', 'Pris, år, skick och säljare', 'Preis, Jahr, Zustand und Verkäufer')
+  ].filter(Boolean).join(' · ') || uiText(locale, 'Condition, seller and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')
 
-  const technicalIntro = selectedTechnicalCategoryItems.length
-    ? uiText(locale, 'Technical filters follow your selected categories.', 'Tekniska filter följer valda kategorier.', 'Technische Filter folgen den gewählten Kategorien.')
-    : uiText(locale, 'Choose one or more categories to show technical filters.', 'Välj en eller flera kategorier för tekniska filter.', 'Wählen Sie Kategorien für technische Filter.')
+  const categoryFilterSummary = uiText(locale, 'Make, model and key details', 'Märke, modell och viktigaste egenskaper', 'Marke, Modell und wichtigste Eigenschaften')
 
   function categoryScopedOptions(categoryKey: string, field: 'fuelType' | 'gearbox' | 'bodyType' | 'condition' | 'color') {
     const values = optionListings
@@ -1252,6 +1259,7 @@ export default function VehicleSearchExperience({
     if (key === 'color') return Boolean(color)
     if (key === 'fourWheelDrive') return fourWheelDrive
     if (key === 'leasingPossible') return leasingPossible
+    if (key === 'equipment') return Boolean(equipmentQuery.trim())
     return false
   }
 
@@ -1309,40 +1317,53 @@ export default function VehicleSearchExperience({
     if (filter.key === 'leasingPossible') {
       return <ToggleFilter key={filter.key} label={filterLabel(filter, locale)} checked={leasingPossible} onChange={setLeasingPossible} />
     }
+    if (filter.key === 'equipment') {
+      return (
+        <label key={filter.key} className="block sm:col-span-2">
+          <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{filterLabel(filter, locale)}</span>
+          <input
+            value={equipmentQuery}
+            onChange={(event) => setEquipmentQuery(event.target.value)}
+            placeholder={uiText(locale, 'E.g. tow bar, navigation, four-wheel drive', 'Ex. dragkrok, navigation, fyrhjulsdrift', 'z.B. Anhängerkupplung, Navigation, Allrad')}
+            className="h-11 w-full rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[12px] font-normal outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
+          />
+        </label>
+      )
+    }
     return null
   }
 
   function renderCategoryFilterSections() {
-    if (!selectedTechnicalCategoryItems.length) {
-      return <p className="rounded-[10px] border border-dashed border-[#d7e2f2] bg-[#f8fbff] px-3 py-3 text-[13px] font-normal text-[#667085]">{technicalIntro}</p>
-    }
+    const profile = categoryFilterProfile(activeCategoryKey)
+    const primaryKeys = new Set(categoryPrimaryFilterKeys(activeCategoryKey))
+    const primaryFilters = profile.filter((filter) => primaryKeys.has(filter.key))
+    const moreFilters = profile.filter((filter) => !primaryKeys.has(filter.key))
+    const moreCount = activeTechnicalFilterCount(moreFilters)
 
-    return selectedTechnicalCategoryItems.map((item) => {
-      const profile = categoryFilterProfile(item.key)
-      const filters = profile
-      const count = activeTechnicalFilterCount(profile)
-      const summary = count
-        ? `${categoryText(item, locale)} · ${count} ${uiText(locale, 'active filters', 'aktiva filter', 'aktive Filter')}`
-        : uiText(locale, 'Category-specific technical filters', 'Kategorispecifika tekniska filter', 'Kategoriespezifische technische Filter')
-
-      if (!filters.length) return null
-      return (
-        <CollapsibleFilterSection
-          key={item.key}
-          title={categoryText(item, locale)}
-          summary={summary}
-          open={openCategoryFilters.includes(item.key)}
-          onToggle={() => setOpenCategoryFilters((open) => {
-            if (open.includes(item.key)) return open.filter((category) => category !== item.key)
-            return selectedTechnicalCategoryItems.length > 1 ? [item.key] : [...open, item.key]
-          })}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {filters.map((filter) => renderTechnicalFilterControl(filter, item.key))}
-          </div>
-        </CollapsibleFilterSection>
-      )
-    })
+    return (
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
+            setMake(value)
+            setModel('')
+          }} />
+          <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+          {primaryFilters.map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
+        </div>
+        {moreFilters.length ? (
+          <CollapsibleFilterSection
+            title={uiText(locale, 'Show more filters', 'Visa fler filter', 'Weitere Filter anzeigen')}
+            summary={moreCount ? `${moreCount} ${uiText(locale, 'active filters', 'aktiva filter', 'aktive Filter')}` : uiText(locale, 'More details for this vehicle type', 'Fler detaljer för vald fordonstyp', 'Weitere Details für diese Fahrzeugart')}
+            open={moreFiltersOpen}
+            onToggle={() => setMoreFiltersOpen((open) => !open)}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {moreFilters.map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
+            </div>
+          </CollapsibleFilterSection>
+        ) : null}
+      </div>
+    )
   }
 
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
@@ -1353,7 +1374,8 @@ export default function VehicleSearchExperience({
         label: categoryText(item, locale, true),
         icon: <Icon className="h-4 w-4" />,
         onRemove: () => {
-          setSelectedCategories((current) => current.filter((category) => category !== item.key))
+          setSelectedCategories(['cars'])
+          clearUnsupportedCategoryFilters(['cars'])
           setMake('')
           setModel('')
         },
@@ -1660,29 +1682,15 @@ export default function VehicleSearchExperience({
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
                     <CollapsibleFilterSection
-                      title={uiText(locale, 'Market', 'Marknad', 'Markt')}
-                      summary={marketSummary}
-                      open={marketOpen}
-                      onToggle={() => setMarketOpen((open) => !open)}
-                    >
-                      <MarketOptionGrid
-                        markets={selectedMarkets}
-                        locale={locale}
-                        onToggle={toggleMarket}
-                      />
-                    </CollapsibleFilterSection>
-                    <CollapsibleFilterSection
-                      title={uiText(locale, 'Categories', 'Kategorier', 'Kategorien')}
+                      title={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
                       summary={categorySummary}
                       open={categoriesOpen}
                       onToggle={() => setCategoriesOpen((open) => !open)}
                     >
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {categories.map((item) => {
+                        {selectableCategories.map((item) => {
                           const Icon = item.icon
-                          const active = item.key === 'all'
-                            ? selectedCategories.length === 0
-                            : selectedCategories.includes(item.key)
+                          const active = activeCategoryKey === item.key
                           return (
                             <button
                               key={item.key}
@@ -1704,19 +1712,24 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                     <CollapsibleFilterSection
-                      title={uiText(locale, 'Common filters', 'Gemensamma filter', 'Allgemeine Filter')}
-                      summary={commonSummary}
-                      open={commonFiltersOpen}
-                      onToggle={() => setCommonFiltersOpen((open) => !open)}
+                      title={uiText(locale, 'Market and location', 'Marknad och plats', 'Markt und Standort')}
+                      summary={marketSummary}
+                      open={marketLocationOpen}
+                      onToggle={() => setMarketLocationOpen((open) => !open)}
                     >
-                      <div className="space-y-4">
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
-                            setMake(value)
-                            setModel('')
-                          }} />
-                          <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
-                        </div>
+                      <MarketOptionGrid
+                        markets={selectedMarkets}
+                        locale={locale}
+                        onToggle={toggleMarket}
+                      />
+                    </CollapsibleFilterSection>
+                    <CollapsibleFilterSection
+                      title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
+                      summary={priceYearSummary}
+                      open={priceYearOpen}
+                      onToggle={() => setPriceYearOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
                         <RangeFilter
                           title={uiText(locale, 'Price', 'Pris', 'Preis')}
                           minValue={minPrice}
@@ -1739,38 +1752,37 @@ export default function VehicleSearchExperience({
                           step={1}
                           startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                         />
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions('', 'condition')} />
-                          <FilterSelect
-                            label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
-                            value={sellerType}
-                            onChange={setSellerType}
-                            options={[
-                              { value: 'all', label: uiText(locale, 'All sellers', 'Alla säljare', 'Alle Verkäufer') },
-                              { value: 'business', label: uiText(locale, 'Business', 'Företag', 'Unternehmen') },
-                              { value: 'private', label: uiText(locale, 'Private seller', 'Privatperson', 'Privatperson') },
-                            ]}
-                          />
-                          <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
-                          <label className="block sm:col-span-2">
-                            <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{uiText(locale, 'Equipment, tow bar etc.', 'Utrustning, drag m.m.', 'Ausstattung, Anhängerkupplung usw.')}</span>
-                            <input
-                              value={equipmentQuery}
-                              onChange={(event) => setEquipmentQuery(event.target.value)}
-                              placeholder={uiText(locale, 'E.g. tow bar, navigation, four-wheel drive', 'Ex. Dragkrok, navigation, fyrhjulsdrift', 'z.B. Anhängerkupplung, Navigation, Allrad')}
-                              className="h-11 w-full rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[12px] font-normal outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
-                            />
-                          </label>
-                        </div>
                       </div>
                     </CollapsibleFilterSection>
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-[15px] font-semibold text-[#101828]">{uiText(locale, 'Technical filters', 'Tekniska filter', 'Technische Filter')}</h3>
-                        <p className="mt-1 text-xs font-normal text-[#667085]">{technicalIntro}</p>
-                      </div>
+                    <CollapsibleFilterSection
+                      title={categoryText(activeCategoryItem, locale)}
+                      summary={categoryFilterSummary}
+                      open
+                      onToggle={() => undefined}
+                    >
                       {renderCategoryFilterSections()}
-                    </div>
+                    </CollapsibleFilterSection>
+                    <CollapsibleFilterSection
+                      title={uiText(locale, 'Condition, seller type and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')}
+                      summary={sellerSummary}
+                      open={sellerFiltersOpen}
+                      onToggle={() => setSellerFiltersOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                        <FilterSelect
+                          label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
+                          value={sellerType}
+                          onChange={setSellerType}
+                          options={[
+                            { value: 'all', label: uiText(locale, 'All sellers', 'Alla säljare', 'Alle Verkäufer') },
+                            { value: 'business', label: uiText(locale, 'Business', 'Företag', 'Unternehmen') },
+                            { value: 'private', label: uiText(locale, 'Private seller', 'Privatperson', 'Privatperson') },
+                          ]}
+                        />
+                        <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
+                      </div>
+                    </CollapsibleFilterSection>
                   </div>
                       <div className="grid grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-7 sm:py-4">
                         <button
@@ -1949,29 +1961,15 @@ export default function VehicleSearchExperience({
                 </div>
                 <div className="h-[calc(100%-116px)] space-y-7 overflow-y-auto px-4 py-5">
                   <CollapsibleFilterSection
-                    title={uiText(locale, 'Market', 'Marknad', 'Markt')}
-                    summary={marketSummary}
-                    open={marketOpen}
-                    onToggle={() => setMarketOpen((open) => !open)}
-                  >
-                    <MarketOptionGrid
-                      markets={selectedMarkets}
-                      locale={locale}
-                      onToggle={toggleMarket}
-                    />
-                  </CollapsibleFilterSection>
-                  <CollapsibleFilterSection
-                    title={uiText(locale, 'Categories', 'Kategorier', 'Kategorien')}
+                    title={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
                     summary={categorySummary}
                     open={categoriesOpen}
                     onToggle={() => setCategoriesOpen((open) => !open)}
                   >
                     <div className="grid grid-cols-2 gap-3">
-                      {categories.map((item) => {
+                      {selectableCategories.map((item) => {
                         const Icon = item.icon
-                        const active = item.key === 'all'
-                          ? selectedCategories.length === 0
-                          : selectedCategories.includes(item.key)
+                        const active = activeCategoryKey === item.key
                         return (
                           <button
                             key={item.key}
@@ -1993,17 +1991,24 @@ export default function VehicleSearchExperience({
                     </div>
                   </CollapsibleFilterSection>
                   <CollapsibleFilterSection
-                    title={uiText(locale, 'Common filters', 'Gemensamma filter', 'Allgemeine Filter')}
-                    summary={commonSummary}
-                    open={commonFiltersOpen}
-                    onToggle={() => setCommonFiltersOpen((open) => !open)}
+                    title={uiText(locale, 'Market and location', 'Marknad och plats', 'Markt und Standort')}
+                    summary={marketSummary}
+                    open={marketLocationOpen}
+                    onToggle={() => setMarketLocationOpen((open) => !open)}
+                  >
+                    <MarketOptionGrid
+                      markets={selectedMarkets}
+                      locale={locale}
+                      onToggle={toggleMarket}
+                    />
+                  </CollapsibleFilterSection>
+                  <CollapsibleFilterSection
+                    title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
+                    summary={priceYearSummary}
+                    open={priceYearOpen}
+                    onToggle={() => setPriceYearOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
-                        setMake(value)
-                        setModel('')
-                      }} />
-                      <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
                       <RangeFilter
                         title={uiText(locale, 'Price', 'Pris', 'Preis')}
                         minValue={minPrice}
@@ -2026,7 +2031,24 @@ export default function VehicleSearchExperience({
                         step={1}
                         startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                       />
-                      <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions('', 'condition')} />
+                    </div>
+                  </CollapsibleFilterSection>
+                  <CollapsibleFilterSection
+                    title={categoryText(activeCategoryItem, locale)}
+                    summary={categoryFilterSummary}
+                    open
+                    onToggle={() => undefined}
+                  >
+                    {renderCategoryFilterSections()}
+                  </CollapsibleFilterSection>
+                  <CollapsibleFilterSection
+                    title={uiText(locale, 'Condition, seller type and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')}
+                    summary={sellerSummary}
+                    open={sellerFiltersOpen}
+                    onToggle={() => setSellerFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
                       <FilterSelect
                         label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                         value={sellerType}
@@ -2040,13 +2062,6 @@ export default function VehicleSearchExperience({
                       <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
                     </div>
                   </CollapsibleFilterSection>
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="text-[15px] font-semibold text-[#101828]">{uiText(locale, 'Technical filters', 'Tekniska filter', 'Technische Filter')}</h3>
-                      <p className="mt-1 text-xs font-normal text-[#667085]">{technicalIntro}</p>
-                    </div>
-                    {renderCategoryFilterSections()}
-                  </div>
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3">
                   <button
@@ -3193,11 +3208,11 @@ function normalizeSearchMapLocationName(value: string) {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-type VehicleFilterKey = 'mileage' | 'operatingHours' | 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'color' | 'fourWheelDrive' | 'leasingPossible'
+type VehicleFilterKey = 'mileage' | 'operatingHours' | 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'color' | 'fourWheelDrive' | 'leasingPossible' | 'equipment'
 
 type CategoryFilterDefinition = {
   key: VehicleFilterKey
-  type: 'range' | 'select' | 'toggle'
+  type: 'range' | 'select' | 'toggle' | 'text'
   label: {
     en: string
     sv: string
@@ -3213,62 +3228,93 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 40 },
-    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Kaross', de: 'Karosserie' }, apiParam: 'bodyType', order: 50 },
+    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Kaross', de: 'Karosserie' }, apiParam: 'bodyType', order: 40 },
+    { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 50 },
+    { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
+    { key: 'equipment', type: 'text', label: { en: 'Equipment', sv: 'Utrustning', de: 'Ausstattung' }, apiParam: 'equipment', order: 80 },
   ],
   vans: [
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 40 },
-    { key: 'bodyType', type: 'select', label: { en: 'Vehicle type', sv: 'Fordonstyp', de: 'Fahrzeugtyp' }, apiParam: 'bodyType', order: 50 },
+    { key: 'bodyType', type: 'select', label: { en: 'Van type', sv: 'Transportbilstyp', de: 'Transportertyp' }, apiParam: 'bodyType', order: 40 },
+    { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 50 },
+    { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
+    { key: 'equipment', type: 'text', label: { en: 'Cargo equipment', sv: 'Lastutrustning', de: 'Ladeausstattung' }, apiParam: 'equipment', order: 80 },
   ],
   motorcycles: [
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
-    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
-    { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'bodyType', type: 'select', label: { en: 'Motorcycle type', sv: 'Motorcykeltyp', de: 'Motorradtyp' }, apiParam: 'bodyType', order: 40 },
-    { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 60 },
+    { key: 'bodyType', type: 'select', label: { en: 'Motorcycle type', sv: 'Motorcykeltyp', de: 'Motorradtyp' }, apiParam: 'bodyType', order: 20 },
+    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 30 },
+    { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 40 },
+    { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 50 },
+    { key: 'equipment', type: 'text', label: { en: 'Accessories', sv: 'Tillbehör', de: 'Zubehör' }, apiParam: 'equipment', order: 60 },
   ],
   motorhomes: [
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
-    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
-    { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'bodyType', type: 'select', label: { en: 'Motorhome type', sv: 'Husbilstyp', de: 'Wohnmobiltyp' }, apiParam: 'bodyType', order: 40 },
+    { key: 'bodyType', type: 'select', label: { en: 'Motorhome type', sv: 'Husbilstyp', de: 'Wohnmobiltyp' }, apiParam: 'bodyType', order: 20 },
+    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 30 },
+    { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 40 },
+    { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 50 },
+    { key: 'equipment', type: 'text', label: { en: 'Living equipment', sv: 'Boendeutrustning', de: 'Wohnraumausstattung' }, apiParam: 'equipment', order: 60 },
   ],
   caravans: [
     { key: 'bodyType', type: 'select', label: { en: 'Caravan type', sv: 'Husvagnstyp', de: 'Wohnwagentyp' }, apiParam: 'bodyType', order: 10 },
+    { key: 'equipment', type: 'text', label: { en: 'Living equipment', sv: 'Boendeutrustning', de: 'Wohnraumausstattung' }, apiParam: 'equipment', order: 20 },
   ],
   trucks: [
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
-    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
-    { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'bodyType', type: 'select', label: { en: 'Truck type', sv: 'Lastbilstyp', de: 'Lkw-Typ' }, apiParam: 'bodyType', order: 40 },
+    { key: 'bodyType', type: 'select', label: { en: 'Truck type', sv: 'Lastbilstyp', de: 'Lkw-Typ' }, apiParam: 'bodyType', order: 20 },
+    { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 30 },
+    { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 40 },
+    { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 50 },
+    { key: 'equipment', type: 'text', label: { en: 'Body and equipment', sv: 'Påbyggnad och utrustning', de: 'Aufbau und Ausstattung' }, apiParam: 'equipment', order: 60 },
   ],
   agriculture: [
-    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 5, unit: 'h' },
-    { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 10 },
-    { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 20 },
-    { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 30 },
+    { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 10 },
+    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 20, unit: 'h' },
+    { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 30 },
+    { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 40 },
+    { key: 'equipment', type: 'text', label: { en: 'Implements and equipment', sv: 'Redskap och utrustning', de: 'Anbaugeräte und Ausstattung' }, apiParam: 'equipment', order: 50 },
   ],
   construction: [
-    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 5, unit: 'h' },
-    { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 10 },
-    { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 20 },
-    { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 30 },
+    { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 10 },
+    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 20, unit: 'h' },
+    { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 30 },
+    { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 40 },
+    { key: 'equipment', type: 'text', label: { en: 'Attachments and equipment', sv: 'Tillbehör och utrustning', de: 'Anbaugeräte und Ausstattung' }, apiParam: 'equipment', order: 50 },
   ],
   'electric-bikes': [
     { key: 'bodyType', type: 'select', label: { en: 'Bike type', sv: 'Cykeltyp', de: 'Fahrradtyp' }, apiParam: 'bodyType', order: 10 },
+    { key: 'equipment', type: 'text', label: { en: 'Equipment', sv: 'Utrustning', de: 'Ausstattung' }, apiParam: 'equipment', order: 20 },
   ],
   'e-scooters': [
     { key: 'bodyType', type: 'select', label: { en: 'Scooter type', sv: 'Sparkcykeltyp', de: 'Rollertyp' }, apiParam: 'bodyType', order: 10 },
+    { key: 'equipment', type: 'text', label: { en: 'Equipment', sv: 'Utrustning', de: 'Ausstattung' }, apiParam: 'equipment', order: 20 },
   ],
+}
+
+const categoryPrimaryFilterDefinitions: Record<string, VehicleFilterKey[]> = {
+  cars: ['bodyType', 'fuel', 'gearbox', 'mileage'],
+  vans: ['bodyType', 'fuel', 'gearbox', 'mileage'],
+  motorcycles: ['bodyType', 'mileage', 'fuel'],
+  motorhomes: ['bodyType', 'mileage', 'fuel'],
+  caravans: ['bodyType'],
+  trucks: ['bodyType', 'mileage', 'fuel', 'gearbox'],
+  agriculture: ['bodyType', 'operatingHours', 'fuel'],
+  construction: ['bodyType', 'operatingHours', 'fuel'],
+  'electric-bikes': ['bodyType'],
+  'e-scooters': ['bodyType'],
 }
 
 function categoryFilterProfile(category: string): CategoryFilterDefinition[] {
   return [...(categoryFilterDefinitions[category] || [])].sort((a, b) => a.order - b.order)
+}
+
+function categoryPrimaryFilterKeys(category: string): VehicleFilterKey[] {
+  return categoryPrimaryFilterDefinitions[category] || categoryFilterProfile(category).slice(0, 4).map((filter) => filter.key)
 }
 
 function filterLabel(filter: CategoryFilterDefinition, locale: PublicLocale) {
@@ -3495,5 +3541,4 @@ function titleCaseLocation(value: string) {
     )
     .join(' ')
 }
-
 
