@@ -7,7 +7,6 @@ import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
   Bookmark,
-  Check,
   ChevronDown,
   Columns2,
   Expand,
@@ -587,8 +586,6 @@ export default function VehicleSearchExperience({
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const [marketLocationOpen, setMarketLocationOpen] = useState(false)
   const [priceYearOpen, setPriceYearOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
@@ -822,7 +819,6 @@ export default function VehicleSearchExperience({
   const selectableCategories = categories.filter((item) => item.key !== 'all')
   const activeCategoryItem = selectedCategoryItems[0] || categories.find((item) => item.key === 'cars')!
   const activeCategoryKey = activeCategoryItem.key
-  const categorySummary = categoryText(activeCategoryItem, locale)
   const filterProfile = [
     ...new Set(categoryFilterProfile(activeCategoryKey).map((filter) => filter.key)),
   ]
@@ -979,7 +975,6 @@ export default function VehicleSearchExperience({
   function toggleCategory(nextCategory: string) {
     if (nextCategory === 'all') return
     if (nextCategory === activeCategoryKey) {
-      setCategoriesOpen(false)
       return
     }
     setMake('')
@@ -997,28 +992,16 @@ export default function VehicleSearchExperience({
     clearUnsupportedCategoryFilters(next)
     setSelectedCategories(next)
     setMoreFiltersOpen(false)
-    setCategoriesOpen(false)
   }
 
-  function toggleMarket(value: string) {
+  function selectMarket(value: string) {
     setMake('')
     setModel('')
     setRegion('')
     setCity('')
     setMunicipality('')
-    if (!value) {
-      setSelectedMarkets([])
-      setMarketOverride(true)
-      return
-    }
-    setSelectedMarkets((current) => {
-      const normalized = normalizeMarketSelection(current)
-      const next = normalized.includes(value)
-        ? normalized.filter((item) => item !== value)
-        : [...normalized, value]
-      setMarketOverride(true)
-      return next
-    })
+    setSelectedMarkets(value ? [value] : [])
+    setMarketOverride(true)
   }
 
   function removeMarket(value: string) {
@@ -1366,6 +1349,50 @@ export default function VehicleSearchExperience({
     )
   }
 
+  function renderQuickFilterSelectors(compact = false) {
+    const ActiveCategoryIcon = activeCategoryItem.icon
+    const marketValue = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''
+
+    return (
+      <div className={`grid min-w-0 gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <label className="relative min-w-0">
+          <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
+          <ActiveCategoryIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]" />
+          <select
+            value={activeCategoryKey}
+            onChange={(event) => toggleCategory(event.target.value)}
+            className="h-10 w-full min-w-0 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white py-0 pl-9 pr-8 text-[13px] font-medium text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+          >
+            {selectableCategories.map((item) => (
+              <option key={item.key} value={item.key}>
+                {categoryText(item, locale)}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+        </label>
+        <label className="relative min-w-0">
+          <span className="sr-only">{uiText(locale, 'Market', 'Marknad', 'Markt')}</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+            <CountryFlag code={marketValue || 'eu'} className="h-4 w-4 rounded-full" />
+          </span>
+          <select
+            value={marketValue}
+            onChange={(event) => selectMarket(event.target.value)}
+            className="h-10 w-full min-w-0 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white py-0 pl-9 pr-8 text-[13px] font-medium text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+          >
+            {countryFilterOptions.map((option) => (
+              <option key={option.value || 'eu'} value={option.value}>
+                {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+        </label>
+      </div>
+    )
+  }
+
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
     ...selectedCategoryItems.map((item) => {
       const Icon = item.icon
@@ -1645,7 +1672,7 @@ export default function VehicleSearchExperience({
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="flex items-center justify-between border-b border-[#e1e9f5] px-4 py-3 sm:px-6 sm:py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] px-4 py-3 sm:px-6 sm:py-4">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[19px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
@@ -1654,6 +1681,9 @@ export default function VehicleSearchExperience({
                             {activeFilters.length}
                           </span>
                         ) : null}
+                      </div>
+                      <div className="order-3 w-full min-w-0 sm:order-none sm:w-[min(420px,48%)]">
+                        {renderQuickFilterSelectors()}
                       </div>
                       <button
                         type="button"
@@ -1681,48 +1711,6 @@ export default function VehicleSearchExperience({
                       )}
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
-                    <CollapsibleFilterSection
-                      title={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
-                      summary={categorySummary}
-                      open={categoriesOpen}
-                      onToggle={() => setCategoriesOpen((open) => !open)}
-                    >
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {selectableCategories.map((item) => {
-                          const Icon = item.icon
-                          const active = activeCategoryKey === item.key
-                          return (
-                            <button
-                              key={item.key}
-                              type="button"
-                              onClick={() => toggleCategory(item.key)}
-                              className={`flex min-h-[74px] flex-col items-center justify-center gap-2 rounded-[10px] border px-3 py-3 text-center transition ${
-                                active
-                                  ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                                  : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
-                              }`}
-                            >
-                              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[9px] ${active ? 'bg-white' : 'bg-[#f3f6fb]'}`}>
-                                <Icon className="h-4 w-4" />
-                              </span>
-                              <span className="block min-w-0 max-w-full text-[13px] font-medium leading-tight">{categoryText(item, locale)}</span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </CollapsibleFilterSection>
-                    <CollapsibleFilterSection
-                      title={uiText(locale, 'Market', 'Marknad', 'Markt')}
-                      summary={marketSummary}
-                      open={marketLocationOpen}
-                      onToggle={() => setMarketLocationOpen((open) => !open)}
-                    >
-                      <MarketOptionGrid
-                        markets={selectedMarkets}
-                        locale={locale}
-                        onToggle={toggleMarket}
-                      />
-                    </CollapsibleFilterSection>
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
                       summary={priceYearSummary}
@@ -1945,7 +1933,7 @@ export default function VehicleSearchExperience({
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
-                <div className="flex items-center justify-between border-b border-[#edf1f6] px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] px-4 py-3">
                   <div>
                     <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
                     <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
@@ -1958,50 +1946,11 @@ export default function VehicleSearchExperience({
                   >
                     <X className="h-4 w-4" />
                   </button>
+                  <div className="w-full">
+                    {renderQuickFilterSelectors()}
+                  </div>
                 </div>
-                <div className="h-[calc(100%-116px)] space-y-7 overflow-y-auto px-4 py-5">
-                  <CollapsibleFilterSection
-                    title={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
-                    summary={categorySummary}
-                    open={categoriesOpen}
-                    onToggle={() => setCategoriesOpen((open) => !open)}
-                  >
-                    <div className="grid grid-cols-2 gap-3">
-                      {selectableCategories.map((item) => {
-                        const Icon = item.icon
-                        const active = activeCategoryKey === item.key
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            onClick={() => toggleCategory(item.key)}
-                            className={`flex min-h-[74px] flex-col items-center justify-center gap-2 rounded-[10px] border px-3 py-3 text-center transition ${
-                              active
-                                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                                : 'border-[#d0d5dd] bg-white text-[#101828]'
-                            }`}
-                          >
-                            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[9px] ${active ? 'bg-white' : 'bg-[#f3f6fb]'}`}>
-                              <Icon className="h-4 w-4" />
-                            </span>
-                            <span className="max-w-full text-[13px] font-medium leading-tight">{categoryText(item, locale)}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </CollapsibleFilterSection>
-                  <CollapsibleFilterSection
-                    title={uiText(locale, 'Market', 'Marknad', 'Markt')}
-                    summary={marketSummary}
-                    open={marketLocationOpen}
-                    onToggle={() => setMarketLocationOpen((open) => !open)}
-                  >
-                    <MarketOptionGrid
-                      markets={selectedMarkets}
-                      locale={locale}
-                      onToggle={toggleMarket}
-                    />
-                  </CollapsibleFilterSection>
+                <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   <CollapsibleFilterSection
                     title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
                     summary={priceYearSummary}
@@ -2120,42 +2069,6 @@ function CollapsibleFilterSection({
       </button>
       {open ? <div className="mt-3">{children}</div> : null}
     </section>
-  )
-}
-
-function MarketOptionGrid({
-  markets,
-  locale,
-  onToggle,
-}: {
-  markets: string[]
-  locale: PublicLocale
-  onToggle: (value: string) => void
-}) {
-  const selectedMarkets = normalizeMarketSelection(markets)
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {countryFilterOptions.map((option) => {
-        const selected = option.value ? selectedMarkets.includes(option.value) : selectedMarkets.length === 0
-        return (
-          <button
-            key={option.value || 'eu'}
-            type="button"
-            onClick={() => onToggle(option.value)}
-            className={`flex min-h-11 items-center justify-center rounded-[8px] border px-2 text-center text-[12px] font-normal leading-tight transition sm:px-3 ${
-              selected
-                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff]'
-            }`}
-          >
-            <span className="min-w-0 truncate">
-              {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
-            </span>
-            {selected ? <Check className="ml-1.5 h-4 w-4 shrink-0" /> : null}
-          </button>
-        )
-      })}
-    </div>
   )
 }
 
