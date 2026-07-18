@@ -163,11 +163,11 @@ export default async function BusinessMarketplaceHome({
       <section className="-mt-[2px] bg-white pt-0">
         <div className="relative min-h-[665px] overflow-visible bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
           <Image
-            src="/autorell-home-hero-storgatan.jpg"
+            src="/autorell-home-hero-street-cars.jpg"
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover object-[center_58%]"
             sizes="100vw"
           />
           <div
