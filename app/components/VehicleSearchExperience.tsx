@@ -1225,8 +1225,6 @@ export default function VehicleSearchExperience({
     verifiedOnly ? uiText(locale, 'Verified', 'Verifierade', 'Verifiziert') : '',
   ].filter(Boolean).join(' · ') || uiText(locale, 'Condition, seller and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')
 
-  const categoryFilterSummary = uiText(locale, 'Make, model and key details', 'Märke, modell och viktigaste egenskaper', 'Marke, Modell und wichtigste Eigenschaften')
-
   function categoryScopedOptions(categoryKey: string, field: 'fuelType' | 'gearbox' | 'bodyType' | 'condition' | 'color') {
     const values = optionListings
       .filter((listing) => !categoryKey || listing.category === categoryKey)
@@ -1713,7 +1711,6 @@ export default function VehicleSearchExperience({
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
                     <CollapsibleFilterSection
                       title={categoryText(activeCategoryItem, locale)}
-                      summary={categoryFilterSummary}
                       open
                       onToggle={() => undefined}
                     >
@@ -1953,7 +1950,6 @@ export default function VehicleSearchExperience({
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   <CollapsibleFilterSection
                     title={categoryText(activeCategoryItem, locale)}
-                    summary={categoryFilterSummary}
                     open
                     onToggle={() => undefined}
                   >
@@ -2048,7 +2044,7 @@ function CollapsibleFilterSection({
   children,
 }: {
   title: string
-  summary: string
+  summary?: string
   open: boolean
   onToggle: () => void
   children: ReactNode
@@ -2063,7 +2059,7 @@ function CollapsibleFilterSection({
       >
         <span>
           <span className="block text-[14px] font-semibold text-[#101828]">{title}</span>
-          <span className="mt-0.5 block text-xs font-normal text-[#667085]">{summary}</span>
+          {summary ? <span className="mt-0.5 block text-xs font-normal text-[#667085]">{summary}</span> : null}
         </span>
         <span className={`grid h-8 w-8 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
           <ChevronDown className="h-4 w-4" />
