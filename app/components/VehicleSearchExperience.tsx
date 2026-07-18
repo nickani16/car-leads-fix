@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
@@ -21,7 +21,7 @@ import {
   Star,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
@@ -2217,6 +2217,8 @@ function RangeFilter({
   step: number
   startLabel?: string
 }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [activeHandle, setActiveHandle] = useState<'min' | 'max' | null>(null)
   const parsedMin = parseOptionalNumber(minValue)
   const parsedMax = parseOptionalNumber(maxValue)
   const safeMinLimit = Math.min(minLimit, maxLimit)
@@ -2230,15 +2232,49 @@ function RangeFilter({
   const upperPercent = ((upperValue - safeMinLimit) / rangeSpan) * 100
   const trackBackground = `linear-gradient(to right, #e8eef6 0%, #e8eef6 ${lowerPercent}%, #0866ff ${lowerPercent}%, #0866ff ${upperPercent}%, #e8eef6 ${upperPercent}%, #e8eef6 100%)`
 
-  const normalizeMinChange = (nextValue: string) => {
+  const normalizeMinChange = useCallback((nextValue: string) => {
     const nextNumber = clampNumber(Number(nextValue), safeMinLimit, upperValue)
     onMinChange(nextNumber <= safeMinLimit ? '' : String(nextNumber))
-  }
+  }, [onMinChange, safeMinLimit, upperValue])
 
-  const normalizeMaxChange = (nextValue: string) => {
+  const normalizeMaxChange = useCallback((nextValue: string) => {
     const nextNumber = clampNumber(Number(nextValue), lowerValue, safeMaxLimit)
     onMaxChange(nextNumber >= safeMaxLimit ? '' : String(nextNumber))
-  }
+  }, [lowerValue, onMaxChange, safeMaxLimit])
+
+  const valueFromClientX = useCallback((clientX: number) => {
+    const rect = trackRef.current?.getBoundingClientRect()
+    if (!rect || rect.width <= 0) return safeMinLimit
+    const ratio = clampNumber((clientX - rect.left) / rect.width, 0, 1)
+    const rawValue = safeMinLimit + ratio * (safeMaxLimit - safeMinLimit)
+    return snapToStep(rawValue, step, safeMinLimit, safeMaxLimit)
+  }, [safeMaxLimit, safeMinLimit, step])
+
+  const updateHandleFromClientX = useCallback((handle: 'min' | 'max', clientX: number) => {
+    const nextValue = valueFromClientX(clientX)
+    if (handle === 'min') {
+      normalizeMinChange(String(nextValue))
+    } else {
+      normalizeMaxChange(String(nextValue))
+    }
+  }, [normalizeMaxChange, normalizeMinChange, valueFromClientX])
+
+  useEffect(() => {
+    if (!activeHandle) return
+    const handlePointerMove = (event: PointerEvent) => {
+      event.preventDefault()
+      updateHandleFromClientX(activeHandle, event.clientX)
+    }
+    const handlePointerUp = () => setActiveHandle(null)
+    window.addEventListener('pointermove', handlePointerMove, { passive: false })
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [activeHandle, lowerValue, upperValue, safeMinLimit, safeMaxLimit, step, updateHandleFromClientX])
 
   return (
     <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
@@ -2257,27 +2293,46 @@ function RangeFilter({
           </button>
         ) : null}
       </div>
-      <div className="relative h-8">
+      <div
+        ref={trackRef}
+        className="relative h-9 touch-none"
+        onPointerDown={(event) => {
+          const nextValue = valueFromClientX(event.clientX)
+          const nextHandle = Math.abs(nextValue - lowerValue) <= Math.abs(nextValue - upperValue) ? 'min' : 'max'
+          setActiveHandle(nextHandle)
+          updateHandleFromClientX(nextHandle, event.clientX)
+        }}
+      >
         <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
-        <input
-          type="range"
-          min={safeMinLimit}
-          max={safeMaxLimit}
-          step={step}
-          value={lowerValue}
-          onChange={(event) => normalizeMinChange(event.target.value)}
-          className="autorell-dual-range absolute inset-x-0 top-1/2 z-20 h-7 w-full -translate-y-1/2"
+        <button
+          type="button"
+          className="absolute top-1/2 z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0866ff] shadow-[0_3px_10px_rgba(8,102,255,.24)] outline-none ring-4 ring-white transition focus-visible:ring-[#dbeafe]"
+          style={{ left: `${lowerPercent}%` }}
           aria-label={`${title} min`}
+          aria-valuemin={safeMinLimit}
+          aria-valuemax={upperValue}
+          aria-valuenow={lowerValue}
+          role="slider"
+          onPointerDown={(event) => {
+            event.stopPropagation()
+            setActiveHandle('min')
+          }}
+          onKeyDown={(event) => handleRangeHandleKeyDown(event, lowerValue, step, safeMinLimit, upperValue, normalizeMinChange)}
         />
-        <input
-          type="range"
-          min={safeMinLimit}
-          max={safeMaxLimit}
-          step={step}
-          value={upperValue}
-          onChange={(event) => normalizeMaxChange(event.target.value)}
-          className="autorell-dual-range absolute inset-x-0 top-1/2 z-30 h-7 w-full -translate-y-1/2"
+        <button
+          type="button"
+          className="absolute top-1/2 z-30 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0866ff] shadow-[0_3px_10px_rgba(8,102,255,.24)] outline-none ring-4 ring-white transition focus-visible:ring-[#dbeafe]"
+          style={{ left: `${upperPercent}%` }}
           aria-label={`${title} max`}
+          aria-valuemin={lowerValue}
+          aria-valuemax={safeMaxLimit}
+          aria-valuenow={upperValue}
+          role="slider"
+          onPointerDown={(event) => {
+            event.stopPropagation()
+            setActiveHandle('max')
+          }}
+          onKeyDown={(event) => handleRangeHandleKeyDown(event, upperValue, step, lowerValue, safeMaxLimit, normalizeMaxChange)}
         />
       </div>
       <div className="mt-1 flex items-center justify-between text-[13px] font-semibold text-[#101828]">
@@ -3464,6 +3519,34 @@ function parseOptionalNumber(value: string | number | null | undefined) {
 function clampNumber(value: number, min: number, max: number) {
   if (!Number.isFinite(value)) return min
   return Math.min(Math.max(value, min), max)
+}
+
+function snapToStep(value: number, step: number, min: number, max: number) {
+  const safeStep = Number.isFinite(step) && step > 0 ? step : 1
+  const snapped = Math.round((value - min) / safeStep) * safeStep + min
+  return clampNumber(snapped, min, max)
+}
+
+function handleRangeHandleKeyDown(
+  event: KeyboardEvent<HTMLButtonElement>,
+  currentValue: number,
+  step: number,
+  min: number,
+  max: number,
+  onChange: (value: string) => void,
+) {
+  if (!['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+  event.preventDefault()
+  if (event.key === 'Home') {
+    onChange(String(min))
+    return
+  }
+  if (event.key === 'End') {
+    onChange(String(max))
+    return
+  }
+  const direction = event.key === 'ArrowLeft' || event.key === 'ArrowDown' ? -1 : 1
+  onChange(String(snapToStep(currentValue + direction * step, step, min, max)))
 }
 
 function formatNumberRangeLabel(minValue: string, maxValue: string, unit: string, locale: PublicLocale) {
