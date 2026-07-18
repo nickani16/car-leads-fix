@@ -1004,19 +1004,6 @@ export default function VehicleSearchExperience({
     setMarketOverride(true)
   }
 
-  function removeMarket(value: string) {
-    setMake('')
-    setModel('')
-    setRegion('')
-    setCity('')
-    setMunicipality('')
-    setSelectedMarkets((current) => {
-      const next = normalizeMarketSelection(current).filter((item) => item !== value)
-      setMarketOverride(true)
-      return next
-    })
-  }
-
   async function saveCurrentSearch() {
     if (savingSearch) return
     setSavingSearch(true)
@@ -1394,40 +1381,6 @@ export default function VehicleSearchExperience({
   }
 
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
-    ...selectedCategoryItems.map((item) => {
-      const Icon = item.icon
-      return {
-        key: `category-${item.key}`,
-        label: categoryText(item, locale, true),
-        icon: <Icon className="h-4 w-4" />,
-        onRemove: () => {
-          setSelectedCategories(['cars'])
-          clearUnsupportedCategoryFilters(['cars'])
-          setMake('')
-          setModel('')
-        },
-      }
-    }),
-    ...(marketOverride
-      ? selectedMarketCodes.length
-        ? selectedMarketCodes.map((code) => ({
-            key: `market-${code}`,
-            label: getEuCountryName(code, locale),
-            icon: <CountryFlag code={code} className="h-4 w-4 rounded-full" />,
-            onRemove: () => removeMarket(code),
-          }))
-        : [{
-            key: 'market-eu',
-            label: uiText(locale, 'All of Europe', 'Hela Europa', 'Ganz Europa'),
-            icon: <CountryFlag code="eu" className="h-4 w-4 rounded-full" />,
-            onRemove: () => {
-              setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
-              setMarketOverride(false)
-              setMake('')
-              setModel('')
-            },
-          }]
-      : []),
     make ? { key: 'make', label: make, onRemove: () => {
       setMake('')
       setModel('')
