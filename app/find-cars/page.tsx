@@ -72,6 +72,7 @@ export default async function FindCarsPage({
         model: listing.model || '',
         year: listing.model_year ? String(listing.model_year) : null,
         mileageKm: listing.mileage_km,
+        operatingHours: listing.operating_hours,
         fuelType: listing.fuel_type,
         gearbox: listing.gearbox,
         bodyType: listing.body_type,
@@ -120,6 +121,7 @@ export default async function FindCarsPage({
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear') || ''}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear') || ''}
         initialMaxMileage={getSearchParam(resolvedSearchParams, 'maxMileage') || ''}
+        initialMaxOperatingHours={getSearchParam(resolvedSearchParams, 'maxOperatingHours') || ''}
         initialFuel={getSearchParam(resolvedSearchParams, 'fuel') || ''}
         initialGearbox={getSearchParam(resolvedSearchParams, 'gearbox') || ''}
         initialBodyType={getSearchParam(resolvedSearchParams, 'bodyType') || ''}

@@ -37,6 +37,7 @@ export type MarketplaceSearchInput = {
   minYear?: string | number | null
   maxYear?: string | number | null
   maxMileage?: string | number | null
+  maxOperatingHours?: string | number | null
   fuel?: string | null
   fuelType?: string | null
   gearbox?: string | null
@@ -298,6 +299,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     minYear: positiveNumber(input.minYear),
     maxYear: positiveNumber(input.maxYear),
     maxMileage: positiveNumber(input.maxMileage),
+    maxOperatingHours: positiveNumber(input.maxOperatingHours),
     sort,
     cursor,
     page: clampInt(input.page, 1, 10_000, 1),
@@ -417,6 +419,7 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.minYear !== null) query = query.gte('model_year', filters.minYear)
   if (filters.maxYear !== null) query = query.lte('model_year', filters.maxYear)
   if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
+  if (filters.maxOperatingHours !== null) query = query.lte('operating_hours', filters.maxOperatingHours)
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     for (const token of marketplaceSearchTokens(filters.q)) {

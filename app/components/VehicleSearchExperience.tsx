@@ -102,6 +102,7 @@ type SavedVehicleSearch = {
     minYear: string
     maxYear: string
     maxMileage: string
+    maxOperatingHours?: string
     fuel: string
     gearbox: string
     bodyType: string
@@ -126,6 +127,7 @@ export type VehicleSearchListing = {
   model: string
   year: string | null
   mileageKm: number | null
+  operatingHours: number | null
   fuelType: string | null
   gearbox: string | null
   bodyType: string | null
@@ -476,6 +478,7 @@ export default function VehicleSearchExperience({
   initialMinYear = '',
   initialMaxYear = '',
   initialMaxMileage = '',
+  initialMaxOperatingHours = '',
   initialFuel = '',
   initialGearbox = '',
   initialBodyType = '',
@@ -508,6 +511,7 @@ export default function VehicleSearchExperience({
   initialMinYear?: string
   initialMaxYear?: string
   initialMaxMileage?: string
+  initialMaxOperatingHours?: string
   initialFuel?: string
   initialGearbox?: string
   initialBodyType?: string
@@ -562,6 +566,7 @@ export default function VehicleSearchExperience({
       initialMinYear ||
       initialMaxYear ||
       initialMaxMileage ||
+      initialMaxOperatingHours ||
       initialFuel ||
       initialGearbox ||
       initialBodyType ||
@@ -595,6 +600,7 @@ export default function VehicleSearchExperience({
   const [minYear, setMinYear] = useState(initialMinYear)
   const [maxYear, setMaxYear] = useState(initialMaxYear)
   const [maxMileage, setMaxMileage] = useState(initialMaxMileage)
+  const [maxOperatingHours, setMaxOperatingHours] = useState(initialMaxOperatingHours)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
   const [region, setRegion] = useState(initialRegion)
@@ -639,6 +645,7 @@ export default function VehicleSearchExperience({
     minYear,
     maxYear,
     maxMileage,
+    maxOperatingHours,
     fuel,
     gearbox,
     bodyType,
@@ -650,7 +657,7 @@ export default function VehicleSearchExperience({
     leasingPossible,
     equipmentQuery: equipmentQuery.trim(),
     sortBy,
-  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -679,6 +686,7 @@ export default function VehicleSearchExperience({
     setParam('minYear', minYear)
     setParam('maxYear', maxYear)
     setParam('maxMileage', maxMileage)
+    setParam('maxOperatingHours', maxOperatingHours)
     setParam('fuel', fuel)
     setParam('gearbox', gearbox)
     setParam('bodyType', bodyType)
@@ -691,7 +699,7 @@ export default function VehicleSearchExperience({
     setParam('equipment', equipmentQuery)
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -728,6 +736,7 @@ export default function VehicleSearchExperience({
       setMinYear(restored.minYear || '')
       setMaxYear(restored.maxYear || '')
       setMaxMileage(restored.maxMileage || '')
+      setMaxOperatingHours(restored.maxOperatingHours || '')
       setMake(restored.make || '')
       setModel(restored.model || '')
       setRegion(restored.region || '')
@@ -845,6 +854,7 @@ export default function VehicleSearchExperience({
     const minYearValue = parseOptionalNumber(minYear)
     const maxYearValue = parseOptionalNumber(maxYear)
     const maxMileageValue = parseOptionalNumber(maxMileage)
+    const maxOperatingHoursValue = parseOptionalNumber(maxOperatingHours)
     const matches = searchListings.filter((listing) => {
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
@@ -877,6 +887,7 @@ export default function VehicleSearchExperience({
       if (minYearValue !== null && (listingYear === null || listingYear < minYearValue)) return false
       if (maxYearValue !== null && (listingYear === null || listingYear > maxYearValue)) return false
       if (maxMileageValue !== null && (listing.mileageKm === null || listing.mileageKm > maxMileageValue)) return false
+      if (maxOperatingHoursValue !== null && (listing.operatingHours === null || listing.operatingHours > maxOperatingHoursValue)) return false
       if (!normalizedQuery) return true
       const searchableMatches = [
         listing.title,
@@ -914,7 +925,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -930,6 +941,7 @@ export default function VehicleSearchExperience({
     setMinYear(initialMinYear)
     setMaxYear(initialMaxYear)
     setMaxMileage(initialMaxMileage)
+    setMaxOperatingHours(initialMaxOperatingHours)
     setMake(initialMake)
     setModel(initialModel)
     setRegion(initialRegion)
@@ -957,10 +969,10 @@ export default function VehicleSearchExperience({
     const supported = new Set(nextCategories.flatMap((category) => categoryFilterProfile(category).map((filter) => filter.key)))
     const clearAllTechnical = nextCategories.length === 0
     if (clearAllTechnical || !supported.has('mileage')) setMaxMileage('')
+    if (clearAllTechnical || !supported.has('operatingHours')) setMaxOperatingHours('')
     if (clearAllTechnical || !supported.has('fuel')) setFuel('')
     if (clearAllTechnical || !supported.has('gearbox')) setGearbox('')
     if (clearAllTechnical || !supported.has('bodyType')) setBodyType('')
-    if (clearAllTechnical || !supported.has('condition')) setCondition('')
     if (clearAllTechnical || !supported.has('color')) setColor('')
     if (clearAllTechnical || !supported.has('fourWheelDrive')) setFourWheelDrive(false)
     if (clearAllTechnical || !supported.has('leasingPossible')) setLeasingPossible(false)
@@ -1206,16 +1218,13 @@ export default function VehicleSearchExperience({
     return false
   }
 
-  const sharedTechnicalKeys = selectedTechnicalCategoryItems.length > 1
-    ? intersectCategoryFilters(selectedTechnicalCategoryItems.map((item) => item.key)).map((filter) => filter.key)
-    : []
-
   const commonSummary = [
     minPrice || maxPrice ? uiText(locale, 'Price', 'Pris', 'Preis') : '',
     minYear || maxYear ? uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') : '',
+    condition ? uiText(locale, 'Condition', 'Skick', 'Zustand') : '',
     sellerType !== 'all' ? uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp') : '',
     verifiedOnly ? uiText(locale, 'Verified', 'Verifierade', 'Verifiziert') : '',
-  ].filter(Boolean).join(' · ') || uiText(locale, 'Price, year, seller and area', 'Pris, år, säljare och område', 'Preis, Jahr, Verkäufer und Gebiet')
+  ].filter(Boolean).join(' · ') || uiText(locale, 'Price, year, condition and seller', 'Pris, år, skick och säljare', 'Preis, Jahr, Zustand und Verkäufer')
 
   const technicalIntro = selectedTechnicalCategoryItems.length
     ? uiText(locale, 'Technical filters follow your selected categories.', 'Tekniska filter följer valda kategorier.', 'Technische Filter folgen den gewählten Kategorien.')
@@ -1235,6 +1244,7 @@ export default function VehicleSearchExperience({
 
   function isTechnicalFilterActive(key: VehicleFilterKey) {
     if (key === 'mileage') return Boolean(maxMileage)
+    if (key === 'operatingHours') return Boolean(maxOperatingHours)
     if (key === 'fuel') return Boolean(fuel)
     if (key === 'gearbox') return Boolean(gearbox)
     if (key === 'bodyType') return Boolean(bodyType)
@@ -1259,6 +1269,22 @@ export default function VehicleSearchExperience({
           maxLimit={mileageBounds.max}
           unit={filter.unit || 'km'}
           step={1000}
+        />
+      )
+    }
+    if (filter.key === 'operatingHours') {
+      return (
+        <RangeFilter
+          key={filter.key}
+          title={filterLabel(filter, locale)}
+          minValue=""
+          maxValue={maxOperatingHours}
+          onMinChange={() => undefined}
+          onMaxChange={setMaxOperatingHours}
+          minLimit={0}
+          maxLimit={20000}
+          unit={filter.unit || 'h'}
+          step={100}
         />
       )
     }
@@ -1293,9 +1319,7 @@ export default function VehicleSearchExperience({
 
     return selectedTechnicalCategoryItems.map((item) => {
       const profile = categoryFilterProfile(item.key)
-      const filters = selectedTechnicalCategoryItems.length > 1
-        ? profile.filter((filter) => !sharedTechnicalKeys.includes(filter.key))
-        : profile
+      const filters = profile
       const count = activeTechnicalFilterCount(profile)
       const summary = count
         ? `${categoryText(item, locale)} · ${count} ${uiText(locale, 'active filters', 'aktiva filter', 'aktive Filter')}`
@@ -1308,7 +1332,10 @@ export default function VehicleSearchExperience({
           title={categoryText(item, locale)}
           summary={summary}
           open={openCategoryFilters.includes(item.key)}
-          onToggle={() => setOpenCategoryFilters((open) => open.includes(item.key) ? open.filter((category) => category !== item.key) : [...open, item.key])}
+          onToggle={() => setOpenCategoryFilters((open) => {
+            if (open.includes(item.key)) return open.filter((category) => category !== item.key)
+            return selectedTechnicalCategoryItems.length > 1 ? [item.key] : [...open, item.key]
+          })}
         >
           <div className="grid gap-3 sm:grid-cols-2">
             {filters.map((filter) => renderTechnicalFilterControl(filter, item.key))}
@@ -1381,6 +1408,7 @@ export default function VehicleSearchExperience({
       } }
       : null,
     maxMileage ? { key: 'mileage', label: `Max ${formatMileageAsMil(Number(maxMileage), locale)}`, onRemove: () => setMaxMileage('') } : null,
+    maxOperatingHours ? { key: 'operatingHours', label: `${uiText(locale, 'Max operating hours', 'Max drifttimmar', 'Max. Betriebsstunden')} ${Number(maxOperatingHours).toLocaleString(countNumberLocale(locale))} h`, onRemove: () => setMaxOperatingHours('') } : null,
     verifiedOnly ? { key: 'verified', label: uiText(locale, 'Verified', 'Verifierade', 'Verifiziert'), onRemove: () => setVerifiedOnly(false) } : null,
     fourWheelDrive ? { key: 'fourWheelDrive', label: uiText(locale, 'Four-wheel drive', 'Fyrhjulsdrift', 'Allrad'), onRemove: () => setFourWheelDrive(false) } : null,
     leasingPossible ? { key: 'leasingPossible', label: uiText(locale, 'Leasing possible', 'Leasing möjlig', 'Leasing möglich'), onRemove: () => setLeasingPossible(false) } : null,
@@ -1711,15 +1739,8 @@ export default function VehicleSearchExperience({
                           step={1}
                           startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                         />
-                        {sharedTechnicalKeys.length ? (
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {sharedTechnicalKeys
-                              .map((key) => findCategoryFilterDefinition(key))
-                              .filter((filter): filter is CategoryFilterDefinition => Boolean(filter))
-                              .map((filter) => renderTechnicalFilterControl(filter))}
-                          </div>
-                        ) : null}
                         <div className="grid gap-3 sm:grid-cols-2">
+                          <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions('', 'condition')} />
                           <FilterSelect
                             label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                             value={sellerType}
@@ -2005,6 +2026,18 @@ export default function VehicleSearchExperience({
                         step={1}
                         startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                       />
+                      <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions('', 'condition')} />
+                      <FilterSelect
+                        label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
+                        value={sellerType}
+                        onChange={setSellerType}
+                        options={[
+                          { value: 'all', label: uiText(locale, 'All sellers', 'Alla säljare', 'Alle Verkäufer') },
+                          { value: 'business', label: uiText(locale, 'Business', 'Företag', 'Unternehmen') },
+                          { value: 'private', label: uiText(locale, 'Private seller', 'Privatperson', 'Privatperson') },
+                        ]}
+                      />
+                      <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
                     </div>
                   </CollapsibleFilterSection>
                   <div className="space-y-3">
@@ -3160,7 +3193,7 @@ function normalizeSearchMapLocationName(value: string) {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-type VehicleFilterKey = 'mileage' | 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'color' | 'fourWheelDrive' | 'leasingPossible'
+type VehicleFilterKey = 'mileage' | 'operatingHours' | 'fuel' | 'gearbox' | 'bodyType' | 'condition' | 'color' | 'fourWheelDrive' | 'leasingPossible'
 
 type CategoryFilterDefinition = {
   key: VehicleFilterKey
@@ -3182,7 +3215,6 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
     { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 40 },
     { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Kaross', de: 'Karosserie' }, apiParam: 'bodyType', order: 50 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
   ],
   vans: [
@@ -3191,7 +3223,6 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
     { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 40 },
     { key: 'bodyType', type: 'select', label: { en: 'Vehicle type', sv: 'Fordonstyp', de: 'Fahrzeugtyp' }, apiParam: 'bodyType', order: 50 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
   ],
   motorcycles: [
@@ -3199,7 +3230,6 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
     { key: 'bodyType', type: 'select', label: { en: 'Motorcycle type', sv: 'Motorcykeltyp', de: 'Motorradtyp' }, apiParam: 'bodyType', order: 40 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 50 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 60 },
   ],
   motorhomes: [
@@ -3207,38 +3237,33 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
     { key: 'bodyType', type: 'select', label: { en: 'Motorhome type', sv: 'Husbilstyp', de: 'Wohnmobiltyp' }, apiParam: 'bodyType', order: 40 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 50 },
   ],
   caravans: [
     { key: 'bodyType', type: 'select', label: { en: 'Caravan type', sv: 'Husvagnstyp', de: 'Wohnwagentyp' }, apiParam: 'bodyType', order: 10 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 20 },
   ],
   trucks: [
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
     { key: 'bodyType', type: 'select', label: { en: 'Truck type', sv: 'Lastbilstyp', de: 'Lkw-Typ' }, apiParam: 'bodyType', order: 40 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 50 },
   ],
   agriculture: [
+    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 5, unit: 'h' },
     { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 10 },
     { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 20 },
     { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 30 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 40 },
   ],
   construction: [
+    { key: 'operatingHours', type: 'range', label: { en: 'Operating hours', sv: 'Drifttimmar', de: 'Betriebsstunden' }, apiParam: 'maxOperatingHours', order: 5, unit: 'h' },
     { key: 'fuel', type: 'select', label: { en: 'Drive / fuel', sv: 'Drift / drivmedel', de: 'Antrieb / Kraftstoff' }, apiParam: 'fuel', order: 10 },
     { key: 'gearbox', type: 'select', label: { en: 'Transmission', sv: 'Transmission', de: 'Getriebe' }, apiParam: 'gearbox', order: 20 },
     { key: 'bodyType', type: 'select', label: { en: 'Machine type', sv: 'Maskintyp', de: 'Maschinentyp' }, apiParam: 'bodyType', order: 30 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 40 },
   ],
   'electric-bikes': [
     { key: 'bodyType', type: 'select', label: { en: 'Bike type', sv: 'Cykeltyp', de: 'Fahrradtyp' }, apiParam: 'bodyType', order: 10 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 20 },
   ],
   'e-scooters': [
     { key: 'bodyType', type: 'select', label: { en: 'Scooter type', sv: 'Sparkcykeltyp', de: 'Rollertyp' }, apiParam: 'bodyType', order: 10 },
-    { key: 'condition', type: 'select', label: { en: 'Condition', sv: 'Skick', de: 'Zustand' }, apiParam: 'condition', order: 20 },
   ],
 }
 
@@ -3246,25 +3271,10 @@ function categoryFilterProfile(category: string): CategoryFilterDefinition[] {
   return [...(categoryFilterDefinitions[category] || [])].sort((a, b) => a.order - b.order)
 }
 
-function findCategoryFilterDefinition(key: VehicleFilterKey) {
-  return Object.values(categoryFilterDefinitions)
-    .flat()
-    .sort((a, b) => a.order - b.order)
-    .find((filter) => filter.key === key)
-}
-
 function filterLabel(filter: CategoryFilterDefinition, locale: PublicLocale) {
   if (locale === 'sv') return filter.label.sv
   if (locale === 'de') return filter.label.de
   return filter.label.en
-}
-
-function intersectCategoryFilters(categoryKeys: string[]) {
-  if (!categoryKeys.length) return []
-  const [firstCategory, ...rest] = categoryKeys
-  return categoryFilterProfile(firstCategory).filter((filter) =>
-    rest.every((category) => categoryFilterProfile(category).some((candidate) => candidate.key === filter.key)),
-  )
 }
 
 function mapApiListingToVehicleSearchListing(
@@ -3285,6 +3295,7 @@ function mapApiListingToVehicleSearchListing(
     model: String(listing.model || ''),
     year: listing.model_year ? String(listing.model_year) : null,
     mileageKm: numberOrNull(listing.mileage_km),
+    operatingHours: numberOrNull(listing.operating_hours),
     fuelType: stringOrNull(listing.fuel_type),
     gearbox: stringOrNull(listing.gearbox),
     bodyType: stringOrNull(listing.body_type),
