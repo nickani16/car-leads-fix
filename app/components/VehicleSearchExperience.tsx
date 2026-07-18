@@ -1744,13 +1744,7 @@ export default function VehicleSearchExperience({
                       )}
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
-                    <CollapsibleFilterSection
-                      title={categoryText(activeCategoryItem, locale)}
-                      open
-                      onToggle={() => undefined}
-                    >
-                      {renderCategoryFilterSections()}
-                    </CollapsibleFilterSection>
+                    {renderCategoryFilterSections()}
                     <div className="hidden sm:block">
                       <CollapsibleFilterSection
                         title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
@@ -1983,13 +1977,7 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
-                  <CollapsibleFilterSection
-                    title={categoryText(activeCategoryItem, locale)}
-                    open
-                    onToggle={() => undefined}
-                  >
-                    {renderCategoryFilterSections()}
-                  </CollapsibleFilterSection>
+                  {renderCategoryFilterSections()}
                   <div className="hidden sm:block">
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
