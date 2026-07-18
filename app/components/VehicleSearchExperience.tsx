@@ -763,12 +763,20 @@ export default function VehicleSearchExperience({
 
   useEffect(() => {
     if (!searchStateReady || typeof window === 'undefined') return
-    const nextQuery = marketplaceSearchParams.toString()
-    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
-    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
-    if (nextUrl !== currentUrl) {
-      window.history.replaceState(window.history.state, '', nextUrl)
-    }
+    const timer = window.setTimeout(() => {
+      const nextQuery = marketplaceSearchParams.toString()
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
+      if (nextUrl !== currentUrl) {
+        try {
+          window.history.replaceState(window.history.state, '', nextUrl)
+        } catch (error) {
+          console.warn('[marketplace] skipped URL sync after browser history limit', error)
+        }
+      }
+    }, 350)
+
+    return () => window.clearTimeout(timer)
   }, [marketplaceSearchParams, searchStateReady])
 
   useEffect(() => {
