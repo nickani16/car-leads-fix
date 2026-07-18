@@ -1365,7 +1365,7 @@ export default function VehicleSearchExperience({
             setModel('')
           }} />
           <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
-          <div className="grid gap-3 sm:hidden sm:col-span-2">
+          <div className="grid gap-3 sm:col-span-2">
             <RangeFilter
               title={uiText(locale, 'Price', 'Pris', 'Preis')}
               minValue={minPrice}
@@ -1549,7 +1549,7 @@ export default function VehicleSearchExperience({
         </header>
 
         <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className="relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full">
+          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
             <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 lg:px-7">
               <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
                 {tabs.map((tab) => (
@@ -1745,7 +1745,7 @@ export default function VehicleSearchExperience({
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
-                    <div className="hidden sm:block">
+                    <div className="hidden">
                       <CollapsibleFilterSection
                         title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
                         summary={priceYearSummary}
@@ -1978,7 +1978,7 @@ export default function VehicleSearchExperience({
                 </div>
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   {renderCategoryFilterSections()}
-                  <div className="hidden sm:block">
+                  <div className="hidden">
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
                       summary={priceYearSummary}
@@ -2277,7 +2277,7 @@ function RangeFilter({
   }, [activeHandle, lowerValue, upperValue, safeMinLimit, safeMaxLimit, step, updateHandleFromClientX])
 
   return (
-    <section className="border-b border-[#edf1f6] pb-4 last:border-b-0">
+    <section className="border-b border-[#edf1f6] pb-4 last:border-b-0 sm:col-span-2">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
         {maxValue || minValue ? (
@@ -2306,7 +2306,7 @@ function RangeFilter({
         <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
         <button
           type="button"
-          className="absolute top-1/2 z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-20 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${lowerPercent}%` }}
           aria-label={`${title} min`}
           aria-valuemin={safeMinLimit}
@@ -2321,7 +2321,7 @@ function RangeFilter({
         />
         <button
           type="button"
-          className="absolute top-1/2 z-30 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-30 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${upperPercent}%` }}
           aria-label={`${title} max`}
           aria-valuemin={lowerValue}

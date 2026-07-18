@@ -1977,7 +1977,7 @@ function RangeFilter({
           <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
           <button
             type="button"
-            className="absolute top-1/2 z-20 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+            className="absolute top-1/2 z-20 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
             style={{ left: `${lowerPercent}%` }}
             aria-label={`${title} min`}
             aria-valuemin={safeMinLimit}
@@ -1992,7 +1992,7 @@ function RangeFilter({
           />
           <button
             type="button"
-            className="absolute top-1/2 z-30 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_8px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+            className="absolute top-1/2 z-30 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
             style={{ left: `${upperPercent}%` }}
             aria-label={`${title} max`}
             aria-valuemin={lowerValue}
