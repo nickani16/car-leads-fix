@@ -38,11 +38,11 @@ const homeCopy = {
     sellerCtaTitle: 'Få ditt fordon att synas på marknader med över 360 miljoner människor',
     privateTitle: 'Sälj som privatperson',
     privateText:
-      'Kom igång kostnadsfritt och skapa din fordonsannons på några minuter. Betala bara när du vill annonsera längre eller ge annonsen extra synlighet.',
+      'Skapa en gratis annons på några minuter. Betala bara när du vill annonsera längre eller få extra synlighet.',
     privateCta: 'Skapa gratis annons',
     businessTitle: 'Sälj som företag',
     businessText:
-      'Samla annonser, fordon och team på en och samma plattform. Skapa annonser manuellt direkt i Autorell eller importera hela fordonslagret smidigt via CSV. Hantera stora annonsvolymer och få full kontroll över ert lager.',
+      'Publicera manuellt i Autorell eller importera lagret via CSV. Samla annonser, team och lagerkontroll i ett professionellt flöde.',
     businessCta: 'Kom igång som företag',
   },
   en: {
@@ -55,11 +55,11 @@ const homeCopy = {
     sellerCtaTitle: 'Get your vehicle seen in markets with over 360 million people',
     privateTitle: 'Sell as a private seller',
     privateText:
-      'Start for free and create your vehicle listing in a few minutes. Pay only when you want to advertise for longer or give the listing extra visibility.',
+      'Create a free listing in minutes. Pay only when you want a longer listing period or extra visibility.',
     privateCta: 'Create free listing',
     businessTitle: 'Sell as a business',
     businessText:
-      'Keep listings, vehicles and team workflows in one platform. Create listings manually in Autorell or import your full inventory smoothly via CSV. Manage large listing volumes and keep full control of your stock.',
+      'Publish manually in Autorell or import inventory via CSV. Keep listings, teams and stock control in one professional flow.',
     businessCta: 'Get started as a business',
   },
   de: {
@@ -72,11 +72,11 @@ const homeCopy = {
     sellerCtaTitle: 'Machen Sie Ihr Fahrzeug in Märkten mit über 360 Millionen Menschen sichtbar',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
-      'Starten Sie kostenlos und erstellen Sie Ihre Fahrzeuganzeige in wenigen Minuten. Zahlen Sie nur, wenn Sie länger inserieren oder Ihrer Anzeige zusätzliche Sichtbarkeit geben möchten.',
+      'Erstellen Sie in wenigen Minuten eine kostenlose Anzeige. Zahlen Sie nur für längere Laufzeit oder zusätzliche Sichtbarkeit.',
     privateCta: 'Kostenlose Anzeige erstellen',
     businessTitle: 'Als Unternehmen verkaufen',
     businessText:
-      'Bündeln Sie Anzeigen, Fahrzeuge und Teamabläufe auf einer Plattform. Erstellen Sie Anzeigen manuell direkt in Autorell oder importieren Sie Ihren gesamten Fahrzeugbestand bequem per CSV. Verwalten Sie große Anzeigenvolumen und behalten Sie die volle Kontrolle über Ihren Bestand.',
+      'Veröffentlichen Sie manuell in Autorell oder importieren Sie Ihren Bestand per CSV. Anzeigen, Team und Lagerkontrolle bleiben in einem professionellen Ablauf.',
     businessCta: 'Als Unternehmen starten',
   },
 } as const
@@ -256,43 +256,68 @@ function HomeSellerAudienceSection({
   copy: Record<keyof typeof homeCopy.en, string>
   locale: PublicLocale
 }) {
-  return (
-    <section className="border-t border-[#e5eaf2] bg-white py-14 sm:py-20">
-      <div className={homeContentContainerClass}>
-        <div className="mx-auto max-w-[1050px]">
-          <h2 className="max-w-[780px] text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-[#101828] sm:text-[46px]">
-            {copy.sellerCtaTitle}
-          </h2>
+  const cards = [
+    {
+      id: '01',
+      title: copy.privateTitle,
+      text: copy.privateText,
+      cta: copy.privateCta,
+      href: localizePublicHref(locale, '/account/listings/new'),
+      variant: 'primary',
+    },
+    {
+      id: '02',
+      title: copy.businessTitle,
+      text: copy.businessText,
+      cta: copy.businessCta,
+      href: localizePublicHref(locale, '/register?onboarding=1&account=business'),
+      variant: 'secondary',
+    },
+  ] as const
 
-          <div className="mt-10 grid gap-10 sm:mt-14 md:grid-cols-2 md:gap-20">
-            <div>
-              <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-[#101828] sm:text-[26px]">
-                {copy.privateTitle}
-              </h3>
-              <p className="mt-4 max-w-[480px] text-[16px] leading-7 text-[#344054]">
-                {copy.privateText}
+  return (
+    <section className="border-t border-[#dfe6f1] bg-[#f7faff] py-12 sm:py-[72px]">
+      <div className={homeContentContainerClass}>
+        <div className="overflow-hidden rounded-[22px] border border-[#cfe0f5] bg-white shadow-[0_22px_70px_rgba(16,24,40,.07)]">
+          <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="relative border-b border-[#e2eaf5] bg-[#f5f9ff] px-6 py-8 sm:px-10 sm:py-10 lg:border-b-0 lg:border-r">
+              <div className="absolute inset-x-0 top-0 h-1 bg-[#0866ff]" />
+              <p className="text-[12px] font-semibold uppercase tracking-[.22em] text-[#0866ff]">
+                Autorell Europe
               </p>
-              <Link
-                href={localizePublicHref(locale, '/account/listings/new')}
-                className="mt-7 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-[#101828] px-5 text-sm font-semibold text-white transition hover:bg-[#1d2939]"
-              >
-                {copy.privateCta}
-              </Link>
+              <h2 className="mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">
+                {copy.sellerCtaTitle}
+              </h2>
             </div>
 
-            <div>
-              <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-[#101828] sm:text-[26px]">
-                {copy.businessTitle}
-              </h3>
-              <p className="mt-4 max-w-[520px] text-[16px] leading-7 text-[#344054]">
-                {copy.businessText}
-              </p>
-              <Link
-                href={localizePublicHref(locale, '/register?onboarding=1&account=business')}
-                className="mt-7 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-[#101828] px-5 text-sm font-semibold text-white transition hover:bg-[#1d2939]"
-              >
-                {copy.businessCta}
-              </Link>
+            <div className="grid divide-y divide-[#e6edf7] md:grid-cols-2 md:divide-x md:divide-y-0">
+              {cards.map((card) => (
+                <article key={card.id} className="flex min-h-[300px] flex-col px-6 py-7 sm:px-8 sm:py-9">
+                  <div className="flex items-start justify-between gap-5">
+                    <span className="text-[12px] font-semibold uppercase tracking-[.18em] text-[#0866ff]">
+                      {card.id}
+                    </span>
+                    <span className="h-px w-16 bg-[#0866ff]" />
+                  </div>
+                  <h3 className="mt-9 text-[23px] font-semibold tracking-[-0.025em] text-[#101828] sm:text-[27px]">
+                    {card.title}
+                  </h3>
+                  <p className="mt-4 max-w-[420px] text-[15px] leading-6 text-[#475467]">
+                    {card.text}
+                  </p>
+                  <Link
+                    href={card.href}
+                    className={`mt-auto inline-flex min-h-11 w-fit items-center gap-2 rounded-[8px] px-4 text-sm font-semibold transition ${
+                      card.variant === 'primary'
+                        ? 'bg-[#0866ff] text-white hover:bg-[#075ce5]'
+                        : 'border border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
+                    }`}
+                  >
+                    {card.cta}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </article>
+              ))}
             </div>
           </div>
         </div>
