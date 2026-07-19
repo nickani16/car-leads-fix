@@ -43,6 +43,7 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
+import { MarketSelectorModal } from './PublicFooter'
 import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
@@ -51,6 +52,7 @@ import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locati
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
+import { marketForLocale } from '@/lib/market-locale'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
@@ -61,6 +63,12 @@ type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
 }
 
 let selectedSearchSuggestionSequence = 0
+
+const appStoreHref =
+  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
+const playStoreHref =
+  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
+  'https://play.google.com/store/search?q=autorell&c=apps'
 
 function searchSuggestionDedupeKey(suggestion: VehicleSmartSearchSuggestion) {
   return [
@@ -2379,6 +2387,10 @@ function FilterSelect({
 }
 
 function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
+  const [isMarketOpen, setIsMarketOpen] = useState(false)
+  const market = marketForLocale(locale)
+  const [currency, setCurrency] = useState(market.currency.toLowerCase())
+  const termsHref = localizePublicHref(locale, '/terms')
   const columns = [
     {
       title: uiText(locale, 'Services', 'Tjänster', 'Dienste'),
@@ -2425,25 +2437,146 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </div>
         ))}
       </div>
-      <div className="mt-8 border-t border-[#dfe5ee] pt-6">
-        <div className="inline-flex w-[112px] flex-col items-center">
-          <BrandLogo compact underline={false} />
-          <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
-            Marketplace
-          </span>
+      <div className="mt-8 grid gap-7 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+        <div>
+          <div className="inline-flex w-[112px] flex-col items-center">
+            <BrandLogo compact underline={false} />
+            <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
+              Marketplace
+            </span>
+          </div>
+          <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
+            {marketplaceFooterDescriptions[locale]}
+          </p>
         </div>
-        <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
-          {marketplaceFooterDescriptions[locale]}
-        </p>
-        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
-          <Link href={localizePublicHref(locale, '/terms')} className="hover:text-[#0866ff]">{uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}</Link>
-          <Link href={localizePublicHref(locale, '/privacy')} className="hover:text-[#0866ff]">{uiText(locale, 'Privacy Policy', 'Integritet', 'Datenschutz')}</Link>
-          <Link href={localizePublicHref(locale, '/cookies')} className="hover:text-[#0866ff]">Cookies</Link>
-          <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">{uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}</Link>
+        <div className="flex flex-col gap-5 lg:items-end">
+          <MarketplaceAppBadges locale={locale} />
+          <MarketplaceSocialLinks />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsMarketOpen(true)}
+              className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[13px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            >
+              <CountryFlag code={market.countryCode} className="h-4 w-5 shrink-0 rounded-sm shadow-sm ring-1 ring-black/5" />
+              <span>{market.countryName}</span>
+              <ChevronDown className="h-4 w-4 text-[#667085]" />
+            </button>
+            <label className="relative">
+              <span className="sr-only">Currency</span>
+              <select
+                value={currency}
+                onChange={(event) => setCurrency(event.target.value)}
+                className="h-10 appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-[13px] font-semibold uppercase text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
+              >
+                {['eur', 'sek', 'dkk', 'pln', 'czk', 'huf', 'ron', 'bgn', 'nok', 'chf', 'gbp', 'usd'].map((code) => (
+                  <option key={code} value={code}>
+                    {code.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-[#667085]" />
+            </label>
+          </div>
         </div>
-        <p className="mt-5 text-[12px] text-[#667085]">© 2026 Autorell</p>
       </div>
+      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
+        <p className="text-[12px] text-[#667085]">© 2026 Autorell</p>
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
+          <Link href={termsHref} className="hover:text-[#0866ff]">
+            {uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}
+          </Link>
+          <Link href={`${termsHref}#purchase-terms`} className="hover:text-[#0866ff]">
+            {uiText(locale, 'Purchase terms', 'Köpvillkor', 'Kaufbedingungen')}
+          </Link>
+          <Link href={localizePublicHref(locale, '/privacy')} className="hover:text-[#0866ff]">
+            {uiText(locale, 'Privacy Policy', 'Integritet', 'Datenschutz')}
+          </Link>
+          <Link href={localizePublicHref(locale, '/cookies')} className="hover:text-[#0866ff]">
+            {uiText(locale, 'Cookie policy', 'Cookiepolicy', 'Cookie-Richtlinie')}
+          </Link>
+          <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">
+            {uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}
+          </Link>
+        </nav>
+      </div>
+      <MarketSelectorModal isOpen={isMarketOpen} onClose={() => setIsMarketOpen(false)} locale={locale} />
     </footer>
+  )
+}
+
+function MarketplaceAppBadges({ locale }: { locale: PublicLocale }) {
+  return (
+    <div className="grid gap-2.5">
+      <p className="text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0866ff] max-lg:text-left">
+        {translatePublic(locale, 'Download Autorell')}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <MarketplaceStoreBadge href={appStoreHref} src="/app-store-badge.svg" alt="Download on the App Store" width={96} height={32} />
+        <MarketplaceStoreBadge href={playStoreHref} src="/google-play-badge.svg" alt="Get it on Google Play" width={108} height={32} />
+      </div>
+    </div>
+  )
+}
+
+function MarketplaceStoreBadge({
+  href,
+  src,
+  alt,
+  width,
+  height,
+}: {
+  href: string
+  src: string
+  alt: string
+  width: number
+  height: number
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex h-8 items-center overflow-hidden rounded-[6px] transition hover:-translate-y-0.5 hover:opacity-90 sm:h-9"
+      aria-label={alt}
+    >
+      <Image src={src} alt={alt} width={width} height={height} className="h-full w-auto" />
+    </Link>
+  )
+}
+
+function MarketplaceSocialLinks() {
+  const links = [
+    {
+      label: 'Facebook',
+      href: 'https://www.facebook.com/autorell',
+      path: 'M18.896 2H15.52c-3.792 0-6.24 2.516-6.24 6.41v2.954H6v4.488h3.28V26h4.56V15.852h3.792l.608-4.488h-4.4V8.854c0-1.298.35-2.18 2.224-2.18h2.832V2Z',
+    },
+    {
+      label: 'Instagram',
+      href: 'https://www.instagram.com/autorell',
+      path: 'M14 7.776A6.224 6.224 0 1 0 14 20.224 6.224 6.224 0 0 0 14 7.776Zm0 10.266A4.042 4.042 0 1 1 14 9.958a4.042 4.042 0 0 1 0 8.084Zm6.47-10.52a1.454 1.454 0 1 1-2.908 0 1.454 1.454 0 0 1 2.908 0ZM24.6 9c-.059-1.244-.342-2.347-1.254-3.254C22.44 4.834 21.337 4.55 20.093 4.49 18.81 4.417 14.956 4.417 14 4.417c-.956 0-4.81 0-6.093.073-1.244.06-2.347.343-3.253 1.255C3.742 6.653 3.459 7.756 3.4 9 3.326 10.283 3.326 14.137 3.326 15.093c0 .956 0 4.81.073 6.093.06 1.244.343 2.347 1.255 3.253.906.912 2.009 1.195 3.253 1.254 1.283.074 5.137.074 6.093.074.956 0 4.81 0 6.093-.074 1.244-.059 2.347-.342 3.253-1.254.912-.906 1.195-2.009 1.254-3.253.074-1.283.074-5.137.074-6.093 0-.956 0-4.81-.074-6.093Zm-2.23 10.808c-.128.8-.417 1.236-.748 1.567-.33.331-.767.62-1.567.748-1.087.172-3.662.133-6.055.133s-4.968.039-6.055-.133c-.8-.128-1.236-.417-1.567-.748-.331-.331-.62-.767-.748-1.567-.172-1.087-.133-3.662-.133-6.055s-.039-4.968.133-6.055c.128-.8.417-1.236.748-1.567.331-.331.767-.62 1.567-.748 1.087-.172 3.662-.133 6.055-.133s4.968-.039 6.055.133c.8.128 1.236.417 1.567.748.331.331.62.767.748 1.567.172 1.087.133 3.662.133 6.055s.039 4.968-.133 6.055Z',
+    },
+    {
+      label: 'LinkedIn',
+      href: 'https://www.linkedin.com/company/autorell',
+      path: 'M6.7 9.52H2.42V26H6.7V9.52ZM4.56 7.27A2.48 2.48 0 1 0 4.53 2.31a2.48 2.48 0 0 0 .03 4.96ZM25.58 26v-8.76c0-4.69-2.5-6.87-5.83-6.87-2.69 0-3.89 1.48-4.56 2.52v-2.16h-4.28c.06 1.21 0 15.27 0 15.27h4.28v-8.53c0-.46.03-.91.17-1.24.37-.91 1.2-1.86 2.6-1.86 1.83 0 2.56 1.4 2.56 3.45V26h5.06Z',
+    },
+  ]
+
+  return (
+    <nav className="flex items-center gap-4 lg:justify-end" aria-label="Social media">
+      {links.map((link) => (
+        <Link
+          key={link.label}
+          href={link.href}
+          aria-label={link.label}
+          className="text-[#101828] transition hover:-translate-y-0.5 hover:text-[#0866ff]"
+        >
+          <svg viewBox="0 0 28 28" aria-hidden="true" className="h-5 w-5 fill-current">
+            <path d={link.path} />
+          </svg>
+        </Link>
+      ))}
+    </nav>
   )
 }
 
