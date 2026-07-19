@@ -539,7 +539,7 @@ function StoreBadge({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex h-10 shrink-0 rounded-[6px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:h-11"
+      className="inline-flex h-8 shrink-0 rounded-[5px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:h-9"
     >
       <Image src={imageSrc} alt={alt} width={width} height={32} className="h-full w-auto" />
     </a>
