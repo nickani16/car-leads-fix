@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Apple,
   Check,
   ChevronDown,
   Globe2,
-  Play,
   X,
 } from 'lucide-react'
 import {
@@ -406,7 +405,6 @@ export default function PublicFooter({
               </div>
               <AppDownloadBadges
                 title={t.appDownloadTitle}
-                text={t.appDownloadText}
                 downloadOn={t.downloadOn}
                 getItOn={t.getItOn}
                 appStore={t.appStore}
@@ -493,37 +491,32 @@ export default function PublicFooter({
 
 function AppDownloadBadges({
   title,
-  text,
   downloadOn,
   getItOn,
   appStore,
   playStore,
 }: {
   title: string
-  text: string
   downloadOn: string
   getItOn: string
   appStore: string
   playStore: string
 }) {
   return (
-    <div className="rounded-[8px] border border-[#dce5f2] bg-[#f7faff] p-3.5 sm:p-4">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#075fff]">
-        {title}
-      </p>
-      <p className="mt-2 max-w-[340px] text-[13px] leading-6 text-[#475467]">{text}</p>
-      <div className="mt-3 flex flex-col gap-2 min-[390px]:flex-row">
+    <div className="flex flex-col items-start gap-2.5">
+      <p className="text-[13px] font-semibold text-[#344054]">{title}</p>
+      <div className="flex flex-wrap items-center gap-2.5">
         <StoreBadge
           href={appStoreHref}
-          icon={<Apple className="h-5 w-5" strokeWidth={2} />}
-          eyebrow={downloadOn}
-          label={appStore}
+          imageSrc="/app-store-badge.svg"
+          alt={`${downloadOn} ${appStore}`}
+          width={96}
         />
         <StoreBadge
           href={playStoreHref}
-          icon={<Play className="h-5 w-5 fill-[#101828]" strokeWidth={2} />}
-          eyebrow={getItOn}
-          label={playStore}
+          imageSrc="/google-play-badge.svg"
+          alt={`${getItOn} ${playStore}`}
+          width={108}
         />
       </div>
     </div>
@@ -532,33 +525,23 @@ function AppDownloadBadges({
 
 function StoreBadge({
   href,
-  icon,
-  eyebrow,
-  label,
+  imageSrc,
+  alt,
+  width,
 }: {
   href: string
-  icon: ReactNode
-  eyebrow: string
-  label: string
+  imageSrc: string
+  alt: string
+  width: number
 }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex min-h-11 flex-1 items-center gap-2.5 rounded-[8px] border border-[#cfd9e8] bg-white px-3 py-2 text-[#101828] shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition hover:border-[#075fff] hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] min-[390px]:max-w-[168px]"
+      className="inline-flex h-10 shrink-0 rounded-[6px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:h-11"
     >
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] bg-[#eef4ff] text-[#075fff]">
-        {icon}
-      </span>
-      <span className="min-w-0">
-        <span className="block text-[10px] font-medium leading-none text-[#667085]">
-          {eyebrow}
-        </span>
-        <span className="mt-1 block truncate text-[13px] font-semibold leading-none">
-          {label}
-        </span>
-      </span>
+      <Image src={imageSrc} alt={alt} width={width} height={32} className="h-full w-auto" />
     </a>
   )
 }
