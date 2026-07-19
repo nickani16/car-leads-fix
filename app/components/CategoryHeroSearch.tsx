@@ -273,7 +273,6 @@ function getSearchPlaceholders(
     agriculture: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter redskap...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     construction: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter maskintyp...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     'electric-bikes': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
-    'e-scooters': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
   } satisfies Record<MarketplaceCategorySlug, string[]>
 
   const en = {
@@ -286,7 +285,6 @@ function getSearchPlaceholders(
     agriculture: ['Search by make...', 'Search by model...', 'Search by implement...', 'Search by hours...', 'Search by year...'],
     construction: ['Search by make...', 'Search by model...', 'Search by machine type...', 'Search by hours...', 'Search by year...'],
     'electric-bikes': ['Search by make...', 'Search by model...', 'Search by battery...', 'Search by range...', 'Search by year...'],
-    'e-scooters': ['Search by make...', 'Search by model...', 'Search by battery...', 'Search by range...', 'Search by year...'],
   } satisfies Record<MarketplaceCategorySlug, string[]>
 
   const de = {
@@ -299,7 +297,6 @@ function getSearchPlaceholders(
     agriculture: ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Gerät suchen...', 'Nach Stunden suchen...', 'Nach Baujahr suchen...'],
     construction: ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Maschinentyp suchen...', 'Nach Stunden suchen...', 'Nach Baujahr suchen...'],
     'electric-bikes': ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Akku suchen...', 'Nach Reichweite suchen...', 'Nach Baujahr suchen...'],
-    'e-scooters': ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Akku suchen...', 'Nach Reichweite suchen...', 'Nach Baujahr suchen...'],
   } satisfies Record<MarketplaceCategorySlug, string[]>
 
   if (locale === 'sv') return sv[slug]

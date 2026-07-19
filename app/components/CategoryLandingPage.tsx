@@ -708,16 +708,6 @@ function getTypeCards(slug: MarketplaceCategorySlug): TypeCard[] {
       type('Speed', 'Speed', 'Speed', 'speed', '/category-types/electric-bikes-speed.png'),
       type('Kids', 'Kids', 'Kinder', 'kids', '/category-types/electric-bikes-kids.png'),
     ],
-    'e-scooters': [
-      type('Commuter', 'Commuter', 'Pendler', 'commuter', '/category-types/e-scooters-commuter.png'),
-      type('Long range', 'Long range', 'Hohe Reichweite', 'long range', '/category-types/e-scooters-long-range.png'),
-      type('Folding', 'Folding', 'Faltbar', 'folding', '/category-types/e-scooters-folding.png'),
-      type('Off-road', 'Off-road', 'Offroad', 'off-road', '/category-types/e-scooters-off-road.png'),
-      type('Seated', 'Seated', 'Mit Sitz', 'seated', '/category-types/e-scooters-seated.png'),
-      type('Lightweight', 'Lightweight', 'Leicht', 'lightweight', '/category-types/e-scooters-lightweight.png'),
-      type('Cargo', 'Cargo', 'Cargo', 'cargo', '/category-types/e-scooters-cargo.png'),
-      type('Performance', 'Performance', 'Performance', 'performance', '/category-types/e-scooters-performance.png'),
-    ],
   }
   return cards[slug]
 }
@@ -735,7 +725,6 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     agriculture: t3('Köp lantbruksmaskiner i hela Europa', 'Buy agricultural machinery across Europe', 'Landmaschinen in ganz Europa kaufen'),
     construction: t3('Köp entreprenadmaskiner i hela Europa', 'Buy construction machinery across Europe', 'Baumaschinen in ganz Europa kaufen'),
     'electric-bikes': t3('Köp cyklar i hela Europa', 'Buy bikes across Europe', 'Fahrräder in ganz Europa kaufen'),
-    'e-scooters': t3('Köp sparkcyklar i hela Europa', 'Buy scooters across Europe', 'Scooter in ganz Europa kaufen'),
   }
   const heroEyebrows: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
     cars: t3('Europas bilmarknad', "Europe's car marketplace", 'Europas Automarkt'),
@@ -747,7 +736,6 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     agriculture: t3('Europas lantbruksmarknad', "Europe's agricultural marketplace", 'Europas Landmaschinenmarkt'),
     construction: t3('Europas entreprenadmarknad', "Europe's construction machinery marketplace", 'Europas Baumaschinenmarkt'),
     'electric-bikes': t3('Europas cykelmarknad', "Europe's bike marketplace", 'Europas Fahrradmarkt'),
-    'e-scooters': t3('Europas sparkcykelmarknad', "Europe's scooter marketplace", 'Europas Scooter-Markt'),
   }
   const searchCtas: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', string>> = {
     cars: t3('Sök bil', 'Search cars', 'Autos suchen'),
@@ -759,7 +747,6 @@ function pageCopy(locale: PublicLocale, slug: MarketplaceCategorySlug, label: st
     agriculture: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
     construction: t3('Sök maskin', 'Search machinery', 'Maschinen suchen'),
     'electric-bikes': t3('Sök cykel', 'Search bikes', 'Fahrräder suchen'),
-    'e-scooters': t3('Sök sparkcykel', 'Search scooters', 'Scooter suchen'),
   }
   const base = {
     sv: {
@@ -980,11 +967,6 @@ function getCategoryHeroContent(
       en: { title: 'Bikes for city and commuting', body: 'Compare bikes for everyday travel, cargo and longer rides from trusted sellers.' },
       de: { title: 'Fahrräder für Stadt und Pendeln', body: 'Vergleichen Sie Fahrräder für Alltag, Lasten und längere Fahrten.' },
     },
-    'e-scooters': {
-      sv: { title: 'Sparkcyklar för smidig vardag', body: 'Sök sparkcyklar för korta resor, pendling och enkel mobilitet i staden.' },
-      en: { title: 'Scooters for easy mobility', body: 'Search scooters for short trips, commuting and simple city transport.' },
-      de: { title: 'Scooter für flexible Mobilität', body: 'Suchen Sie Scooter für kurze Wege, Pendeln und einfache Stadtmobilität.' },
-    },
   }
 
   return content[slug][language]
@@ -1040,11 +1022,6 @@ function getCategorySeoContent(
       sv: { title: 'Cyklar till salu | Köp begagnad eller ny cykel | Autorell', description: 'Hitta cyklar till salu i Europa. Jämför begagnade och nya cyklar för stad, pendling och vardag.' },
       en: { title: 'Bikes for sale | Used and new bikes | Autorell', description: 'Find bikes for sale in Europe. Compare used and new bikes for city, commuting and everyday travel.' },
       de: { title: 'Fahrräder kaufen | Gebrauchte und neue Fahrräder | Autorell', description: 'Finden Sie Fahrräder in Europa. Vergleichen Sie gebrauchte und neue Fahrräder für Stadt und Alltag.' },
-    },
-    'e-scooters': {
-      sv: { title: 'Sparkcyklar till salu | Köp begagnad eller ny sparkcykel | Autorell', description: 'Sök sparkcyklar till salu i Europa. Jämför begagnade och nya sparkcyklar för pendling och korta resor.' },
-      en: { title: 'Scooters for sale | Used and new scooters | Autorell', description: 'Search scooters for sale in Europe. Compare used and new scooters for commuting and short trips.' },
-      de: { title: 'Scooter kaufen | Gebrauchte und neue Scooter | Autorell', description: 'Suchen Sie Scooter in Europa. Vergleichen Sie gebrauchte und neue Scooter für Pendeln und kurze Wege.' },
     },
   }
 

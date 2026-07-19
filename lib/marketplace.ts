@@ -3,7 +3,6 @@ import {
   BusFront,
   CarFront,
   Construction,
-  Scooter,
   Tractor,
   Truck,
   Warehouse,
@@ -21,7 +20,6 @@ export type MarketplaceCategorySlug =
   | 'agriculture'
   | 'construction'
   | 'electric-bikes'
-  | 'e-scooters'
 
 export type MarketplaceCategory = {
   slug: MarketplaceCategorySlug
@@ -41,7 +39,6 @@ export const marketplaceCategories: MarketplaceCategory[] = [
   { slug: 'agriculture', icon: Tractor, labels: { sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen' }, singular: { sv: 'lantbruksmaskin', en: 'agricultural machine', de: 'Landmaschine' }, keywords: ['tractor', 'traktor', 'agriculture', 'farm', 'lantbruk', 'landmaschine'] },
   { slug: 'construction', icon: Construction, labels: { sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen' }, singular: { sv: 'entreprenadmaskin', en: 'construction machine', de: 'Baumaschine' }, keywords: ['construction', 'entreprenad', 'excavator', 'grävmaskin', 'loader', 'baumaschine'] },
   { slug: 'electric-bikes', icon: Bike, labels: { sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder' }, singular: { sv: 'cykel', en: 'bike', de: 'Fahrrad' }, keywords: ['bike', 'bicycle', 'cykel', 'e-bike', 'elcykel'] },
-  { slug: 'e-scooters', icon: Scooter, labels: { sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter' }, singular: { sv: 'sparkcykel', en: 'scooter', de: 'Scooter' }, keywords: ['scooter', 'kick scooter', 'e-scooter', 'elsparkcykel'] },
 ]
 
 export const marketplaceCategoryAliases: Record<string, MarketplaceCategorySlug> = {

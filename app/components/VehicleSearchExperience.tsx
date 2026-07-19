@@ -40,7 +40,6 @@ import {
   AutorellConstructionIcon,
   AutorellMotorhomeIcon,
   AutorellMotorbikeIcon,
-  AutorellScooterIcon,
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
@@ -188,7 +187,6 @@ const categories = [
   { key: 'agriculture', label: 'Lantbruk', shortLabel: 'Lantbruk', icon: AutorellAgricultureIcon },
   { key: 'construction', label: 'Entreprenad', shortLabel: 'Entreprenad', icon: AutorellConstructionIcon },
   { key: 'electric-bikes', label: 'Cyklar', shortLabel: 'Cyklar', icon: AutorellBikeIcon },
-  { key: 'e-scooters', label: 'Sparkcyklar', shortLabel: 'Spark', icon: AutorellScooterIcon },
 ]
 
 const countryCenters: Record<string, [number, number]> = {
@@ -362,7 +360,6 @@ const categoryEnglishLabels: Record<string, string> = {
   agriculture: 'Agricultural machinery',
   construction: 'Construction machinery',
   'electric-bikes': 'Bikes',
-  'e-scooters': 'Scooters',
 }
 
 function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
@@ -416,7 +413,6 @@ function categoryText(item: (typeof categories)[number], locale: PublicLocale, s
       agriculture: 'Landmaschinen',
       construction: 'Baumaschinen',
       'electric-bikes': 'Fahrräder',
-      'e-scooters': 'Scooter',
     }
     return deLabels[item.key] || item.label
   }
@@ -3314,10 +3310,6 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'bodyType', type: 'select', label: { en: 'Bike type', sv: 'Cykeltyp', de: 'Fahrradtyp' }, apiParam: 'bodyType', order: 10 },
     { key: 'equipment', type: 'text', label: { en: 'Equipment', sv: 'Utrustning', de: 'Ausstattung' }, apiParam: 'equipment', order: 20 },
   ],
-  'e-scooters': [
-    { key: 'bodyType', type: 'select', label: { en: 'Scooter type', sv: 'Sparkcykeltyp', de: 'Rollertyp' }, apiParam: 'bodyType', order: 10 },
-    { key: 'equipment', type: 'text', label: { en: 'Equipment', sv: 'Utrustning', de: 'Ausstattung' }, apiParam: 'equipment', order: 20 },
-  ],
 }
 
 const categoryPrimaryFilterDefinitions: Record<string, VehicleFilterKey[]> = {
@@ -3330,7 +3322,6 @@ const categoryPrimaryFilterDefinitions: Record<string, VehicleFilterKey[]> = {
   agriculture: ['bodyType', 'operatingHours', 'fuel'],
   construction: ['bodyType', 'operatingHours', 'fuel'],
   'electric-bikes': ['bodyType'],
-  'e-scooters': ['bodyType'],
 }
 
 function categoryFilterProfile(category: string): CategoryFilterDefinition[] {
@@ -3460,7 +3451,6 @@ function countCategoryLabel(item: (typeof categories)[number], locale: PublicLoc
       agriculture: 'lantbruksmaskin',
       construction: 'entreprenadmaskin',
       'electric-bikes': 'cykel',
-      'e-scooters': 'sparkcykel',
     }
     return count === 1 ? singular[item.key] || 'fordon' : categoryText(item, locale, true).toLocaleLowerCase('sv-SE')
   }

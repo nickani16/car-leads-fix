@@ -207,16 +207,6 @@ export const categoryTechnicalFields: Record<
     chips('condition', 'Skick', conditionOptions, true),
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
-  'e-scooters': [
-    chips('bodyType', 'Sparkcykeltyp', ['Elsparkcykel', 'Mopedklassad', 'Hopfällbar', 'Offroad', 'Cargo'], true),
-    numberField('batteryCapacityWh', 'Batterikapacitet', 1, 3000, 'Wh', true),
-    numberField('batteryVoltageV', 'Batterispänning', 1, 100, 'V'),
-    numberField('rangeKm', 'Räckvidd', 1, 300, 'km'),
-    numberField('motorPowerW', 'Motoreffekt', 1, 4000, 'W'),
-    numberField('maxSpeedKmh', 'Maxhastighet', 1, 100, 'km/h'),
-    chips('condition', 'Skick', conditionOptions, true),
-    chips('damageStatus', 'Skador/fel', damageStatusOptions),
-  ],
 }
 
 export const categoryEquipmentOptions: Record<MarketplaceCategorySlug, ListingOption[]> = {
@@ -229,7 +219,6 @@ export const categoryEquipmentOptions: Record<MarketplaceCategorySlug, ListingOp
   agriculture: options(['Frontlastare', 'GPS', 'PTO', 'Hydrauluttag', 'Dubbelmontage', 'Redskap ingår']),
   construction: options(['Rototilt', 'Skopor ingår', 'Snabbfäste', 'GPS', 'Centralsmörjning', 'Kamera']),
   'electric-bikes': options(['Laddare', 'Extra batteri', 'Pakethållare', 'Lås', 'Korg', 'Barnstol']),
-  'e-scooters': options(['Laddare', 'Extra batteri', 'App-stöd', 'Lås', 'Blinkers', 'Dubbla bromsar']),
 }
 
 export const identifierSelectOptions: Partial<Record<string, ListingOption[]>> = {

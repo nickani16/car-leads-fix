@@ -139,7 +139,6 @@ export default async function AdminListingsPage({
             { value: 'agriculture', label: 'Lantbruk' },
             { value: 'construction', label: 'Entreprenad' },
             { value: 'electric-bikes', label: 'Cyklar' },
-            { value: 'e-scooters', label: 'Sparkcyklar' },
           ]}
         />
         <FilterSelect

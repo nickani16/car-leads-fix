@@ -213,7 +213,7 @@ function categoryLabel(value: string, swedish: boolean) {
     cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'],
     motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'],
     agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'],
-    'electric-bikes': ['Elcyklar', 'Electric bikes'], 'e-scooters': ['Elsparkcyklar', 'E-scooters'],
+    'electric-bikes': ['Elcyklar', 'Electric bikes'],
   }
   return labels[value]?.[swedish ? 0 : 1] || value
 }

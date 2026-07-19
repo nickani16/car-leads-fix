@@ -697,7 +697,6 @@ function checkoutCategoryLabel(category: string) {
     agriculture: 'Agricultural machine',
     construction: 'Construction machine',
     'electric-bikes': 'Electric bike',
-    'e-scooters': 'Electric scooter',
   }
   return labels[category] || capitalize(category.replace(/-/g, ' '))
 }

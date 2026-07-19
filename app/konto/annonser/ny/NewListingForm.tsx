@@ -369,7 +369,7 @@ export default function NewListingForm({
       if (
         category !== 'agriculture' &&
         category !== 'construction' &&
-        !['caravans', 'electric-bikes', 'e-scooters'].includes(category) &&
+        !['caravans', 'electric-bikes'].includes(category) &&
         !values.mileage
       ) {
         return missing(copy.errors.mileage)
@@ -648,7 +648,7 @@ export default function NewListingForm({
                 type="number"
                 value={values.mileage || ''}
                 onValueChange={setValue}
-                required={!['caravans', 'electric-bikes', 'e-scooters'].includes(category)}
+                required={!['caravans', 'electric-bikes'].includes(category)}
                 step={usesSwedishMileage ? '1' : undefined}
               />
             ) : (
@@ -3119,7 +3119,6 @@ const categoryLabelOverrides: Partial<
     agriculture: 'Landbrugsmaskiner',
     construction: 'Entreprenørmaskiner',
     'electric-bikes': 'Cykler',
-    'e-scooters': 'Scootere',
   },
 }
 
@@ -3189,7 +3188,7 @@ function identifierHelpText(category: MarketplaceCategorySlug, locale: PublicLoc
     if (locale === 'sv') return 'Ange registreringsnummer om objektet har ett. Annars ange serienummer, VIN eller chassinummer.'
     return localizedListingText(locale, 'Enter the registration number if the object has one. Otherwise enter serial number, VIN or chassis number.')
   }
-  if (category === 'electric-bikes' || category === 'e-scooters') {
+  if (category === 'electric-bikes') {
     if (locale === 'sv') return 'Ange ramnummer eller serienummer. Batteriserienummer kan anges om det finns.'
     return localizedListingText(locale, 'Enter frame number or serial number. Battery serial number can be entered if available.')
   }

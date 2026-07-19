@@ -2176,16 +2176,6 @@ function getMarketplaceTypeCards(slug: string, locale: PublicLocale): TypeCard[]
       t('Speed', 'Speed', 'Speed', 'speed', '/category-types/electric-bikes-speed.png'),
       t('Kids', 'Kids', 'Kinder', 'kids', '/category-types/electric-bikes-kids.png'),
     ],
-    'e-scooters': [
-      t('Commuter', 'Commuter', 'Pendler', 'commuter', '/category-types/e-scooters-commuter.png'),
-      t('Long range', 'Long range', 'Hohe Reichweite', 'long range', '/category-types/e-scooters-long-range.png'),
-      t('Folding', 'Folding', 'Faltbar', 'folding', '/category-types/e-scooters-folding.png'),
-      t('Off-road', 'Off-road', 'Offroad', 'off-road', '/category-types/e-scooters-off-road.png'),
-      t('Seated', 'Seated', 'Mit Sitz', 'seated', '/category-types/e-scooters-seated.png'),
-      t('Lightweight', 'Lightweight', 'Leicht', 'lightweight', '/category-types/e-scooters-lightweight.png'),
-      t('Cargo', 'Cargo', 'Cargo', 'cargo', '/category-types/e-scooters-cargo.png'),
-      t('Performance', 'Performance', 'Performance', 'performance', '/category-types/e-scooters-performance.png'),
-    ],
   }
   return cards[slug] || cards.cars
 }
@@ -2790,11 +2780,6 @@ function categorySearchPlaceholder(slug: string, locale: PublicLocale) {
       en: 'Search bikes',
       de: 'Fahrräder suchen',
     },
-    'e-scooters': {
-      sv: 'Sök i sparkcykel',
-      en: 'Search scooters',
-      de: 'Scooter suchen',
-    },
   }
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
   const label = labels[slug]?.[language] || labels.cars[language]
@@ -2834,7 +2819,7 @@ function categoryFilterProfile(slug: string): {
       advanced: ['condition', 'fuel', 'gearbox', 'year', 'hours', 'equipment'],
     }
   }
-  if (slug === 'electric-bikes' || slug === 'e-scooters') {
+  if (slug === 'electric-bikes') {
     return {
       basic: ['condition'],
       advanced: ['bodyType', 'year', 'equipment'],
@@ -2899,11 +2884,6 @@ function categoryQuickFilters(slug: string, locale: PublicLocale) {
       en: ['New', 'Used', 'City', 'Cargo bike', 'Price'],
       de: ['Neu', 'Gebraucht', 'City', 'Lastenrad', 'Preis'],
     },
-    'e-scooters': {
-      sv: ['Nya', 'Begagnade', 'Pendling', 'Pris'],
-      en: ['New', 'Used', 'Commuting', 'Price'],
-      de: ['Neu', 'Gebraucht', 'Pendeln', 'Preis'],
-    },
   }
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'
   const filters = values[slug]?.[language] || values.cars[language]
@@ -2946,7 +2926,6 @@ function localizeCategory(category: CategoryConfig, locale: PublicLocale) {
     agriculture: { en: ['Agricultural machinery', 'agricultural machinery'], de: ['Landmaschinen', 'eine Landmaschine'] },
     construction: { en: ['Construction machinery', 'construction machinery'], de: ['Baumaschinen', 'eine Baumaschine'] },
     'electric-bikes': { en: ['Bikes', 'a bike'], de: ['Fahrräder', 'ein Fahrrad'] },
-    'e-scooters': { en: ['Scooters', 'a scooter'], de: ['Scooter', 'einen Scooter'] },
   }
   const translated = labels[category.slug]?.[locale] || [category.label, category.singular]
   return {

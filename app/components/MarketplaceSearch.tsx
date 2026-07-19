@@ -16,7 +16,6 @@ import {
   AutorellCaravanIcon,
   AutorellCarIcon,
   AutorellMotorbikeIcon,
-  AutorellScooterIcon,
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
@@ -43,7 +42,6 @@ const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
   agriculture: '/marketplace/agriculture',
   construction: '/marketplace/construction',
   'electric-bikes': '/marketplace/electric-bikes',
-  'e-scooters': '/marketplace/e-scooters',
 }
 
 const categoryOptions: Array<{
@@ -62,7 +60,6 @@ const categoryOptions: Array<{
   { value: 'agriculture', sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen', icon: Tractor },
   { value: 'construction', sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen', icon: Construction },
   { value: 'electric-bikes', sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder', icon: AutorellBikeIcon },
-  { value: 'e-scooters', sv: 'Sparkcyklar', en: 'Scooters', de: 'Scooter', icon: AutorellScooterIcon },
 ]
 
 export default function MarketplaceSearch({
@@ -462,7 +459,6 @@ function getSearchCta(
     agriculture: 'Sök maskin',
     construction: 'Sök maskin',
     'electric-bikes': 'Sök cykel',
-    'e-scooters': 'Sök sparkcykel',
   }
   const en: Record<MarketplaceCategorySlug, string> = {
     cars: 'Search cars',
@@ -474,7 +470,6 @@ function getSearchCta(
     agriculture: 'Search machines',
     construction: 'Search machines',
     'electric-bikes': 'Search bikes',
-    'e-scooters': 'Search scooters',
   }
   const de: Record<MarketplaceCategorySlug, string> = {
     cars: 'Autos suchen',
@@ -486,7 +481,6 @@ function getSearchCta(
     agriculture: 'Maschinen suchen',
     construction: 'Maschinen suchen',
     'electric-bikes': 'Fahrräder suchen',
-    'e-scooters': 'Scooter suchen',
   }
 
   if (locale === 'sv') return sv[category]
@@ -515,7 +509,6 @@ function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale
     agriculture: 'Traktorer och redskap',
     construction: 'Maskiner och entreprenad',
     'electric-bikes': 'Elcyklar och cyklar',
-    'e-scooters': 'Elsparkcyklar',
   }
   const en: Record<MarketplaceCategorySlug, string> = {
     cars: 'Passenger cars and EVs',
@@ -527,7 +520,6 @@ function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale
     agriculture: 'Tractors and equipment',
     construction: 'Machines and construction',
     'electric-bikes': 'E-bikes and bicycles',
-    'e-scooters': 'Electric scooters',
   }
   const de: Record<MarketplaceCategorySlug, string> = {
     cars: 'Pkw und Elektroautos',
@@ -539,7 +531,6 @@ function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale
     agriculture: 'Traktoren und Geräte',
     construction: 'Maschinen und Bau',
     'electric-bikes': 'E-Bikes und Fahrräder',
-    'e-scooters': 'E-Scooter',
   }
 
   if (locale === 'sv') return sv[category]
@@ -593,7 +584,6 @@ function getSearchPlaceholders(
     agriculture: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter redskap...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     construction: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter maskintyp...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     'electric-bikes': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
-    'e-scooters': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
   }
   const en: Record<MarketplaceCategorySlug, string[]> = {
     cars: ['Search by make...', 'Search by model...', 'Search by gearbox...', 'Search by fuel...', 'Search by year...'],
@@ -605,7 +595,6 @@ function getSearchPlaceholders(
     agriculture: ['Search by make...', 'Search by model...', 'Search by implement...', 'Search by hours...', 'Search by year...'],
     construction: ['Search by make...', 'Search by model...', 'Search by machine type...', 'Search by hours...', 'Search by year...'],
     'electric-bikes': ['Search by make...', 'Search by model...', 'Search by battery...', 'Search by range...', 'Search by year...'],
-    'e-scooters': ['Search by make...', 'Search by model...', 'Search by battery...', 'Search by range...', 'Search by year...'],
   }
   const de: Record<MarketplaceCategorySlug, string[]> = {
     cars: ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Getriebe suchen...', 'Nach Kraftstoff suchen...', 'Nach Baujahr suchen...'],
@@ -617,7 +606,6 @@ function getSearchPlaceholders(
     agriculture: ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Gerät suchen...', 'Nach Stunden suchen...', 'Nach Baujahr suchen...'],
     construction: ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Maschinentyp suchen...', 'Nach Stunden suchen...', 'Nach Baujahr suchen...'],
     'electric-bikes': ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Akku suchen...', 'Nach Reichweite suchen...', 'Nach Baujahr suchen...'],
-    'e-scooters': ['Nach Marke suchen...', 'Nach Modell suchen...', 'Nach Akku suchen...', 'Nach Reichweite suchen...', 'Nach Baujahr suchen...'],
   }
 
   if (locale === 'sv') return sv[category]

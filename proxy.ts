@@ -171,8 +171,6 @@ const RETIRED_CATEGORY_ROUTES = new Map([
   ['/construction', '/marketplace/construction'],
   ['/electric-bikes', '/marketplace/electric-bikes'],
   ['/e-bikes', '/marketplace/electric-bikes'],
-  ['/e-scooters', '/marketplace/e-scooters'],
-  ['/electric-scooters', '/marketplace/e-scooters'],
 ])
 
 const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {

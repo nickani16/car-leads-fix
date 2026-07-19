@@ -70,10 +70,6 @@ export const listingRequirementsByCategory: Record<
     { key: 'frameNumber', label: 'Ramnummer eller serienummer', required: false },
     { key: 'batterySerialNumber', label: 'Batteriserienummer om möjligt', required: false },
   ],
-  'e-scooters': [
-    { key: 'frameNumber', label: 'Ramnummer eller serienummer', required: false },
-    { key: 'batterySerialNumber', label: 'Batteriserienummer om möjligt', required: false },
-  ],
 }
 
 export const sellerListingConfirmationKeys = [
@@ -144,7 +140,6 @@ export function validateRequiredIdentifiers(
 export function lowPriceThreshold(category: MarketplaceCategorySlug) {
   switch (category) {
     case 'electric-bikes':
-    case 'e-scooters':
       return 100
     case 'motorcycles':
       return 750

@@ -248,30 +248,6 @@ export const categoryLandingConfigs: CategoryLandingConfig[] = [
       de: ['Motorposition und Fahrgefühl', 'Akku und Reichweite', 'Gebrauchtes E-Bike prüfen'],
     },
   },
-  {
-    slug: 'e-scooters',
-    path: '/e-scooters',
-    aliases: ['/electric-scooters'],
-    heroImage: '/category-e-scooters-hero.jpg',
-    heroPosition: '54% center',
-    eyebrow: sharedEyebrow,
-    intro: {
-      sv: 'Jämför sparkcyklar för smidig pendling och korta resor i vardagen.',
-      en: 'Compare scooters for convenient commuting and shorter everyday journeys.',
-      de: 'Vergleichen Sie Scooter für bequemes Pendeln und kurze Alltagswege.',
-    },
-    searchHint: { sv: 'Märke, modell eller användning', en: 'Make, model or use', de: 'Marke, Modell oder Nutzung' },
-    menu: {
-      sv: ['Begagnade sparkcyklar', 'Nya sparkcyklar', 'Sälj din sparkcykel'],
-      en: ['Used scooters', 'New scooters', 'Sell your scooter'],
-      de: ['Gebrauchte Scooter', 'Neue Scooter', 'Scooter verkaufen'],
-    },
-    guideTopics: {
-      sv: ['Räckvidd i verkligheten', 'Däck, bromsar och komfort', 'Regler i olika länder'],
-      en: ['Real-world range', 'Tyres, brakes and comfort', 'Rules in different countries'],
-      de: ['Reale Reichweite', 'Reifen, Bremsen und Komfort', 'Regeln in verschiedenen Ländern'],
-    },
-  },
 ]
 
 export function getCategoryLanding(slug: MarketplaceCategorySlug) {

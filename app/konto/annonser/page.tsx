@@ -419,7 +419,7 @@ function localizedLifecycleLabel(group: ReturnType<typeof listingLifecycle>['gro
 function isFuture(value: string | null) { return Boolean(value && new Date(value).getTime() > Date.now()) }
 function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) }
 function packageLabel(value: string) { return value === 'premium_30d' ? 'Premium · 30' : value === 'standard_15d' ? 'Standard · 15' : 'Start · 7' }
-function categoryLabel(value: string, locale: string) { const labels: Record<string, [string, string]> = { cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'], motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'], agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'], 'electric-bikes': ['Elcyklar', 'Electric bikes'], 'e-scooters': ['Elsparkcyklar', 'E-scooters'] }; return labels[value]?.[locale === 'sv' ? 0 : 1] || value }
+function categoryLabel(value: string, locale: string) { const labels: Record<string, [string, string]> = { cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'], motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'], agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'], 'electric-bikes': ['Elcyklar', 'Electric bikes'] }; return labels[value]?.[locale === 'sv' ? 0 : 1] || value }
 
 function listingPageCopy(locale: PublicLocale) {
   const sv = locale === 'sv'

@@ -26,7 +26,6 @@ export type ListingCategory =
   | 'agriculture'
   | 'construction'
   | 'electric-bikes'
-  | 'e-scooters'
 
 export type BillingProductKind = 'listing_package' | 'addon' | 'subscription'
 export type BillingType = 'payment' | 'subscription'
@@ -70,7 +69,6 @@ export const listingCategoryLabels: Record<ListingCategory, string> = {
   agriculture: 'Lantbruksmaskiner',
   construction: 'Entreprenadmaskiner',
   'electric-bikes': 'Cyklar',
-  'e-scooters': 'Sparkcyklar',
 }
 
 const listingPrices: Record<
@@ -115,10 +113,6 @@ const listingPrices: Record<
   'electric-bikes': {
     standard: { sek: 7900, eur: 699, dkk: 5500, pln: 2900 },
     premium: { sek: 17900, eur: 1599, dkk: 11900, pln: 6900 },
-  },
-  'e-scooters': {
-    standard: { sek: 4900, eur: 449, dkk: 3500, pln: 1900 },
-    premium: { sek: 12900, eur: 1099, dkk: 8900, pln: 4900 },
   },
 }
 

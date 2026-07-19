@@ -114,7 +114,7 @@ const maxRecentSearches = 6
 const quickAccess: Array<{ key: keyof typeof desktopCopy.en; href: string; icon: LucideIcon; desc: string }> = [
   { key: 'cars', href: '/marketplace/cars', icon: CarFront, desc: 'Find cars across Europe' },
   { key: 'vans', href: '/marketplace/vans', icon: BusFront, desc: 'Find vans for work or business' },
-  { key: 'motorcycles', href: '/marketplace/motorcycles', icon: Bike, desc: 'Explore motorcycles and scooters' },
+  { key: 'motorcycles', href: '/marketplace/motorcycles', icon: Bike, desc: 'Explore motorcycles' },
   { key: 'motorhomes', href: '/marketplace/motorhomes', icon: BusFront, desc: 'Find motorhomes and RVs' },
   { key: 'trucks', href: '/marketplace/trucks', icon: Truck, desc: 'Trucks, trailers and more' },
 ]

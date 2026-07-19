@@ -73,7 +73,6 @@ const translations: Record<string, string> = {
   Karosstyp: 'Body type',
   Motorcykeltyp: 'Motorcycle type',
   Cykeltyp: 'Bike type',
-  Sparkcykeltyp: 'Scooter type',
   Skåpbil: 'Panel van',
   Kylbil: 'Refrigerated van',
   Flak: 'Flatbed',

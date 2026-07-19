@@ -117,7 +117,6 @@ const categoryAliases: Record<MarketplaceCategorySlug, string[]> = {
   agriculture: ['lantbruk', 'lantbruksmaskin', 'lantbruksmaskiner', 'traktor', 'tractor', 'tractores', 'landmaschinen'],
   construction: ['entreprenad', 'entreprenadmaskin', 'entreprenadmaskiner', 'construction', 'baumaschinen', 'maquinaria'],
   'electric-bikes': ['cykel', 'cyklar', 'elcykel', 'elcyklar', 'bike', 'bikes', 'bicycle', 'bicicleta', 'bicicletas', 'fahrrad', 'fahrrader'],
-  'e-scooters': ['sparkcykel', 'sparkcyklar', 'elsparkcykel', 'elsparkcyklar', 'scooter', 'scooters', 'patinete', 'patinetes'],
 }
 
 const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug, string>>> = {
@@ -131,7 +130,6 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
     agriculture: 'Lantbruksmaskiner',
     construction: 'Entreprenadmaskiner',
     'electric-bikes': 'Cyklar',
-    'e-scooters': 'Sparkcyklar',
   },
   es: {
     cars: 'Coches',
@@ -143,7 +141,6 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
     agriculture: 'Maquinaria agricola',
     construction: 'Maquinaria de construccion',
     'electric-bikes': 'Bicicletas',
-    'e-scooters': 'Patinetes',
   },
   de: {
     cars: 'Autos',
@@ -155,7 +152,6 @@ const categoryLocalLabels: Record<string, Partial<Record<MarketplaceCategorySlug
     agriculture: 'Landmaschinen',
     construction: 'Baumaschinen',
     'electric-bikes': 'Fahrrader',
-    'e-scooters': 'Scooter',
   },
 }
 

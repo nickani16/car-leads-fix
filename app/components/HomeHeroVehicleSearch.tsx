@@ -27,7 +27,6 @@ import {
   AutorellCaravanIcon,
   AutorellCarIcon,
   AutorellMotorbikeIcon,
-  AutorellScooterIcon,
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
@@ -126,7 +125,6 @@ const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
   agriculture: '/marketplace/agriculture',
   construction: '/marketplace/construction',
   'electric-bikes': '/marketplace/electric-bikes',
-  'e-scooters': '/marketplace/e-scooters',
 }
 
 const categories = [
@@ -139,7 +137,6 @@ const categories = [
   { slug: 'agriculture', label: 'Lantbruksmaskiner', icon: Tractor },
   { slug: 'construction', label: 'Entreprenadmaskiner', icon: Construction },
   { slug: 'electric-bikes', label: 'Cyklar', icon: AutorellBikeIcon },
-  { slug: 'e-scooters', label: 'Sparkcyklar', icon: AutorellScooterIcon },
 ] satisfies Array<{
   slug: MarketplaceCategorySlug
   label: string

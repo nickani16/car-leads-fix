@@ -41,7 +41,6 @@ const allVehicleCategories: MarketplaceCategorySlug[] = [
   'agriculture',
   'construction',
   'electric-bikes',
-  'e-scooters',
 ]
 
 const roadVehicleCategories: MarketplaceCategorySlug[] = [
