@@ -70,8 +70,8 @@ async function encodeVariant(
     withoutEnlargement: true,
   })
   pipeline = format === 'avif'
-    ? pipeline.avif({ quality, effort: 4, chromaSubsampling: '4:2:0' })
-    : pipeline.webp({ quality, effort: 4, smartSubsample: true })
+    ? pipeline.avif({ quality, effort: 3, chromaSubsampling: '4:2:0' })
+    : pipeline.webp({ quality, effort: 3, smartSubsample: true })
   const result = await pipeline.toBuffer({ resolveWithObject: true })
   return {
     body: result.data,

@@ -215,6 +215,29 @@ async function uploadImage(
   }
 }
 
+async function uploadImagesWithConcurrency(
+  supabase: SupabaseClient,
+  files: File[],
+  userId: string,
+  concurrency = 2,
+) {
+  const results = new Array<UploadedMarketplaceImage>(files.length)
+  let cursor = 0
+
+  async function worker() {
+    while (cursor < files.length) {
+      const index = cursor
+      cursor += 1
+      results[index] = await uploadImage(supabase, files[index], userId, index)
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, files.length) }, () => worker()),
+  )
+  return results
+}
+
 async function uploadProcessedVariant(
   supabase: SupabaseClient,
   path: string,
@@ -622,9 +645,7 @@ export async function POST(request: Request) {
     const uploadedImages: UploadedMarketplaceImage[] = []
     let serialPlateImage: UploadedMarketplaceImage | null
     try {
-      for (const [index, file] of files.entries()) {
-        uploadedImages.push(await uploadImage(admin, file, user.id, index))
-      }
+      uploadedImages.push(...await uploadImagesWithConcurrency(admin, files, user.id))
       serialPlateImage =
         serialPlateFile instanceof File && serialPlateFile.size > 0
           ? await uploadImage(admin, serialPlateFile, user.id, files.length + 1)
@@ -874,6 +895,7 @@ export async function POST(request: Request) {
       success: true,
       listingId: listing.id,
       referenceNumber: listing.reference_number,
+      status: listing.status,
       requiresPayment: packageId !== 'free_7d',
       packageId,
     })

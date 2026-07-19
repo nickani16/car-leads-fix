@@ -3,6 +3,7 @@ import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
+import { renderListingCreatedPage } from '@/app/account/listings/created/page'
 import AccountSavedListingsPage from '@/app/account/saved-listings/page'
 import AccountSavedSearchesPage from '@/app/account/saved-searches/page'
 import PrivateProfilePage from '@/app/account/profile/page'
@@ -91,8 +92,12 @@ export default async function LocalizedMarketPage({
     return <CompanyOverviewPage localeOverride={locale} />
   }
 
-  if (slugPath === 'account/company/listings') {
+  if (slugPath === 'account/listings' || slugPath === 'konto/annonser' || slugPath === 'account/company/listings') {
     return <AccountListingsPage searchParams={searchParams} />
+  }
+
+  if (slugPath === 'account/listings/created' || slugPath === 'konto/annonser/klar') {
+    return renderListingCreatedPage({ searchParams, localeOverride: locale })
   }
 
   if (slugPath === 'account/company/listings/create') {

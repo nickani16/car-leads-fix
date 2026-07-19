@@ -535,7 +535,7 @@ export async function POST(request: Request) {
       success_url:
         product.kind === 'subscription'
           ? `${origin}${localizePublicHref(checkoutLocale, `/account/business/subscription?payment=processing&order=${order.id}`)}`
-          : `${origin}${localizePublicHref(checkoutLocale, `/account/listings?payment=processing&order=${order.id}`)}`,
+          : `${origin}${localizePublicHref(checkoutLocale, `/account/listings/created?payment=processing&order=${order.id}${listing?.id ? `&listing=${listing.id}` : ''}`)}`,
       cancel_url:
         product.kind === 'subscription'
           ? `${origin}${localizePublicHref(checkoutLocale, `/account/business/subscription?payment=cancelled&order=${order.id}`)}`

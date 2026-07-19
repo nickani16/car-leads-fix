@@ -217,8 +217,6 @@ export default function NewListingForm({
   useEffect(() => {
     let active = true
     const controller = new AbortController()
-    setRegionOptions([])
-    setPlaceOptions([])
     void fetch(`/api/geo/regions?country=${encodeURIComponent(listingCountryCode)}`, {
       signal: controller.signal,
     })
@@ -327,18 +325,6 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
-    }))
-  }
-
-  function useManualLocation(value: string) {
-    const next = value.trim()
-    setPlaceQuery(next)
-    setGeoPlaceCode('')
-    setLocationSource('manual')
-    setValues((current) => ({
-      ...current,
-      municipality: next,
-      city: current.city || next,
     }))
   }
 
@@ -514,6 +500,7 @@ export default function NewListingForm({
       listingId?: string
       requiresPayment?: boolean
       packageId?: string
+      status?: string
     }
     if (!response.ok || !result.listingId) {
       applySubmissionError(result)
@@ -556,7 +543,7 @@ export default function NewListingForm({
       }
     }
     window.location.assign(
-      localizePublicHref(locale, `/account/listings?published=1&listing=${encodeURIComponent(result.listingId)}`),
+      localizePublicHref(locale, `/account/listings/created?listing=${encodeURIComponent(result.listingId)}`),
     )
   }
 
