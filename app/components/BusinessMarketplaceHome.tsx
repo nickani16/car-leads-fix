@@ -299,15 +299,15 @@ function HomeSellerAudienceSection({
                     </span>
                     <span className="h-px w-16 bg-[#0866ff]" />
                   </div>
-                  <h3 className="mt-9 text-[23px] font-semibold tracking-[-0.025em] text-[#101828] sm:text-[27px]">
+                  <h3 className="mt-9 text-[23px] font-semibold leading-[1.18] tracking-[-0.025em] text-[#101828] sm:text-[27px] md:min-h-[64px]">
                     {card.title}
                   </h3>
-                  <p className="mt-4 max-w-[420px] text-[15px] leading-6 text-[#475467]">
+                  <p className="mt-4 max-w-[420px] text-[15px] leading-6 text-[#475467] md:min-h-[120px] lg:min-h-[144px] xl:min-h-[120px]">
                     {card.text}
                   </p>
                   <Link
                     href={card.href}
-                    className={`group mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-[8px] px-4 text-sm font-semibold transition ${
+                    className={`group mt-8 inline-flex min-h-11 w-fit items-center gap-2 rounded-[8px] px-4 text-sm font-semibold transition md:mt-auto ${
                       card.variant === 'primary'
                         ? 'bg-[#0866ff] text-white hover:bg-[#075ce5]'
                         : 'border border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
