@@ -742,12 +742,12 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-9 w-9 place-items-center rounded-full bg-[#075fff] text-white ring-1 ring-[#075fff] transition hover:-translate-y-0.5 hover:bg-[#0052df] hover:ring-[#0052df]"
+          className="grid h-8 w-8 place-items-center text-[#101828] transition hover:-translate-y-0.5 hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-5 w-5 fill-current"
+            className="h-[22px] w-[22px] fill-current"
           >
             <path d={path} />
           </svg>
