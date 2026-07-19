@@ -4,9 +4,11 @@ import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 're
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Apple,
   Check,
   ChevronDown,
   Globe2,
+  Play,
   X,
 } from 'lucide-react'
 import {
@@ -18,6 +20,12 @@ import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
 import BrandLogo from './BrandLogo'
+
+const appStoreHref =
+  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
+const playStoreHref =
+  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
+  'https://play.google.com/store/search?q=autorell&c=apps'
 
 const footerCopy = {
   sv: {
@@ -80,6 +88,12 @@ const footerCopy = {
     newsletterTitle: 'Håll dig uppdaterad',
     newsletterText:
       'Få de senaste fordonen, marknadstrenderna och tipsen direkt till din inkorg.',
+    appDownloadTitle: 'Ladda ner Autorell',
+    appDownloadText: 'Ha sökningar, sparade fordon och nya annonser nära till hands.',
+    appStore: 'App Store',
+    playStore: 'Google Play',
+    downloadOn: 'Ladda ner i',
+    getItOn: 'Hämta på',
     emailPlaceholder: 'Ange din e-post',
     subscribe: 'Prenumerera',
     trust: [
@@ -169,6 +183,12 @@ const footerCopy = {
     newsletterTitle: 'Auf dem Laufenden bleiben',
     newsletterText:
       'Erhalten Sie neue Fahrzeuge, Markttrends und Tipps direkt in Ihr Postfach.',
+    appDownloadTitle: 'Autorell herunterladen',
+    appDownloadText: 'Suchen, gespeicherte Fahrzeuge und neue Anzeigen immer griffbereit.',
+    appStore: 'App Store',
+    playStore: 'Google Play',
+    downloadOn: 'Laden im',
+    getItOn: 'Jetzt bei',
     emailPlaceholder: 'E-Mail-Adresse eingeben',
     subscribe: 'Abonnieren',
     trust: [
@@ -258,6 +278,12 @@ const footerCopy = {
     newsletterTitle: 'Stay up to date',
     newsletterText:
       'Get the latest vehicles, market trends and tips straight to your inbox.',
+    appDownloadTitle: 'Download Autorell',
+    appDownloadText: 'Keep searches, saved vehicles and new listings close at hand.',
+    appStore: 'App Store',
+    playStore: 'Google Play',
+    downloadOn: 'Download on the',
+    getItOn: 'Get it on',
     emailPlaceholder: 'Enter your email',
     subscribe: 'Subscribe',
     trust: [
@@ -372,10 +398,20 @@ export default function PublicFooter({
 
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
-              <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
-                <BrandLogo underline={false} />
-              </Link>
+            <div className="flex max-w-[430px] flex-col gap-5">
+              <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
+                <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
+                  <BrandLogo underline={false} />
+                </Link>
+              </div>
+              <AppDownloadBadges
+                title={t.appDownloadTitle}
+                text={t.appDownloadText}
+                downloadOn={t.downloadOn}
+                getItOn={t.getItOn}
+                appStore={t.appStore}
+                playStore={t.playStore}
+              />
             </div>
             <SocialLinks />
           </div>
@@ -452,6 +488,78 @@ export default function PublicFooter({
         locale={locale}
       />
     </footer>
+  )
+}
+
+function AppDownloadBadges({
+  title,
+  text,
+  downloadOn,
+  getItOn,
+  appStore,
+  playStore,
+}: {
+  title: string
+  text: string
+  downloadOn: string
+  getItOn: string
+  appStore: string
+  playStore: string
+}) {
+  return (
+    <div className="rounded-[8px] border border-[#dce5f2] bg-[#f7faff] p-3.5 sm:p-4">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#075fff]">
+        {title}
+      </p>
+      <p className="mt-2 max-w-[340px] text-[13px] leading-6 text-[#475467]">{text}</p>
+      <div className="mt-3 flex flex-col gap-2 min-[390px]:flex-row">
+        <StoreBadge
+          href={appStoreHref}
+          icon={<Apple className="h-5 w-5" strokeWidth={2} />}
+          eyebrow={downloadOn}
+          label={appStore}
+        />
+        <StoreBadge
+          href={playStoreHref}
+          icon={<Play className="h-5 w-5 fill-[#101828]" strokeWidth={2} />}
+          eyebrow={getItOn}
+          label={playStore}
+        />
+      </div>
+    </div>
+  )
+}
+
+function StoreBadge({
+  href,
+  icon,
+  eyebrow,
+  label,
+}: {
+  href: string
+  icon: ReactNode
+  eyebrow: string
+  label: string
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex min-h-11 flex-1 items-center gap-2.5 rounded-[8px] border border-[#cfd9e8] bg-white px-3 py-2 text-[#101828] shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition hover:border-[#075fff] hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] min-[390px]:max-w-[168px]"
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] bg-[#eef4ff] text-[#075fff]">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[10px] font-medium leading-none text-[#667085]">
+          {eyebrow}
+        </span>
+        <span className="mt-1 block truncate text-[13px] font-semibold leading-none">
+          {label}
+        </span>
+      </span>
+    </a>
   )
 }
 
