@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
-import { ArrowRight, BadgeCheck, BarChart3, Check, Info, RefreshCw, Rocket, Star, X } from 'lucide-react'
+import { BadgeCheck, BarChart3, Check, Info, RefreshCw, Rocket, Star, X } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import PricingAnchorScroll from '@/app/components/PricingAnchorScroll'
@@ -25,7 +25,7 @@ import {
   type BillingPeriod,
   type BusinessSubscriptionPlan,
 } from '@/lib/business-subscription-plans'
-import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type PricingPageProps = {
   locale: PublicLocale
@@ -64,7 +64,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
     perMonth: 'per månad',
     included: 'Ingår',
     recommended: 'Rekommenderad',
-    startText: '7 dagar, standardplacering.',
+    startText: '5 dagar, standardplacering.',
     standardText: '15 dagar och utökad annonsstatistik.',
     premiumText: '30 dagar, Premium-badge och 7 dagars toppplacering.',
     topPlacement: 'Toppplacering',
@@ -93,7 +93,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
     perMonth: 'pr. måned',
     included: 'Inkluderet',
     recommended: 'Anbefalet',
-    startText: '7 dage, standardplacering.',
+    startText: '5 dage, standardplacering.',
     standardText: '15 dage og udvidet annoncestatistik.',
     premiumText: '30 dage, Premium-badge og 7 dages topplacering.',
     topPlacement: 'Topplacering',
@@ -122,7 +122,7 @@ const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
     perMonth: 'miesiecznie',
     included: 'W cenie',
     recommended: 'Polecane',
-    startText: '7 dni, standardowa pozycja.',
+    startText: '5 dni, standardowa pozycja.',
     standardText: '15 dni i rozszerzone statystyki ogloszenia.',
     premiumText: '30 dni, odznaka Premium i 7 dni topowej pozycji.',
     topPlacement: 'Topowa pozycja',
@@ -153,7 +153,7 @@ const copyByLocaleBase = {
   perMonth: 'per month',
   included: 'Included',
   recommended: 'Recommended',
-  startText: '7 days, standard placement.',
+  startText: '5 days, standard placement.',
   standardText: '15 days and extended listing statistics.',
   premiumText: '30 days, Premium badge and 7 days of top placement.',
   topPlacement: 'Top placement',

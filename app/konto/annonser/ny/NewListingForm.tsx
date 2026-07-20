@@ -2820,7 +2820,7 @@ function getPackageCopy(locale: PublicLocale) {
   const en = {
     free_7d: {
       title: 'Start',
-      days: '7 days',
+      days: '5 days',
       text: 'A simple way to test Autorell and get started quickly.',
     },
     standard_15d: {
@@ -2838,7 +2838,7 @@ function getPackageCopy(locale: PublicLocale) {
     return {
       free_7d: {
         title: 'Start',
-        days: '7 dagar',
+        days: '5 dagar',
         text: 'Bra för att testa Autorell och komma igång snabbt.',
       },
       standard_15d: {
@@ -2857,7 +2857,7 @@ function getPackageCopy(locale: PublicLocale) {
     return {
       free_7d: {
         title: 'Start',
-        days: '7 Tage',
+        days: '5 Tage',
         text: 'Ein einfacher Weg, Autorell zu testen und schnell loszulegen.',
       },
       standard_15d: {
@@ -2876,7 +2876,7 @@ function getPackageCopy(locale: PublicLocale) {
     fi: {
       free_7d: {
         title: 'Aloitus',
-        days: '7 päivää',
+        days: '5 päivää',
         text: 'Helppo tapa kokeilla Autorellia ja päästä nopeasti alkuun.',
       },
       standard_15d: {
@@ -2893,7 +2893,7 @@ function getPackageCopy(locale: PublicLocale) {
     da: {
       free_7d: {
         title: 'Start',
-        days: '7 dage',
+        days: '5 dage',
         text: 'En enkel måde at prøve Autorell og komme hurtigt i gang.',
       },
       standard_15d: {
@@ -2910,7 +2910,7 @@ function getPackageCopy(locale: PublicLocale) {
     fr: {
       free_7d: {
         title: 'Essentiel',
-        days: '7 jours',
+        days: '5 jours',
         text: 'Un moyen simple de tester Autorell et de commencer rapidement.',
       },
       standard_15d: {
@@ -2927,7 +2927,7 @@ function getPackageCopy(locale: PublicLocale) {
     es: {
       free_7d: {
         title: 'Inicio',
-        days: '7 días',
+        days: '5 días',
         text: 'Una forma sencilla de probar Autorell y empezar rápidamente.',
       },
       standard_15d: {
@@ -2944,7 +2944,7 @@ function getPackageCopy(locale: PublicLocale) {
     it: {
       free_7d: {
         title: 'Base',
-        days: '7 giorni',
+        days: '5 giorni',
         text: 'Un modo semplice per provare Autorell e iniziare rapidamente.',
       },
       standard_15d: {
@@ -2961,7 +2961,7 @@ function getPackageCopy(locale: PublicLocale) {
     nl: {
       free_7d: {
         title: 'Start',
-        days: '7 dagen',
+        days: '5 dagen',
         text: 'Een eenvoudige manier om Autorell te proberen en snel te starten.',
       },
       standard_15d: {
@@ -2978,7 +2978,7 @@ function getPackageCopy(locale: PublicLocale) {
     pl: {
       free_7d: {
         title: 'Start',
-        days: '7 dni',
+        days: '5 dni',
         text: 'Prosty sposób, aby wypróbować Autorell i szybko rozpocząć.',
       },
       standard_15d: {

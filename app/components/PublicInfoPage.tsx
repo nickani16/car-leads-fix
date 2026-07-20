@@ -1265,12 +1265,12 @@ export default async function PublicInfoPage({
     const freeLabel = isSv ? 'Gratis' : 'Free'
     const packageCards = isSv
       ? [
-          ['Start', '7 dagar', 'Publicera och kontrollera annonsens kvalitet utan startkostnad.'],
+          ['Start', '5 dagar', 'Publicera och kontrollera annonsens kvalitet utan startkostnad.'],
           ['Standard', '15 dagar', 'För fordon som behöver stabil synlighet över flera köpbeslut.'],
           ['Premium', '30 dagar', 'För annonser där exponering och prioritet ska kännas tydligt.'],
         ]
       : [
-          ['Start', '7 days', 'Publish and check listing quality without starting cost.'],
+          ['Start', '5 days', 'Publish and check listing quality without starting cost.'],
           ['Standard', '15 days', 'For vehicles that need steady visibility across buyer decisions.'],
           ['Premium', '30 days', 'For listings where exposure and priority should be clear.'],
         ]
@@ -1489,12 +1489,12 @@ export default async function PublicInfoPage({
     const freeLabel = isSv ? 'Gratis' : 'Free'
     const packageCards = isSv
       ? [
-          ['Start', '7 dagar', 'Första publicering utan kostnad.'],
+          ['Start', '5 dagar', 'Första publicering utan kostnad.'],
           ['Standard', '15 dagar', 'Mer tid i marknaden för vanliga annonser.'],
           ['Premium', '30 dagar', 'Extra synlighet för fordon som ska lyftas.'],
         ]
       : [
-          ['Start', '7 days', 'First publishing without cost.'],
+          ['Start', '5 days', 'First publishing without cost.'],
           ['Standard', '15 days', 'More time in market for regular listings.'],
           ['Premium', '30 days', 'Extra visibility for vehicles that need a lift.'],
         ]
@@ -1624,12 +1624,12 @@ export default async function PublicInfoPage({
           : ['Free start', 'Standard period', 'Premium visibility'],
         cards: isSv
           ? [
-              ['Start', '7 dagar', 'Testa annonsen och se att allt ser rätt ut innan du väljer mer synlighet.'],
+              ['Start', '5 dagar', 'Testa annonsen och se att allt ser rätt ut innan du väljer mer synlighet.'],
               ['Standard', '15 dagar', 'För vanliga annonser där du vill ligga ute längre och få stabil exponering.'],
               ['Premium', '30 dagar', 'För fordon som ska synas mer i rätt kategori och marknad.'],
             ]
           : [
-              ['Start', '7 days', 'Test the listing and make sure everything looks right.'],
+              ['Start', '5 days', 'Test the listing and make sure everything looks right.'],
               ['Standard', '15 days', 'For normal listings that need longer steady exposure.'],
               ['Premium', '30 days', 'For vehicles that need stronger category and market visibility.'],
             ],

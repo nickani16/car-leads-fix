@@ -89,7 +89,7 @@ export default function ListingsFilters({
       </FilterSelect>
       <FilterSelect label={isSwedish ? 'Paket' : 'Package'} value={filters.package} onChange={(value) => update({ package: value })} className={fieldClass}>
         <option value="all">{isSwedish ? 'Alla paket' : 'All packages'}</option>
-        <option value="free_7d">Start · 7</option>
+        <option value="free_7d">Start · 5</option>
         <option value="standard_15d">Standard · 15</option>
         <option value="premium_30d">Premium · 30</option>
       </FilterSelect>

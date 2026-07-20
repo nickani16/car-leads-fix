@@ -329,7 +329,7 @@ function PromotionBadge({ label }: { label: string }) {
 function packageOptions(listing: ManagedListing, locale: string, prices: Map<string, BillingPriceRow>): PackageOption[] {
   const market = normalizeBillingMarket(listing.country_code)
   const definitions = [
-    { id: 'free_7d', title: 'Start', duration: 7, description: locale === 'sv' ? 'En vanlig annons för att komma igång.' : 'A standard listing to get started.' },
+    { id: 'free_7d', title: 'Start', duration: 5, description: locale === 'sv' ? 'En vanlig annons för att komma igång.' : 'A standard listing to get started.' },
     { id: 'standard_15d', title: 'Standard', duration: 15, description: locale === 'sv' ? 'Längre annonstid för en seriös försäljning.' : 'A longer listing period for a serious sale.' },
     { id: 'premium_30d', title: 'Premium', duration: 30, description: locale === 'sv' ? 'Extra synlighet och inkluderad toppplacering.' : 'Extra visibility and included top placement.' },
   ]
@@ -418,7 +418,7 @@ function localizedLifecycleLabel(group: ReturnType<typeof listingLifecycle>['gro
 }
 function isFuture(value: string | null) { return Boolean(value && new Date(value).getTime() > Date.now()) }
 function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) }
-function packageLabel(value: string) { return value === 'premium_30d' ? 'Premium · 30' : value === 'standard_15d' ? 'Standard · 15' : 'Start · 7' }
+function packageLabel(value: string) { return value === 'premium_30d' ? 'Premium · 30' : value === 'standard_15d' ? 'Standard · 15' : 'Start · 5' }
 function categoryLabel(value: string, locale: string) { const labels: Record<string, [string, string]> = { cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'], motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'], agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'], 'electric-bikes': ['Elcyklar', 'Electric bikes'] }; return labels[value]?.[locale === 'sv' ? 0 : 1] || value }
 
 function listingPageCopy(locale: PublicLocale) {
@@ -432,3 +432,4 @@ function listingPageCopy(locale: PublicLocale) {
     pagination: sv ? 'Sidnavigering' : 'Pagination', previous: sv ? 'Föregående' : 'Previous', next: sv ? 'Nästa' : 'Next', paymentCancelledTitle: sv ? 'Betalningen avbröts – inget publicerades.' : 'Payment cancelled — nothing was published.', paymentCancelledText: sv ? 'Annonsen är sparad och kan återupptas nedan.' : 'The listing is saved and can be resumed below.', paymentProcessingTitle: sv ? 'Vi bekräftar betalningen.' : 'We are confirming the payment.', paymentProcessingText: sv ? 'Status uppdateras när den verifierade Stripe-webhooken har behandlats.' : 'Status updates after the verified Stripe webhook is processed.', listingCreatedTitle: sv ? 'Annonsen är skapad.' : 'The listing has been created.', listingCreatedText: sv ? 'Om den är godkänd syns den direkt. Annars visas den här medan Autorell granskar uppgifterna.' : 'If approved, it is visible now. Otherwise it stays here while Autorell reviews the details.', loadError: sv ? 'Mina annonser kunde inte laddas just nu.' : 'My listings could not be loaded.',
   }
 }
+

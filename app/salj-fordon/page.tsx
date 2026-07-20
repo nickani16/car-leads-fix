@@ -190,7 +190,7 @@ export default async function SellVehiclePage({
           <p className="mt-3 max-w-2xl text-[#667085]">Samma tydliga kategoripris gäller för privatpersoner och företag. Alla priser visas inklusive tillämplig moms före betalning.</p>
           <div className="mt-8 overflow-x-auto rounded-[22px] border border-[#e1e5ec]">
             <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-              <thead className="bg-[#f4f7ff]"><tr><th className="p-4">Kategori</th><th className="p-4">7 dagar</th><th className="p-4">15 dagar</th><th className="p-4">Premium 30 dagar</th></tr></thead>
+              <thead className="bg-[#f4f7ff]"><tr><th className="p-4">Kategori</th><th className="p-4">5 dagar</th><th className="p-4">15 dagar</th><th className="p-4">Premium 30 dagar</th></tr></thead>
               <tbody>{marketplaceCategories.map((item) => <tr key={item.slug} className="border-t border-[#e7eaf0]"><th className="p-4">{item.label}</th><td className="p-4 font-bold text-emerald-700">Gratis</td><td className="p-4 font-semibold">{formatListingPrice(item.standard)}</td><td className="p-4 font-semibold">{formatListingPrice(item.premium)}</td></tr>)}</tbody>
             </table>
           </div>

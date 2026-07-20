@@ -70,7 +70,7 @@ export function formatListingPriceForMarket(category: string, packageId: Marketp
 }
 
 export const listingPackageDetails = {
-  free_7d: { durationDays: 7, priority: 0, label: 'Start' },
+  free_7d: { durationDays: 5, priority: 0, label: 'Start' },
   standard_15d: { durationDays: 15, priority: 0, label: 'Standard' },
   premium_30d: { durationDays: 30, priority: 0, label: 'Premium', includedBoostDays: 7 },
 } as const

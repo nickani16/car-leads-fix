@@ -49,7 +49,7 @@ const sections = [
     id: 'purchase-terms',
     title: 'Annonspaket och betalning',
     items: [
-      'Sju dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
+      'Fem dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
       'Samma publicerade kategoripris gäller för privatkonton och företagskonton, om inget separat skriftligt volymavtal gäller.',
       'Betalning hanteras av extern betalningsleverantör. Betalningsuppgifter ska aldrig skickas i meddelanden.',
       'Köpta digitala annonstjänster börjar enligt det valda paketet. Information om eventuell lagstadgad ångerrätt och samtycke till omedelbar leverans ska visas i checkout när det krävs.',
