@@ -350,20 +350,20 @@ export default function PublicHeader({
   }
   const mobileSavedSearchesLabel = (() => {
     const labels: Partial<Record<PublicLocale, string>> = {
-      sv: 'Sparade',
-      en: 'Saved',
-      de: 'Merken',
-      at: 'Merken',
-      fr: 'Favoris',
-      es: 'Guardadas',
-      it: 'Salvate',
-      nl: 'Bewaard',
-      be: 'Bewaard',
-      pl: 'Zapisane',
-      da: 'Gemte',
-      fi: 'Tallessa',
+      sv: 'Sökningar',
+      en: 'Searches',
+      de: 'Suchen',
+      at: 'Suchen',
+      fr: 'Recherches',
+      es: 'Búsquedas',
+      it: 'Ricerche',
+      nl: 'Zoeken',
+      be: 'Zoeken',
+      pl: 'Wyszuk.',
+      da: 'Søgninger',
+      fi: 'Haut',
     }
-    return labels[locale] || 'Saved'
+    return labels[locale] || 'Searches'
   })()
   const [open, setOpen] = useState(false)
   const [marketSelectorOpen, setMarketSelectorOpen] = useState(false)

@@ -1600,7 +1600,7 @@ export default function VehicleSearchExperience({
             </span>
             <span className="hidden items-center gap-2 md:inline-flex">
               <Bookmark className="h-5 w-5" />
-              Sparade
+              Sökningar
             </span>
             <span className="inline-flex items-center gap-2">
               <CountryFlag code={primaryMapCountry || 'SE'} className="h-5 w-5" />
