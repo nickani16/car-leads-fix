@@ -122,6 +122,7 @@ type SellerVerification = {
 
 type SellerDetails = SellerVerification & {
   websiteUrl: string | null
+  companyPageHref: string | null
   logoUrl: string | null
   address: string | null
   ratingAverage: number | null
@@ -700,6 +701,15 @@ export default async function ListingDetailPage({
                             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                           </a>
                         ) : null}
+                        {sellerDetails.companyPageHref ? (
+                          <Link
+                            href={sellerDetails.companyPageHref}
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
+                          >
+                            {localizedLabel(locale, 'Visa företagssida', 'View company page', 'Unternehmensseite ansehen')}
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                          </Link>
+                        ) : null}
                       </div>
                       <p className="mt-3 text-sm leading-6 text-[#667085]">
                         {localizedLabel(
@@ -789,6 +799,7 @@ async function getSellerDetails(
     label: copy.unverifiedEmail,
     tone: 'unverified',
     websiteUrl: null,
+    companyPageHref: null,
     logoUrl: null,
     address: null,
     ratingAverage: null,
@@ -807,7 +818,7 @@ async function getSellerDetails(
   const [{ data: profile }, { data: reviews }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region,created_at')
+      .select('user_id,company_id,website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region,created_at')
       .eq('user_id', listing.seller_user_id)
       .maybeSingle(),
     admin
@@ -833,6 +844,9 @@ async function getSellerDetails(
 
   const base = {
     websiteUrl: sellerType === 'business' ? textOrNull(profile?.website_url) : null,
+    companyPageHref: sellerType === 'business' && await sellerHasPublicCompanyPage(admin, listing.seller_user_id, profile?.company_id)
+      ? localizePublicHref(locale, `/company/${listing.seller_user_id}`)
+      : null,
     logoUrl: sellerType === 'business' ? textOrNull(profile?.logo_url) : null,
     address: sellerType === 'business' ? textOrNull(addressLine) : null,
     ratingAverage,
@@ -875,6 +889,44 @@ async function getSellerDetails(
         label: copy.unverified,
         tone: 'unverified',
       }
+}
+
+async function sellerHasPublicCompanyPage(
+  admin: ReturnType<typeof createAdminClient>,
+  sellerUserId: string,
+  companyId?: string | null,
+) {
+  const sellerUserIds = companyId
+    ? await getCompanySellerUserIds(admin, companyId, sellerUserId)
+    : [sellerUserId]
+  const { data } = await admin
+    .from('business_subscriptions')
+    .select('plan_key,status,manually_activated,free_period_ends_at')
+    .in('user_id', sellerUserIds)
+    .order('updated_at', { ascending: false })
+
+  return (data || []).some((subscription) => {
+    const plan = String(subscription.plan_key || '').toLowerCase()
+    const status = String(subscription.status || '').toLowerCase()
+    const freePeriodActive = Boolean(subscription.free_period_ends_at && new Date(subscription.free_period_ends_at).getTime() > Date.now())
+    return ['starter', 'growth', 'professional', 'enterprise'].includes(plan) &&
+      (['active', 'trialing'].includes(status) || subscription.manually_activated === true || freePeriodActive)
+  })
+}
+
+async function getCompanySellerUserIds(
+  admin: ReturnType<typeof createAdminClient>,
+  companyId: string,
+  fallbackUserId: string,
+) {
+  const { data } = await admin
+    .from('marketplace_profiles')
+    .select('user_id')
+    .eq('company_id', companyId)
+    .eq('account_type', 'business')
+
+  const ids = (data || []).map((row) => String(row.user_id || '')).filter(Boolean)
+  return ids.length ? [...new Set(ids)] : [fallbackUserId]
 }
 
 function sellerBadgeClass(tone: SellerVerification['tone']) {
