@@ -133,12 +133,8 @@ test('unsupported and spoofed files are rejected with stable error codes', async
   assert.match(listingRouteSource, /HEIC\/HEIF stöds inte ännu\. Välj JPG, PNG, WebP eller AVIF\./)
 })
 
-test('listing creation processes images with bounded concurrency and stores card URLs separately', () => {
-  assert.match(listingRouteSource, /async function uploadImagesWithConcurrency/)
-  assert.match(listingRouteSource, /let cursor = 0/)
-  assert.match(listingRouteSource, /while \(cursor < files\.length\)/)
-  assert.match(listingRouteSource, /const index = cursor/)
-  assert.match(listingRouteSource, /results\[index\] = await uploadImage\(supabase, files\[index\], userId, index\)/)
+test('listing creation processes images sequentially and stores card URLs separately', () => {
+  assert.match(listingRouteSource, /for \(const \[index, file\] of files\.entries\(\)\)/)
   assert.doesNotMatch(listingRouteSource, /Promise\.all\(\s*files\.map/)
   assert.match(listingRouteSource, /Promise\.allSettled\([\s\S]*variants\.map/)
   assert.match(listingRouteSource, /const images = uploadedImages\.map\(\(image\) => image\.cardUrl\)/)
