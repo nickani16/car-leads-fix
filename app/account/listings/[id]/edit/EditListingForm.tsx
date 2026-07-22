@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Check, ImagePlus, LoaderCircle, Search, X } from 'lucide-react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import {
-  categoryTechnicalFields,
+  fieldsForCategoryAndSubcategory,
   identifierSelectOptions,
   type ListingTechnicalField,
 } from '@/lib/listing-form-options'
@@ -48,7 +48,6 @@ const mileageCategories = new Set<MarketplaceCategorySlug>([
   'vans',
   'motorcycles',
   'motorhomes',
-  'caravans',
   'trucks',
 ])
 const swedishMileageFactor = 10
@@ -247,7 +246,10 @@ export default function EditListingForm({
               />
             </label>
           ) : null}
-          {categoryTechnicalFields[listing.category].map((field) => (
+          {fieldsForCategoryAndSubcategory(listing.category, {
+            bodyType: technicalData.bodyType,
+            fuelType: technicalData.fuelType,
+          }).map((field) => (
             <TechnicalField
               key={field.name}
               field={field}

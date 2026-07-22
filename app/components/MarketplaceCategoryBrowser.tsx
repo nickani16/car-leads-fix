@@ -2807,6 +2807,12 @@ function categoryFilterProfile(slug: string): {
   basic: FilterKey[]
   advanced: FilterKey[]
 } {
+  if (slug === 'electric-bikes') {
+    return {
+      basic: ['condition'],
+      advanced: ['bodyType', 'year', 'equipment'],
+    }
+  }
   if (slug === 'caravans') {
     return {
       basic: ['condition'],
@@ -2817,12 +2823,6 @@ function categoryFilterProfile(slug: string): {
     return {
       basic: ['bodyType'],
       advanced: ['condition', 'fuel', 'gearbox', 'year', 'hours', 'equipment'],
-    }
-  }
-  if (slug === 'electric-bikes') {
-    return {
-      basic: ['condition'],
-      advanced: ['bodyType', 'year', 'equipment'],
     }
   }
   if (slug === 'motorcycles') {
@@ -2859,6 +2859,11 @@ function categoryQuickFilters(slug: string, locale: PublicLocale) {
       en: ['New', 'Used', 'Automatic', 'A-class', 'Price', 'Mileage'],
       de: ['Neu', 'Gebraucht', 'Automatik', 'Vollintegriert', 'Preis', 'Kilometer'],
     },
+    'electric-bikes': {
+      sv: ['Nya', 'Begagnade', 'City', 'Lastcykel', 'Pris'],
+      en: ['New', 'Used', 'City', 'Cargo bike', 'Price'],
+      de: ['Neu', 'Gebraucht', 'City', 'Lastenrad', 'Preis'],
+    },
     caravans: {
       sv: ['Nya', 'Begagnade', 'Enkelaxel', 'Dubbelaxel', 'Pris'],
       en: ['New', 'Used', 'Single axle', 'Twin axle', 'Price'],
@@ -2878,11 +2883,6 @@ function categoryQuickFilters(slug: string, locale: PublicLocale) {
       sv: ['Grävmaskiner', 'Lastare', 'Dumprar', 'Pris', 'Drifttimmar'],
       en: ['Excavators', 'Loaders', 'Dumpers', 'Price', 'Operating hours'],
       de: ['Bagger', 'Lader', 'Dumper', 'Preis', 'Betriebsstunden'],
-    },
-    'electric-bikes': {
-      sv: ['Nya', 'Begagnade', 'City', 'Lastcykel', 'Pris'],
-      en: ['New', 'Used', 'City', 'Cargo bike', 'Price'],
-      de: ['Neu', 'Gebraucht', 'City', 'Lastenrad', 'Preis'],
     },
   }
   const language = locale === 'sv' || locale === 'de' ? locale : 'en'

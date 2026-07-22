@@ -65,6 +65,27 @@ const machineDrivetrainOptions = options(['Band', 'Hjul', '4WD', '2WD', 'Annat']
 
 const conditionOptions = options(['Ny', 'Begagnad', 'Defekt', 'Reservdelsobjekt'])
 const yesNoUnknownOptions = options(['Nej', 'Ja', 'Vet ej'])
+
+const electrifiedFuelValues = new Set(['el', 'electric', 'hybrid', 'plug-in hybrid', 'plug in hybrid'])
+
+const electricPowertrainFields: ListingTechnicalField[] = [
+  numberField('electricRangeKm', 'Räckvidd', 1, 2000, 'km'),
+  numberField('batteryCapacityKWh', 'Batterikapacitet', 0.1, 500, 'kWh'),
+  numberField('motorPowerKw', 'Motoreffekt', 0.1, 2000, 'kW'),
+  numberField('chargingPowerKw', 'Laddningseffekt', 0.1, 500, 'kW'),
+  numberField('chargingTimeHours', 'Laddningstid', 0.1, 100, 'h'),
+  chips('fastCharging', 'Snabbladdning', yesNoUnknownOptions),
+  chips('regenerativeBraking', 'Regenerativ bromsning', yesNoUnknownOptions),
+]
+
+function isElectrifiedFuel(value: unknown) {
+  return electrifiedFuelValues.has(String(value || '').trim().toLowerCase())
+}
+
+function isPureElectricFuel(value: unknown) {
+  const normalized = String(value || '').trim().toLowerCase()
+  return normalized === 'el' || normalized === 'electric'
+}
 const serviceHistoryOptions = options(['Fullständig', 'Delvis', 'Saknas', 'Vet ej'])
 
 const damageStatusOptions = options([
@@ -177,6 +198,7 @@ export const categoryTechnicalFields: Record<
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
   ],
   agriculture: [
+    numberField('operatingHours', 'Drifttimmar', 1, 50000, 'h'),
     chips('bodyType', 'Maskintyp', ['Traktor', 'Skördetröska', 'Redskap', 'Press', 'Vagn', 'Spruta', 'Lastare', 'Annat'], true),
     chips('fuelType', 'Drivmedel', heavyFuelOptions),
     chips('attachmentType', 'Redskapsfäste', ['Trepunkt', 'Frontlastare', 'PTO', 'Hydrauliskt', 'Drag', 'Annat']),
@@ -187,6 +209,7 @@ export const categoryTechnicalFields: Record<
     chips('serviceHistory', 'Servicehistorik', serviceHistoryOptions),
   ],
   construction: [
+    numberField('operatingHours', 'Drifttimmar', 1, 50000, 'h'),
     chips('bodyType', 'Maskintyp', ['Grävmaskin', 'Minigrävare', 'Hjullastare', 'Dumper', 'Dozer', 'Vält', 'Lift', 'Kran', 'Kompaktor', 'Annat'], true),
     chips('fuelType', 'Drivmedel', heavyFuelOptions, true),
     chips('attachmentType', 'Redskapsfäste', ['S40', 'S45', 'S50', 'S60', 'S70', 'Hydrauliskt', 'Annat']),
@@ -230,10 +253,76 @@ export const identifierSelectOptions: Partial<Record<string, ListingOption[]>> =
   machineType: options(['Grävmaskin', 'Minigrävare', 'Hjullastare', 'Dumper', 'Dozer', 'Vält', 'Lift', 'Traktor', 'Skördetröska', 'Redskap', 'Annat']),
 }
 
+const yesNoOptions = options(['Nej', 'Ja'])
+
+export const categorySubcategoryFields: Partial<
+  Record<MarketplaceCategorySlug, Record<string, ListingTechnicalField[]>>
+> = {
+  agriculture: {
+    tractor: [
+      chips('pto', 'PTO', yesNoOptions),
+      chips('hydraulics', 'Hydraulik', yesNoOptions),
+      chips('frontLoader', 'Frontlastare', yesNoOptions),
+      chips('gps', 'GPS', yesNoOptions),
+      chips('isobus', 'ISOBUS', yesNoOptions),
+    ],
+    balePress: [
+      chips('baleType', 'Baltyp', ['Rundbal', 'Fyrkantsbal', 'Småbal', 'Annat']),
+      numberField('baleSize', 'Balstorlek', 1, 300, 'cm'),
+      chips('chamberType', 'Kammartyp', ['Fast', 'Variabel', 'Annat']),
+      chips('knives', 'Knivar', yesNoOptions),
+      chips('wrapper', 'Plastare', yesNoOptions),
+    ],
+  },
+  construction: {
+    excavator: [
+      chips('quickCoupler', 'Snabbfäste', yesNoOptions),
+      chips('hydraulics', 'Hydraulik', yesNoOptions),
+      chips('tiltrotator', 'Rotortilt', yesNoOptions),
+      chips('buckets', 'Skopor', yesNoOptions),
+    ],
+    lift: [
+      numberField('workingHeightM', 'Arbetshöjd', 1, 150, 'm'),
+      numberField('outreachM', 'Räckvidd', 1, 100, 'm'),
+      numberField('platformCapacityKg', 'Plattformskapacitet', 1, 10000, 'kg'),
+    ],
+  },
+}
+
+function subcategoryKey(value: unknown) {
+  const text = String(value || '').toLowerCase()
+  if (text.includes('traktor') || text.includes('tractor')) return 'tractor'
+  if (text.includes('press') || text.includes('baler')) return 'balePress'
+  if (
+    text.includes('excav') ||
+    text.includes('grävmaskin') ||
+    text.includes('grÃ¤vmaskin') ||
+    text.includes('bagger') ||
+    text.includes('pelle')
+  ) return 'excavator'
+  if (text.includes('lift')) return 'lift'
+  return null
+}
+
+export function fieldsForCategoryAndSubcategory(
+  category: MarketplaceCategorySlug,
+  values: Record<string, unknown> = {},
+) {
+  const base = (categoryTechnicalFields[category] || []).filter(
+    (field) => !(isPureElectricFuel(values.fuelType) && field.name === 'engineLiters'),
+  )
+  const key = subcategoryKey(values.bodyType)
+  const extra = key ? categorySubcategoryFields[category]?.[key] || [] : []
+  const electric = isElectrifiedFuel(values.fuelType) ? electricPowertrainFields : []
+  return [...base, ...electric, ...extra]
+}
+
 export const structuredListingFieldNames = Array.from(
   new Set(
     Object.values(categoryTechnicalFields)
       .flat()
+      .concat(electricPowertrainFields)
+      .concat(Object.values(categorySubcategoryFields).flatMap((groups) => Object.values(groups).flat()))
       .map((field) => field.name)
       .concat(['color', 'equipment', 'sellerNote']),
   ),

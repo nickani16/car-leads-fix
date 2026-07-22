@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { marketplacePublicSelect, normalizeMarketplaceCategory } from './marketplace'
+import { marketplacePublicSelect, normalizeMarketplaceCategory, type MarketplaceCategorySlug } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import {
   marketplaceLocations,
@@ -9,6 +9,7 @@ import {
   marketplaceSearchLocationTermsForQuery,
 } from './marketplace-locations'
 import { createAdminClient } from './supabase/admin'
+import { fieldsForCategory } from './listing-schema'
 
 export type MarketplaceSort =
   | 'published'
@@ -48,22 +49,25 @@ export type MarketplaceSearchInput = {
   equipment?: string | null
   fourWheelDrive?: string | boolean | null
   leasingPossible?: string | boolean | null
+  offerType?: string | null
   verifiedOnly?: string | boolean | null
   mode?: string | null
   page?: string | number | null
   sort?: string | null
   cursor?: string | null
   limit?: string | number | null
+  [key: `technical_${string}`]: string | null | undefined
 }
 
 export type MarketplaceSearchResult = {
   items: Array<Record<string, unknown>>
   facets: {
-    makes: string[]
-    models: string[]
-    fuels: string[]
-    gearboxes: string[]
-    bodyTypes: string[]
+    makes: MarketplaceFacetOption[]
+    models: MarketplaceFacetOption[]
+    fuels: MarketplaceFacetOption[]
+    gearboxes: MarketplaceFacetOption[]
+    bodyTypes: MarketplaceFacetOption[]
+    technical: Record<string, MarketplaceFacetOption[]>
   }
   nextCursor: string | null
   totalEstimate: number | null
@@ -74,6 +78,8 @@ export type MarketplaceSearchResult = {
   limit: number
   hasNext: boolean
 }
+
+export type MarketplaceFacetOption = { value: string; count: number }
 
 const MAX_PAGE_SIZE = 48
 const DEFAULT_PAGE_SIZE = 24
@@ -141,7 +147,7 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
 
   const rows = (data || []) as MarketplaceSearchRow[]
   const items = rows.map(sanitizePublicListingSellerName)
-  const facets = emptyMarketplaceFacets()
+  const facets = await getDynamicMarketplaceFacets(admin, filters)
   const totalCount = count || 0
   const totalPages = Math.max(1, Math.ceil(totalCount / filters.limit))
   const hasNext = filters.page < totalPages
@@ -218,7 +224,7 @@ async function searchPublishedWithSponsoredBlock(
 
   return {
     items,
-    facets: emptyMarketplaceFacets(),
+    facets: await getDynamicMarketplaceFacets(admin, filters),
     nextCursor: hasNext && lastItem ? encodeCursor(cursorFromRow(lastItem, filters.sort)) : null,
     totalEstimate: totalCount,
     totalCount,
@@ -293,6 +299,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
+    offerType: clean(input.offerType).toLowerCase(),
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice),
@@ -300,6 +307,11 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     maxYear: positiveNumber(input.maxYear),
     maxMileage: positiveNumber(input.maxMileage),
     maxOperatingHours: positiveNumber(input.maxOperatingHours),
+    technicalFilters: Object.fromEntries(
+      Object.entries(input)
+        .filter(([key, value]) => key.startsWith('technical_') && typeof value === 'string' && clean(value))
+        .map(([key, value]) => [key.slice('technical_'.length), clean(value).slice(0, 80)]),
+    ),
     sort,
     cursor,
     page: clampInt(input.page, 1, 10_000, 1),
@@ -413,13 +425,23 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.sellerType && filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
   if (filters.equipment) query = query.ilike('equipment', `%${escapeIlike(filters.equipment)}%`)
   if (filters.fourWheelDrive) query = query.ilike('equipment', '%fyrhjuls%')
-  if (filters.leasingPossible) query = query.ilike('equipment', '%leasing%')
+  if (filters.offerType === 'sale' || filters.offerType === 'lease') {
+    query = query.eq('offer_type', filters.offerType)
+  } else if (filters.offerType === 'sale_and_lease') {
+    query = query.eq('offer_type', 'sale_and_lease')
+  } else if (filters.leasingPossible) {
+    query = query.in('offer_type', ['lease', 'sale_and_lease'])
+  }
   if (filters.minPrice !== null) query = query.gte('price', filters.minPrice)
   if (filters.maxPrice !== null) query = query.lte('price', filters.maxPrice)
   if (filters.minYear !== null) query = query.gte('model_year', filters.minYear)
   if (filters.maxYear !== null) query = query.lte('model_year', filters.maxYear)
   if (filters.maxMileage !== null) query = query.lte('mileage_km', filters.maxMileage)
   if (filters.maxOperatingHours !== null) query = query.lte('operating_hours', filters.maxOperatingHours)
+  for (const [key, value] of Object.entries(filters.technicalFilters)) {
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) continue
+    query = query.eq(`structured_data->>${key}`, value)
+  }
 
   if (filters.q.length >= MIN_FULLTEXT_QUERY_LENGTH) {
     for (const token of marketplaceSearchTokens(filters.q)) {
@@ -466,12 +488,31 @@ function marketplaceSearchOrFiltersForToken(token: string, markets: string[]) {
     `condition.ilike.%${escaped}%`,
     `color.ilike.%${escaped}%`,
     `equipment.ilike.%${escaped}%`,
+    `search_document.ilike.%${escaped}%`,
     `city.ilike.%${escaped}%`,
     `municipality.ilike.%${escaped}%`,
     `country.ilike.%${escaped}%`,
     `country_code.ilike.%${escaped}%`,
     `reference_number.ilike.%${escaped}%`,
   ]
+
+  const synonyms: Record<string, string[]> = {
+    avant: ['kombi', 'estate', 'station wagon'],
+    estate: ['kombi', 'avant'],
+    automatic: ['automat'],
+    petrol: ['bensin'],
+    gasoline: ['bensin'],
+    diesel: ['diesel'],
+    excavator: ['grÃ¤vmaskin', 'grÃ¤vare'],
+    tracked: ['bandgrÃ¤vare', 'band'],
+    tractor: ['traktor'],
+    gps: ['gps'],
+    caravan: ['husvagn'],
+  }
+  for (const synonym of synonyms[token.toLowerCase()] || []) {
+    const escapedSynonym = escapeIlike(synonym)
+    filters.push(`search_document.ilike.%${escapedSynonym}%`, `title.ilike.%${escapedSynonym}%`)
+  }
 
   if (/^(19|20)\d{2}$/.test(token)) filters.push(`model_year.eq.${token}`)
 
@@ -679,6 +720,67 @@ function emptyMarketplaceFacets() {
     fuels: [],
     gearboxes: [],
     bodyTypes: [],
+    technical: {},
+  }
+}
+
+async function getDynamicMarketplaceFacets(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+) {
+  let query = admin
+    .from('marketplace_listings')
+    .select('category,make,model,fuel_type,gearbox,body_type,structured_data,offer_type')
+  query = applyMarketplaceListingFilters(query, filters)
+  const { data, error } = await query.limit(10_000)
+  if (error) throw new Error(error.message)
+
+  const rows = (data || []) as Array<Record<string, unknown>>
+  const categories = filters.categories.length
+    ? filters.categories
+    : Array.from(new Set(rows.map((row) => String(row.category || '')).filter(Boolean)))
+  const allowedTechnicalFields = new Set(
+    categories.flatMap((category) => fieldsForCategory(category as MarketplaceCategorySlug).map((field) => field.id)),
+  )
+  const counts = new Map<string, Map<string, number>>()
+  const add = (key: string, value: unknown) => {
+    const cleanValue = String(value || '').trim()
+    if (!cleanValue) return
+    const values = counts.get(key) || new Map<string, number>()
+    values.set(cleanValue, (values.get(cleanValue) || 0) + 1)
+    counts.set(key, values)
+  }
+
+  for (const row of rows) {
+    add('makes', row.make)
+    add('models', row.model)
+    add('fuels', row.fuel_type)
+    add('gearboxes', row.gearbox)
+    add('bodyTypes', row.body_type)
+    const structured = row.structured_data && typeof row.structured_data === 'object'
+      ? row.structured_data as Record<string, unknown>
+      : {}
+    for (const [key, value] of Object.entries(structured)) {
+      if (allowedTechnicalFields.has(key)) add(`technical:${key}`, value)
+    }
+  }
+
+  const list = (key: string) => Array.from(counts.get(key) || [])
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => right.count - left.count || left.value.localeCompare(right.value, 'sv'))
+  const technical = Object.fromEntries(
+    Array.from(counts.keys())
+      .filter((key) => key.startsWith('technical:'))
+      .map((key) => [key.slice('technical:'.length), list(key)]),
+  )
+
+  return {
+    makes: list('makes'),
+    models: list('models'),
+    fuels: list('fuels'),
+    gearboxes: list('gearboxes'),
+    bodyTypes: list('bodyTypes'),
+    technical,
   }
 }
 

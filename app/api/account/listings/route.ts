@@ -19,9 +19,10 @@ import {
   normalizeMarketplaceCategory,
 } from '@/lib/marketplace'
 import {
-  categoryTechnicalFields,
+  fieldsForCategoryAndSubcategory,
   listingColorOptions,
 } from '@/lib/listing-form-options'
+import { buildListingSearchDocument, isLeaseOffer, isSaleOffer, normalizeOfferType, type LeaseData } from '@/lib/listing-schema'
 import {
   equipmentLabel,
   equipmentOptionByKey,
@@ -96,7 +97,7 @@ function collectStructuredTechnicalData(
   category: ReturnType<typeof normalizeMarketplaceCategory>,
 ) {
   const technicalData: Record<string, string | number | string[]> = {}
-  const fields = categoryTechnicalFields[category] || []
+  const fields = fieldsForCategoryAndSubcategory(category, { bodyType: text(form, 'bodyType') })
 
   for (const field of fields) {
     const rawValue = text(form, field.name)
@@ -213,6 +214,15 @@ async function uploadImage(
     fullscreenSizeBytes: processed.fullscreen.sizeBytes,
     originalFilename: processed.originalFilename,
   }
+}
+
+function optionalNumber(value: string) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : undefined
+}
+
+function checkbox(form: FormData, key: string) {
+  return form.get(key) === 'on'
 }
 
 async function uploadImagesWithConcurrency(
@@ -441,6 +451,7 @@ export async function POST(request: Request) {
 
     const make = text(form, 'make')
     const model = text(form, 'model')
+    const offerType = normalizeOfferType(form.get('offerType'))
     const sellerNote = text(form, 'sellerNote')
     const description =
       sellerNote ||
@@ -493,7 +504,9 @@ export async function POST(request: Request) {
       : currencyForCountry(listingCountryCode)
     const modelYearInput = text(form, 'modelYear')
     const modelYear = modelYearInput === '1950+' ? 1950 : Number(modelYearInput)
-    const mileage = Number(text(form, 'mileage'))
+    const mileage = ['cars', 'vans', 'motorcycles', 'motorhomes', 'trucks'].includes(category)
+      ? Number(text(form, 'mileage'))
+      : NaN
     const identifiers: ListingIdentifierInput = {
       registrationNumber:
         normalizeIdentifier(text(form, 'registrationNumber') || text(form, 'registration')),
@@ -536,7 +549,57 @@ export async function POST(request: Request) {
       return listingFormError('Välj årsmodell mellan 1950+ och 2027.', 0, 'modelYear')
     }
     if (!city) return listingFormError('Fyll i ort.', 0, 'city')
-    if (!Number.isFinite(price) || price <= 0) return listingFormError('Fyll i ett giltigt pris.', 0, 'price')
+    if (isSaleOffer(offerType) && (!Number.isFinite(price) || price <= 0)) {
+      return listingFormError('Fyll i ett giltigt försäljningspris.', 0, 'price')
+    }
+    const leaseData: LeaseData = {
+      monthlyPrice: optionalNumber(text(form, 'leaseMonthlyPrice')),
+      currency,
+      termMonths: optionalNumber(text(form, 'leaseTermMonths')),
+      minTermMonths: optionalNumber(text(form, 'leaseMinTermMonths')),
+      maxTermMonths: optionalNumber(text(form, 'leaseMaxTermMonths')),
+      initialPayment: optionalNumber(text(form, 'leaseInitialPayment')),
+      deposit: optionalNumber(text(form, 'leaseDeposit')),
+      setupFee: optionalNumber(text(form, 'leaseSetupFee')),
+      residualValue: optionalNumber(text(form, 'leaseResidualValue')),
+      annualMileageKm: optionalNumber(text(form, 'leaseAnnualMileageKm')),
+      excessMileageCost: optionalNumber(text(form, 'leaseExcessMileageCost')),
+      availableFrom: text(form, 'leaseAvailableFrom') || undefined,
+      serviceIncluded: checkbox(form, 'leaseServiceIncluded'),
+      insuranceIncluded: checkbox(form, 'leaseInsuranceIncluded'),
+      maintenanceIncluded: checkbox(form, 'leaseMaintenanceIncluded'),
+      repairsIncluded: checkbox(form, 'leaseRepairsIncluded'),
+      tyresIncluded: checkbox(form, 'leaseTyresIncluded'),
+      deliveryIncluded: checkbox(form, 'leaseDeliveryIncluded'),
+      privateLeasing: checkbox(form, 'leasePrivate'),
+      businessLeasing: checkbox(form, 'leaseBusiness'),
+      operationalLeasing: checkbox(form, 'leaseOperational'),
+      financialLeasing: checkbox(form, 'leaseFinancial'),
+      buyoutAvailable: checkbox(form, 'leaseBuyoutAvailable'),
+      transportIncluded: checkbox(form, 'leaseTransportIncluded'),
+      operatorIncluded: checkbox(form, 'leaseOperatorIncluded'),
+    }
+    const structuredData = {
+      ...technicalData,
+      category,
+      make,
+      model,
+      variant: text(form, 'variant'),
+      equipment_keys: equipmentKeys,
+    }
+    const searchDocument = buildListingSearchDocument({
+      category,
+      make,
+      model,
+      variant: text(form, 'variant'),
+      offerType,
+      technicalData: structuredData,
+      equipment: equipmentText,
+      leaseData,
+    })
+    if (isLeaseOffer(offerType) && (!leaseData.monthlyPrice || leaseData.monthlyPrice <= 0)) {
+      return listingFormError('Fyll i en giltig leasingkostnad per månad.', 0, 'leaseMonthlyPrice')
+    }
 
     const files = form
       .getAll('images')
@@ -686,7 +749,9 @@ export async function POST(request: Request) {
         mileage_km: Number.isFinite(mileage)
           ? Math.max(0, Math.round(mileage))
           : null,
-        operating_hours: Number(text(form, 'operatingHours')) || null,
+        operating_hours: ['agriculture', 'construction'].includes(category)
+          ? Number(text(form, 'operatingHours')) || null
+          : null,
         body_type: text(form, 'bodyType') || category,
         fuel_type: text(form, 'fuelType') || null,
         gearbox: text(form, 'gearbox') || null,
@@ -705,8 +770,12 @@ export async function POST(request: Request) {
         latitude,
         longitude,
         postal_code: postalCode || null,
-        price,
+        price: Number.isFinite(price) ? price : null,
         currency,
+        offer_type: offerType,
+        lease_data: leaseData,
+        structured_data: structuredData,
+        search_document: searchDocument,
         images,
         seller_name:
           profile.account_type === 'business'

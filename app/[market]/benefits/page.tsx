@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import WhyChooseAutorellPage, {
-  generateWhyChooseAutorellMetadata,
-} from '@/app/components/WhyChooseAutorellPage'
-import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
+import { generateWhyChooseAutorellMetadata } from '@/app/components/WhyChooseAutorellPage'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
 
@@ -28,13 +26,7 @@ export default async function LocalizedBenefitsPage({
   const { market } = await params
   const locale = resolveMarketLocale(market)
   if (!locale) notFound()
-  const normalizedMarket = normalizeBillingMarket(market)
-  return (
-    <WhyChooseAutorellPage
-      localeOverride={locale}
-      marketCodeOverride={normalizedMarket.toUpperCase()}
-    />
-  )
+  permanentRedirect(`/${market}/sell-car`)
 }
 
 function resolveMarketLocale(code: string): PublicLocale | null {

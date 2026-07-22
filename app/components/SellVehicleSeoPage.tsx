@@ -539,7 +539,7 @@ export default async function SellVehicleSeoPage({
             <h1 className="mt-5 max-w-5xl text-[42px] font-semibold leading-[.98] tracking-[-.055em] sm:text-[68px] lg:text-[78px]">
               {copy.title}
             </h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#526071]">
+            <p className="mt-6 max-w-3xl text-base leading-7 text-[#526071]">
               {copy.intro}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

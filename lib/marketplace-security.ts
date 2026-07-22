@@ -30,6 +30,10 @@ export const listingRequirementsByCategory: Record<
   cars: [
     { key: 'registrationNumber', label: 'Registreringsnummer, om relevant', required: false },
     { key: 'vin', label: 'VIN/chassinummer', required: false },
+    ],
+  'electric-bikes': [
+    { key: 'frameNumber', label: 'Ramnummer eller serienummer', required: false },
+    { key: 'batterySerialNumber', label: 'Batteriserienummer om möjligt', required: false },
   ],
   vans: [
     { key: 'registrationNumber', label: 'Registreringsnummer, om relevant', required: false },
@@ -65,10 +69,6 @@ export const listingRequirementsByCategory: Record<
     { key: 'serialNumber', label: 'Serienummer', required: false },
     { key: 'vin', label: 'VIN/chassinummer om sådant finns', required: false },
     { key: 'machineType', label: 'Maskintyp', required: true },
-  ],
-  'electric-bikes': [
-    { key: 'frameNumber', label: 'Ramnummer eller serienummer', required: false },
-    { key: 'batterySerialNumber', label: 'Batteriserienummer om möjligt', required: false },
   ],
 }
 

@@ -137,7 +137,7 @@ export default async function AdminListingsPage({
             { value: 'caravans', label: 'Husvagnar' },
             { value: 'trucks', label: 'Lastbilar' },
             { value: 'agriculture', label: 'Lantbruk' },
-            { value: 'construction', label: 'Entreprenad' },
+              { value: 'construction', label: 'Entreprenad' },
             { value: 'electric-bikes', label: 'Cyklar' },
           ]}
         />

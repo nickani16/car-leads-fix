@@ -51,6 +51,8 @@ import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locati
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
+import { fieldsForCategory } from '@/lib/listing-schema'
+import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
@@ -119,6 +121,7 @@ type SavedVehicleSearch = {
     fourWheelDrive: boolean
     leasingPossible: boolean
     equipmentQuery: string
+    technicalFilters?: Record<string, string>
     sortBy?: string
   }
 }
@@ -155,6 +158,8 @@ export type VehicleSearchListing = {
   condition: string | null
   color: string | null
   equipment: string | null
+  offerType?: 'sale' | 'lease' | 'sale_and_lease' | null
+  leaseData?: Record<string, unknown> | null
 }
 
 type MarketplaceSearchApiResponse = {
@@ -165,11 +170,12 @@ type MarketplaceSearchApiResponse = {
   totalPages?: number
   hasNext?: boolean
   facets?: {
-    makes?: string[]
-    models?: string[]
-    fuels?: string[]
-    gearboxes?: string[]
-    bodyTypes?: string[]
+    makes?: Array<string | { value: string; count: number }>
+    models?: Array<string | { value: string; count: number }>
+    fuels?: Array<string | { value: string; count: number }>
+    gearboxes?: Array<string | { value: string; count: number }>
+    bodyTypes?: Array<string | { value: string; count: number }>
+    technical?: Record<string, Array<string | { value: string; count: number }>>
   }
 }
 
@@ -340,7 +346,7 @@ function writeMarketplaceReturnSearchState(locale: PublicLocale, state: Marketpl
 }
 
 function isLeasingListing(listing: VehicleSearchListing) {
-  return (listing.equipment || '').toLowerCase().includes('leasing')
+  return listing.offerType === 'lease' || listing.offerType === 'sale_and_lease' || (listing.equipment || '').toLowerCase().includes('leasing')
 }
 
 function listingEquipmentChips(equipment: string | null | undefined) {
@@ -417,8 +423,8 @@ function categoryText(item: (typeof categories)[number], locale: PublicLocale, s
       caravans: 'Wohnwagen',
       trucks: 'Lkw',
       agriculture: 'Landmaschinen',
-      construction: 'Baumaschinen',
-      'electric-bikes': 'Fahrräder',
+        construction: 'Baumaschinen',
+        'electric-bikes': 'Fahrräder',
     }
     return deLabels[item.key] || item.label
   }
@@ -626,6 +632,14 @@ export default function VehicleSearchExperience({
   const [fourWheelDrive, setFourWheelDrive] = useState(initialFourWheelDrive)
   const [leasingPossible, setLeasingPossible] = useState(initialLeasingPossible)
   const [equipmentQuery, setEquipmentQuery] = useState(initialEquipmentQuery)
+  const [technicalFilters, setTechnicalFilters] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') return {}
+    return Object.fromEntries(
+      Array.from(new URLSearchParams(window.location.search).entries())
+        .filter(([key, value]) => key.startsWith('technical_') && value.trim())
+        .map(([key, value]) => [key.slice('technical_'.length), value.trim()]),
+    )
+  })
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
@@ -634,6 +648,7 @@ export default function VehicleSearchExperience({
   const [mobileMapSearchFocused, setMobileMapSearchFocused] = useState(false)
   const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>(initialSearchSuggestions)
   const [searchListings, setSearchListings] = useState<VehicleSearchListing[]>(listings)
+  const [searchFacets, setSearchFacets] = useState<MarketplaceSearchApiResponse['facets']>({})
   const [, setSearchTotalCount] = useState(listings.length)
   const [searchPage, setSearchPage] = useState(1)
   const [searchTotalPages, setSearchTotalPages] = useState(1)
@@ -668,8 +683,9 @@ export default function VehicleSearchExperience({
     fourWheelDrive,
     leasingPossible,
     equipmentQuery: equipmentQuery.trim(),
+    technicalFilters,
     sortBy,
-  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }), [bodyType, city, color, condition, equipmentQuery, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, technicalFilters, verifiedOnly, fourWheelDrive])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -711,9 +727,10 @@ export default function VehicleSearchExperience({
     if (fourWheelDrive) params.set('fourWheelDrive', '1')
     if (leasingPossible) params.set('leasingPossible', '1')
     setParam('equipment', equipmentQuery)
+    Object.entries(technicalFilters).forEach(([key, value]) => setParam(`technical_${key}`, value))
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -768,6 +785,7 @@ export default function VehicleSearchExperience({
       setFourWheelDrive(Boolean(restored.fourWheelDrive))
       setLeasingPossible(Boolean(restored.leasingPossible))
       setEquipmentQuery(restored.equipmentQuery || '')
+      setTechnicalFilters(restored.technicalFilters || {})
       setSortBy(restored.sortBy || 'published')
       setSearchStateReady(true)
     }, 0)
@@ -837,6 +855,7 @@ export default function VehicleSearchExperience({
         setSearchListings((current) => searchPage > 1 ? [...current, ...nextListings] : nextListings)
         setSearchTotalCount(payload.totalCount ?? nextListings.length)
         setSearchTotalPages(payload.totalPages ?? 1)
+        setSearchFacets(payload.facets || {})
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           setSearchError(true)
@@ -998,6 +1017,7 @@ export default function VehicleSearchExperience({
     setFourWheelDrive(initialFourWheelDrive)
     setLeasingPossible(initialLeasingPossible)
     setEquipmentQuery(initialEquipmentQuery)
+    setTechnicalFilters({})
     setSortBy(initialSortBy || 'published')
     setSavedSearchMessage('')
   }
@@ -1032,6 +1052,7 @@ export default function VehicleSearchExperience({
     setFourWheelDrive(false)
     setLeasingPossible(false)
     setEquipmentQuery('')
+    setTechnicalFilters({})
     const next = [nextCategory]
     clearUnsupportedCategoryFilters(next)
     setSelectedCategories(next)
@@ -1257,11 +1278,48 @@ export default function VehicleSearchExperience({
   ].filter(Boolean).join(' · ') || uiText(locale, 'Condition, seller and verified listings', 'Skick, säljartyp och verifierade annonser', 'Zustand, Verkäufer und verifizierte Anzeigen')
 
   function categoryScopedOptions(categoryKey: string, field: 'fuelType' | 'gearbox' | 'bodyType' | 'condition' | 'color') {
+    const facetKey = field === 'fuelType' ? 'fuels' : field === 'gearbox' ? 'gearboxes' : field === 'bodyType' ? 'bodyTypes' : null
+    const dynamicValues = facetKey
+      ? (searchFacets?.[facetKey] || []).map((item) => typeof item === 'string'
+        ? { value: item, label: item }
+        : { value: item.value, label: `${item.value} (${item.count})` })
+      : []
+    if (dynamicValues.length) return dynamicValues
     const values = optionListings
       .filter((listing) => !categoryKey || listing.category === categoryKey)
       .map((listing) => listing[field])
       .filter((value): value is string => Boolean(value))
     return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
+  }
+
+  function technicalFacetLabel(key: string) {
+    const definition = fieldsForCategory(activeCategoryKey as Parameters<typeof fieldsForCategory>[0], { bodyType }).find((field) => field.id === key)
+    const label = definition?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./, (value) => value.toUpperCase())
+    const normalized = label.includes('\u00c3') ? decodeURIComponent(escape(label)) : label
+    const english = vehicleValueInEnglish(label) || vehicleValueInEnglish(normalized) || normalized
+    return translatePublic(locale, english)
+  }
+
+  function renderDynamicTechnicalFacets() {
+    const knownKeys = new Set(['fuelType', 'gearbox', 'bodyType', 'condition', 'color', 'equipment'])
+    const entries = Object.entries(searchFacets?.technical || {})
+      .filter(([key, options]) => !knownKeys.has(key) && options.length > 0)
+      .filter(([key]) => fieldsForCategory(activeCategoryKey as Parameters<typeof fieldsForCategory>[0], { bodyType }).some((field) => field.id === key))
+    if (!entries.length) return null
+
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 sm:col-span-2">
+        {entries.map(([key, options]) => (
+          <FilterSelect
+            key={key}
+            label={technicalFacetLabel(key)}
+            value={technicalFilters[key] || ''}
+            onChange={(value) => setTechnicalFilters((current) => ({ ...current, ...(value ? { [key]: value } : (() => { const next = { ...current }; delete next[key]; return next })()) }))}
+            options={options.map((item) => typeof item === 'string' ? { value: item, label: item } : { value: item.value, label: `${item.value} (${item.count})` })}
+          />
+        ))}
+      </div>
+    )
   }
 
   function activeTechnicalFilterCount(filters: CategoryFilterDefinition[]) {
@@ -1402,6 +1460,7 @@ export default function VehicleSearchExperience({
           >
             <div className="grid gap-3 sm:grid-cols-2">
               {moreFilters.map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
+              {renderDynamicTechnicalFacets()}
             </div>
           </CollapsibleFilterSection>
         ) : null}
@@ -3479,6 +3538,12 @@ function mapApiListingToVehicleSearchListing(
     condition: stringOrNull(listing.condition),
     color: stringOrNull(listing.color),
     equipment: stringOrNull(listing.equipment),
+    offerType: listing.offer_type === 'lease' || listing.offer_type === 'sale_and_lease' || listing.offer_type === 'sale'
+      ? listing.offer_type
+      : null,
+    leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
+      ? listing.lease_data as Record<string, unknown>
+      : null,
   }
 }
 
@@ -3550,8 +3615,8 @@ function countCategoryLabel(item: (typeof categories)[number], locale: PublicLoc
       caravans: 'husvagn',
       trucks: 'lastbil',
       agriculture: 'lantbruksmaskin',
-      construction: 'entreprenadmaskin',
-      'electric-bikes': 'cykel',
+        construction: 'entreprenadmaskin',
+        'electric-bikes': 'cykel',
     }
     return count === 1 ? singular[item.key] || 'fordon' : categoryText(item, locale, true).toLocaleLowerCase('sv-SE')
   }

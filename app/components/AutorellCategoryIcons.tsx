@@ -134,6 +134,6 @@ export const autorellCategoryIcons: Record<string, AutorellCategoryIcon> = {
   caravans: AutorellCaravanIcon,
   trucks: AutorellTruckIcon,
   agriculture: AutorellAgricultureIcon,
-  construction: AutorellConstructionIcon,
+    construction: AutorellConstructionIcon,
   'electric-bikes': AutorellBikeIcon,
 }

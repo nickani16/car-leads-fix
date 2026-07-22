@@ -81,6 +81,16 @@ const homeCopy = {
   },
 } as const
 
+export function getHomeCopy(locale: PublicLocale) {
+  return locale === 'sv'
+    ? homeCopy.sv
+    : locale === 'de'
+      ? homeCopy.de
+      : locale === 'en'
+        ? homeCopy.en
+        : translatePublicObject(locale, homeCopy.en)
+}
+
 type HomeListingCardItem = {
   id: string
   title: string
@@ -109,14 +119,7 @@ export default async function BusinessMarketplaceHome({
   locale?: PublicLocale
   marketCode?: string
 }) {
-  const t =
-    locale === 'sv'
-      ? homeCopy.sv
-      : locale === 'de'
-        ? homeCopy.de
-        : locale === 'en'
-          ? homeCopy.en
-          : translatePublicObject(locale, homeCopy.en)
+  const t = getHomeCopy(locale)
   const localMarketCode =
     marketCode || countryForLocale(locale)
   const localMarketLabel =
@@ -249,7 +252,7 @@ export default async function BusinessMarketplaceHome({
   )
 }
 
-function HomeSellerAudienceSection({
+export function HomeSellerAudienceSection({
   copy,
   locale,
 }: {

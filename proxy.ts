@@ -596,7 +596,7 @@ export async function proxy(request: NextRequest) {
       // These pages own market-prefixed App Router routes because their
       // metadata, content, and canonical URLs are market-specific. Do not strip
       // the market segment through the legacy localized-page rewrite below.
-      if (segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits') {
+      if (segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car') {
         return withMarketCookie(
           withLanguageCookie(
             NextResponse.next({ request: { headers: requestHeaders } }),

@@ -135,7 +135,7 @@ const categories = [
   { slug: 'caravans', label: 'Husvagnar', icon: AutorellCaravanIcon },
   { slug: 'trucks', label: 'Lastbilar', icon: AutorellTruckIcon },
   { slug: 'agriculture', label: 'Lantbruksmaskiner', icon: Tractor },
-  { slug: 'construction', label: 'Entreprenadmaskiner', icon: Construction },
+    { slug: 'construction', label: 'Entreprenadmaskiner', icon: Construction },
   { slug: 'electric-bikes', label: 'Cyklar', icon: AutorellBikeIcon },
 ] satisfies Array<{
   slug: MarketplaceCategorySlug

@@ -33,12 +33,14 @@ import {
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 import {
-  categoryTechnicalFields,
+  fieldsForCategoryAndSubcategory,
   identifierSelectOptions,
   listingColorOptions,
+  structuredListingFieldNames,
   type ListingOption,
   type ListingTechnicalField,
 } from '@/lib/listing-form-options'
+import { isLeaseOffer, normalizeOfferType, offerTypeValues, type OfferType } from '@/lib/listing-schema'
 import {
   equipmentGroupsForCategory,
   equipmentLabel,
@@ -93,6 +95,15 @@ const steps = [
   'Annonsförhandsvisning',
   'Paket & publicering',
 ] as const
+
+const mileageCategories = new Set<MarketplaceCategorySlug>([
+  'cars',
+  'vans',
+  'motorcycles',
+  'motorhomes',
+  'trucks',
+])
+const machineCategories = new Set<MarketplaceCategorySlug>(['agriculture', 'construction'])
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 const swedishMileageFactor = 10
 const minModelYear = 1950
@@ -127,6 +138,7 @@ export default function NewListingForm({
     packageId: 'free_7d',
     currency: defaultCurrency,
     phoneVisibility: 'public',
+    offerType: 'sale' as OfferType,
   })
   const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
@@ -146,6 +158,7 @@ export default function NewListingForm({
   const [geoLoading, setGeoLoading] = useState(false)
   const draftRestored = useRef(false)
   const draftImagesRestored = useRef(false)
+  const stepHeaderRef = useRef<HTMLDivElement>(null)
   const draftKey = `autorell-listing-draft:${countryCode.toUpperCase()}:${defaultCurrency}`
   const selectedPricing =
     marketplaceCategories.find((item) => item.slug === category) ||
@@ -329,10 +342,12 @@ export default function NewListingForm({
   }
 
   function changeCategory(value: string) {
-    setCategory(normalizeMarketplaceCategory(value))
+    const nextCategory = normalizeMarketplaceCategory(value)
+    setCategory(nextCategory)
     setValues((current) => ({
       packageId: current.packageId || 'free_7d',
       currency: current.currency || currencyForCountry(listingCountryCode),
+      offerType: current.offerType || 'sale',
     }))
     setEquipment([])
     setEquipmentSearch('')
@@ -363,7 +378,9 @@ export default function NewListingForm({
       if ((category === 'agriculture' || category === 'construction') && !values.operatingHours) {
         return missing(copy.errors.operatingHours)
       }
-      if (!values.price) return missing(copy.errors.price)
+      const offerType = normalizeOfferType(values.offerType)
+      if (isLeaseOffer(offerType) && !values.leaseMonthlyPrice) return missing(translatePublic(locale, 'Enter the monthly lease price.'))
+      if (offerType !== 'lease' && !values.price) return missing(copy.errors.price)
       if (!values.county) return missing(copy.errors.chooseField.replace('{field}', marketplaceRegionLabel(listingCountryCode, locale).toLowerCase()))
       if (usesMunicipalityDropdown && !values.municipality) {
         return missing(copy.errors.chooseField.replace('{field}', marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()))
@@ -387,7 +404,7 @@ export default function NewListingForm({
       if (missingIdentifier) {
         return missing(copy.errors.requiredField.replace('{field}', localizeVehicleText(locale, missingIdentifier.label).toLowerCase()))
       }
-      const missingTechnical = categoryTechnicalFields[category].find(
+      const missingTechnical = fieldsForCategoryAndSubcategory(category, values).find(
         (field) => field.required && !values[field.name],
       )
       if (missingTechnical) {
@@ -439,14 +456,26 @@ export default function NewListingForm({
     return displayMessage
   }
 
+  function moveToStep(nextStep: StepId) {
+    setStep(nextStep)
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = stepHeaderRef.current
+        if (!target) return
+        const top = target.getBoundingClientRect().top + window.scrollY - 12
+        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
+      })
+    })
+  }
+
   function nextStep() {
     if (!validate(step)) return
-    setStep((current) => Math.min(4, current + 1) as StepId)
+    moveToStep(Math.min(4, step + 1) as StepId)
   }
 
   function previousStep() {
     setError('')
-    setStep((current) => Math.max(0, current - 1) as StepId)
+    moveToStep(Math.max(0, step - 1) as StepId)
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -461,7 +490,12 @@ export default function NewListingForm({
     form.set('sellerCountryCode', listingCountryCode)
     form.set('geoPlaceCode', usesMunicipalityDropdown ? geoPlaceCode : '')
     form.set('locationSource', usesMunicipalityDropdown ? locationSource || 'unverified' : 'manual')
+    form.set('offerType', normalizeOfferType(values.offerType))
+    const allowedTechnicalKeys = new Set(
+      fieldsForCategoryAndSubcategory(category, values).map((field) => field.name),
+    )
     Object.entries(values).forEach(([key, value]) => {
+      if (structuredListingFieldNames.includes(key) && !allowedTechnicalKeys.has(key)) return
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
     form.set(
@@ -553,7 +587,7 @@ export default function NewListingForm({
       className="overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
     >
       {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>{copy.draftRestoredTitle}</strong> {copy.draftRestoredText}</div> : null}
-      <div className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
+      <div ref={stepHeaderRef} className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">
@@ -573,15 +607,16 @@ export default function NewListingForm({
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-5">
+        <div className="mt-4 grid grid-cols-5 gap-1 sm:gap-2">
           {copy.steps.map((label, index) => (
             <button
               key={label}
               type="button"
               onClick={() => {
-                if (index <= step || validate(step)) setStep(index as StepId)
+                if (index <= step || validate(step)) moveToStep(index as StepId)
               }}
-              className={`min-h-11 rounded-[12px] px-3 py-2 text-left text-xs font-semibold leading-4 transition ${
+              aria-label={label}
+              className={`min-h-9 rounded-[10px] px-1.5 py-2 text-center text-[11px] font-semibold leading-4 transition sm:min-h-11 sm:rounded-[12px] sm:px-3 sm:text-left sm:text-xs ${
                 index === step
                   ? 'bg-[#0866ff] text-white'
                   : index < step
@@ -589,7 +624,8 @@ export default function NewListingForm({
                     : 'bg-white text-[#667085]'
               }`}
             >
-              {label}
+              <span className="sm:hidden">{index + 1}</span>
+              <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </div>
@@ -618,6 +654,20 @@ export default function NewListingForm({
                 </div>
               </SelectCard>
             </div>
+            <div className="md:col-span-2">
+              <p className="mb-2 block text-sm font-semibold">Erbjudande</p>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {offerTypeValues.map((item) => (
+                  <ChoiceButton
+                    key={item.value}
+                    selected={normalizeOfferType(values.offerType) === item.value}
+                    onClick={() => setValue('offerType', item.value)}
+                  >
+                    {item.label}
+                  </ChoiceButton>
+                ))}
+              </div>
+            </div>
             <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} required />
             <Field name="model" label={copy.model} value={values.model || ''} onValueChange={setValue} required />
             <Field name="variant" label={copy.variant} value={values.variant || ''} onValueChange={setValue} />
@@ -628,7 +678,7 @@ export default function NewListingForm({
               ))}
               <option value="1950+">1950+</option>
             </SelectNative>
-            {category !== 'agriculture' && category !== 'construction' ? (
+            {mileageCategories.has(category) ? (
               <Field
                 name="mileage"
                 label={copy.mileageLabel || mileageUnit}
@@ -638,7 +688,7 @@ export default function NewListingForm({
                 required={!['caravans', 'electric-bikes'].includes(category)}
                 step={usesSwedishMileage ? '1' : undefined}
               />
-            ) : (
+            ) : machineCategories.has(category) ? (
               <Field
                 name="operatingHours"
                 label={copy.operatingHours}
@@ -647,7 +697,7 @@ export default function NewListingForm({
                 onValueChange={setValue}
                 required
               />
-            )}
+            ) : null}
             <PriceField
               name="price"
               label={copy.price}
@@ -656,6 +706,9 @@ export default function NewListingForm({
               onValueChange={setValue}
               required
             />
+            {isLeaseOffer(normalizeOfferType(values.offerType)) ? (
+              <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
+            ) : null}
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
             <SelectNative
               name="county"
@@ -752,7 +805,7 @@ export default function NewListingForm({
                 />
               )
             })}
-            {categoryTechnicalFields[category].map((field) => (
+            {fieldsForCategoryAndSubcategory(category, values).map((field) => (
               <TechnicalCard
                 key={field.name}
                 field={field}
@@ -817,6 +870,7 @@ export default function NewListingForm({
             locale={locale}
             copy={copy}
             categoryLabel={selectedCategoryLabel}
+            category={category}
             values={values}
             equipment={equipment}
             images={orderedImages}
@@ -1512,6 +1566,7 @@ function PreviewStep({
   locale,
   copy,
   categoryLabel,
+  category,
   values,
   equipment,
   images,
@@ -1521,6 +1576,7 @@ function PreviewStep({
   locale: PublicLocale
   copy: ListingFormCopy
   categoryLabel: string
+  category: MarketplaceCategorySlug
   values: Values
   equipment: string[]
   images: UploadImage[]
@@ -1528,10 +1584,15 @@ function PreviewStep({
   usesSwedishMileage: boolean
 }) {
   const title = [values.make, values.model, values.variant].filter(Boolean).join(' ')
+  const showMileage = mileageCategories.has(category)
+  const showOperatingHours = machineCategories.has(category)
   const specs = [
     values.modelYear,
-    values.mileage ? formatMileageInput(values.mileage, usesSwedishMileage) : '',
-    values.operatingHours ? `${Number(values.operatingHours).toLocaleString('sv-SE')} timmar` : '',
+    showMileage && values.mileage ? formatMileageInput(values.mileage, usesSwedishMileage) : '',
+    showOperatingHours && values.operatingHours ? `${Number(values.operatingHours).toLocaleString(formNumberLocale(locale))} ${localizedOperatingHoursUnit(locale)}` : '',
+    values.electricRangeKm ? `${values.electricRangeKm} km` : '',
+    values.batteryCapacityKWh ? `${values.batteryCapacityKWh} kWh` : '',
+    values.motorPowerKw ? `${values.motorPowerKw} kW` : '',
     values.fuelType,
     values.gearbox,
     values.bodyType,
@@ -1756,13 +1817,14 @@ function Field(
     helper?: string
     name: string
     value: string
+    locale?: PublicLocale
     onValueChange: (name: string, value: string) => void
   },
 ) {
-  const { label, helper, name, value, onValueChange, ...rest } = props
+  const { label, helper, name, value, locale, onValueChange, ...rest } = props
   return (
     <label>
-      <span className="mb-2 block text-sm font-semibold">{label}</span>
+      <span className="mb-2 block text-sm font-semibold">{leaseLabel(locale || currentDocumentLocale(), label)}</span>
       <input
         {...rest}
         name={name}
@@ -1775,12 +1837,112 @@ function Field(
   )
 }
 
+function LeaseOfferFields({
+  category,
+  values,
+  onChange,
+  currency,
+  locale,
+}: {
+  category: MarketplaceCategorySlug
+  values: Values
+  onChange: (name: string, value: string) => void
+  currency: string
+  locale: PublicLocale
+}) {
+  const isMachine = category === 'agriculture' || category === 'construction'
+  const label = (english: string) => leaseLabel(locale, english)
+  return (
+    <section className="md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
+      <h3 className="text-base font-semibold text-[#101828]">{label('Leasing')}</h3>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <PriceField
+          name="leaseMonthlyPrice"
+          locale={locale}
+          label="Månadskostnad"
+          currency={currency}
+          value={values.leaseMonthlyPrice || ''}
+          onValueChange={onChange}
+          required
+        />
+        <Field
+          name="leaseTermMonths"
+          locale={locale}
+          label="Avtalsperiod (månader)"
+          type="number"
+          min="1"
+          value={values.leaseTermMonths || ''}
+          onValueChange={onChange}
+        />
+        <Field name="leaseMinTermMonths" label="Kortaste avtalsperiod (månader)" type="number" min="1" value={values.leaseMinTermMonths || ''} onValueChange={onChange} />
+        <Field name="leaseMaxTermMonths" label="Längsta avtalsperiod (månader)" type="number" min="1" value={values.leaseMaxTermMonths || ''} onValueChange={onChange} />
+        <Field
+          name="leaseInitialPayment"
+          label="Första förhöjda avgift"
+          type="number"
+          value={values.leaseInitialPayment || ''}
+          onValueChange={onChange}
+        />
+        <Field
+          name="leaseDeposit"
+          label="Deposition"
+          type="number"
+          value={values.leaseDeposit || ''}
+          onValueChange={onChange}
+        />
+        <Field name="leaseSetupFee" label="Uppläggningsavgift" type="number" value={values.leaseSetupFee || ''} onValueChange={onChange} />
+        <Field name="leaseResidualValue" label="Restvärde" type="number" value={values.leaseResidualValue || ''} onValueChange={onChange} />
+        {!isMachine ? <Field name="leaseAnnualMileageKm" label="Tillåten körsträcka per år (km)" type="number" value={values.leaseAnnualMileageKm || ''} onValueChange={onChange} /> : null}
+        {!isMachine ? <Field name="leaseExcessMileageCost" label="Kostnad per övermil" type="number" value={values.leaseExcessMileageCost || ''} onValueChange={onChange} /> : null}
+        <Field name="leaseAvailableFrom" label="Tillgänglig från" type="date" value={values.leaseAvailableFrom || ''} onValueChange={onChange} />
+        <label className="flex items-center gap-3 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={values.leaseServiceIncluded === 'on'}
+            onChange={(event) => onChange('leaseServiceIncluded', event.target.checked ? 'on' : '')}
+            className="h-4 w-4 accent-[#0866ff]"
+          />
+          Service ingår
+        </label>
+        <label className="flex items-center gap-3 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={values.leaseBusiness === 'on'}
+            onChange={(event) => onChange('leaseBusiness', event.target.checked ? 'on' : '')}
+            className="h-4 w-4 accent-[#0866ff]"
+          />
+          Företagsleasing
+        </label>
+        {[
+          ['leaseInsuranceIncluded', 'FÃ¶rsÃ¤kring ingÃ¥r'],
+          ['leaseMaintenanceIncluded', 'UnderhÃ¥ll ingÃ¥r'],
+          ['leaseRepairsIncluded', 'Reparationer ingÃ¥r'],
+          ...(!isMachine ? [['leaseTyresIncluded', 'DÃ¤ck ingÃ¥r']] : []),
+          ['leaseDeliveryIncluded', 'Leverans ingÃ¥r'],
+          ...(!isMachine ? [['leasePrivate', 'Privatleasing']] : []),
+          ['leaseOperational', 'Operationell leasing'],
+          ['leaseFinancial', 'Finansiell leasing'],
+          ['leaseBuyoutAvailable', 'MÃ¶jlighet att kÃ¶pa ut'],
+          ['leaseTransportIncluded', 'Transport ingÃ¥r'],
+          ['leaseOperatorIncluded', 'FÃ¶rare eller operatÃ¶r ingÃ¥r'],
+        ].map(([name, label]) => (
+          <label key={name} className="flex items-center gap-3 text-sm font-medium">
+            <input type="checkbox" checked={values[name] === 'on'} onChange={(event) => onChange(name, event.target.checked ? 'on' : '')} className="h-4 w-4 accent-[#0866ff]" />
+            {leaseLabel(locale, label)}
+          </label>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function PriceField({
   label,
   name,
   value,
   currency,
   required,
+  locale,
   onValueChange,
 }: {
   label: string
@@ -1788,11 +1950,12 @@ function PriceField({
   value: string
   currency: string
   required?: boolean
+  locale?: PublicLocale
   onValueChange: (name: string, value: string) => void
 }) {
   return (
     <label>
-      <span className="mb-2 block text-sm font-semibold">{label}</span>
+      <span className="mb-2 block text-sm font-semibold">{leaseLabel(locale || currentDocumentLocale(), label)}</span>
       <span className="relative block">
         <input
           name={name}
@@ -3003,11 +3166,89 @@ function localizeFormText(locale: PublicLocale, sv: string, en: string, de: stri
   return translatePublic(locale, en)
 }
 
+function currentDocumentLocale(): PublicLocale {
+  if (typeof document === 'undefined') return 'en'
+  const language = document.documentElement.lang.toLowerCase().split('-')[0]
+  return (['sv', 'de', 'en', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da'] as string[]).includes(language)
+    ? language as PublicLocale
+    : 'en'
+}
+
+function leaseLabel(locale: PublicLocale, value: string) {
+  const normalized = value.toLowerCase()
+  const english = normalized.includes('månad') || normalized.includes('mÃ¥nad') ? 'Monthly price' :
+    normalized.includes('mån') || normalized.includes('mÃ¥n') ? 'Contract term (months)' :
+    normalized.includes('kortaste') ? 'Minimum contract term (months)' :
+    normalized.includes('längsta') || normalized.includes('lÃ¤ngsta') ? 'Maximum contract term (months)' :
+    normalized.includes('första') || normalized.includes('fÃ¶rsta') ? 'Initial payment' :
+    normalized.includes('deposition') ? 'Deposit' :
+    normalized.includes('upplägg') || normalized.includes('upplÃ¤gg') ? 'Setup fee' :
+    normalized.includes('restvär') || normalized.includes('restvÃ¤r') ? 'Residual value' :
+    normalized.includes('tillåten') || normalized.includes('tillÃ¥ten') ? 'Allowed mileage per year (km)' :
+    normalized.includes('överm') || normalized.includes('Ã¶verm') ? 'Excess mileage cost' :
+    normalized.includes('tillgäng') || normalized.includes('tillgÃ¤ng') ? 'Available from' :
+    normalized.includes('service') ? 'Service included' :
+    normalized.includes('företags') || normalized.includes('fÃ¶retags') ? 'Business leasing' :
+    normalized.includes('försäkring') || normalized.includes('fÃ¶rsÃ¤kring') ? 'Insurance included' :
+    normalized.includes('underhåll') || normalized.includes('underhÃ¥ll') ? 'Maintenance included' :
+    normalized.includes('reparation') ? 'Repairs included' :
+    normalized.includes('däck') || normalized.includes('dÃ¤ck') ? 'Tyres included' :
+    normalized.includes('leverans') ? 'Delivery included' :
+    normalized.includes('privatleasing') ? 'Private leasing' :
+    normalized.includes('operationell') ? 'Operating lease' :
+    normalized.includes('finansiell') ? 'Financial lease' :
+    normalized.includes('köpa ut') || normalized.includes('kÃ¶pa ut') ? 'Buyout available' :
+    normalized.includes('transport') ? 'Transport included' :
+    normalized.includes('förare') || normalized.includes('fÃ¶rare') ? 'Driver or operator included' :
+    value
+  return translatePublic(locale, english)
+}
+
 function localizeVehicleText(locale: PublicLocale, value?: string | null) {
   if (!value) return ''
   if (locale === 'sv') return value
-  const english = vehicleValueInEnglish(value) || value
+  const normalized = repairListingText(value)
+  const english = vehicleValueInEnglish(value) || additionalVehicleEnglish[normalized] || vehicleValueInEnglish(normalized) || normalized
   return localizedVehicleTerm(locale, english) || translatePublic(locale, english)
+}
+
+const additionalVehicleEnglish: Record<string, string> = {
+  Drifttimmar: 'Operating hours',
+  Räckvidd: 'Range',
+  Batterikapacitet: 'Battery capacity',
+  Motoreffekt: 'Motor power',
+  Laddningseffekt: 'Charging power',
+  Laddningstid: 'Charging time',
+  Snabbladdning: 'Fast charging',
+  'Regenerativ bromsning': 'Regenerative braking',
+  Maskintyp: 'Machine type',
+  'Redskapsf\u00e4ste': 'Attachment',
+  Hydraulik: 'Hydraulics',
+  Frontlastare: 'Front loader',
+  ISOBUS: 'ISOBUS',
+  Baltyp: 'Bale type',
+  Balstorlek: 'Bale size',
+  Kammartyp: 'Chamber type',
+  Knivar: 'Knives',
+  Plastare: 'Wrapper',
+  'Snabbf\u00e4ste': 'Quick coupler',
+  Rotortilt: 'Tiltrotator',
+  Skopor: 'Buckets',
+  'Arbetsh\u00f6jd': 'Working height',
+  Plattformskapacitet: 'Platform capacity',
+  'Batterisp\u00e4nning': 'Battery voltage',
+  Rundbal: 'Round bale',
+  Fyrkantsbal: 'Square bale',
+  'Sm\u00e5bal': 'Small bale',
+  Fast: 'Fixed',
+  Variabel: 'Variable',
+  Trepunkt: 'Three-point hitch',
+  Hydrauliskt: 'Hydraulic',
+  Drag: 'Drawbar',
+}
+
+function repairListingText(value: string) {
+  return value.includes('\u00c3') ? decodeURIComponent(escape(value)) : value
 }
 
 function localizedListingText(locale: PublicLocale, english: string) {
@@ -3040,6 +3281,14 @@ function localizedUnitSuffix(locale: PublicLocale, suffix?: string) {
   if (locale === 'sv') return ` (${suffix})`
   const normalized = unitSuffixOverrides[locale]?.[suffix] ?? unitSuffixOverrides.en[suffix] ?? suffix
   return normalized ? ` (${normalized})` : ''
+}
+
+function localizedOperatingHoursUnit(locale: PublicLocale) {
+  const units: Record<PublicLocale, string> = {
+    sv: 'timmar', en: 'hours', de: 'Stunden', at: 'Stunden', be: 'uur', fr: 'heures',
+    es: 'horas', it: 'ore', pl: 'godz.', nl: 'uur', fi: 'tuntia', da: 'timer',
+  }
+  return units[locale]
 }
 
 function formatMunicipalityCount(count: number, countryCode: string, locale: PublicLocale) {
@@ -3104,8 +3353,8 @@ const categoryLabelOverrides: Partial<
     caravans: 'Campingvogne',
     trucks: 'Lastbiler',
     agriculture: 'Landbrugsmaskiner',
-    construction: 'Entreprenørmaskiner',
     'electric-bikes': 'Cykler',
+    construction: 'Entreprenørmaskiner',
   },
 }
 

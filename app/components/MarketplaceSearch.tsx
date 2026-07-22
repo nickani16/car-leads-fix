@@ -450,6 +450,7 @@ function getSearchCta(
   }
 
   const sv: Record<MarketplaceCategorySlug, string> = {
+    'electric-bikes': 'Sök cykel',
     cars: 'Sök bil',
     vans: 'Sök transportbil',
     motorcycles: 'Sök motorcykel',
@@ -458,7 +459,6 @@ function getSearchCta(
     trucks: 'Sök lastbil',
     agriculture: 'Sök maskin',
     construction: 'Sök maskin',
-    'electric-bikes': 'Sök cykel',
   }
   const en: Record<MarketplaceCategorySlug, string> = {
     cars: 'Search cars',
@@ -470,6 +470,7 @@ function getSearchCta(
     agriculture: 'Search machines',
     construction: 'Search machines',
     'electric-bikes': 'Search bikes',
+    
   }
   const de: Record<MarketplaceCategorySlug, string> = {
     cars: 'Autos suchen',
@@ -575,6 +576,7 @@ function getSearchPlaceholders(
   locale: PublicLocale,
 ) {
   const sv: Record<MarketplaceCategorySlug, string[]> = {
+    'electric-bikes': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
     cars: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter växellåda...', 'Sök efter drivmedel...', 'Sök efter årsmodell...'],
     vans: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter skåp...', 'Sök efter drivmedel...', 'Sök efter årsmodell...'],
     motorcycles: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter motor...', 'Sök efter körsträcka...', 'Sök efter årsmodell...'],
@@ -583,7 +585,6 @@ function getSearchPlaceholders(
     trucks: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter axlar...', 'Sök efter drivmedel...', 'Sök efter årsmodell...'],
     agriculture: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter redskap...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     construction: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter maskintyp...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
-    'electric-bikes': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
   }
   const en: Record<MarketplaceCategorySlug, string[]> = {
     cars: ['Search by make...', 'Search by model...', 'Search by gearbox...', 'Search by fuel...', 'Search by year...'],

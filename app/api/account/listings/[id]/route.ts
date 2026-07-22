@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
 import { geocodeListingLocation, parseCoordinate } from '@/lib/geocoding'
 import { normalizeMarketplaceCategory } from '@/lib/marketplace'
-import { categoryTechnicalFields } from '@/lib/listing-form-options'
+import { buildListingSearchDocument, normalizeOfferType } from '@/lib/listing-schema'
+import { fieldsForCategoryAndSubcategory } from '@/lib/listing-form-options'
 import {
   equipmentLabel,
   equipmentOptionByKey,
@@ -49,7 +50,7 @@ function collectStructuredTechnicalData(
   category: ReturnType<typeof normalizeMarketplaceCategory>,
 ) {
   const technicalData: Record<string, string | number> = {}
-  const fields = categoryTechnicalFields[category] || []
+  const fields = fieldsForCategoryAndSubcategory(category, input)
 
   for (const field of fields) {
     const rawValue = clean(input[field.name])
@@ -134,7 +135,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category')
+    .select('id,seller_user_id,status,review_status,title,price,currency,description,make,model,variant,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
     .eq('id', id)
     .maybeSingle()
 
@@ -311,10 +312,12 @@ export async function PATCH(
       equipment: equipmentTextFromKeys(equipmentKeys) || null,
       phone_visibility: phoneVisibility,
       updated_at: now,
-      mileage_km: Number.isFinite(Number(body.mileage))
+      mileage_km: ['cars', 'vans', 'motorcycles', 'motorhomes', 'trucks'].includes(category) && Number.isFinite(Number(body.mileage))
         ? Math.max(0, Math.round(Number(body.mileage)))
         : null,
-      operating_hours: Number(body.operatingHours) || null,
+      operating_hours: ['agriculture', 'construction'].includes(category)
+        ? Number(body.operatingHours) || null
+        : null,
       body_type: technicalInput.bodyType ? clean(technicalInput.bodyType) : category,
       fuel_type: technicalInput.fuelType ? clean(technicalInput.fuelType) : null,
       gearbox: technicalInput.gearbox ? clean(technicalInput.gearbox) : null,
@@ -322,6 +325,26 @@ export async function PATCH(
       known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
       service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
     }
+    const structuredData = {
+      ...(listing.structured_data && typeof listing.structured_data === 'object' ? listing.structured_data : {}),
+      ...technicalData,
+      category,
+      make: listing.make,
+      model: listing.model,
+      variant: listing.variant,
+      equipment_keys: equipmentKeys,
+    }
+    patch.structured_data = structuredData
+    patch.search_document = buildListingSearchDocument({
+      category,
+      make: listing.make,
+      model: listing.model,
+      variant: listing.variant,
+        offerType: normalizeOfferType(listing.offer_type),
+      technicalData: structuredData,
+      equipment: equipmentTextFromKeys(equipmentKeys),
+      leaseData: listing.lease_data,
+    })
     if (priceChanged) {
       patch.updated_at = now
     }

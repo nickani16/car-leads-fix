@@ -124,7 +124,7 @@ export function localizePublicHref(locale: PublicLocale, href: string) {
 }
 
 export function localePathPrefix(locale: PublicLocale) {
-  return localePathPrefixes[locale]
+  return localePathPrefixes[locale] || ''
 }
 
 export function translationLocale(locale: PublicLocale): PublicLocale {
@@ -157,6 +157,8 @@ export const publicPagePaths = [
   '/vehicles',
   '/how-it-works',
   '/benefits',
+  '/sell-car',
+  '/sell-van',
   '/about',
   '/faq',
   '/help-center',

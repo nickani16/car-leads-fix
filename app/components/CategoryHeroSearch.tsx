@@ -272,7 +272,7 @@ function getSearchPlaceholders(
     trucks: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter axlar...', 'Sök efter drivmedel...', 'Sök efter årsmodell...'],
     agriculture: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter redskap...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
     construction: ['Sök efter märke...', 'Sök efter modell...', 'Sök efter maskintyp...', 'Sök efter timmar...', 'Sök efter årsmodell...'],
-    'electric-bikes': ['Sök efter märke...', 'Sök efter modell...', 'Sök efter batteri...', 'Sök efter räckvidd...', 'Sök efter årsmodell...'],
+    'electric-bikes': ['Sok efter marke...', 'Sok efter modell...', 'Sok efter batteri...', 'Sok efter rackvidd...', 'Sok efter arsmodell...'],
   } satisfies Record<MarketplaceCategorySlug, string[]>
 
   const en = {
