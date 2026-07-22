@@ -6,6 +6,10 @@ import {
 
 const statuses = new Set(['reviewing', 'actioned', 'closed'])
 
+type AdminReportRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 const reportAuditSelect = `
   id,
   listing_id,
@@ -21,7 +25,7 @@ const reportAuditSelect = `
 
 export async function PATCH(
   request: Request,
-  context: RouteContext<'/api/admin/reports/[id]'>,
+  context: AdminReportRouteContext,
 ) {
   const auth = await requireAdminRoute('reports.manage')
   if ('error' in auth) return auth.error

@@ -19,9 +19,13 @@ const actions = new Set([
   'reopen_account',
 ])
 
+type AdminListingRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function PATCH(
   request: Request,
-  context: RouteContext<'/api/admin/marketplace-listings/[id]'>,
+  context: AdminListingRouteContext,
 ) {
   const { id } = await context.params
   const body = (await request.json()) as {

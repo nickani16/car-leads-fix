@@ -5,7 +5,11 @@ import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
-export async function POST(request: Request, context: RouteContext<'/api/account/listings/[id]/refresh'>) {
+type ListingRefreshRouteContext = {
+  params: Promise<{ id: string }>
+}
+
+export async function POST(request: Request, context: ListingRefreshRouteContext) {
   const { id } = await context.params
   const supabase = await createClient()
   const {

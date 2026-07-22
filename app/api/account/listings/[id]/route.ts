@@ -24,6 +24,10 @@ const actions = new Set([
 ])
 const decimalTechnicalFieldNames = new Set(['engineLiters', 'cargoVolumeM3'])
 
+type ListingRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 function clean(value: unknown) {
   return String(value || '').replace(/\s+/g, ' ').trim()
 }
@@ -97,7 +101,7 @@ function equipmentTextFromKeys(keys: string[]) {
 
 export async function PATCH(
   request: Request,
-  context: RouteContext<'/api/account/listings/[id]'>,
+  context: ListingRouteContext,
 ) {
   const supabase = await createClient()
   const {

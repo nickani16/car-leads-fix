@@ -217,8 +217,6 @@ export default function NewListingForm({
   useEffect(() => {
     let active = true
     const controller = new AbortController()
-    setRegionOptions([])
-    setPlaceOptions([])
     void fetch(`/api/geo/regions?country=${encodeURIComponent(listingCountryCode)}`, {
       signal: controller.signal,
     })

@@ -22,6 +22,10 @@ type PageKey =
   | 'terms'
   | 'cookies'
 
+type DealerMarketPageProps = {
+  params: Promise<{ locale: string; page: string }>
+}
+
 const pages: Record<PageKey, {
   title: string
   heading: string
@@ -115,7 +119,7 @@ const pages: Record<PageKey, {
 
 export async function generateMetadata({
   params,
-}: PageProps<'/dealer-market/[locale]/[page]'>): Promise<Metadata> {
+}: DealerMarketPageProps): Promise<Metadata> {
   const { locale, page } = await params
   if ((locale !== 'de' && !isPublicLanguage(locale)) || !(page in pages)) return {}
   const publicLocale = locale as PublicLocale
@@ -125,7 +129,7 @@ export async function generateMetadata({
 
 export default async function MarketplaceInformationPage({
   params,
-}: PageProps<'/dealer-market/[locale]/[page]'>) {
+}: DealerMarketPageProps) {
   const { locale, page } = await params
   if ((locale !== 'de' && !isPublicLanguage(locale)) || !(page in pages)) {
     notFound()

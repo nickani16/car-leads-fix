@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import type { PublicNewsArticle, PublicNewsListing } from '@/lib/content/vehicle-news'
 
 export default function VehicleNewsSearch({
@@ -17,13 +17,9 @@ export default function VehicleNewsSearch({
   articles: PublicNewsArticle[]
   featuredListings: PublicNewsListing[]
 }) {
-  const [activeCategory, setActiveCategory] = useState(initialCategory)
+  const activeCategory = initialCategory
   const [query, setQuery] = useState('')
   const copy = vehicleNewsSearchCopy(market)
-
-  useEffect(() => {
-    setActiveCategory(initialCategory)
-  }, [initialCategory])
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()

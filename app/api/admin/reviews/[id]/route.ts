@@ -6,6 +6,10 @@ import {
 
 const actions = new Set(['approve', 'hide', 'remove'])
 
+type AdminReviewRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 const reviewAuditSelect = `
   id,
   listing_id,
@@ -24,7 +28,7 @@ const reviewAuditSelect = `
 
 export async function PATCH(
   request: Request,
-  context: RouteContext<'/api/admin/reviews/[id]'>,
+  context: AdminReviewRouteContext,
 ) {
   const auth = await requireAdminRoute('moderation.manage')
   if ('error' in auth) return auth.error

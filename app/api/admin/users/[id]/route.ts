@@ -14,6 +14,10 @@ const actions = new Set([
   'company_pending_review',
 ])
 
+type AdminUserRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 const profileAuditSelect = `
   user_id,
   account_type,
@@ -42,7 +46,7 @@ const profileAuditSelect = `
 
 export async function PATCH(
   request: Request,
-  context: RouteContext<'/api/admin/users/[id]'>,
+  context: AdminUserRouteContext,
 ) {
   const { id } = await context.params
   const body = (await request.json()) as { action?: string; reason?: string }
