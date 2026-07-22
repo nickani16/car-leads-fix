@@ -419,7 +419,30 @@ async function buildWhyChooseAutorellMetadata(
   const seoLocale = marketCode === 'AT' ? 'at' : marketCode === 'BE' ? 'be' : locale
   const seoMap = vehicleKind === 'van' ? sellVanSeoByLocale : vehicleKind === 'construction' ? sellConstructionSeoByLocale : sellCarSeoByLocale
   const pagePath = vehicleKind === 'van' ? '/sell-van' : vehicleKind === 'construction' ? '/sell-construction' : '/sell-car'
-  const seo = sellSeoOverridesByVehicleKind[vehicleKind][seoLocale] || seoMap[seoLocale] || seoMap.en
+  const productionSeoByKind: Record<VehicleKind, Partial<Record<PublicLocale, SellCarSeo>>> = {
+    car: {
+      sv: {
+        title: 'Sälj bil gratis online | Autorells fordonsmarknad',
+        description: 'Annonsera din bil gratis i 5 dagar på Autorell. Nå köpare i Sverige och Europa med en tydlig bilannons på rätt språk och marknad.',
+        imageAlt: 'Sälj bil gratis online på Autorell',
+      },
+    },
+    van: {
+      sv: {
+        title: 'Sälj transportbil gratis online | Autorell',
+        description: 'Annonsera din transportbil gratis i 5 dagar på Autorell och nå köpare i Sverige och Europa med en tydlig annons.',
+        imageAlt: 'Sälj transportbil gratis online på Autorell',
+      },
+    },
+    construction: {
+      sv: {
+        title: getConstructionBenefitsCopy('sv').metaTitle,
+        description: 'Annonsera grävmaskin, hjullastare eller annan entreprenadmaskin gratis i 5 dagar på Autorell och nå rätt köpare.',
+        imageAlt: 'Sälj entreprenadmaskiner gratis online på Autorell',
+      },
+    },
+  }
+  const seo = productionSeoByKind[vehicleKind][seoLocale] || sellSeoOverridesByVehicleKind[vehicleKind][seoLocale] || seoMap[seoLocale] || seoMap.en
   const canonical = `https://www.autorell.com${localizePublicHref(locale, pagePath)}`
   const title = cleanSeoText(seo.title, 67)
   const description = cleanSeoText(seo.description, 155)
