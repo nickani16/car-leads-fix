@@ -71,7 +71,7 @@ const copyByLocale: Record<'en' | 'sv', BenefitsCopy> = {
     stepsTitle: 'Tre enkla steg till en publicerad annons',
     steps: [
       {
-        title: 'Fyll i fordonet',
+        title: 'Skapa en tydlig bilannons',
         text: 'Lägg in kategori, märke, modell, pris, plats och bilder i ett flöde som fungerar på både mobil och desktop.',
       },
       {
