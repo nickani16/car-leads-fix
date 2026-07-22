@@ -317,6 +317,7 @@ export default function HomeHeroVehicleSearch({
   ])
   const [marketsOpen, setMarketsOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
+  const [categoryError, setCategoryError] = useState(false)
   const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
@@ -346,12 +347,16 @@ export default function HomeHeroVehicleSearch({
     'Kategorie wählen',
     'Choose category',
   )
+  const chooseCategoryErrorLabel = localizedLabel(
+    locale,
+    'Välj en kategori för att söka',
+    'Wählen Sie eine Kategorie für die Suche',
+    'Choose a category to search',
+  )
   const selectedCategoryLabel =
     selectedCategories.length === 1
       ? categoryLabel(selectedCategory.slug, locale)
-      : selectedCategories.length > 1
-        ? `${selectedCategories.length} ${localizedLabel(locale, 'kategorier', 'Kategorien', 'categories')}`
-        : chooseCategoryLabel
+      : chooseCategoryLabel
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -409,13 +414,9 @@ export default function HomeHeroVehicleSearch({
   }
 
   function toggleCategory(slug: MarketplaceCategorySlug) {
-    setSelectedCategories((current) => {
-      if (current.includes(slug)) {
-        const next = current.filter((item) => item !== slug)
-        return next
-      }
-      return [...current, slug]
-    })
+    setSelectedCategories((current) => (current.includes(slug) ? [] : [slug]))
+    setCategoryError(false)
+    setCategoryOpen(false)
   }
 
   function updateAdvancedFilter(
@@ -427,6 +428,11 @@ export default function HomeHeroVehicleSearch({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (selectedCategories.length !== 1) {
+      setCategoryError(true)
+      setCategoryOpen(true)
+      return
+    }
     const params = new URLSearchParams()
     const trimmedQuery = query.trim()
     const chipLabels = selectedSearchSuggestions.map((suggestion) => suggestion.title.trim()).filter(Boolean)
@@ -435,7 +441,6 @@ export default function HomeHeroVehicleSearch({
     if (intent === 'leasing') params.set('mode', 'leasing')
     if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
-    if (selectedCategories.length > 1) params.set('categories', selectedCategories.join(','))
     Object.entries(advancedFilters).forEach(([key, value]) => {
       const trimmedValue = value.trim()
       if (trimmedValue) params.set(key, trimmedValue)
@@ -736,6 +741,9 @@ export default function HomeHeroVehicleSearch({
               ))}
             </div>
           ) : null}
+          {categoryError ? (
+            <p className="mt-2 text-sm font-medium text-[#d92d20]">{chooseCategoryErrorLabel}</p>
+          ) : null}
         </div>
 
         <div className="mt-8 hidden grid-cols-3 gap-2 lg:grid">
@@ -756,6 +764,9 @@ export default function HomeHeroVehicleSearch({
             </button>
           ))}
         </div>
+        {categoryError ? (
+          <p className="mt-3 hidden text-sm font-medium text-[#d92d20] lg:block">{chooseCategoryErrorLabel}</p>
+        ) : null}
 
         {!moreCategoriesOpen ? (
           <div className="mt-3 hidden lg:block">
