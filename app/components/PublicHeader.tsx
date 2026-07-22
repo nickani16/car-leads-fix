@@ -348,6 +348,23 @@ export default function PublicHeader({
     if (locale === 'de') return de || en
     return locale === 'en' ? en : translatePublic(locale, en)
   }
+  const mobileSavedSearchesLabel = (() => {
+    const labels: Partial<Record<PublicLocale, string>> = {
+      sv: 'Sparade',
+      en: 'Saved',
+      de: 'Merken',
+      at: 'Merken',
+      fr: 'Favoris',
+      es: 'Guardadas',
+      it: 'Salvate',
+      nl: 'Bewaard',
+      be: 'Bewaard',
+      pl: 'Zapisane',
+      da: 'Gemte',
+      fi: 'Tallessa',
+    }
+    return labels[locale] || 'Saved'
+  })()
   const [open, setOpen] = useState(false)
   const [marketSelectorOpen, setMarketSelectorOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -1768,7 +1785,7 @@ export default function PublicHeader({
                 ) : null}
               </span>
               <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
+                {mobileSavedSearchesLabel}
               </span>
             </Link>
           ) : (
@@ -1779,7 +1796,7 @@ export default function PublicHeader({
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
+                {mobileSavedSearchesLabel}
               </span>
             </button>
           )}
