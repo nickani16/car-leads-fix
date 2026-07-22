@@ -55,7 +55,7 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.match(form, /market: billingMarketCode \|\| listingCountryCode/)
   assert.match(form, /locale,/)
   assert.match(form, /window\.location\.assign\(checkout\.url\)/)
-  assert.match(form, /localizePublicHref\(locale, `\/account\/listings\?published=1&listing=/)
+  assert.match(form, /localizePublicHref\(locale, `\/account\/listings\/created\?listing=/)
   assert.match(form, /Publiceringen tog f/)
   assert.doesNotMatch(form, /router\.push\(`\/account\/listings\?choosePackage=1&listing=/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
@@ -72,7 +72,7 @@ test('listing insert falls back when production schema lacks geo columns', () =>
 test('create listing package copy and metadata are manually localized', () => {
   assert.match(form, /title: 'Inicio'/)
   assert.match(form, /title: 'Estándar'/)
-  assert.match(form, /days: '7 días'/)
+  assert.match(form, /days: '5 días'/)
   assert.match(form, /days: '15 días'/)
   assert.match(form, /days: '30 días'/)
   assert.match(form, /periodo de anuncio/)
