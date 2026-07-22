@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { hasVerifiedEmailCode } from '@/lib/email-verification'
 
 export const generateMetadata = generateAccountMetadata('settings')
 
@@ -54,6 +55,7 @@ export default async function PrivateSettingsPage() {
     .maybeSingle<ProfileRow>()
 
   if (!profile) redirect(localizePublicHref(locale, '/register'))
+  const emailVerified = await hasVerifiedEmailCode(profile.email)
   if (profile.account_type === 'business') redirect(localizePublicHref(locale, '/account/company/settings'))
 
   const sections: SettingsSection[] = [
@@ -64,7 +66,7 @@ export default async function PrivateSettingsPage() {
       rows: [
         [copy.email, profile.email || user.email || copy.notSet],
         [copy.phone, profile.phone || copy.notSet],
-        [copy.emailVerification, user.email_confirmed_at ? copy.verified : copy.notVerified],
+        [copy.emailVerification, emailVerified ? copy.verified : copy.notVerified],
         [copy.phoneCheck, phoneStatusLabel(profile.phone_verification_status, copy)],
         [copy.profileStatus, profile.identity_status || copy.notSet],
       ],

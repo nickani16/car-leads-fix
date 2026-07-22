@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { euCountryCodes } from '@/lib/eu-countries'
 import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
+import { normalizePlaceName } from '@/lib/place-name'
 
 function clean(value: unknown) {
   return String(value || '').trim()
@@ -34,7 +35,8 @@ export async function PATCH(request: Request) {
   const addressLine1 = clean(body.addressLine1)
   const addressLine2 = clean(body.addressLine2)
   const postalCode = clean(body.postalCode)
-  const city = clean(body.city)
+  const city = normalizePlaceName(body.city)
+  const region = normalizePlaceName(body.region)
   const birthDate = clean(body.birthDate)
   const websiteUrl = clean(body.websiteUrl)
   const profile = {
@@ -56,7 +58,7 @@ export async function PATCH(request: Request) {
     address_line_2: addressLine2 || null,
     registered_address: [addressLine1, addressLine2].filter(Boolean).join(', '),
     city,
-    region: clean(body.region) || null,
+    region: region || null,
     postal_code: postalCode,
     risk_status: phoneRiskStatus(phoneRiskFlags),
     updated_at: new Date().toISOString(),
@@ -99,7 +101,7 @@ export async function PATCH(request: Request) {
         address_line_2: addressLine2 || null,
         postal_code: postalCode,
         city,
-        region: clean(body.region) || null,
+        region: region || null,
         contact_name: profile.display_name,
         contact_phone: phone,
         updated_at: new Date().toISOString(),

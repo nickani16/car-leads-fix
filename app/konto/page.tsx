@@ -23,6 +23,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { hasVerifiedEmailCode } from '@/lib/email-verification'
 import AccountLogoutButton from './AccountLogoutButton'
 import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
@@ -138,10 +139,11 @@ export default async function AccountPage() {
   const conversations = (conversationData.data || []) as ConversationRow[]
   const visibleConversationCount = await countVisibleConversations(admin, user.id, conversations)
   const paymentCount = pendingPaymentCount.count || 0
+  const emailVerified = await hasVerifiedEmailCode(profile.email)
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
   const privateVerificationComplete =
-    Boolean(user.email_confirmed_at) &&
+    emailVerified &&
     profile.risk_status === 'standard' &&
     !['needs_review', 'rejected'].includes(String(profile.identity_status || ''))
   const verificationLabel = privateVerificationComplete ? copy.verified : copy.reviewPending
@@ -408,7 +410,7 @@ export default async function AccountPage() {
               {copy.secureAccount}
             </span>
           </div>
-          <ProfileForm profile={profile} locale={locale} emailConfirmed={Boolean(user.email_confirmed_at)} />
+          <ProfileForm profile={profile} locale={locale} emailConfirmed={emailVerified} />
         </section>
 
         <DeleteAccountPanel

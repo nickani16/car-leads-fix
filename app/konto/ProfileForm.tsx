@@ -100,7 +100,7 @@ export default function ProfileForm({
     const response = await fetch('/api/auth/email-code/request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: profile.email, locale }),
+      body: JSON.stringify({ email: profile.email, locale, purpose: 'email_verification' }),
     })
     const result = (await response.json().catch(() => null)) as { error?: string } | null
     setEmailVerificationLoading(false)
@@ -284,7 +284,10 @@ function VerificationCard({
         <div className="mt-4 grid gap-2 text-sm md:grid-cols-2">
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
             <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
-            <strong className="mt-1 block text-[#101828]">{emailConfirmed ? copy.verified : copy.notVerified}</strong>
+            <strong className={`mt-1 flex items-center gap-1.5 ${emailConfirmed ? 'text-[#027a48]' : 'text-[#b42318]'}`}>
+              {emailConfirmed ? <CheckCircle2 className="h-4 w-4" /> : null}
+              {emailConfirmed ? copy.verified : copy.notVerified}
+            </strong>
             <span className="mt-1 block truncate text-xs font-medium text-[#667085]">{email}</span>
           </div>
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
@@ -305,7 +308,7 @@ function VerificationCard({
               disabled={emailVerificationLoading}
               className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              {emailVerificationLoading ? copy.sendingCode : emailCodeSent ? copy.sendNewCode : copy.sendCode}
+              {emailVerificationLoading ? copy.sendingCode : emailCodeSent ? copy.sendNewCode : copy.verifyEmailButton}
             </button>
             {emailCodeSent ? (
               <form onSubmit={onVerifyEmailCode} className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,180px)_auto]">
@@ -398,6 +401,7 @@ function getProfileCopy(locale: PublicLocale) {
     phoneNotChecked: 'Checked when saved',
     verifyEmailTitle: 'Verify your email',
     verifyEmailText: 'Send a one-time code to your email and enter it here. After that your seller profile can show as verified.',
+    verifyEmailButton: 'Verify email',
     sendCode: 'Send code',
     sendNewCode: 'Send new code',
     sendingCode: 'Sending...',
@@ -445,6 +449,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNotChecked: 'Kontrolleras vid sparande',
       verifyEmailTitle: 'Verifiera mejladressen',
       verifyEmailText: 'Skicka en engångskod till mejlen och ange den här. Efter det kan säljarprofilen visas som verifierad.',
+      verifyEmailButton: 'Verifiera mejl',
       sendCode: 'Skicka kod',
       sendNewCode: 'Skicka ny kod',
       sendingCode: 'Skickar...',
@@ -489,6 +494,25 @@ function getProfileCopy(locale: PublicLocale) {
       city: 'Ciudad',
       region: 'Región o provincia',
       email: 'Correo electrónico',
+      emailVerification: 'Correo',
+      phoneCheck: 'Control del teléfono',
+      phoneCheckHelp: 'El prefijo del país y el formato del número se comprueban automáticamente.',
+      verified: 'Verificado',
+      notVerified: 'No verificado',
+      phoneFormatValid: 'Formato aprobado',
+      phoneNeedsReview: 'Revisa el número',
+      phoneNotChecked: 'Se comprueba al guardar',
+      verifyEmailTitle: 'Verifica tu correo',
+      verifyEmailText: 'Envía un código de un solo uso a tu correo e introdúcelo aquí. Después, tu perfil de vendedor podrá mostrarse como verificado.',
+      verifyEmailButton: 'Verificar correo',
+      sendCode: 'Enviar código',
+      sendNewCode: 'Enviar nuevo código',
+      sendingCode: 'Enviando...',
+      verifyCode: 'Verificar código',
+      emailCodeSent: 'Hemos enviado un código a tu correo.',
+      emailVerifiedNow: 'Correo verificado.',
+      emailCodeSendError: 'No se pudo enviar el código.',
+      emailCodeVerifyError: 'No se pudo verificar el código.',
       saveProfile: 'Guardar perfil',
       needsReview: 'La cuenta necesita revisión',
       basicCheckDone: 'La comprobación básica se ha completado',
@@ -509,6 +533,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Nummer prüfen',
       verifyEmailTitle: 'E-Mail verifizieren',
       verifyEmailText: 'Senden Sie einen Einmalcode an Ihre E-Mail und geben Sie ihn hier ein. Danach kann Ihr Verkäuferprofil als verifiziert angezeigt werden.',
+      verifyEmailButton: 'E-Mail verifizieren',
       sendCode: 'Code senden',
       sendNewCode: 'Neuen Code senden',
       sendingCode: 'Wird gesendet...',
@@ -531,6 +556,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Vérifier le numéro',
       verifyEmailTitle: 'Vérifier l’e-mail',
       verifyEmailText: 'Envoyez un code à usage unique à votre e-mail et saisissez-le ici. Le profil vendeur pourra ensuite être affiché comme vérifié.',
+      verifyEmailButton: 'Vérifier l’e-mail',
       sendCode: 'Envoyer le code',
       sendNewCode: 'Envoyer un nouveau code',
       sendingCode: 'Envoi...',
@@ -553,6 +579,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Controlla il numero',
       verifyEmailTitle: 'Verifica l’e-mail',
       verifyEmailText: 'Invia un codice monouso alla tua e-mail e inseriscilo qui. Dopo, il profilo venditore potrà risultare verificato.',
+      verifyEmailButton: 'Verifica e-mail',
       sendCode: 'Invia codice',
       sendNewCode: 'Invia nuovo codice',
       sendingCode: 'Invio...',
@@ -575,6 +602,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Controleer het nummer',
       verifyEmailTitle: 'E-mail verifiëren',
       verifyEmailText: 'Stuur een eenmalige code naar je e-mail en vul die hier in. Daarna kan je verkopersprofiel als geverifieerd worden getoond.',
+      verifyEmailButton: 'E-mail verifiëren',
       sendCode: 'Code sturen',
       sendNewCode: 'Nieuwe code sturen',
       sendingCode: 'Versturen...',
@@ -597,6 +625,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Sprawdź numer',
       verifyEmailTitle: 'Zweryfikuj e-mail',
       verifyEmailText: 'Wyślij jednorazowy kod na e-mail i wpisz go tutaj. Potem profil sprzedawcy może być oznaczony jako zweryfikowany.',
+      verifyEmailButton: 'Zweryfikuj e-mail',
       sendCode: 'Wyślij kod',
       sendNewCode: 'Wyślij nowy kod',
       sendingCode: 'Wysyłanie...',
@@ -619,6 +648,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Kontrollér nummeret',
       verifyEmailTitle: 'Verificér e-mail',
       verifyEmailText: 'Send en engangskode til din e-mail og indtast den her. Derefter kan sælgerprofilen vises som verificeret.',
+      verifyEmailButton: 'Verificér e-mail',
       sendCode: 'Send kode',
       sendNewCode: 'Send ny kode',
       sendingCode: 'Sender...',
@@ -641,6 +671,7 @@ function getProfileCopy(locale: PublicLocale) {
       phoneNeedsReview: 'Tarkista numero',
       verifyEmailTitle: 'Vahvista sähköposti',
       verifyEmailText: 'Lähetä kertakäyttökoodi sähköpostiisi ja syötä se tähän. Sen jälkeen myyjäprofiili voidaan näyttää vahvistettuna.',
+      verifyEmailButton: 'Vahvista sähköposti',
       sendCode: 'Lähetä koodi',
       sendNewCode: 'Lähetä uusi koodi',
       sendingCode: 'Lähetetään...',

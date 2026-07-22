@@ -12,6 +12,7 @@ import {
   MARKETPLACE_TERMS_VERSION,
 } from '@/lib/marketplace-security'
 import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
+import { normalizePlaceName } from '@/lib/place-name'
 
 function clean(value: unknown) {
   return String(value || '').trim()
@@ -155,8 +156,8 @@ export async function POST(request: Request) {
     const addressLine1 = clean(body.addressLine1)
     const addressLine2 = clean(body.addressLine2)
     const postalCode = clean(body.postalCode)
-    const city = clean(body.city)
-    const region = clean(body.region)
+    const city = normalizePlaceName(body.city)
+    const region = normalizePlaceName(body.region)
     const accountType = body.accountType === 'business' ? 'business' : 'private'
     const nationalId = clean(body.nationalId)
     const companyName = clean(body.companyName)

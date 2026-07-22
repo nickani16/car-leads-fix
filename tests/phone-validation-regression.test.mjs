@@ -18,6 +18,18 @@ const profileForm = readFileSync(
   new URL('../app/konto/ProfileForm.tsx', import.meta.url),
   'utf8',
 )
+const emailCodeRequestApi = readFileSync(
+  new URL('../app/api/auth/email-code/request/route.ts', import.meta.url),
+  'utf8',
+)
+const emailVerification = readFileSync(
+  new URL('../lib/email-verification.ts', import.meta.url),
+  'utf8',
+)
+const placeName = readFileSync(
+  new URL('../lib/place-name.ts', import.meta.url),
+  'utf8',
+)
 const accountPage = readFileSync(
   new URL('../app/konto/page.tsx', import.meta.url),
   'utf8',
@@ -67,6 +79,15 @@ test('my pages show email verification separately from phone format checks', () 
   assert.match(profileForm, /Checked when saved/)
   assert.match(profileForm, /\/api\/auth\/email-code\/request/)
   assert.match(profileForm, /\/api\/auth\/email-code\/verify/)
+  assert.match(profileForm, /purpose: 'email_verification'/)
+  assert.match(profileForm, /verifyEmailButton/)
+  assert.match(emailCodeRequestApi, /getEmailVerificationCodeCopy/)
+  assert.match(emailCodeRequestApi, /body\.purpose === 'email_verification'/)
+  assert.match(emailCodeRequestApi, /redirect_path: body\.purpose === 'email_verification'/)
+  assert.match(emailVerification, /auth_email_codes/)
+  assert.match(emailVerification, /redirect_path/)
+  assert.match(emailVerification, /email_verification/)
+  assert.match(emailVerification, /consumed_at/)
   assert.doesNotMatch(profileForm, /phoneVerification/)
   assert.doesNotMatch(profileForm, /not code verified/i)
   assert.match(settingsPage, /phoneStatusLabel/)
@@ -76,9 +97,19 @@ test('my pages show email verification separately from phone format checks', () 
   assert.doesNotMatch(settingsPage, /Phone verification/)
 })
 
-test('private account overview uses email and risk status for the visible verification badge', () => {
+test('private account overview uses explicit email-code verification and risk status for the visible verification badge', () => {
   assert.match(accountPage, /privateVerificationComplete/)
-  assert.match(accountPage, /user\.email_confirmed_at/)
+  assert.match(accountPage, /hasVerifiedEmailCode/)
+  assert.match(accountPage, /emailVerified/)
   assert.match(accountPage, /profile\.risk_status === 'standard'/)
   assert.match(accountPage, /copy\.verified : copy\.reviewPending/)
+})
+
+test('profile address place names are normalized before storage', () => {
+  assert.match(placeName, /normalizePlaceName/)
+  assert.match(placeName, /toLocaleLowerCase/)
+  assert.match(registerApi, /normalizePlaceName\(body\.city\)/)
+  assert.match(registerApi, /normalizePlaceName\(body\.region\)/)
+  assert.match(profileApi, /normalizePlaceName\(body\.city\)/)
+  assert.match(profileApi, /normalizePlaceName\(body\.region\)/)
 })

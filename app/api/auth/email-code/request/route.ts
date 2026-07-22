@@ -12,7 +12,7 @@ import {
 import { getAuthApiCopy } from '@/lib/auth-copy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { localeFromRequest } from '@/lib/auth-locale'
-import { authEmailHtml, getOtpEmailCopy } from '@/lib/email/auth-emails'
+import { authEmailHtml, getEmailVerificationCodeCopy, getOtpEmailCopy } from '@/lib/email/auth-emails'
 
 const requestWindow = new Map<string, number>()
 const REQUEST_COOLDOWN_MS = 20_000
@@ -35,7 +35,7 @@ function isRateLimited(key: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string; locale?: string }
+    const body = (await request.json()) as { email?: string; locale?: string; purpose?: string }
     const email = normalizeEmail(body.email)
     const locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
@@ -85,11 +85,14 @@ export async function POST(request: Request) {
       email,
       email_hash: hashedEmail,
       code_hash: codeHash(email, code),
+      redirect_path: body.purpose === 'email_verification' ? 'email_verification' : null,
       expires_at: codeExpiresAt(),
     })
     if (insertError) throw insertError
 
-    const emailCopy = getOtpEmailCopy(locale, code)
+    const emailCopy = body.purpose === 'email_verification'
+      ? getEmailVerificationCodeCopy(locale, code)
+      : getOtpEmailCopy(locale, code)
     const resend = new Resend(resendKey)
     const { error: sendError } = await resend.emails.send({
       from: 'Autorell <noreply@autorell.com>',
