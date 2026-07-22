@@ -24,6 +24,7 @@ test('listing management uses server-side filtering, aggregate counts and pagina
   assert.match(accountListingManagement, /userId: string \| string\[\]/)
   assert.match(accountListingManagement, /getManagedListingsForOwners\(admin, ownerIds, filters\)/)
   assert.match(accountListingManagement, /\.in\('seller_user_id', ownerIds\)/)
+  assert.match(accountListingManagement, /account_listing_summary', \{ p_user_id: ownerIds\[0\] \}/)
   assert.match(manageApi, /'Cache-Control': 'private, no-store'/)
   assert.match(migration, /row_number\(\) over/i)
   assert.match(migration, /row_number_value > \(normalized\.requested_page - 1\)/i)

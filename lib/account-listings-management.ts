@@ -161,7 +161,7 @@ export async function getAccountListingSummary(
   const ownerIds = normalizeOwnerIds(userId)
   if (ownerIds.length !== 1) return getAccountListingSummaryForOwners(admin, ownerIds)
 
-  const { data, error } = await admin.rpc('account_listing_summary', { p_user_id: userId })
+  const { data, error } = await admin.rpc('account_listing_summary', { p_user_id: ownerIds[0] })
   if (error) throw error
   return normalizeSummary(data)
 }
