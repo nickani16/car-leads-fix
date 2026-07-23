@@ -78,6 +78,7 @@ type ListingRow = {
   service_history: string | null
   equipment: string | null
   equipment_keys: string[] | null
+  structured_data: Record<string, string | number | string[] | null> | null
   country_code: string
   country: string | null
   city: string
@@ -282,8 +283,20 @@ export default async function ListingDetailPage({
   const equipmentGroups = selectedEquipmentGroups(equipmentKeys, locale)
   const fallbackEquipment = equipmentKeys.length ? [] : splitCsv(listing.equipment).map((item) => translateSpecValue(locale, item) || item)
   const technicalDetails = await getListingTechnicalDetails(listing.id)
-  const specs = buildSpecs(listing, locale, categoryLabel, countryName, technicalDetails)
-  const technicalData = technicalDetails?.technicalData || {}
+  const listingStructuredData = isRecord(listing.structured_data)
+    ? (listing.structured_data as Record<string, string | number | string[] | null>)
+    : {}
+  const mergedTechnicalDetails: ListingTechnicalDetails = {
+    registrationNumber: technicalDetails?.registrationNumber || null,
+    vin: technicalDetails?.vin || null,
+    chassisNumber: technicalDetails?.chassisNumber || null,
+    technicalData: {
+      ...listingStructuredData,
+      ...(technicalDetails?.technicalData || {}),
+    },
+  }
+  const specs = buildSpecs(listing, locale, categoryLabel, countryName, mergedTechnicalDetails)
+  const technicalData = mergedTechnicalDetails.technicalData
   const electricRange = technicalData.electricRangeKm ?? technicalData.rangeKm
   const publicSellerDescription = isPublicSellerDescription(listing.description)
     ? listing.description

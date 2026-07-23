@@ -135,6 +135,8 @@ test('listing detail equipment tabs stay compact on desktop', () => {
 })
 
 test('listing detail shows electric vehicle technical values from current form keys', () => {
+  assert.match(listingDetail, /listingStructuredData/)
+  assert.match(listingDetail, /\.\.\.listingStructuredData/)
   assert.match(listingDetail, /technicalData\.electricRangeKm \?\? technicalData\.rangeKm/)
   assert.match(listingDetail, /technical\.batteryCapacityKWh \?\? technical\.batteryCapacityWh/)
   assert.match(listingDetail, /technical\.motorPowerKw \?\? technical\.motorPowerW/)
