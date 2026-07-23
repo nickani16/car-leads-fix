@@ -162,7 +162,7 @@ export default function ListingImageGallery({
                   <img
                     src={image}
                     alt={index === active ? title : ''}
-                    className="h-full w-full object-contain"
+                    className="h-full w-full object-cover"
                   />
                 </div>
               ))}
@@ -277,7 +277,7 @@ export default function ListingImageGallery({
               aria-label={`Show photo ${index + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt="" className="h-full w-full object-contain" />
+              <img src={image} alt="" className="h-full w-full object-cover" />
               <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-black text-white">
                 {index + 1}
               </span>
@@ -326,12 +326,12 @@ export default function ListingImageGallery({
           <div className="h-dvh overflow-y-auto px-4 pb-8 pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:px-8 sm:pb-12">
             <div className="mx-auto grid max-w-[1120px] gap-5 sm:gap-7">
               {safeFullscreenImages.map((image, index) => (
-                <div key={`fullscreen-${image}-${index}`} className="overflow-hidden bg-[#181818]">
+                <div key={`fullscreen-${image}-${index}`} className="overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image}
                     alt={index === 0 ? title : ''}
-                    className="h-auto w-full object-contain"
+                    className="h-auto w-full object-cover"
                   />
                 </div>
               ))}

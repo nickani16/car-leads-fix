@@ -1519,7 +1519,7 @@ function ImageStep({
               onDrop={(event) => dropImage(event, image.id)}
               className="overflow-hidden rounded-[18px] border border-[#d7deed] bg-white"
             >
-              <Image src={image.preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-contain" />
+              <Image src={image.preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-cover" />
               <div className="flex items-center justify-between gap-2 p-3">
                 <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-[#667085]">
                   <GripVertical className="h-4 w-4 shrink-0" />
@@ -1634,7 +1634,7 @@ function PreviewStep({
       </div>
       <article className="overflow-hidden rounded-[24px] border border-[#d7deed] bg-white shadow-sm">
         {images[0] ? (
-          <Image src={images[0].preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-contain" />
+          <Image src={images[0].preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-cover" />
         ) : (
           <div className="grid h-64 place-items-center bg-[#f3f6fb] text-sm text-[#667085]">
             {copy.noImage}
@@ -1675,7 +1675,7 @@ function PreviewStep({
           {images.length > 1 ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {images.slice(1, 5).map((image) => (
-                <Image key={image.id} src={image.preview} alt="" width={240} height={180} unoptimized className="aspect-[4/3] w-full rounded-[10px] object-contain" />
+                <Image key={image.id} src={image.preview} alt="" width={240} height={180} unoptimized className="aspect-[4/3] w-full rounded-[10px] object-cover" />
               ))}
             </div>
           ) : null}
