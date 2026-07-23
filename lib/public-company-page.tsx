@@ -405,7 +405,7 @@ export default async function PublicCompanyPage({
             <div className="divide-y divide-[#edf1f6]">
               {visibleListings.map(({ listing, href, price }) => (
                 <article key={listing.id} className="grid gap-4 p-4 transition hover:bg-[#fbfdff] sm:grid-cols-[190px_minmax(0,1fr)_auto] sm:p-5">
-                  <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px] bg-black">
+                  <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px]">
                     {listing.images?.length ? (
                       <ListingCardImageCarousel
                         images={listing.images}

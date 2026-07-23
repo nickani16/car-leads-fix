@@ -204,7 +204,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
   return (
     <article className="relative overflow-visible rounded-[20px] border border-[#dfe6f1] bg-white shadow-[0_10px_35px_rgba(16,24,40,.045)]">
       <div className="grid gap-0 md:grid-cols-[190px_minmax(0,1fr)] xl:grid-cols-[190px_minmax(0,1fr)_260px]">
-        <div className="relative min-h-[180px] overflow-hidden rounded-t-[19px] bg-black md:rounded-l-[19px] md:rounded-tr-none">
+        <div className="relative min-h-[180px] overflow-hidden rounded-t-[19px] md:rounded-l-[19px] md:rounded-tr-none">
           {image ? <Image src={image} alt={listing.title} fill sizes="(max-width: 768px) 100vw, 190px" quality={78} className="object-contain" /> : <div className="grid h-full min-h-[180px] place-items-center text-center text-sm text-[#667085]"><span><FileImage className="mx-auto mb-2 h-6 w-6" />{copy.noImage}</span></div>}
           {canBulk ? <label className="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-[10px] bg-white/95 shadow-md"><span className="sr-only">{copy.selectListing} {listing.title}</span><input form="bulk-listing-form" type="checkbox" name="listingId" value={listing.id} className="h-4 w-4 rounded accent-[#0866ff]" /></label> : null}
         </div>

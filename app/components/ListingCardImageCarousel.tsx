@@ -81,7 +81,7 @@ export default function ListingCardImageCarousel({
 
   return (
     <div
-      className={`group pointer-events-auto relative h-full w-full overflow-hidden bg-black ${className}`}
+      className={`group pointer-events-auto relative h-full w-full overflow-hidden ${className}`}
       onTouchStart={(event) => {
         if (visibleImages.length < 2) return
         const touch = event.touches[0]
