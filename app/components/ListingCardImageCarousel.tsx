@@ -16,6 +16,8 @@ type ListingCardImageCarouselProps = {
   nextLabel?: string
   placeholder?: ReactNode
   onNavigate?: () => void
+  showControlsOnDesktop?: boolean
+  showDotsOnDesktop?: boolean
 }
 
 export default function ListingCardImageCarousel({
@@ -29,6 +31,8 @@ export default function ListingCardImageCarousel({
   nextLabel = 'Next photo',
   placeholder,
   onNavigate,
+  showControlsOnDesktop = false,
+  showDotsOnDesktop = false,
 }: ListingCardImageCarouselProps) {
   const [imageIndex, setImageIndex] = useState(0)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -128,7 +132,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className="absolute left-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
+            className={`absolute left-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white transition md:grid ${showControlsOnDesktop ? 'md:opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
           >
             <ChevronLeft className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
@@ -140,7 +144,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className="absolute right-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white opacity-0 transition md:grid md:group-hover:opacity-100"
+            className={`absolute right-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white transition md:grid ${showControlsOnDesktop ? 'md:opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
           >
             <ChevronRight className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
           </button>
@@ -148,7 +152,7 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className="absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[4px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] md:hidden">
+        <div className={`absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[4px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] ${showDotsOnDesktop ? '' : 'md:hidden'}`}>
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}

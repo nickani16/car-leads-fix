@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import ListingCardImageCarousel from '@/app/components/ListingCardImageCarousel'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
@@ -403,10 +404,19 @@ export default async function PublicCompanyPage({
           {visibleListings.length ? (
             <div className="divide-y divide-[#edf1f6]">
               {visibleListings.map(({ listing, href, price }) => (
-                <Link key={listing.id} href={href} className="grid gap-4 p-4 transition hover:bg-[#fbfdff] sm:grid-cols-[190px_minmax(0,1fr)_auto] sm:p-5">
+                <article key={listing.id} className="grid gap-4 p-4 transition hover:bg-[#fbfdff] sm:grid-cols-[190px_minmax(0,1fr)_auto] sm:p-5">
                   <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px] bg-black">
-                    {listing.images?.[0] ? (
-                      <Image src={listing.images[0]} alt={listing.title} fill sizes="220px" quality={78} className="object-contain" />
+                    {listing.images?.length ? (
+                      <ListingCardImageCarousel
+                        images={listing.images}
+                        title={listing.title}
+                        href={href}
+                        sizes="220px"
+                        previousLabel={translatePublic(locale, 'Previous photo')}
+                        nextLabel={translatePublic(locale, 'Next photo')}
+                        showControlsOnDesktop
+                        showDotsOnDesktop
+                      />
                     ) : (
                       <span className="grid h-full place-items-center text-[#0866ff]">
                         <Building2 className="h-10 w-10" />
@@ -414,7 +424,7 @@ export default async function PublicCompanyPage({
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-lg font-semibold tracking-[-0.02em] text-[#101828]">{listing.title}</span>
+                    <Link href={href} className="block text-lg font-semibold tracking-[-0.02em] text-[#101828] hover:text-[#0866ff]">{listing.title}</Link>
                     <span className="mt-1 block text-sm font-medium text-[#667085]">
                       {[categoryLabel(listing.category, locale), listing.city, getEuCountryName(listing.country_code || '', locale)].filter(Boolean).join(' | ')}
                     </span>
@@ -424,11 +434,11 @@ export default async function PublicCompanyPage({
                   </span>
                   <span className="flex flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
                     <span className="text-lg font-semibold text-[#101828]">{price.label}</span>
-                    <span className="inline-flex min-h-10 items-center rounded-[10px] border border-[#c9d7ec] px-3 text-sm font-bold text-[#0866ff]">
+                    <Link href={href} className="inline-flex min-h-10 items-center rounded-[10px] border border-[#c9d7ec] px-3 text-sm font-bold text-[#0866ff] hover:border-[#0866ff]">
                       {copy.viewListing}
-                    </span>
+                    </Link>
                   </span>
-                </Link>
+                </article>
               ))}
             </div>
           ) : (
