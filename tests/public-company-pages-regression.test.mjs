@@ -76,6 +76,19 @@ test('business listing detail links to eligible public company page', () => {
   assert.doesNotMatch(listingDetail, /Kontakt erfolgt/)
 })
 
+test('listing detail breadcrumbs include home, marketplace, category, and localized labels', () => {
+  assert.match(listingDetail, /getListingBreadcrumbCopy/)
+  assert.match(listingDetail, /localizePublicHref\(locale, '\/'\)/)
+  assert.match(listingDetail, /localizePublicHref\(locale, '\/marketplace'\)/)
+  assert.match(listingDetail, /localizePublicHref\(locale, `\/marketplace\/\$\{listing\.category\}`\)/)
+  assert.match(listingDetail, /Fordon till salu/)
+  assert.match(listingDetail, /Vehicles for sale/)
+  assert.match(listingDetail, /Fahrzeuge kaufen/)
+  assert.match(listingDetail, /Voertuigen te koop/)
+  assert.match(listingDetail, /rounded-full border border-\[#d8e2f1\]/)
+  assert.match(listingDetail, /item\.icon === 'home'/)
+})
+
 test('new listing page uses a white page background', () => {
   assert.match(newListingPage, /min-h-screen bg-white/)
 })

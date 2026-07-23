@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Fuel,
   Gauge,
+  Home,
   Info,
   Map as MapIcon,
   MapPin,
@@ -384,18 +385,21 @@ export default async function ListingDetailPage({
       />
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
         <div className="hidden items-center justify-between gap-3 sm:flex">
-          <nav aria-label={copy.breadcrumbLabel} className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-[#475467]">
-            {breadcrumbItems.map((item, index) => (
-              <div key={`${item.href}-${item.label}`} className="flex min-w-0 items-center gap-1.5">
-                {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" strokeWidth={2} /> : null}
-                <Link
-                  href={item.href}
-                  className="truncate text-[#101828] underline underline-offset-4 transition hover:text-[#0866ff]"
-                >
-                  {item.label}
-                </Link>
-              </div>
-            ))}
+          <nav aria-label={copy.breadcrumbLabel} className="min-w-0">
+            <ol className="flex min-w-0 flex-wrap items-center gap-1.5 text-[13px] font-semibold text-[#475467]">
+              {breadcrumbItems.map((item, index) => (
+                <li key={`${item.href}-${item.label}`} className="flex min-w-0 items-center gap-1.5">
+                  {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" strokeWidth={2.25} /> : null}
+                  <Link
+                    href={item.href}
+                    className="inline-flex min-h-8 max-w-[210px] items-center gap-1.5 truncate rounded-full border border-[#d8e2f1] bg-white px-2.5 py-1 text-[#344054] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                  >
+                    {item.icon === 'home' ? <Home className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} /> : null}
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
           </nav>
           <div className="hidden min-w-0 items-center gap-4 sm:flex">
             <ShareListingButton
@@ -1058,8 +1062,12 @@ function buildDesktopBreadcrumbItems({
   locale: PublicLocale
   categoryLabel: string
 }) {
+  const copy = getListingBreadcrumbCopy(locale)
+  const marketplaceHref = localizePublicHref(locale, '/marketplace')
   const categoryHref = localizePublicHref(locale, `/marketplace/${listing.category}`)
-  const items: Array<{ label: string; href: string }> = [
+  const items: Array<{ label: string; href: string; icon?: 'home' }> = [
+    { label: copy.home, href: localizePublicHref(locale, '/'), icon: 'home' },
+    { label: copy.vehiclesForSale, href: marketplaceHref },
     { label: categoryLabel, href: categoryHref },
   ]
   const bodyTypeLabel = translateSpecValue(locale, listing.body_type)?.trim()
@@ -1076,6 +1084,25 @@ function buildDesktopBreadcrumbItems({
   }
 
   return items
+}
+
+function getListingBreadcrumbCopy(locale: PublicLocale) {
+  const labels: Record<PublicLocale, { home: string; vehiclesForSale: string }> = {
+    sv: { home: 'Hem', vehiclesForSale: 'Fordon till salu' },
+    en: { home: 'Home', vehiclesForSale: 'Vehicles for sale' },
+    de: { home: 'Startseite', vehiclesForSale: 'Fahrzeuge kaufen' },
+    at: { home: 'Startseite', vehiclesForSale: 'Fahrzeuge kaufen' },
+    be: { home: 'Home', vehiclesForSale: 'Voertuigen te koop' },
+    fr: { home: 'Accueil', vehiclesForSale: 'Véhicules à vendre' },
+    es: { home: 'Inicio', vehiclesForSale: 'Vehículos en venta' },
+    it: { home: 'Home', vehiclesForSale: 'Veicoli in vendita' },
+    pl: { home: 'Strona główna', vehiclesForSale: 'Pojazdy na sprzedaż' },
+    nl: { home: 'Home', vehiclesForSale: 'Voertuigen te koop' },
+    fi: { home: 'Etusivu', vehiclesForSale: 'Ajoneuvot myynnissä' },
+    da: { home: 'Forside', vehiclesForSale: 'Køretøjer til salg' },
+  }
+
+  return labels[locale] || labels.en
 }
 
 function buildSpecs(
