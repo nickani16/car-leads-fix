@@ -12,6 +12,8 @@ const listingRouteSource = await readFile('app/api/account/listings/route.ts', '
 const listingFormSource = await readFile('app/konto/annonser/ny/NewListingForm.tsx', 'utf8')
 const listingGallerySource = await readFile('app/components/ListingImageGallery.tsx', 'utf8')
 const listingCardCarouselSource = await readFile('app/components/ListingCardImageCarousel.tsx', 'utf8')
+const publicCompanySource = await readFile('lib/public-company-page.tsx', 'utf8')
+const accountListingsSource = await readFile('app/konto/annonser/page.tsx', 'utf8')
 const nextConfigSource = await readFile('next.config.ts', 'utf8')
 const require = createRequire(import.meta.url)
 
@@ -158,6 +160,11 @@ test('public listing images use safe framing and modern formats by viewport', ()
   assert.match(listingGallerySource, /bg-black/)
   assert.match(listingGallerySource, /object-contain/)
   assert.doesNotMatch(listingGallerySource, /className="h-full w-full object-cover"/)
+  assert.match(publicCompanySource, /rounded-\[10px\] bg-black/)
+  assert.match(publicCompanySource, /quality=\{78\} className="object-contain"/)
+  assert.match(accountListingsSource, /bg-black md:rounded-l-\[19px\]/)
+  assert.match(accountListingsSource, /quality=\{78\} className="object-contain"/)
+  assert.match(listingFormSource, /bg-black object-contain/)
 })
 
 function loadImageProcessingModule() {
