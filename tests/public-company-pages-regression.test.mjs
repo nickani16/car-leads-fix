@@ -37,6 +37,7 @@ test('public company page gathers company listings and contact details', () => {
   assert.match(companyPage, /website_url/)
   assert.match(companyPage, /Open in Google Maps/)
   assert.match(companyPage, /bg-\[linear-gradient/)
+  assert.match(companyPage, /placeholder:text-\[#98a2b3\]/)
   assert.doesNotMatch(companyPage, /<iframe/)
   assert.doesNotMatch(companyPage, /output=embed/)
   assert.match(companyPage, /uniqueValues/)
