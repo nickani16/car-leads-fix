@@ -463,14 +463,14 @@ function HomeListingCard({
   locale: PublicLocale
 }) {
   return (
-    <article className="group relative w-[82vw] max-w-[320px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
+    <article className="group relative w-[76vw] max-w-[280px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[4/3]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
             images={item.imageUrls}
             title={item.title}
             href={item.href}
-            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 76vw, (max-width: 1024px) 50vw, 25vw"
             previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
             nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
           />
