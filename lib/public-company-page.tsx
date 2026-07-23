@@ -363,11 +363,23 @@ export default async function PublicCompanyPage({
                 {selectedCategory ? <input type="hidden" name="category" value={selectedCategory} /> : null}
                 <label className="relative min-w-0 flex-1 lg:w-[320px]">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+                  <style>{`
+                    .company-listing-search {
+                      color: #98a2b3 !important;
+                    }
+                    .company-listing-search::placeholder {
+                      color: #98a2b3 !important;
+                      opacity: 1 !important;
+                    }
+                    .company-listing-search:not(:placeholder-shown) {
+                      color: #101828 !important;
+                    }
+                  `}</style>
                   <input
                     name="q"
                     defaultValue={q}
                     placeholder={copy.searchPlaceholder}
-                    className={`h-11 w-full rounded-[10px] border border-[#d9e2ef] bg-white pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:text-[#101828] focus:ring-4 focus:ring-[#0866ff]/10 ${q ? 'text-[#101828]' : 'text-[#98a2b3]'}`}
+                    className="company-listing-search h-11 w-full rounded-[10px] border border-[#d9e2ef] bg-white pl-10 pr-3 text-sm font-medium outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                   />
                 </label>
                 <button type="submit" className="h-11 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">
