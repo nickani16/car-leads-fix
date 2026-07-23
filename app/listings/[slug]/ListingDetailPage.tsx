@@ -485,11 +485,11 @@ export default async function ListingDetailPage({
                   {headlineFacts.slice(0, 8).map((fact) => {
                     const Icon = fact.icon
                     return (
-                      <div key={fact.label} className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#edf1f6] bg-[#f8fbff] px-2.5 py-2 sm:gap-3 sm:rounded-[14px] sm:px-4 sm:py-3">
-                        <Icon className="h-4 w-4 shrink-0 text-[#202124] sm:h-5 sm:w-5" />
+                      <div key={fact.label} className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#edf1f6] bg-[#f8fbff] px-2.5 py-2 sm:gap-2.5 sm:rounded-[11px] sm:px-3 sm:py-2.5">
+                        <Icon className="h-4 w-4 shrink-0 text-[#202124]" />
                         <div className="min-w-0">
-                          <p className="break-words text-[11px] font-medium leading-3.5 text-[#667085] sm:text-xs sm:leading-4">{fact.label}</p>
-                          <p title={String(fact.value)} className="mt-0.5 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:text-sm sm:leading-5">{fact.value}</p>
+                          <p className="break-words text-[11px] font-medium leading-3.5 text-[#667085]">{fact.label}</p>
+                          <p title={String(fact.value)} className="mt-0.5 break-words text-[13px] font-semibold leading-4 text-[#101828]">{fact.value}</p>
                         </div>
                       </div>
                     )
@@ -504,11 +504,11 @@ export default async function ListingDetailPage({
               </h2>
               <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-2.5 xl:grid-cols-3">
                 {specs.map((spec) => (
-                  <div key={spec.label} className="rounded-[9px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-2.5 sm:rounded-[10px] sm:px-3.5 sm:py-3">
-                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[#667085] sm:text-[10px] sm:tracking-[0.13em]">
+                  <div key={spec.label} className="rounded-[9px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-2.5 sm:rounded-[10px] sm:px-3 sm:py-2.5">
+                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[#667085] sm:text-[9px] sm:tracking-[0.12em]">
                       {spec.label}
                     </p>
-                    <p className="mt-1 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:mt-1.5 sm:text-[14px] sm:leading-5">
+                    <p className="mt-1 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:mt-1 sm:text-[13px] sm:leading-4">
                       {spec.value}
                     </p>
                   </div>
@@ -658,7 +658,7 @@ export default async function ListingDetailPage({
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
                         <span>{sellerTypeLabel}</span>
                         <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
-                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-5 shrink-0 rounded-[4px]" />
+                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                           {countryName || listing.country_code}
                         </span>
                       </div>

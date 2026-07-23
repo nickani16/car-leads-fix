@@ -102,6 +102,13 @@ test('listing detail cards do not use card shadows', () => {
   assert.doesNotMatch(listingImageGallery, /aspect-\[16\/9\] overflow-hidden shadow-sm/)
 })
 
+test('listing detail desktop spec tabs stay compact and company flag is round', () => {
+  assert.match(listingDetail, /sm:gap-2\.5 sm:rounded-\[11px\] sm:px-3 sm:py-2\.5/)
+  assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
+  assert.match(listingDetail, /sm:text-\[13px\] sm:leading-4/)
+  assert.match(listingDetail, /CountryFlag code=\{listing\.country_code \|\| 'eu'\} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black\/5"/)
+})
+
 test('new listing page uses a white page background', () => {
   assert.match(newListingPage, /min-h-screen bg-white/)
 })
