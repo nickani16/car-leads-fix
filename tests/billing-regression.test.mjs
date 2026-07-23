@@ -189,6 +189,7 @@ test('business subscription cards expose five tiered plans with Free kept listin
   assert.match(pricingPage, /feature\.included \? <Check/)
   assert.doesNotMatch(pricingPage, /invoice30|payCard|onChoose|listing-checkout/)
   assert.match(pricingPage, /src="\/autorell-pricing-phone-hero\.png"/)
+  assert.doesNotMatch(pricingPage, /linear-gradient\(90deg,rgba\(255,255,255/)
   assert.match(pricingPage, /bg-\[#0866ff\][^"]*text-white/)
   assert.match(pricingPage, /hover:border-\[#0866ff\][^"]*hover:text-\[#0866ff\]/)
   assert.match(publicHeader, /isBusinessAccount[\s\S]*account\/company\/subscription/)

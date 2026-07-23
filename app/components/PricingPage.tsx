@@ -215,8 +215,6 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.94)_0%,rgba(255,255,255,.78)_34%,rgba(255,255,255,.25)_58%,rgba(255,255,255,0)_82%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(255,255,255,.18)_0%,rgba(255,255,255,0)_42%)]" />
         <div className="relative z-10 mx-auto flex min-h-[320px] max-w-[var(--autorell-page-max)] items-end px-5 py-8 sm:min-h-[400px] sm:px-8 sm:py-11 lg:min-h-[440px] lg:py-12">
           <div className="min-w-0">
               <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-[#101828] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
