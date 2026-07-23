@@ -137,7 +137,7 @@ export default function ListingImageGallery({
 
   return (
     <section className="-mx-4 block min-[430px]:-mx-5 sm:mx-0">
-      <div className="group relative aspect-[3/2] overflow-hidden bg-white shadow-sm sm:aspect-[16/10] sm:rounded-[12px] lg:aspect-[4/3]">
+      <div className="group relative aspect-[16/9] overflow-hidden bg-black shadow-sm sm:rounded-[12px]">
         {activeImage ? (
           <button
             type="button"
