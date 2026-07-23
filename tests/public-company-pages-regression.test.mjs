@@ -149,6 +149,10 @@ test('generated fallback seller descriptions are not shown as seller information
   assert.match(listingCreateRoute, /const description = sellerNote \|\| null/)
 })
 
+test('new listing creation includes fuel type when collecting electric technical fields', () => {
+  assert.match(listingCreateRoute, /fieldsForCategoryAndSubcategory\(category, \{\s*bodyType: text\(form, 'bodyType'\),\s*fuelType: text\(form, 'fuelType'\),\s*\}\)/s)
+})
+
 test('new listing page uses a white page background', () => {
   assert.match(newListingPage, /min-h-screen bg-white/)
 })

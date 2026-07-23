@@ -97,7 +97,10 @@ function collectStructuredTechnicalData(
   category: ReturnType<typeof normalizeMarketplaceCategory>,
 ) {
   const technicalData: Record<string, string | number | string[]> = {}
-  const fields = fieldsForCategoryAndSubcategory(category, { bodyType: text(form, 'bodyType') })
+  const fields = fieldsForCategoryAndSubcategory(category, {
+    bodyType: text(form, 'bodyType'),
+    fuelType: text(form, 'fuelType'),
+  })
 
   for (const field of fields) {
     const rawValue = text(form, field.name)
