@@ -1044,8 +1044,8 @@ const infoPageCopy = {
 const ctaLinks = {
   primary: {
     'sell-vehicle': '/account/listings/new',
-    'how-selling-works': '/sell-vehicle',
-    pricing: '/sell-vehicle',
+    'how-selling-works': '/account/listings/new',
+    pricing: '/account/listings/new',
     'dealer-solutions': '/register?account=business',
     'saved-searches': '/marketplace',
     'compare-vehicles': '/marketplace',
@@ -1056,7 +1056,7 @@ const ctaLinks = {
     press: '/contact',
     partners: '/contact',
     'safety-tips': '/report',
-    payments: '/safety-tips',
+    payments: '/help-center',
     'shipping-delivery': '/buying-guide',
   },
   secondary: {
@@ -1066,8 +1066,8 @@ const ctaLinks = {
     'dealer-solutions': '/contact',
     'saved-searches': '/register',
     'compare-vehicles': '/buying-guide',
-    'vehicle-history': '/safety-tips',
-    'buying-guide': '/safety-tips',
+    'vehicle-history': '/help-center',
+    'buying-guide': '/help-center',
     about: '/contact',
     careers: '/about',
     press: '/about',

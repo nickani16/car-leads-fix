@@ -21,7 +21,6 @@ import {
   Plus,
   Search,
   Settings,
-  ShieldCheck,
   Store,
   UserPlus,
   UserRound,
@@ -314,19 +313,16 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/sell-vehicle', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Skapa annons', description: 'Lägg upp bilen, transportbilen eller maskinen direkt.', icon: CarFront },
     { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
-    { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
   ],
   en: [
-    { href: '/sell-vehicle', label: 'Sell vehicle', description: 'Free to start for private and business sellers.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Create listing', description: 'List your car, van or machine directly.', icon: CarFront },
     { href: '/pricing', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
-    { href: '/how-selling-works', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
-    { href: '/sell-vehicle', label: 'Verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Anzeige erstellen', description: 'Auto, Transporter oder Maschine direkt inserieren.', icon: CarFront },
     { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
-    { href: '/how-selling-works', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
 }
 
@@ -698,7 +694,7 @@ export default function PublicHeader({
         : translatePublicObject(locale, item)
     return {
       ...translatedItem,
-      href: localizePublicHref(locale, item.href),
+      href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
   const helpMenuLinks = [
@@ -715,12 +711,6 @@ export default function PublicHeader({
       icon: Newspaper,
     },
     {
-      href: localizePublicHref(locale, '/safety-tips'),
-      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheit'),
-      description: publicLabel('Practical checks before you buy or sell.', 'Praktiska kontroller innan du köper eller säljer.', 'Praktische Checks vor Kauf oder Verkauf.'),
-      icon: ShieldCheck,
-    },
-    {
       href: localizePublicHref(locale, '/report'),
       label: publicLabel('Report a problem', 'Rapportera problem', 'Melden'),
       description: publicLabel('Tell Autorell if something does not look right.', 'Meddela Autorell om något inte ser rätt ut.', 'Melden Sie Autorell, wenn etwas nicht stimmt.'),
@@ -735,7 +725,7 @@ export default function PublicHeader({
       icon: Search,
     },
     {
-      href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'),
+      href: sellMenuLinks[0]?.href || createListingHref,
       label: publicLabel(t.sell, 'Sälja', t.sell),
       icon: Plus,
       children: sellMenuLinks,
@@ -754,7 +744,7 @@ export default function PublicHeader({
     : `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
-    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
+    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || createListingHref, label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'link' as const, href: localizePublicHref(locale, '/pricing#business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
   ]
@@ -883,12 +873,6 @@ export default function PublicHeader({
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
   ) {
-    const targetPath = stripLocalePrefix(new URL(href, window.location.origin).pathname)
-    if (targetPath === '/sell-vehicle') {
-      event.preventDefault()
-      openAuthModal('login', href)
-      return
-    }
     handleInternalNavigation(event, href)
   }
 
@@ -1330,7 +1314,7 @@ export default function PublicHeader({
             </nav>
 
             <Link
-              href={localizePublicHref(locale, '/sell-vehicle')}
+              href={createListingHref}
               onClick={closeMobile}
               className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
             >

@@ -296,7 +296,7 @@ export function categoryLandingMenuHref(
     normalized.includes('sälj') ||
     normalized.includes('verkaufen')
   ) {
-    return `/sell-vehicle?category=${config.slug}`
+    return `/account/listings/new?category=${config.slug}`
   }
   return `/marketplace/${config.slug}?filter=${encodeURIComponent(item)}`
 }

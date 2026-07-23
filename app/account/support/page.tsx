@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, CreditCard, FileImage, FileText, MessageCircle, ShieldAlert } from 'lucide-react'
+import { ArrowLeft, CreditCard, FileImage, FileText, MessageCircle } from 'lucide-react'
 import ContactForm from '@/app/components/ContactForm'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -31,7 +31,6 @@ export default async function PrivateSupportPage() {
     { icon: FileImage, title: copy.images, text: copy.imagesText, href: localizePublicHref(locale, '/account/listings') },
     { icon: CreditCard, title: copy.payments, text: copy.paymentsText, href: localizePublicHref(locale, '/account/payments') },
     { icon: MessageCircle, title: copy.messages, text: copy.messagesText, href: localizePublicHref(locale, '/account/messages') },
-    { icon: ShieldAlert, title: copy.safety, text: copy.safetyText, href: localizePublicHref(locale, '/safety-tips') },
   ]
 
   return (

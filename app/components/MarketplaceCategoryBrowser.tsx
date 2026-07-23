@@ -790,7 +790,7 @@ export default function MarketplaceCategoryBrowser({
             </div>
             <div className="hidden gap-3 sm:flex">
               <Link
-                href={localizePublicHref(locale, `/sell-vehicle?category=${category.slug}`)}
+                href={localizePublicHref(locale, `/account/listings/new?category=${category.slug}`)}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]"
               >
                 {copy.sell} {localizedCategory.singular}
@@ -1314,7 +1314,7 @@ export default function MarketplaceCategoryBrowser({
                   {copy.noResultsText} {localizedCategory.singular}.
                 </p>
                 <Link
-                  href={localizePublicHref(locale, `/sell-vehicle?category=${category.slug}`)}
+                  href={localizePublicHref(locale, `/account/listings/new?category=${category.slug}`)}
                   className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white"
                 >
                   {copy.createListing}

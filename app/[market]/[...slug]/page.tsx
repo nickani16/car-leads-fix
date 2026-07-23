@@ -25,20 +25,24 @@ import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
 import RegisterPage from '@/app/registrera/page'
-import SellVehicleSeoPage, {
-  generateSellVehicleMetadata,
-} from '@/app/components/SellVehicleSeoPage'
+
+const removedPublicPages = new Set([
+  'sell-vehicle',
+  'safety-tips',
+  'partners',
+  'careers',
+  'press',
+  'how-selling-works',
+  'compare-vehicles',
+  'payments',
+])
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ market: string; slug: string[] }>
 }) {
-  const { market: marketCode, slug } = await params
-  const locale = resolveMarketLocale(marketCode)
-  if (locale && slug.join('/') === 'sell-vehicle') {
-    return generateSellVehicleMetadata(locale)
-  }
+  await params
 
   return {}
 }
@@ -56,6 +60,10 @@ export default async function LocalizedMarketPage({
   if (!locale) notFound()
 
   const slugPath = slug.join('/')
+  if (removedPublicPages.has(slugPath)) {
+    notFound()
+  }
+
   if (slugPath === 'login') {
     redirect(`/${marketCode}?auth=login`)
   }
@@ -178,10 +186,6 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'pricing') {
     return <PricingPage locale={locale} market={normalizedMarket} marketCode={normalizedMarket.toUpperCase()} />
-  }
-
-  if (slugPath === 'sell-vehicle') {
-    return <SellVehicleSeoPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
   }
 
   return <BusinessMarketplaceHome locale={locale} marketCode={normalizedMarket.toUpperCase()} />

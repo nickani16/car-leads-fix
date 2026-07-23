@@ -46,8 +46,6 @@ const footerCopy = {
       {
         title: 'Sälj',
         links: [
-          ['Sälj ditt fordon', '/sell-vehicle'],
-          ['Så fungerar det', '/how-selling-works'],
           ['Priser', '/pricing'],
           ['För företag', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -58,7 +56,6 @@ const footerCopy = {
         links: [
           ['Sök fordon', '/marketplace'],
           ['Sparade sökningar', '/saved-searches'],
-          ['Jämför fordon', '/compare-vehicles'],
           ['Fordonshistorik', '/vehicle-history'],
           ['Köpguide', '/buying-guide'],
         ],
@@ -67,9 +64,6 @@ const footerCopy = {
         title: 'Företag',
         links: [
           ['Om Autorell', '/about'],
-          ['Karriär', '/careers'],
-          ['Press', '/press'],
-          ['Partners', '/partners'],
           ['Kontakta oss', '/contact'],
         ],
       },
@@ -77,8 +71,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hjälpcenter', '/help-center'],
-          ['Säkerhetstips', '/safety-tips'],
-          ['Betalningar', '/payments'],
           ['Frakt & leverans', '/shipping-delivery'],
           ['Rapportera problem', '/report'],
         ],
@@ -141,8 +133,6 @@ const footerCopy = {
       {
         title: 'Verkaufen',
         links: [
-          ['Fahrzeug verkaufen', '/sell-vehicle'],
-          ['So funktioniert es', '/how-selling-works'],
           ['Preise', '/pricing'],
           ['Für Unternehmen', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -153,7 +143,6 @@ const footerCopy = {
         links: [
           ['Fahrzeuge suchen', '/marketplace'],
           ['Gespeicherte Suchen', '/saved-searches'],
-          ['Fahrzeuge vergleichen', '/compare-vehicles'],
           ['Fahrzeughistorie', '/vehicle-history'],
           ['Kaufberatung', '/buying-guide'],
         ],
@@ -162,9 +151,6 @@ const footerCopy = {
         title: 'Unternehmen',
         links: [
           ['Über Autorell', '/about'],
-          ['Karriere', '/careers'],
-          ['Presse', '/press'],
-          ['Partner', '/partners'],
           ['Kontakt', '/contact'],
         ],
       },
@@ -172,8 +158,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hilfe', '/help-center'],
-          ['Sicherheitstipps', '/safety-tips'],
-          ['Zahlungen', '/payments'],
           ['Versand & Lieferung', '/shipping-delivery'],
           ['Problem melden', '/report'],
         ],
@@ -236,8 +220,6 @@ const footerCopy = {
       {
         title: 'Sell',
         links: [
-          ['Sell your vehicle', '/sell-vehicle'],
-          ['How it works', '/how-selling-works'],
           ['Pricing', '/pricing'],
           ['For businesses', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -248,7 +230,6 @@ const footerCopy = {
         links: [
           ['Search vehicles', '/marketplace'],
           ['Saved searches', '/saved-searches'],
-          ['Compare vehicles', '/compare-vehicles'],
           ['Vehicle history', '/vehicle-history'],
           ['Buying guide', '/buying-guide'],
         ],
@@ -257,9 +238,6 @@ const footerCopy = {
         title: 'Company',
         links: [
           ['About Autorell', '/about'],
-          ['Careers', '/careers'],
-          ['Press', '/press'],
-          ['Partners', '/partners'],
           ['Contact us', '/contact'],
         ],
       },
@@ -267,8 +245,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Help center', '/help-center'],
-          ['Safety tips', '/safety-tips'],
-          ['Payments', '/payments'],
           ['Shipping & delivery', '/shipping-delivery'],
           ['Report a problem', '/report'],
         ],

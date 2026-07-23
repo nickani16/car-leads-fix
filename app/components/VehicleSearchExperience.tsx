@@ -1586,7 +1586,7 @@ export default function VehicleSearchExperience({
           </Link>
           <nav className="hidden items-center gap-7 text-[14px] font-medium text-[#101828] md:flex">
             <span className="text-[#0866ff]">Sök fordon</span>
-            <Link href={localizePublicHref(locale, '/sell-vehicle')} className="transition hover:text-[#0866ff]">
+            <Link href={localizePublicHref(locale, '/account/listings/new')} className="transition hover:text-[#0866ff]">
               Sälj fordon
             </Link>
             <Link href={localizePublicHref(locale, '/business')} className="transition hover:text-[#0866ff]">
@@ -2452,16 +2452,14 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         [uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge'), '/marketplace'],
         [uiText(locale, 'Cars', 'Bilar', 'Autos'), '/marketplace/cars'],
         [uiText(locale, 'Vans', 'Transportbilar', 'Transporter'), '/marketplace/vans'],
-        [uiText(locale, 'Compare vehicles', 'Jämför fordon', 'Fahrzeuge vergleichen'), '/compare-vehicles'],
       ],
     },
     {
       title: uiText(locale, 'Sell vehicle', 'Sälj fordon', 'Fahrzeug verkaufen'),
       links: [
-        [uiText(locale, 'Sell your vehicle', 'Sälj ditt fordon', 'Fahrzeug verkaufen'), '/sell-vehicle'],
+        [uiText(locale, 'Create listing', 'Skapa annons', 'Anzeige erstellen'), '/account/listings/new'],
         [uiText(locale, 'For businesses', 'Företag', 'Für Unternehmen'), '/business'],
         [uiText(locale, 'Pricing', 'Priser', 'Preise'), '/pricing'],
-        [uiText(locale, 'Safety tips', 'Trygg affär', 'Sicherheitstipps'), '/safety-tips'],
       ],
     },
     {
