@@ -307,13 +307,30 @@ export default async function PublicCompanyPage({
                   </a>
                 ) : null}
               </div>
-              <iframe
-                title={`${companyName} ${copy.map}`}
-                src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="h-[240px] w-full border-0"
-              />
+              <a
+                href={mapHref || undefined}
+                target="_blank"
+                rel="noreferrer"
+                className="relative block h-[240px] overflow-hidden bg-[#e8eef6]"
+              >
+                <span className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,102,255,.08)_1px,transparent_1px),linear-gradient(0deg,rgba(8,102,255,.08)_1px,transparent_1px)] bg-[size:28px_28px]" />
+                <span className="absolute left-0 right-0 top-1/2 h-px bg-[#c7d4e6]" />
+                <span className="absolute bottom-0 top-0 left-1/2 w-px bg-[#c7d4e6]" />
+                <span className="absolute inset-x-5 top-5 rounded-[14px] border border-[#d9e2ef] bg-white/95 p-4 shadow-sm">
+                  <span className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#0866ff] text-white">
+                      <MapPin className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-[#101828]">{companyName}</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#667085]">{address}</span>
+                    </span>
+                  </span>
+                </span>
+                <span className="absolute bottom-5 left-1/2 grid h-11 w-11 -translate-x-1/2 place-items-center rounded-full bg-[#0866ff] text-white shadow-[0_12px_28px_rgba(8,102,255,.28)]">
+                  <MapPin className="h-5 w-5" />
+                </span>
+              </a>
             </section>
           ) : null}
 
