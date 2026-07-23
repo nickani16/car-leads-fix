@@ -66,7 +66,7 @@ export default function ListingCardImageCarousel({
             fill
             sizes={sizes}
             quality={78}
-            className={`object-cover ${imageClassName}`}
+            className={`object-contain ${imageClassName}`}
           />
         </div>
       ))}
@@ -77,7 +77,7 @@ export default function ListingCardImageCarousel({
 
   return (
     <div
-      className={`group pointer-events-auto relative h-full w-full overflow-hidden ${className}`}
+      className={`group pointer-events-auto relative h-full w-full overflow-hidden bg-black ${className}`}
       onTouchStart={(event) => {
         if (visibleImages.length < 2) return
         const touch = event.touches[0]
