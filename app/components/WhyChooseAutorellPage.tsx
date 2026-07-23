@@ -488,7 +488,7 @@ export default async function WhyChooseAutorellPage({
   const stepImages = vehicleKind === 'van'
     ? ['/sell-van-step-1.png', '/sell-van-step-2.png', '/sell-van-step-3.png']
     : vehicleKind === 'construction'
-      ? ['/sell-construction-step-create-v2.png', '/sell-construction-step-photo-v2.png', '/sell-construction-step-contact-v2.png']
+      ? ['/sell-construction-step-create-v3.png', '/sell-construction-step-photo-v3.png', '/sell-construction-step-contact-v3.png']
       : ['/sell-car-step-listing-real.png', '/sell-car-step-photo-real.png', '/sell-car-step-contact.png']
   const heroLeftImage = vehicleKind === 'van' ? '/sell-van-black.webp' : vehicleKind === 'construction' ? '/sell-construction-hero-excavator-cropped.png' : '/sell-car-light.webp'
   const heroRightImage = vehicleKind === 'van' ? '/sell-van-yellow.webp' : vehicleKind === 'construction' ? '/sell-construction-hero-loader-cropped.png' : '/sell-car-red.webp'
@@ -539,7 +539,7 @@ export default async function WhyChooseAutorellPage({
             />
           <div className="relative z-10 mx-auto flex w-full max-w-[760px] flex-col items-center text-center">
             <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#0866ff]">{copy.eyebrow}</p>
-            <h1 className="mt-5 max-w-[16ch] text-[clamp(2.6rem,6vw,4.5rem)] font-semibold leading-[.98] tracking-[-.05em] text-[#101828]">
+            <h1 className="mt-5 max-w-[12ch] text-[clamp(2.15rem,9vw,4.5rem)] font-semibold leading-[.98] tracking-[-.05em] text-[#101828] sm:max-w-[16ch]">
               {copy.title}
             </h1>
             <p className="mt-6 max-w-[46ch] text-base leading-7 text-[#526071] sm:mt-7">
@@ -676,15 +676,12 @@ export default async function WhyChooseAutorellPage({
       </section>
 
       <div className="bg-white">
-        <section
-          className="relative overflow-hidden bg-[#0866ff] py-14 text-white sm:py-20"
-          style={{ clipPath: 'polygon(0 clamp(14px, 2vw, 28px), 100% 0, 100% calc(100% - clamp(14px, 2vw, 28px)), 0 100%)' }}
-        >
-          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:items-center">
-            <h2 className="max-w-[18ch] text-4xl font-semibold leading-[1.03] tracking-[-.05em] sm:text-5xl lg:text-[clamp(2.75rem,4vw,4.25rem)]">
+        <section className="relative overflow-hidden bg-[#0866ff] py-14 text-white sm:py-20">
+          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16">
+            <h2 className="max-w-[16ch] text-4xl font-semibold leading-[1.03] tracking-[-.05em] sm:text-5xl lg:text-[clamp(2.6rem,3.55vw,4rem)]">
               {copy.seoTitle}
             </h2>
-            <p className="max-w-[46ch] text-base leading-7 text-white/84">{copy.seoText}</p>
+            <p className="max-w-[46ch] text-base leading-7 text-white/84 lg:justify-self-end">{copy.seoText}</p>
           </div>
         </section>
       </div>
