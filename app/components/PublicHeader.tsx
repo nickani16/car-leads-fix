@@ -21,6 +21,7 @@ import {
   Plus,
   Search,
   Settings,
+  ShieldCheck,
   Store,
   UserPlus,
   UserRound,
@@ -82,6 +83,7 @@ type MenuItem = {
   label: string
   description: string
   icon: LucideIcon
+  requiresLogin?: boolean
 }
 
 type HeaderAccount = {
@@ -313,16 +315,19 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/account/listings/new', label: 'Skapa annons', description: 'Lägg upp bilen, transportbilen eller maskinen direkt.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront, requiresLogin: true },
     { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
+    { href: '/help-center', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
   ],
   en: [
-    { href: '/account/listings/new', label: 'Create listing', description: 'List your car, van or machine directly.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Advertise vehicles on Autorell', description: 'Free to start for private and business sellers.', icon: CarFront, requiresLogin: true },
     { href: '/pricing', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
+    { href: '/help-center', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
-    { href: '/account/listings/new', label: 'Anzeige erstellen', description: 'Auto, Transporter oder Maschine direkt inserieren.', icon: CarFront },
+    { href: '/account/listings/new', label: 'Fahrzeug auf Autorell inserieren', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront, requiresLogin: true },
     { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
+    { href: '/help-center', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
 }
 
@@ -694,6 +699,7 @@ export default function PublicHeader({
         : translatePublicObject(locale, item)
     return {
       ...translatedItem,
+      requiresLogin: item.requiresLogin,
       href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
@@ -709,6 +715,12 @@ export default function PublicHeader({
       label: publicLabel('Vehicle news', 'Fordonsnyheter', 'Auto-News'),
       description: publicLabel('Guides, updates and articles about vehicle markets.', 'Guider, uppdateringar och artiklar om fordonsmarknaden.', 'Ratgeber, Updates und Artikel zum Fahrzeugmarkt.'),
       icon: Newspaper,
+    },
+    {
+      href: localizePublicHref(locale, '/help-center'),
+      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheitstipps'),
+      description: publicLabel('Practical checks before you buy or sell.', 'Praktiska kontroller innan du köper eller säljer.', 'Praktische Checks vor Kauf oder Verkauf.'),
+      icon: ShieldCheck,
     },
     {
       href: localizePublicHref(locale, '/report'),
@@ -984,12 +996,17 @@ export default function PublicHeader({
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon }) => (
+                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon, requiresLogin }) => (
                           <Link
                             key={sellHref}
                             href={sellHref}
                             onClick={(event) => {
                               setSellMenuOpen(false)
+                              if (requiresLogin) {
+                                event.preventDefault()
+                                openAuthModal('login', sellHref)
+                                return
+                              }
                               handleInternalNavigation(event, sellHref)
                             }}
                             className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
@@ -1274,22 +1291,34 @@ export default function PublicHeader({
                       >
                         <div className="overflow-hidden">
                           <div className="grid gap-2 rounded-[15px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
-                            {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
-                              <Link
-                                key={childHref}
-                                href={childHref}
-                                onClick={(event) => handleInternalNavigation(event, childHref)}
-                                className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
-                              >
-                                <span className="flex min-w-0 items-center gap-3">
-                                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
-                                    <ChildIcon className="h-4 w-4" />
+                            {children.map((child) => {
+                              const { href: childHref, label: childLabel, icon: ChildIcon } = child
+                              const requiresLogin = 'requiresLogin' in child && child.requiresLogin
+                              return (
+                                <Link
+                                  key={childHref}
+                                  href={childHref}
+                                  onClick={(event) => {
+                                    if (requiresLogin) {
+                                      event.preventDefault()
+                                      closeMobile()
+                                      openAuthModal('login', childHref)
+                                      return
+                                    }
+                                    handleInternalNavigation(event, childHref)
+                                  }}
+                                  className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-3">
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                      <ChildIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="min-w-0 truncate">{childLabel}</span>
                                   </span>
-                                  <span className="min-w-0 truncate">{childLabel}</span>
-                                </span>
-                                <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                              </Link>
-                            ))}
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                                </Link>
+                              )
+                            })}
                           </div>
                         </div>
                       </div>
@@ -1631,22 +1660,34 @@ export default function PublicHeader({
                         >
                           <div className="overflow-hidden">
                             <div className="grid gap-2 rounded-[16px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
-                              {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
-                                <Link
-                                  key={childHref}
-                                  href={childHref}
-                                  onClick={(event) => handleInternalNavigation(event, childHref)}
-                                  className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
-                                >
-                                  <span className="flex min-w-0 items-center gap-3">
-                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
-                                      <ChildIcon className="h-4 w-4" />
+                              {children.map((child) => {
+                                const { href: childHref, label: childLabel, icon: ChildIcon } = child
+                                const requiresLogin = 'requiresLogin' in child && child.requiresLogin
+                                return (
+                                  <Link
+                                    key={childHref}
+                                    href={childHref}
+                                    onClick={(event) => {
+                                      if (requiresLogin) {
+                                        event.preventDefault()
+                                        closeMobile()
+                                        openAuthModal('login', childHref)
+                                        return
+                                      }
+                                      handleInternalNavigation(event, childHref)
+                                    }}
+                                    className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                                  >
+                                    <span className="flex min-w-0 items-center gap-3">
+                                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                        <ChildIcon className="h-4 w-4" />
+                                      </span>
+                                      <span className="min-w-0 truncate">{childLabel}</span>
                                     </span>
-                                    <span className="min-w-0 truncate">{childLabel}</span>
-                                  </span>
-                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                                </Link>
-                              ))}
+                                    <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                                  </Link>
+                                )
+                              })}
                             </div>
                           </div>
                         </div>

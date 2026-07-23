@@ -46,3 +46,11 @@ test('removed public pages are not advertised in sitemap or public navigation', 
     assert.doesNotMatch(vehicleSearch, new RegExp(`'/${page}'`))
   }
 })
+
+test('header keeps menu entries while routing them to live destinations', () => {
+  assert.match(publicHeader, /Annonsera fordon på Autorell/)
+  assert.match(publicHeader, /requiresLogin: true/)
+  assert.match(publicHeader, /openAuthModal\('login', sellHref\)/)
+  assert.match(publicHeader, /Safety tips', 'Säkerhetstips', 'Sicherheitstipps'/)
+  assert.match(publicHeader, /href: localizePublicHref\(locale, '\/help-center'\)[\s\S]*label: publicLabel\('Safety tips'/)
+})
