@@ -453,9 +453,7 @@ export async function POST(request: Request) {
     const model = text(form, 'model')
     const offerType = normalizeOfferType(form.get('offerType'))
     const sellerNote = text(form, 'sellerNote')
-    const description =
-      sellerNote ||
-      `Strukturerad Autorell-annons: ${make} ${model}.`
+    const description = sellerNote || null
     const city = text(form, 'city')
     const rawRegion = text(form, 'county') || text(form, 'region')
     const rawMunicipality = text(form, 'municipality')

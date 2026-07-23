@@ -284,6 +284,10 @@ export default async function ListingDetailPage({
   const technicalDetails = await getListingTechnicalDetails(listing.id)
   const specs = buildSpecs(listing, locale, categoryLabel, countryName, technicalDetails)
   const technicalData = technicalDetails?.technicalData || {}
+  const electricRange = technicalData.electricRangeKm ?? technicalData.rangeKm
+  const publicSellerDescription = isPublicSellerDescription(listing.description)
+    ? listing.description
+    : null
   const headlineSubtitle = [
     listing.variant,
     translateSpecValue(locale, listing.body_type),
@@ -312,6 +316,11 @@ export default async function ListingDetailPage({
       label: localizedLabel(locale, 'Drivmedel', 'Fuel', 'Kraftstoff'),
       value: translateListingVehicleValue(locale, listing.fuel_type),
       icon: Fuel,
+    },
+    {
+      label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'),
+      value: formatTechnicalValue(electricRange, 'km'),
+      icon: Gauge,
     },
     {
       label: localizedLabel(locale, 'Effekt', 'Power', 'Leistung'),
@@ -524,18 +533,18 @@ export default async function ListingDetailPage({
               showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
                 />
 
-                {listing.description ? (
+                {publicSellerDescription ? (
                   <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
                 <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
                 <p className="mt-1.5 text-xs font-medium text-[#667085] sm:mt-2 sm:text-sm">{copy.originalLanguage}</p>
                 <SellerDescriptionClamp
-                  text={listing.description}
+                  text={publicSellerDescription}
                   readMoreLabel={localizedLabel(locale, 'Läs mer', 'Read more', 'Mehr anzeigen')}
                   showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
                 />
-                <SellerDescriptionTranslationButton text={listing.description} locale={locale} />
+                <SellerDescriptionTranslationButton text={publicSellerDescription} locale={locale} />
                   </section>
                 ) : null}
 
@@ -1099,6 +1108,9 @@ function buildSpecs(
   technicalDetails: ListingTechnicalDetails | null,
 ) {
   const technical = technicalDetails?.technicalData || {}
+  const electricRange = technical.electricRangeKm ?? technical.rangeKm
+  const batteryCapacity = technical.batteryCapacityKWh ?? technical.batteryCapacityWh
+  const motorPower = technical.motorPowerKw ?? technical.motorPowerW
   const specs: Array<{ label: string; value: string | number | null | undefined }> = [
     { label: localizedLabel(locale, 'Kategori', 'Category', 'Kategorie'), value: categoryLabel },
     { label: localizedLabel(locale, 'Märke', 'Make', 'Marke'), value: listing.make },
@@ -1130,10 +1142,10 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Säten', 'Seats', 'Sitze'), value: formatTechnicalValue(technical.seats, '') },
     { label: localizedLabel(locale, 'Sovplatser', 'Sleeping places', 'Schlafplätze'), value: formatTechnicalValue(technical.sleepingPlaces, '') },
     { label: localizedLabel(locale, 'Längd', 'Length', 'Länge'), value: formatTechnicalValue(technical.lengthCm, 'cm') },
-    { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(technical.motorPowerW, 'W') },
-    { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(technical.batteryCapacityWh, 'Wh') },
+    { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(motorPower, motorPower === technical.motorPowerKw ? 'kW' : 'W') },
+    { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(batteryCapacity, batteryCapacity === technical.batteryCapacityKWh ? 'kWh' : 'Wh') },
     { label: localizedLabel(locale, 'Batterispänning', 'Battery voltage', 'Batteriespannung'), value: formatTechnicalValue(technical.batteryVoltageV, 'V') },
-    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(technical.rangeKm, 'km') },
+    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(electricRange, 'km') },
     { label: localizedLabel(locale, 'Maxhastighet', 'Maximum speed', 'Höchstgeschwindigkeit'), value: formatTechnicalValue(technical.maxSpeedKmh, 'km/h') },
     { label: localizedLabel(locale, 'Maskintyp', 'Machine type', 'Maschinentyp'), value: translateSpecValue(locale, formatTechnicalValue(technical.machineType, '')) },
     { label: localizedLabel(locale, 'Maskinvikt', 'Operating weight', 'Betriebsgewicht'), value: formatTechnicalValue(technical.operatingWeightKg, 'kg') },
@@ -1155,6 +1167,11 @@ function buildSpecs(
     (item): item is { label: string; value: string | number } =>
       item.value !== null && item.value !== undefined && item.value !== '',
   )
+}
+
+function isPublicSellerDescription(value: string | null): value is string {
+  if (!value) return false
+  return !/^Strukturerad Autorell-annons:/i.test(value.trim())
 }
 
 function InfoLine({ label, value }: { label: string; value: string }) {

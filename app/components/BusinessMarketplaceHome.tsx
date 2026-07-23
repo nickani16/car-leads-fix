@@ -464,7 +464,7 @@ function HomeListingCard({
 }) {
   return (
     <article className="group relative w-[76vw] max-w-[280px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[4/3]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[16/10]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
             images={item.imageUrls}

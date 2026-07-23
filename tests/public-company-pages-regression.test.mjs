@@ -12,6 +12,7 @@ const listingLocationMap = readFileSync(new URL('../app/components/ListingLocati
 const listingImageGallery = readFileSync(new URL('../app/components/ListingImageGallery.tsx', import.meta.url), 'utf8')
 const globalsCss = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
+const listingCreateRoute = readFileSync(new URL('../app/api/account/listings/route.ts', import.meta.url), 'utf8')
 const profileApi = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 
 test('public company pages are available on root and localized routes', () => {
@@ -124,6 +125,26 @@ test('listing detail bottom listing facts stay compact on desktop', () => {
   assert.match(listingDetail, /bg-white px-4 py-3 sm:px-3 sm:py-2\.5/)
   assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
   assert.match(listingDetail, /sm:mt-1 sm:text-\[13px\] sm:leading-4/)
+})
+
+test('listing detail equipment tabs stay compact on desktop', () => {
+  assert.match(listingEquipmentSection, /sm:p-6/)
+  assert.match(listingEquipmentSection, /sm:rounded-\[13px\] sm:p-3/)
+  assert.match(listingEquipmentSection, /sm:px-2\.5 sm:py-1 sm:text-xs/)
+  assert.match(listingEquipmentSection, /sm:h-3\.5 sm:w-3\.5/)
+})
+
+test('listing detail shows electric vehicle technical values from current form keys', () => {
+  assert.match(listingDetail, /technicalData\.electricRangeKm \?\? technicalData\.rangeKm/)
+  assert.match(listingDetail, /technical\.batteryCapacityKWh \?\? technical\.batteryCapacityWh/)
+  assert.match(listingDetail, /technical\.motorPowerKw \?\? technical\.motorPowerW/)
+  assert.match(listingDetail, /formatTechnicalValue\(electricRange, 'km'\)/)
+})
+
+test('generated fallback seller descriptions are not shown as seller information', () => {
+  assert.match(listingDetail, /isPublicSellerDescription/)
+  assert.match(listingDetail, /Strukturerad Autorell-annons:/)
+  assert.match(listingCreateRoute, /const description = sellerNote \|\| null/)
 })
 
 test('new listing page uses a white page background', () => {

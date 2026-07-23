@@ -46,22 +46,22 @@ export default function ListingEquipmentSection({
   if (!flatCount) return null
 
   return (
-    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-        <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.04em]">{title}</h2>
-        <span className="rounded-full bg-[#eef5ff] px-2.5 py-0.5 text-[11px] font-semibold text-[#0866ff] sm:px-3 sm:py-1 sm:text-xs">
+    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-2.5">
+        <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-[22px] sm:tracking-[-0.035em]">{title}</h2>
+        <span className="rounded-full bg-[#eef5ff] px-2.5 py-0.5 text-[11px] font-semibold text-[#0866ff] sm:px-2.5 sm:text-[11px]">
           {flatCount}
         </span>
       </div>
 
       {visibleGroups.length ? (
-        <div className="mt-3 grid gap-3 sm:mt-5 sm:gap-4 lg:grid-cols-2">
+        <div className="mt-3 grid gap-3 sm:mt-4 sm:gap-3 lg:grid-cols-2">
           {visibleGroups.map((group) => (
-            <div key={group.key} className="rounded-[12px] border border-[#edf1f6] bg-[#fbfcff] p-3 sm:rounded-[16px] sm:p-4">
-              <h3 className="text-[11px] font-semibold uppercase tracking-[.12em] text-[#667085] sm:text-xs sm:tracking-[.14em]">
+            <div key={group.key} className="rounded-[12px] border border-[#edf1f6] bg-[#fbfcff] p-3 sm:rounded-[13px] sm:p-3">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[.12em] text-[#667085] sm:text-[10px] sm:tracking-[.12em]">
                 {group.label}
               </h3>
-              <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">
+              <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-1.5">
                 {group.options.map((item) => (
                   <EquipmentChip key={item.key} label={item.label} />
                 ))}
@@ -70,7 +70,7 @@ export default function ListingEquipmentSection({
           ))}
         </div>
       ) : (
-        <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
+        <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-1.5">
           {visibleFallback.map((item) => (
             <EquipmentChip key={item} label={item} />
           ))}
@@ -92,8 +92,8 @@ export default function ListingEquipmentSection({
 
 function EquipmentChip({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#edf4ff] px-2.5 py-1.5 text-xs font-semibold text-[#174ea6] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
-      <CheckCircle2 className="h-3.5 w-3.5 text-[#0866ff] sm:h-4 sm:w-4" />
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#edf4ff] px-2.5 py-1.5 text-xs font-semibold text-[#174ea6] sm:px-2.5 sm:py-1 sm:text-xs">
+      <CheckCircle2 className="h-3.5 w-3.5 text-[#0866ff] sm:h-3.5 sm:w-3.5" />
       {label}
     </span>
   )
