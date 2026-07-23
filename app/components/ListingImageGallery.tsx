@@ -162,7 +162,7 @@ export default function ListingImageGallery({
                   <img
                     src={image}
                     alt={index === active ? title : ''}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               ))}
@@ -277,7 +277,7 @@ export default function ListingImageGallery({
               aria-label={`Show photo ${index + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt="" className="h-full w-full object-cover" />
+              <img src={image} alt="" className="h-full w-full object-contain" />
               <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-black text-white">
                 {index + 1}
               </span>

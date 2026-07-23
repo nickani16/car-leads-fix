@@ -10,6 +10,8 @@ import ts from 'typescript'
 const processingSource = await readFile('lib/marketplace/image-processing.ts', 'utf8')
 const listingRouteSource = await readFile('app/api/account/listings/route.ts', 'utf8')
 const listingFormSource = await readFile('app/konto/annonser/ny/NewListingForm.tsx', 'utf8')
+const listingGallerySource = await readFile('app/components/ListingImageGallery.tsx', 'utf8')
+const listingCardCarouselSource = await readFile('app/components/ListingCardImageCarousel.tsx', 'utf8')
 const nextConfigSource = await readFile('next.config.ts', 'utf8')
 const require = createRequire(import.meta.url)
 
@@ -44,9 +46,9 @@ test('JPG, PNG, WebP and AVIF can produce bounded card, listing and fullscreen v
     const processed = await processMarketplaceImage(
       new File([input], `vehicle.${extensions[index]}`, { type: contentTypes[index] }),
     )
-    assert.ok(processed.card.width <= 720 && processed.card.height <= 540)
-    assert.ok(processed.listing.width <= 1440 && processed.listing.height <= 1080)
-    assert.ok(processed.fullscreen.width <= 1920 && processed.fullscreen.height <= 1440)
+    assert.ok(processed.card.width <= 640 && processed.card.height <= 480)
+    assert.ok(processed.listing.width <= 1920 && processed.listing.height <= 1440)
+    assert.ok(processed.fullscreen.width <= 2560 && processed.fullscreen.height <= 1920)
     assert.ok(processed.card.body.length > 0)
     assert.ok(processed.listing.body.length > 0)
     assert.ok(processed.fullscreen.body.length > 0)
@@ -84,8 +86,8 @@ test('safe inside framing keeps the complete vehicle visible without subject cro
   const card = await sharp(processed.card.body).raw().toBuffer({ resolveWithObject: true })
   const bounds = darkPixelBounds(card.data, card.info.width, card.info.height, card.info.channels)
 
-  assert.equal(processed.card.width, 720)
-  assert.equal(processed.card.height, 540)
+  assert.equal(processed.card.width, 640)
+  assert.equal(processed.card.height, 480)
   assert.ok(bounds, 'expected the synthetic vehicle subject to remain visible')
   assert.ok(bounds.width / processed.card.width >= 0.55)
   assert.ok(bounds.width / processed.card.width <= 0.62)
@@ -133,13 +135,26 @@ test('unsupported and spoofed files are rejected with stable error codes', async
   assert.match(listingRouteSource, /HEIC\/HEIF stöds inte ännu\. Välj JPG, PNG, WebP eller AVIF\./)
 })
 
-test('listing creation processes images sequentially and stores card URLs separately', () => {
-  assert.match(listingRouteSource, /for \(const \[index, file\] of files\.entries\(\)\)/)
+test('listing creation processes images with bounded concurrency and stores card URLs separately', () => {
+  assert.match(listingRouteSource, /uploadImagesWithConcurrency\(admin, files, user\.id\)/)
+  assert.match(listingRouteSource, /concurrency = 2/)
   assert.doesNotMatch(listingRouteSource, /Promise\.all\(\s*files\.map/)
   assert.match(listingRouteSource, /Promise\.allSettled\([\s\S]*variants\.map/)
   assert.match(listingRouteSource, /const images = uploadedImages\.map\(\(image\) => image\.cardUrl\)/)
   assert.match(listingRouteSource, /storageListingPath/)
   assert.match(listingRouteSource, /storageFullscreenPath/)
+})
+
+test('public listing images use safe framing and modern formats by viewport', () => {
+  assert.match(processingSource, /encodeVariant\(source, 640, 480, 'webp', 78\)/)
+  assert.match(processingSource, /encodeVariant\(source, 1920, 1440, 'webp', 95\)/)
+  assert.match(processingSource, /encodeVariant\(source, 2560, 1920, 'avif', 90\)/)
+  assert.match(nextConfigSource, /formats: \['image\/avif', 'image\/webp'\]/)
+  assert.match(listingCardCarouselSource, /quality=\{78\}/)
+  assert.match(listingCardCarouselSource, /object-contain/)
+  assert.doesNotMatch(listingCardCarouselSource, /className=\{`object-cover/)
+  assert.match(listingGallerySource, /object-contain/)
+  assert.doesNotMatch(listingGallerySource, /className="h-full w-full object-cover"/)
 })
 
 function loadImageProcessingModule() {
@@ -194,5 +209,7 @@ test('client accepts only supported formats and processes selected images withou
   assert.match(listingFormSource, /for \(const file of selected\)[\s\S]*await compressImage\(file\)/)
   assert.match(listingFormSource, /Anslutningen avbröts\. Dina uppgifter finns kvar/)
   assert.match(listingFormSource, /listingRequestTimeoutMs = 60_000/)
-  assert.match(listingFormSource, /180_000/)
+  assert.match(listingFormSource, /file,\s*\r?\n\s*preview: URL\.createObjectURL\(file\)/)
+  assert.doesNotMatch(listingFormSource, /180_000/)
+  assert.doesNotMatch(listingFormSource, /canvasToJpeg/)
 })

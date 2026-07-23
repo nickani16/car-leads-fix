@@ -1519,7 +1519,7 @@ function ImageStep({
               onDrop={(event) => dropImage(event, image.id)}
               className="overflow-hidden rounded-[18px] border border-[#d7deed] bg-white"
             >
-              <Image src={image.preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-cover" />
+              <Image src={image.preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-contain" />
               <div className="flex items-center justify-between gap-2 p-3">
                 <span className="flex min-w-0 items-center gap-2 text-xs font-semibold text-[#667085]">
                   <GripVertical className="h-4 w-4 shrink-0" />
@@ -1634,7 +1634,7 @@ function PreviewStep({
       </div>
       <article className="overflow-hidden rounded-[24px] border border-[#d7deed] bg-white shadow-sm">
         {images[0] ? (
-          <Image src={images[0].preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-cover" />
+          <Image src={images[0].preview} alt="" width={720} height={540} unoptimized className="aspect-[4/3] w-full object-contain" />
         ) : (
           <div className="grid h-64 place-items-center bg-[#f3f6fb] text-sm text-[#667085]">
             {copy.noImage}
@@ -1675,7 +1675,7 @@ function PreviewStep({
           {images.length > 1 ? (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {images.slice(1, 5).map((image) => (
-                <Image key={image.id} src={image.preview} alt="" width={240} height={180} unoptimized className="aspect-[4/3] w-full rounded-[10px] object-cover" />
+                <Image key={image.id} src={image.preview} alt="" width={240} height={180} unoptimized className="aspect-[4/3] w-full rounded-[10px] object-contain" />
               ))}
             </div>
           ) : null}
@@ -3446,65 +3446,15 @@ async function compressImage(file: File): Promise<UploadImage> {
     decoded.close()
     throw new Error('IMAGE_DIMENSIONS_TOO_LARGE')
   }
-  const maxWidth = 1920
-  const maxHeight = 1440
-  const ratio = Math.min(maxWidth / decoded.width, maxHeight / decoded.height, 1)
-  let width = Math.max(1, Math.round(decoded.width * ratio))
-  let height = Math.max(1, Math.round(decoded.height * ratio))
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const context = canvas.getContext('2d')
-  if (!context) throw new Error('IMAGE_PROCESSING_UNAVAILABLE')
-  context.fillStyle = '#fff'
-  context.fillRect(0, 0, width, height)
-  context.drawImage(decoded.source, 0, 0, width, height)
   decoded.close()
 
-  let blob = await encodeJpegWithinLimit(canvas, 180_000)
-  while (blob.size > 180_000 && width > 900 && height > 675) {
-    width = Math.max(900, Math.round(width * 0.82))
-    height = Math.max(675, Math.round(height * 0.82))
-    const resized = document.createElement('canvas')
-    resized.width = width
-    resized.height = height
-    const resizedContext = resized.getContext('2d')
-    if (!resizedContext) break
-    resizedContext.drawImage(canvas, 0, 0, width, height)
-    canvas.width = width
-    canvas.height = height
-    context.drawImage(resized, 0, 0)
-    blob = await encodeJpegWithinLimit(canvas, 180_000)
-  }
-  const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
-  const compressed = new File([blob], name, { type: 'image/jpeg' })
   return {
     id: crypto.randomUUID(),
-    file: compressed,
-    preview: URL.createObjectURL(compressed),
-    name,
-    size: compressed.size,
+    file,
+    preview: URL.createObjectURL(file),
+    name: file.name,
+    size: file.size,
   }
-}
-
-async function encodeJpegWithinLimit(canvas: HTMLCanvasElement, maxBytes: number) {
-  let result: Blob | null = null
-  for (const quality of [0.82, 0.72, 0.62, 0.52]) {
-    result = await canvasToJpeg(canvas, quality)
-    if (result.size <= maxBytes) return result
-  }
-  if (!result) throw new Error('IMAGE_ENCODING_FAILED')
-  return result
-}
-
-function canvasToJpeg(canvas: HTMLCanvasElement, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (result) => result ? resolve(result) : reject(new Error('IMAGE_ENCODING_FAILED')),
-      'image/jpeg',
-      quality,
-    )
-  })
 }
 
 async function decodeBrowserImage(file: File) {

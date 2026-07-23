@@ -40,9 +40,9 @@ export async function processMarketplaceImage(file: File): Promise<ProcessedMark
   }).rotate()
 
   const [card, listing, fullscreen] = await Promise.all([
-    encodeVariant(source, 720, 540, 'webp', 74),
-    encodeVariant(source, 1440, 1080, 'webp', 80),
-    encodeVariant(source, 1920, 1440, 'avif', 60),
+    encodeVariant(source, 640, 480, 'webp', 78),
+    encodeVariant(source, 1920, 1440, 'webp', 95),
+    encodeVariant(source, 2560, 1920, 'avif', 90),
   ])
 
   return {

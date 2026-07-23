@@ -65,7 +65,8 @@ export default function ListingCardImageCarousel({
             alt={index === safeImageIndex ? title : ''}
             fill
             sizes={sizes}
-            className={`object-cover ${imageClassName}`}
+            quality={78}
+            className={`object-contain ${imageClassName}`}
           />
         </div>
       ))}

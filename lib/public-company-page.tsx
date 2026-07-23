@@ -406,7 +406,7 @@ export default async function PublicCompanyPage({
                 <Link key={listing.id} href={href} className="grid gap-4 p-4 transition hover:bg-[#fbfdff] sm:grid-cols-[190px_minmax(0,1fr)_auto] sm:p-5">
                   <span className="relative block aspect-[4/3] overflow-hidden rounded-[10px] bg-[#eef3f8]">
                     {listing.images?.[0] ? (
-                      <Image src={listing.images[0]} alt={listing.title} fill sizes="220px" className="object-cover" />
+                      <Image src={listing.images[0]} alt={listing.title} fill sizes="220px" quality={78} className="object-contain" />
                     ) : (
                       <span className="grid h-full place-items-center text-[#0866ff]">
                         <Building2 className="h-10 w-10" />
