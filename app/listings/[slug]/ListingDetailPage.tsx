@@ -297,6 +297,7 @@ export default async function ListingDetailPage({
   }
   const specs = buildSpecs(listing, locale, categoryLabel, countryName, mergedTechnicalDetails)
   const technicalData = mergedTechnicalDetails.technicalData
+  const electricListing = isElectricListing(listing, technicalData)
   const electricRange = technicalData.electricRangeKm ?? technicalData.rangeKm
   const publicSellerDescription = isPublicSellerDescription(listing.description)
     ? listing.description
@@ -332,7 +333,7 @@ export default async function ListingDetailPage({
     },
     {
       label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'),
-      value: formatTechnicalValue(electricRange, 'km'),
+      value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null),
       icon: Gauge,
     },
     {
@@ -1121,6 +1122,7 @@ function buildSpecs(
   technicalDetails: ListingTechnicalDetails | null,
 ) {
   const technical = technicalDetails?.technicalData || {}
+  const electricListing = isElectricListing(listing, technical)
   const electricRange = technical.electricRangeKm ?? technical.rangeKm
   const batteryCapacity = technical.batteryCapacityKWh ?? technical.batteryCapacityWh
   const motorPower = technical.motorPowerKw ?? technical.motorPowerW
@@ -1155,10 +1157,10 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Säten', 'Seats', 'Sitze'), value: formatTechnicalValue(technical.seats, '') },
     { label: localizedLabel(locale, 'Sovplatser', 'Sleeping places', 'Schlafplätze'), value: formatTechnicalValue(technical.sleepingPlaces, '') },
     { label: localizedLabel(locale, 'Längd', 'Length', 'Länge'), value: formatTechnicalValue(technical.lengthCm, 'cm') },
-    { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(motorPower, motorPower === technical.motorPowerKw ? 'kW' : 'W') },
-    { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(batteryCapacity, batteryCapacity === technical.batteryCapacityKWh ? 'kWh' : 'Wh') },
+    { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(motorPower, motorPower === technical.motorPowerKw ? 'kW' : 'W') || (electricListing ? missingTechnicalLabel(locale) : null) },
+    { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(batteryCapacity, batteryCapacity === technical.batteryCapacityKWh ? 'kWh' : 'Wh') || (electricListing ? missingTechnicalLabel(locale) : null) },
     { label: localizedLabel(locale, 'Batterispänning', 'Battery voltage', 'Batteriespannung'), value: formatTechnicalValue(technical.batteryVoltageV, 'V') },
-    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(electricRange, 'km') },
+    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null) },
     { label: localizedLabel(locale, 'Maxhastighet', 'Maximum speed', 'Höchstgeschwindigkeit'), value: formatTechnicalValue(technical.maxSpeedKmh, 'km/h') },
     { label: localizedLabel(locale, 'Maskintyp', 'Machine type', 'Maschinentyp'), value: translateSpecValue(locale, formatTechnicalValue(technical.machineType, '')) },
     { label: localizedLabel(locale, 'Maskinvikt', 'Operating weight', 'Betriebsgewicht'), value: formatTechnicalValue(technical.operatingWeightKg, 'kg') },
@@ -1185,6 +1187,27 @@ function buildSpecs(
 function isPublicSellerDescription(value: string | null): value is string {
   if (!value) return false
   return !/^Strukturerad Autorell-annons:/i.test(value.trim())
+}
+
+function isElectricListing(
+  listing: ListingRow,
+  technicalData: Record<string, string | number | string[] | null>,
+) {
+  return [listing.fuel_type, technicalData.fuelType]
+    .some((value) => String(value || '').trim().toLowerCase() === 'el')
+}
+
+function missingTechnicalLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Ej angivet'
+  if (locale === 'de' || locale === 'at') return 'Nicht angegeben'
+  if (locale === 'fr') return 'Non renseigné'
+  if (locale === 'es') return 'No indicado'
+  if (locale === 'it') return 'Non indicato'
+  if (locale === 'nl' || locale === 'be') return 'Niet opgegeven'
+  if (locale === 'pl') return 'Nie podano'
+  if (locale === 'da') return 'Ikke angivet'
+  if (locale === 'fi') return 'Ei ilmoitettu'
+  return 'Not specified'
 }
 
 function InfoLine({ label, value }: { label: string; value: string }) {
