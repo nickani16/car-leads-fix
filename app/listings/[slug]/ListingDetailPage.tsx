@@ -711,14 +711,6 @@ export default async function ListingDetailPage({
                           </Link>
                         ) : null}
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-[#667085]">
-                        {localizedLabel(
-                          locale,
-                          'Kontakt sker via Autorell så att köpare och säljare får en tydlig historik.',
-                          'Contact happens through Autorell so buyers and sellers have a clear history.',
-                          'Kontakt erfolgt über Autorell, damit Käufer und Verkäufer eine klare Historie haben.',
-                        )}
-                      </p>
                     </div>
                   </div>
                 )}

@@ -367,7 +367,7 @@ export default async function PublicCompanyPage({
                     name="q"
                     defaultValue={q}
                     placeholder={copy.searchPlaceholder}
-                    className="h-11 w-full rounded-[10px] border border-[#d9e2ef] bg-white pl-10 pr-3 text-sm font-medium text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                    className={`h-11 w-full rounded-[10px] border border-[#d9e2ef] bg-white pl-10 pr-3 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] placeholder:opacity-100 focus:border-[#0866ff] focus:text-[#101828] focus:ring-4 focus:ring-[#0866ff]/10 ${q ? 'text-[#101828]' : 'text-[#98a2b3]'}`}
                   />
                 </label>
                 <button type="submit" className="h-11 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">

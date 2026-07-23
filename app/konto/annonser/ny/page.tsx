@@ -75,7 +75,8 @@ export async function renderNewListingPage({
   const copy = getNewListingPageCopy(locale)
 
   return (
-    <main className="mx-auto max-w-[1360px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+    <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-[1360px]">
       <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="border-b border-[#dfe6f1] bg-[#f4f8ff] p-5 sm:p-6 lg:border-b-0 lg:border-r">
@@ -108,6 +109,7 @@ export async function renderNewListingPage({
           </div>
         </div>
       </section>
+      </div>
     </main>
   )
 }

@@ -6,6 +6,7 @@ const companyPage = readFileSync(new URL('../lib/public-company-page.tsx', impor
 const rootRoute = readFileSync(new URL('../app/company/[id]/page.tsx', import.meta.url), 'utf8')
 const localizedRoute = readFileSync(new URL('../app/[market]/company/[id]/page.tsx', import.meta.url), 'utf8')
 const listingDetail = readFileSync(new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url), 'utf8')
+const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const profileApi = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 
 test('public company pages are available on root and localized routes', () => {
@@ -38,6 +39,8 @@ test('public company page gathers company listings and contact details', () => {
   assert.match(companyPage, /Open in Google Maps/)
   assert.match(companyPage, /bg-\[linear-gradient/)
   assert.match(companyPage, /placeholder:text-\[#98a2b3\]/)
+  assert.match(companyPage, /text-\[#98a2b3\]/)
+  assert.match(companyPage, /focus:text-\[#101828\]/)
   assert.doesNotMatch(companyPage, /<iframe/)
   assert.doesNotMatch(companyPage, /output=embed/)
   assert.match(companyPage, /uniqueValues/)
@@ -58,4 +61,11 @@ test('business listing detail links to eligible public company page', () => {
   assert.match(listingDetail, /companyPageHref/)
   assert.match(listingDetail, /\/company\/\$\{listing\.seller_user_id\}/)
   assert.match(listingDetail, /Visa företagssida/)
+  assert.doesNotMatch(listingDetail, /Kontakt sker via Autorell/)
+  assert.doesNotMatch(listingDetail, /Contact happens through Autorell/)
+  assert.doesNotMatch(listingDetail, /Kontakt erfolgt/)
+})
+
+test('new listing page uses a white page background', () => {
+  assert.match(newListingPage, /min-h-screen bg-white/)
 })
