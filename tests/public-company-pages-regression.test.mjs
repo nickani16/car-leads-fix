@@ -127,6 +127,17 @@ test('listing detail bottom listing facts stay compact on desktop', () => {
   assert.match(listingDetail, /sm:mt-1 sm:text-\[13px\] sm:leading-4/)
 })
 
+test('listing detail specifications do not duplicate location fields', () => {
+  const buildSpecsBody = listingDetail.slice(
+    listingDetail.indexOf('function buildSpecs('),
+    listingDetail.indexOf('function isPublicSellerDescription'),
+  )
+  assert.doesNotMatch(buildSpecsBody, /Bilens plats/)
+  assert.doesNotMatch(buildSpecsBody, /Vehicle location/)
+  assert.doesNotMatch(buildSpecsBody, /Kommun/)
+  assert.doesNotMatch(buildSpecsBody, /Municipality/)
+})
+
 test('listing detail equipment tabs stay compact on desktop', () => {
   assert.match(listingEquipmentSection, /sm:p-6/)
   assert.match(listingEquipmentSection, /sm:rounded-\[13px\] sm:p-3/)

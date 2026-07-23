@@ -1131,8 +1131,6 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Märke', 'Make', 'Marke'), value: listing.make },
     { label: localizedLabel(locale, 'Modell', 'Model', 'Modell'), value: [listing.model, listing.variant].filter(Boolean).join(' ') },
     { label: localizedLabel(locale, 'Årsmodell', 'Model year', 'Modelljahr'), value: listing.model_year },
-    { label: localizedLabel(locale, 'Bilens plats', 'Vehicle location', 'Fahrzeugstandort'), value: countryName },
-    { label: localizedLabel(locale, 'Kommun', 'Municipality', 'Gemeinde'), value: listing.municipality },
     {
       label: localizedLabel(locale, 'Miltal', 'Mileage', 'Kilometerstand'),
       value: formatMileageAsMil(listing.mileage_km, locale),
