@@ -205,9 +205,9 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <PricingAnchorScroll />
-      <section className="relative min-h-[320px] overflow-hidden border-b border-[#d8e0ec] bg-[#101828] sm:min-h-[400px] lg:min-h-[440px]">
+      <section className="relative min-h-[320px] overflow-hidden border-b border-[#d8e0ec] bg-[#d9edf8] sm:min-h-[400px] lg:min-h-[440px]">
         <Image
-          src="/autorell-pricing-mobile-hero.jpg"
+          src="/autorell-pricing-phone-hero.png"
           alt="Autorell mobile listing form"
           fill
           priority
@@ -215,21 +215,21 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,12,24,.24)_0%,rgba(7,12,24,.14)_42%,rgba(7,12,24,.03)_76%,rgba(7,12,24,0)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,12,24,.04)_0%,rgba(7,12,24,0)_42%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.94)_0%,rgba(255,255,255,.78)_34%,rgba(255,255,255,.25)_58%,rgba(255,255,255,0)_82%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(255,255,255,.18)_0%,rgba(255,255,255,0)_42%)]" />
         <div className="relative z-10 mx-auto flex min-h-[320px] max-w-[var(--autorell-page-max)] items-end px-5 py-8 sm:min-h-[400px] sm:px-8 sm:py-11 lg:min-h-[440px] lg:py-12">
           <div className="min-w-0">
-              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-white [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
+              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-[#101828] [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
                 {copy.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-white/82 sm:text-[18px] sm:leading-8">
+              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[#344054] sm:text-[18px] sm:leading-8">
                 {copy.intro}
               </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Link href="#private" className="rounded-full border border-white/55 bg-white px-4 py-2 text-sm font-medium text-[#101828] shadow-[0_12px_30px_rgba(7,12,24,.18)] transition hover:bg-[#f7faff]">
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <Link href="#private" className="inline-flex min-h-11 items-center rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(8,102,255,.22)] transition hover:bg-[#075ce5] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20">
                   {copy.privateHeading}
                 </Link>
-                <Link href="#business" className="rounded-full border border-white/45 bg-white/12 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/18">
+                <Link href="#business" className="inline-flex min-h-11 items-center rounded-[8px] border border-[#b9c7dc] bg-white/90 px-5 text-sm font-semibold text-[#101828] shadow-[0_10px_24px_rgba(16,24,40,.08)] backdrop-blur transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/16">
                   {copy.businessHeading}
                 </Link>
               </div>
