@@ -15,6 +15,7 @@ const listingCardCarouselSource = await readFile('app/components/ListingCardImag
 const businessHomeSource = await readFile('app/components/BusinessMarketplaceHome.tsx', 'utf8')
 const publicCompanySource = await readFile('lib/public-company-page.tsx', 'utf8')
 const accountListingsSource = await readFile('app/konto/annonser/page.tsx', 'utf8')
+const vehicleSearchExperienceSource = await readFile('app/components/VehicleSearchExperience.tsx', 'utf8')
 const nextConfigSource = await readFile('next.config.ts', 'utf8')
 const require = createRequire(import.meta.url)
 
@@ -174,6 +175,13 @@ test('public listing images use safe framing and modern formats by viewport', ()
   assert.match(accountListingsSource, /quality=\{78\} className="object-cover"/)
   assert.match(listingFormSource, /object-cover/)
   assert.doesNotMatch(listingFormSource, /object-contain/)
+})
+
+test('marketplace result cards only show seller trust when verified', () => {
+  assert.match(vehicleSearchExperienceSource, /listing\.sellerTrust === 'verified' \? \(/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Unverified company/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Overifierat företag/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /sellerTrustClass/)
 })
 
 function loadImageProcessingModule() {
