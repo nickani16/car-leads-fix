@@ -6,6 +6,10 @@ const companyPage = readFileSync(new URL('../lib/public-company-page.tsx', impor
 const rootRoute = readFileSync(new URL('../app/company/[id]/page.tsx', import.meta.url), 'utf8')
 const localizedRoute = readFileSync(new URL('../app/[market]/company/[id]/page.tsx', import.meta.url), 'utf8')
 const listingDetail = readFileSync(new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url), 'utf8')
+const listingBackButton = readFileSync(new URL('../app/components/ListingBackButton.tsx', import.meta.url), 'utf8')
+const listingEquipmentSection = readFileSync(new URL('../app/components/ListingEquipmentSection.tsx', import.meta.url), 'utf8')
+const listingLocationMap = readFileSync(new URL('../app/components/ListingLocationMap.tsx', import.meta.url), 'utf8')
+const listingImageGallery = readFileSync(new URL('../app/components/ListingImageGallery.tsx', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const profileApi = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 
@@ -76,17 +80,26 @@ test('business listing detail links to eligible public company page', () => {
   assert.doesNotMatch(listingDetail, /Kontakt erfolgt/)
 })
 
-test('listing detail breadcrumbs include home, marketplace, category, and localized labels', () => {
-  assert.match(listingDetail, /getListingBreadcrumbCopy/)
-  assert.match(listingDetail, /localizePublicHref\(locale, '\/'\)/)
-  assert.match(listingDetail, /localizePublicHref\(locale, '\/marketplace'\)/)
-  assert.match(listingDetail, /localizePublicHref\(locale, `\/marketplace\/\$\{listing\.category\}`\)/)
-  assert.match(listingDetail, /Fordon till salu/)
-  assert.match(listingDetail, /Vehicles for sale/)
-  assert.match(listingDetail, /Fahrzeuge kaufen/)
-  assert.match(listingDetail, /Voertuigen te koop/)
-  assert.match(listingDetail, /rounded-full border border-\[#d8e2f1\]/)
-  assert.match(listingDetail, /item\.icon === 'home'/)
+test('listing detail top navigation uses a history-aware back link instead of visible breadcrumb pills', () => {
+  assert.match(listingDetail, /ListingBackButton/)
+  assert.match(listingDetail, /fallbackBackHref/)
+  assert.match(listingDetail, /label=\{copy\.backToListings\}/)
+  assert.match(listingBackButton, /window\.history\.back\(\)/)
+  assert.match(listingBackButton, /document\.referrer/)
+  assert.match(listingBackButton, /group-hover:-translate-x-1/)
+  assert.match(listingBackButton, /text-\[14px\] font-\[500\]/)
+  assert.doesNotMatch(listingDetail, /rounded-full border border-\[#d8e2f1\]/)
+  assert.doesNotMatch(listingDetail, /item\.icon === 'home'/)
+})
+
+test('listing detail cards do not use card shadows', () => {
+  assert.doesNotMatch(listingDetail, /listing-contact-card[^"]*shadow-/)
+  assert.doesNotMatch(listingDetail, /rounded-\[12px\] border border-\[#dfe6f2\] bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingDetail, /rounded-\[16px\] border border-\[#dfe6f2\] bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingEquipmentSection, /bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingLocationMap, /bg-white shadow-sm/)
+  assert.doesNotMatch(listingLocationMap, /bg-white p-5 shadow-sm/)
+  assert.doesNotMatch(listingImageGallery, /aspect-\[16\/9\] overflow-hidden shadow-sm/)
 })
 
 test('new listing page uses a white page background', () => {

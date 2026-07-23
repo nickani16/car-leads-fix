@@ -46,7 +46,7 @@ export default function ListingEquipmentSection({
   if (!flatCount) return null
 
   return (
-    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.04em]">{title}</h2>
         <span className="rounded-full bg-[#eef5ff] px-2.5 py-0.5 text-[11px] font-semibold text-[#0866ff] sm:px-3 sm:py-1 sm:text-xs">

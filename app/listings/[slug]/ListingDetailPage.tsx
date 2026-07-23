@@ -9,7 +9,6 @@ import {
   ExternalLink,
   Fuel,
   Gauge,
-  Home,
   Info,
   Map as MapIcon,
   MapPin,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
+import ListingBackButton from '@/app/components/ListingBackButton'
 import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
 import CountryFlag from '@/app/components/CountryFlag'
@@ -342,6 +342,7 @@ export default async function ListingDetailPage({
     locale,
     categoryLabel,
   })
+  const fallbackBackHref = localizePublicHref(locale, `/marketplace/${listing.category}`)
   const listingJsonLd = buildListingJsonLd({
     listing,
     price: Number(listing.price),
@@ -385,22 +386,7 @@ export default async function ListingDetailPage({
       />
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
         <div className="hidden items-center justify-between gap-3 sm:flex">
-          <nav aria-label={copy.breadcrumbLabel} className="min-w-0">
-            <ol className="flex min-w-0 flex-wrap items-center gap-1.5 text-[13px] font-semibold text-[#475467]">
-              {breadcrumbItems.map((item, index) => (
-                <li key={`${item.href}-${item.label}`} className="flex min-w-0 items-center gap-1.5">
-                  {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" strokeWidth={2.25} /> : null}
-                  <Link
-                    href={item.href}
-                    className="inline-flex min-h-8 max-w-[210px] items-center gap-1.5 truncate rounded-full border border-[#d8e2f1] bg-white px-2.5 py-1 text-[#344054] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
-                  >
-                    {item.icon === 'home' ? <Home className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} /> : null}
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </nav>
+          <ListingBackButton href={fallbackBackHref} label={copy.backToListings} className="shrink-0 whitespace-nowrap" />
           <div className="hidden min-w-0 items-center gap-4 sm:flex">
             <ShareListingButton
               title={listing.title}
@@ -441,7 +427,7 @@ export default async function ListingDetailPage({
             <div className="hidden">
               <a
                 href="#listing-location-map"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 <MapIcon className="h-4 w-4" />
                 {localizedLabel(locale, 'Karta', 'Map', 'Karte')}
@@ -453,7 +439,7 @@ export default async function ListingDetailPage({
                   label={copy.shareListing}
                   copiedLabel={copy.shareCopied}
                   variant="button"
-                  className="rounded-[8px] shadow-sm"
+                  className="rounded-[8px]"
                 />
                 <SavedListingButton
                   listingId={listing.id}
@@ -466,7 +452,7 @@ export default async function ListingDetailPage({
             </div>
 
               <div className="min-w-0 space-y-4 sm:space-y-6">
-                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
               {isSold ? (
                 <div className="mb-5 rounded-[12px] border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm font-semibold text-[#9a3412]">
                   {localizedLabel(locale, 'Den här annonsen är såld', 'This listing is sold', 'Diese Anzeige ist verkauft')}
@@ -512,7 +498,7 @@ export default async function ListingDetailPage({
               ) : null}
                 </section>
 
-                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
               <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                 {localizedLabel(locale, 'Specifikationer', 'Specifications', 'Spezifikationen')}
               </h2>
@@ -539,7 +525,7 @@ export default async function ListingDetailPage({
                 />
 
                 {listing.description ? (
-                  <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-7">
+                  <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
                 <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
@@ -572,7 +558,7 @@ export default async function ListingDetailPage({
             </div>
 
               <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start">
-            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white shadow-[0_12px_32px_rgba(16,24,40,.09)] sm:rounded-[18px] sm:shadow-[0_18px_48px_rgba(16,24,40,.10)] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
+            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white sm:rounded-[18px] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
               <div className="border-b border-[#edf1f6] p-4 sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
@@ -651,7 +637,7 @@ export default async function ListingDetailPage({
                 ) : (
                   <div className="grid gap-4">
                     {sellerDetails.logoUrl ? (
-                      <div className="inline-flex w-fit max-w-full rounded-[14px] border border-[#dfe6f2] bg-white px-4 py-3 shadow-sm">
+                      <div className="inline-flex w-fit max-w-full rounded-[14px] border border-[#dfe6f2] bg-white px-4 py-3">
                         <Image
                           src={sellerDetails.logoUrl}
                           alt={sellerLabel}
@@ -724,7 +710,7 @@ export default async function ListingDetailPage({
           </div>
         </div>
 
-        <section className="mt-6 w-[calc(100vw-2rem)] rounded-[16px] border border-[#dfe6f2] bg-white p-4 shadow-sm sm:w-auto sm:p-5">
+        <section className="mt-6 w-[calc(100vw-2rem)] rounded-[16px] border border-[#dfe6f2] bg-white p-4 sm:w-auto sm:p-5">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#0866ff]">

@@ -134,7 +134,7 @@ export default function ListingLocationMap({
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white shadow-sm">
+    <div className="overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white">
       <div className="flex items-start gap-3 border-b border-[#edf1f6] px-4 py-4 sm:px-5">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
           <MapPin className="h-5 w-5" />
@@ -250,7 +250,7 @@ function LocationFallback({
   country?: string | null
 }) {
   return (
-    <div className="rounded-[16px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-6">
+    <div className="rounded-[16px] border border-[#dfe6f2] bg-white p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
           <MapPin className="h-5 w-5" />
