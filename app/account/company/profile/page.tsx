@@ -14,14 +14,28 @@ export default async function CompanyProfilePage({ localeOverride }: { localeOve
   const copy = translatePublicObject(context.locale, baseCopy)
   const { data: profile } = await createAdminClient()
     .from('marketplace_profiles')
-    .select('account_type,first_name,last_name,birth_date,email,phone,phone_verified,phone_verification_status,phone_risk_flags,country_code,company_name,registration_number,vat_number,website_url,logo_url,address_line_1,address_line_2,city,region,postal_code,identity_status,business_verification_status,risk_status,national_id_last4')
+    .select('account_type,first_name,last_name,birth_date,email,phone,phone_verified,phone_verification_status,phone_risk_flags,country_code,company_name,registration_number,vat_number,website_url,logo_url,address_line_1,address_line_2,city,region,postal_code,identity_status,business_verification_status,risk_status,national_id_last4,company_id')
     .eq('user_id', context.userId)
     .maybeSingle()
+  const { data: company } = profile?.company_id
+    ? await createAdminClient()
+        .from('marketplace_companies')
+        .select('contact_email,contact_phone,phone')
+        .eq('id', profile.company_id)
+        .maybeSingle()
+    : { data: null }
   const emailVerified = await hasVerifiedEmailCode(profile?.email)
+  const formProfile = profile
+    ? {
+        ...profile,
+        company_contact_email: company?.contact_email || '',
+        company_contact_phone: company?.contact_phone || company?.phone || '',
+      }
+    : null
 
   return (
     <CompanyPortalShell context={context} active="profile" title={copy.title} description={copy.description}>
-      {profile ? <ProfileForm profile={profile} locale={context.locale} emailConfirmed={emailVerified} /> : null}
+      {formProfile ? <ProfileForm profile={formProfile} locale={context.locale} emailConfirmed={emailVerified} /> : null}
     </CompanyPortalShell>
   )
 }

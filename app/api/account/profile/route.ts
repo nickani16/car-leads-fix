@@ -39,6 +39,9 @@ export async function PATCH(request: Request) {
   const region = normalizePlaceName(body.region)
   const birthDate = clean(body.birthDate)
   const websiteUrl = clean(body.websiteUrl)
+  const companyContactEmail = clean(body.companyContactEmail).toLowerCase()
+  const companyContactPhone = clean(body.companyContactPhone)
+  const companyContactEmailValid = !companyContactEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyContactEmail)
   const profile = {
     display_name: `${firstName} ${lastName}`.trim(),
     legal_name: `${firstName} ${lastName}`.trim(),
@@ -74,7 +77,7 @@ export async function PATCH(request: Request) {
     !city ||
     (existingProfile.account_type === 'private' && !birthDate) ||
     (existingProfile.account_type === 'business' &&
-      (!profile.company_name || !(profile.registration_number || profile.vat_number)))
+      (!profile.company_name || !(profile.registration_number || profile.vat_number) || !companyContactEmailValid))
   ) {
     return NextResponse.json(
       { error: 'Fyll i namn, telefon, födelsedatum och fullständig adress.' },
@@ -96,14 +99,15 @@ export async function PATCH(request: Request) {
         vat_number: profile.vat_number,
         country_code: countryCode,
         website_url: websiteUrl || null,
-        phone,
+        phone: companyContactPhone || null,
         address_line_1: addressLine1,
         address_line_2: addressLine2 || null,
         postal_code: postalCode,
         city,
         region: region || null,
         contact_name: profile.display_name,
-        contact_phone: phone,
+        contact_email: companyContactEmail || null,
+        contact_phone: companyContactPhone || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', existingProfile.company_id)

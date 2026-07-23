@@ -50,6 +50,24 @@ type CompanyProfile = {
   created_at: string | null
 }
 
+type CompanyContact = {
+  id: string
+  name: string | null
+  registration_number: string | null
+  vat_number: string | null
+  country_code: string | null
+  website_url: string | null
+  phone: string | null
+  address_line_1: string | null
+  address_line_2: string | null
+  postal_code: string | null
+  city: string | null
+  region: string | null
+  contact_name: string | null
+  contact_email: string | null
+  contact_phone: string | null
+}
+
 type CompanySubscription = {
   plan_key: string | null
   status: string | null
@@ -94,7 +112,6 @@ const baseCopy = {
   businessSeller: 'Business seller',
   listings: 'Listings',
   activeListings: 'Active listings',
-  plan: 'Plan',
   memberSince: 'Member since',
   contact: 'Contact',
   address: 'Address',
@@ -102,6 +119,8 @@ const baseCopy = {
   phone: 'Phone',
   email: 'Email',
   organization: 'Registration',
+  map: 'Map',
+  openMap: 'Open in Google Maps',
   allListings: 'All listings',
   searchPlaceholder: 'Search this companys listings',
   searchButton: 'Search',
@@ -129,10 +148,10 @@ export async function generateCompanyMetadata({
     }
   }
 
-  const title = `${data.profile.company_name || data.profile.display_name || 'Företag'} | Autorell`
-  const location = formatLocation(data.profile, locale)
+  const title = `${data.company?.name || data.profile.company_name || data.profile.display_name || 'Företag'} | Autorell`
+  const location = formatCompanyLocation(data.company, data.profile, locale)
   const description = [
-    data.profile.company_name,
+    data.company?.name || data.profile.company_name,
     location,
     `${data.listings.length} ${translatePublic(locale, baseCopy.activeListings).toLowerCase()}`,
   ].filter(Boolean).join(' | ')
@@ -172,10 +191,14 @@ export default async function PublicCompanyPage({
 
   const q = getSearchValue(resolvedSearchParams, 'q')
   const selectedCategory = getSearchValue(resolvedSearchParams, 'category')
-  const displayCurrency = displayCurrencyForMarket(data.profile.country_code || undefined)
-  const companyName = data.profile.company_name || data.profile.display_name || copy.businessSeller
-  const address = formatAddress(data.profile)
-  const location = formatLocation(data.profile, locale)
+  const company = data.company
+  const displayCurrency = displayCurrencyForMarket((company?.country_code || data.profile.country_code) || undefined)
+  const companyName = company?.name || data.profile.company_name || data.profile.display_name || copy.businessSeller
+  const address = formatCompanyAddress(company, data.profile)
+  const location = formatCompanyLocation(company, data.profile, locale)
+  const contactEmail = resolveCompanyContactEmail(data.profile, company)
+  const contactPhone = resolveCompanyContactPhone(data.profile, company)
+  const companyRegistration = uniqueValues(company?.registration_number, company?.vat_number, data.profile.registration_number, data.profile.vat_number)
   const categories = categoryCounts(data.listings, locale)
   const filteredListings = filterCompanyListings(data.listings, q, selectedCategory)
   const visibleListings = await Promise.all(
@@ -204,7 +227,7 @@ export default async function PublicCompanyPage({
   const mapHref = address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
     : null
-  const websiteHref = normalizeWebsiteUrl(data.profile.website_url)
+  const websiteHref = normalizeWebsiteUrl(company?.website_url || data.profile.website_url)
 
   return (
     <main className="min-h-screen bg-[#f6f8fb] text-[#101828]">
@@ -238,9 +261,8 @@ export default async function PublicCompanyPage({
           </div>
 
           <aside className="rounded-[16px] border border-[#d9e2ef] bg-[#fbfdff] p-5">
-            <dl className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <SummaryStat label={copy.activeListings} value={data.listings.length.toLocaleString(countLocale(locale))} />
-              <SummaryStat label={copy.plan} value={capitalize(data.subscription.plan_key || 'Starter')} />
               <SummaryStat label={copy.memberSince} value={formatYear(data.profile.created_at)} />
             </dl>
           </aside>
@@ -253,14 +275,14 @@ export default async function PublicCompanyPage({
             <h2 className="text-lg font-semibold tracking-[-0.025em]">{copy.contact}</h2>
             <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
               {address ? <ContactLine icon={MapPin} label={copy.address} value={address} href={mapHref} /> : null}
-              {websiteHref ? <ContactLine icon={Globe2} label={copy.website} value={displayWebsite(data.profile.website_url)} href={websiteHref} external /> : null}
-              {data.profile.phone ? <ContactLine icon={Phone} label={copy.phone} value={data.profile.phone} href={`tel:${data.profile.phone.replace(/\s+/g, '')}`} /> : null}
-              {data.profile.email ? <ContactLine icon={Mail} label={copy.email} value={data.profile.email} href={`mailto:${data.profile.email}`} /> : null}
-              {data.profile.registration_number || data.profile.vat_number ? (
+              {websiteHref ? <ContactLine icon={Globe2} label={copy.website} value={displayWebsite(company?.website_url || data.profile.website_url)} href={websiteHref} external /> : null}
+              {contactPhone ? <ContactLine icon={Phone} label={copy.phone} value={contactPhone} href={`tel:${contactPhone.replace(/\s+/g, '')}`} /> : null}
+              {contactEmail ? <ContactLine icon={Mail} label={copy.email} value={contactEmail} href={`mailto:${contactEmail}`} /> : null}
+              {companyRegistration.length ? (
                 <ContactLine
                   icon={Building2}
                   label={copy.organization}
-                  value={[data.profile.registration_number, data.profile.vat_number].filter(Boolean).join(' | ')}
+                  value={companyRegistration.join(' | ')}
                 />
               ) : null}
             </div>
@@ -273,6 +295,27 @@ export default async function PublicCompanyPage({
               <p className="mt-5 text-sm font-semibold text-[#667085]">{copy.noReviews}</p>
             )}
           </section>
+
+          {address ? (
+            <section className="mt-4 overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+              <div className="flex items-center justify-between gap-3 border-b border-[#edf1f6] px-5 py-4">
+                <h2 className="text-lg font-semibold tracking-[-0.025em]">{copy.map}</h2>
+                {mapHref ? (
+                  <a href={mapHref} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-bold text-[#0866ff]">
+                    {copy.openMap}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : null}
+              </div>
+              <iframe
+                title={`${companyName} ${copy.map}`}
+                src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-[240px] w-full border-0"
+              />
+            </section>
+          ) : null}
 
           <section className="mt-4 rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
             <h2 className="text-lg font-semibold tracking-[-0.025em]">{copy.allCategories}</h2>
@@ -377,7 +420,14 @@ export async function getPublicCompanyPageData(id: string) {
   if (!profile || profile.account_type !== 'business') return null
 
   const companyUserIds = await getCompanyUserIds(profile)
-  const [{ data: subscriptions }, { data: listings }, { data: reviews }] = await Promise.all([
+  const [{ data: company }, { data: subscriptions }, { data: listings }, { data: reviews }] = await Promise.all([
+    profile.company_id
+      ? admin
+          .from('marketplace_companies')
+          .select('id,name,registration_number,vat_number,country_code,website_url,phone,address_line_1,address_line_2,postal_code,city,region,contact_name,contact_email,contact_phone')
+          .eq('id', profile.company_id)
+          .maybeSingle<CompanyContact>()
+      : Promise.resolve({ data: null }),
     admin
       .from('business_subscriptions')
       .select('plan_key,status,manually_activated,free_period_ends_at,active_listing_limit,updated_at')
@@ -414,6 +464,7 @@ export async function getPublicCompanyPageData(id: string) {
 
   return {
     profile,
+    company: company || null,
     subscription,
     companyUserIds,
     listings: ((listings || []) as CompanyListing[]).map((listing) => ({
@@ -564,18 +615,59 @@ function isVerifiedCompany(profile: CompanyProfile) {
   return ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
 }
 
-function formatAddress(profile: CompanyProfile) {
+function formatCompanyAddress(company: CompanyContact | null, profile: CompanyProfile) {
   return [
-    profile.address_line_1,
-    profile.address_line_2,
-    [profile.postal_code, profile.city].filter(Boolean).join(' '),
-    profile.region,
-    profile.country_code,
+    company?.address_line_1 || profile.address_line_1,
+    company?.address_line_2 || profile.address_line_2,
+    [company?.postal_code || profile.postal_code, company?.city || profile.city].filter(Boolean).join(' '),
+    company?.region || profile.region,
+    company?.country_code || profile.country_code,
   ].filter(Boolean).join(', ')
 }
 
-function formatLocation(profile: CompanyProfile, locale: PublicLocale) {
-  return [profile.city, getEuCountryName(profile.country_code || '', locale)].filter(Boolean).join(', ')
+function formatCompanyLocation(company: CompanyContact | null, profile: CompanyProfile, locale: PublicLocale) {
+  const countryCode = company?.country_code || profile.country_code || ''
+  return [company?.city || profile.city, getEuCountryName(countryCode, locale)].filter(Boolean).join(', ')
+}
+
+function resolveCompanyContactEmail(profile: CompanyProfile, company: CompanyContact | null) {
+  const contactEmail = company?.contact_email?.trim()
+  if (contactEmail && contactEmail.toLowerCase() !== String(profile.email || '').toLowerCase()) return contactEmail
+  return infoEmailFromWebsite(company?.website_url || profile.website_url)
+}
+
+function resolveCompanyContactPhone(profile: CompanyProfile, company: CompanyContact | null) {
+  const contactPhone = company?.contact_phone?.trim()
+  const companyPhone = company?.phone?.trim()
+  const sellerPhone = String(profile.phone || '').replace(/\s+/g, '')
+  if (contactPhone && contactPhone.replace(/\s+/g, '') !== sellerPhone) return contactPhone
+  if (companyPhone && companyPhone.replace(/\s+/g, '') !== sellerPhone) return companyPhone
+  return null
+}
+
+function infoEmailFromWebsite(value: string | null) {
+  const url = normalizeWebsiteUrl(value)
+  if (!url) return null
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '')
+    return hostname ? `info@${hostname}` : null
+  } catch {
+    return null
+  }
+}
+
+function uniqueValues(...values: Array<string | null | undefined>) {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const value of values) {
+    const clean = String(value || '').trim()
+    if (!clean) continue
+    const key = clean.replace(/\s+/g, '').toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(clean)
+  }
+  return result
 }
 
 function normalizeWebsiteUrl(value: string | null) {
@@ -596,10 +688,6 @@ function displayWebsite(value: string | null) {
 function initials(value: string) {
   const parts = value.trim().split(/\s+/).filter(Boolean)
   return (parts[0]?.[0] || 'A') + (parts[1]?.[0] || '')
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
 function formatYear(value: string | null) {

@@ -34,6 +34,8 @@ type Profile = {
   business_verification_status: string | null
   risk_status: string
   national_id_last4: string | null
+  company_contact_email?: string | null
+  company_contact_phone?: string | null
 }
 
 export default function ProfileForm({
@@ -211,6 +213,14 @@ export default function ProfileForm({
             <Field name="registrationNumber" label={copy.registrationNumber} defaultValue={profile.registration_number || ''} required />
             <Field name="vatNumber" label={copy.vatNumber} defaultValue={profile.vat_number || ''} />
             <Field name="websiteUrl" label={copy.websiteUrl} defaultValue={profile.website_url || ''} />
+            <div className="sm:col-span-2 rounded-[16px] border border-[#d8e3f7] bg-white p-4">
+              <h2 className="text-sm font-semibold text-[#101828]">{copy.companyPublicContact}</h2>
+              <p className="mt-1 text-xs leading-5 text-[#667085]">{copy.companyPublicContactHelp}</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field name="companyContactEmail" label={copy.companyContactEmail} type="email" defaultValue={profile.company_contact_email || ''} />
+                <Field name="companyContactPhone" label={copy.companyContactPhone} defaultValue={profile.company_contact_phone || ''} />
+              </div>
+            </div>
           </>
         )}
         <Field name="addressLine1" label={copy.addressLine1} defaultValue={profile.address_line_1 || ''} required />
@@ -379,6 +389,10 @@ function getProfileCopy(locale: PublicLocale) {
     registrationNumber: 'Registration number',
     vatNumber: 'VAT number',
     websiteUrl: 'Website',
+    companyPublicContact: 'Public company contact',
+    companyPublicContactHelp: 'Shown on the company page only. Listing cards and listing pages still use the seller who published the vehicle.',
+    companyContactEmail: 'Company email',
+    companyContactPhone: 'Company phone',
     addressLine1: 'Street address',
     addressLine2: 'Apartment, floor or c/o',
     postalCode: 'Postal code',
@@ -433,6 +447,10 @@ function getProfileCopy(locale: PublicLocale) {
       registrationNumber: 'Registreringsnummer',
       vatNumber: 'VAT-nummer',
       websiteUrl: 'Webbplats',
+      companyPublicContact: 'Publik företagskontakt',
+      companyPublicContactHelp: 'Visas bara på företagssidan. Annonskort och annonssidor använder fortfarande säljaren som publicerade fordonet.',
+      companyContactEmail: 'Företagsmejl',
+      companyContactPhone: 'Företagstelefon',
       addressLine1: 'Gatuadress',
       addressLine2: 'Lägenhet, våning eller c/o',
       postalCode: 'Postnummer',
@@ -488,6 +506,10 @@ function getProfileCopy(locale: PublicLocale) {
       registrationNumber: 'Número de registro',
       vatNumber: 'Número de IVA',
       websiteUrl: 'Sitio web',
+      companyPublicContact: 'Contacto público de la empresa',
+      companyPublicContactHelp: 'Se muestra solo en la página de empresa. Las tarjetas y páginas de anuncio siguen usando el vendedor que publicó el vehículo.',
+      companyContactEmail: 'Correo de empresa',
+      companyContactPhone: 'Teléfono de empresa',
       addressLine1: 'Dirección',
       addressLine2: 'Apartamento, planta o c/o',
       postalCode: 'Código postal',
@@ -531,6 +553,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Nicht verifiziert',
       phoneFormatValid: 'Format bestätigt',
       phoneNeedsReview: 'Nummer prüfen',
+      companyPublicContact: 'Öffentlicher Unternehmenskontakt',
+      companyPublicContactHelp: 'Wird nur auf der Unternehmensseite angezeigt. Anzeigenkarten und Anzeigenseiten verwenden weiterhin den Verkäufer, der das Fahrzeug veröffentlicht hat.',
+      companyContactEmail: 'Unternehmens-E-Mail',
+      companyContactPhone: 'Unternehmenstelefon',
       verifyEmailTitle: 'E-Mail verifizieren',
       verifyEmailText: 'Senden Sie einen Einmalcode an Ihre E-Mail und geben Sie ihn hier ein. Danach kann Ihr Verkäuferprofil als verifiziert angezeigt werden.',
       verifyEmailButton: 'E-Mail verifizieren',
@@ -554,6 +580,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Non vérifié',
       phoneFormatValid: 'Format validé',
       phoneNeedsReview: 'Vérifier le numéro',
+      companyPublicContact: 'Contact public de l’entreprise',
+      companyPublicContactHelp: 'Affiché uniquement sur la page entreprise. Les cartes et pages d’annonce utilisent toujours le vendeur qui a publié le véhicule.',
+      companyContactEmail: 'E-mail entreprise',
+      companyContactPhone: 'Téléphone entreprise',
       verifyEmailTitle: 'Vérifier l’e-mail',
       verifyEmailText: 'Envoyez un code à usage unique à votre e-mail et saisissez-le ici. Le profil vendeur pourra ensuite être affiché comme vérifié.',
       verifyEmailButton: 'Vérifier l’e-mail',
@@ -577,6 +607,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Non verificato',
       phoneFormatValid: 'Formato approvato',
       phoneNeedsReview: 'Controlla il numero',
+      companyPublicContact: 'Contatto pubblico aziendale',
+      companyPublicContactHelp: 'Mostrato solo nella pagina aziendale. Le schede e le pagine annuncio usano ancora il venditore che ha pubblicato il veicolo.',
+      companyContactEmail: 'E-mail aziendale',
+      companyContactPhone: 'Telefono aziendale',
       verifyEmailTitle: 'Verifica l’e-mail',
       verifyEmailText: 'Invia un codice monouso alla tua e-mail e inseriscilo qui. Dopo, il profilo venditore potrà risultare verificato.',
       verifyEmailButton: 'Verifica e-mail',
@@ -600,6 +634,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Niet geverifieerd',
       phoneFormatValid: 'Formaat goedgekeurd',
       phoneNeedsReview: 'Controleer het nummer',
+      companyPublicContact: 'Openbaar bedrijfscontact',
+      companyPublicContactHelp: 'Wordt alleen op de bedrijfspagina getoond. Advertentiekaarten en advertentiepagina’s gebruiken nog steeds de verkoper die het voertuig heeft gepubliceerd.',
+      companyContactEmail: 'Bedrijfs-e-mail',
+      companyContactPhone: 'Bedrijfstelefoon',
       verifyEmailTitle: 'E-mail verifiëren',
       verifyEmailText: 'Stuur een eenmalige code naar je e-mail en vul die hier in. Daarna kan je verkopersprofiel als geverifieerd worden getoond.',
       verifyEmailButton: 'E-mail verifiëren',
@@ -623,6 +661,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Niezweryfikowano',
       phoneFormatValid: 'Format zatwierdzony',
       phoneNeedsReview: 'Sprawdź numer',
+      companyPublicContact: 'Publiczny kontakt firmy',
+      companyPublicContactHelp: 'Widoczny tylko na stronie firmy. Karty i strony ogłoszeń nadal używają sprzedawcy, który opublikował pojazd.',
+      companyContactEmail: 'E-mail firmy',
+      companyContactPhone: 'Telefon firmy',
       verifyEmailTitle: 'Zweryfikuj e-mail',
       verifyEmailText: 'Wyślij jednorazowy kod na e-mail i wpisz go tutaj. Potem profil sprzedawcy może być oznaczony jako zweryfikowany.',
       verifyEmailButton: 'Zweryfikuj e-mail',
@@ -646,6 +688,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Ikke verificeret',
       phoneFormatValid: 'Format godkendt',
       phoneNeedsReview: 'Kontrollér nummeret',
+      companyPublicContact: 'Offentlig virksomhedskontakt',
+      companyPublicContactHelp: 'Vises kun på virksomhedssiden. Annoncekort og annoncesider bruger stadig sælgeren, der udgav køretøjet.',
+      companyContactEmail: 'Virksomheds-e-mail',
+      companyContactPhone: 'Virksomhedstelefon',
       verifyEmailTitle: 'Verificér e-mail',
       verifyEmailText: 'Send en engangskode til din e-mail og indtast den her. Derefter kan sælgerprofilen vises som verificeret.',
       verifyEmailButton: 'Verificér e-mail',
@@ -669,6 +715,10 @@ function getProfileCopy(locale: PublicLocale) {
       notVerified: 'Ei vahvistettu',
       phoneFormatValid: 'Muoto hyväksytty',
       phoneNeedsReview: 'Tarkista numero',
+      companyPublicContact: 'Julkinen yritysyhteystieto',
+      companyPublicContactHelp: 'Näytetään vain yrityssivulla. Ilmoituskortit ja ilmoitussivut käyttävät edelleen ajoneuvon julkaissutta myyjää.',
+      companyContactEmail: 'Yrityksen sähköposti',
+      companyContactPhone: 'Yrityksen puhelin',
       verifyEmailTitle: 'Vahvista sähköposti',
       verifyEmailText: 'Lähetä kertakäyttökoodi sähköpostiisi ja syötä se tähän. Sen jälkeen myyjäprofiili voidaan näyttää vahvistettuna.',
       verifyEmailButton: 'Vahvista sähköposti',
