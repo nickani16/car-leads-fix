@@ -10,6 +10,7 @@ const listingBackButton = readFileSync(new URL('../app/components/ListingBackBut
 const listingEquipmentSection = readFileSync(new URL('../app/components/ListingEquipmentSection.tsx', import.meta.url), 'utf8')
 const listingLocationMap = readFileSync(new URL('../app/components/ListingLocationMap.tsx', import.meta.url), 'utf8')
 const listingImageGallery = readFileSync(new URL('../app/components/ListingImageGallery.tsx', import.meta.url), 'utf8')
+const globalsCss = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const profileApi = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 
@@ -107,6 +108,22 @@ test('listing detail desktop spec tabs stay compact and company flag is round', 
   assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
   assert.match(listingDetail, /sm:text-\[13px\] sm:leading-4/)
   assert.match(listingDetail, /CountryFlag code=\{listing\.country_code \|\| 'eu'\} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black\/5"/)
+})
+
+test('listing detail map has no duplicate location overlay and uses refined controls', () => {
+  assert.match(listingLocationMap, /autorell-listing-location-map/)
+  assert.doesNotMatch(listingLocationMap, /left-4 top-4 z-20 hidden rounded-\[8px\]/)
+  assert.match(globalsCss, /\.autorell-listing-location-map \.maplibregl-ctrl-group/)
+  assert.match(globalsCss, /border-radius: 12px/)
+  assert.match(globalsCss, /width: 38px/)
+  assert.match(globalsCss, /background-color: #eef5ff/)
+})
+
+test('listing detail bottom listing facts stay compact on desktop', () => {
+  assert.match(listingDetail, /sm:grid-cols-2 sm:gap-2 xl:grid-cols-4/)
+  assert.match(listingDetail, /bg-white px-4 py-3 sm:px-3 sm:py-2\.5/)
+  assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
+  assert.match(listingDetail, /sm:mt-1 sm:text-\[13px\] sm:leading-4/)
 })
 
 test('new listing page uses a white page background', () => {

@@ -134,10 +134,10 @@ export default function ListingLocationMap({
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white">
+    <div className="autorell-listing-location-map overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white">
       <div className="flex items-start gap-3 border-b border-[#edf1f6] px-4 py-4 sm:px-5">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
-          <MapPin className="h-5 w-5" />
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-[#edf4ff] text-[#0866ff]">
+          <MapPin className="h-5 w-5 fill-[#0866ff]/10" />
         </span>
         <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
@@ -175,10 +175,6 @@ export default function ListingLocationMap({
             <MapPin className="h-7 w-7 fill-[#0866ff]/15" />
           </span>
         ) : null}
-        <span className="pointer-events-none absolute left-4 top-4 z-20 hidden rounded-[8px] bg-white/95 px-3 py-2 text-xs font-semibold text-[#101828] shadow-[0_10px_24px_rgba(16,24,40,.16)] backdrop-blur sm:inline-flex">
-          <MapPin className="h-7 w-7 fill-[#0866ff]/15" />
-          <span className="ml-2">{city || country}</span>
-        </span>
       </div>
       <ListingMapDebug
         listingId={listingId}

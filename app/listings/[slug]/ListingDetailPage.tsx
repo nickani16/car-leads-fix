@@ -728,7 +728,7 @@ export default async function ListingDetailPage({
             </div>
           </div>
 
-          <dl className="mt-4 grid gap-2.5 text-sm sm:grid-cols-2 xl:grid-cols-4">
+          <dl className="mt-4 grid gap-2.5 text-sm sm:grid-cols-2 sm:gap-2 xl:grid-cols-4">
             <InfoLine label={copy.adId} value={listingIdentity} />
             <InfoLine label={copy.updated} value={formatDateTime(listing.edited_at || publishedDate, locale)} />
             <InfoLine label={copy.reference} value={listing.reference_number || listingIdentity} />
@@ -1159,11 +1159,11 @@ function buildSpecs(
 
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[12px] border border-[#edf1f6] bg-white px-4 py-3">
-      <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-[#667085]">
+    <div className="rounded-[12px] border border-[#edf1f6] bg-white px-4 py-3 sm:px-3 sm:py-2.5">
+      <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-[#667085] sm:text-[9px] sm:tracking-[0.12em]">
         {label}
       </dt>
-      <dd className="mt-1.5 break-words text-[15px] font-semibold text-[#101828]">{value}</dd>
+      <dd className="mt-1.5 break-words text-[15px] font-semibold text-[#101828] sm:mt-1 sm:text-[13px] sm:leading-4">{value}</dd>
     </div>
   )
 }
