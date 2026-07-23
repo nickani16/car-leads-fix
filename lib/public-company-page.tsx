@@ -365,22 +365,28 @@ export default async function PublicCompanyPage({
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
                   <style>{`
                     .company-listing-search {
-                      color: #98a2b3 !important;
+                      color: #101828 !important;
                     }
                     .company-listing-search::placeholder {
-                      color: #98a2b3 !important;
-                      opacity: 1 !important;
+                      color: transparent !important;
+                      opacity: 0 !important;
                     }
-                    .company-listing-search:not(:placeholder-shown) {
-                      color: #101828 !important;
+                    .company-listing-search + .company-listing-search-placeholder {
+                      display: none;
+                    }
+                    .company-listing-search:placeholder-shown + .company-listing-search-placeholder {
+                      display: block;
                     }
                   `}</style>
                   <input
                     name="q"
                     defaultValue={q}
-                    placeholder={copy.searchPlaceholder}
+                    placeholder=" "
                     className="company-listing-search h-11 w-full rounded-[10px] border border-[#d9e2ef] bg-white pl-10 pr-3 text-sm font-medium outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                   />
+                  <span className="company-listing-search-placeholder pointer-events-none absolute left-10 top-1/2 max-w-[calc(100%-3.5rem)] -translate-y-1/2 truncate text-sm font-medium text-[#98a2b3]">
+                    {copy.searchPlaceholder}
+                  </span>
                 </label>
                 <button type="submit" className="h-11 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">
                   {copy.searchButton}
