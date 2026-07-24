@@ -16,7 +16,7 @@ export default function BusinessFaqClient({
   const toggleLabel = expanded ? 'Stäng alla' : 'Expandera alla'
 
   return (
-    <div>
+    <div className="w-full max-w-[calc(100vw-40px)] min-w-0 sm:max-w-none">
       <div className="flex w-full min-w-0 flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
         <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
         <div className="flex w-full justify-end sm:w-auto">
@@ -33,8 +33,8 @@ export default function BusinessFaqClient({
       <div className="mt-10 divide-y divide-[#d0d5dd] sm:mt-14">
         {items.map(([question, answer]) => (
           <details key={question} className="group" open={expanded ? true : undefined}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:text-2xl">
-              {question}
+            <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:flex sm:justify-between sm:gap-6 sm:text-2xl">
+              <span className="min-w-0">{question}</span>
               <ChevronDown className="h-7 w-7 shrink-0 text-[#86868b] transition group-open:rotate-180" />
             </summary>
             <p className="max-w-[920px] pb-8 text-base leading-8 text-[#515966] sm:text-lg">{answer}</p>
