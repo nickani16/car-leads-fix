@@ -27,7 +27,7 @@ export default async function FaqPage() {
     <main className="overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <section className="border-b border-[#dfe6f2] bg-white">
-        <div className="mx-auto w-full max-w-[980px] px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mx-auto w-full max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-14">
           <FaqPageClient locale={locale} />
         </div>
       </section>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, BadgeEuro, Building2, CarFront, ChevronDown, Megaphone, Search, ShieldCheck, Truck, UserRound } from 'lucide-react'
+import { ArrowRight, Building2, CarFront, ChevronDown, CreditCard, Megaphone, Search, ShieldCheck, Truck, UserRound } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
@@ -32,7 +32,7 @@ const popularSearches = [
 const topicCards: Array<{ category: Exclude<CategoryKey, 'all'>; label: Localized; icon: typeof CarFront }> = [
   { category: 'listings', label: { sv: 'Annonsering', en: 'Listing ads', de: 'Inserieren' }, icon: Megaphone },
   { category: 'account', label: { sv: 'Konto & inloggning', en: 'Account & sign-in', de: 'Konto & Anmeldung' }, icon: UserRound },
-  { category: 'pricing', label: { sv: 'Betalning', en: 'Payment', de: 'Zahlung' }, icon: BadgeEuro },
+  { category: 'pricing', label: { sv: 'Betalning', en: 'Payment', de: 'Zahlung' }, icon: CreditCard },
   { category: 'business', label: { sv: 'För företag', en: 'For businesses', de: 'Für Unternehmen' }, icon: Building2 },
   { category: 'safety', label: { sv: 'Kundsäkerhet', en: 'Customer safety', de: 'Kundensicherheit' }, icon: ShieldCheck },
   { category: 'export', label: { sv: 'Export & transport', en: 'Export & transport', de: 'Export & Transport' }, icon: Truck },
@@ -159,6 +159,12 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
     return matchesCategory && matchesSearch
   })
 
+  const selectCategory = (nextCategory: CategoryKey) => {
+    setCategory(nextCategory)
+    setSearch('')
+    setOpen(questions.find((item) => nextCategory === 'all' || item.category === nextCategory)?.question.en || null)
+  }
+
   return (
     <>
       <section className="mx-auto max-w-[900px]">
@@ -185,7 +191,11 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
             <button
               key={item.en}
               type="button"
-              onClick={() => setSearch(text(item))}
+              onClick={() => {
+                setCategory('all')
+                setSearch(text(item))
+                setOpen(null)
+              }}
               className="rounded-[8px] border border-[#d8d7e1] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
             >
               {text(item)}
@@ -198,7 +208,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
             <button
               key={topicCategory}
               type="button"
-              onClick={() => setCategory(topicCategory)}
+              onClick={() => selectCategory(topicCategory)}
               className={`flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[8px] border px-4 text-center transition ${
                 category === topicCategory ? 'border-[#0866ff] bg-[#f1f6ff]' : 'border-[#dfe6f2] bg-white hover:border-[#0866ff]'
               }`}
@@ -215,7 +225,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
           <button
             key={item.key}
             type="button"
-            onClick={() => setCategory(item.key)}
+            onClick={() => selectCategory(item.key)}
             className={`shrink-0 rounded-[8px] px-4 py-2.5 text-sm font-semibold transition ${
               category === item.key ? 'bg-[#0866ff] text-white' : 'border border-[#d8d7e1] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
             }`}
