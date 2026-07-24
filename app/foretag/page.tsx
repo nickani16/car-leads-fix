@@ -407,8 +407,8 @@ function BusinessFaq({ copy }: { copy: BusinessCopy }) {
   ] as const
 
   return (
-    <section className="border-t border-[#e5e7eb] bg-[#f5f5f7] px-5 py-20 sm:px-8 sm:py-28">
-      <div className="mx-auto max-w-[1260px]">
+    <section className="w-screen max-w-full overflow-hidden border-t border-[#e5e7eb] bg-[#f5f5f7] px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-[1260px]">
         <BusinessFaqClient title={copy.faqTitle} items={extendedFaqs} />
       </div>
     </section>
