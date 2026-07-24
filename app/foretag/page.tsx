@@ -28,9 +28,9 @@ const businessPageCopy = {
     metaDescription:
       'Autorell Business samlar annonser, företagssida, team, import och europeisk räckvidd för professionella fordonsföretag.',
     heroEyebrow: 'Autorell Business',
-    heroTitle: 'Verktyg för att driva och växa fordonsaffären. Allt på en plats.',
+    heroTitle: 'Företag, annonser, import och analys. Allt på en plats.',
     heroIntro:
-      'Bygg företagssida, publicera annonser, hantera säljare och nå köpare i flera europeiska marknader från samma arbetsyta.',
+      'Samla företagssida, lagerflöde, säljare och marknadsdata i en arbetsyta byggd för professionell fordonsförsäljning.',
     primaryCta: 'Starta företagskonto',
     secondaryCta: 'Se abonnemang',
     discoverTitle: 'Upptäck lösningar som passar ert sätt att sälja.',
@@ -68,9 +68,9 @@ const businessPageCopy = {
     metaDescription:
       'Autorell Business brings listings, company pages, teams, imports and European reach together for professional vehicle sellers.',
     heroEyebrow: 'Autorell Business',
-    heroTitle: 'Tools to run and grow your vehicle business. All in one place.',
+    heroTitle: 'Business, listings, imports and analytics. All in one place.',
     heroIntro:
-      'Build a company page, publish listings, manage sellers and reach buyers across European markets from one workspace.',
+      'Bring company pages, inventory flows, sellers and market data into one workspace built for professional vehicle sales.',
     primaryCta: 'Start business account',
     secondaryCta: 'View plans',
     discoverTitle: 'Discover solutions that fit the way you sell.',
@@ -108,9 +108,9 @@ const businessPageCopy = {
     metaDescription:
       'Autorell Business bündelt Anzeigen, Unternehmensseiten, Teams, Import und europäische Reichweite für professionelle Fahrzeugverkäufer.',
     heroEyebrow: 'Autorell Business',
-    heroTitle: 'Werkzeuge, um Ihr Fahrzeuggeschäft zu führen und zu erweitern. Alles an einem Ort.',
+    heroTitle: 'Unternehmen, Anzeigen, Import und Analyse. Alles an einem Ort.',
     heroIntro:
-      'Erstellen Sie eine Unternehmensseite, veröffentlichen Sie Anzeigen, verwalten Sie Verkäufer und erreichen Sie Käufer in europäischen Märkten.',
+      'Bündeln Sie Unternehmensseite, Bestand, Verkäufer und Marktdaten in einer Arbeitsfläche für professionellen Fahrzeugverkauf.',
     primaryCta: 'Unternehmenskonto starten',
     secondaryCta: 'Pläne ansehen',
     discoverTitle: 'Lösungen für Ihre Verkaufsweise.',
@@ -250,85 +250,17 @@ function AppleHero({
               </Link>
             </div>
           </div>
-          <DeviceMockup copy={copy} />
+          <HeroImageSlot />
         </div>
       </div>
     </section>
   )
 }
 
-function DeviceMockup({ copy }: { copy: BusinessCopy }) {
+function HeroImageSlot() {
   return (
-    <div className="relative min-w-0 overflow-hidden min-h-[380px] lg:min-h-[520px]">
-      <div className="absolute left-8 top-10 h-[330px] w-[520px] rotate-[-6deg] rounded-[24px] border-[10px] border-[#1d2939] bg-[#0f172a] shadow-[0_34px_90px_rgba(16,24,40,.24)] sm:left-auto sm:right-4 sm:h-[360px] sm:w-[640px] lg:right-[-22px] lg:top-16">
-        <div className="h-full overflow-hidden rounded-[14px] bg-white">
-          <div className="flex h-10 items-center gap-2 border-b border-[#e8eef6] bg-[#f8fbff] px-5">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-            <span className="ml-4 h-4 w-40 rounded-full bg-[#e8eef6]" />
-          </div>
-          <div className="grid h-[calc(100%-40px)] grid-cols-[150px_1fr]">
-            <aside className="border-r border-[#e8eef6] bg-[#fbfcff] p-4">
-              <div className="h-7 w-24 rounded bg-[#0866ff]" />
-              <div className="mt-8 space-y-3">
-                {[72, 92, 64, 84].map((width) => (
-                  <span key={width} className="block h-3 rounded-full bg-[#dce6f4]" style={{ width }} />
-                ))}
-              </div>
-            </aside>
-            <div className="p-5">
-              <div className="flex items-end justify-between gap-6">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">{copy.companyPage}</p>
-                  <div className="mt-2 h-7 w-64 rounded bg-[#111827]" />
-                </div>
-                <div className="rounded-full bg-[#eaf2ff] px-4 py-2 text-sm font-semibold text-[#0866ff]">
-                  {copy.allMarkets}
-                </div>
-              </div>
-              <div className="mt-8 grid grid-cols-3 gap-4">
-                {[copy.liveListings, 'Team', 'Leads'].map((label, index) => (
-                  <div key={label} className="rounded-[8px] border border-[#dce6f4] bg-white p-4">
-                    <div className="h-8 w-12 rounded bg-[#eaf2ff]" />
-                    <p className="mt-5 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{label}</p>
-                    <p className="mt-1 text-3xl font-bold text-[#101828]">{[184, 8, 42][index]}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 rounded-[8px] border border-[#dce6f4] bg-[#fbfdff] p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="h-3 w-32 rounded bg-[#cbd7ea]" />
-                  <span className="h-7 w-24 rounded-full bg-[#0866ff]" />
-                </div>
-                {[64, 82, 48].map((height, index) => (
-                  <div key={height} className="mb-3 grid grid-cols-[64px_1fr_72px] items-center gap-3 last:mb-0">
-                    <span className="h-11 rounded bg-[#e7eef8]" />
-                    <span className="h-3 rounded-full bg-[#cbd7ea]" />
-                    <span className="business-metric-line h-10 origin-bottom rounded-t bg-[#0866ff]" style={{ animationDelay: `${index * 180}ms`, height }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="business-card-drift absolute bottom-8 right-6 h-[250px] w-[176px] rotate-[4deg] rounded-[28px] border-[9px] border-[#1d2939] bg-[#0f172a] shadow-[0_26px_70px_rgba(16,24,40,.22)] sm:right-8 sm:h-[260px] sm:w-[190px] lg:right-24">
-        <div className="h-full overflow-hidden rounded-[18px] bg-white p-4">
-          <div className="mx-auto h-5 w-20 rounded-full bg-[#e8eef6]" />
-          <div className="mt-6 h-20 rounded-[8px] bg-[#eaf2ff]" />
-          <div className="mt-4 h-5 w-28 rounded bg-[#101828]" />
-          <div className="mt-3 h-3 w-32 rounded bg-[#cbd7ea]" />
-          <div className="mt-6 space-y-2">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="flex items-center gap-2 rounded-[8px] border border-[#e5edf7] p-2">
-                <span className="h-8 w-8 rounded bg-[#eef4fb]" />
-                <span className="h-3 flex-1 rounded bg-[#cbd7ea]" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="relative hidden min-h-[420px] min-w-0 overflow-hidden lg:block">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_50%,rgba(210,236,240,.9)_0,rgba(210,236,240,.9)_28%,transparent_29%),radial-gradient(circle_at_28%_50%,rgba(226,243,245,.72)_0,rgba(226,243,245,.72)_34%,transparent_35%),radial-gradient(circle_at_43%_50%,rgba(242,246,250,.95)_0,rgba(242,246,250,.95)_39%,transparent_40%)]" />
     </div>
   )
 }
