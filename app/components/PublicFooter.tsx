@@ -46,6 +46,9 @@ const footerCopy = {
       {
         title: 'Sälj',
         links: [
+          ['Sälj bil', '/sell-car'],
+          ['Sälj transportbil', '/sell-van'],
+          ['Sälj maskin', '/sell-construction'],
           ['Priser', '/pricing'],
           ['För företag', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -55,14 +58,9 @@ const footerCopy = {
         title: 'Köp',
         links: [
           ['Sök fordon', '/marketplace'],
+          ['Sparade annonser', '/saved'],
           ['Sparade sökningar', '/saved-searches'],
-        ],
-      },
-      {
-        title: 'Företag',
-        links: [
-          ['Om Autorell', '/about'],
-          ['Kontakta oss', '/contact'],
+          ['Fordonsnyheter', '/vehicle-news'],
         ],
       },
       {
@@ -70,6 +68,8 @@ const footerCopy = {
         links: [
           ['Hjälpcenter', '/help-center'],
           ['Rapportera problem', '/report'],
+          ['Om Autorell', '/about'],
+          ['Kontakta oss', '/contact'],
         ],
       },
     ],
@@ -130,6 +130,9 @@ const footerCopy = {
       {
         title: 'Verkaufen',
         links: [
+          ['Auto verkaufen', '/sell-car'],
+          ['Transporter verkaufen', '/sell-van'],
+          ['Baumaschine verkaufen', '/sell-construction'],
           ['Preise', '/pricing'],
           ['Für Unternehmen', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -139,14 +142,9 @@ const footerCopy = {
         title: 'Kaufen',
         links: [
           ['Fahrzeuge suchen', '/marketplace'],
+          ['Gespeicherte Anzeigen', '/saved'],
           ['Gespeicherte Suchen', '/saved-searches'],
-        ],
-      },
-      {
-        title: 'Unternehmen',
-        links: [
-          ['Über Autorell', '/about'],
-          ['Kontakt', '/contact'],
+          ['Auto-News', '/vehicle-news'],
         ],
       },
       {
@@ -154,6 +152,8 @@ const footerCopy = {
         links: [
           ['Hilfe', '/help-center'],
           ['Problem melden', '/report'],
+          ['Über Autorell', '/about'],
+          ['Kontakt', '/contact'],
         ],
       },
     ],
@@ -214,6 +214,9 @@ const footerCopy = {
       {
         title: 'Sell',
         links: [
+          ['Sell a car', '/sell-car'],
+          ['Sell a van', '/sell-van'],
+          ['Sell machinery', '/sell-construction'],
           ['Pricing', '/pricing'],
           ['For businesses', '/business'],
           ['Dealer solutions', '/dealer-solutions'],
@@ -223,14 +226,9 @@ const footerCopy = {
         title: 'Buy',
         links: [
           ['Search vehicles', '/marketplace'],
+          ['Saved listings', '/saved'],
           ['Saved searches', '/saved-searches'],
-        ],
-      },
-      {
-        title: 'Company',
-        links: [
-          ['About Autorell', '/about'],
-          ['Contact us', '/contact'],
+          ['Vehicle news', '/vehicle-news'],
         ],
       },
       {
@@ -238,6 +236,8 @@ const footerCopy = {
         links: [
           ['Help center', '/help-center'],
           ['Report a problem', '/report'],
+          ['About Autorell', '/about'],
+          ['Contact us', '/contact'],
         ],
       },
     ],
@@ -347,7 +347,7 @@ export default function PublicFooter({
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
       <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-4 lg:gap-x-12">
           {t.columns.map((column) => (
             <FooterColumn
               key={column.title}
