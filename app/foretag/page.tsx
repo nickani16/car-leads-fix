@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import {
@@ -232,7 +233,7 @@ function AppleHero({
         <div className="grid min-h-[420px] w-full overflow-hidden rounded-[8px] bg-[#eef8fb] lg:grid-cols-[0.82fr_1.18fr]">
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
             <div className="inline-flex w-max flex-col items-start">
-              <BrandLogo compact underline={false} />
+              <BrandLogo underline={false} />
               <p className="mt-0.5 w-full text-center text-[14px] font-semibold leading-none tracking-[-.01em] text-[#101828]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
             </div>
             <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
@@ -258,8 +259,16 @@ function AppleHero({
 
 function HeroImageSlot() {
   return (
-    <div className="relative hidden min-h-[420px] min-w-0 overflow-hidden lg:block">
+    <div className="relative min-h-[220px] min-w-0 overflow-hidden lg:min-h-[420px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_50%,rgba(210,236,240,.9)_0,rgba(210,236,240,.9)_28%,transparent_29%),radial-gradient(circle_at_28%_50%,rgba(226,243,245,.72)_0,rgba(226,243,245,.72)_34%,transparent_35%),radial-gradient(circle_at_43%_50%,rgba(242,246,250,.95)_0,rgba(242,246,250,.95)_39%,transparent_40%)]" />
+      <Image
+        src="/business-responsive-mockup.webp"
+        alt=""
+        width={1920}
+        height={1080}
+        priority
+        className="absolute bottom-[-10px] left-1/2 w-[440px] max-w-none -translate-x-1/2 object-contain lg:bottom-[-48px] lg:left-auto lg:right-[-120px] lg:w-[760px] lg:translate-x-0"
+      />
     </div>
   )
 }
