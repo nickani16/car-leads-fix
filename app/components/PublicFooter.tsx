@@ -56,8 +56,6 @@ const footerCopy = {
         links: [
           ['Sök fordon', '/marketplace'],
           ['Sparade sökningar', '/saved-searches'],
-          ['Fordonshistorik', '/vehicle-history'],
-          ['Köpguide', '/buying-guide'],
         ],
       },
       {
@@ -71,7 +69,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hjälpcenter', '/help-center'],
-          ['Frakt & leverans', '/shipping-delivery'],
           ['Rapportera problem', '/report'],
         ],
       },
@@ -143,8 +140,6 @@ const footerCopy = {
         links: [
           ['Fahrzeuge suchen', '/marketplace'],
           ['Gespeicherte Suchen', '/saved-searches'],
-          ['Fahrzeughistorie', '/vehicle-history'],
-          ['Kaufberatung', '/buying-guide'],
         ],
       },
       {
@@ -158,7 +153,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Hilfe', '/help-center'],
-          ['Versand & Lieferung', '/shipping-delivery'],
           ['Problem melden', '/report'],
         ],
       },
@@ -230,8 +224,6 @@ const footerCopy = {
         links: [
           ['Search vehicles', '/marketplace'],
           ['Saved searches', '/saved-searches'],
-          ['Vehicle history', '/vehicle-history'],
-          ['Buying guide', '/buying-guide'],
         ],
       },
       {
@@ -245,7 +237,6 @@ const footerCopy = {
         title: 'Support',
         links: [
           ['Help center', '/help-center'],
-          ['Shipping & delivery', '/shipping-delivery'],
           ['Report a problem', '/report'],
         ],
       },

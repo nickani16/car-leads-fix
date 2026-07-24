@@ -962,7 +962,13 @@ export default function PublicHeader({
                   activePathname === targetPath ||
                   (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage)) ||
                   (item.kind === 'sell' &&
-                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === activePathname)) ||
+                    [
+                      '/account/listings/new',
+                      '/account/company/listings/create',
+                      '/sell-car',
+                      '/sell-van',
+                      '/sell-construction',
+                    ].includes(activePathname)) ||
                   (item.kind === 'help' &&
                     helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === activePathname))
 

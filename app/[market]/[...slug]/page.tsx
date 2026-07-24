@@ -35,6 +35,9 @@ const removedPublicPages = new Set([
   'how-selling-works',
   'compare-vehicles',
   'payments',
+  'buying-guide',
+  'vehicle-history',
+  'shipping-delivery',
 ])
 
 export async function generateMetadata({
