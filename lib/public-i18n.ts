@@ -166,7 +166,6 @@ export const publicPagePaths = [
   '/contact',
   '/pricing',
   '/business',
-  '/dealer-solutions',
   '/saved-searches',
   '/privacy',
   '/cookies',

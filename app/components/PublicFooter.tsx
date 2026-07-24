@@ -50,8 +50,7 @@ const footerCopy = {
           ['Sälj transportbil', '/sell-van'],
           ['Sälj maskin', '/sell-construction'],
           ['Priser', '/pricing'],
-          ['För företag', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Dealer solutions', '/business'],
         ],
       },
       {
@@ -134,8 +133,7 @@ const footerCopy = {
           ['Transporter verkaufen', '/sell-van'],
           ['Baumaschine verkaufen', '/sell-construction'],
           ['Preise', '/pricing'],
-          ['Für Unternehmen', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Dealer solutions', '/business'],
         ],
       },
       {
@@ -218,8 +216,7 @@ const footerCopy = {
           ['Sell a van', '/sell-van'],
           ['Sell machinery', '/sell-construction'],
           ['Pricing', '/pricing'],
-          ['For businesses', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Dealer solutions', '/business'],
         ],
       },
       {

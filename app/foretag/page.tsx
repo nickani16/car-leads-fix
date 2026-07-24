@@ -27,13 +27,13 @@ import { cleanSeoText } from '@/lib/market-seo'
 
 const businessPageCopy = {
   sv: {
-    metaTitle: 'Företagssida och abonnemang för fordonsföretag | Autorell',
+    metaTitle: 'Dealer solutions för fordonsföretag | Autorell',
     metaDescription:
-      'Autorell Business samlar annonser, företagssida, team, import och europeisk räckvidd för professionella fordonsföretag.',
-    heroEyebrow: 'Autorell Business',
-    heroTitle: 'Företag, annonser, import och analys. Allt på en plats.',
+      'Autorell Dealer solutions samlar lagerflöde, team, import och europeisk räckvidd för professionella fordonsföretag.',
+    heroEyebrow: 'Autorell Dealer solutions',
+    heroTitle: 'Dealer solutions för lager, team och annonser. Allt på en plats.',
     heroIntro:
-      'Samla företagssida, lagerflöde, säljare och marknadsdata i en arbetsyta byggd för professionell fordonsförsäljning.',
+      'Samla lagerflöde, säljare, import och marknadsdata i en arbetsyta byggd för professionell fordonsförsäljning.',
     primaryCta: 'Starta företagskonto',
     secondaryCta: 'Se abonnemang',
     learnMoreCta: 'Läs mer',
@@ -46,9 +46,9 @@ const businessPageCopy = {
     faqTitle: 'Frågor? Svar.',
     allMarkets: '11 marknader',
     liveListings: 'Annonser',
-    companyPage: 'Företagssida',
+    companyPage: 'Dealer solutions',
     cards: [
-      ['Företagssida', 'Logo, adress, kontaktuppgifter och alla annonser samlade på en tydlig sida.'],
+      ['Dealer-profil', 'Logo, adress, kontaktuppgifter och alla annonser samlade på en tydlig sida.'],
       ['Annonsflöde', 'Publicera fordon med strukturerade fält, bilder, pris och säljarkontakt.'],
       ['Team', 'Låt flera säljare arbeta i samma företagskonto med egna kontaktuppgifter.'],
       ['Import', 'Förbered större lager med CSV och kontroller innan annonser går live.'],
@@ -56,25 +56,25 @@ const businessPageCopy = {
       ['Marknader', 'Visa rätt språk, valuta och marknadslogik för köpare i Europa.'],
     ],
     plans: [
-      ['Start', 'För företag som vill komma igång med en ren företagssida och grundannonser.', 'Skapa konto'],
+      ['Start', 'För handlare som vill komma igång med en ren dealer-profil och grundannonser.', 'Skapa konto'],
       ['Standard', 'För team som vill hantera fler annonser, säljare och uppföljning.', 'Se priser'],
       ['Premium', 'För växande lager med mer synlighet, struktur och prioriterad hantering.', 'Kontakta oss'],
     ],
     faqs: [
-      ['Vad får företagssidan innehålla?', 'Företagssidan visar företagets logo, adress, webbplats, generella kontaktuppgifter och samlade annonser.'],
+      ['Vad ingår i Dealer solutions?', 'Dealer solutions visar företagets logo, adress, webbplats, generella kontaktuppgifter och samlade annonser.'],
       ['Kan säljare ha egna kontaktuppgifter?', 'Ja. Annonskort och annonssidor kan visa säljarens direkta kontakt, medan företagssidan visar företagets gemensamma kontaktuppgifter.'],
       ['Fungerar Autorell i flera marknader?', 'Ja. Sidan är byggd för elva marknader med lokaliserade länkar, språk och valuta där det behövs.'],
       ['Kan vi börja enkelt?', 'Ja. Börja med Start och uppgradera när fler annonser, säljare eller importflöden behövs.'],
     ],
   },
   en: {
-    metaTitle: 'Business pages and plans for vehicle companies | Autorell',
+    metaTitle: 'Dealer solutions for vehicle companies | Autorell',
     metaDescription:
-      'Autorell Business brings listings, company pages, teams, imports and European reach together for professional vehicle sellers.',
-    heroEyebrow: 'Autorell Business',
-    heroTitle: 'Business, listings, imports and analytics. All in one place.',
+      'Autorell Dealer solutions brings inventory flows, teams, imports and European reach together for professional vehicle sellers.',
+    heroEyebrow: 'Autorell Dealer solutions',
+    heroTitle: 'Dealer solutions for inventory, teams and listings. All in one place.',
     heroIntro:
-      'Bring company pages, inventory flows, sellers and market data into one workspace built for professional vehicle sales.',
+      'Bring inventory flows, sellers, imports and market data into one workspace built for professional vehicle sales.',
     primaryCta: 'Start business account',
     secondaryCta: 'View plans',
     learnMoreCta: 'Learn more',
@@ -87,9 +87,9 @@ const businessPageCopy = {
     faqTitle: 'Questions? Answers.',
     allMarkets: '11 markets',
     liveListings: 'Listings',
-    companyPage: 'Company page',
+    companyPage: 'Dealer solutions',
     cards: [
-      ['Company page', 'Logo, address, contact details and all listings gathered on one clear page.'],
+      ['Dealer profile', 'Logo, address, contact details and all listings gathered on one clear page.'],
       ['Listing flow', 'Publish vehicles with structured fields, images, price and seller contact.'],
       ['Team', 'Let multiple sellers work in one business account with their own contact details.'],
       ['Import', 'Prepare larger inventory with CSV and checks before listings go live.'],
@@ -97,25 +97,25 @@ const businessPageCopy = {
       ['Markets', 'Show the right language, currency and market logic for buyers in Europe.'],
     ],
     plans: [
-      ['Start', 'For companies that want a clean company page and basic listings.', 'Create account'],
+      ['Start', 'For dealers that want a clean dealer profile and basic listings.', 'Create account'],
       ['Standard', 'For teams that need more listings, sellers and follow-up.', 'View pricing'],
       ['Premium', 'For growing inventory with more visibility, structure and priority handling.', 'Contact us'],
     ],
     faqs: [
-      ['What does the company page include?', 'The company page shows logo, address, website, general contact details and all published listings.'],
+      ['What does Dealer solutions include?', 'Dealer solutions shows logo, address, website, general contact details and all published listings.'],
       ['Can sellers use their own contact details?', 'Yes. Listing cards and listing pages can show the direct seller contact while the company page shows company-wide details.'],
       ['Does Autorell work across markets?', 'Yes. The page is built for eleven markets with localized links, language and currency where needed.'],
       ['Can we start simple?', 'Yes. Start with the basic plan and upgrade when more listings, sellers or import flows are needed.'],
     ],
   },
   de: {
-    metaTitle: 'Unternehmensseiten und Pläne für Fahrzeugfirmen | Autorell',
+    metaTitle: 'Dealer solutions für Fahrzeugfirmen | Autorell',
     metaDescription:
-      'Autorell Business bündelt Anzeigen, Unternehmensseiten, Teams, Import und europäische Reichweite für professionelle Fahrzeugverkäufer.',
-    heroEyebrow: 'Autorell Business',
-    heroTitle: 'Unternehmen, Anzeigen, Import und Analyse. Alles an einem Ort.',
+      'Autorell Dealer solutions bündelt Bestand, Teams, Import und europäische Reichweite für professionelle Fahrzeugverkäufer.',
+    heroEyebrow: 'Autorell Dealer solutions',
+    heroTitle: 'Dealer solutions für Bestand, Teams und Anzeigen. Alles an einem Ort.',
     heroIntro:
-      'Bündeln Sie Unternehmensseite, Bestand, Verkäufer und Marktdaten in einer Arbeitsfläche für professionellen Fahrzeugverkauf.',
+      'Bündeln Sie Bestand, Verkäufer, Import und Marktdaten in einer Arbeitsfläche für professionellen Fahrzeugverkauf.',
     primaryCta: 'Unternehmenskonto starten',
     secondaryCta: 'Pläne ansehen',
     learnMoreCta: 'Mehr erfahren',
@@ -123,14 +123,14 @@ const businessPageCopy = {
     discoverIntro: 'Starten Sie mit dem, was Sie brauchen, und erweitern Sie bei wachsendem Bestand.',
     globeTitle: 'Ein europäisches Schaufenster für Ihren Bestand.',
     globeText:
-      'Autorell zeigt Unternehmensanzeigen lokal und marktübergreifend mit passender Sprache, Währung und Links zur Unternehmensseite.',
+      'Autorell zeigt Dealer-Anzeigen lokal und marktübergreifend mit passender Sprache, Währung und Links zur Dealer-Präsenz.',
     stepTitle: 'Der nächste Schritt.',
     faqTitle: 'Fragen? Antworten.',
     allMarkets: '11 Märkte',
     liveListings: 'Anzeigen',
-    companyPage: 'Unternehmensseite',
+    companyPage: 'Dealer solutions',
     cards: [
-      ['Unternehmensseite', 'Logo, Adresse, Kontaktdaten und alle Anzeigen auf einer klaren Seite.'],
+      ['Dealer-Profil', 'Logo, Adresse, Kontaktdaten und alle Anzeigen auf einer klaren Seite.'],
       ['Anzeigenfluss', 'Fahrzeuge mit strukturierten Feldern, Bildern, Preis und Verkäuferkontakt veröffentlichen.'],
       ['Team', 'Mehrere Verkäufer arbeiten in einem Unternehmenskonto mit eigenen Kontaktdaten.'],
       ['Import', 'Größere Bestände per CSV vorbereiten und prüfen, bevor Anzeigen live gehen.'],
@@ -138,13 +138,13 @@ const businessPageCopy = {
       ['Märkte', 'Passende Sprache, Währung und Marktlogik für Käufer in Europa zeigen.'],
     ],
     plans: [
-      ['Start', 'Für Unternehmen mit sauberer Unternehmensseite und Basisanzeigen.', 'Konto erstellen'],
+      ['Start', 'Für Händler mit sauberem Dealer-Profil und Basisanzeigen.', 'Konto erstellen'],
       ['Standard', 'Für Teams mit mehr Anzeigen, Verkäufern und Auswertung.', 'Preise ansehen'],
       ['Premium', 'Für wachsende Bestände mit mehr Sichtbarkeit, Struktur und Priorität.', 'Kontakt aufnehmen'],
     ],
     faqs: [
-      ['Was enthält die Unternehmensseite?', 'Die Unternehmensseite zeigt Logo, Adresse, Website, allgemeine Kontaktdaten und alle Anzeigen.'],
-      ['Können Verkäufer eigene Kontaktdaten nutzen?', 'Ja. Anzeigen können den direkten Verkäuferkontakt zeigen, während die Unternehmensseite allgemeine Unternehmensdaten zeigt.'],
+      ['Was ist in Dealer solutions enthalten?', 'Dealer solutions zeigt Logo, Adresse, Website, allgemeine Kontaktdaten und alle Anzeigen.'],
+      ['Können Verkäufer eigene Kontaktdaten nutzen?', 'Ja. Anzeigen können den direkten Verkäuferkontakt zeigen, während Dealer solutions allgemeine Unternehmensdaten zeigt.'],
       ['Funktioniert Autorell in mehreren Märkten?', 'Ja. Die Seite ist für elf Märkte mit lokalisierten Links, Sprache und Währung gebaut.'],
       ['Können wir einfach starten?', 'Ja. Starten Sie mit dem Basispaket und erweitern Sie bei mehr Anzeigen, Verkäufern oder Importbedarf.'],
     ],
@@ -302,10 +302,10 @@ function NextStep({
       price: '499 kr',
       period: '/mån',
       limit: '25 aktiva annonser',
-      text: 'För mindre lager som behöver företagssida och ett mer professionellt annonsflöde.',
+      text: 'För mindre lager som behöver dealer-profil och ett mer professionellt annonsflöde.',
       href: registerHref,
       cta: 'Skapa konto',
-      features: ['Företagssida Basic', 'Logo och kontaktväg', 'Standardförfrågningar'],
+      features: ['Dealer-profil Basic', 'Logo och kontaktväg', 'Standardförfrågningar'],
     },
     {
       name: 'Growth',
@@ -317,7 +317,7 @@ function NextStep({
       href: pricingHref,
       cta: 'Se priser',
       recommended: true,
-      features: ['Företagssida Plus', '10 teamkonton', 'Roller för säljare'],
+      features: ['Dealer solutions Plus', '10 teamkonton', 'Roller för säljare'],
     },
     {
       name: 'Professional',
@@ -328,7 +328,7 @@ function NextStep({
       text: 'För större lager med hög volym, fler säljare och bättre uppföljning.',
       href: pricingHref,
       cta: 'Jämför plan',
-      features: ['Företagssida Pro', '50+ teamkonton', 'Rapporter och export'],
+      features: ['Dealer solutions Pro', '50+ teamkonton', 'Rapporter och export'],
     },
     {
       name: 'Enterprise',
@@ -339,7 +339,7 @@ function NextStep({
       text: 'För importörer, kedjor och operatörer med särskilda behov för volym och process.',
       href: contactHref,
       cta: 'Kontakta oss',
-      features: ['Avancerad företagssida', 'Utökat team', 'Enterprise-support'],
+      features: ['Avancerad dealer-lösning', 'Utökat team', 'Enterprise-support'],
     },
   ]
 

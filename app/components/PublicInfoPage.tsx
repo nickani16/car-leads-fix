@@ -1071,7 +1071,7 @@ const ctaLinks = {
     about: '/contact',
     careers: '/about',
     press: '/about',
-    partners: '/dealer-solutions',
+    partners: '/business',
     'safety-tips': '/buying-guide',
     payments: '/contact',
     'shipping-delivery': '/contact',

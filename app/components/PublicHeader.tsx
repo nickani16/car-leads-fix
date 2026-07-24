@@ -714,13 +714,13 @@ export default function PublicHeader({
   const businessMenuLinks = [
     {
       href: localizePublicHref(locale, '/business'),
-      label: publicLabel('Company page', 'Företagssida', 'Unternehmensseite'),
+      label: publicLabel('Dealer solutions', 'Dealer solutions', 'Dealer solutions'),
       description: publicLabel(
-        'Present company details, contact information and listings.',
-        'Visa företagsuppgifter, kontaktinformation och annonser.',
-        'Unternehmensdaten, Kontaktinformationen und Anzeigen zeigen.',
+        'Tools for dealers and recurring professional sellers.',
+        'Verktyg för handlare och återkommande företagssäljare.',
+        'Werkzeuge für Händler und professionelle Verkäufer.',
       ),
-      icon: Building2,
+      icon: Store,
     },
     {
       href: localizePublicHref(locale, '/pricing#business'),
@@ -731,16 +731,6 @@ export default function PublicHeader({
         'Unternehmenstarife und Leistungen vergleichen.',
       ),
       icon: CreditCard,
-    },
-    {
-      href: localizePublicHref(locale, '/dealer-solutions'),
-      label: publicLabel('Dealer solutions', 'Dealer solutions', 'Dealer solutions'),
-      description: publicLabel(
-        'Tools for dealers and recurring professional sellers.',
-        'Verktyg för handlare och återkommande företagssäljare.',
-        'Werkzeuge für Händler und professionelle Verkäufer.',
-      ),
-      icon: Store,
     },
   ]
   const helpMenuLinks = [
