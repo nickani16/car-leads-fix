@@ -380,14 +380,17 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
+  const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
   const [mobileSellMenuOpen, setMobileSellMenuOpen] = useState(false)
+  const [mobileBusinessMenuOpen, setMobileBusinessMenuOpen] = useState(false)
   const [mobileHelpMenuOpen, setMobileHelpMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(true)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
+  const businessMenuRef = useRef<HTMLDivElement | null>(null)
   const helpMenuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -404,8 +407,10 @@ export default function PublicHeader({
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
         setSellMenuOpen(false)
+        setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
         setMobileSellMenuOpen(false)
+        setMobileBusinessMenuOpen(false)
         setMobileHelpMenuOpen(false)
       } else if (difference < -1) setVisible(true)
 
@@ -513,16 +518,18 @@ export default function PublicHeader({
   }, [open])
 
   useEffect(() => {
-    if (!profileMenuOpen && !sellMenuOpen && !helpMenuOpen) return
+    if (!profileMenuOpen && !sellMenuOpen && !businessMenuOpen && !helpMenuOpen) return
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
       if (profileMenuRef.current?.contains(target)) return
       if (sellMenuRef.current?.contains(target)) return
+      if (businessMenuRef.current?.contains(target)) return
       if (helpMenuRef.current?.contains(target)) return
       setProfileMenuOpen(false)
       setSellMenuOpen(false)
+      setBusinessMenuOpen(false)
       setHelpMenuOpen(false)
     }
 
@@ -530,6 +537,7 @@ export default function PublicHeader({
       if (event.key === 'Escape') {
         setProfileMenuOpen(false)
         setSellMenuOpen(false)
+        setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
       }
     }
@@ -540,7 +548,7 @@ export default function PublicHeader({
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [profileMenuOpen, sellMenuOpen, helpMenuOpen])
+  }, [profileMenuOpen, sellMenuOpen, businessMenuOpen, helpMenuOpen])
 
   useEffect(() => {
     const auth = new URLSearchParams(window.location.search).get('auth')
@@ -703,6 +711,38 @@ export default function PublicHeader({
       href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
+  const businessMenuLinks = [
+    {
+      href: localizePublicHref(locale, '/business'),
+      label: publicLabel('Company page', 'Företagssida', 'Unternehmensseite'),
+      description: publicLabel(
+        'Present company details, contact information and listings.',
+        'Visa företagsuppgifter, kontaktinformation och annonser.',
+        'Unternehmensdaten, Kontaktinformationen und Anzeigen zeigen.',
+      ),
+      icon: Building2,
+    },
+    {
+      href: localizePublicHref(locale, '/pricing#business'),
+      label: publicLabel('Plans', 'Planer', 'Tarife'),
+      description: publicLabel(
+        'Compare business plans and what is included.',
+        'Jämför företagsplaner och vad som ingår.',
+        'Unternehmenstarife und Leistungen vergleichen.',
+      ),
+      icon: CreditCard,
+    },
+    {
+      href: localizePublicHref(locale, '/dealer-solutions'),
+      label: publicLabel('Dealer solutions', 'Dealer solutions', 'Dealer solutions'),
+      description: publicLabel(
+        'Tools for dealers and recurring professional sellers.',
+        'Verktyg för handlare och återkommande företagssäljare.',
+        'Werkzeuge für Händler und professionelle Verkäufer.',
+      ),
+      icon: Store,
+    },
+  ]
   const helpMenuLinks = [
     {
       href: localizePublicHref(locale, '/help-center'),
@@ -741,8 +781,15 @@ export default function PublicHeader({
       label: publicLabel(t.sell, 'Sälja', t.sell),
       icon: Plus,
       children: sellMenuLinks,
+      menu: 'sell' as const,
     },
-    { href: localizePublicHref(locale, '/pricing#business'), label: t.business, icon: Building2 },
+    {
+      href: localizePublicHref(locale, '/business'),
+      label: t.business,
+      icon: Building2,
+      children: businessMenuLinks,
+      menu: 'business' as const,
+    },
     {
       href: localizePublicHref(locale, '/help-center'),
       label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe'),
@@ -757,7 +804,7 @@ export default function PublicHeader({
   const desktopNavLinks = [
     { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || createListingHref, label: publicLabel(t.sell, 'Sälja', t.sell) },
-    { kind: 'link' as const, href: localizePublicHref(locale, '/pricing#business'), label: t.business },
+    { kind: 'business' as const, href: localizePublicHref(locale, '/business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
   ]
   const desktopAccountLinks = [
@@ -796,13 +843,16 @@ export default function PublicHeader({
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
   }
 
-  function toggleDesktopMenu(menu: 'sell' | 'help' | 'profile') {
+  function toggleDesktopMenu(menu: 'sell' | 'business' | 'help' | 'profile') {
     setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
+    setBusinessMenuOpen((current) => (menu === 'business' ? !current : false))
     setHelpMenuOpen((current) => (menu === 'help' ? !current : false))
     setProfileMenuOpen((current) => (menu === 'profile' ? !current : false))
   }
@@ -817,9 +867,11 @@ export default function PublicHeader({
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
   }
 
@@ -864,8 +916,10 @@ export default function PublicHeader({
     }
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     closeMobile()
   }
@@ -874,8 +928,10 @@ export default function PublicHeader({
     event.preventDefault()
     setProfileMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     closeMobile()
     window.location.assign(homeHref)
@@ -969,6 +1025,8 @@ export default function PublicHeader({
                       '/sell-van',
                       '/sell-construction',
                     ].includes(activePathname)) ||
+                  (item.kind === 'business' &&
+                    businessMenuLinks.some((businessItem) => stripLocalePrefix((businessItem.href.split('#')[0] || businessItem.href).split('?')[0] || businessItem.href) === activePathname)) ||
                   (item.kind === 'help' &&
                     helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === activePathname))
 
@@ -1023,6 +1081,62 @@ export default function PublicHeader({
                             <span className="min-w-0 max-w-[min(34rem,calc(100vw-8rem))]">
                               <span className="block w-max max-w-full whitespace-normal text-[14px] font-[500] leading-snug">{sellLabel}</span>
                               <span className="mt-0.5 block w-max max-w-full whitespace-normal text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                                {description}
+                              </span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+
+                if (item.kind === 'business') {
+                  return (
+                    <div
+                      key={href}
+                      ref={businessMenuRef}
+                      className="relative flex h-full items-center"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={businessMenuOpen}
+                        onClick={() => toggleDesktopMenu('business')}
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition ${businessMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-max min-w-[18rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                          businessMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        {businessMenuLinks.map(({ href: businessHref, label: businessLabel, description, icon: Icon }) => (
+                          <Link
+                            key={businessHref}
+                            href={businessHref}
+                            onClick={(event) => {
+                              setBusinessMenuOpen(false)
+                              handleInternalNavigation(event, businessHref)
+                            }}
+                            className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                          >
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
+                              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0 max-w-[min(34rem,calc(100vw-8rem))]">
+                              <span className="block w-max max-w-full whitespace-normal text-[14px] font-[500] leading-snug">{businessLabel}</span>
+                              <span className="mt-0.5 block w-max max-w-full whitespace-normal break-words text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
                                 {description}
                               </span>
                             </span>
@@ -1261,13 +1375,24 @@ export default function PublicHeader({
 
             <nav className="mt-6 grid gap-2">
               {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
-                const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                const expanded =
+                  menu === 'help'
+                    ? mobileHelpMenuOpen
+                    : menu === 'business'
+                      ? mobileBusinessMenuOpen
+                      : mobileSellMenuOpen
                 const toggleExpanded = () => {
                   if (menu === 'help') {
                     setMobileHelpMenuOpen((current) => !current)
+                    setMobileBusinessMenuOpen(false)
                     setMobileSellMenuOpen(false)
+                  } else if (menu === 'business') {
+                    setMobileBusinessMenuOpen((current) => !current)
+                    setMobileSellMenuOpen(false)
+                    setMobileHelpMenuOpen(false)
                   } else {
                     setMobileSellMenuOpen((current) => !current)
+                    setMobileBusinessMenuOpen(false)
                     setMobileHelpMenuOpen(false)
                   }
                 }
@@ -1635,10 +1760,26 @@ export default function PublicHeader({
             <section className="mb-7">
               <div className="grid gap-2">
                 {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
-                  const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                  const expanded =
+                    menu === 'help'
+                      ? mobileHelpMenuOpen
+                      : menu === 'business'
+                        ? mobileBusinessMenuOpen
+                        : mobileSellMenuOpen
                   const toggleExpanded = () => {
-                    if (menu === 'help') setMobileHelpMenuOpen((current) => !current)
-                    else setMobileSellMenuOpen((current) => !current)
+                    if (menu === 'help') {
+                      setMobileHelpMenuOpen((current) => !current)
+                      setMobileBusinessMenuOpen(false)
+                      setMobileSellMenuOpen(false)
+                    } else if (menu === 'business') {
+                      setMobileBusinessMenuOpen((current) => !current)
+                      setMobileSellMenuOpen(false)
+                      setMobileHelpMenuOpen(false)
+                    } else {
+                      setMobileSellMenuOpen((current) => !current)
+                      setMobileBusinessMenuOpen(false)
+                      setMobileHelpMenuOpen(false)
+                    }
                   }
 
                   return (
