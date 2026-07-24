@@ -16,7 +16,7 @@ export default function BusinessFaqClient({
   const toggleLabel = expanded ? 'Stäng alla' : 'Expandera alla'
 
   return (
-    <div className="w-full max-w-[calc(100vw-40px)] min-w-0 sm:max-w-none">
+    <div className="w-[calc(100vw-40px)] max-w-full min-w-0 sm:w-full sm:max-w-none">
       <div className="flex w-full min-w-0 flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
         <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
         <div className="flex w-full justify-end sm:w-auto">
