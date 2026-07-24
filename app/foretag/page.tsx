@@ -260,14 +260,14 @@ function AppleHero({
 
 function HeroImageSlot() {
   return (
-    <div className="relative min-h-[320px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[520px]">
+    <div className="relative min-h-[260px] min-w-0 overflow-hidden sm:min-h-[330px] lg:min-h-[520px]">
       <Image
         src="/business-responsive-mockup.webp"
         alt=""
         width={1920}
         height={1080}
         priority
-        className="relative mx-auto mt-10 w-full max-w-[340px] object-contain min-[430px]:max-w-[390px] sm:max-w-[520px] lg:absolute lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:top-auto lg:mt-0 lg:w-[980px] lg:max-w-none lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
+        className="relative left-1/2 mt-2 w-[455px] max-w-none -translate-x-1/2 object-contain min-[430px]:w-[520px] sm:w-[640px] lg:absolute lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:top-auto lg:mt-0 lg:w-[980px] lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
       />
     </div>
   )
