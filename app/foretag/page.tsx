@@ -4,14 +4,10 @@ import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import {
   ArrowRight,
-  BarChart3,
   ChevronDown,
-  FileSpreadsheet,
-  Globe2,
+  Check,
   Layers3,
   ShieldCheck,
-  Store,
-  Users2,
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
@@ -152,8 +148,6 @@ const businessPageCopy = {
 
 type BusinessCopy = (typeof businessPageCopy)[keyof typeof businessPageCopy]
 
-const solutionIcons = [Store, Layers3, Users2, FileSpreadsheet, BarChart3, Globe2]
-
 export async function generateMetadata(): Promise<Metadata> {
   const headerStore = await headers()
   const locale = getRequestedLocale(headerStore)
@@ -184,35 +178,8 @@ export default async function BusinessPage({
 
   return (
     <main className="overflow-x-hidden bg-white text-[#101828]">
-      <style>{`
-        @media (prefers-reduced-motion: no-preference) {
-          .business-orbit {
-            animation: businessOrbit 18s linear infinite;
-            transform-origin: 50% 50%;
-          }
-          .business-card-drift {
-            animation: businessCardDrift 8s ease-in-out infinite;
-          }
-          .business-metric-line {
-            animation: businessMetricLine 4.8s ease-in-out infinite;
-          }
-        }
-        @keyframes businessOrbit {
-          to { transform: rotate(360deg); }
-        }
-        @keyframes businessCardDrift {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes businessMetricLine {
-          0%, 100% { transform: scaleY(.55); opacity: .55; }
-          45% { transform: scaleY(1); opacity: 1; }
-        }
-      `}</style>
       <PublicHeader locale={locale} marketCode={marketCode} />
       <AppleHero copy={copy} pricingHref={pricingHref} />
-      <SolutionScroller copy={copy} />
-      <EuropeGlobe copy={copy} />
       <NextStep copy={copy} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
       <BusinessFaq copy={copy} />
       <PublicFooter locale={locale} />
@@ -273,79 +240,6 @@ function HeroImageSlot() {
   )
 }
 
-function SolutionScroller({ copy }: { copy: BusinessCopy }) {
-  return (
-    <section className="bg-white px-5 py-12 sm:px-8 sm:py-16">
-      <div className="mx-auto w-full max-w-[1120px]">
-        <div className="w-full max-w-[330px] sm:max-w-[360px]">
-          <h2 className="text-3xl font-semibold leading-tight tracking-[-.015em] text-[#101828] sm:text-4xl">{copy.discoverTitle}</h2>
-          <p className="mt-3 text-base leading-7 text-[#667085]">{copy.discoverIntro}</p>
-        </div>
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-          {copy.cards.slice(0, 4).map(([title]) => (
-            <span key={title} className="shrink-0 rounded-full bg-[#f2f4f7] px-4 py-2 text-xs font-semibold text-[#101828]">
-              {title}
-            </span>
-          ))}
-        </div>
-        <div className="mt-10 flex w-full max-w-full gap-6 overflow-x-auto pb-8 [scrollbar-width:thin]">
-          {copy.cards.map(([title, text], index) => {
-            const Icon = solutionIcons[index] || Store
-            return (
-              <article key={title} className="w-[245px] shrink-0 snap-start text-center">
-                <div className="mx-auto flex h-[112px] w-[150px] items-center justify-center rounded-[8px] bg-[#f5f8fc]">
-                  <Icon className="h-11 w-11 text-[#0866ff]" strokeWidth={1.7} />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold text-[#101828]">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
-              </article>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function EuropeGlobe({ copy }: { copy: BusinessCopy }) {
-  return (
-    <section className="border-y border-[#e5e7eb] bg-[#f5f5f7] px-5 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto grid w-full max-w-[1120px] items-center gap-12 lg:grid-cols-[0.86fr_1.14fr]">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">Europe</p>
-          <h2 className="mt-4 w-full max-w-[330px] text-4xl font-semibold leading-[1.03] tracking-[-.02em] sm:max-w-[540px] sm:text-6xl">{copy.globeTitle}</h2>
-          <p className="mt-5 w-full max-w-[330px] text-lg leading-8 text-[#475467] sm:max-w-[520px]">{copy.globeText}</p>
-        </div>
-        <div className="relative mx-auto flex aspect-square w-full max-w-[340px] items-center justify-center sm:max-w-[520px]">
-          <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle_at_38%_30%,#ffffff_0,#dff0ff_22%,#72b4ff_58%,#0866ff_100%)] shadow-[inset_-28px_-34px_60px_rgba(16,24,40,.18),0_32px_80px_rgba(8,102,255,.18)]" />
-          <div className="business-orbit absolute inset-[13%] rounded-full border border-white/70" />
-          <div className="business-orbit absolute inset-[20%] rounded-full border border-white/45" style={{ animationDuration: '24s' }} />
-          <div className="absolute h-[76%] w-[1px] rounded-full bg-white/55" />
-          <div className="absolute h-[1px] w-[76%] rounded-full bg-white/55" />
-          <svg className="relative h-[72%] w-[72%]" viewBox="0 0 320 320" aria-label="Europe map">
-            <path d="M124 56l31 8 18 25 37 4 17 30-11 38 22 28-18 37-41 9-31 29-42-18-12-41-34-22 12-45-19-31 38-19z" fill="rgba(255,255,255,.68)" />
-            <path d="M148 91l31 10 12 29-19 18 9 28-25 22-31-12-4-29-24-18 17-28z" fill="rgba(255,255,255,.78)" />
-            {[
-              [128, 88, 'SE'],
-              [126, 125, 'DE'],
-              [166, 123, 'PL'],
-              [104, 143, 'FR'],
-              [88, 191, 'ES'],
-            ].map(([cx, cy, code]) => (
-              <g key={code as string}>
-                <circle cx={cx as number} cy={cy as number} r="9" fill="#0866ff" />
-                <text x={cx as number} y={(cy as number) + 4} textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff">
-                  {code}
-                </text>
-              </g>
-            ))}
-          </svg>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function NextStep({
   copy,
   registerHref,
@@ -357,28 +251,98 @@ function NextStep({
   pricingHref: string
   contactHref: string
 }) {
-  const hrefs = [registerHref, pricingHref, contactHref]
+  const plans = [
+    {
+      name: 'Starter',
+      audience: 'Small dealers',
+      price: '499 kr',
+      period: '/mån',
+      limit: '25 aktiva annonser',
+      text: 'För mindre lager som behöver företagssida och ett mer professionellt annonsflöde.',
+      href: registerHref,
+      cta: 'Skapa konto',
+      features: ['Företagssida Basic', 'Logo och kontaktväg', 'Standardförfrågningar'],
+    },
+    {
+      name: 'Growth',
+      audience: 'Growing team',
+      price: '999 kr',
+      period: '/mån',
+      limit: '100 aktiva annonser',
+      text: 'För företag där flera säljare arbetar i samma konto och publicerar löpande.',
+      href: pricingHref,
+      cta: 'Se priser',
+      recommended: true,
+      features: ['Företagssida Plus', '10 teamkonton', 'Roller för säljare'],
+    },
+    {
+      name: 'Professional',
+      audience: 'High volume',
+      price: '1 999 kr',
+      period: '/mån',
+      limit: '500 aktiva annonser',
+      text: 'För större lager med hög volym, fler säljare och bättre uppföljning.',
+      href: pricingHref,
+      cta: 'Jämför plan',
+      features: ['Företagssida Pro', '50+ teamkonton', 'Rapporter och export'],
+    },
+    {
+      name: 'Enterprise',
+      audience: 'Tailored',
+      price: 'Anpassat',
+      period: '',
+      limit: 'Anpassad kvot',
+      text: 'För importörer, kedjor och operatörer med särskilda behov för volym och process.',
+      href: contactHref,
+      cta: 'Kontakta oss',
+      features: ['Avancerad företagssida', 'Utökat team', 'Enterprise-support'],
+    },
+  ]
 
   return (
-    <section className="bg-white px-5 py-14 sm:px-8 sm:py-20">
-      <div className="mx-auto max-w-[1120px]">
-        <h2 className="text-3xl font-semibold tracking-[-.015em] text-[#101828]">{copy.stepTitle}</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {copy.plans.map(([title, text, cta], index) => (
+    <section className="overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-24">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <div className="flex flex-col gap-3 sm:max-w-[620px]">
+          <h2 className="text-4xl font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.stepTitle}</h2>
+          <p className="max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-[620px]">Välj plan efter lager, team och hur många annonser ni vill ha aktiva samtidigt.</p>
+        </div>
+        <div className="mt-10 grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-4">
+          {plans.map((plan) => (
             <Link
-              key={title}
-              href={hrefs[index]}
-              className="group rounded-[8px] bg-[#f5f5f7] p-6 transition hover:bg-[#eef5ff]"
+              key={plan.name}
+              href={plan.href}
+              className={`group flex min-h-[420px] w-full min-w-0 flex-col rounded-[18px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] ${
+                plan.recommended ? 'border-[#0866ff] bg-[#f4f8ff]' : 'border-[#e1e7f0] bg-[#f5f5f7]'
+              }`}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-white text-[#0866ff]">
-                {[ShieldCheck, Layers3, ArrowRight].map((Icon, iconIndex) =>
-                  iconIndex === index ? <Icon key={title} className="h-5 w-5" /> : null,
-                )}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-white text-[#0866ff]">
+                  {plan.recommended ? <Layers3 className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+                </div>
+                {plan.recommended ? (
+                  <span className="rounded-full border border-[#0866ff] bg-white px-3 py-1 text-[11px] font-semibold text-[#0866ff]">Rekommenderad</span>
+                ) : null}
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-[#101828]">{title}</h3>
-              <p className="mt-2 min-h-[72px] text-sm leading-6 text-[#667085]">{text}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#0866ff]">
-                {cta}
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[.14em] text-[#667085]">{plan.audience}</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-[-.02em] text-[#101828]">{plan.name}</h3>
+              <div className="mt-5 flex items-end gap-1">
+                <span className="text-[34px] font-semibold leading-none tracking-[-.04em] text-[#101828]">{plan.price}</span>
+                <span className="pb-1 text-sm font-semibold text-[#667085]">{plan.period}</span>
+              </div>
+              <p className="mt-3 rounded-[10px] border border-[#d8e3f2] bg-white px-3 py-2 text-sm font-semibold text-[#344054]">{plan.limit}</p>
+              <p className="mt-4 max-w-full text-sm leading-6 text-[#667085]">{plan.text}</p>
+              <ul className="mt-5 space-y-2">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 text-sm text-[#344054]">
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#eaf2ff] text-[#0866ff]">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <span className="mt-auto inline-flex items-center gap-1 pt-6 text-sm font-semibold text-[#0866ff]">
+                {plan.cta}
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </span>
             </Link>
@@ -390,18 +354,29 @@ function NextStep({
 }
 
 function BusinessFaq({ copy }: { copy: BusinessCopy }) {
+  const extendedFaqs = [
+    ...copy.faqs,
+    ['Vilken plan passar mindre handlare?', 'Starter passar företag som vill ha en professionell företagssida och upp till 25 aktiva annonser utan ett större teamflöde.'],
+    ['När behöver vi Growth?', 'Growth passar när flera säljare ska arbeta i samma konto, när lagret växer och när upp till 100 aktiva annonser behövs.'],
+    ['Vad är skillnaden med Professional?', 'Professional är för större lager med upp till 500 aktiva annonser, fler teamkonton, rapporter, export och prioriterad hantering.'],
+    ['Finns Enterprise för kedjor och importörer?', 'Ja. Enterprise anpassas för större aktörer med särskilda behov kring volym, import, process, support och presentation.'],
+  ] as const
+
   return (
-    <section className="bg-[#f5f5f7] px-5 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-[1120px]">
-        <h2 className="text-3xl font-semibold tracking-[-.015em] text-[#101828]">{copy.faqTitle}</h2>
-        <div className="mt-8 divide-y divide-[#d7dbe3]">
-          {copy.faqs.map(([question, answer]) => (
+    <section className="border-t border-[#e5e7eb] bg-[#f5f5f7] px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto max-w-[1260px]">
+        <div className="flex items-end justify-between gap-6">
+          <h2 className="text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{copy.faqTitle}</h2>
+          <span className="hidden text-sm font-medium text-[#0866ff] sm:inline">Expandera alla</span>
+        </div>
+        <div className="mt-14 divide-y divide-[#d0d5dd]">
+          {extendedFaqs.map(([question, answer]) => (
             <details key={question} className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-base font-semibold text-[#101828]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:text-2xl">
                 {question}
-                <ChevronDown className="h-5 w-5 shrink-0 transition group-open:rotate-180" />
+                <ChevronDown className="h-7 w-7 shrink-0 text-[#86868b] transition group-open:rotate-180" />
               </summary>
-              <p className="max-w-[820px] pb-6 text-base leading-7 text-[#667085]">{answer}</p>
+              <p className="max-w-[920px] pb-8 text-base leading-8 text-[#515966] sm:text-lg">{answer}</p>
             </details>
           ))}
         </div>
