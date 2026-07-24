@@ -235,7 +235,7 @@ function AppleHero({
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
             <div className="inline-flex w-max flex-col items-end">
               <BrandLogo underline={false} />
-              <p className="mt-0.5 w-full text-right text-[14px] font-semibold leading-none tracking-[-.01em] text-[#101828]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
+              <p className="mt-0.5 w-full text-right text-[12px] font-semibold leading-none tracking-[-.01em] text-[#101828] sm:text-[14px]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
             </div>
             <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
               {copy.heroTitle}
@@ -260,14 +260,14 @@ function AppleHero({
 
 function HeroImageSlot() {
   return (
-    <div className="relative min-h-[260px] min-w-0 overflow-hidden lg:min-h-[520px]">
+    <div className="relative min-h-[320px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[520px]">
       <Image
         src="/business-responsive-mockup.webp"
         alt=""
         width={1920}
         height={1080}
         priority
-        className="absolute bottom-[-12px] left-1/2 w-[560px] max-w-none -translate-x-1/2 object-contain sm:w-[680px] lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:w-[980px] lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
+        className="relative mx-auto mt-10 w-full max-w-[340px] object-contain min-[430px]:max-w-[390px] sm:max-w-[520px] lg:absolute lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:top-auto lg:mt-0 lg:w-[980px] lg:max-w-none lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
       />
     </div>
   )
