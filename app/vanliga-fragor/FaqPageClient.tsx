@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, ChevronDown, Search } from 'lucide-react'
+import { ArrowRight, BadgeEuro, Building2, CarFront, ChevronDown, Megaphone, Search, ShieldCheck, Truck, UserRound } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
@@ -20,6 +20,22 @@ const categories: Array<{ key: CategoryKey; label: Localized }> = [
   { key: 'safety', label: { sv: 'Trygghet', en: 'Safety', de: 'Sicherheit' } },
   { key: 'business', label: { sv: 'Företag', en: 'Business', de: 'Unternehmen' } },
   { key: 'language', label: { sv: 'Språk', en: 'Language', de: 'Sprache' } },
+]
+
+const popularSearches = [
+  { sv: 'Skapa annons', en: 'Create listing', de: 'Anzeige erstellen' },
+  { sv: 'Betalning', en: 'Payment', de: 'Zahlung' },
+  { sv: 'Verifiering', en: 'Verification', de: 'Verifizierung' },
+  { sv: 'Export', en: 'Export', de: 'Export' },
+] satisfies Localized[]
+
+const topicCards: Array<{ category: Exclude<CategoryKey, 'all'>; label: Localized; icon: typeof CarFront }> = [
+  { category: 'listings', label: { sv: 'Annonsering', en: 'Listing ads', de: 'Inserieren' }, icon: Megaphone },
+  { category: 'account', label: { sv: 'Konto & inloggning', en: 'Account & sign-in', de: 'Konto & Anmeldung' }, icon: UserRound },
+  { category: 'pricing', label: { sv: 'Betalning', en: 'Payment', de: 'Zahlung' }, icon: BadgeEuro },
+  { category: 'business', label: { sv: 'För företag', en: 'For businesses', de: 'Für Unternehmen' }, icon: Building2 },
+  { category: 'safety', label: { sv: 'Kundsäkerhet', en: 'Customer safety', de: 'Kundensicherheit' }, icon: ShieldCheck },
+  { category: 'export', label: { sv: 'Export & transport', en: 'Export & transport', de: 'Export & Transport' }, icon: Truck },
 ]
 
 const questions: Array<{ category: Exclude<CategoryKey, 'all'>; question: Localized; answer: Localized }> = [
@@ -131,7 +147,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
     if (locale === 'de') return value.de
     return translatePublic(locale, value.en)
   }
-  const translate = (value: string) => (locale === 'sv' ? value : translatePublic(locale, value))
+  const translate = (sv: string, en = sv, de = en) => text({ sv, en, de })
 
   const query = search.trim().toLocaleLowerCase(locale === 'sv' ? 'sv' : 'en')
   const filtered = questions.filter((item) => {
@@ -145,28 +161,56 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
 
   return (
     <>
-      <div id="faq-search" className="mt-12 scroll-mt-28 rounded-[8px] border border-[#dfe6f2] bg-[#f8fbff] p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0866ff]">{translate('Sök och filtrera')}</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-[#101828]">{translate('Vanliga frågor')}</h2>
-          </div>
-          <span className="hidden text-sm font-medium text-[#667085] sm:block">
-            {filtered.length} / {questions.length}
-          </span>
-        </div>
-        <div className="mt-4 flex items-center gap-3 rounded-[8px] border border-[#cfd8e7] bg-white px-4">
-          <Search className="h-5 w-5 text-[#667085]" />
+      <section className="mx-auto max-w-[900px]">
+        <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-[#101828] sm:text-4xl">
+          {translate('Hej, vad kan vi hjälpa dig med?', 'Hi, what can we help you with?', 'Hallo, womit können wir helfen?')}
+        </h1>
+
+        <div id="faq-search" className="mt-5 flex scroll-mt-28 items-center gap-3 rounded-[8px] border border-[#cfd8e7] bg-white px-4 focus-within:border-[#0866ff]">
+          <Search className="h-5 w-5 shrink-0 text-[#667085]" />
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder={translate('Sök bland frågor...')}
-            className="h-13 w-full bg-transparent text-[#101828] outline-none placeholder:text-[#98a2b3]"
+            placeholder={translate('Sök bland frågor...', 'Search questions...', 'Fragen durchsuchen...')}
+            className="h-13 w-full min-w-0 bg-transparent text-[#101828] outline-none placeholder:!text-[#98a2b3] [&::placeholder]:!text-[#98a2b3]"
           />
+          <button type="button" className="hidden min-h-9 rounded-[8px] bg-[#0866ff] px-5 text-xs font-bold text-white transition hover:bg-[#0054d8] sm:inline-flex sm:items-center">
+            {translate('Sök', 'Search', 'Suchen')}
+          </button>
         </div>
-      </div>
 
-      <div className="mt-5 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs font-semibold text-[#344054]">{translate('Många söker på', 'Many search for', 'Häufig gesucht')}</span>
+          {popularSearches.map((item) => (
+            <button
+              key={item.en}
+              type="button"
+              onClick={() => setSearch(text(item))}
+              className="rounded-[8px] border border-[#d8d7e1] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+            >
+              {text(item)}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {topicCards.map(({ category: topicCategory, label, icon: Icon }) => (
+            <button
+              key={topicCategory}
+              type="button"
+              onClick={() => setCategory(topicCategory)}
+              className={`flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[8px] border px-4 text-center transition ${
+                category === topicCategory ? 'border-[#0866ff] bg-[#f1f6ff]' : 'border-[#dfe6f2] bg-white hover:border-[#0866ff]'
+              }`}
+            >
+              <Icon className="h-6 w-6 text-[#0866ff]" />
+              <span className="text-sm font-bold text-[#101828]">{text(label)}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-8 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
         {categories.map((item) => (
           <button
             key={item.key}
@@ -181,30 +225,29 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
         ))}
       </div>
 
-      <div className="mt-8 grid gap-3 lg:grid-cols-2">
+      <div className="mt-7 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-bold text-[#101828]">{translate('Det här undrar folk ofta över:', 'People often ask about this:', 'Das fragen Nutzer häufig:')}</h2>
+        <span className="text-xs font-semibold text-[#667085]">{filtered.length} / {questions.length}</span>
+      </div>
+
+      <div className="mt-3 grid gap-2">
         {filtered.map((item) => {
           const question = text(item.question)
           const isOpen = open === item.question.en
-          const categoryLabel = text(categories.find((candidate) => candidate.key === item.category)?.label || categories[0].label)
           return (
-            <div key={item.question.en} className="rounded-[8px] border border-[#dfe6f2] bg-white align-top">
+            <div key={item.question.en} className="rounded-[8px] border border-[#e5ebf3] bg-[#f7f8fa]">
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? null : item.question.en)}
-                className="flex w-full items-start justify-between gap-5 p-5 text-left"
+                className="flex w-full items-center justify-between gap-5 px-4 py-4 text-left"
                 aria-expanded={isOpen}
               >
-                <span>
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-[#0866ff]">{categoryLabel}</span>
-                  <span className="mt-2 block text-base font-semibold leading-6 text-[#101828] sm:text-lg">{question}</span>
-                </span>
-                <span className={`mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-[8px] transition ${isOpen ? 'rotate-180 bg-[#0866ff] text-white' : 'bg-[#eef5ff] text-[#0866ff]'}`}>
-                  <ChevronDown className="h-4 w-4" />
-                </span>
+                <span className="text-sm font-semibold leading-6 text-[#101828]">{question}</span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-[#667085] transition ${isOpen ? 'rotate-180' : ''}`} />
               </button>
               <div className={`grid transition-[grid-template-rows] duration-300 ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                 <div className="overflow-hidden">
-                  <p className="border-t border-[#edf1f6] px-5 pb-6 pt-4 text-sm leading-7 text-[#566174]">{text(item.answer)}</p>
+                  <p className="border-t border-white px-4 pb-5 pt-3 text-sm leading-7 text-[#566174]">{text(item.answer)}</p>
                 </div>
               </div>
             </div>
@@ -214,17 +257,17 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
 
       {filtered.length === 0 && (
         <div className="mt-8 rounded-[8px] border border-[#dfe6f2] py-14 text-center">
-          <p className="text-[#626d76]">{translate('Vi hittade ingen fråga som matchade din sökning.')}</p>
+          <p className="text-[#626d76]">{translate('Vi hittade ingen fråga som matchade din sökning.', 'No question matched your search.', 'Keine Frage passt zu Ihrer Suche.')}</p>
         </div>
       )}
 
-      <div className="mt-10 flex min-h-[130px] flex-col items-start justify-between gap-6 rounded-[8px] border border-[#bfd0ea] bg-[#eef5ff] p-6 sm:flex-row sm:items-center sm:p-8">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em]">{translate('Hittade du inte svaret?')}</h2>
-          <p className="mt-2 text-sm text-[#56636c]">{translate('Skicka din fråga så hjälper vi dig vidare.')}</p>
-        </div>
-        <Link href={localizePublicHref(locale, '/report')} className="inline-flex min-h-12 items-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-bold text-white transition hover:bg-[#0054d8]">
-          {translate('Rapportera problem')} <ArrowRight className="h-4 w-4" />
+      <div className="mt-10 rounded-[8px] border border-[#0866ff] bg-white p-6 sm:p-8">
+        <h2 className="text-xl font-semibold tracking-[-0.02em] text-[#101828]">{translate('Behöver du fortfarande hjälp?', 'Still need help?', 'Brauchen Sie noch Hilfe?')}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-[#566174]">
+          {translate('Skicka in problemet med annons-ID, betalningsreferens eller den e-postadress kontot gäller.', 'Send the issue with listing ID, payment reference or the email address for the account.', 'Senden Sie das Problem mit Anzeigen-ID, Zahlungsreferenz oder der E-Mail-Adresse des Kontos.')}
+        </p>
+        <Link href={localizePublicHref(locale, '/report')} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#0054d8]">
+          {translate('Rapportera problem', 'Report a problem', 'Problem melden')} <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </>
