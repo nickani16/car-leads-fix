@@ -19,7 +19,7 @@ export default function BusinessFaqClient({
     <div className="min-w-0" style={{ width: 'min(100%, calc(100vw - 40px))' }}>
       <div className="flex w-full min-w-0 flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
         <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
-        <div className="flex w-full justify-end sm:w-auto">
+        <div className="flex w-full justify-start pl-48 sm:w-auto sm:justify-end sm:pl-0">
           <button
             type="button"
             onClick={() => setExpanded((current) => !current)}
