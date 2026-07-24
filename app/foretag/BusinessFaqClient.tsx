@@ -1,0 +1,44 @@
+'use client'
+
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+
+type FaqItem = readonly [string, string]
+
+export default function BusinessFaqClient({
+  title,
+  items,
+}: {
+  title: string
+  items: readonly FaqItem[]
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const toggleLabel = expanded ? 'Stäng alla' : 'Expandera alla'
+
+  return (
+    <div>
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end sm:gap-6">
+        <h2 className="text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-0 text-sm font-medium text-[#0866ff] transition hover:text-[#0057df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0866ff]"
+        >
+          {toggleLabel}
+          <ChevronDown className={`h-4 w-4 transition ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
+      <div className="mt-10 divide-y divide-[#d0d5dd] sm:mt-14">
+        {items.map(([question, answer]) => (
+          <details key={question} className="group" open={expanded ? true : undefined}>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:text-2xl">
+              {question}
+              <ChevronDown className="h-7 w-7 shrink-0 text-[#86868b] transition group-open:rotate-180" />
+            </summary>
+            <p className="max-w-[920px] pb-8 text-base leading-8 text-[#515966] sm:text-lg">{answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  )
+}

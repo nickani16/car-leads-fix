@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import {
   ArrowRight,
   BarChart3,
-  ChevronDown,
   Check,
   FileSpreadsheet,
   Globe2,
@@ -17,6 +16,7 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import BrandLogo from '@/app/components/BrandLogo'
+import BusinessFaqClient from './BusinessFaqClient'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -409,21 +409,7 @@ function BusinessFaq({ copy }: { copy: BusinessCopy }) {
   return (
     <section className="border-t border-[#e5e7eb] bg-[#f5f5f7] px-5 py-20 sm:px-8 sm:py-28">
       <div className="mx-auto max-w-[1260px]">
-        <div className="flex items-end justify-between gap-6">
-          <h2 className="text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{copy.faqTitle}</h2>
-          <span className="hidden text-sm font-medium text-[#0866ff] sm:inline">Expandera alla</span>
-        </div>
-        <div className="mt-14 divide-y divide-[#d0d5dd]">
-          {extendedFaqs.map(([question, answer]) => (
-            <details key={question} className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:text-2xl">
-                {question}
-                <ChevronDown className="h-7 w-7 shrink-0 text-[#86868b] transition group-open:rotate-180" />
-              </summary>
-              <p className="max-w-[920px] pb-8 text-base leading-8 text-[#515966] sm:text-lg">{answer}</p>
-            </details>
-          ))}
-        </div>
+        <BusinessFaqClient title={copy.faqTitle} items={extendedFaqs} />
       </div>
     </section>
   )
