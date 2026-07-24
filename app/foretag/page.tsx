@@ -4,10 +4,15 @@ import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import {
   ArrowRight,
+  BarChart3,
   ChevronDown,
   Check,
+  FileSpreadsheet,
+  Globe2,
   Layers3,
   ShieldCheck,
+  Store,
+  Users2,
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
@@ -180,6 +185,7 @@ export default async function BusinessPage({
     <main className="overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <AppleHero copy={copy} pricingHref={pricingHref} />
+      <BusinessInsights copy={copy} />
       <NextStep copy={copy} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
       <BusinessFaq copy={copy} />
       <PublicFooter locale={locale} />
@@ -237,6 +243,44 @@ function HeroImageSlot() {
         className="relative left-1/2 mt-2 w-[455px] max-w-none -translate-x-1/2 object-contain min-[430px]:w-[520px] sm:w-[640px] lg:absolute lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:top-auto lg:mt-0 lg:w-[980px] lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
       />
     </div>
+  )
+}
+
+function BusinessInsights({ copy }: { copy: BusinessCopy }) {
+  const icons = [Store, Layers3, Users2, FileSpreadsheet, BarChart3, Globe2]
+
+  return (
+    <section className="bg-white px-5 py-14 sm:px-8 sm:py-20">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <div className="flex max-w-[330px] flex-col gap-3 sm:max-w-[660px]">
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">Autorell Business</p>
+          <h2 className="text-[34px] font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.discoverTitle}</h2>
+          <p className="max-w-[560px] text-base leading-7 text-[#667085]">{copy.discoverIntro}</p>
+        </div>
+
+        <div className="mt-10 flex gap-5 overflow-x-auto pb-6 pr-8 [scrollbar-width:thin]">
+          {copy.cards.map(([title, text], index) => {
+            const Icon = icons[index] || Store
+            return (
+              <article
+                key={title}
+                className="group flex min-h-[300px] w-[275px] shrink-0 snap-start flex-col rounded-[20px] border border-[#e1e7f0] bg-[#f5f8fc] p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#eef6ff]"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-white text-[#0866ff] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
+                  <Icon className="h-6 w-6" strokeWidth={1.8} />
+                </div>
+                <h3 className="mt-8 text-2xl font-semibold tracking-[-.018em] text-[#101828]">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#667085]">{text}</p>
+                <span className="mt-auto inline-flex items-center gap-1 pt-7 text-sm font-semibold text-[#0866ff]">
+                  Läs mer
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </article>
+            )
+          })}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -306,12 +350,12 @@ function NextStep({
           <h2 className="text-4xl font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.stepTitle}</h2>
           <p className="max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-[620px]">Välj plan efter lager, team och hur många annonser ni vill ha aktiva samtidigt.</p>
         </div>
-        <div className="mt-10 grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-4">
+        <div className="mt-10 flex gap-5 overflow-x-auto pb-6 pr-8 [scrollbar-width:thin]">
           {plans.map((plan) => (
             <Link
               key={plan.name}
               href={plan.href}
-              className={`group flex min-h-[420px] w-full min-w-0 flex-col rounded-[18px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] ${
+              className={`group flex min-h-[430px] w-[300px] shrink-0 snap-start flex-col rounded-[18px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] sm:w-[320px] ${
                 plan.recommended ? 'border-[#0866ff] bg-[#f4f8ff]' : 'border-[#e1e7f0] bg-[#f5f5f7]'
               }`}
             >
