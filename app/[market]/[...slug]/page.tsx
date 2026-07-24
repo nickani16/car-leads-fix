@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
+import BusinessPage from '@/app/foretag/page'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
 import { renderListingCreatedPage } from '@/app/account/listings/created/page'
@@ -189,6 +190,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'pricing') {
     return <PricingPage locale={locale} market={normalizedMarket} marketCode={normalizedMarket.toUpperCase()} />
+  }
+
+  if (slugPath === 'business') {
+    return <BusinessPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
   }
 
   return <BusinessMarketplaceHome locale={locale} marketCode={normalizedMarket.toUpperCase()} />
