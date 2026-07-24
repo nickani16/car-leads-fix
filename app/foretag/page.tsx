@@ -253,7 +253,7 @@ function BusinessInsights({ copy }: { copy: BusinessCopy }) {
     <section className="bg-white px-5 py-14 sm:px-8 sm:py-20">
       <div className="mx-auto w-full max-w-[1120px]">
         <div className="flex max-w-[330px] flex-col gap-3 sm:max-w-[660px]">
-          <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">Autorell Business</p>
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">Dealer solutions</p>
           <h2 className="text-[34px] font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.discoverTitle}</h2>
           <p className="max-w-[560px] text-base leading-7 text-[#667085]">{copy.discoverIntro}</p>
         </div>
