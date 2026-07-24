@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import BrandLogo from '@/app/components/BrandLogo'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -33,6 +34,7 @@ const businessPageCopy = {
       'Samla företagssida, lagerflöde, säljare och marknadsdata i en arbetsyta byggd för professionell fordonsförsäljning.',
     primaryCta: 'Starta företagskonto',
     secondaryCta: 'Se abonnemang',
+    learnMoreCta: 'Läs mer',
     discoverTitle: 'Upptäck lösningar som passar ert sätt att sälja.',
     discoverIntro: 'Välj det ni behöver nu och bygg vidare när lagret växer.',
     globeTitle: 'Ett europeiskt skyltfönster för ert lager.',
@@ -73,6 +75,7 @@ const businessPageCopy = {
       'Bring company pages, inventory flows, sellers and market data into one workspace built for professional vehicle sales.',
     primaryCta: 'Start business account',
     secondaryCta: 'View plans',
+    learnMoreCta: 'Learn more',
     discoverTitle: 'Discover solutions that fit the way you sell.',
     discoverIntro: 'Choose what you need now and add more when inventory grows.',
     globeTitle: 'A European showroom for your inventory.',
@@ -113,6 +116,7 @@ const businessPageCopy = {
       'Bündeln Sie Unternehmensseite, Bestand, Verkäufer und Marktdaten in einer Arbeitsfläche für professionellen Fahrzeugverkauf.',
     primaryCta: 'Unternehmenskonto starten',
     secondaryCta: 'Pläne ansehen',
+    learnMoreCta: 'Mehr erfahren',
     discoverTitle: 'Lösungen für Ihre Verkaufsweise.',
     discoverIntro: 'Starten Sie mit dem, was Sie brauchen, und erweitern Sie bei wachsendem Bestand.',
     globeTitle: 'Ein europäisches Schaufenster für Ihren Bestand.',
@@ -205,7 +209,7 @@ export default async function BusinessPage({
         }
       `}</style>
       <PublicHeader locale={locale} marketCode={marketCode} />
-      <AppleHero copy={copy} registerHref={registerHref} pricingHref={pricingHref} />
+      <AppleHero copy={copy} pricingHref={pricingHref} />
       <SolutionScroller copy={copy} />
       <EuropeGlobe copy={copy} />
       <NextStep copy={copy} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
@@ -217,11 +221,9 @@ export default async function BusinessPage({
 
 function AppleHero({
   copy,
-  registerHref,
   pricingHref,
 }: {
   copy: BusinessCopy
-  registerHref: string
   pricingHref: string
 }) {
   return (
@@ -229,23 +231,21 @@ function AppleHero({
       <div className="mx-auto w-full max-w-[1120px]">
         <div className="grid min-h-[420px] w-full overflow-hidden rounded-[8px] bg-[#eef8fb] lg:grid-cols-[0.82fr_1.18fr]">
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
-            <p className="text-xs font-semibold uppercase tracking-[.12em] text-[#0866ff]">{copy.heroEyebrow}</p>
-            <h1 className="mt-4 w-full max-w-[300px] text-[32px] font-bold leading-[1.04] tracking-[-.02em] text-[#101828] sm:max-w-[520px] sm:text-[46px] lg:text-[54px]">
+            <div className="flex items-center gap-2.5">
+              <BrandLogo compact underline={false} />
+              <span className="text-[22px] font-semibold tracking-[-.01em] text-[#101828]">Business</span>
+            </div>
+            <p className="mt-5 text-[11px] font-semibold uppercase tracking-[.16em] text-[#0866ff]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
+            <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
               {copy.heroTitle}
             </h1>
-            <p className="mt-5 w-full max-w-[300px] text-base leading-7 text-[#475467] sm:max-w-[500px] sm:text-lg">{copy.heroIntro}</p>
-            <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Link
-                href={registerHref}
-                className="inline-flex min-h-11 items-center rounded-full bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0057df]"
-              >
-                {copy.primaryCta}
-              </Link>
+            <p className="mt-5 w-full max-w-[360px] text-base leading-7 text-[#475467] sm:max-w-[500px]">{copy.heroIntro}</p>
+            <div className="mt-6">
               <Link
                 href={pricingHref}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0866ff] ring-1 ring-[#c9d8ee] transition hover:ring-[#0866ff]"
+                className="inline-flex items-center gap-1.5 text-[17px] font-medium text-[#0866ff] transition hover:text-[#0057df]"
               >
-                {copy.secondaryCta}
+                {copy.learnMoreCta}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
