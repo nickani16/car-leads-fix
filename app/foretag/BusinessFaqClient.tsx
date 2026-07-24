@@ -17,16 +17,18 @@ export default function BusinessFaqClient({
 
   return (
     <div>
-      <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
-        <h2 className="text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
-        <button
-          type="button"
-          onClick={() => setExpanded((current) => !current)}
-          className="inline-flex min-h-9 self-end items-center gap-0.5 rounded-full px-0 text-[17px] font-normal leading-none text-[#0866ff] transition hover:text-[#0057df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0866ff]"
-        >
-          {toggleLabel}
-          <ChevronDown className={`h-4 w-4 transition ${expanded ? 'rotate-180' : ''}`} />
-        </button>
+      <div className="flex w-full min-w-0 flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
+        <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
+        <div className="flex w-full justify-end sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setExpanded((current) => !current)}
+            className="inline-flex min-h-9 max-w-full items-center gap-px rounded-full px-0 text-[17px] font-normal leading-none text-[#0866ff] transition hover:text-[#0057df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0866ff]"
+          >
+            {toggleLabel}
+            <ChevronDown className={`h-4 w-4 transition ${expanded ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
       </div>
       <div className="mt-10 divide-y divide-[#d0d5dd] sm:mt-14">
         {items.map(([question, answer]) => (
