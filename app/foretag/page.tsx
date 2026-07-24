@@ -231,11 +231,10 @@ function AppleHero({
       <div className="mx-auto w-full max-w-[1120px]">
         <div className="grid min-h-[420px] w-full overflow-hidden rounded-[8px] bg-[#eef8fb] lg:grid-cols-[0.82fr_1.18fr]">
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
-            <div className="flex items-center gap-2.5">
+            <div>
               <BrandLogo compact underline={false} />
-              <span className="text-[22px] font-semibold tracking-[-.01em] text-[#101828]">Business</span>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#0866ff]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
             </div>
-            <p className="mt-5 text-[11px] font-semibold uppercase tracking-[.16em] text-[#0866ff]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
             <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
               {copy.heroTitle}
             </h1>
