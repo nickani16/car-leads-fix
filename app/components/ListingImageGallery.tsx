@@ -243,7 +243,16 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={openFullscreen}
-              style={{ fontWeight: 400, left: 'calc(100vw - 76px)' }}
+              style={{
+                fontWeight: 400,
+                position: 'absolute',
+                left: 'calc(100vw - 76px)',
+                bottom: '12px',
+                zIndex: 50,
+                background: 'rgba(255, 255, 255, 0.94)',
+                color: '#101828',
+                boxShadow: '0 6px 18px rgba(16, 24, 40, 0.16)',
+              }}
               className="absolute bottom-3 z-10 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
               aria-label="Open photos"
             >
