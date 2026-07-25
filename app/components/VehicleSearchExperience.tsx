@@ -1954,8 +1954,18 @@ export default function VehicleSearchExperience({
                         : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
                     }`}
                   >
+                    {filtersOpen ? (
+                      <button
+                        type="button"
+                        onClick={() => setFiltersOpen(false)}
+                        className="fixed right-4 top-4 z-[260] grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] shadow-[0_6px_18px_rgba(16,24,40,.14)] transition hover:text-[#0866ff] sm:hidden"
+                        aria-label="Stäng filter"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    ) : null}
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
+                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-14 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
@@ -2120,7 +2130,7 @@ export default function VehicleSearchExperience({
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-8 w-[132px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-7 w-[116px] appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[12px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -2128,7 +2138,7 @@ export default function VehicleSearchExperience({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
                 </label>
                 </div>
               </div>
