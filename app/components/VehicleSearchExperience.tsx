@@ -1607,17 +1607,33 @@ export default function VehicleSearchExperience({
         ? getEuCountryName(selectedMarketCodes[0], locale)
         : uiText(locale, 'Market', 'Marknad', 'Markt')
     const wrapperClassName = placement === 'desktop'
-      ? 'hidden min-[1120px]:block max-w-full overflow-x-auto border-b border-[#eceff4] bg-white px-3 py-1.5 overscroll-x-contain sm:px-5 [scrollbar-width:thin]'
+      ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
       : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
+    const saveSearchButton = (
+      <button
+        type="button"
+        onClick={saveCurrentSearch}
+        disabled={savingSearch}
+        className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
+          savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
+        } disabled:cursor-wait disabled:opacity-70`}
+      >
+        <Bookmark className="h-4 w-4" strokeWidth={2} />
+        {saveSearchButtonLabel}
+      </button>
+    )
 
     return (
       <div
         ref={desktopFilterBarRef}
         data-marketplace-filter-surface
         className={wrapperClassName}
-        onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
       >
-        <div className={`${placement === 'desktop' ? 'w-max min-w-full' : 'min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}>
+        <div className="flex min-w-0 items-center gap-2">
+          <div
+            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}
+            onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
+          >
           <div className="relative shrink-0">
             <button
               type="button"
@@ -1821,18 +1837,9 @@ export default function VehicleSearchExperience({
               </div>
             ), 'w-[340px]')}
           </div>
-
-          <button
-            type="button"
-            onClick={saveCurrentSearch}
-            disabled={savingSearch}
-            className={`order-last ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
-              savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
-            } disabled:cursor-wait disabled:opacity-70`}
-          >
-            <Bookmark className="h-4 w-4" strokeWidth={2} />
-            {saveSearchButtonLabel}
-          </button>
+          {placement === 'mobile' ? <div className="order-last shrink-0">{saveSearchButton}</div> : null}
+          </div>
+          {placement === 'desktop' ? <div className="shrink-0 pb-1">{saveSearchButton}</div> : null}
         </div>
       </div>
     )
