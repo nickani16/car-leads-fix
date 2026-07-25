@@ -2125,12 +2125,12 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <label className="relative block w-[112px] shrink-0 sm:w-auto">
+                <label className="relative block w-[118px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[11px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-5 text-[10px] font-medium leading-none tracking-[-0.01em] outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px] sm:tracking-normal"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -2138,7 +2138,7 @@ export default function VehicleSearchExperience({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
+                  <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
                 </label>
                 </div>
               </div>
