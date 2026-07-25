@@ -1931,6 +1931,14 @@ export default function VehicleSearchExperience({
                         : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
                     }`}
                   >
+                    <button
+                      type="button"
+                      onClick={() => setFiltersOpen(false)}
+                      className="absolute right-4 top-4 z-40 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] lg:hidden"
+                      aria-label="Stäng filter"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
                     <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pr-16 pt-6 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
@@ -1942,14 +1950,6 @@ export default function VehicleSearchExperience({
                           </span>
                         ) : null}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setFiltersOpen(false)}
-                        className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
-                        aria-label="Stäng filter"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
                       <button
                         type="button"
                         onClick={() => setFiltersOpen(false)}
@@ -2066,7 +2066,7 @@ export default function VehicleSearchExperience({
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-9 w-9 place-items-center rounded-[8px] border text-[#101828] transition sm:h-10 sm:w-10 ${
+                  className={`grid h-8 w-8 place-items-center rounded-[8px] border text-[#101828] transition sm:h-10 sm:w-10 ${
                     resultsLayout === 'split'
                       ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                       : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2074,14 +2074,14 @@ export default function VehicleSearchExperience({
                   aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
                   title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
                 >
-                  {resultsLayout === 'split' ? <List className="h-[18px] w-[18px] sm:h-5 sm:w-5" /> : <Columns2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" />}
+                  {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
                 <label className="relative">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-9 min-w-[118px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium outline-none transition focus:border-[#0866ff] sm:h-10 sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-8 w-[132px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
