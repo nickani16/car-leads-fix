@@ -2125,12 +2125,12 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <label className="relative block w-[126px] shrink-0 sm:w-auto">
+                <label className="relative block w-[112px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[12px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[11px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -2219,7 +2219,7 @@ export default function VehicleSearchExperience({
               type="button"
               onClick={() => setMobileMapOpen(true)}
               style={{ fontWeight: 500 }}
-              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-[500] text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition-transform duration-200 active:scale-[.98] lg:hidden"
+              className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white shadow-[0_12px_28px_rgba(8,102,255,.26)] transition-transform duration-200 active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
               {uiText(locale, 'Map', 'Karta', 'Karte')}
