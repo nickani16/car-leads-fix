@@ -1934,7 +1934,7 @@ export default function VehicleSearchExperience({
                     <button
                       type="button"
                       onClick={() => setFiltersOpen(false)}
-                      className="absolute right-4 top-4 z-40 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] lg:hidden"
+                      className="fixed right-4 top-[calc(env(safe-area-inset-top)+72px)] z-[220] grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.12)] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] lg:hidden"
                       aria-label="Stäng filter"
                     >
                       <X className="h-5 w-5" />
