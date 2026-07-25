@@ -339,6 +339,12 @@ export default function PublicHeader({
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
   const unprefixedPathname = stripLocalePrefix(pathname)
+  const isMarketplaceRoute =
+    pathname === '/marketplace' ||
+    pathname.includes('/marketplace/') ||
+    pathname.endsWith('/marketplace') ||
+    unprefixedPathname === '/marketplace' ||
+    unprefixedPathname.startsWith('/marketplace/')
   const language = marketplaceLanguage(locale)
   const t =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -402,10 +408,7 @@ export default function PublicHeader({
       const difference = currentScrollY - lastScrollY.current
       setAtPageTop(currentScrollY < 8)
 
-      const marketplaceMobileChrome =
-        unprefixedPathname === '/marketplace' || unprefixedPathname.startsWith('/marketplace/')
-
-      if (marketplaceMobileChrome) {
+      if (isMarketplaceRoute) {
         setVisible(true)
         lastScrollY.current = currentScrollY
         return
@@ -433,7 +436,7 @@ export default function PublicHeader({
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [unprefixedPathname])
+  }, [isMarketplaceRoute])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -731,7 +734,7 @@ export default function PublicHeader({
     : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
       : 'h-[56px] min-[1120px]:h-[62px]'
-  const effectiveHeaderSpacerClass = isMarketplaceResults
+  const effectiveHeaderSpacerClass = isMarketplaceRoute
     ? 'h-0 min-[1120px]:h-[62px]'
     : headerSpacerClass
   const desktopMainRowHeightClass = showTopCategoryNav
@@ -989,7 +992,7 @@ export default function PublicHeader({
       <div
         className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
-        }`}
+        } ${isMarketplaceRoute ? 'hidden min-[1120px]:block' : ''}`}
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {renderTopCategoryNav ? (
@@ -1674,7 +1677,7 @@ export default function PublicHeader({
       <div
         className={`fixed left-0 right-auto top-0 z-[130] grid h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
-        } ${isMarketplaceResults ? 'hidden' : ''}`}
+        } ${isMarketplaceRoute ? 'hidden' : ''}`}
       >
         <div className="flex min-w-0 items-center gap-2 self-center">
           <button
@@ -2004,7 +2007,7 @@ export default function PublicHeader({
       ) : null}
       <nav
         className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
-          isMarketplaceResults || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
+          isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
         <div className="grid h-[54px] w-full grid-cols-4 px-1 pt-1">
