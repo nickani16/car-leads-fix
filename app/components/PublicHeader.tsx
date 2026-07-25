@@ -379,6 +379,7 @@ export default function PublicHeader({
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [searchMenuOpen, setSearchMenuOpen] = useState(false)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
@@ -389,6 +390,7 @@ export default function PublicHeader({
   const [atPageTop, setAtPageTop] = useState(true)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
+  const searchMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
   const businessMenuRef = useRef<HTMLDivElement | null>(null)
   const helpMenuRef = useRef<HTMLDivElement | null>(null)
@@ -406,6 +408,7 @@ export default function PublicHeader({
         setMarketSelectorOpen(false)
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
+        setSearchMenuOpen(false)
         setSellMenuOpen(false)
         setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
@@ -518,16 +521,18 @@ export default function PublicHeader({
   }, [open])
 
   useEffect(() => {
-    if (!profileMenuOpen && !sellMenuOpen && !businessMenuOpen && !helpMenuOpen) return
+    if (!profileMenuOpen && !searchMenuOpen && !sellMenuOpen && !businessMenuOpen && !helpMenuOpen) return
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
       if (profileMenuRef.current?.contains(target)) return
+      if (searchMenuRef.current?.contains(target)) return
       if (sellMenuRef.current?.contains(target)) return
       if (businessMenuRef.current?.contains(target)) return
       if (helpMenuRef.current?.contains(target)) return
       setProfileMenuOpen(false)
+      setSearchMenuOpen(false)
       setSellMenuOpen(false)
       setBusinessMenuOpen(false)
       setHelpMenuOpen(false)
@@ -536,6 +541,7 @@ export default function PublicHeader({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setProfileMenuOpen(false)
+        setSearchMenuOpen(false)
         setSellMenuOpen(false)
         setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
@@ -548,7 +554,7 @@ export default function PublicHeader({
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [profileMenuOpen, sellMenuOpen, businessMenuOpen, helpMenuOpen])
+  }, [profileMenuOpen, searchMenuOpen, sellMenuOpen, businessMenuOpen, helpMenuOpen])
 
   useEffect(() => {
     const auth = new URLSearchParams(window.location.search).get('auth')
@@ -792,7 +798,7 @@ export default function PublicHeader({
     ? `${marketPathPrefix}/account/company/listings`
     : `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
-    { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
+    { kind: 'search' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
     { kind: 'sell' as const, href: sellMenuLinks[0]?.href || createListingHref, label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'business' as const, href: localizePublicHref(locale, '/business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
@@ -832,6 +838,7 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
+    setSearchMenuOpen(false)
     setMobileSellMenuOpen(false)
     setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
@@ -840,7 +847,8 @@ export default function PublicHeader({
     setHelpMenuOpen(false)
   }
 
-  function toggleDesktopMenu(menu: 'sell' | 'business' | 'help' | 'profile') {
+  function toggleDesktopMenu(menu: 'search' | 'sell' | 'business' | 'help' | 'profile') {
+    setSearchMenuOpen((current) => (menu === 'search' ? !current : false))
     setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
     setBusinessMenuOpen((current) => (menu === 'business' ? !current : false))
     setHelpMenuOpen((current) => (menu === 'help' ? !current : false))
@@ -860,6 +868,7 @@ export default function PublicHeader({
     setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
     setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
@@ -905,6 +914,7 @@ export default function PublicHeader({
       document.getElementById(href.split('#')[1])?.scrollIntoView({ behavior: 'smooth' })
     }
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
     setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
@@ -917,6 +927,7 @@ export default function PublicHeader({
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
     setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
@@ -1019,6 +1030,89 @@ export default function PublicHeader({
                     businessMenuLinks.some((businessItem) => stripLocalePrefix((businessItem.href.split('#')[0] || businessItem.href).split('?')[0] || businessItem.href) === activePathname)) ||
                   (item.kind === 'help' &&
                     helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === activePathname))
+
+                if (item.kind === 'search') {
+                  return (
+                    <div
+                      key={href}
+                      ref={searchMenuRef}
+                      className="group relative flex h-full items-center"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={searchMenuOpen}
+                        onClick={() => toggleDesktopMenu('search')}
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(760px,calc(100vw-2rem))] overflow-hidden rounded-[14px] border border-[#d9e1ec] bg-white shadow-[0_22px_60px_rgba(16,24,40,.16)] transition group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+                          searchMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        <div className="grid gap-5 p-4">
+                          <Link
+                            href={vehicleSearchHref}
+                            onClick={(event) => handleInternalNavigation(event, vehicleSearchHref)}
+                            className="group flex items-center justify-between rounded-[12px] bg-[#f5f9ff] px-4 py-3 text-[#101828] ring-1 ring-[#dbe8ff] transition hover:bg-[#edf5ff] hover:text-[#0866ff]"
+                          >
+                            <span className="flex min-w-0 items-center gap-3">
+                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white text-[#0866ff] shadow-sm ring-1 ring-[#dbe8ff]">
+                                <Search className="h-[18px] w-[18px]" strokeWidth={2} />
+                              </span>
+                              <span>
+                                <span className="block text-[14px] font-[500] leading-snug">
+                                  {publicLabel('All vehicles', 'Alla fordon', 'Alle Fahrzeuge')}
+                                </span>
+                                <span className="mt-0.5 block text-[12px] font-[400] leading-5 text-[#667085]">
+                                  {publicLabel(
+                                    'Search the full marketplace across categories.',
+                                    'Sök i hela marknadsplatsen över alla kategorier.',
+                                    'Den gesamten Marktplatz über alle Kategorien durchsuchen.',
+                                  )}
+                                </span>
+                              </span>
+                            </span>
+                            <ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-0.5" />
+                          </Link>
+                          <div className="grid grid-cols-3 gap-2.5">
+                            {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }) => (
+                              <Link
+                                key={categoryHref}
+                                href={categoryHref}
+                                onClick={(event) => handleInternalNavigation(event, categoryHref)}
+                                className="group flex min-h-[68px] items-center gap-3 rounded-[12px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff]"
+                              >
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-[14px] font-[500] leading-tight">
+                                    {categoryLabel}
+                                  </span>
+                                  <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
+                                    {publicLabel('View listings', 'Visa annonser', 'Anzeigen ansehen')}
+                                  </span>
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
 
                 if (item.kind === 'sell') {
                   return (
