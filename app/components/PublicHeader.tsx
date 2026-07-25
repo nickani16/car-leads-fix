@@ -380,6 +380,7 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [searchMenuOpen, setSearchMenuOpen] = useState(false)
+  const [searchMenuIntent, setSearchMenuIntent] = useState<'sale' | 'leasing'>('sale')
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
@@ -584,6 +585,28 @@ export default function PublicHeader({
       icon: category.icon,
     }
   })
+  const searchIntentOptions = [
+    {
+      key: 'sale' as const,
+      label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
+      text: publicLabel(
+        'Browse vehicles that are ready to buy.',
+        'Se fordon som är redo att köpa.',
+        'Fahrzeuge ansehen, die direkt gekauft werden können.',
+      ),
+    },
+    {
+      key: 'leasing' as const,
+      label: publicLabel('Vehicle leasing', 'Leasing av fordon', 'Fahrzeugleasing'),
+      text: publicLabel(
+        'Show leasing listings from business sellers.',
+        'Visa leasingannonser från företagssäljare.',
+        'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
+      ),
+    },
+  ]
+  const searchCategoryHref = (href: string) =>
+    searchMenuIntent === 'leasing' ? `${href}?mode=leasing` : href
   const topCategoryLabels: Partial<Record<(typeof marketplaceCategories)[number]['slug'], Record<'sv' | 'en' | 'de', string>>> = {
     agriculture: { sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft' },
     construction: { sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
@@ -1074,12 +1097,34 @@ export default function PublicHeader({
                               )}
                             </p>
                           </div>
+                          <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
+                            {searchIntentOptions.map((option) => {
+                              const selected = searchMenuIntent === option.key
+                              return (
+                                <button
+                                  key={option.key}
+                                  type="button"
+                                  role="tab"
+                                  aria-selected={selected}
+                                  onClick={() => setSearchMenuIntent(option.key)}
+                                  className={`rounded-[11px] px-3.5 py-2.5 text-left transition ${
+                                    selected
+                                      ? 'bg-white text-[#101828] shadow-[0_8px_20px_rgba(16,24,40,.08)] ring-1 ring-[#d8e1ee]'
+                                      : 'text-[#475467] hover:bg-white/70 hover:text-[#101828]'
+                                  }`}
+                                >
+                                  <span className="block text-[13px] font-[500] leading-5">{option.label}</span>
+                                  <span className="mt-0.5 block text-[11px] font-[400] leading-4 text-[#667085]">{option.text}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
                           <div className="grid grid-cols-3 gap-2.5">
                             {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }) => (
                               <Link
                                 key={categoryHref}
-                                href={categoryHref}
-                                onClick={(event) => handleInternalNavigation(event, categoryHref)}
+                                href={searchCategoryHref(categoryHref)}
+                                onClick={(event) => handleInternalNavigation(event, searchCategoryHref(categoryHref))}
                                 className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
                               >
                                 <span className="flex min-w-0 items-center gap-3">
@@ -1091,7 +1136,9 @@ export default function PublicHeader({
                                       {categoryLabel}
                                     </span>
                                     <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
-                                      {publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
+                                      {searchMenuIntent === 'leasing'
+                                        ? publicLabel('Open leasing', 'Öppna leasing', 'Leasing öffnen')
+                                        : publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
                                     </span>
                                   </span>
                                 </span>
