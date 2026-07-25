@@ -2101,7 +2101,7 @@ export default function VehicleSearchExperience({
                 </div>
 
             <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+              <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-between sm:gap-3">
                 <p className="min-h-6 text-sm font-medium leading-6">
                   {searchLoading && searchPage === 1 ? (
                     <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
