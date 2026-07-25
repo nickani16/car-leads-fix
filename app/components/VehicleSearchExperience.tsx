@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { KeyboardEvent, ReactNode } from 'react'
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
@@ -646,6 +646,7 @@ export default function VehicleSearchExperience({
   const [searchTotalPages, setSearchTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
@@ -830,6 +831,7 @@ export default function VehicleSearchExperience({
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target
       if (!(target instanceof Node)) return
+      if (target instanceof Element && target.closest('[data-marketplace-filter-surface]')) return
       if (desktopFilterBarRef.current?.contains(target)) return
       setDesktopFilterMenu(null)
     }
@@ -1536,15 +1538,23 @@ export default function VehicleSearchExperience({
     return (
       <button
         type="button"
-        onClick={() => setDesktopFilterMenu((current) => (current === menu ? null : menu))}
-        className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-10 sm:px-3.5 sm:text-[14px] ${
+        onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+          const rect = event.currentTarget.getBoundingClientRect()
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' ? 310 : menu === 'model' ? 340 : 420
+          setDesktopFilterPopoverPosition({
+            left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
+            top: rect.bottom + 6,
+          })
+          setDesktopFilterMenu((current) => (current === menu ? null : menu))
+        }}
+        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-8 sm:px-3 sm:text-[13px] ${
           open || active
             ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
             : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
         }`}
       >
         <span>{label}</span>
-        <ChevronDown className={`h-3.5 w-3.5 transition sm:h-4 sm:w-4 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} />
       </button>
     )
   }
@@ -1552,9 +1562,24 @@ export default function VehicleSearchExperience({
   function renderDesktopFilterPopover(menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
     if (desktopFilterMenu !== menu) return null
     return (
-      <div className={`fixed left-4 top-[178px] z-[240] max-w-[calc(100vw-32px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)] min-[1120px]:left-[28px] min-[1120px]:top-[148px]`}>
-        {children}
-      </div>
+      <>
+        <button
+          type="button"
+          aria-label={uiText(locale, 'Close filter menu', 'Stäng filtermeny', 'Filtermenü schließen')}
+          onClick={() => setDesktopFilterMenu(null)}
+          className="fixed inset-0 z-[230] cursor-default bg-white/35 backdrop-blur-[2px]"
+        />
+        <div
+          data-marketplace-filter-surface
+          style={{
+            left: desktopFilterPopoverPosition?.left ?? 16,
+            top: desktopFilterPopoverPosition?.top ?? 112,
+          }}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)]`}
+        >
+          {children}
+        </div>
+      </>
     )
   }
 
@@ -1565,11 +1590,11 @@ export default function VehicleSearchExperience({
     )
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
     const wrapperClassName = placement === 'desktop'
-      ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-5 py-2 sm:px-7'
+      ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
       : 'relative -mx-4 mt-3 min-w-0 border-t border-[#edf1f6] px-4 pt-3 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
 
     return (
-      <div ref={desktopFilterBarRef} className={wrapperClassName}>
+      <div ref={desktopFilterBarRef} data-marketplace-filter-surface className={wrapperClassName}>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="relative shrink-0">
             <button
@@ -1578,7 +1603,7 @@ export default function VehicleSearchExperience({
                 setFiltersOpen(true)
                 setDesktopFilterMenu(null)
               }}
-              className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-10 sm:px-3.5 sm:text-[14px] ${
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:px-3 sm:text-[13px] ${
                 filtersOpen || activeFilters.length
                   ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
                   : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
@@ -1733,7 +1758,7 @@ export default function VehicleSearchExperience({
             type="button"
             onClick={saveCurrentSearch}
             disabled={savingSearch}
-            className={`ml-auto inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.20)] transition sm:h-10 sm:px-5 sm:text-[14px] ${
+            className={`ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.18)] transition sm:px-4 sm:text-[13px] ${
               savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
             } disabled:cursor-wait disabled:opacity-70`}
           >
