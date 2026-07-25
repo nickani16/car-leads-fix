@@ -243,8 +243,17 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={openFullscreen}
+              style={{ fontWeight: 400, left: 'calc(100vw - 76px)' }}
+              className="absolute bottom-3 z-10 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
+              aria-label="Open photos"
+            >
+              {active + 1}/{safeImages.length}
+            </button>
+            <button
+              type="button"
+              onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 left-[calc(100vw-76px)] right-auto z-10 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:left-auto sm:right-3"
+              className="absolute bottom-3 right-3 z-10 hidden min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:inline-flex"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}
