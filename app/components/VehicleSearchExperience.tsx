@@ -1608,7 +1608,7 @@ export default function VehicleSearchExperience({
         : uiText(locale, 'Market', 'Marknad', 'Markt')
     const wrapperClassName = placement === 'desktop'
       ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
-      : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
+      : 'relative -mx-4 mt-2 w-screen max-w-[100vw] min-w-0 overflow-hidden border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
     const saveSearchButton = (
       <button
         type="button"
@@ -1631,7 +1631,7 @@ export default function VehicleSearchExperience({
       >
         <div className="flex min-w-0 items-center gap-2">
           <div
-            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}
+            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}
             onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
           >
           <div className="relative shrink-0">
