@@ -598,6 +598,7 @@ export default function VehicleSearchExperience({
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
+  const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -1839,6 +1840,15 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'Save', 'Spara', 'Speichern') + ' ' + activeFilters.length + ' ' + uiText(locale, 'filters', 'filter', 'Filter')
       : uiText(locale, 'Save search', 'Spara sökning', 'Suche speichern')
   )
+  useEffect(() => {
+    const updatePinnedSearch = () => {
+      setMobileSearchPinned(window.scrollY > 56)
+    }
+    updatePinnedSearch()
+    window.addEventListener('scroll', updatePinnedSearch, { passive: true })
+    return () => window.removeEventListener('scroll', updatePinnedSearch)
+  }, [])
+
   return (
     <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
       <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
@@ -1873,15 +1883,17 @@ export default function VehicleSearchExperience({
 
         {renderDesktopFilterBar('desktop')}
 
-        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
-            <div>
-              <div className="min-w-0 max-w-full overflow-visible">
-                <div className="sticky top-0 z-[90] w-full max-w-full overflow-visible border-b border-[#eceff4] bg-white px-4 pb-2 pt-3 shadow-[0_8px_22px_rgba(16,24,40,.06)] sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:shadow-none">
-                {renderMarketplaceSearchInput()}
-                {renderDesktopFilterBar('mobile')}
+        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
+            <div className="bg-white">
+              <div className="min-w-0 max-w-full overflow-visible bg-white">
+                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[150] w-full max-w-full overflow-visible border-b border-[#eceff4] bg-white px-4 pb-2 pt-3 shadow-[0_8px_22px_rgba(16,24,40,.06)] sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:shadow-none`}>
+                  {renderMarketplaceSearchInput()}
+                  {renderDesktopFilterBar('mobile')}
+                </div>
+                {mobileSearchPinned ? <div aria-hidden="true" className="h-[96px] bg-white min-[1120px]:hidden" /> : null}
 
-                  <div
+                <div
                     aria-hidden={!filtersOpen}
                     className={`fixed inset-x-0 bottom-0 z-[180] h-[min(88vh,820px)] overflow-hidden rounded-t-[18px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out lg:absolute lg:inset-0 lg:z-50 lg:h-auto lg:rounded-none lg:border-t-0 lg:shadow-none ${
                       filtersOpen
@@ -2014,8 +2026,7 @@ export default function VehicleSearchExperience({
                         </button>
                       </div>
                     </div>
-                  </div>
-              </div>
+                </div>
 
             <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
               <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">

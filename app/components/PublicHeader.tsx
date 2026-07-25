@@ -408,6 +408,27 @@ export default function PublicHeader({
       const difference = currentScrollY - lastScrollY.current
       setAtPageTop(currentScrollY < 8)
 
+      if (isMarketplaceRoute) {
+        if (currentScrollY < 10) {
+          setVisible(true)
+        } else {
+          setVisible(false)
+          setOpen(false)
+          setMarketSelectorOpen(false)
+          setMobileCategoryOpen(false)
+          setMobileMoreOpen(false)
+          setSearchMenuOpen(false)
+          setSellMenuOpen(false)
+          setBusinessMenuOpen(false)
+          setHelpMenuOpen(false)
+          setMobileSellMenuOpen(false)
+          setMobileBusinessMenuOpen(false)
+          setMobileHelpMenuOpen(false)
+        }
+        lastScrollY.current = currentScrollY
+        return
+      }
+
       if (currentScrollY < 10) setVisible(true)
       else if (difference > 1) {
         setVisible(false)
@@ -430,7 +451,7 @@ export default function PublicHeader({
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isMarketplaceRoute])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
