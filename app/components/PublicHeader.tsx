@@ -1007,7 +1007,7 @@ export default function PublicHeader({
       />
       <div
         className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
-          hideOnMobile ? 'max-[1119px]:hidden' : ''
+          hideOnMobile ? 'hidden min-[1120px]:block' : ''
         } ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
