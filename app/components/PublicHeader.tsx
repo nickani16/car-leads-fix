@@ -1036,7 +1036,7 @@ export default function PublicHeader({
                     <div
                       key={href}
                       ref={searchMenuRef}
-                      className="group relative flex h-full items-center"
+                      className="relative flex h-full items-center"
                     >
                       <button
                         type="button"
@@ -1055,7 +1055,7 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-[#d9e1ec] bg-white shadow-[0_24px_70px_rgba(16,24,40,.16)] transition group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-[#d9e1ec] bg-white shadow-[0_24px_70px_rgba(16,24,40,.16)] transition ${
                           searchMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
@@ -1083,7 +1083,7 @@ export default function PublicHeader({
                                 className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
                               >
                                 <span className="flex min-w-0 items-center gap-3">
-                                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#0866ff] transition group-hover:bg-[#0866ff] group-hover:text-white">
+                                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#101828] transition group-hover:bg-[#0866ff] group-hover:text-white">
                                     <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                                   </span>
                                   <span className="min-w-0">
