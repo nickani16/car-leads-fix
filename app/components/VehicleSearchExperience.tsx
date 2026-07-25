@@ -14,7 +14,6 @@ import {
   Heart,
   Layers,
   List,
-  Map,
   MapPin,
   Search,
   Scale,
@@ -180,11 +179,6 @@ type MarketplaceSearchApiResponse = {
     technical?: Record<string, Array<string | { value: string; count: number }>>
   }
 }
-
-const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
-  { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Fordon till salu', hint: 'Privata och företag' },
-  { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
-]
 
 const MARKETPLACE_RETURN_SEARCH_STATE_KEY = 'autorell:marketplace-return-search'
 const MARKETPLACE_RETURN_SEARCH_ARMED_KEY = 'autorell:marketplace-return-search-armed'
@@ -1543,14 +1537,14 @@ export default function VehicleSearchExperience({
       <button
         type="button"
         onClick={() => setDesktopFilterMenu((current) => (current === menu ? null : menu))}
-        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[14px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition ${
+        className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-10 sm:px-3.5 sm:text-[14px] ${
           open || active
             ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
             : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
         }`}
       >
         <span>{label}</span>
-        <ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-3.5 w-3.5 transition sm:h-4 sm:w-4 ${open ? 'rotate-180' : ''}`} />
       </button>
     )
   }
@@ -1558,16 +1552,13 @@ export default function VehicleSearchExperience({
   function renderDesktopFilterPopover(menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
     if (desktopFilterMenu !== menu) return null
     return (
-      <div className={`absolute left-0 top-[calc(100%+10px)] z-[70] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)]`}>
+      <div className={`fixed left-4 top-[178px] z-[240] max-w-[calc(100vw-32px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)] min-[1120px]:left-[56px] min-[1120px]:top-[238px]`}>
         {children}
       </div>
     )
   }
 
   function renderDesktopFilterBar() {
-    const modeLabel = mode === 'leasing'
-      ? uiText(locale, 'Leasing', 'Leasing', 'Leasing')
-      : uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
     const categoryLabel = categoryText(
       categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
       locale,
@@ -1575,7 +1566,7 @@ export default function VehicleSearchExperience({
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
 
     return (
-      <div ref={desktopFilterBarRef} className="relative hidden min-w-0 border-t border-[#edf1f6] pt-3 min-[1120px]:block">
+      <div ref={desktopFilterBarRef} className="relative -mx-4 mt-3 min-w-0 border-t border-[#edf1f6] px-4 pt-3 sm:-mx-6 sm:px-6">
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="relative shrink-0">
             <button
@@ -1584,7 +1575,7 @@ export default function VehicleSearchExperience({
                 setFiltersOpen(true)
                 setDesktopFilterMenu(null)
               }}
-              className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-[14px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition ${
+              className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-10 sm:px-3.5 sm:text-[14px] ${
                 filtersOpen || activeFilters.length
                   ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
                   : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
@@ -1601,7 +1592,7 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative shrink-0">
-            {desktopMenuButton('mode', `${uiText(locale, 'Sell method', 'Sälj metod', 'Verkaufsart')}: ${modeLabel}`, mode !== 'sale')}
+            {desktopMenuButton('mode', uiText(locale, 'Sell', 'Sälj', 'Verkauf'), mode !== 'sale')}
             {renderDesktopFilterPopover('mode', (
               <div className="space-y-1">
                 {[
@@ -1739,7 +1730,7 @@ export default function VehicleSearchExperience({
             type="button"
             onClick={saveCurrentSearch}
             disabled={savingSearch}
-            className={`ml-auto inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.20)] transition ${
+            className={`ml-auto inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.20)] transition sm:h-10 sm:px-5 sm:text-[14px] ${
               savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
             } disabled:cursor-wait disabled:opacity-70`}
           >
@@ -1877,81 +1868,11 @@ export default function VehicleSearchExperience({
 
         <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
-            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 lg:px-7">
-              <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[40px] min-w-0 px-1 text-center text-[12px] !font-medium transition sm:min-h-[44px] sm:px-2 sm:text-[14px] ${
-                      mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
-                    }`}
-                  >
-                    <span className="block sm:hidden">
-                      {tab.key === 'sale'
-                        ? uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
-                        : uiText(locale, 'Leasing', 'Leasing', 'Leasing')}
-                    </span>
-                    <span className="hidden sm:block">
-                      {tab.key === 'sale'
-                        ? uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
-                        : uiText(locale, 'Leasing', 'Leasing', 'Leasing')}
-                    </span>
-                    {mode === tab.key ? <span className="absolute inset-x-0 -bottom-px h-[3px] bg-[#0866ff]" /> : null}
-                  </button>
-                ))}
-              </div>
-
-            </div>
-
             <div>
               <div className="min-w-0 max-w-full overflow-visible">
                 <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
                 {renderMarketplaceSearchInput()}
                 {renderDesktopFilterBar()}
-
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3 min-[1120px]:hidden">
-                  <button
-                    type="button"
-                    onClick={() => setFiltersOpen((open) => !open)}
-                    style={{ fontWeight: 500 }}
-                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-[500] shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
-                      filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
-                    }`}
-                  >
-                    <SlidersHorizontal className="h-5 w-5" />
-                    {filtersOpen
-                      ? uiText(locale, 'Filters open', 'Filter öppna', 'Filter geöffnet')
-                      : uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileMapOpen(true)}
-                    style={{ fontWeight: 500 }}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:min-h-10 sm:gap-2 sm:px-4 lg:hidden"
-                  >
-                    <Map className="h-5 w-5" />
-                    <span className="sm:hidden">{uiText(locale, 'Map', 'Karta', 'Karte')}</span>
-                    <span className="hidden sm:inline">{uiText(locale, 'Show map', 'Visa karta', 'Karte anzeigen')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveCurrentSearch}
-                    disabled={savingSearch}
-                    style={{ fontWeight: 500 }}
-                    className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-[500] text-white transition lg:col-span-1 ${
-                      savedSearchMessage
-                        ? 'bg-[#079455]'
-                        : activeFilters.length
-                          ? 'bg-[#0866ff] hover:bg-[#0757da]'
-                          : 'bg-[#d1d3d8]'
-                    }`}
-                  >
-                    <Bookmark className="h-5 w-5" strokeWidth={1.8} />
-                    {saveSearchButtonLabel}
-                  </button>
-                </div>
 
                   <div
                     aria-hidden={!filtersOpen}
