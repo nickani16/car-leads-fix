@@ -231,11 +231,6 @@ const marketOptions = [
   { value: 'SE', label: 'Sverige' },
 ]
 
-const countryFilterOptions = marketOptions.map((option) => ({
-  ...option,
-  label: option.value ? option.label : 'All of Europe',
-}))
-
 const selectableMarketCodes = new Set(marketOptions.map((option) => option.value).filter(Boolean))
 const allMarketCodes = new Set(['EU', 'ALL'])
 
@@ -1059,16 +1054,6 @@ export default function VehicleSearchExperience({
     setMoreFiltersOpen(false)
   }
 
-  function selectMarket(value: string) {
-    setMake('')
-    setModel('')
-    setRegion('')
-    setCity('')
-    setMunicipality('')
-    setSelectedMarkets(value ? [value] : [])
-    setMarketOverride(true)
-  }
-
   async function saveCurrentSearch() {
     if (savingSearch) return
     setSavingSearch(true)
@@ -1212,6 +1197,74 @@ export default function VehicleSearchExperience({
     active: searchFocused,
   })
   const searchPlaceholder = getVehicleSearchPlaceholder(locale)
+  function renderMarketplaceSearchInput(className = '') {
+    return (
+      <div className={`relative ${className}`}>
+        <div className="group relative flex min-h-[50px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
+          <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
+          {selectedSearchSuggestions.map((suggestion) => (
+            <span
+              key={suggestion.chipId}
+              className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)]"
+            >
+              <span className="truncate">{suggestion.title}</span>
+              <button
+                type="button"
+                onPointerDown={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setSelectedSearchSuggestions((current) => {
+                    const next = current.filter((item) => item.chipId !== suggestion.chipId)
+                    setQuery(buildSearchQueryFromSuggestions(next, searchInput))
+                    return next
+                  })
+                }}
+                className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
+                aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+          <input
+            value={searchInput}
+            onChange={(event) => {
+              const nextInput = event.target.value
+              setSearchInput(nextInput)
+              setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, nextInput))
+            }}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
+            placeholder=""
+            aria-label={searchPlaceholder}
+            className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
+          />
+          {searchInput || selectedSearchSuggestions.length ? null : (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
+            >
+              {searchPlaceholder}
+            </span>
+          )}
+          <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
+        </div>
+        <VehicleSmartSearchSuggestionPanel
+          query={searchInput}
+          suggestions={smartSearch.suggestions}
+          loading={smartSearch.loading}
+          searched={smartSearch.searched}
+          locale={locale}
+          onSelect={selectMarketplaceSuggestion}
+          active={searchFocused}
+        />
+      </div>
+    )
+  }
   const mobileMapSmartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
     locale,
@@ -1468,11 +1521,9 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function renderQuickFilterSelectors(compact = false) {
-    const marketValue = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''
-
+  function renderQuickFilterSelectors() {
     return (
-      <div className={`grid min-w-0 gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-2'}`}>
+      <div className="grid min-w-0 grid-cols-1 gap-2">
         <label className="relative min-w-0">
           <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
           <select
@@ -1483,21 +1534,6 @@ export default function VehicleSearchExperience({
             {selectableCategories.map((item) => (
               <option key={item.key} value={item.key}>
                 {categoryText(item, locale)}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-        </label>
-        <label className="relative min-w-0">
-          <span className="sr-only">{uiText(locale, 'Market', 'Marknad', 'Markt')}</span>
-          <select
-            value={marketValue}
-            onChange={(event) => selectMarket(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
-          >
-            {countryFilterOptions.map((option) => (
-              <option key={option.value || 'eu'} value={option.value}>
-                {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
               </option>
             ))}
           </select>
@@ -1642,70 +1678,7 @@ export default function VehicleSearchExperience({
             <div>
               <div className="min-w-0 max-w-full overflow-visible">
                 <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
-                <div className="relative">
-                <div className="group relative flex min-h-[50px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
-                  <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
-                  {selectedSearchSuggestions.map((suggestion) => (
-                    <span
-                      key={suggestion.chipId}
-                      className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)]"
-                    >
-                      <span className="truncate">{suggestion.title}</span>
-                      <button
-                        type="button"
-                        onPointerDown={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                        }}
-                        onClick={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          setSelectedSearchSuggestions((current) => {
-                            const next = current.filter((item) => item.chipId !== suggestion.chipId)
-                            setQuery(buildSearchQueryFromSuggestions(next, searchInput))
-                            return next
-                          })
-                        }}
-                        className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
-                        aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </span>
-                  ))}
-                  <input
-                    value={searchInput}
-                    onChange={(event) => {
-                      const nextInput = event.target.value
-                      setSearchInput(nextInput)
-                      setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, nextInput))
-                    }}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
-                    placeholder=""
-                    aria-label={searchPlaceholder}
-                    className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
-                  />
-                  {searchInput || selectedSearchSuggestions.length ? null : (
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
-                    >
-                      {searchPlaceholder}
-                    </span>
-                  )}
-                  <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
-                </div>
-                <VehicleSmartSearchSuggestionPanel
-                  query={searchInput}
-                  suggestions={smartSearch.suggestions}
-                  loading={smartSearch.loading}
-                  searched={smartSearch.searched}
-                  locale={locale}
-                  onSelect={selectMarketplaceSuggestion}
-                  active={searchFocused}
-                />
-                </div>
+                {renderMarketplaceSearchInput()}
 
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
                   <button
@@ -1801,10 +1774,14 @@ export default function VehicleSearchExperience({
                           </button>
                         </div>
                       ) : (
-                         <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle, market and equipment.', 'Avgränsa på fordon, marknad och utrustning.', 'Nach Fahrzeug, Markt und Ausstattung eingrenzen.')}</p>
+                         <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle category, keyword and equipment.', 'Avgränsa på fordonskategori, sökord och utrustning.', 'Nach Fahrzeugkategorie, Suchbegriff und Ausstattung eingrenzen.')}</p>
                       )}
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
+                    <div className="rounded-[12px] border border-[#dbe4f0] bg-[#f8fbff] p-3 shadow-[0_10px_24px_rgba(16,24,40,.05)]">
+                      <span className="mb-2 block text-[13px] font-semibold text-[#101828]">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
+                      {renderMarketplaceSearchInput()}
+                    </div>
                     {renderCategoryFilterSections()}
                     <div className="hidden">
                       <CollapsibleFilterSection
