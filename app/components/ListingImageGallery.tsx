@@ -49,7 +49,6 @@ export default function ListingImageGallery({
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
   const fullscreenCopy = galleryCopy(locale)
-  const imageCountText = imageCountLabel(locale, imageCount)
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -245,7 +244,7 @@ export default function ListingImageGallery({
               type="button"
               onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 right-3 inline-flex min-h-7 items-center rounded-[8px] bg-[#101828]/42 px-2.5 text-[13px] font-normal text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)]"
+              className="absolute bottom-3 right-3 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white"
               aria-label="Open photos"
             >
               {active + 1}/{safeImages.length}
@@ -253,19 +252,6 @@ export default function ListingImageGallery({
           </>
         ) : null}
       </div>
-      {safeImages.length > 1 ? (
-        <div className="mt-3 flex items-center justify-end gap-3 px-4 min-[430px]:px-5 sm:hidden">
-          <button
-            type="button"
-            onClick={openFullscreen}
-            className="autorell-listing-gallery-control ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-3.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-            aria-label={imageCountText}
-          >
-            {imageCountText}
-            <Maximize2 className="h-[15px] w-[15px]" />
-          </button>
-        </div>
-      ) : null}
 
       {safeImages.length > 1 ? (
         <div className="mt-2 hidden gap-3 overflow-x-auto pb-1 sm:flex lg:hidden">
