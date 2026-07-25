@@ -1931,24 +1931,33 @@ export default function VehicleSearchExperience({
                         : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
                     }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setFiltersOpen(false)}
-                      className="fixed right-4 top-[calc(env(safe-area-inset-top)+72px)] z-[220] grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,.12)] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] lg:hidden"
-                      aria-label="Stäng filter"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pr-16 pt-6 sm:px-6 sm:py-4 sm:pr-16 relative">
+                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
-                        <p className="min-w-0 text-[19px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
+                        <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
                         {activeFilters.length ? (
                           <span className="grid h-7 min-w-7 place-items-center rounded-full bg-[#101828] px-2 text-sm font-semibold text-white">
                             {activeFilters.length}
                           </span>
                         ) : null}
+                      </div>
+                      <div className="ml-auto flex items-center gap-2 pr-12 sm:hidden">
+                        <button
+                          type="button"
+                          onClick={resetFilters}
+                          className="h-9 rounded-full px-2.5 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
+                        >
+                          {uiText(locale, 'Clear filters', 'Rensa filter', 'Filter löschen')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFiltersOpen(false)}
+                          className="absolute right-4 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          aria-label="Stäng filter"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
                       </div>
                       <button
                         type="button"
@@ -1959,7 +1968,7 @@ export default function VehicleSearchExperience({
                         <X className="h-5 w-5" />
                       </button>
                     </div>
-                    <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6">
+                    <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6 max-sm:hidden">
                       {activeFilters.length ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <ActiveFilterChips filters={activeFilters} />
