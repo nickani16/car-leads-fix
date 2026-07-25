@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
+  Check,
   Columns2,
   Expand,
   Heart,
@@ -56,6 +57,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -597,6 +599,7 @@ export default function VehicleSearchExperience({
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [desktopFilterMenu, setDesktopFilterMenu] = useState<DesktopFilterMenu>(null)
   const [priceYearOpen, setPriceYearOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
@@ -649,6 +652,7 @@ export default function VehicleSearchExperience({
   const [searchTotalPages, setSearchTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  const desktopFilterBarRef = useRef<HTMLDivElement>(null)
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,
@@ -826,6 +830,18 @@ export default function VehicleSearchExperience({
       document.documentElement.style.overscrollBehavior = previousHtmlOverscroll
     }
   }, [filtersOpen])
+
+  useEffect(() => {
+    if (!desktopFilterMenu) return undefined
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (desktopFilterBarRef.current?.contains(target)) return
+      setDesktopFilterMenu(null)
+    }
+    window.addEventListener('pointerdown', handlePointerDown)
+    return () => window.removeEventListener('pointerdown', handlePointerDown)
+  }, [desktopFilterMenu])
 
   useEffect(() => {
     if (!searchStateReady) return
@@ -1521,6 +1537,220 @@ export default function VehicleSearchExperience({
     )
   }
 
+  function desktopMenuButton(menu: Exclude<DesktopFilterMenu, null>, label: string, active = false) {
+    const open = desktopFilterMenu === menu
+    return (
+      <button
+        type="button"
+        onClick={() => setDesktopFilterMenu((current) => (current === menu ? null : menu))}
+        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[14px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition ${
+          open || active
+            ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
+            : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
+        }`}
+      >
+        <span>{label}</span>
+        <ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
+      </button>
+    )
+  }
+
+  function renderDesktopFilterPopover(menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
+    if (desktopFilterMenu !== menu) return null
+    return (
+      <div className={`absolute left-0 top-[calc(100%+10px)] z-[70] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)]`}>
+        {children}
+      </div>
+    )
+  }
+
+  function renderDesktopFilterBar() {
+    const modeLabel = mode === 'leasing'
+      ? uiText(locale, 'Leasing', 'Leasing', 'Leasing')
+      : uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
+    const categoryLabel = categoryText(
+      categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
+      locale,
+    )
+    const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
+
+    return (
+      <div ref={desktopFilterBarRef} className="relative hidden min-w-0 border-t border-[#edf1f6] pt-3 min-[1120px]:block">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setFiltersOpen(true)
+                setDesktopFilterMenu(null)
+              }}
+              className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-[14px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition ${
+                filtersOpen || activeFilters.length
+                  ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
+                  : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>{uiText(locale, 'Filter', 'Filter', 'Filter')}</span>
+              {activeFilters.length ? (
+                <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
+                  {activeFilters.length}
+                </span>
+              ) : null}
+            </button>
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('mode', `${uiText(locale, 'Sell method', 'Sälj metod', 'Verkaufsart')}: ${modeLabel}`, mode !== 'sale')}
+            {renderDesktopFilterPopover('mode', (
+              <div className="space-y-1">
+                {[
+                  { value: 'sale' as SearchMode, label: uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen') },
+                  { value: 'leasing' as SearchMode, label: uiText(locale, 'Leasing vehicles', 'Leasing av fordon', 'Leasingfahrzeuge') },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setMode(option.value)
+                      setDesktopFilterMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[15px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                  >
+                    <span>{option.label}</span>
+                    {mode === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                  </button>
+                ))}
+              </div>
+            ), 'w-[260px]')}
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
+            {renderDesktopFilterPopover('price', (
+              <div className="space-y-4">
+                <RangeFilter
+                  title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                  minValue={minPrice}
+                  maxValue={maxPrice}
+                  onMinChange={setMinPrice}
+                  onMaxChange={setMaxPrice}
+                  minLimit={priceBounds.min}
+                  maxLimit={priceBounds.max}
+                  unit="SEK"
+                  step={1000}
+                />
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('year', minYear || maxYear ? `${uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}: ${minYear || '1950'}-${maxYear || 'max'}` : uiText(locale, 'Model year', 'Årsmodell', 'Baujahr'), Boolean(minYear || maxYear))}
+            {renderDesktopFilterPopover('year', (
+              <div className="space-y-4">
+                <RangeFilter
+                  title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                  minValue={minYear}
+                  maxValue={maxYear}
+                  onMinChange={setMinYear}
+                  onMaxChange={setMaxYear}
+                  minLimit={1950}
+                  maxLimit={new Date().getFullYear() + 1}
+                  step={1}
+                  startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
+                />
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('mileage', minMileage || maxMileage ? `${uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand'), Boolean(minMileage || maxMileage))}
+            {renderDesktopFilterPopover('mileage', (
+              <div className="space-y-4">
+                <RangeFilter
+                  title={uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}
+                  minValue={minMileage}
+                  maxValue={maxMileage}
+                  onMinChange={setMinMileage}
+                  onMaxChange={setMaxMileage}
+                  minLimit={0}
+                  maxLimit={300000}
+                  unit="km"
+                  step={5000}
+                />
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('category', categoryLabel, activeCategoryKey !== 'cars')}
+            {renderDesktopFilterPopover('category', (
+              <div className="grid max-h-[420px] gap-1 overflow-y-auto">
+                {selectableCategories.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => {
+                        toggleCategory(item.key)
+                        setDesktopFilterMenu(null)
+                      }}
+                      className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#101828]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{categoryText(item, locale)}</span>
+                      {activeCategoryKey === item.key ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative shrink-0">
+            {desktopMenuButton('model', modelLabel, Boolean(make || model))}
+            {renderDesktopFilterPopover('model', (
+              <div className="space-y-3">
+                <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
+                  setMake(value)
+                  if (!value.trim()) setModel('')
+                }} />
+                <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ), 'w-[340px]')}
+          </div>
+
+          <button
+            type="button"
+            onClick={saveCurrentSearch}
+            disabled={savingSearch}
+            className={`ml-auto inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.20)] transition ${
+              savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
+            } disabled:cursor-wait disabled:opacity-70`}
+          >
+            <Bookmark className="h-4 w-4" strokeWidth={2} />
+            {saveSearchButtonLabel}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   function renderQuickFilterSelectors() {
     return (
       <div className="grid min-w-0 grid-cols-1 gap-2">
@@ -1679,8 +1909,9 @@ export default function VehicleSearchExperience({
               <div className="min-w-0 max-w-full overflow-visible">
                 <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
                 {renderMarketplaceSearchInput()}
+                {renderDesktopFilterBar()}
 
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3 min-[1120px]:hidden">
                   <button
                     type="button"
                     onClick={() => setFiltersOpen((open) => !open)}
