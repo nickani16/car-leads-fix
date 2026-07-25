@@ -1935,7 +1935,7 @@ export default function VehicleSearchExperience({
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
+                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
@@ -1945,18 +1945,20 @@ export default function VehicleSearchExperience({
                           </span>
                         ) : null}
                       </div>
-                      <div className="ml-auto flex shrink-0 items-center gap-2 sm:hidden">
-                        <button
-                          type="button"
-                          onClick={resetFilters}
-                          className="h-9 whitespace-nowrap rounded-full px-2.5 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
-                        >
-                          {uiText(locale, 'Clear filters', 'Rensa filter', 'Filter löschen')}
-                        </button>
+                      <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:hidden">
+                        {activeFilters.length ? (
+                          <button
+                            type="button"
+                            onClick={resetFilters}
+                            className="h-9 max-w-[112px] truncate rounded-full px-2 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
+                          >
+                            {uiText(locale, 'Clear filters', 'Rensa filter', 'Filter löschen')}
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => setFiltersOpen(false)}
-                          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          className="mr-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
                           aria-label="Stäng filter"
                         >
                           <X className="h-5 w-5" />
@@ -1971,6 +1973,11 @@ export default function VehicleSearchExperience({
                         <X className="h-5 w-5" />
                       </button>
                     </div>
+                    {activeFilters.length ? (
+                      <div className="border-b border-[#edf1f6] bg-white px-4 py-2.5 sm:hidden">
+                        <ActiveFilterChips filters={activeFilters} />
+                      </div>
+                    ) : null}
                     <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6 max-sm:hidden">
                       {activeFilters.length ? (
                         <div className="flex flex-wrap items-center gap-2">
