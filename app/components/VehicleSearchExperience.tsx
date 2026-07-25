@@ -598,7 +598,6 @@ export default function VehicleSearchExperience({
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
-  const [mobileDockVisible, setMobileDockVisible] = useState(true)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -1840,31 +1839,9 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'Save', 'Spara', 'Speichern') + ' ' + activeFilters.length + ' ' + uiText(locale, 'filters', 'filter', 'Filter')
       : uiText(locale, 'Save search', 'Spara sökning', 'Suche speichern')
   )
-  useEffect(() => {
-    let lastScrollY = window.scrollY
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const isNearTop = currentScrollY < 24
-      const scrollingUp = currentScrollY < lastScrollY
-      const scrollingDown = currentScrollY > lastScrollY + 6
-
-      if (isNearTop || scrollingUp) {
-        setMobileDockVisible(true)
-      } else if (scrollingDown) {
-        setMobileDockVisible(false)
-      }
-
-      lastScrollY = currentScrollY
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
-      <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
+    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+      <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -1900,7 +1877,7 @@ export default function VehicleSearchExperience({
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
             <div>
               <div className="min-w-0 max-w-full overflow-visible">
-                <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
+                <div className="sticky top-0 z-[90] w-full max-w-full overflow-visible border-b border-[#eceff4] bg-white px-4 pb-2 pt-3 shadow-[0_8px_22px_rgba(16,24,40,.06)] sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:shadow-none">
                 {renderMarketplaceSearchInput()}
                 {renderDesktopFilterBar('mobile')}
 
@@ -2136,7 +2113,7 @@ export default function VehicleSearchExperience({
               type="button"
               onClick={() => setMobileMapOpen(true)}
               style={{ fontWeight: 500 }}
-              className={`${mobileDockVisible ? 'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(1rem+env(safe-area-inset-bottom))]'} fixed left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-[500] text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition-[bottom,transform] duration-200 active:scale-[.98] lg:hidden`}
+              className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-[500] text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition-transform duration-200 active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
               {uiText(locale, 'Map', 'Karta', 'Karte')}
