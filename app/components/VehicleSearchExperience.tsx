@@ -1590,9 +1590,11 @@ export default function VehicleSearchExperience({
       locale,
     )
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
-    const marketLabel = selectedMarketCodes.length
-      ? selectedMarketCodes.map((code) => getEuCountryName(code, locale)).join(', ')
-      : uiText(locale, 'Market', 'Marknad', 'Markt')
+    const marketLabel = selectedMarketCodes.length > 1
+      ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
+      : selectedMarketCodes.length === 1
+        ? getEuCountryName(selectedMarketCodes[0], locale)
+        : uiText(locale, 'Market', 'Marknad', 'Markt')
     const wrapperClassName = placement === 'desktop'
       ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
       : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
@@ -1623,7 +1625,7 @@ export default function VehicleSearchExperience({
             </button>
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-20 shrink-0">
             {desktopMenuButton('mode', uiText(locale, 'Sell', 'Sälj', 'Verkauf'), mode !== 'sale')}
             {renderDesktopFilterPopover('mode', (
               <div className="space-y-1">
@@ -1648,7 +1650,7 @@ export default function VehicleSearchExperience({
             ), 'w-[260px]')}
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-40 shrink-0">
             {desktopMenuButton('price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
             {renderDesktopFilterPopover('price', (
               <div className="space-y-4">
@@ -1670,7 +1672,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-50 shrink-0">
             {desktopMenuButton('year', minYear || maxYear ? `${uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}: ${minYear || '1950'}-${maxYear || 'max'}` : uiText(locale, 'Model year', 'Årsmodell', 'Baujahr'), Boolean(minYear || maxYear))}
             {renderDesktopFilterPopover('year', (
               <div className="space-y-4">
@@ -1692,7 +1694,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-60 shrink-0">
             {desktopMenuButton('mileage', minMileage || maxMileage ? `${uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand'), Boolean(minMileage || maxMileage))}
             {renderDesktopFilterPopover('mileage', (
               <div className="space-y-4">
@@ -1714,7 +1716,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-10 shrink-0">
             {desktopMenuButton('category', categoryLabel, activeCategoryKey !== 'cars')}
             {renderDesktopFilterPopover('category', (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
@@ -1742,40 +1744,53 @@ export default function VehicleSearchExperience({
             ), 'w-[310px]')}
           </div>
 
-          <div className="relative shrink-0">
-            {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 0)}
+          <div className="relative order-70 shrink-0">
+            {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 1)}
             {renderDesktopFilterPopover('market', (
-              <div className="grid max-h-[420px] gap-1 overflow-y-auto">
-                {marketOptions.map((option) => {
-                  const selected = option.value
-                    ? selectedMarketCodes.includes(option.value)
-                    : selectedMarketCodes.length === 0
-                  return (
-                    <button
-                      key={option.value || 'all'}
-                      type="button"
-                      onClick={() => {
-                        setSelectedMarkets(option.value ? [option.value] : [])
-                        setMarketOverride(true)
-                        setDesktopFilterMenu(null)
-                      }}
-                      className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
-                    >
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f5f7fb] text-[#101828] ring-1 ring-[#e4e7ec]">
-                        {option.value ? <CountryFlag code={option.value} className="h-5 w-5 rounded-full" /> : <Globe2 className="h-5 w-5" />}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
-                      </span>
-                      {selected ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
-                    </button>
-                  )
-                })}
+              <div className="space-y-3">
+                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                  {marketOptions.map((option) => {
+                    const selected = option.value
+                      ? selectedMarketCodes.includes(option.value)
+                      : selectedMarketCodes.length === 0
+                    return (
+                      <button
+                        key={option.value || 'all'}
+                        type="button"
+                        onClick={() => {
+                          setMarketOverride(true)
+                          if (!option.value) {
+                            setSelectedMarkets([])
+                            return
+                          }
+                          setSelectedMarkets((current) => {
+                            const normalized = normalizeMarketSelection(current)
+                            return normalized.includes(option.value)
+                              ? normalized.filter((code) => code !== option.value)
+                              : [...normalized, option.value]
+                          })
+                        }}
+                        className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f5f7fb] text-[#101828] ring-1 ring-[#e4e7ec]">
+                          {option.value ? <CountryFlag code={option.value} className="h-5 w-5 rounded-full" /> : <Globe2 className="h-5 w-5" />}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
+                        </span>
+                        {selected ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
               </div>
             ), 'w-[310px]')}
           </div>
 
-          <div className="relative shrink-0">
+          <div className="relative order-30 shrink-0">
             {desktopMenuButton('model', modelLabel, Boolean(make || model))}
             {renderDesktopFilterPopover('model', (
               <div className="space-y-3">
@@ -1795,7 +1810,7 @@ export default function VehicleSearchExperience({
             type="button"
             onClick={saveCurrentSearch}
             disabled={savingSearch}
-            className={`ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
+            className={`order-last ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
               savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
             } disabled:cursor-wait disabled:opacity-70`}
           >
@@ -1865,7 +1880,7 @@ export default function VehicleSearchExperience({
   }, [])
 
   return (
-    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
       <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
@@ -1898,7 +1913,7 @@ export default function VehicleSearchExperience({
 
         {renderDesktopFilterBar('desktop')}
 
-        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
@@ -2139,7 +2154,7 @@ export default function VehicleSearchExperience({
             </button>
           ) : null}
 
-          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
+          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden`}>
             <VehicleSearchMap
               listings={filteredListings}
               country={primaryMapCountry}
@@ -3068,7 +3083,7 @@ function VehicleSearchMap({
   }, [country, mapListings, mapReady, selectedListing?.id])
 
   return (
-    <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
+    <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
       <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
