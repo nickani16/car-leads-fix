@@ -1880,7 +1880,7 @@ export default function VehicleSearchExperience({
   }, [])
 
   return (
-    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
+    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-62px)] min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
       <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
