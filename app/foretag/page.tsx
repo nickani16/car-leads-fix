@@ -208,7 +208,7 @@ function AppleHero({
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
             <div className="inline-flex w-max flex-col items-end">
               <BrandLogo underline={false} />
-              <p className="mt-0.5 w-full text-right text-[12px] font-semibold leading-none tracking-[-.01em] text-[#101828] sm:text-[14px]">{copy.heroEyebrow.replace('Autorell ', '')}</p>
+              <p className="mt-0.5 w-full text-right text-[12px] font-semibold leading-none tracking-[-.01em] text-[#101828] sm:text-[14px]">Business</p>
             </div>
             <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
               {copy.heroTitle}
