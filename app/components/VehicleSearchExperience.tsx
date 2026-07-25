@@ -1917,7 +1917,7 @@ export default function VehicleSearchExperience({
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
-                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[150] w-full max-w-full overflow-visible border-y border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:border-t-0`}>
+                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[90] w-full max-w-full overflow-visible border-y border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:border-t-0`}>
                   {renderMarketplaceSearchInput()}
                   {renderDesktopFilterBar('mobile')}
                 </div>
