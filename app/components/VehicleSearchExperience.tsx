@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode, WheelEvent as ReactWheelEvent } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
@@ -1584,6 +1584,14 @@ export default function VehicleSearchExperience({
     )
   }
 
+  function handleDesktopFilterWheel(event: ReactWheelEvent<HTMLDivElement>) {
+    const element = event.currentTarget
+    if (element.scrollWidth <= element.clientWidth) return
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
+    element.scrollLeft += event.deltaY
+    event.preventDefault()
+  }
+
   function renderDesktopFilterBar(placement: 'desktop' | 'mobile' = 'mobile') {
     const categoryLabel = categoryText(
       categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
@@ -1599,12 +1607,17 @@ export default function VehicleSearchExperience({
         ? getEuCountryName(selectedMarketCodes[0], locale)
         : uiText(locale, 'Market', 'Marknad', 'Markt')
     const wrapperClassName = placement === 'desktop'
-      ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
+      ? 'hidden min-[1120px]:block max-w-full overflow-x-auto border-b border-[#eceff4] bg-white px-3 py-1.5 overscroll-x-contain sm:px-5 [scrollbar-width:thin]'
       : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
 
     return (
-      <div ref={desktopFilterBarRef} data-marketplace-filter-surface className={wrapperClassName}>
-        <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={desktopFilterBarRef}
+        data-marketplace-filter-surface
+        className={wrapperClassName}
+        onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
+      >
+        <div className={`${placement === 'desktop' ? 'w-max min-w-full' : 'min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}>
           <div className="relative shrink-0">
             <button
               type="button"
