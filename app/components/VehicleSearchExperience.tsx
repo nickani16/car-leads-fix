@@ -1589,6 +1589,9 @@ export default function VehicleSearchExperience({
       categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
       locale,
     )
+    const modeLabel = mode === 'leasing'
+      ? uiText(locale, 'Leasing', 'Leasing', 'Leasing')
+      : uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
     const marketLabel = selectedMarketCodes.length > 1
       ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
@@ -1626,7 +1629,7 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-20 shrink-0">
-            {desktopMenuButton('mode', uiText(locale, 'Sell', 'Sälj', 'Verkauf'), mode !== 'sale')}
+            {desktopMenuButton('mode', modeLabel, false)}
             {renderDesktopFilterPopover('mode', (
               <div className="space-y-1">
                 {[
@@ -1717,7 +1720,7 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-10 shrink-0">
-            {desktopMenuButton('category', categoryLabel, activeCategoryKey !== 'cars')}
+            {desktopMenuButton('category', categoryLabel, false)}
             {renderDesktopFilterPopover('category', (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
                 {selectableCategories.map((item) => {
@@ -1925,14 +1928,14 @@ export default function VehicleSearchExperience({
 
                 <div
                     aria-hidden={!filtersOpen}
-                    className={`fixed inset-x-0 bottom-0 z-[180] h-[min(88vh,820px)] overflow-hidden rounded-t-[18px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out lg:absolute lg:inset-0 lg:z-50 lg:h-auto lg:rounded-none lg:border-t-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 bottom-0 z-[180] h-[min(88vh,820px)] overflow-hidden rounded-t-[18px] bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out sm:border-t sm:border-[#d9e6ff] lg:absolute lg:inset-0 lg:z-50 lg:h-auto lg:rounded-none lg:border-t-0 lg:shadow-none ${
                       filtersOpen
                         ? 'translate-y-0 opacity-100'
                         : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
+                    <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 py-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
@@ -1942,18 +1945,18 @@ export default function VehicleSearchExperience({
                           </span>
                         ) : null}
                       </div>
-                      <div className="ml-auto flex items-center gap-2 pr-12 sm:hidden">
+                      <div className="ml-auto flex shrink-0 items-center gap-2 sm:hidden">
                         <button
                           type="button"
                           onClick={resetFilters}
-                          className="h-9 rounded-full px-2.5 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
+                          className="h-9 whitespace-nowrap rounded-full px-2.5 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
                         >
                           {uiText(locale, 'Clear filters', 'Rensa filter', 'Filter löschen')}
                         </button>
                         <button
                           type="button"
                           onClick={() => setFiltersOpen(false)}
-                          className="absolute right-4 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
                           aria-label="Stäng filter"
                         >
                           <X className="h-5 w-5" />
