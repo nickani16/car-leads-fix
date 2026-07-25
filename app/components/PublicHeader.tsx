@@ -76,6 +76,7 @@ type PublicHeaderProps = {
     slug: string
   }
   marketCode?: string
+  hideOnMobile?: boolean
 }
 
 type MenuItem = {
@@ -335,6 +336,7 @@ export default function PublicHeader({
   locale: providedLocale,
   marketplaceChannel,
   marketCode,
+  hideOnMobile = false,
 }: PublicHeaderProps) {
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
@@ -746,7 +748,9 @@ export default function PublicHeader({
     ? showTopCategoryNav
       ? 'h-[110px] min-[1120px]:h-[80px]'
       : 'h-[110px] min-[1120px]:h-[62px]'
-    : showTopCategoryNav
+    : hideOnMobile
+      ? 'h-0 min-[1120px]:h-[62px]'
+      : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
       : 'h-[56px] min-[1120px]:h-[62px]'
   const desktopMainRowHeightClass = showTopCategoryNav
@@ -1003,6 +1007,8 @@ export default function PublicHeader({
       />
       <div
         className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
+          hideOnMobile ? 'max-[1119px]:hidden' : ''
+        } ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >

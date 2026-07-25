@@ -180,7 +180,7 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="autorell-listing-gallery-control absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
+            className="autorell-listing-gallery-control absolute right-3 top-3 z-10 hidden h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:grid sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
             aria-label="Open fullscreen gallery"
           >
             <Maximize2 className="h-[14px] w-[14px] sm:h-4 sm:w-4" strokeWidth={1.8} />
@@ -191,11 +191,36 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={goBack}
-            className="absolute left-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
+            className="absolute left-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-[17px] w-[17px]" strokeWidth={2.05} />
+            <ArrowLeft className="h-5 w-5" strokeWidth={1.9} />
           </button>
+        ) : null}
+
+        {activeImage ? (
+          <div className="absolute right-4 top-4 z-10 flex items-center gap-2 sm:hidden">
+            {shareUrl ? (
+              <ShareListingButton
+                title={title}
+                url={shareUrl}
+                label={shareLabel}
+                copiedLabel={shareCopiedLabel}
+                variant="button"
+                className="!h-11 !min-h-11 !w-11 !rounded-full !border-0 !bg-white/92 !px-0 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white"
+                labelClassName="sr-only"
+                iconClassName="h-5 w-5"
+              />
+            ) : null}
+            <SavedListingButton
+              listingId={listingId}
+              label={fullscreenCopy.save}
+              savedLabel={fullscreenCopy.saved}
+              variant="icon"
+              className="!h-11 !w-11 !rounded-full !bg-white/92 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white hover:!text-[#0866ff]"
+              iconClassName="h-5 w-5"
+            />
+          </div>
         ) : null}
 
         {safeImages.length > 1 ? (
@@ -229,27 +254,7 @@ export default function ListingImageGallery({
         ) : null}
       </div>
       {safeImages.length > 1 ? (
-        <div className="mt-3 flex items-center justify-between gap-3 px-4 min-[430px]:px-5 sm:hidden">
-          <SavedListingButton
-            listingId={listingId}
-            label={fullscreenCopy.save}
-            savedLabel={fullscreenCopy.saved}
-            variant="icon"
-            className="h-[42px] w-[42px] rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
-            iconClassName="h-5 w-5"
-          />
-          {shareUrl ? (
-            <ShareListingButton
-              title={title}
-              url={shareUrl}
-              label={shareLabel}
-              copiedLabel={shareCopiedLabel}
-              variant="button"
-              className="!h-[42px] !min-h-[42px] !w-[42px] rounded-[10px] !px-0 shadow-sm"
-              labelClassName="sr-only"
-              iconClassName="h-5 w-5 text-[#101828]"
-            />
-          ) : null}
+        <div className="mt-3 flex items-center justify-end gap-3 px-4 min-[430px]:px-5 sm:hidden">
           <button
             type="button"
             onClick={openFullscreen}

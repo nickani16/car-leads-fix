@@ -600,6 +600,7 @@ export default function VehicleSearchExperience({
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
+  const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
@@ -1606,6 +1607,7 @@ export default function VehicleSearchExperience({
       : selectedMarketCodes.length === 1
         ? getEuCountryName(selectedMarketCodes[0], locale)
         : uiText(locale, 'Market', 'Marknad', 'Markt')
+    const compactMobileFilterButton = placement === 'mobile' && mobileFilterRailScrolled
     const wrapperClassName = placement === 'desktop'
       ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
       : 'relative -mx-4 mt-2 w-screen max-w-[100vw] min-w-0 overflow-hidden border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
@@ -1633,23 +1635,34 @@ export default function VehicleSearchExperience({
           <div
             className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}
             onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
+            onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
           >
-          <div className="relative shrink-0">
+          <div className={`${placement === 'mobile' ? 'sticky left-0 z-20 bg-white pr-1' : ''} relative shrink-0`}>
             <button
               type="button"
               onClick={() => {
                 setFiltersOpen(true)
                 setDesktopFilterMenu(null)
               }}
-              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium transition sm:px-3 sm:text-[13px] ${
+              className={`inline-flex h-8 items-center rounded-full border text-[12px] font-medium transition-all duration-200 ease-out sm:text-[13px] ${
+                compactMobileFilterButton
+                  ? 'w-8 justify-center gap-0 px-0'
+                  : 'gap-1.5 px-2.5 sm:px-3'
+              } ${
                 filtersOpen || activeFilters.length
                   ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
                   : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
               }`}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span>{uiText(locale, 'Filter', 'Filter', 'Filter')}</span>
-              {activeFilters.length ? (
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-out ${
+                  compactMobileFilterButton ? 'max-w-0 opacity-0' : 'max-w-[4.5rem] opacity-100'
+                }`}
+              >
+                {uiText(locale, 'Filter', 'Filter', 'Filter')}
+              </span>
+              {activeFilters.length && !compactMobileFilterButton ? (
                 <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
                   {activeFilters.length}
                 </span>
