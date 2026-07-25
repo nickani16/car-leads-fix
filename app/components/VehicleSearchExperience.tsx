@@ -1211,7 +1211,7 @@ export default function VehicleSearchExperience({
   function renderMarketplaceSearchInput(className = '') {
     return (
       <div className={`relative ${className}`}>
-        <div className="group relative flex min-h-[50px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
+        <div className="group relative flex min-h-[42px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-1.5 pr-10 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828] sm:min-h-[50px] sm:py-2 sm:pr-11">
           <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
           {selectedSearchSuggestions.map((suggestion) => (
             <span
@@ -1252,7 +1252,7 @@ export default function VehicleSearchExperience({
             onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
             placeholder=""
             aria-label={searchPlaceholder}
-            className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
+            className="vehicle-search-control h-6 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent] sm:h-7"
           />
           {searchInput || selectedSearchSuggestions.length ? null : (
             <span
@@ -1262,7 +1262,7 @@ export default function VehicleSearchExperience({
               {searchPlaceholder}
             </span>
           )}
-          <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
+          <Search className="absolute right-3.5 top-1/2 h-[18px] w-[18px] shrink-0 -translate-y-1/2 text-[#101828] sm:right-4 sm:h-5 sm:w-5" />
         </div>
         <VehicleSmartSearchSuggestionPanel
           query={searchInput}
@@ -1590,7 +1590,7 @@ export default function VehicleSearchExperience({
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
     const wrapperClassName = placement === 'desktop'
       ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
-      : 'relative -mx-4 mt-3 min-w-0 border-t border-[#edf1f6] px-4 pt-3 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
+      : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
 
     return (
       <div ref={desktopFilterBarRef} data-marketplace-filter-surface className={wrapperClassName}>
@@ -2017,8 +2017,8 @@ export default function VehicleSearchExperience({
                   </div>
               </div>
 
-            <div className="px-5 py-4 sm:px-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <p className="min-h-6 text-sm font-medium leading-6">
                   {searchLoading && searchPage === 1 ? (
                     <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
@@ -2028,11 +2028,11 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-10 w-10 place-items-center rounded-[8px] border text-[#101828] shadow-sm transition ${
+                  className={`grid h-9 w-9 place-items-center rounded-[8px] border text-[#101828] shadow-sm transition sm:h-10 sm:w-10 ${
                     resultsLayout === 'split'
                       ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                       : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2040,14 +2040,14 @@ export default function VehicleSearchExperience({
                   aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
                   title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
                 >
-                  {resultsLayout === 'split' ? <List className="h-5 w-5" /> : <Columns2 className="h-5 w-5" />}
+                  {resultsLayout === 'split' ? <List className="h-[18px] w-[18px] sm:h-5 sm:w-5" /> : <Columns2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" />}
                 </button>
                 <label className="relative">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-10 min-w-[136px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-8 text-[13px] font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:min-w-[148px]"
+                    className="h-9 min-w-[118px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:h-10 sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -2055,13 +2055,13 @@ export default function VehicleSearchExperience({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
                 </label>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[#eceff4]">
+            <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
                 <div className={resultsLayout === 'split' ? 'grid grid-cols-1 min-[560px]:grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (

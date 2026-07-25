@@ -408,12 +408,6 @@ export default function PublicHeader({
       const difference = currentScrollY - lastScrollY.current
       setAtPageTop(currentScrollY < 8)
 
-      if (isMarketplaceRoute) {
-        setVisible(true)
-        lastScrollY.current = currentScrollY
-        return
-      }
-
       if (currentScrollY < 10) setVisible(true)
       else if (difference > 1) {
         setVisible(false)
@@ -436,7 +430,7 @@ export default function PublicHeader({
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [isMarketplaceRoute])
+  }, [])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -734,9 +728,6 @@ export default function PublicHeader({
     : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
       : 'h-[56px] min-[1120px]:h-[62px]'
-  const effectiveHeaderSpacerClass = isMarketplaceRoute
-    ? 'h-0 min-[1120px]:h-[62px]'
-    : headerSpacerClass
   const desktopMainRowHeightClass = showTopCategoryNav
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
@@ -986,13 +977,13 @@ export default function PublicHeader({
   return (
     <>
       <div
-        className={effectiveHeaderSpacerClass}
+        className={headerSpacerClass}
         aria-hidden="true"
       />
       <div
         className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
-        } ${isMarketplaceRoute ? 'hidden min-[1120px]:block' : ''}`}
+        }`}
       >
         <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
           {renderTopCategoryNav ? (
@@ -1677,7 +1668,7 @@ export default function PublicHeader({
       <div
         className={`fixed left-0 right-auto top-0 z-[130] grid h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
-        } ${isMarketplaceRoute ? 'hidden' : ''}`}
+        }`}
       >
         <div className="flex min-w-0 items-center gap-2 self-center">
           <button
