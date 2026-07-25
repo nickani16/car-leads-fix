@@ -1552,21 +1552,24 @@ export default function VehicleSearchExperience({
   function renderDesktopFilterPopover(menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
     if (desktopFilterMenu !== menu) return null
     return (
-      <div className={`fixed left-4 top-[178px] z-[240] max-w-[calc(100vw-32px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)] min-[1120px]:left-[56px] min-[1120px]:top-[238px]`}>
+      <div className={`fixed left-4 top-[178px] z-[240] max-w-[calc(100vw-32px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)] min-[1120px]:left-[28px] min-[1120px]:top-[148px]`}>
         {children}
       </div>
     )
   }
 
-  function renderDesktopFilterBar() {
+  function renderDesktopFilterBar(placement: 'desktop' | 'mobile' = 'mobile') {
     const categoryLabel = categoryText(
       categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
       locale,
     )
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
+    const wrapperClassName = placement === 'desktop'
+      ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-5 py-2 sm:px-7'
+      : 'relative -mx-4 mt-3 min-w-0 border-t border-[#edf1f6] px-4 pt-3 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
 
     return (
-      <div ref={desktopFilterBarRef} className="relative -mx-4 mt-3 min-w-0 border-t border-[#edf1f6] px-4 pt-3 sm:-mx-6 sm:px-6">
+      <div ref={desktopFilterBarRef} className={wrapperClassName}>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="relative shrink-0">
             <button
@@ -1866,13 +1869,15 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
+        {renderDesktopFilterBar('desktop')}
+
         <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
             <div>
               <div className="min-w-0 max-w-full overflow-visible">
                 <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
                 {renderMarketplaceSearchInput()}
-                {renderDesktopFilterBar()}
+                {renderDesktopFilterBar('mobile')}
 
                   <div
                     aria-hidden={!filtersOpen}
