@@ -1055,56 +1055,47 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(760px,calc(100vw-2rem))] overflow-hidden rounded-[14px] border border-[#d9e1ec] bg-white shadow-[0_22px_60px_rgba(16,24,40,.16)] transition group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-[#d9e1ec] bg-white shadow-[0_24px_70px_rgba(16,24,40,.16)] transition group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 ${
                           searchMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        <div className="grid gap-5 p-4">
-                          <Link
-                            href={vehicleSearchHref}
-                            onClick={(event) => handleInternalNavigation(event, vehicleSearchHref)}
-                            className="group flex items-center justify-between rounded-[12px] bg-[#f5f9ff] px-4 py-3 text-[#101828] ring-1 ring-[#dbe8ff] transition hover:bg-[#edf5ff] hover:text-[#0866ff]"
-                          >
-                            <span className="flex min-w-0 items-center gap-3">
-                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white text-[#0866ff] shadow-sm ring-1 ring-[#dbe8ff]">
-                                <Search className="h-[18px] w-[18px]" strokeWidth={2} />
-                              </span>
-                              <span>
-                                <span className="block text-[14px] font-[500] leading-snug">
-                                  {publicLabel('All vehicles', 'Alla fordon', 'Alle Fahrzeuge')}
-                                </span>
-                                <span className="mt-0.5 block text-[12px] font-[400] leading-5 text-[#667085]">
-                                  {publicLabel(
-                                    'Search the full marketplace across categories.',
-                                    'Sök i hela marknadsplatsen över alla kategorier.',
-                                    'Den gesamten Marktplatz über alle Kategorien durchsuchen.',
-                                  )}
-                                </span>
-                              </span>
-                            </span>
-                            <ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-0.5" />
-                          </Link>
+                        <div className="grid gap-4 p-4">
+                          <div className="rounded-[14px] bg-[#f6f9ff] px-4 py-3 ring-1 ring-[#dbe8ff]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">
+                              {t.shopByCategory}
+                            </p>
+                            <p className="mt-1 text-[13px] font-[400] leading-5 text-[#475467]">
+                              {publicLabel(
+                                'Choose one vehicle category and go straight to matching listings.',
+                                'Välj en fordonskategori och gå direkt till matchande annonser.',
+                                'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
+                              )}
+                            </p>
+                          </div>
                           <div className="grid grid-cols-3 gap-2.5">
                             {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }) => (
                               <Link
                                 key={categoryHref}
                                 href={categoryHref}
                                 onClick={(event) => handleInternalNavigation(event, categoryHref)}
-                                className="group flex min-h-[68px] items-center gap-3 rounded-[12px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff]"
+                                className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
                               >
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
-                                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                                </span>
-                                <span className="min-w-0">
-                                  <span className="block truncate text-[14px] font-[500] leading-tight">
-                                    {categoryLabel}
+                                <span className="flex min-w-0 items-center gap-3">
+                                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#0866ff] transition group-hover:bg-[#0866ff] group-hover:text-white">
+                                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                                   </span>
-                                  <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
-                                    {publicLabel('View listings', 'Visa annonser', 'Anzeigen ansehen')}
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-[14px] font-[500] leading-tight">
+                                      {categoryLabel}
+                                    </span>
+                                    <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
+                                      {publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
+                                    </span>
                                   </span>
                                 </span>
+                                <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
                               </Link>
                             ))}
                           </div>

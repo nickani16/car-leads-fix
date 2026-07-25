@@ -34,7 +34,6 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alla fordon', '/marketplace'],
           ['Bilar', '/marketplace/cars'],
           ['Transportbilar', '/marketplace/vans'],
           ['Lastbilar', '/marketplace/trucks'],
@@ -117,7 +116,6 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['Alle Fahrzeuge', '/marketplace'],
           ['Autos', '/marketplace/cars'],
           ['Transporter', '/marketplace/vans'],
           ['Lkw', '/marketplace/trucks'],
@@ -200,7 +198,6 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['All vehicles', '/marketplace'],
           ['Cars', '/marketplace/cars'],
           ['Vans', '/marketplace/vans'],
           ['Trucks', '/marketplace/trucks'],
