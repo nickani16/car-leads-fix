@@ -1120,31 +1120,37 @@ export default function PublicHeader({
                             })}
                           </div>
                           <div className="grid grid-cols-3 gap-2.5">
-                            {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }) => (
-                              <Link
-                                key={categoryHref}
-                                href={searchCategoryHref(categoryHref)}
-                                onClick={(event) => handleInternalNavigation(event, searchCategoryHref(categoryHref))}
-                                className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
-                              >
-                                <span className="flex min-w-0 items-center gap-3">
-                                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#101828] transition group-hover:bg-[#0866ff] group-hover:text-white">
-                                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                                  </span>
-                                  <span className="min-w-0">
-                                    <span className="block truncate text-[14px] font-[500] leading-tight">
-                                      {categoryLabel}
+                            {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }, index) => {
+                              const categorySlug = marketplaceCategories[index]?.slug
+                              const CategoryIcon =
+                                (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                              const itemHref = searchCategoryHref(categoryHref)
+                              return (
+                                <Link
+                                  key={categoryHref}
+                                  href={itemHref}
+                                  onClick={(event) => handleInternalNavigation(event, itemHref)}
+                                  className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-3">
+                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#101828] transition group-hover:bg-[#0866ff] group-hover:text-white">
+                                      <CategoryIcon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                                     </span>
-                                    <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
-                                      {searchMenuIntent === 'leasing'
-                                        ? publicLabel('Open leasing', 'Öppna leasing', 'Leasing öffnen')
-                                        : publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
+                                    <span className="min-w-0">
+                                      <span className="block truncate text-[14px] font-[500] leading-tight">
+                                        {categoryLabel}
+                                      </span>
+                                      <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
+                                        {searchMenuIntent === 'leasing'
+                                          ? publicLabel('Open leasing', 'Öppna leasing', 'Leasing öffnen')
+                                          : publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
+                                      </span>
                                     </span>
                                   </span>
-                                </span>
-                                <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
-                              </Link>
-                            ))}
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
+                                </Link>
+                              )
+                            })}
                           </div>
                         </div>
                       </div>
