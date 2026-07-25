@@ -2125,7 +2125,7 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <label className="relative block w-[108px] shrink-0 sm:w-auto">
+                <label className="relative block w-[126px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
