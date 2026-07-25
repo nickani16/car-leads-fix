@@ -1954,16 +1954,6 @@ export default function VehicleSearchExperience({
                         : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
                     }`}
                   >
-                    {filtersOpen ? (
-                      <button
-                        type="button"
-                        onClick={() => setFiltersOpen(false)}
-                        className="fixed right-4 top-4 z-[260] grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] shadow-[0_6px_18px_rgba(16,24,40,.14)] transition hover:text-[#0866ff] sm:hidden"
-                        aria-label="Stäng filter"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    ) : null}
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
                     <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-14 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
@@ -1988,7 +1978,7 @@ export default function VehicleSearchExperience({
                         <button
                           type="button"
                           onClick={() => setFiltersOpen(false)}
-                          className="mr-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          className="mr-0.5 grid h-9 w-9 shrink-0 translate-y-1 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
                           aria-label="Stäng filter"
                         >
                           <X className="h-5 w-5" />
