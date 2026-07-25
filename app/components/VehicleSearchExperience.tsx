@@ -2123,14 +2123,37 @@ export default function VehicleSearchExperience({
                   ))}
                 </div>
               ) : (
-                <div className="px-8 py-14">
-                  <div className="rounded-[8px] border border-[#d9e1ec] bg-[#f8fbff] p-7">
-                    <p className="text-xl font-semibold text-[#101828]">
-                      {uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')}
+                <div className="px-6 py-14 sm:px-8 sm:py-16">
+                  <div className="mx-auto flex max-w-[520px] flex-col items-center text-center">
+                    <Image
+                      src="/autorell-empty-search.svg"
+                      alt=""
+                      aria-hidden="true"
+                      width={220}
+                      height={150}
+                      className="h-auto w-[180px] max-w-[60vw] sm:w-[220px]"
+                    />
+                    <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
+                      {uiText(locale, 'There do not seem to be any results.', 'Det verkar inte finnas några resultat.', 'Es scheint keine Ergebnisse zu geben.')}
                     </p>
-                    <p className="mt-3 max-w-xl text-base leading-7 text-[#667085]">
-                      {uiText(locale, '0 listings', '0 annonser', '0 Anzeigen')}
+                    <p className="mt-2 max-w-[420px] text-sm leading-6 text-[#667085] sm:text-base">
+                      {uiText(
+                        locale,
+                        'Try searching for another location, another vehicle or another make.',
+                        'Prova att söka på en annan plats, ett annat fordon eller ett annat märke.',
+                        'Versuche es mit einem anderen Ort, einem anderen Fahrzeug oder einer anderen Marke.',
+                      )}
                     </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMarketOverride(true)
+                        setSelectedMarkets([])
+                      }}
+                      className="mt-5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4 sm:text-base"
+                    >
+                      {uiText(locale, 'Search across all of Europe', 'Testa att söka inom hela Europa', 'In ganz Europa suchen')}
+                    </button>
                   </div>
                 </div>
               )}
