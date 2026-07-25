@@ -2111,11 +2111,11 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-8 w-8 place-items-center rounded-[8px] border text-[#101828] transition sm:h-10 sm:w-10 ${
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
                     resultsLayout === 'split'
                       ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                       : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2125,12 +2125,12 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <label className="relative">
+                <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-7 w-[116px] appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[12px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-6 text-[12px] font-medium leading-none outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
