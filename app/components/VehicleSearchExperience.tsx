@@ -11,6 +11,7 @@ import {
   Check,
   Columns2,
   Expand,
+  Globe2,
   Heart,
   Layers,
   List,
@@ -56,7 +57,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
-type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'model' | null
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -1540,14 +1541,14 @@ export default function VehicleSearchExperience({
         type="button"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           const rect = event.currentTarget.getBoundingClientRect()
-          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' ? 310 : menu === 'model' ? 340 : 420
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
           setDesktopFilterPopoverPosition({
             left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
             top: rect.bottom + 6,
           })
           setDesktopFilterMenu((current) => (current === menu ? null : menu))
         }}
-        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:h-8 sm:px-3 sm:text-[13px] ${
+        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium transition sm:h-8 sm:px-3 sm:text-[13px] ${
           open || active
             ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
             : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
@@ -1575,7 +1576,7 @@ export default function VehicleSearchExperience({
             left: desktopFilterPopoverPosition?.left ?? 16,
             top: desktopFilterPopoverPosition?.top ?? 112,
           }}
-          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_18px_45px_rgba(16,24,40,.18)]`}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)]`}
         >
           {children}
         </div>
@@ -1589,6 +1590,9 @@ export default function VehicleSearchExperience({
       locale,
     )
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
+    const marketLabel = selectedMarketCodes.length
+      ? selectedMarketCodes.map((code) => getEuCountryName(code, locale)).join(', ')
+      : uiText(locale, 'Market', 'Marknad', 'Markt')
     const wrapperClassName = placement === 'desktop'
       ? 'hidden min-[1120px]:block border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
       : 'relative -mx-4 mt-2 min-w-0 border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
@@ -1603,7 +1607,7 @@ export default function VehicleSearchExperience({
                 setFiltersOpen(true)
                 setDesktopFilterMenu(null)
               }}
-              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium shadow-[0_1px_2px_rgba(16,24,40,.04)] transition sm:px-3 sm:text-[13px] ${
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium transition sm:px-3 sm:text-[13px] ${
                 filtersOpen || activeFilters.length
                   ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
                   : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
@@ -1739,6 +1743,39 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative shrink-0">
+            {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 0)}
+            {renderDesktopFilterPopover('market', (
+              <div className="grid max-h-[420px] gap-1 overflow-y-auto">
+                {marketOptions.map((option) => {
+                  const selected = option.value
+                    ? selectedMarketCodes.includes(option.value)
+                    : selectedMarketCodes.length === 0
+                  return (
+                    <button
+                      key={option.value || 'all'}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMarkets(option.value ? [option.value] : [])
+                        setMarketOverride(true)
+                        setDesktopFilterMenu(null)
+                      }}
+                      className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f5f7fb] text-[#101828] ring-1 ring-[#e4e7ec]">
+                        {option.value ? <CountryFlag code={option.value} className="h-5 w-5 rounded-full" /> : <Globe2 className="h-5 w-5" />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
+                      </span>
+                      {selected ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative shrink-0">
             {desktopMenuButton('model', modelLabel, Boolean(make || model))}
             {renderDesktopFilterPopover('model', (
               <div className="space-y-3">
@@ -1758,7 +1795,7 @@ export default function VehicleSearchExperience({
             type="button"
             onClick={saveCurrentSearch}
             disabled={savingSearch}
-            className={`ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white shadow-[0_8px_20px_rgba(8,102,255,.18)] transition sm:px-4 sm:text-[13px] ${
+            className={`ml-auto inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
               savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
             } disabled:cursor-wait disabled:opacity-70`}
           >
@@ -1766,28 +1803,6 @@ export default function VehicleSearchExperience({
             {saveSearchButtonLabel}
           </button>
         </div>
-      </div>
-    )
-  }
-
-  function renderQuickFilterSelectors() {
-    return (
-      <div className="grid min-w-0 grid-cols-1 gap-2">
-        <label className="relative min-w-0">
-          <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
-          <select
-            value={activeCategoryKey}
-            onChange={(event) => toggleCategory(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
-          >
-            {selectableCategories.map((item) => (
-              <option key={item.key} value={item.key}>
-                {categoryText(item, locale)}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-        </label>
       </div>
     )
   }
@@ -1887,7 +1902,7 @@ export default function VehicleSearchExperience({
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
-                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[150] w-full max-w-full overflow-visible border-b border-[#eceff4] bg-white px-4 pb-2 pt-3 shadow-[0_8px_22px_rgba(16,24,40,.06)] sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:shadow-none`}>
+                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[150] w-full max-w-full overflow-visible border-b border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto`}>
                   {renderMarketplaceSearchInput()}
                   {renderDesktopFilterBar('mobile')}
                 </div>
@@ -1902,7 +1917,7 @@ export default function VehicleSearchExperience({
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pt-6 sm:px-6 sm:py-4 relative">
+                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pr-16 pt-6 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[19px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
@@ -1912,13 +1927,10 @@ export default function VehicleSearchExperience({
                           </span>
                         ) : null}
                       </div>
-                      <div className="order-3 w-full min-w-0 pr-12 sm:order-none sm:w-[min(420px,48%)] sm:pr-0">
-                        {renderQuickFilterSelectors()}
-                      </div>
                       <button
                         type="button"
                         onClick={() => setFiltersOpen(false)}
-                        className="absolute bottom-3 right-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
+                        className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
                         aria-label="Stäng filter"
                       >
                         <X className="h-5 w-5" />
@@ -1926,7 +1938,7 @@ export default function VehicleSearchExperience({
                       <button
                         type="button"
                         onClick={() => setFiltersOpen(false)}
-                        className="hidden h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:grid"
+                        className="absolute right-4 top-3 hidden h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:grid"
                         aria-label="Stäng filter"
                       >
                         <X className="h-5 w-5" />
@@ -1949,10 +1961,6 @@ export default function VehicleSearchExperience({
                       )}
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
-                    <div className="rounded-[12px] border border-[#dbe4f0] bg-[#f8fbff] p-3 shadow-[0_10px_24px_rgba(16,24,40,.05)]">
-                      <span className="mb-2 block text-[13px] font-semibold text-[#101828]">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
-                      {renderMarketplaceSearchInput()}
-                    </div>
                     {renderCategoryFilterSections()}
                     <div className="hidden">
                       <CollapsibleFilterSection
@@ -2043,7 +2051,7 @@ export default function VehicleSearchExperience({
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-9 w-9 place-items-center rounded-[8px] border text-[#101828] shadow-sm transition sm:h-10 sm:w-10 ${
+                  className={`grid h-9 w-9 place-items-center rounded-[8px] border text-[#101828] transition sm:h-10 sm:w-10 ${
                     resultsLayout === 'split'
                       ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                       : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2058,7 +2066,7 @@ export default function VehicleSearchExperience({
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-9 min-w-[118px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:h-10 sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
+                    className="h-9 min-w-[118px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-2.5 pr-7 text-[12px] font-medium outline-none transition focus:border-[#0866ff] sm:h-10 sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px]"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -2174,11 +2182,10 @@ export default function VehicleSearchExperience({
                     <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
                     <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
                   </div>
-                  <div className="w-full min-w-0 pr-12">{renderQuickFilterSelectors()}</div>
                   <button
                     type="button"
                     onClick={() => setFiltersOpen(false)}
-                    className="absolute bottom-3 right-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
+                    className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
                     aria-label="Stäng filter"
                   >
                     <X className="h-5 w-5" />
