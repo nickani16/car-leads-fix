@@ -48,6 +48,10 @@ export default function ListingImageGallery({
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
+  const displayImageCount = Math.max(
+    imageCount,
+    fullscreenImages?.filter(Boolean).length || 0,
+  )
   const fullscreenCopy = galleryCopy(locale)
 
   const showPrevious = useCallback(() => {
@@ -222,7 +226,7 @@ export default function ListingImageGallery({
           </div>
         ) : null}
 
-        {safeImages.length > 1 ? (
+        {displayImageCount > 1 ? (
           <>
             <button
               type="button"
@@ -256,7 +260,7 @@ export default function ListingImageGallery({
               className="absolute bottom-3 z-10 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
               aria-label="Open photos"
             >
-              {active + 1}/{safeImages.length}
+              {active + 1}/{displayImageCount}
             </button>
             <button
               type="button"
@@ -265,7 +269,7 @@ export default function ListingImageGallery({
               className="absolute bottom-3 right-3 z-10 hidden min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:inline-flex"
               aria-label="Open photos"
             >
-              {active + 1}/{safeImages.length}
+              {active + 1}/{displayImageCount}
             </button>
           </>
         ) : null}
