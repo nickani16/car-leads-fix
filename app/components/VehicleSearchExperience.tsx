@@ -2155,7 +2155,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' ? 'grid grid-cols-2' : ''}>
+                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (
                     <VehicleResultCard
                       key={listing.id}
@@ -2164,7 +2164,7 @@ export default function VehicleSearchExperience({
                       compareActive={compareIds.includes(listing.id)}
                       onCompare={() => toggleCompare(listing.id)}
                       onBeforeNavigate={rememberSearchBeforeListingNavigation}
-                      layout={resultsLayout}
+                      layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
                     />
                   ))}
                 </div>
