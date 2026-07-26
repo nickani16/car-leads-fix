@@ -2103,7 +2103,7 @@ export default function VehicleSearchExperience({
                     </div>
                 </div>
 
-            <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
+            <div className="w-screen max-w-[100vw] overflow-hidden bg-white px-4 py-3 sm:px-6 sm:py-4 min-[1120px]:w-full min-[1120px]:max-w-full">
               <div className="relative flex w-full items-center justify-between gap-2 sm:gap-3">
                 <p className="min-h-6 min-w-0 flex-1 truncate pr-[150px] text-sm font-medium leading-6 sm:pr-2">
                   {searchLoading && searchPage === 1 ? (
