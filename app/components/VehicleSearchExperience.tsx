@@ -2105,7 +2105,7 @@ export default function VehicleSearchExperience({
 
             <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
               <div className="flex w-full items-center justify-between gap-2 sm:gap-3">
-                <p className="min-h-6 min-w-0 flex-1 text-sm font-medium leading-6">
+                <p className="min-h-6 min-w-0 flex-1 truncate pr-2 text-sm font-medium leading-6">
                   {searchLoading && searchPage === 1 ? (
                     <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
                   ) : searchError ? (
@@ -2128,7 +2128,7 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <label className="relative block w-[118px] shrink-0 sm:w-auto">
+                <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
