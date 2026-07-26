@@ -42,8 +42,10 @@ import SiteSearch from './SiteSearch'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   categorySearchPath,
+  isLeasingMarketplaceCategory,
   marketplaceCategories,
   marketplaceLanguage,
+  type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import {
   categoryLandingMenuHref,
@@ -85,6 +87,7 @@ type MenuItem = {
   label: string
   description: string
   icon: LucideIcon
+  slug?: MarketplaceCategorySlug
   requiresLogin?: boolean
 }
 
@@ -605,6 +608,7 @@ export default function PublicHeader({
     return {
       href: localizePublicHref(locale, categorySearchPath(category.slug)),
       label,
+      slug: category.slug,
       description:
         locale === 'sv'
           ? 'Se annonser från privatpersoner och företag i hela Europa.'
@@ -638,6 +642,10 @@ export default function PublicHeader({
   ]
   const searchCategoryHref = (href: string) =>
     searchMenuIntent === 'leasing' ? `${href}?mode=leasing` : href
+  const visibleSearchCategoryItems =
+    searchMenuIntent === 'leasing'
+      ? buyItems.filter((item) => item.slug && isLeasingMarketplaceCategory(item.slug))
+      : buyItems
   const topCategoryLabels: Partial<Record<(typeof marketplaceCategories)[number]['slug'], Record<'sv' | 'en' | 'de', string>>> = {
     agriculture: { sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft' },
     construction: { sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
@@ -1155,8 +1163,7 @@ export default function PublicHeader({
                             })}
                           </div>
                           <div className="grid grid-cols-3 gap-2.5">
-                            {buyItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon }, index) => {
-                              const categorySlug = marketplaceCategories[index]?.slug
+                            {visibleSearchCategoryItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon, slug: categorySlug }) => {
                               const CategoryIcon =
                                 (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
                               const itemHref = searchCategoryHref(categoryHref)
