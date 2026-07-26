@@ -204,9 +204,21 @@ export default function ListingContactFormButton({
   const text = getContactCopy(locale)
 
   useEffect(() => {
-    document.body.classList.toggle('autorell-contact-modal-open', open)
+    if (!open) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.classList.add('autorell-contact-modal-open')
+    document.body.style.overflow = 'hidden'
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
     return () => {
+      window.removeEventListener('keydown', closeOnEscape)
       document.body.classList.remove('autorell-contact-modal-open')
+      document.body.style.overflow = previousOverflow
     }
   }, [open])
 
@@ -260,9 +272,14 @@ export default function ListingContactFormButton({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[240] flex items-start justify-center overflow-y-auto bg-[#101828]/85 px-3 py-[calc(env(safe-area-inset-top)+1rem)] backdrop-blur-lg sm:items-center sm:px-4 sm:py-6">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-[560px] overflow-y-auto rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_30px_90px_rgba(16,24,40,.25)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
-            <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] px-5 py-5 sm:px-6">
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center overflow-hidden bg-[#101828]/45 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:px-6 sm:py-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setOpen(false)
+          }}
+        >
+          <div className="relative flex max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] min-h-0 w-full max-w-[620px] flex-col overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#edf1f6] bg-white px-5 py-4 sm:px-6 sm:py-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
                   {listingTitle}
@@ -276,13 +293,13 @@ export default function ListingContactFormButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={text.close}
-                className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3]"
+                className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3] sm:h-10 sm:w-10"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={submit} className="grid gap-4 px-5 py-5 sm:px-6">
+            <form onSubmit={submit} className="grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-5 sm:px-6">
               <div className="grid gap-4 sm:grid-cols-2 sm:[&>label]:min-w-0">
                 <FormField label={text.name} name="name" required />
                 <FormField label={text.phone} name="phone" type="tel" required />
