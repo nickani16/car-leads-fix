@@ -2114,7 +2114,7 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="absolute left-[calc(100vw-154px)] top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
+                <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
@@ -2222,7 +2222,7 @@ export default function VehicleSearchExperience({
               type="button"
               onClick={() => setMobileMapOpen(true)}
               style={{ fontWeight: 500 }}
-              className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white shadow-[0_12px_28px_rgba(8,102,255,.26)] transition-transform duration-200 active:scale-[.98] lg:hidden"
+              className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white transition-transform duration-200 active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
               {uiText(locale, 'Map', 'Karta', 'Karte')}

@@ -152,12 +152,12 @@ export default function ListingCardImageCarousel({
       ) : null}
 
       {dotCount > 1 ? (
-        <div className={`absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[4px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] ${showDotsOnDesktop ? '' : 'md:hidden'}`}>
+        <div className={`absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-black/5 ${showDotsOnDesktop ? '' : 'md:hidden'}`}>
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
               className={`h-1.5 rounded-full transition ${
-                dotIndex === activeDot ? 'w-2.5 bg-white' : 'w-1.5 bg-white/55'
+                dotIndex === activeDot ? 'w-2.5 bg-[#0866ff]' : 'w-1.5 bg-[#0866ff]/35'
               }`}
             />
           ))}
