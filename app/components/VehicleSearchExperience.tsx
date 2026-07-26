@@ -635,6 +635,7 @@ export default function VehicleSearchExperience({
     )
   })
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const [compareOpen, setCompareOpen] = useState(false)
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
   const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
@@ -1170,14 +1171,19 @@ export default function VehicleSearchExperience({
   }
 
   const toggleCompare = (listingId: string) => {
-    setCompareIds((current) =>
-      current.includes(listingId)
+    setCompareIds((current) => {
+      const next = current.includes(listingId)
         ? current.filter((id) => id !== listingId)
-        : [...current, listingId].slice(-4),
-    )
+        : [...current, listingId].slice(-4)
+      if (next.length < 2) setCompareOpen(false)
+      return next
+    })
   }
 
   const visibleCount = filteredListings.length
+  const compareListings = compareIds
+    .map((id) => filteredListings.find((listing) => listing.id === id) || listings.find((listing) => listing.id === id))
+    .filter((listing): listing is VehicleSearchListing => Boolean(listing))
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
   const marketSummary = selectedMarketCodes.length
@@ -2149,7 +2155,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' ? 'grid grid-cols-1 min-[560px]:grid-cols-2' : ''}>
+                <div className={resultsLayout === 'split' ? 'grid grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (
                     <VehicleResultCard
                       key={listing.id}
@@ -2197,6 +2203,44 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
               )}
+              {compareIds.length ? (
+                <div className="sticky bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 border-t border-[#d9e6ff] bg-white/95 px-4 py-3 backdrop-blur sm:bottom-0 sm:px-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#101828]">
+                        {compareIds.length} {compareIds.length === 1
+                          ? uiText(locale, 'listing selected', 'annons vald', 'Anzeige ausgewählt')
+                          : uiText(locale, 'listings selected', 'annonser valda', 'Anzeigen ausgewählt')}
+                      </p>
+                      <p className="truncate text-xs font-medium text-[#667085]">
+                        {uiText(locale, 'Select at least two listings to compare.', 'Välj minst två annonser för att jämföra.', 'Wähle mindestens zwei Anzeigen zum Vergleichen.')}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCompareOpen(true)}
+                        disabled={compareIds.length < 2}
+                        className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0757da] disabled:bg-[#c8d2e2]"
+                      >
+                        <Scale className="h-4 w-4" />
+                        {uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompareIds([])
+                          setCompareOpen(false)
+                        }}
+                        aria-label={uiText(locale, 'Clear comparison', 'Rensa jämförelse', 'Vergleich löschen')}
+                        className="grid h-9 w-9 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#475467]"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {filteredListings.length > 0 && searchPage < searchTotalPages ? (
                 <div className="border-t border-[#eceff4] px-5 py-5 text-center sm:px-6">
                   <button
@@ -2227,6 +2271,83 @@ export default function VehicleSearchExperience({
               <MapPin className="h-4 w-4" />
               {uiText(locale, 'Map', 'Karta', 'Karte')}
             </button>
+          ) : null}
+
+          {compareOpen && compareListings.length >= 2 ? (
+            <div className="fixed inset-0 z-[260] grid place-items-center bg-[#101828]/35 px-4 py-6 backdrop-blur-[2px]">
+              <div className="max-h-[min(720px,calc(100svh-48px))] w-full max-w-4xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)]">
+                <div className="flex items-center justify-between gap-4 border-b border-[#edf1f6] px-4 py-3 sm:px-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">
+                      {uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+                    </p>
+                    <h2 className="text-lg font-semibold text-[#101828]">
+                      {uiText(locale, 'Selected listings', 'Valda annonser', 'Ausgewählte Anzeigen')}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCompareOpen(false)}
+                    aria-label={uiText(locale, 'Close comparison', 'Stäng jämförelse', 'Vergleich schließen')}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828]"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid max-h-[calc(min(720px,100svh-48px)-73px)] grid-cols-2 gap-0 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
+                  {compareListings.map((listing) => {
+                    const href = buildListingPath({
+                      id: listing.id,
+                      title: listing.title,
+                      make: listing.make,
+                      model: listing.model,
+                      year: listing.year,
+                      city: listing.city,
+                      country_code: listing.country,
+                    }, locale)
+                    return (
+                      <article key={listing.id} className="relative border-b border-r border-[#edf1f6] p-3 sm:p-4">
+                        <button
+                          type="button"
+                          onClick={() => toggleCompare(listing.id)}
+                          aria-label={uiText(locale, 'Remove from comparison', 'Ta bort från jämförelse', 'Aus Vergleich entfernen')}
+                          className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                        <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+                            {listing.imageUrls.length ? (
+                              <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="(max-width: 640px) 50vw, 240px" className="object-cover" />
+                            ) : (
+                              <div className="grid h-full place-items-center text-[#0866ff]">
+                                <AutorellCarIcon className="h-10 w-10" />
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                          <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
+                          <dl className="mt-3 grid gap-2 text-xs text-[#667085]">
+                            <div>
+                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Year', 'År', 'Jahr')}</dt>
+                              <dd className="font-semibold text-[#101828]">{listing.year || '-'}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Mileage', 'Miltal', 'Kilometer')}</dt>
+                              <dd className="font-semibold text-[#101828]">{listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : '-'}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Fuel', 'Drivmedel', 'Kraftstoff')}</dt>
+                              <dd className="font-semibold text-[#101828]">{listing.fuelType || '-'}</dd>
+                            </div>
+                          </dl>
+                        </Link>
+                      </article>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
           ) : null}
 
           <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden`}>
@@ -2895,14 +3016,14 @@ function VehicleResultCard({
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
-      layout === 'split' ? 'mx-0 px-3 py-4 min-[560px]:border-r sm:px-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
+      layout === 'split' ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
     }`}>
       <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
       <div className={`pointer-events-none relative z-20 grid gap-4 ${
         layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
       }`}>
         <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
-          layout === 'split' ? 'aspect-[4/3] min-h-[138px]' : 'h-[246px] sm:h-[174px]'
+          layout === 'split' ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]' : 'h-[246px] sm:h-[174px]'
         }`}>
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
@@ -2910,7 +3031,7 @@ function VehicleResultCard({
               title={listing.title}
               href={href}
               onNavigate={onBeforeNavigate}
-              sizes={layout === 'split' ? '(max-width: 560px) 100vw, 50vw' : '(max-width: 640px) 100vw, 260px'}
+              sizes={layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : '(max-width: 640px) 100vw, 260px'}
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
@@ -2935,27 +3056,27 @@ function VehicleResultCard({
               event.stopPropagation()
               onCompare()
             }}
-            className={`pointer-events-auto absolute bottom-3 right-3 z-30 hidden h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition sm:inline-flex ${
+            className={`pointer-events-auto absolute bottom-2 right-2 z-30 inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-full text-xs font-semibold shadow-md transition sm:bottom-3 sm:right-3 sm:h-9 sm:w-auto sm:px-3 ${
               compareActive ? 'bg-[#0866ff] text-white' : 'bg-white text-[#101828] hover:text-[#0866ff]'
             }`}
           >
-            <Scale className="h-4 w-4" />
-            <span>Jämför</span>
+            <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Jämför</span>
           </button>
         </div>
 
         <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
-            <span className={`${layout === 'split' ? 'text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
+            <span className={`${layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
-            <p className="line-clamp-1 text-[14px] font-light leading-5 text-[#667085]">
+            <p className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
               {subtitle}
             </p>
-            <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+            <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
-            <MetaSeparatorList items={meta} className="text-[14px] font-light leading-5 text-[#101828]" />
+            <MetaSeparatorList items={meta} className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName
@@ -2963,7 +3084,7 @@ function VehicleResultCard({
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <div className={`${layout === 'split' ? 'hidden sm:flex' : 'flex'} min-w-0 flex-wrap items-center gap-1.5`}>
               {equipmentChips.map((item) => (
                 <span key={item} className="max-w-[150px] truncate rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                   {item}
