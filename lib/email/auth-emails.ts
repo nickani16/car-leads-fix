@@ -242,79 +242,6 @@ const resetCopy: Record<string, AuthEmailCopy> = {
   },
 }
 
-const emailVerificationCopy: Record<string, Partial<AuthEmailCopy>> = {
-  en: {
-    subject: 'is your Autorell email verification code',
-    preheader: 'Use this one-time code to verify your Autorell email address.',
-    eyebrow: 'Email verification',
-    heading: 'Verify your email',
-    intro: 'Enter this code on My pages to verify your email address.',
-  },
-  sv: {
-    subject: '\u00e4r din verifieringskod f\u00f6r Autorell',
-    preheader: 'Anv\u00e4nd eng\u00e5ngskoden f\u00f6r att verifiera din mejladress.',
-    eyebrow: 'Mejlverifiering',
-    heading: 'Verifiera din mejladress',
-    intro: 'Ange koden p\u00e5 Mina sidor f\u00f6r att verifiera din mejladress.',
-  },
-  de: {
-    subject: 'ist Ihr Autorell-Verifizierungscode',
-    preheader: 'Verwenden Sie diesen Einmalcode, um Ihre E-Mail-Adresse zu verifizieren.',
-    eyebrow: 'E-Mail-Verifizierung',
-    heading: 'E-Mail verifizieren',
-    intro: 'Geben Sie den Code in Ihrem Konto ein, um Ihre E-Mail-Adresse zu verifizieren.',
-  },
-  fr: {
-    subject: 'est votre code de v\u00e9rification Autorell',
-    preheader: 'Utilisez ce code \u00e0 usage unique pour v\u00e9rifier votre e-mail.',
-    eyebrow: 'V\u00e9rification e-mail',
-    heading: 'V\u00e9rifiez votre e-mail',
-    intro: 'Saisissez ce code dans votre compte pour v\u00e9rifier votre adresse e-mail.',
-  },
-  es: {
-    subject: 'es tu c\u00f3digo de verificaci\u00f3n de Autorell',
-    preheader: 'Usa este c\u00f3digo de un solo uso para verificar tu correo electr\u00f3nico.',
-    eyebrow: 'Verificaci\u00f3n de correo',
-    heading: 'Verifica tu correo',
-    intro: 'Introduce este c\u00f3digo en tu cuenta para verificar tu direcci\u00f3n de correo.',
-  },
-  it: {
-    subject: '\u00e8 il tuo codice di verifica Autorell',
-    preheader: 'Usa questo codice monouso per verificare la tua e-mail.',
-    eyebrow: 'Verifica e-mail',
-    heading: 'Verifica la tua e-mail',
-    intro: 'Inserisci questo codice nel tuo account per verificare il tuo indirizzo e-mail.',
-  },
-  pl: {
-    subject: 'to Tw\u00f3j kod weryfikacyjny Autorell',
-    preheader: 'U\u017cyj tego jednorazowego kodu, aby zweryfikowa\u0107 adres e-mail.',
-    eyebrow: 'Weryfikacja e-mail',
-    heading: 'Zweryfikuj e-mail',
-    intro: 'Wpisz ten kod na swoim koncie, aby zweryfikowa\u0107 adres e-mail.',
-  },
-  nl: {
-    subject: 'is je Autorell-verificatiecode',
-    preheader: 'Gebruik deze eenmalige code om je e-mailadres te verifi\u00ebren.',
-    eyebrow: 'E-mailverificatie',
-    heading: 'Verifieer je e-mail',
-    intro: 'Voer deze code in je account in om je e-mailadres te verifi\u00ebren.',
-  },
-  fi: {
-    subject: 'on Autorell-vahvistuskoodisi',
-    preheader: 'K\u00e4yt\u00e4 t\u00e4t\u00e4 kertak\u00e4ytt\u00f6koodia s\u00e4hk\u00f6postiosoitteesi vahvistamiseen.',
-    eyebrow: 'S\u00e4hk\u00f6postin vahvistus',
-    heading: 'Vahvista s\u00e4hk\u00f6posti',
-    intro: 'Sy\u00f6t\u00e4 t\u00e4m\u00e4 koodi tilill\u00e4si vahvistaaksesi s\u00e4hk\u00f6postiosoitteesi.',
-  },
-  da: {
-    subject: 'er din Autorell-verificeringskode',
-    preheader: 'Brug denne engangskode til at verificere din e-mailadresse.',
-    eyebrow: 'E-mailverificering',
-    heading: 'Verific\u00e9r din e-mail',
-    intro: 'Indtast koden p\u00e5 din konto for at verificere din e-mailadresse.',
-  },
-}
-
 function copyKey(locale: PublicLocale) {
   const key = translationLocale(locale)
   return key in otpCopy ? key : 'en'
@@ -327,12 +254,79 @@ export function getOtpEmailCopy(locale: PublicLocale, code: string): AuthEmailCo
 
 export function getEmailVerificationCodeCopy(locale: PublicLocale, code: string): AuthEmailCopy {
   const base = getOtpEmailCopy(locale, code)
-  const localized = emailVerificationCopy[copyKey(locale)] || emailVerificationCopy.en
-  return {
-    ...base,
-    ...localized,
-    subject: `${code} ${localized.subject || emailVerificationCopy.en.subject}`,
+  const localized: Record<string, Partial<AuthEmailCopy>> = {
+    en: {
+      subject: `${code} is your Autorell email verification code`,
+      preheader: 'Use this one-time code to verify your Autorell email address.',
+      eyebrow: 'Email verification',
+      heading: 'Verify your email',
+      intro: 'Enter this code on My pages to verify your email address.',
+    },
+    sv: {
+      subject: `${code} \u00e4r din verifieringskod f\u00f6r Autorell`,
+      preheader: 'Anv\u00e4nd eng\u00e5ngskoden f\u00f6r att verifiera din mejladress.',
+      eyebrow: 'Mejlverifiering',
+      heading: 'Verifiera din mejladress',
+      intro: 'Ange koden p\u00e5 Mina sidor f\u00f6r att verifiera din mejladress.',
+    },
+    de: {
+      subject: `${code} ist Ihr Autorell-Verifizierungscode`,
+      preheader: 'Verwenden Sie diesen Einmalcode, um Ihre E-Mail-Adresse zu verifizieren.',
+      eyebrow: 'E-Mail-Verifizierung',
+      heading: 'E-Mail verifizieren',
+      intro: 'Geben Sie den Code in Ihrem Konto ein, um Ihre E-Mail-Adresse zu verifizieren.',
+    },
+    fr: {
+      subject: `${code} est votre code de v\u00e9rification Autorell`,
+      preheader: 'Utilisez ce code \u00e0 usage unique pour v\u00e9rifier votre e-mail.',
+      eyebrow: 'V\u00e9rification e-mail',
+      heading: 'V\u00e9rifiez votre e-mail',
+      intro: 'Saisissez ce code dans votre compte pour v\u00e9rifier votre adresse e-mail.',
+    },
+    es: {
+      subject: `${code} es tu c\u00f3digo de verificaci\u00f3n de Autorell`,
+      preheader: 'Usa este c\u00f3digo de un solo uso para verificar tu correo electr\u00f3nico.',
+      eyebrow: 'Verificaci\u00f3n de correo',
+      heading: 'Verifica tu correo',
+      intro: 'Introduce este c\u00f3digo en tu cuenta para verificar tu direcci\u00f3n de correo.',
+    },
+    it: {
+      subject: `${code} \u00e8 il tuo codice di verifica Autorell`,
+      preheader: 'Usa questo codice monouso per verificare la tua e-mail.',
+      eyebrow: 'Verifica e-mail',
+      heading: 'Verifica la tua e-mail',
+      intro: 'Inserisci questo codice nel tuo account per verificare il tuo indirizzo e-mail.',
+    },
+    pl: {
+      subject: `${code} to Tw\u00f3j kod weryfikacyjny Autorell`,
+      preheader: 'U\u017cyj tego jednorazowego kodu, aby zweryfikowa\u0107 adres e-mail.',
+      eyebrow: 'Weryfikacja e-mail',
+      heading: 'Zweryfikuj e-mail',
+      intro: 'Wpisz ten kod na swoim koncie, aby zweryfikowa\u0107 adres e-mail.',
+    },
+    nl: {
+      subject: `${code} is je Autorell-verificatiecode`,
+      preheader: 'Gebruik deze eenmalige code om je e-mailadres te verifi\u00ebren.',
+      eyebrow: 'E-mailverificatie',
+      heading: 'Verifieer je e-mail',
+      intro: 'Voer deze code in je account in om je e-mailadres te verifi\u00ebren.',
+    },
+    fi: {
+      subject: `${code} on Autorell-vahvistuskoodisi`,
+      preheader: 'K\u00e4yt\u00e4 t\u00e4t\u00e4 kertak\u00e4ytt\u00f6koodia s\u00e4hk\u00f6postiosoitteesi vahvistamiseen.',
+      eyebrow: 'S\u00e4hk\u00f6postin vahvistus',
+      heading: 'Vahvista s\u00e4hk\u00f6posti',
+      intro: 'Sy\u00f6t\u00e4 t\u00e4m\u00e4 koodi tilill\u00e4si vahvistaaksesi s\u00e4hk\u00f6postiosoitteesi.',
+    },
+    da: {
+      subject: `${code} er din Autorell-verificeringskode`,
+      preheader: 'Brug denne engangskode til at verificere din e-mailadresse.',
+      eyebrow: 'E-mailverificering',
+      heading: 'Verific\u00e9r din e-mail',
+      intro: 'Indtast koden p\u00e5 din konto for at verificere din e-mailadresse.',
+    },
   }
+  return { ...base, ...(localized[copyKey(locale)] || localized.en) }
 }
 
 export function getPasswordResetEmailCopy(locale: PublicLocale): AuthEmailCopy {

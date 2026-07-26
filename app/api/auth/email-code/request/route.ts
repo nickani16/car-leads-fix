@@ -81,13 +81,21 @@ export async function POST(request: Request) {
     }
 
     const code = generateEmailCode()
-    const { error: insertError } = await admin.from('auth_email_codes').insert({
+    const challengeRow: Record<string, string | number | null> = {
       email,
       email_hash: hashedEmail,
       code_hash: codeHash(email, code),
-      redirect_path: body.purpose === 'email_verification' ? 'email_verification' : null,
       expires_at: codeExpiresAt(),
-    })
+    }
+    if (body.purpose === 'email_verification') {
+      challengeRow.redirect_path = 'email_verification'
+    }
+
+    let { error: insertError } = await admin.from('auth_email_codes').insert(challengeRow)
+    if (insertError?.code === 'PGRST204' && 'redirect_path' in challengeRow) {
+      delete challengeRow.redirect_path
+      ;({ error: insertError } = await admin.from('auth_email_codes').insert(challengeRow))
+    }
     if (insertError) throw insertError
 
     const emailCopy = body.purpose === 'email_verification'
