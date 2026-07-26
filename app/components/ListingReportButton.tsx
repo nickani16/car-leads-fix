@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertTriangle, X } from 'lucide-react'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
@@ -87,8 +87,10 @@ export default function ListingReportButton({
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return
 
     const previousOverflow = document.body.style.overflow
@@ -98,8 +100,19 @@ export default function ListingReportButton({
       if (event.key === 'Escape') setOpen(false)
     }
 
+    const resetModalScroll = () => {
+      panelRef.current?.scrollTo({ top: 0, left: 0 })
+      formRef.current?.scrollTo({ top: 0, left: 0 })
+    }
+
+    resetModalScroll()
+    const animationFrame = window.requestAnimationFrame(resetModalScroll)
+    const timeout = window.setTimeout(resetModalScroll, 80)
+
     window.addEventListener('keydown', closeOnEscape)
     return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(timeout)
       window.removeEventListener('keydown', closeOnEscape)
       document.body.style.overflow = previousOverflow
     }
@@ -131,12 +144,12 @@ export default function ListingReportButton({
     open && typeof document !== 'undefined'
       ? createPortal(
         <div
-          className="fixed inset-0 isolate z-[2147483647] flex items-center justify-center overflow-hidden bg-[#101828]/35 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:px-6 sm:py-6"
+          className="fixed inset-0 isolate z-[2147483647] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#101828]/35 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:items-center sm:px-6 sm:py-6"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setOpen(false)
           }}
         >
-          <div className="relative flex max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] min-h-0 w-full max-w-[620px] flex-col overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
+          <div ref={panelRef} className="relative flex max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] min-h-0 w-full max-w-[620px] flex-col overflow-hidden overscroll-contain rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
             <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 py-4 sm:px-5">
               <div className="min-w-0">
                 <h2 className="text-xl font-black tracking-[-0.035em]">{copy.title}</h2>
@@ -152,7 +165,7 @@ export default function ListingReportButton({
               </button>
             </div>
 
-            <form onSubmit={submit} className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-5">
+            <form ref={formRef} onSubmit={submit} className="grid min-h-0 flex-1 gap-4 overflow-y-auto overscroll-contain p-5">
               <input name="company" className="hidden" tabIndex={-1} autoComplete="off" />
               <label className="grid gap-2">
                 <span className="text-sm font-bold">{copy.reason}</span>
