@@ -169,6 +169,11 @@ export default function NewListingForm({
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
   const leasingAllowedForCategory = isLeasingMarketplaceCategory(category)
+  const selectedOfferType = normalizeOfferType(values.offerType)
+  const isLeasingOfferSelected = isLeaseOffer(selectedOfferType)
+  const visibleMarketplaceCategories = isLeasingOfferSelected
+    ? marketplaceCategories.filter((item) => isLeasingMarketplaceCategory(item.slug))
+    : marketplaceCategories
   const allowedOfferTypeValues = leasingAllowedForCategory
     ? offerTypeValues
     : offerTypeValues.filter((item) => item.value !== 'lease')
@@ -661,7 +666,7 @@ export default function NewListingForm({
                 onToggle={() => setOpenField(openField === 'category' ? null : 'category')}
               >
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {marketplaceCategories.map((item) => (
+                  {visibleMarketplaceCategories.map((item) => (
                     <ChoiceButton
                       key={item.slug}
                       selected={category === item.slug}
@@ -679,7 +684,7 @@ export default function NewListingForm({
                 {allowedOfferTypeValues.map((item) => (
                   <ChoiceButton
                     key={item.value}
-                    selected={normalizeOfferType(values.offerType) === item.value}
+                    selected={selectedOfferType === item.value}
                     onClick={() => setValue('offerType', item.value)}
                   >
                     {item.label}
