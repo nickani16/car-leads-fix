@@ -1889,6 +1889,7 @@ function LeaseOfferFields({
   locale: PublicLocale
 }) {
   const isMachine = category === 'agriculture' || category === 'construction'
+  const [availableFromOpen, setAvailableFromOpen] = useState(false)
   const label = (english: string) => leaseLabel(locale, english)
   return (
     <section className="min-w-0 md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
@@ -1930,7 +1931,14 @@ function LeaseOfferFields({
         <Field name="leaseResidualValue" label="Restvärde" type="number" value={values.leaseResidualValue || ''} onValueChange={onChange} />
         {!isMachine ? <Field name="leaseAnnualMileageKm" label="Tillåten körsträcka per år (km)" type="number" value={values.leaseAnnualMileageKm || ''} onValueChange={onChange} /> : null}
         {!isMachine ? <Field name="leaseExcessMileageCost" label="Kostnad per övermil" type="number" value={values.leaseExcessMileageCost || ''} onValueChange={onChange} /> : null}
-        <Field name="leaseAvailableFrom" label="Tillgänglig från" type="date" value={values.leaseAvailableFrom || ''} onValueChange={onChange} />
+        <DatePickerCard
+          label={label('Available from')}
+          value={values.leaseAvailableFrom || ''}
+          locale={locale}
+          open={availableFromOpen}
+          onToggle={() => setAvailableFromOpen((current) => !current)}
+          onChange={(value) => onChange('leaseAvailableFrom', value)}
+        />
         <label className="flex items-center gap-3 text-sm font-medium">
           <input
             type="checkbox"
