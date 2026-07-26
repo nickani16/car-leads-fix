@@ -1358,7 +1358,7 @@ const listingDetailCopy = {
     backToListings: 'Tillbaka',
     home: 'Hem',
     euDisclaimer:
-      'Annonsen kan vara ofullständig eller inaktuell. Säljaren ansvarar för att lämna korrekta och fullständiga uppgifter enligt tillämplig upplysningsplikt i EU och nationell lag. Autorell kontrollerar inte varje uppgift och ansvarar inte för informationen i annonsen.',
+      'Misstänker du att något i annonsen inte stämmer eller att information saknas? Hjälp oss att hålla Autorell tryggt och uppdaterat genom att anmäla annonsen. Vi granskar alla inkomna rapporter.',
   },
   en: {
     sellerDescription: 'Seller information',
@@ -1394,7 +1394,7 @@ const listingDetailCopy = {
     backToListings: 'Back',
     home: 'Home',
     euDisclaimer:
-      'The listing may be incomplete or out of date. The seller is responsible for providing correct and complete information under applicable EU and national disclosure obligations. Autorell does not verify every statement and is not responsible for the accuracy of the information in the listing.',
+      'Do you suspect that something in the listing is incorrect or that information is missing? Help us keep Autorell safe and up to date by reporting the listing. We review every report we receive.',
   },
   de: {
     sellerDescription: 'Information des Verkäufers',
@@ -1430,17 +1430,36 @@ const listingDetailCopy = {
     backToListings: 'Zurück',
     home: 'Startseite',
     euDisclaimer:
-      'Die Anzeige kann unvollständig oder veraltet sein. Der Verkäufer ist dafür verantwortlich, korrekte und vollständige Informationen gemäß der geltenden EU- und nationalen Aufklärungspflichten bereitzustellen. Autorell prüft nicht alle Angaben und übernimmt keine Verantwortung für die Richtigkeit der Informationen in der Anzeige.',
+      'Vermuten Sie, dass etwas in der Anzeige nicht stimmt oder Informationen fehlen? Helfen Sie uns, Autorell sicher und aktuell zu halten, indem Sie die Anzeige melden. Wir prüfen alle eingehenden Meldungen.',
   },
 } as const
 
+const localizedReportDisclaimer: Record<PublicLocale, string> = {
+  sv: listingDetailCopy.sv.euDisclaimer,
+  de: listingDetailCopy.de.euDisclaimer,
+  en: listingDetailCopy.en.euDisclaimer,
+  at: listingDetailCopy.de.euDisclaimer,
+  be: 'Vermoedt u dat er iets in de advertentie niet klopt of dat er informatie ontbreekt? Help ons Autorell veilig en up-to-date te houden door de advertentie te melden. We bekijken alle ontvangen meldingen.',
+  fr: "Vous pensez qu'une information dans l'annonce est incorrecte ou manquante ? Aidez-nous à garder Autorell sûr et à jour en signalant l'annonce. Nous examinons tous les signalements reçus.",
+  es: '¿Sospechas que algo del anuncio no es correcto o que falta información? Ayúdanos a mantener Autorell seguro y actualizado denunciando el anuncio. Revisamos todos los informes recibidos.',
+  it: "Sospetti che qualcosa nell'annuncio non sia corretto o che manchino informazioni? Aiutaci a mantenere Autorell sicuro e aggiornato segnalando l'annuncio. Esaminiamo tutte le segnalazioni ricevute.",
+  pl: 'Podejrzewasz, że coś w ogłoszeniu jest nieprawidłowe albo brakuje informacji? Pomóż nam dbać o bezpieczeństwo i aktualność Autorell, zgłaszając ogłoszenie. Sprawdzamy wszystkie otrzymane zgłoszenia.',
+  nl: 'Vermoedt u dat er iets in de advertentie niet klopt of dat er informatie ontbreekt? Help ons Autorell veilig en up-to-date te houden door de advertentie te melden. We bekijken alle ontvangen meldingen.',
+  fi: 'Epäiletkö, että ilmoituksessa on virhe tai siitä puuttuu tietoja? Auta meitä pitämään Autorell turvallisena ja ajan tasalla ilmoittamalla ilmoituksesta. Tarkistamme kaikki saamamme ilmoitukset.',
+  da: 'Mistænker du, at noget i annoncen ikke stemmer, eller at der mangler oplysninger? Hjælp os med at holde Autorell trygt og opdateret ved at anmelde annoncen. Vi gennemgår alle indkomne rapporter.',
+}
+
 function getListingDetailCopy(locale: PublicLocale) {
   if (locale === 'sv' || locale === 'de' || locale === 'at' || locale === 'en') {
-    return listingDetailCopy[locale === 'at' ? 'de' : locale]
+    return {
+      ...listingDetailCopy[locale === 'at' ? 'de' : locale],
+      euDisclaimer: localizedReportDisclaimer[locale],
+    }
   }
 
   return {
     ...translatePublicObject(locale, listingDetailCopy.en),
+    euDisclaimer: localizedReportDisclaimer[locale],
     mapLabel: localizedMapLabels[locale],
   }
 }
