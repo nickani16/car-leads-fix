@@ -274,7 +274,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
             <p className="mt-2 max-w-2xl text-sm leading-7 text-[#566174]">
               {translate('Skicka in problemet med annons-ID, betalningsreferens eller den e-postadress kontot gäller.', 'Send the issue with listing ID, payment reference or the email address for the account.', 'Senden Sie das Problem mit Anzeigen-ID, Zahlungsreferenz oder der E-Mail-Adresse des Kontos.')}
             </p>
-            <Link href={localizePublicHref(locale, '/report')} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0054d8]">
+            <Link href={localizePublicHref(locale, '/report')} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0054d8] sm:w-auto sm:justify-start">
               {translate('Rapportera problem', 'Report a problem', 'Problem melden')} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
