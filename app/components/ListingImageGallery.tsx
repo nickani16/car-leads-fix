@@ -194,10 +194,10 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={goBack}
-            className="absolute left-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
+            className="absolute left-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-5 w-5" strokeWidth={1.9} />
+            <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </button>
         ) : null}
 
@@ -210,9 +210,9 @@ export default function ListingImageGallery({
                 label={shareLabel}
                 copiedLabel={shareCopiedLabel}
                 variant="button"
-                className="!h-11 !min-h-11 !w-11 !rounded-full !border-0 !bg-white/92 !px-0 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white"
+                className="!h-10 !min-h-10 !w-10 !rounded-full !border-0 !bg-white/92 !px-0 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white"
                 labelClassName="sr-only"
-                iconClassName="h-5 w-5"
+                iconClassName="h-[18px] w-[18px]"
               />
             ) : null}
             <SavedListingButton
@@ -220,8 +220,8 @@ export default function ListingImageGallery({
               label={fullscreenCopy.save}
               savedLabel={fullscreenCopy.saved}
               variant="icon"
-              className="!h-11 !w-11 !rounded-full !bg-white/92 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white hover:!text-[#0866ff]"
-              iconClassName="h-5 w-5"
+              className="!h-10 !w-10 !rounded-full !bg-white/92 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white hover:!text-[#0866ff]"
+              iconClassName="h-[18px] w-[18px]"
             />
           </div>
         ) : null}
@@ -247,17 +247,8 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={openFullscreen}
-              style={{
-                fontWeight: 400,
-                position: 'absolute',
-                left: 'calc(100vw - 76px)',
-                bottom: '12px',
-                zIndex: 50,
-                background: 'rgba(255, 255, 255, 0.94)',
-                color: '#101828',
-                boxShadow: '0 6px 18px rgba(16, 24, 40, 0.16)',
-              }}
-              className="absolute bottom-3 z-10 inline-flex min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
+              style={{ fontWeight: 400 }}
+              className="absolute bottom-3 right-3 z-10 inline-flex min-h-9 items-center rounded-[10px] bg-white/94 px-3 text-[14px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
               aria-label="Open photos"
             >
               {active + 1}/{displayImageCount}
@@ -272,6 +263,17 @@ export default function ListingImageGallery({
               {active + 1}/{displayImageCount}
             </button>
           </>
+        ) : null}
+
+        {activeImage ? (
+          <button
+            type="button"
+            onClick={openFullscreen}
+            className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/94 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
+            aria-label="Open fullscreen gallery"
+          >
+            <Maximize2 className="h-[17px] w-[17px]" strokeWidth={1.9} />
+          </button>
         ) : null}
       </div>
 
