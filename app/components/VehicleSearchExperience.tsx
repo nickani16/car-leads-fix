@@ -2114,7 +2114,7 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
+                <div className="absolute left-[calc(100vw-154px)] top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
