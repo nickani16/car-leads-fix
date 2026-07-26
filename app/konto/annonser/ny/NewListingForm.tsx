@@ -1856,7 +1856,7 @@ function Field(
         name={name}
         value={value}
         onChange={(event) => onValueChange(String(name), event.target.value)}
-        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="block h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
@@ -1879,9 +1879,9 @@ function LeaseOfferFields({
   const isMachine = category === 'agriculture' || category === 'construction'
   const label = (english: string) => leaseLabel(locale, english)
   return (
-    <section className="md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
+    <section className="min-w-0 md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
       <h3 className="text-base font-semibold text-[#101828]">{label('Leasing')}</h3>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2">
         <PriceField
           name="leaseMonthlyPrice"
           locale={locale}
@@ -1990,7 +1990,7 @@ function PriceField({
           min="0"
           step="1"
           onChange={(event) => onValueChange(name, event.target.value)}
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          className="block h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[10px] border border-[#d7deed] bg-[#f7faff] px-3 text-sm font-semibold text-[#344054]">
           {currency.toUpperCase()}
@@ -3192,8 +3192,11 @@ function localizeFormText(locale: PublicLocale, sv: string, en: string, de: stri
 
 function currentDocumentLocale(): PublicLocale {
   if (typeof document === 'undefined') return 'en'
-  const language = document.documentElement.lang.toLowerCase().split('-')[0]
-  return (['sv', 'de', 'en', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da'] as string[]).includes(language)
+  const supportedLocales = ['sv', 'de', 'en', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da'] as const
+  const pathLocale = window.location.pathname.split('/').filter(Boolean)[0]
+  const documentLocale = document.documentElement.lang.toLowerCase().split('-')[0]
+  const language = pathLocale === 'se' ? 'sv' : pathLocale || documentLocale
+  return (supportedLocales as readonly string[]).includes(language)
     ? language as PublicLocale
     : 'en'
 }
