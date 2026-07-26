@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MessageCircle, Phone } from 'lucide-react'
 import { translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
@@ -45,8 +45,6 @@ export default function ListingMobileContactBar({
   const [loadingPhone, setLoadingPhone] = useState(false)
   const [phoneError, setPhoneError] = useState<'login' | 'unavailable' | ''>('')
   const [messageLoading, setMessageLoading] = useState(false)
-  const [bottomNavVisible, setBottomNavVisible] = useState(true)
-  const lastScrollY = useRef(0)
 
   const phoneText =
     locale === 'sv'
@@ -60,16 +58,9 @@ export default function ListingMobileContactBar({
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      const difference = currentScrollY - lastScrollY.current
 
       setVisible(currentScrollY > 420)
-      if (currentScrollY < 10) setBottomNavVisible(true)
-      else if (difference > 1) setBottomNavVisible(false)
-      else if (difference < -1) setBottomNavVisible(true)
-
-      lastScrollY.current = currentScrollY
     }
-    lastScrollY.current = window.scrollY
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -140,13 +131,10 @@ export default function ListingMobileContactBar({
   }
 
   const show = visible && !contactVisible
-  const bottomClass = bottomNavVisible
-    ? 'bottom-[calc(3.75rem+env(safe-area-inset-bottom))]'
-    : 'bottom-[calc(.75rem+env(safe-area-inset-bottom))]'
 
   return (
     <div
-      className={`fixed inset-x-3 z-[60] rounded-[18px] border border-[#d7e2f2] bg-white/96 p-2 shadow-[0_18px_50px_rgba(16,24,40,.22)] backdrop-blur transition-[bottom,transform,opacity] duration-300 ease-out sm:hidden ${bottomClass} ${
+      className={`fixed inset-x-3 bottom-[calc(4.35rem+env(safe-area-inset-bottom))] z-[60] rounded-[18px] border border-[#d7e2f2] bg-white/96 p-2 shadow-[0_18px_50px_rgba(16,24,40,.22)] backdrop-blur transition-[transform,opacity] duration-300 ease-out sm:hidden ${
         show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-5 opacity-0'
       }`}
     >

@@ -435,11 +435,10 @@ function HomeListingSection({
       </div>
       {section.items.length ? (
         <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
-          {section.items.map((item, index) => (
+          {section.items.map((item) => (
             <HomeListingCard
               key={`${section.title}-${item.id}`}
               item={item}
-              index={index + 1}
               locale={locale}
             />
           ))}
@@ -455,11 +454,9 @@ function HomeListingSection({
 
 function HomeListingCard({
   item,
-  index,
   locale,
 }: {
   item: HomeListingCardItem
-  index: number
   locale: PublicLocale
 }) {
   return (
@@ -477,9 +474,6 @@ function HomeListingCard({
         ) : (
           <NoPhotoFrame className="h-full w-full border-0" compact locale={locale} />
         )}
-        <span className="absolute left-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-[#101828]/75 text-xs font-semibold text-white">
-          {index}
-        </span>
         {item.isFeatured ? (
           <span className="absolute right-3 top-3 rounded-full bg-[#0866ff] px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
             {featuredListingLabel(locale)}

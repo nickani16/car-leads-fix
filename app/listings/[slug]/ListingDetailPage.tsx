@@ -407,6 +407,7 @@ export default async function ListingDetailPage({
         marketCode={marketCode}
         marketplaceChannel={{ label: categoryLabel, slug: category.slug }}
         hideOnMobile
+        lockMobileBottomNav
       />
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
         <div className="hidden items-center justify-between gap-3 sm:flex">
