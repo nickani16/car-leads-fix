@@ -84,6 +84,7 @@ const translations: Record<string, string> = {
   Tankbil: 'Tanker',
   Lastväxlare: 'Hook lift',
   Betongbil: 'Concrete mixer',
+  Buss: 'Bus',
   Grävmaskin: 'Excavator',
   Minigrävare: 'Mini excavator',
   Hjullastare: 'Wheel loader',
