@@ -53,6 +53,7 @@ import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/pu
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
+import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
@@ -532,7 +533,11 @@ export default function VehicleSearchExperience({
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
-  const safeInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
+  const baseInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
+  const safeInitialCategories = initialMode === 'leasing'
+    ? baseInitialCategories.filter((category) => isLeasingMarketplaceCategory(category))
+    : baseInitialCategories
+  if (!safeInitialCategories.length) safeInitialCategories.push('cars')
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
   const safeInitialMarkets = normalizeMarketSelection(
@@ -738,6 +743,15 @@ export default function VehicleSearchExperience({
   }, [searchInput])
 
   useEffect(() => {
+    if (mode !== 'leasing') return
+    setSelectedCategories((current) => {
+      const next = current.filter((category) => isLeasingMarketplaceCategory(category))
+      if (next.length === current.length && next.length) return current
+      return next.length ? next : ['cars']
+    })
+  }, [mode])
+
+  useEffect(() => {
     if (hasExplicitInitialFilters) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
       return () => window.clearTimeout(timer)
@@ -751,12 +765,19 @@ export default function VehicleSearchExperience({
     }
 
     const timer = window.setTimeout(() => {
-      setMode(restored.mode === 'leasing' ? 'leasing' : 'sale')
+      const restoredMode = restored.mode === 'leasing' ? 'leasing' : 'sale'
+      setMode(restoredMode)
       setSelectedSearchSuggestions([])
       setSearchInput(restored.query || '')
       setDebouncedSearchInput(restored.query || '')
       setQuery(restored.query || '')
-      setSelectedCategories(normalizeSavedCategories(restored.categories).length ? normalizeSavedCategories(restored.categories) : ['cars'])
+      {
+        const restoredCategories = normalizeSavedCategories(restored.categories)
+        const nextCategories = restoredMode === 'leasing'
+          ? restoredCategories.filter((category) => isLeasingMarketplaceCategory(category))
+          : restoredCategories
+        setSelectedCategories(nextCategories.length ? nextCategories : ['cars'])
+      }
       setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
       setMarketOverride(true)
       setMinPrice(restored.minPrice || '')
@@ -884,6 +905,9 @@ export default function VehicleSearchExperience({
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
   const selectableCategories = categories.filter((item) => item.key !== 'all')
+  const visibleSelectableCategories = mode === 'leasing'
+    ? selectableCategories.filter((item) => isLeasingMarketplaceCategory(item.key))
+    : selectableCategories
   const activeCategoryItem = selectedCategoryItems[0] || categories.find((item) => item.key === 'cars')!
   const activeCategoryKey = activeCategoryItem.key
   const filterProfile = [
@@ -923,6 +947,7 @@ export default function VehicleSearchExperience({
     const maxOperatingHoursValue = parseOptionalNumber(maxOperatingHours)
     const matches = searchListings.filter((listing) => {
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
+      if (mode === 'leasing' && !isLeasingMarketplaceCategory(listing.category)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
       if (make && listing.make !== make) return false
@@ -1048,6 +1073,7 @@ export default function VehicleSearchExperience({
 
   function toggleCategory(nextCategory: string) {
     if (nextCategory === 'all') return
+    if (mode === 'leasing' && !isLeasingMarketplaceCategory(nextCategory)) return
     if (nextCategory === activeCategoryKey) {
       return
     }
@@ -1601,7 +1627,9 @@ export default function VehicleSearchExperience({
 
   function renderDesktopFilterBar(placement: 'desktop' | 'mobile' = 'mobile') {
     const categoryLabel = categoryText(
-      categories.find((item) => item.key === activeCategoryKey) || selectableCategories[0],
+      visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
+        visibleSelectableCategories[0] ||
+        selectableCategories[0],
       locale,
     )
     const modeLabel = mode === 'leasing'
@@ -1771,7 +1799,7 @@ export default function VehicleSearchExperience({
             {desktopMenuButton('category', categoryLabel, false)}
             {renderDesktopFilterPopover('category', (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
-                {selectableCategories.map((item) => {
+                {visibleSelectableCategories.map((item) => {
                   const Icon = item.icon
                   return (
                     <button

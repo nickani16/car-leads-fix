@@ -25,6 +25,7 @@ import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import {
   currencyForCountry,
   getMarketplaceCategory,
+  isLeasingMarketplaceCategory,
   marketplaceLanguage,
   normalizeMarketplaceCategory,
   type SupportedCurrency,
@@ -167,6 +168,10 @@ export default function NewListingForm({
   const usesSwedishMileage = listingCountryCode.toUpperCase() === 'SE'
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
+  const leasingAllowedForCategory = isLeasingMarketplaceCategory(category)
+  const allowedOfferTypeValues = leasingAllowedForCategory
+    ? offerTypeValues
+    : offerTypeValues.filter((item) => item.value !== 'lease')
   const progress = Math.round(((step + 1) / steps.length) * 100)
   const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT'].includes(listingCountryCode)
   const orderedImages = useMemo(() => {
@@ -221,6 +226,15 @@ export default function NewListingForm({
     if (!draftRestored.current) return
     window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, savedAt: new Date().toISOString() }))
   }, [category, draftKey, equipment, step, values])
+
+  useEffect(() => {
+    if (leasingAllowedForCategory) return
+    setValues((current) => (
+      isLeaseOffer(normalizeOfferType(current.offerType))
+        ? { ...current, offerType: 'sale' }
+        : current
+    ))
+  }, [leasingAllowedForCategory])
 
   useEffect(() => {
     if (!draftImagesRestored.current) return
@@ -347,7 +361,9 @@ export default function NewListingForm({
     setValues((current) => ({
       packageId: current.packageId || 'free_7d',
       currency: current.currency || currencyForCountry(listingCountryCode),
-      offerType: current.offerType || 'sale',
+      offerType: isLeasingMarketplaceCategory(nextCategory)
+        ? current.offerType || 'sale'
+        : 'sale',
     }))
     setEquipment([])
     setEquipmentSearch('')
@@ -379,6 +395,9 @@ export default function NewListingForm({
         return missing(copy.errors.operatingHours)
       }
       const offerType = normalizeOfferType(values.offerType)
+      if (isLeaseOffer(offerType) && !leasingAllowedForCategory) {
+        return missing(translatePublic(locale, 'Leasing is only available for cars, vans, trucks, agricultural machinery and construction machinery.'))
+      }
       if (isLeaseOffer(offerType) && !values.leaseMonthlyPrice) return missing(translatePublic(locale, 'Enter the monthly lease price.'))
       if (offerType !== 'lease' && !values.price) return missing(copy.errors.price)
       if (!values.county) return missing(copy.errors.chooseField.replace('{field}', marketplaceRegionLabel(listingCountryCode, locale).toLowerCase()))
@@ -657,7 +676,7 @@ export default function NewListingForm({
             <div className="md:col-span-2">
               <p className="mb-2 block text-sm font-semibold">Erbjudande</p>
               <div className="grid gap-2 sm:grid-cols-3">
-                {offerTypeValues.map((item) => (
+                {allowedOfferTypeValues.map((item) => (
                   <ChoiceButton
                     key={item.value}
                     selected={normalizeOfferType(values.offerType) === item.value}
@@ -706,7 +725,7 @@ export default function NewListingForm({
               onValueChange={setValue}
               required
             />
-            {isLeaseOffer(normalizeOfferType(values.offerType)) ? (
+            {leasingAllowedForCategory && isLeaseOffer(normalizeOfferType(values.offerType)) ? (
               <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
             ) : null}
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />

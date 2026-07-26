@@ -38,6 +38,7 @@ import {
 } from '@/lib/public-i18n'
 import {
   getMarketplaceCategory,
+  isLeasingMarketplaceCategory,
   marketplaceLanguage,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
@@ -357,6 +358,14 @@ export default function HomeHeroVehicleSearch({
     selectedCategories.length === 1
       ? categoryLabel(selectedCategory.slug, locale)
       : chooseCategoryLabel
+  const visibleCategories = intent === 'leasing'
+    ? categories.filter((item) => isLeasingMarketplaceCategory(item.slug))
+    : categories
+
+  useEffect(() => {
+    if (intent !== 'leasing') return
+    setSelectedCategories((current) => current.filter((slug) => isLeasingMarketplaceCategory(slug)))
+  }, [intent])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -414,6 +423,7 @@ export default function HomeHeroVehicleSearch({
   }
 
   function toggleCategory(slug: MarketplaceCategorySlug) {
+    if (intent === 'leasing' && !isLeasingMarketplaceCategory(slug)) return
     setSelectedCategories((current) => (current.includes(slug) ? [] : [slug]))
     setCategoryError(false)
     setCategoryOpen(false)
@@ -502,7 +512,14 @@ export default function HomeHeroVehicleSearch({
       const nextMinYear = params.get('minYear')
 
       if (nextMarkets) setMarkets(nextMarkets.split(',').filter(Boolean))
-      if (nextCategories) setSelectedCategories(nextCategories.split(',').filter(Boolean) as MarketplaceCategorySlug[])
+      if (nextCategories) {
+        const next = nextCategories
+          .split(',')
+          .filter(Boolean)
+          .map((value) => value as MarketplaceCategorySlug)
+          .filter((slug) => intent !== 'leasing' || isLeasingMarketplaceCategory(slug))
+        setSelectedCategories(next)
+      }
       setAdvancedFilters((current) => ({
         ...current,
         make: nextMake || current.make,
@@ -724,7 +741,7 @@ export default function HomeHeroVehicleSearch({
           </button>
           {categoryOpen ? (
             <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
-              {categories.map(({ slug, icon: Icon }) => (
+              {visibleCategories.map(({ slug, icon: Icon }) => (
                 <button
                   key={slug}
                   type="button"
@@ -747,7 +764,7 @@ export default function HomeHeroVehicleSearch({
         </div>
 
         <div className="mt-8 hidden grid-cols-3 gap-2 lg:grid">
-          {categories.slice(0, 6).map(({ slug, icon: Icon }) => (
+          {visibleCategories.slice(0, 6).map(({ slug, icon: Icon }) => (
             <button
               key={slug}
               type="button"
@@ -768,7 +785,7 @@ export default function HomeHeroVehicleSearch({
           <p className="mt-3 hidden text-sm font-medium text-[#d92d20] lg:block">{chooseCategoryErrorLabel}</p>
         ) : null}
 
-        {!moreCategoriesOpen ? (
+        {!moreCategoriesOpen && visibleCategories.length > 6 ? (
           <div className="mt-3 hidden lg:block">
             <button
               type="button"
@@ -787,7 +804,7 @@ export default function HomeHeroVehicleSearch({
 
         {moreCategoriesOpen ? (
           <div className="mt-3 hidden grid-cols-3 gap-2 lg:grid">
-            {categories.slice(6).map(({ slug, icon: Icon }) => (
+            {visibleCategories.slice(6).map(({ slug, icon: Icon }) => (
               <button
                 key={slug}
                 type="button"

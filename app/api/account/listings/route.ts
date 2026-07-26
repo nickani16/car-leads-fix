@@ -15,6 +15,7 @@ import {
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import {
   currencyForCountry,
+  isLeasingMarketplaceCategory,
   isSupportedCurrency,
   normalizeMarketplaceCategory,
 } from '@/lib/marketplace'
@@ -552,6 +553,13 @@ export async function POST(request: Request) {
     if (!city) return listingFormError('Fyll i ort.', 0, 'city')
     if (isSaleOffer(offerType) && (!Number.isFinite(price) || price <= 0)) {
       return listingFormError('Fyll i ett giltigt försäljningspris.', 0, 'price')
+    }
+    if (isLeaseOffer(offerType) && !isLeasingMarketplaceCategory(category)) {
+      return listingFormError(
+        'Leasing kan bara användas för bilar, transportbilar, lastbilar, lantbruksmaskiner och entreprenadmaskiner.',
+        0,
+        'offerType',
+      )
     }
     const leaseData: LeaseData = {
       monthlyPrice: optionalNumber(text(form, 'leaseMonthlyPrice')),

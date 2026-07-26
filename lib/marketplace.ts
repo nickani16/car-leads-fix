@@ -41,6 +41,14 @@ export const marketplaceCategories: MarketplaceCategory[] = [
   { slug: 'electric-bikes', icon: Bike, labels: { sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder' }, singular: { sv: 'cykel', en: 'bike', de: 'Fahrrad' }, keywords: ['bike', 'bicycle', 'cykel', 'e-bike', 'elcykel'] },
 ]
 
+export const leasingMarketplaceCategorySlugs = [
+  'cars',
+  'vans',
+  'trucks',
+  'agriculture',
+  'construction',
+] as const satisfies MarketplaceCategorySlug[]
+
 export const marketplaceCategoryAliases: Record<string, MarketplaceCategorySlug> = {
   bikes: 'motorcycles',
   farm: 'agriculture',
@@ -56,6 +64,12 @@ export function normalizeMarketplaceCategory(value: string): MarketplaceCategory
   return marketplaceCategories.some((category) => category.slug === normalized)
     ? (normalized as MarketplaceCategorySlug)
     : 'cars'
+}
+
+export function isLeasingMarketplaceCategory(value: string) {
+  return leasingMarketplaceCategorySlugs.includes(
+    normalizeMarketplaceCategory(value) as (typeof leasingMarketplaceCategorySlugs)[number],
+  )
 }
 
 export function getMarketplaceCategory(value: string) {
