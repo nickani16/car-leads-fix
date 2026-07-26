@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Check, Mail, Send, X } from 'lucide-react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
@@ -257,23 +258,11 @@ export default function ListingContactFormButton({
     }
   }
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setOpen(true)
-          setStatus('idle')
-        }}
-        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
-      >
-        <Mail className="h-4 w-4 text-[#0866ff]" />
-        {text.open}
-      </button>
-
-      {open ? (
+  const modal =
+    open && typeof document !== 'undefined'
+      ? createPortal(
         <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center overflow-hidden bg-[#101828]/45 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:px-6 sm:py-6"
+          className="fixed inset-0 isolate z-[2147483647] flex items-center justify-center overflow-hidden bg-[#101828]/35 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:px-6 sm:py-6"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setOpen(false)
           }}
@@ -359,8 +348,26 @@ export default function ListingContactFormButton({
               </button>
             </form>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+      : null
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(true)
+          setStatus('idle')
+        }}
+        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+      >
+        <Mail className="h-4 w-4 text-[#0866ff]" />
+        {text.open}
+      </button>
+
+      {modal}
     </>
   )
 }
