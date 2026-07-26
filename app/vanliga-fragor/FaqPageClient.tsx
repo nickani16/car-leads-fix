@@ -22,12 +22,12 @@ const categories: Array<{ key: CategoryKey; label: Localized }> = [
   { key: 'language', label: { sv: 'Språk', en: 'Language', de: 'Sprache' } },
 ]
 
-const popularSearches = [
-  { sv: 'Skapa annons', en: 'Create listing', de: 'Anzeige erstellen' },
-  { sv: 'Betalning', en: 'Payment', de: 'Zahlung' },
-  { sv: 'Verifiering', en: 'Verification', de: 'Verifizierung' },
-  { sv: 'Export', en: 'Export', de: 'Export' },
-] satisfies Localized[]
+const popularSearches: Array<{ category: CategoryKey; label: Localized }> = [
+  { category: 'listings', label: { sv: 'Skapa annons', en: 'Create listing', de: 'Anzeige erstellen' } },
+  { category: 'pricing', label: { sv: 'Betalning', en: 'Payment', de: 'Zahlung' } },
+  { category: 'safety', label: { sv: 'Verifiering', en: 'Verification', de: 'Verifizierung' } },
+  { category: 'export', label: { sv: 'Export', en: 'Export', de: 'Export' } },
+]
 
 const topicCards: Array<{ category: Exclude<CategoryKey, 'all'>; label: Localized; icon: typeof CarFront }> = [
   { category: 'listings', label: { sv: 'Annonsering', en: 'Listing ads', de: 'Inserieren' }, icon: Megaphone },
@@ -180,7 +180,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
             placeholder={translate('Sök bland frågor...', 'Search questions...', 'Fragen durchsuchen...')}
             className="h-13 w-full min-w-0 bg-transparent text-[#101828] outline-none placeholder:!text-[#98a2b3] [&::placeholder]:!text-[#98a2b3]"
           />
-          <button type="button" className="hidden min-h-9 rounded-[8px] bg-[#0866ff] px-5 text-xs font-bold text-white transition hover:bg-[#0054d8] sm:inline-flex sm:items-center">
+          <button type="button" className="hidden min-h-9 rounded-[8px] bg-[#0866ff] px-5 text-xs font-semibold text-white transition hover:bg-[#0054d8] sm:inline-flex sm:items-center">
             {translate('Sök', 'Search', 'Suchen')}
           </button>
         </div>
@@ -189,16 +189,12 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
           <span className="mr-1 text-xs font-semibold text-[#344054]">{translate('Många söker på', 'Many search for', 'Häufig gesucht')}</span>
           {popularSearches.map((item) => (
             <button
-              key={item.en}
+              key={item.label.en}
               type="button"
-              onClick={() => {
-                setCategory('all')
-                setSearch(text(item))
-                setOpen(null)
-              }}
+              onClick={() => selectCategory(item.category)}
               className="rounded-[8px] border border-[#d8d7e1] bg-white px-3 py-1.5 text-xs font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
             >
-              {text(item)}
+              {text(item.label)}
             </button>
           ))}
         </div>
@@ -214,7 +210,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
               }`}
             >
               <Icon className="h-6 w-6 text-[#0866ff]" />
-              <span className="text-sm font-bold text-[#101828]">{text(label)}</span>
+              <span className="text-sm font-semibold text-[#101828]">{text(label)}</span>
             </button>
           ))}
         </div>
@@ -236,7 +232,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
       </div>
 
       <div className="mt-7 flex items-center justify-between gap-4">
-        <h2 className="text-sm font-bold text-[#101828]">{translate('Det här undrar folk ofta över:', 'People often ask about this:', 'Das fragen Nutzer häufig:')}</h2>
+        <h2 className="text-sm font-semibold text-[#101828]">{translate('Det här undrar folk ofta över:', 'People often ask about this:', 'Das fragen Nutzer häufig:')}</h2>
         <span className="text-xs font-semibold text-[#667085]">{filtered.length} / {questions.length}</span>
       </div>
 
@@ -271,14 +267,26 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
         </div>
       )}
 
-      <div className="mt-10 rounded-[8px] border border-[#0866ff] bg-white p-6 sm:p-8">
-        <h2 className="text-xl font-semibold tracking-[-0.02em] text-[#101828]">{translate('Behöver du fortfarande hjälp?', 'Still need help?', 'Brauchen Sie noch Hilfe?')}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-[#566174]">
-          {translate('Skicka in problemet med annons-ID, betalningsreferens eller den e-postadress kontot gäller.', 'Send the issue with listing ID, payment reference or the email address for the account.', 'Senden Sie das Problem mit Anzeigen-ID, Zahlungsreferenz oder der E-Mail-Adresse des Kontos.')}
-        </p>
-        <Link href={localizePublicHref(locale, '/report')} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#0054d8]">
-          {translate('Rapportera problem', 'Report a problem', 'Problem melden')} <ArrowRight className="h-4 w-4" />
-        </Link>
+      <div className="mt-10 overflow-hidden rounded-[12px] border border-[#b8cdfd] bg-[#fbfdff] p-6 sm:p-8">
+        <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0 md:max-w-[560px]">
+            <h2 className="text-xl font-semibold tracking-[-0.02em] text-[#101828]">{translate('Behöver du fortfarande hjälp?', 'Still need help?', 'Brauchen Sie noch Hilfe?')}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-[#566174]">
+              {translate('Skicka in problemet med annons-ID, betalningsreferens eller den e-postadress kontot gäller.', 'Send the issue with listing ID, payment reference or the email address for the account.', 'Senden Sie das Problem mit Anzeigen-ID, Zahlungsreferenz oder der E-Mail-Adresse des Kontos.')}
+            </p>
+            <Link href={localizePublicHref(locale, '/report')} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0054d8]">
+              {translate('Rapportera problem', 'Report a problem', 'Problem melden')} <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="flex shrink-0 justify-center md:w-[260px] lg:w-[300px]">
+            <img
+              src="/help-center-towing.svg"
+              alt=""
+              className="h-auto w-full max-w-[220px] sm:max-w-[250px] md:max-w-[280px]"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
       </div>
     </>
   )
