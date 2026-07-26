@@ -2104,8 +2104,8 @@ export default function VehicleSearchExperience({
                 </div>
 
             <div className="bg-white px-4 py-3 sm:px-6 sm:py-4">
-              <div className="flex w-full items-center justify-between gap-2 sm:gap-3">
-                <p className="min-h-6 min-w-0 flex-1 truncate pr-2 text-sm font-medium leading-6">
+              <div className="relative flex w-full items-center justify-between gap-2 sm:gap-3">
+                <p className="min-h-6 min-w-0 flex-1 truncate pr-[150px] text-sm font-medium leading-6 sm:pr-2">
                   {searchLoading && searchPage === 1 ? (
                     <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
                   ) : searchError ? (
@@ -2114,7 +2114,7 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+                <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
