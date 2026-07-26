@@ -1848,15 +1848,27 @@ function Field(
   },
 ) {
   const { label, helper, name, value, locale, onValueChange, ...rest } = props
+  const inputStyle: React.CSSProperties = {
+    ...rest.style,
+    ...(rest.type === 'date'
+      ? {
+          WebkitAppearance: 'none',
+          inlineSize: '100%',
+          maxInlineSize: '100%',
+          minInlineSize: 0,
+        }
+      : {}),
+  }
   return (
-    <label>
+    <label className="block min-w-0 max-w-full">
       <span className="mb-2 block text-sm font-semibold">{leaseLabel(locale || currentDocumentLocale(), label)}</span>
       <input
         {...rest}
         name={name}
         value={value}
+        style={inputStyle}
         onChange={(event) => onValueChange(String(name), event.target.value)}
-        className="block h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="block box-border h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
