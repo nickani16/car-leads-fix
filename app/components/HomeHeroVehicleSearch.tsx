@@ -781,10 +781,6 @@ export default function HomeHeroVehicleSearch({
             </button>
           ))}
         </div>
-        {categoryError ? (
-          <p className="mt-3 hidden text-sm font-medium text-[#d92d20] lg:block">{chooseCategoryErrorLabel}</p>
-        ) : null}
-
         {!moreCategoriesOpen && visibleCategories.length > 6 ? (
           <div className="mt-3 hidden lg:block">
             <button
@@ -821,6 +817,9 @@ export default function HomeHeroVehicleSearch({
               </button>
             ))}
           </div>
+        ) : null}
+        {categoryError ? (
+          <p className="mt-3 hidden text-sm font-medium text-[#d92d20] lg:block">{chooseCategoryErrorLabel}</p>
         ) : null}
 
         <div ref={moreFiltersRef} className="relative mt-7 lg:mt-6">
