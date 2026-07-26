@@ -717,14 +717,16 @@ export default function NewListingForm({
                 required
               />
             ) : null}
-            <PriceField
-              name="price"
-              label={copy.price}
-              currency={values.currency || defaultCurrency}
-              value={values.price || ''}
-              onValueChange={setValue}
-              required
-            />
+            {!isLeaseOffer(normalizeOfferType(values.offerType)) ? (
+              <PriceField
+                name="price"
+                label={copy.price}
+                currency={values.currency || defaultCurrency}
+                value={values.price || ''}
+                onValueChange={setValue}
+                required
+              />
+            ) : null}
             {leasingAllowedForCategory && isLeaseOffer(normalizeOfferType(values.offerType)) ? (
               <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
             ) : null}
@@ -1893,8 +1895,6 @@ function LeaseOfferFields({
           value={values.leaseTermMonths || ''}
           onValueChange={onChange}
         />
-        <Field name="leaseMinTermMonths" label="Kortaste avtalsperiod (månader)" type="number" min="1" value={values.leaseMinTermMonths || ''} onValueChange={onChange} />
-        <Field name="leaseMaxTermMonths" label="Längsta avtalsperiod (månader)" type="number" min="1" value={values.leaseMaxTermMonths || ''} onValueChange={onChange} />
         <Field
           name="leaseInitialPayment"
           label="Första förhöjda avgift"
@@ -3194,67 +3194,42 @@ function currentDocumentLocale(): PublicLocale {
 }
 
 const leaseLabelEntries = [
-  { english: 'Leasing', sv: 'Leasing', keys: ['leasing'] },
-  { english: 'Monthly price', sv: 'Månadskostnad', keys: ['monthly price', 'månadskostnad'] },
-  { english: 'Contract term (months)', sv: 'Avtalsperiod (månader)', keys: ['contract term', 'avtalsperiod'] },
-  { english: 'Minimum contract term (months)', sv: 'Kortaste avtalsperiod (månader)', keys: ['minimum contract', 'kortaste avtalsperiod'] },
-  { english: 'Maximum contract term (months)', sv: 'Längsta avtalsperiod (månader)', keys: ['maximum contract', 'längsta avtalsperiod'] },
-  { english: 'Initial payment', sv: 'Första förhöjda avgift', keys: ['initial payment', 'första förhöjda'] },
+  { english: 'Monthly price', sv: 'M\u00e5nadskostnad', keys: ['monthly price', 'm\u00e5nadskostnad'] },
+  { english: 'Contract term (months)', sv: 'Avtalsperiod (m\u00e5nader)', keys: ['contract term', 'avtalsperiod'] },
+  { english: 'Initial payment', sv: 'F\u00f6rsta f\u00f6rh\u00f6jda avgift', keys: ['initial payment', 'f\u00f6rsta f\u00f6rh\u00f6jda'] },
   { english: 'Deposit', sv: 'Deposition', keys: ['deposit', 'deposition'] },
-  { english: 'Setup fee', sv: 'Uppläggningsavgift', keys: ['setup fee', 'uppläggningsavgift'] },
-  { english: 'Residual value', sv: 'Restvärde', keys: ['residual value', 'restvärde'] },
-  { english: 'Allowed mileage per year (km)', sv: 'Tillåten körsträcka per år (km)', keys: ['allowed mileage', 'tillåten körsträcka'] },
-  { english: 'Excess mileage cost', sv: 'Kostnad per övermil', keys: ['excess mileage', 'kostnad per övermil'] },
-  { english: 'Available from', sv: 'Tillgänglig från', keys: ['available from', 'tillgänglig från'] },
-  { english: 'Service included', sv: 'Service ingår', keys: ['service included', 'service ingår'] },
-  { english: 'Business leasing', sv: 'Företagsleasing', keys: ['business leasing', 'företagsleasing'] },
-  { english: 'Insurance included', sv: 'Försäkring ingår', keys: ['insurance included', 'försäkring ingår'] },
-  { english: 'Maintenance included', sv: 'Underhåll ingår', keys: ['maintenance included', 'underhåll ingår'] },
-  { english: 'Repairs included', sv: 'Reparationer ingår', keys: ['repairs included', 'reparationer ingår'] },
-  { english: 'Tyres included', sv: 'Däck ingår', keys: ['tyres included', 'tires included', 'däck ingår'] },
-  { english: 'Delivery included', sv: 'Leverans ingår', keys: ['delivery included', 'leverans ingår'] },
+  { english: 'Setup fee', sv: 'Uppl\u00e4ggningsavgift', keys: ['setup fee', 'uppl\u00e4ggningsavgift'] },
+  { english: 'Residual value', sv: 'Restv\u00e4rde', keys: ['residual value', 'restv\u00e4rde'] },
+  { english: 'Allowed mileage per year (km)', sv: 'Till\u00e5ten k\u00f6rstr\u00e4cka per \u00e5r (km)', keys: ['allowed mileage', 'till\u00e5ten k\u00f6rstr\u00e4cka'] },
+  { english: 'Excess mileage cost', sv: 'Kostnad per \u00f6vermil', keys: ['excess mileage', 'kostnad per \u00f6vermil'] },
+  { english: 'Available from', sv: 'Tillg\u00e4nglig fr\u00e5n', keys: ['available from', 'tillg\u00e4nglig fr\u00e5n'] },
+  { english: 'Service included', sv: 'Service ing\u00e5r', keys: ['service included', 'service ing\u00e5r'] },
+  { english: 'Business leasing', sv: 'F\u00f6retagsleasing', keys: ['business leasing', 'f\u00f6retagsleasing'] },
+  { english: 'Insurance included', sv: 'F\u00f6rs\u00e4kring ing\u00e5r', keys: ['insurance included', 'f\u00f6rs\u00e4kring ing\u00e5r'] },
+  { english: 'Maintenance included', sv: 'Underh\u00e5ll ing\u00e5r', keys: ['maintenance included', 'underh\u00e5ll ing\u00e5r'] },
+  { english: 'Repairs included', sv: 'Reparationer ing\u00e5r', keys: ['repairs included', 'reparationer ing\u00e5r'] },
+  { english: 'Tyres included', sv: 'D\u00e4ck ing\u00e5r', keys: ['tyres included', 'tires included', 'd\u00e4ck ing\u00e5r'] },
+  { english: 'Delivery included', sv: 'Leverans ing\u00e5r', keys: ['delivery included', 'leverans ing\u00e5r'] },
   { english: 'Private leasing', sv: 'Privatleasing', keys: ['private leasing', 'privatleasing'] },
   { english: 'Operating lease', sv: 'Operationell leasing', keys: ['operating lease', 'operationell leasing'] },
   { english: 'Financial lease', sv: 'Finansiell leasing', keys: ['financial lease', 'finansiell leasing'] },
-  { english: 'Buyout available', sv: 'Möjlighet att köpa ut', keys: ['buyout available', 'möjlighet att köpa ut'] },
-  { english: 'Transport included', sv: 'Transport ingår', keys: ['transport included', 'transport ingår'] },
-  { english: 'Driver or operator included', sv: 'Förare eller operatör ingår', keys: ['driver or operator included', 'förare eller operatör ingår'] },
+  { english: 'Buyout available', sv: 'M\u00f6jlighet att k\u00f6pa ut', keys: ['buyout available', 'm\u00f6jlighet att k\u00f6pa ut'] },
+  { english: 'Transport included', sv: 'Transport ing\u00e5r', keys: ['transport included', 'transport ing\u00e5r'] },
+  { english: 'Driver or operator included', sv: 'F\u00f6rare eller operat\u00f6r ing\u00e5r', keys: ['driver or operator included', 'f\u00f6rare eller operat\u00f6r ing\u00e5r'] },
+  { english: 'Leasing', sv: 'Leasing', keys: ['leasing'] },
 ] as const
 
 function leaseLabel(locale: PublicLocale, value: string) {
   const repaired = repairMojibakeText(value)
-  const entry = leaseLabelEntries.find((item) => item.keys.some((key) => repaired.toLowerCase().includes(key)))
+  const normalized = repaired.toLowerCase()
+  const entry = leaseLabelEntries.find((item) => {
+    if (item.english === 'Leasing') return normalized === 'leasing'
+    return item.keys.some((key) => normalized.includes(key))
+  })
   if (entry) return locale === 'sv' ? entry.sv : translatePublic(locale, entry.english)
   if (locale === 'sv' && repaired !== value) return repaired
-  const normalized = value.toLowerCase()
-  const english = normalized.includes('månad') || normalized.includes('mÃ¥nad') ? 'Monthly price' :
-    normalized.includes('mån') || normalized.includes('mÃ¥n') ? 'Contract term (months)' :
-    normalized.includes('kortaste') ? 'Minimum contract term (months)' :
-    normalized.includes('längsta') || normalized.includes('lÃ¤ngsta') ? 'Maximum contract term (months)' :
-    normalized.includes('första') || normalized.includes('fÃ¶rsta') ? 'Initial payment' :
-    normalized.includes('deposition') ? 'Deposit' :
-    normalized.includes('upplägg') || normalized.includes('upplÃ¤gg') ? 'Setup fee' :
-    normalized.includes('restvär') || normalized.includes('restvÃ¤r') ? 'Residual value' :
-    normalized.includes('tillåten') || normalized.includes('tillÃ¥ten') ? 'Allowed mileage per year (km)' :
-    normalized.includes('överm') || normalized.includes('Ã¶verm') ? 'Excess mileage cost' :
-    normalized.includes('tillgäng') || normalized.includes('tillgÃ¤ng') ? 'Available from' :
-    normalized.includes('service') ? 'Service included' :
-    normalized.includes('företags') || normalized.includes('fÃ¶retags') ? 'Business leasing' :
-    normalized.includes('försäkring') || normalized.includes('fÃ¶rsÃ¤kring') ? 'Insurance included' :
-    normalized.includes('underhåll') || normalized.includes('underhÃ¥ll') ? 'Maintenance included' :
-    normalized.includes('reparation') ? 'Repairs included' :
-    normalized.includes('däck') || normalized.includes('dÃ¤ck') ? 'Tyres included' :
-    normalized.includes('leverans') ? 'Delivery included' :
-    normalized.includes('privatleasing') ? 'Private leasing' :
-    normalized.includes('operationell') ? 'Operating lease' :
-    normalized.includes('finansiell') ? 'Financial lease' :
-    normalized.includes('köpa ut') || normalized.includes('kÃ¶pa ut') ? 'Buyout available' :
-    normalized.includes('transport') ? 'Transport included' :
-    normalized.includes('förare') || normalized.includes('fÃ¶rare') ? 'Driver or operator included' :
-    value
-  return translatePublic(locale, english)
+  return translatePublic(locale, repaired)
 }
-
 function localizeVehicleText(locale: PublicLocale, value?: string | null) {
   if (!value) return ''
   if (locale === 'sv') return value
