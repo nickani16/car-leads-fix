@@ -1,7 +1,8 @@
 'use client'
 
 import { AlertTriangle, X } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingReportButtonProps = {
@@ -87,6 +88,23 @@ export default function ListingReportButton({
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    if (!open) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      window.removeEventListener('keydown', closeOnEscape)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitting(true)
@@ -109,20 +127,16 @@ export default function ListingReportButton({
     if (response.ok) event.currentTarget.reset()
   }
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-[#d9e1ec] bg-white px-4 text-sm font-bold text-[#101828] transition hover:border-[#b42318] hover:text-[#b42318]"
-      >
-        <AlertTriangle className="h-4 w-4" />
-        {copy.button}
-      </button>
-
-      {open ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[#101828]/45 p-3 sm:grid sm:place-items-center sm:p-4">
-          <div className="mx-auto my-3 max-h-[calc(100dvh-24px)] w-full max-w-[560px] overflow-y-auto rounded-[18px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.24)] sm:my-0">
+  const modal =
+    open && typeof document !== 'undefined'
+      ? createPortal(
+        <div
+          className="fixed inset-0 isolate z-[2147483647] flex items-center justify-center overflow-hidden bg-[#101828]/35 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:px-6 sm:py-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setOpen(false)
+          }}
+        >
+          <div className="relative flex max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] min-h-0 w-full max-w-[620px] flex-col overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
             <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 py-4 sm:px-5">
               <div className="min-w-0">
                 <h2 className="text-xl font-black tracking-[-0.035em]">{copy.title}</h2>
@@ -132,13 +146,13 @@ export default function ListingReportButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={copy.close}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#f2f5f9]"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#475467] transition hover:bg-[#f2f5f9] sm:h-10 sm:w-10"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={submit} className="grid gap-4 p-5">
+            <form onSubmit={submit} className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-5">
               <input name="company" className="hidden" tabIndex={-1} autoComplete="off" />
               <label className="grid gap-2">
                 <span className="text-sm font-bold">{copy.reason}</span>
@@ -178,8 +192,23 @@ export default function ListingReportButton({
               </button>
             </form>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+      : null
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-[#d9e1ec] bg-white px-4 text-sm font-bold text-[#101828] transition hover:border-[#b42318] hover:text-[#b42318]"
+      >
+        <AlertTriangle className="h-4 w-4" />
+        {copy.button}
+      </button>
+
+      {modal}
     </>
   )
 }
