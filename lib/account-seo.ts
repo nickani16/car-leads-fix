@@ -189,45 +189,85 @@ function getAccountSeoCopy(page: AccountSeoKey, locale: PublicLocale) {
 
 const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<AccountSeoKey, AccountSeoCopy>>>> = {
   fi: {
+    messages: {
+      title: 'Viestit | Autorell',
+      description: 'Lue ja vastaa ostajien ja myyjien viesteihin Autorellissa.',
+    },
     'new-listing': {
       title: 'Luo ilmoitus | Autorell',
       description: 'Luo ajoneuvoilmoitus hinnalla, kuvilla, sijainnilla ja ajoneuvon tiedoilla.',
     },
   },
   da: {
+    messages: {
+      title: 'Beskeder | Autorell',
+      description: 'Læs og svar på beskeder mellem købere og sælgere på Autorell.',
+    },
     'new-listing': {
       title: 'Opret annonce | Autorell',
       description: 'Opret en køretøjsannonce med pris, billeder, placering og køretøjsdata.',
     },
   },
   fr: {
+    messages: {
+      title: 'Messages | Autorell',
+      description: 'Lisez et répondez aux messages entre acheteurs et vendeurs sur Autorell.',
+    },
     'new-listing': {
       title: 'Créer une annonce | Autorell',
       description: 'Créez une annonce de véhicule avec prix, photos, localisation et données du véhicule.',
     },
   },
   es: {
+    messages: {
+      title: 'Mensajes | Autorell',
+      description: 'Lee y responde mensajes entre compradores y vendedores en Autorell.',
+    },
     'new-listing': {
       title: 'Crear anuncio | Autorell',
       description: 'Crea un anuncio de vehículo con precio, fotos, ubicación y datos del vehículo.',
     },
   },
   it: {
+    messages: {
+      title: 'Messaggi | Autorell',
+      description: 'Leggi e rispondi ai messaggi tra acquirenti e venditori su Autorell.',
+    },
     'new-listing': {
       title: 'Crea annuncio | Autorell',
       description: 'Crea un annuncio per un veicolo con prezzo, foto, posizione e dati del veicolo.',
     },
   },
   nl: {
+    messages: {
+      title: 'Berichten | Autorell',
+      description: 'Lees en beantwoord berichten tussen kopers en verkopers op Autorell.',
+    },
     'new-listing': {
       title: 'Advertentie maken | Autorell',
       description: 'Maak een voertuigadvertentie met prijs, foto’s, locatie en voertuiggegevens.',
     },
   },
   pl: {
+    messages: {
+      title: 'Wiadomości | Autorell',
+      description: 'Czytaj i odpowiadaj na wiadomości między kupującymi i sprzedającymi w Autorell.',
+    },
     'new-listing': {
       title: 'Utwórz ogłoszenie | Autorell',
       description: 'Utwórz ogłoszenie pojazdu z ceną, zdjęciami, lokalizacją i danymi pojazdu.',
+    },
+  },
+  at: {
+    messages: {
+      title: 'Nachrichten | Autorell',
+      description: 'Nachrichten zwischen Käufern und Verkäufern bei Autorell lesen und beantworten.',
+    },
+  },
+  be: {
+    messages: {
+      title: 'Berichten | Autorell',
+      description: 'Lees en beantwoord berichten tussen kopers en verkopers op Autorell.',
     },
   },
 }

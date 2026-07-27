@@ -14,7 +14,6 @@ import { getRequestLocale } from '@/lib/request-locale'
 import {
   isPublicLanguage,
   localizePublicHref,
-  translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
 import CountryFlag from '@/app/components/CountryFlag'
@@ -25,7 +24,25 @@ import { publicSellerName } from '@/lib/public-seller'
 
 export const generateMetadata = generateAccountMetadata('messages')
 
-const copy = {
+type MessagesCopy = {
+  title: string
+  intro: string
+  empty: string
+  emptyText: string
+  browse: string
+  conversation: string
+  listingRemoved: string
+  buyer: string
+  seller: string
+  safety: string
+  choose: string
+  unread: string
+  you: string
+  sent: string
+  read: string
+}
+
+const messagesCopy: Record<PublicLocale, MessagesCopy> = {
   sv: {
     title: 'Meddelanden',
     intro: 'Frågor och svar mellan köpare och säljare samlade per annons.',
@@ -41,7 +58,7 @@ const copy = {
     unread: 'olästa',
     you: 'Du',
     sent: 'Skickat',
-    read: 'LÃ¤st',
+    read: 'Läst',
   },
   de: {
     title: 'Nachrichten',
@@ -77,7 +94,160 @@ const copy = {
     sent: 'Sent',
     read: 'Read',
   },
-} as const
+  at: {
+    title: 'Nachrichten',
+    intro: 'Fragen und Antworten zwischen Käufern und Verkäufern, nach Anzeige geordnet.',
+    empty: 'Sie haben noch keine Unterhaltungen.',
+    emptyText: 'Öffnen Sie eine Anzeige und wählen Sie Verkäufer kontaktieren, um eine sichere Unterhaltung zu starten.',
+    browse: 'Fahrzeuge entdecken',
+    conversation: 'Unterhaltung',
+    listingRemoved: 'Die Anzeige ist nicht mehr verfügbar',
+    buyer: 'Käufer',
+    seller: 'Verkäufer',
+    safety: 'Senden Sie niemals Passwörter, Kartendaten oder Zahlungen über Nachrichten.',
+    choose: 'Wählen Sie eine Unterhaltung zum Lesen und Antworten.',
+    unread: 'ungelesen',
+    you: 'Sie',
+    sent: 'Gesendet',
+    read: 'Gelesen',
+  },
+  be: {
+    title: 'Berichten',
+    intro: 'Vragen en antwoorden tussen kopers en verkopers, per advertentie gebundeld.',
+    empty: 'Je hebt nog geen gesprekken.',
+    emptyText: 'Open een advertentie en kies Contacteer verkoper om een veilig gesprek te starten.',
+    browse: 'Voertuigen bekijken',
+    conversation: 'Gesprek',
+    listingRemoved: 'De advertentie is niet langer beschikbaar',
+    buyer: 'Koper',
+    seller: 'Verkoper',
+    safety: 'Stuur nooit wachtwoorden, kaartgegevens of betalingen via berichten.',
+    choose: 'Kies een gesprek om te lezen en te antwoorden.',
+    unread: 'ongelezen',
+    you: 'Jij',
+    sent: 'Verzonden',
+    read: 'Gelezen',
+  },
+  fr: {
+    title: 'Messages',
+    intro: 'Questions et réponses entre acheteurs et vendeurs, regroupées par annonce.',
+    empty: "Vous n'avez pas encore de conversations.",
+    emptyText: 'Ouvrez une annonce et choisissez Contacter le vendeur pour démarrer une conversation sécurisée.',
+    browse: 'Explorer les véhicules',
+    conversation: 'Conversation',
+    listingRemoved: "L'annonce n'est plus disponible",
+    buyer: 'Acheteur',
+    seller: 'Vendeur',
+    safety: "N'envoyez jamais de mots de passe, coordonnées de carte ou paiements par message.",
+    choose: 'Choisissez une conversation pour lire et répondre.',
+    unread: 'non lus',
+    you: 'Vous',
+    sent: 'Envoyé',
+    read: 'Lu',
+  },
+  es: {
+    title: 'Mensajes',
+    intro: 'Preguntas y respuestas entre compradores y vendedores, organizadas por anuncio.',
+    empty: 'Todavía no tienes conversaciones.',
+    emptyText: 'Abre un anuncio y elige Contactar con el vendedor para iniciar una conversación segura.',
+    browse: 'Explorar vehículos',
+    conversation: 'Conversación',
+    listingRemoved: 'El anuncio ya no está disponible',
+    buyer: 'Comprador',
+    seller: 'Vendedor',
+    safety: 'No envíes nunca contraseñas, datos de tarjeta ni pagos por mensajes.',
+    choose: 'Elige una conversación para leer y responder.',
+    unread: 'sin leer',
+    you: 'Tú',
+    sent: 'Enviado',
+    read: 'Leído',
+  },
+  it: {
+    title: 'Messaggi',
+    intro: 'Domande e risposte tra acquirenti e venditori, organizzate per annuncio.',
+    empty: 'Non hai ancora conversazioni.',
+    emptyText: "Apri un annuncio e scegli Contatta il venditore per avviare una conversazione sicura.",
+    browse: 'Sfoglia veicoli',
+    conversation: 'Conversazione',
+    listingRemoved: "L'annuncio non è più disponibile",
+    buyer: 'Acquirente',
+    seller: 'Venditore',
+    safety: 'Non inviare mai password, dati della carta o pagamenti tramite messaggi.',
+    choose: 'Scegli una conversazione da leggere e a cui rispondere.',
+    unread: 'non letti',
+    you: 'Tu',
+    sent: 'Inviato',
+    read: 'Letto',
+  },
+  pl: {
+    title: 'Wiadomości',
+    intro: 'Pytania i odpowiedzi między kupującymi i sprzedającymi, zebrane według ogłoszeń.',
+    empty: 'Nie masz jeszcze rozmów.',
+    emptyText: 'Otwórz ogłoszenie i wybierz Kontakt ze sprzedawcą, aby rozpocząć bezpieczną rozmowę.',
+    browse: 'Przeglądaj pojazdy',
+    conversation: 'Rozmowa',
+    listingRemoved: 'Ogłoszenie nie jest już dostępne',
+    buyer: 'Kupujący',
+    seller: 'Sprzedawca',
+    safety: 'Nigdy nie wysyłaj haseł, danych karty ani płatności przez wiadomości.',
+    choose: 'Wybierz rozmowę, aby przeczytać i odpowiedzieć.',
+    unread: 'nieprzeczytane',
+    you: 'Ty',
+    sent: 'Wysłano',
+    read: 'Przeczytano',
+  },
+  nl: {
+    title: 'Berichten',
+    intro: 'Vragen en antwoorden tussen kopers en verkopers, per advertentie gebundeld.',
+    empty: 'Je hebt nog geen gesprekken.',
+    emptyText: 'Open een advertentie en kies Contacteer verkoper om een veilig gesprek te starten.',
+    browse: 'Voertuigen bekijken',
+    conversation: 'Gesprek',
+    listingRemoved: 'De advertentie is niet langer beschikbaar',
+    buyer: 'Koper',
+    seller: 'Verkoper',
+    safety: 'Stuur nooit wachtwoorden, kaartgegevens of betalingen via berichten.',
+    choose: 'Kies een gesprek om te lezen en te antwoorden.',
+    unread: 'ongelezen',
+    you: 'Jij',
+    sent: 'Verzonden',
+    read: 'Gelezen',
+  },
+  fi: {
+    title: 'Viestit',
+    intro: 'Ostajien ja myyjien kysymykset ja vastaukset koottuna ilmoituksittain.',
+    empty: 'Sinulla ei ole vielä keskusteluja.',
+    emptyText: 'Avaa ilmoitus ja valitse Ota yhteyttä myyjään aloittaaksesi turvallisen keskustelun.',
+    browse: 'Selaa ajoneuvoja',
+    conversation: 'Keskustelu',
+    listingRemoved: 'Ilmoitus ei ole enää saatavilla',
+    buyer: 'Ostaja',
+    seller: 'Myyjä',
+    safety: 'Älä koskaan lähetä salasanoja, korttitietoja tai maksuja viesteissä.',
+    choose: 'Valitse keskustelu lukeaksesi ja vastataksesi.',
+    unread: 'lukematta',
+    you: 'Sinä',
+    sent: 'Lähetetty',
+    read: 'Luettu',
+  },
+  da: {
+    title: 'Beskeder',
+    intro: 'Spørgsmål og svar mellem købere og sælgere samlet pr. annonce.',
+    empty: 'Du har ingen samtaler endnu.',
+    emptyText: 'Åbn en annonce og vælg Kontakt sælger for at starte en sikker samtale.',
+    browse: 'Udforsk køretøjer',
+    conversation: 'Samtale',
+    listingRemoved: 'Annoncen er ikke længere tilgængelig',
+    buyer: 'Køber',
+    seller: 'Sælger',
+    safety: 'Send aldrig adgangskoder, kortoplysninger eller betalinger via beskeder.',
+    choose: 'Vælg en samtale for at læse og svare.',
+    unread: 'ulæste',
+    you: 'Du',
+    sent: 'Sendt',
+    read: 'Læst',
+  },
+}
 
 export default async function MessagesPage({
   searchParams,
@@ -103,10 +273,7 @@ export default async function MessagesPage({
     isPublicLanguage(ownProfile?.locale || '')
       ? (ownProfile!.locale as PublicLocale)
       : requestLocale
-  const text =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? copy[locale]
-      : translatePublicObject(locale, copy.en)
+  const text = messagesCopy[locale] || messagesCopy.en
 
   const { data: conversationData } = await admin
     .from('marketplace_conversations')
@@ -198,7 +365,7 @@ export default async function MessagesPage({
     selected?.buyer_user_id === user.id ? text.seller : text.buyer
 
   return (
-    <main className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-12">
+    <main className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] overflow-x-hidden px-4 py-6 sm:px-8 lg:py-12">
       <section className="mb-7 overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="flex flex-col gap-5 bg-[#eef6ff] p-7 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -220,10 +387,10 @@ export default async function MessagesPage({
       </section>
 
       {visibleConversations.length ? (
-        <div className="grid min-h-[640px] overflow-hidden rounded-[24px] border border-[#dde1e7] bg-white shadow-[0_18px_50px_rgba(16,24,40,.07)] lg:grid-cols-[360px_1fr]">
-          <aside className="border-b border-[#e4e7ec] bg-[#fafaf9] lg:border-b-0 lg:border-r">
+        <div className="grid min-h-[640px] min-w-0 overflow-hidden rounded-[24px] border border-[#dde1e7] bg-white shadow-[0_18px_50px_rgba(16,24,40,.07)] lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+          <aside className="min-w-0 border-b border-[#e4e7ec] bg-[#fafaf9] lg:border-b-0 lg:border-r">
             <div className="border-b border-[#e4e7ec] px-5 py-4">
-              <p className="text-sm font-semibold">{visibleConversations.length} {text.conversation.toLocaleLowerCase(locale)}</p>
+              <p className="text-sm font-semibold">{visibleConversations.length} {text.conversation.toLowerCase()}</p>
             </div>
             <div className="max-h-[620px] overflow-y-auto p-2">
               {visibleConversations.map((conversation) => {
@@ -248,7 +415,7 @@ export default async function MessagesPage({
                   <Link
                     key={conversation.id}
                     href={`${localizePublicHref(locale, '/account/messages')}?conversation=${conversation.id}`}
-                    className={`flex gap-3 rounded-[16px] p-3.5 transition ${
+                    className={`flex min-w-0 gap-3 rounded-[16px] p-3.5 transition ${
                       selectedId === conversation.id
                         ? 'bg-white shadow-sm ring-1 ring-[#dfe3e8]'
                         : 'hover:bg-white'
@@ -291,10 +458,10 @@ export default async function MessagesPage({
             </div>
           </aside>
 
-          <section className="flex min-h-[620px] flex-col">
+          <section className="flex min-h-[620px] min-w-0 flex-col">
             {selected ? (
               <>
-                <div className="flex items-center justify-between gap-4 border-b border-[#e4e7ec] px-5 py-4 sm:px-6">
+                <div className="flex min-w-0 flex-col gap-3 border-b border-[#e4e7ec] px-5 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
                   <div className="min-w-0">
                     <h2 className="truncate text-base font-semibold">
                       {selectedListing?.title || text.listingRemoved}
@@ -321,7 +488,7 @@ export default async function MessagesPage({
                   {selectedListing ? (
                     <Link
                       href={`${localizePublicHref(locale, `/marketplace/${selectedListing.category}`)}?q=${encodeURIComponent(selectedListing.title)}`}
-                      className="hidden items-center gap-2 text-sm font-semibold text-[#475467] hover:text-[#101828] sm:flex"
+                      className="hidden min-w-0 items-center gap-2 text-sm font-semibold text-[#475467] hover:text-[#101828] sm:flex"
                     >
                       {selectedListing.title}
                       <ArrowRight className="h-4 w-4" />
@@ -358,7 +525,7 @@ export default async function MessagesPage({
                             }).format(new Date(message.created_at))}
                             {mine ? (
                               <>
-                                <span aria-hidden="true">Â·</span>
+                                <span aria-hidden="true">·</span>
                                 <span>{message.read_at ? text.read : text.sent}</span>
                                 {message.read_at ? <CheckCheck className="h-3 w-3" /> : null}
                               </>

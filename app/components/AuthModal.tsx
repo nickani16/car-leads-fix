@@ -439,7 +439,7 @@ export default function AuthModal({
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? copy.sendingReset : copy.sendReset}
                 {!loading ? <ArrowRight className="h-4 w-4" /> : null}
@@ -489,7 +489,7 @@ export default function AuthModal({
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? copy.savingPassword : copy.savePassword}
                 {!loading ? <CheckCircle2 className="h-4 w-4" /> : null}
@@ -602,7 +602,7 @@ export default function AuthModal({
 
               <button
                 disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? (authMethod === 'password' ? copy.passwordLoading : copy.sending) : (authMethod === 'password' ? copy.passwordSubmit : copy.continue)}
                 {!loading ? <ArrowRight className="h-4 w-4" /> : null}
@@ -656,7 +656,7 @@ export default function AuthModal({
                 type="button"
                 disabled={loading || digits.join('').length !== 6}
                 onClick={() => void verifyCode()}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-45"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-45"
               >
                 {loading ? copy.verifying : copy.submitCode}
                 {!loading ? <CheckCircle2 className="h-4 w-4" /> : null}

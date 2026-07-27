@@ -154,7 +154,7 @@ export default function ListingMobileContactBar({
           type="button"
           onClick={startConversation}
           disabled={messageLoading}
-          className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[13px] bg-[#0866ff] px-3 text-xs font-semibold text-white shadow-[0_10px_20px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
+          className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[13px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
         >
           <MessageCircle className="h-4 w-4" />
           <span className="truncate">
