@@ -1,4 +1,4 @@
-import { headers } from 'next/headers'
+﻿import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
 import { getRequestLocale } from './request-locale'
@@ -25,11 +25,11 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
   sv: {
     profile: {
       title: 'Min profil | Autorell',
-      description: 'Hantera profil, kontaktuppgifter, företag och kontoinställningar på Autorell.',
+      description: 'Hantera profil, kontaktuppgifter, fÃ¶retag och kontoinstÃ¤llningar pÃ¥ Autorell.',
     },
     listings: {
       title: 'Mina annonser | Autorell',
-      description: 'Se, hantera och följ upp dina fordonsannonser på Autorell.',
+      description: 'Se, hantera och fÃ¶lj upp dina fordonsannonser pÃ¥ Autorell.',
     },
     'new-listing': {
       title: 'Skapa annons | Autorell',
@@ -37,31 +37,31 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
     },
     'edit-listing': {
       title: 'Redigera annons | Autorell',
-      description: 'Uppdatera pris, bilder, fordonsdata och publicering för din annons.',
+      description: 'Uppdatera pris, bilder, fordonsdata och publicering fÃ¶r din annons.',
     },
     messages: {
       title: 'Meddelanden | Autorell',
-      description: 'Läs och svara på meddelanden mellan köpare och säljare på Autorell.',
+      description: 'LÃ¤s och svara pÃ¥ meddelanden mellan kÃ¶pare och sÃ¤ljare pÃ¥ Autorell.',
     },
     reviews: {
       title: 'Recensioner | Autorell',
-      description: 'Se och hantera recensioner kopplade till dina fordonsaffärer.',
+      description: 'Se och hantera recensioner kopplade till dina fordonsaffÃ¤rer.',
     },
     'saved-listings': {
       title: 'Sparade annonser | Autorell',
-      description: 'Se dina sparade fordonsannonser och fortsätt jämföra när du är redo.',
+      description: 'Se dina sparade fordonsannonser och fortsÃ¤tt jÃ¤mfÃ¶ra nÃ¤r du Ã¤r redo.',
     },
     'saved-searches': {
-      title: 'Sparade sökningar | Autorell',
-      description: 'Hitta tillbaka till dina sparade fordonssökningar och filter på Autorell.',
+      title: 'Sparade sÃ¶kningar | Autorell',
+      description: 'Hitta tillbaka till dina sparade fordonssÃ¶kningar och filter pÃ¥ Autorell.',
     },
     settings: {
-      title: 'Inställningar | Autorell',
-      description: 'Hantera privata kontoinställningar, notiser, språk och säkerhet på Autorell.',
+      title: 'InstÃ¤llningar | Autorell',
+      description: 'Hantera privata kontoinstÃ¤llningar, notiser, sprÃ¥k och sÃ¤kerhet pÃ¥ Autorell.',
     },
     support: {
       title: 'Support | Autorell',
-      description: 'Få hjälp med privata annonser, betalningar, meddelanden och konto på Autorell.',
+      description: 'FÃ¥ hjÃ¤lp med privata annonser, betalningar, meddelanden och konto pÃ¥ Autorell.',
     },
   },
   de: {
@@ -79,23 +79,23 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
     },
     'edit-listing': {
       title: 'Anzeige bearbeiten | Autorell',
-      description: 'Aktualisieren Sie Preis, Bilder, Fahrzeugdaten und Veröffentlichung Ihrer Anzeige.',
+      description: 'Aktualisieren Sie Preis, Bilder, Fahrzeugdaten und VerÃ¶ffentlichung Ihrer Anzeige.',
     },
     messages: {
       title: 'Nachrichten | Autorell',
-      description: 'Nachrichten zwischen Käufern und Verkäufern bei Autorell lesen und beantworten.',
+      description: 'Nachrichten zwischen KÃ¤ufern und VerkÃ¤ufern bei Autorell lesen und beantworten.',
     },
     reviews: {
       title: 'Bewertungen | Autorell',
-      description: 'Bewertungen zu Ihren Fahrzeuggeschäften ansehen und verwalten.',
+      description: 'Bewertungen zu Ihren FahrzeuggeschÃ¤ften ansehen und verwalten.',
     },
     'saved-listings': {
       title: 'Gespeicherte Anzeigen | Autorell',
-      description: 'Gespeicherte Fahrzeuganzeigen ansehen und später weiter vergleichen.',
+      description: 'Gespeicherte Fahrzeuganzeigen ansehen und spÃ¤ter weiter vergleichen.',
     },
     'saved-searches': {
       title: 'Gespeicherte Suchen | Autorell',
-      description: 'Gespeicherte Fahrzeugsuchen und Filter bei Autorell wieder öffnen.',
+      description: 'Gespeicherte Fahrzeugsuchen und Filter bei Autorell wieder Ã¶ffnen.',
     },
     settings: {
       title: 'Einstellungen | Autorell',
@@ -197,25 +197,49 @@ const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<Accou
       title: 'Luo ilmoitus | Autorell',
       description: 'Luo ajoneuvoilmoitus hinnalla, kuvilla, sijainnilla ja ajoneuvon tiedoilla.',
     },
+    'saved-listings': {
+      title: 'Tallennetut ilmoitukset | Autorell',
+      description: 'Katso tallennetut ajoneuvoilmoitukset ja jatka vertailua, kun olet valmis.',
+    },
+    'saved-searches': {
+      title: 'Tallennetut haut | Autorell',
+      description: 'Palaa tallennettuihin ajoneuvohakuihin ja suodattimiin Autorellissa.',
+    },
   },
   da: {
     messages: {
       title: 'Beskeder | Autorell',
-      description: 'Læs og svar på beskeder mellem købere og sælgere på Autorell.',
+      description: 'Laes og svar paa beskeder mellem koebere og saelgere paa Autorell.',
     },
     'new-listing': {
       title: 'Opret annonce | Autorell',
-      description: 'Opret en køretøjsannonce med pris, billeder, placering og køretøjsdata.',
+      description: 'Opret en koeretoejsannonce med pris, billeder, placering og koeretoejsdata.',
+    },
+    'saved-listings': {
+      title: 'Gemte annoncer | Autorell',
+      description: 'Se dine gemte koeretoejsannoncer, og fortsaet sammenligningen, naar du er klar.',
+    },
+    'saved-searches': {
+      title: 'Gemte soegninger | Autorell',
+      description: 'Find tilbage til dine gemte koeretoejssoegninger og filtre paa Autorell.',
     },
   },
   fr: {
     messages: {
       title: 'Messages | Autorell',
-      description: 'Lisez et répondez aux messages entre acheteurs et vendeurs sur Autorell.',
+      description: 'Lisez et repondez aux messages entre acheteurs et vendeurs sur Autorell.',
     },
     'new-listing': {
-      title: 'Créer une annonce | Autorell',
-      description: 'Créez une annonce de véhicule avec prix, photos, localisation et données du véhicule.',
+      title: 'Creer une annonce | Autorell',
+      description: 'Creez une annonce de vehicule avec prix, photos, localisation et donnees du vehicule.',
+    },
+    'saved-listings': {
+      title: 'Annonces enregistrees | Autorell',
+      description: 'Consultez vos annonces de vehicules enregistrees et continuez la comparaison lorsque vous etes pret.',
+    },
+    'saved-searches': {
+      title: 'Recherches enregistrees | Autorell',
+      description: 'Retrouvez vos recherches et filtres de vehicules enregistres sur Autorell.',
     },
   },
   es: {
@@ -225,7 +249,15 @@ const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<Accou
     },
     'new-listing': {
       title: 'Crear anuncio | Autorell',
-      description: 'Crea un anuncio de vehículo con precio, fotos, ubicación y datos del vehículo.',
+      description: 'Crea un anuncio de vehiculo con precio, fotos, ubicacion y datos del vehiculo.',
+    },
+    'saved-listings': {
+      title: 'Anuncios guardados | Autorell',
+      description: 'Consulta tus anuncios de vehiculos guardados y sigue comparando cuando estes listo.',
+    },
+    'saved-searches': {
+      title: 'Busquedas guardadas | Autorell',
+      description: 'Vuelve a tus busquedas y filtros de vehiculos guardados en Autorell.',
     },
   },
   it: {
@@ -237,6 +269,14 @@ const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<Accou
       title: 'Crea annuncio | Autorell',
       description: 'Crea un annuncio per un veicolo con prezzo, foto, posizione e dati del veicolo.',
     },
+    'saved-listings': {
+      title: 'Annunci salvati | Autorell',
+      description: 'Visualizza gli annunci di veicoli salvati e continua a confrontare quando sei pronto.',
+    },
+    'saved-searches': {
+      title: 'Ricerche salvate | Autorell',
+      description: 'Torna alle ricerche e ai filtri veicolo salvati su Autorell.',
+    },
   },
   nl: {
     messages: {
@@ -245,29 +285,61 @@ const localizedAccountSeoCopy: Partial<Record<PublicLocale, Partial<Record<Accou
     },
     'new-listing': {
       title: 'Advertentie maken | Autorell',
-      description: 'Maak een voertuigadvertentie met prijs, foto’s, locatie en voertuiggegevens.',
+      description: 'Maak een voertuigadvertentie met prijs, fotos, locatie en voertuiggegevens.',
+    },
+    'saved-listings': {
+      title: 'Opgeslagen advertenties | Autorell',
+      description: 'Bekijk uw opgeslagen voertuigadvertenties en vergelijk verder wanneer u klaar bent.',
+    },
+    'saved-searches': {
+      title: 'Opgeslagen zoekopdrachten | Autorell',
+      description: 'Ga terug naar uw opgeslagen voertuigzoekopdrachten en filters op Autorell.',
     },
   },
   pl: {
     messages: {
-      title: 'Wiadomości | Autorell',
-      description: 'Czytaj i odpowiadaj na wiadomości między kupującymi i sprzedającymi w Autorell.',
+      title: 'Wiadomosci | Autorell',
+      description: 'Czytaj i odpowiadaj na wiadomosci miedzy kupujacymi i sprzedajacymi w Autorell.',
     },
     'new-listing': {
-      title: 'Utwórz ogłoszenie | Autorell',
-      description: 'Utwórz ogłoszenie pojazdu z ceną, zdjęciami, lokalizacją i danymi pojazdu.',
+      title: 'Utworz ogloszenie | Autorell',
+      description: 'Utworz ogloszenie pojazdu z cena, zdjeciami, lokalizacja i danymi pojazdu.',
+    },
+    'saved-listings': {
+      title: 'Zapisane ogloszenia | Autorell',
+      description: 'Zobacz zapisane ogloszenia pojazdow i kontynuuj porownywanie, gdy bedziesz gotowy.',
+    },
+    'saved-searches': {
+      title: 'Zapisane wyszukiwania | Autorell',
+      description: 'Wroc do zapisanych wyszukiwan pojazdow i filtrow w Autorell.',
     },
   },
   at: {
     messages: {
       title: 'Nachrichten | Autorell',
-      description: 'Nachrichten zwischen Käufern und Verkäufern bei Autorell lesen und beantworten.',
+      description: 'Nachrichten zwischen Kaeufern und Verkaeufern bei Autorell lesen und beantworten.',
+    },
+    'saved-listings': {
+      title: 'Gespeicherte Anzeigen | Autorell',
+      description: 'Gespeicherte Fahrzeuganzeigen ansehen und spaeter weiter vergleichen.',
+    },
+    'saved-searches': {
+      title: 'Gespeicherte Suchen | Autorell',
+      description: 'Gespeicherte Fahrzeugsuchen und Filter bei Autorell wieder oeffnen.',
     },
   },
   be: {
     messages: {
       title: 'Berichten | Autorell',
       description: 'Lees en beantwoord berichten tussen kopers en verkopers op Autorell.',
+    },
+    'saved-listings': {
+      title: 'Opgeslagen advertenties | Autorell',
+      description: 'Bekijk uw opgeslagen voertuigadvertenties en vergelijk verder wanneer u klaar bent.',
+    },
+    'saved-searches': {
+      title: 'Opgeslagen zoekopdrachten | Autorell',
+      description: 'Ga terug naar uw opgeslagen voertuigzoekopdrachten en filters op Autorell.',
     },
   },
 }
@@ -289,3 +361,4 @@ function fallbackAccountPath(page: AccountSeoKey, locale: PublicLocale) {
 
   return `${prefix}${paths[page]}`
 }
+

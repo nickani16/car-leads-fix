@@ -1377,7 +1377,7 @@ export default function VehicleSearchExperience({
 
   const priceYearSummary = [
     minPrice || maxPrice ? uiText(locale, 'Price', 'Pris', 'Preis') : '',
-    minYear || maxYear ? uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') : '',
+    minYear || maxYear ? translatePublic(locale, 'Model year') : '',
   ].filter(Boolean).join(' · ') || uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')
 
   const sellerSummary = [
@@ -1547,7 +1547,7 @@ export default function VehicleSearchExperience({
               step={1000}
             />
             <RangeFilter
-              title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+              title={translatePublic(locale, 'Model year')}
               minValue={minYear}
               maxValue={maxYear}
               onMinChange={setMinYear}
@@ -1649,7 +1649,7 @@ export default function VehicleSearchExperience({
     const bodyTypeFilterDefinition = categoryFilterProfile(activeCategoryKey).find((filter) => filter.key === 'bodyType')
     const bodyTypeFilterLabel = bodyTypeFilterDefinition
       ? filterLabel(bodyTypeFilterDefinition, locale)
-      : uiText(locale, 'Body type', 'Kaross', 'Karosserie')
+      : translatePublic(locale, 'Body type')
     const bodyTypeLabel = bodyType
       ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
       : bodyTypeFilterLabel
@@ -1769,11 +1769,11 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-60 shrink-0">
-            {desktopMenuButton('year', minYear || maxYear ? `${uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}: ${minYear || '1950'}-${maxYear || 'max'}` : uiText(locale, 'Model year', 'Årsmodell', 'Baujahr'), Boolean(minYear || maxYear))}
+            {desktopMenuButton('year', minYear || maxYear ? `${translatePublic(locale, 'Model year')}: ${minYear || '1950'}-${maxYear || 'max'}` : translatePublic(locale, 'Model year'), Boolean(minYear || maxYear))}
             {renderDesktopFilterPopover('year', (
               <div className="space-y-4">
                 <RangeFilter
-                  title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                  title={translatePublic(locale, 'Model year')}
                   minValue={minYear}
                   maxValue={maxYear}
                   onMinChange={setMinYear}
@@ -1976,7 +1976,7 @@ export default function VehicleSearchExperience({
       } }
       : null,
     minYear || maxYear
-      ? { key: 'year', label: uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') + ' ' + (minYear || '1950') + '-' + (maxYear || uiText(locale, 'newest', 'nyast', 'neueste')), onRemove: () => {
+      ? { key: 'year', label: translatePublic(locale, 'Model year') + ' ' + (minYear || '1950') + '-' + (maxYear || uiText(locale, 'newest', 'nyast', 'neueste')), onRemove: () => {
         setMinYear('')
         setMaxYear('')
       } }
@@ -2143,7 +2143,7 @@ export default function VehicleSearchExperience({
                             step={1000}
                           />
                           <RangeFilter
-                            title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                            title={translatePublic(locale, 'Model year')}
                             minValue={minYear}
                             maxValue={maxYear}
                             onMinChange={setMinYear}
@@ -2268,15 +2268,10 @@ export default function VehicleSearchExperience({
                       className="h-auto w-[180px] max-w-[60vw] sm:w-[220px]"
                     />
                     <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
-                      {uiText(locale, 'There do not seem to be any results.', 'Det verkar inte finnas några resultat.', 'Es scheint keine Ergebnisse zu geben.')}
+                      {translatePublic(locale, 'There do not seem to be any results.')}
                     </p>
                     <p className="mt-2 max-w-[420px] text-sm leading-6 text-[#667085] sm:text-base">
-                      {uiText(
-                        locale,
-                        'Try searching for another location, another vehicle or another make.',
-                        'Prova att söka på en annan plats, ett annat fordon eller ett annat märke.',
-                        'Versuche es mit einem anderen Ort, einem anderen Fahrzeug oder einer anderen Marke.',
-                      )}
+                      {translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}
                     </p>
                     <button
                       type="button"
@@ -2286,7 +2281,7 @@ export default function VehicleSearchExperience({
                       }}
                       className="mt-5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4 sm:text-base"
                     >
-                      {uiText(locale, 'Search across all of Europe', 'Testa att söka inom hela Europa', 'In ganz Europa suchen')}
+                      {translatePublic(locale, 'Search across all of Europe')}
                     </button>
                   </div>
                 </div>
@@ -2357,7 +2352,7 @@ export default function VehicleSearchExperience({
               className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white transition-transform duration-200 active:scale-[.98] lg:hidden"
             >
               <MapPin className="h-4 w-4" />
-              {uiText(locale, 'Map', 'Karta', 'Karte')}
+              {translatePublic(locale, 'Map')}
             </button>
           ) : null}
 
@@ -2478,14 +2473,14 @@ export default function VehicleSearchExperience({
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
                 <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 pb-3 pt-6 relative">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
-                    <p className="mt-0.5 text-xs font-medium text-[#667085]">{uiText(locale, 'Filters update the map immediately.', 'Filtren uppdaterar kartan direkt.', 'Filter aktualisieren die Karte sofort.')}</p>
+                    <p className="text-[15px] font-semibold text-[#101828]">{translatePublic(locale, 'Search filters')}</p>
+                    <p className="mt-0.5 text-xs font-medium text-[#667085]">{translatePublic(locale, 'Filters update the map immediately.')}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFiltersOpen(false)}
                     className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
-                    aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
+                    aria-label={translatePublic(locale, 'Close filters')}
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -2512,7 +2507,7 @@ export default function VehicleSearchExperience({
                           step={1000}
                         />
                         <RangeFilter
-                          title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                          title={translatePublic(locale, 'Model year')}
                           minValue={minYear}
                           maxValue={maxYear}
                           onMinChange={setMinYear}
@@ -3396,7 +3391,7 @@ function VehicleSearchMap({
                 type="button"
                 onClick={onCloseMobileMap}
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm"
-                aria-label={uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}
+                aria-label={translatePublic(locale, 'Show list')}
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -3466,7 +3461,7 @@ function VehicleSearchMap({
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                {uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}
+                {translatePublic(locale, 'Search filters')}
               </button>
               <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} compact />
             </div>
@@ -3476,7 +3471,7 @@ function VehicleSearchMap({
             onClick={onCloseMobileMap}
             className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)]"
           >
-            {uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}
+            {translatePublic(locale, 'Show list')}
           </button>
         </>
       ) : fullscreen ? (
@@ -3504,7 +3499,7 @@ function VehicleSearchMap({
               className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff]"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</span>
+              <span className="hidden sm:inline">{translatePublic(locale, 'Search filters')}</span>
             </button>
             <button
               type="button"
@@ -3524,7 +3519,7 @@ function VehicleSearchMap({
               className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0757da]"
             >
               <List className="h-4 w-4" />
-              <span className="hidden sm:inline">{uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}</span>
+              <span className="hidden sm:inline">{translatePublic(locale, 'Show list')}</span>
             </button>
           </div>
           <div className="absolute right-4 top-[78px] z-20 flex gap-2">
@@ -3539,7 +3534,7 @@ function VehicleSearchMap({
             className="inline-flex h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
           >
             <Expand className="h-4 w-4" />
-            {uiText(locale, 'Fullscreen', 'Fullskärm', 'Vollbild')}
+            {translatePublic(locale, 'Fullscreen')}
           </button>
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
         </div>
@@ -3705,8 +3700,8 @@ function MapLayerPicker({
   locale: PublicLocale
   compact?: boolean
 }) {
-  const mapText = uiText(locale, 'Map', 'Karta', 'Karte')
-  const satelliteText = uiText(locale, 'Satellite', 'Satellit', 'Satellit')
+  const mapText = translatePublic(locale, 'Map')
+  const satelliteText = translatePublic(locale, 'Satellite')
 
   return (
     <div className={`${compact ? 'h-10 w-full min-w-0 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
@@ -3856,7 +3851,7 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Kaross', de: 'Karosserie' }, apiParam: 'bodyType', order: 40 },
+    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Karosstyp', de: 'Karosserie' }, apiParam: 'bodyType', order: 40 },
     { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 50 },
     { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
@@ -3942,8 +3937,8 @@ function categoryPrimaryFilterKeys(category: string): VehicleFilterKey[] {
 
 function filterLabel(filter: CategoryFilterDefinition, locale: PublicLocale) {
   if (locale === 'sv') return filter.label.sv
-  if (locale === 'de') return filter.label.de
-  return filter.label.en
+  if (locale === 'de' || locale === 'at') return filter.label.de
+  return translatePublic(locale, filter.label.en)
 }
 
 function mapApiListingToVehicleSearchListing(
@@ -4027,7 +4022,7 @@ function formatSearchResultCountSummary({
   municipality: string
   region: string
 }) {
-  if (count === 0) return uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')
+  if (count === 0) return translatePublic(locale, 'No listings match your search')
 
   const formatted = count.toLocaleString(countNumberLocale(locale))
   const subject =

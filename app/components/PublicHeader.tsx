@@ -91,6 +91,101 @@ type MenuItem = {
   requiresLogin?: boolean
 }
 
+type SearchMegaCopy = {
+  intro: string
+  saleText: string
+  leasingText: string
+  openCategory: string
+  openLeasing: string
+}
+
+const searchMegaCopy: Record<PublicLocale, SearchMegaCopy> = {
+  sv: {
+    intro: 'Välj en fordonskategori och gå direkt till matchande annonser.',
+    saleText: 'Se fordon som är redo att köpas.',
+    leasingText: 'Visa leasingannonser från företagssäljare.',
+    openCategory: 'Öppna kategori',
+    openLeasing: 'Öppna leasing',
+  },
+  en: {
+    intro: 'Choose one vehicle category and go straight to matching listings.',
+    saleText: 'Browse vehicles that are ready to buy.',
+    leasingText: 'Show leasing listings from business sellers.',
+    openCategory: 'Open category',
+    openLeasing: 'Open leasing',
+  },
+  de: {
+    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
+    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
+    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
+    openCategory: 'Kategorie öffnen',
+    openLeasing: 'Leasing öffnen',
+  },
+  at: {
+    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
+    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
+    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
+    openCategory: 'Kategorie öffnen',
+    openLeasing: 'Leasing öffnen',
+  },
+  be: {
+    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
+    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
+    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
+    openCategory: 'Categorie openen',
+    openLeasing: 'Leasing openen',
+  },
+  fr: {
+    intro: 'Choisissez une catégorie de véhicule et accédez directement aux annonces correspondantes.',
+    saleText: 'Parcourez les véhicules prêts à être achetés.',
+    leasingText: 'Afficher les annonces de leasing des vendeurs professionnels.',
+    openCategory: 'Ouvrir la catégorie',
+    openLeasing: 'Ouvrir le leasing',
+  },
+  es: {
+    intro: 'Elige una categoría de vehículo y ve directamente a los anuncios correspondientes.',
+    saleText: 'Consulta vehículos listos para comprar.',
+    leasingText: 'Muestra anuncios de leasing de vendedores profesionales.',
+    openCategory: 'Abrir categoría',
+    openLeasing: 'Abrir leasing',
+  },
+  it: {
+    intro: 'Scegli una categoria di veicoli e vai direttamente agli annunci corrispondenti.',
+    saleText: "Sfoglia veicoli pronti per l'acquisto.",
+    leasingText: 'Mostra annunci di leasing da venditori professionali.',
+    openCategory: 'Apri categoria',
+    openLeasing: 'Apri leasing',
+  },
+  pl: {
+    intro: 'Wybierz kategorię pojazdu i przejdź bezpośrednio do pasujących ogłoszeń.',
+    saleText: 'Przeglądaj pojazdy gotowe do zakupu.',
+    leasingText: 'Pokaż oferty leasingu od sprzedawców firmowych.',
+    openCategory: 'Otwórz kategorię',
+    openLeasing: 'Otwórz leasing',
+  },
+  nl: {
+    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
+    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
+    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
+    openCategory: 'Categorie openen',
+    openLeasing: 'Leasing openen',
+  },
+  fi: {
+    intro: 'Valitse ajoneuvoluokka ja siirry suoraan sopiviin ilmoituksiin.',
+    saleText: 'Selaa ostovalmiita ajoneuvoja.',
+    leasingText: 'Näytä yritysmyyjien leasing-ilmoitukset.',
+    openCategory: 'Avaa luokka',
+    openLeasing: 'Avaa leasing',
+  },
+  da: {
+    intro: 'Vælg en køretøjskategori og gå direkte til matchende annoncer.',
+    saleText: 'Se køretøjer, der er klar til køb.',
+    leasingText: 'Vis leasingannoncer fra erhvervssælgere.',
+    openCategory: 'Åbn kategori',
+    openLeasing: 'Åbn leasing',
+  },
+}
+
 type HeaderAccount = {
   authenticated: boolean
   displayName?: string
@@ -624,20 +719,12 @@ export default function PublicHeader({
     {
       key: 'sale' as const,
       label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
-      text: publicLabel(
-        'Browse vehicles that are ready to buy.',
-        'Se fordon som är redo att köpa.',
-        'Fahrzeuge ansehen, die direkt gekauft werden können.',
-      ),
+      text: searchMegaCopy[locale].saleText,
     },
     {
       key: 'leasing' as const,
       label: publicLabel('Vehicle leasing', 'Leasing av fordon', 'Fahrzeugleasing'),
-      text: publicLabel(
-        'Show leasing listings from business sellers.',
-        'Visa leasingannonser från företagssäljare.',
-        'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
-      ),
+      text: searchMegaCopy[locale].leasingText,
     },
   ]
   const searchCategoryHref = (href: string) =>
@@ -869,7 +956,7 @@ export default function PublicHeader({
   ]
   const desktopAccountLinks = [
     { href: savedHref, label: publicLabel(t.saved, 'Sparade annonser', t.saved), icon: Heart },
-    { href: savedSearchesHref, label: publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen'), icon: Bookmark },
+    { href: savedSearchesHref, label: translatePublic(locale, 'Saved searches'), icon: Bookmark },
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
   ]
   const savedListingBadge = savedListingCount > 99 ? '99+' : savedListingCount ? String(savedListingCount) : ''
@@ -1133,11 +1220,7 @@ export default function PublicHeader({
                               {t.shopByCategory}
                             </p>
                             <p className="mt-1 text-[13px] font-[400] leading-5 text-[#475467]">
-                              {publicLabel(
-                                'Choose one vehicle category and go straight to matching listings.',
-                                'Välj en fordonskategori och gå direkt till matchande annonser.',
-                                'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
-                              )}
+                              {searchMegaCopy[locale].intro}
                             </p>
                           </div>
                           <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
@@ -1184,8 +1267,8 @@ export default function PublicHeader({
                                       </span>
                                       <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
                                         {searchMenuIntent === 'leasing'
-                                          ? publicLabel('Open leasing', 'Öppna leasing', 'Leasing öffnen')
-                                          : publicLabel('Open category', 'Öppna kategori', 'Kategorie öffnen')}
+                                          ? searchMegaCopy[locale].openLeasing
+                                          : searchMegaCopy[locale].openCategory}
                                       </span>
                                     </span>
                                   </span>
@@ -1771,7 +1854,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
+              aria-label={translatePublic(locale, 'Saved searches')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
@@ -1787,7 +1870,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
+              aria-label={translatePublic(locale, 'Saved searches')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
