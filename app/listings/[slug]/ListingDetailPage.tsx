@@ -46,7 +46,7 @@ import { localizePublicHref, translatePublic, translatePublicObject, type Public
 import { getRequestLocale } from '@/lib/request-locale'
 import { getMarketplaceListingForPublicDetail } from '@/lib/marketplace-public-data'
 import { resolveListingMapLocation } from '@/lib/listing-map-location'
-import { selectedEquipmentGroups } from '@/lib/listing-equipment'
+import { selectedEquipmentGroups, translateListingEquipmentValue } from '@/lib/listing-equipment'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { cleanSeoText } from '@/lib/market-seo'
 import { publicSellerName } from '@/lib/public-seller'
@@ -281,7 +281,7 @@ export default async function ListingDetailPage({
     ? listing.equipment_keys.map(String)
     : []
   const equipmentGroups = selectedEquipmentGroups(equipmentKeys, locale)
-  const fallbackEquipment = equipmentKeys.length ? [] : splitCsv(listing.equipment).map((item) => translateSpecValue(locale, item) || item)
+  const fallbackEquipment = equipmentKeys.length ? [] : splitCsv(listing.equipment).map((item) => translateListingEquipmentValue(locale, item) || item)
   const technicalDetails = await getListingTechnicalDetails(listing.id)
   const listingStructuredData = isRecord(listing.structured_data)
     ? (listing.structured_data as Record<string, string | number | string[] | null>)
@@ -566,6 +566,7 @@ export default async function ListingDetailPage({
 
                 <div id="listing-location-map" className="scroll-mt-24">
               <ListingLocationMap
+                locale={locale}
                 title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
                 listingId={listing.id}
                 address={listing.address}

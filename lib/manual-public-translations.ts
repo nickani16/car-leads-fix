@@ -1489,10 +1489,96 @@ const supplementalActiveTranslations: Record<string, Record<string, string>> = {
   },
 }
 
+const listingDetailTranslations: Record<string, Record<string, string>> = {
+  sv: {
+    'Show more': 'Visa mer',
+    'Show less': 'Visa mindre',
+    'Dealer website': 'Till handlarens webbsida',
+    'View company page': 'Visa företagssida',
+    'Approximate position based on the listing postal code, city and country.': 'Ungefärlig position baserad på annonsens postnummer, ort och land.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Ingen kartposition kan visas eftersom annonsen saknar tillräcklig sparad platsdata.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'Kartan visas när annonsen har koordinater eller en adress/postnummer som kan geokodas.',
+  },
+  de: {
+    'Show more': 'Mehr anzeigen',
+    'Show less': 'Weniger anzeigen',
+    'Dealer website': 'Zur Händlerwebsite',
+    'View company page': 'Unternehmensseite ansehen',
+    'Approximate position based on the listing postal code, city and country.': 'Ungefähre Position basierend auf Postleitzahl, Ort und Land der Anzeige.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Keine Kartenposition kann angezeigt werden, weil der Anzeige ausreichende gespeicherte Standortdaten fehlen.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'Die Karte wird angezeigt, sobald die Anzeige Koordinaten oder eine geokodierbare Adresse/Postleitzahl hat.',
+  },
+  es: {
+    'Show more': 'Mostrar más',
+    'Show less': 'Mostrar menos',
+    'Dealer website': 'Web del concesionario',
+    'View company page': 'Ver página de empresa',
+    'Approximate position based on the listing postal code, city and country.': 'Posición aproximada basada en el código postal, la ciudad y el país del anuncio.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'No se puede mostrar una posición en el mapa porque el anuncio no tiene suficientes datos de ubicación guardados.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'El mapa se muestra cuando el anuncio tiene coordenadas o una dirección/código postal que se puede geocodificar.',
+  },
+  fr: {
+    'Show more': 'Afficher plus',
+    'Show less': 'Afficher moins',
+    'Dealer website': 'Site web du concessionnaire',
+    'View company page': 'Voir la page de l’entreprise',
+    'Approximate position based on the listing postal code, city and country.': 'Position approximative basée sur le code postal, la ville et le pays de l’annonce.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Aucune position ne peut être affichée sur la carte car l’annonce ne contient pas suffisamment de données de localisation enregistrées.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'La carte s’affiche lorsque l’annonce possède des coordonnées ou une adresse/un code postal géocodable.',
+  },
+  it: {
+    'Show more': 'Mostra di più',
+    'Show less': 'Mostra meno',
+    'Dealer website': 'Sito del concessionario',
+    'View company page': 'Vedi pagina aziendale',
+    'Approximate position based on the listing postal code, city and country.': 'Posizione approssimativa basata su CAP, città e paese dell’annuncio.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Non è possibile mostrare una posizione sulla mappa perché l’annuncio non contiene dati di posizione salvati sufficienti.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'La mappa viene mostrata quando l’annuncio ha coordinate o un indirizzo/CAP geocodificabile.',
+  },
+  nl: {
+    'Show more': 'Meer weergeven',
+    'Show less': 'Minder weergeven',
+    'Dealer website': 'Dealerwebsite',
+    'View company page': 'Bedrijfspagina bekijken',
+    'Approximate position based on the listing postal code, city and country.': 'Geschatte locatie op basis van de postcode, plaats en het land van de advertentie.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Er kan geen kaartpositie worden getoond omdat de advertentie onvoldoende opgeslagen locatiegegevens heeft.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'De kaart wordt getoond zodra de advertentie coördinaten of een geocodeerbaar adres/postcode heeft.',
+  },
+  pl: {
+    'Show more': 'Pokaż więcej',
+    'Show less': 'Pokaż mniej',
+    'Dealer website': 'Strona dealera',
+    'View company page': 'Zobacz stronę firmy',
+    'Approximate position based on the listing postal code, city and country.': 'Przybliżona lokalizacja na podstawie kodu pocztowego, miasta i kraju ogłoszenia.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Nie można pokazać pozycji na mapie, ponieważ ogłoszenie nie ma wystarczających zapisanych danych lokalizacji.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'Mapa pojawi się, gdy ogłoszenie będzie mieć współrzędne albo adres/kod pocztowy możliwy do geokodowania.',
+  },
+  da: {
+    'Show more': 'Vis mere',
+    'Show less': 'Vis mindre',
+    'Dealer website': 'Forhandlerens website',
+    'View company page': 'Vis virksomhedsside',
+    'Approximate position based on the listing postal code, city and country.': 'Omtrentlig placering baseret på annoncens postnummer, by og land.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Der kan ikke vises en kortposition, fordi annoncen mangler tilstrækkelige gemte placeringsdata.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'Kortet vises, når annoncen har koordinater eller en adresse/postnummer, der kan geokodes.',
+  },
+  fi: {
+    'Show more': 'Näytä lisää',
+    'Show less': 'Näytä vähemmän',
+    'Dealer website': 'Jälleenmyyjän verkkosivusto',
+    'View company page': 'Näytä yrityssivu',
+    'Approximate position based on the listing postal code, city and country.': 'Likimääräinen sijainti perustuu ilmoituksen postinumeroon, paikkakuntaan ja maahan.',
+    'No map position can be shown because the listing is missing enough saved location data.': 'Karttasijaintia ei voida näyttää, koska ilmoituksesta puuttuu riittävästi tallennettuja sijaintitietoja.',
+    'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.': 'Kartta näytetään, kun ilmoituksessa on koordinaatit tai geokoodattava osoite/postinumero.',
+  },
+}
+
 export function manualPublicTranslation(locale: string, value: string) {
   const normalizedLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
   const lease = leaseCreateListingTranslations[normalizedLocale]
   if (lease?.[value]) return lease[value]
+  const listingDetail = listingDetailTranslations[normalizedLocale]
+  if (listingDetail?.[value]) return listingDetail[value]
   const supplemental = supplementalActiveTranslations[normalizedLocale]
   if (supplemental?.[value]) return supplemental[value]
   const dictionary = activeMarketUiTranslations[normalizedLocale as keyof typeof activeMarketUiTranslations]

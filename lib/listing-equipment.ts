@@ -362,6 +362,21 @@ export const equipmentGroups: EquipmentGroup[] = [
 export const equipmentOptions = equipmentGroups.flatMap((item) => item.options)
 export const equipmentOptionByKey = new Map(equipmentOptions.map((item) => [item.key, item]))
 
+const equipmentOptionByNormalizedLabel = new Map<string, EquipmentOption>()
+
+for (const option of equipmentOptions) {
+  for (const label of [option.key, option.sv, option.en, option.de, decodeLegacyEncoding(option.sv), decodeLegacyEncoding(option.de)]) {
+    const normalized = normalizeEquipmentLookup(label)
+    if (normalized) equipmentOptionByNormalizedLabel.set(normalized, option)
+  }
+}
+
+const legacyEquipmentAliases: Record<string, string> = {
+  'head-up-näyttö': 'head_up_display',
+  sivuaskelmat: 'side_steps',
+  roiskeläpät: 'mud_flaps',
+}
+
 export function equipmentGroupsForCategory(category: MarketplaceCategorySlug) {
   return equipmentGroups.filter((group) => group.categories.includes(category))
 }
@@ -382,8 +397,8 @@ export function normalizeEquipmentKeys(values: unknown) {
 }
 
 export function equipmentLabel(option: EquipmentOption, locale: PublicLocale) {
-  if (locale === 'sv') return option.sv
-  if (locale === 'de' || locale === 'at') return option.de
+  if (locale === 'sv') return decodeLegacyEncoding(option.sv)
+  if (locale === 'de' || locale === 'at') return decodeLegacyEncoding(option.de)
   if (locale === 'en') return option.en
   return translatePublic(locale, option.en)
 }
@@ -409,4 +424,41 @@ export function selectedEquipmentGroups(keys: string[], locale: PublicLocale) {
         })),
     }))
     .filter((group) => group.options.length)
+}
+
+export function translateListingEquipmentValue(locale: PublicLocale, value?: string | null) {
+  if (!value) return ''
+  const normalized = normalizeEquipmentLookup(value)
+  const aliasedKey = legacyEquipmentAliases[normalized]
+  const option = aliasedKey
+    ? equipmentOptionByKey.get(aliasedKey)
+    : equipmentOptionByKey.get(String(value).trim()) || equipmentOptionByNormalizedLabel.get(normalized)
+  if (option) return equipmentLabel(option, locale)
+
+  const cleaned = decodeLegacyEncoding(String(value).trim())
+  return translatePublic(locale, cleaned)
+}
+
+function normalizeEquipmentLookup(value: string) {
+  return decodeLegacyEncoding(value)
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[‐‑–—]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function decodeLegacyEncoding(value: string) {
+  return value
+    .replace(/Ã¥/g, 'å')
+    .replace(/Ã¤/g, 'ä')
+    .replace(/Ã¶/g, 'ö')
+    .replace(/Ã…/g, 'Å')
+    .replace(/Ã„/g, 'Ä')
+    .replace(/Ã–/g, 'Ö')
+    .replace(/Ã©/g, 'é')
+    .replace(/Ã¼/g, 'ü')
+    .replace(/Ãœ/g, 'Ü')
+    .replace(/ÃŸ/g, 'ß')
+    .replace(/Â/g, '')
 }
