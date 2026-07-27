@@ -28,6 +28,11 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import {
+  normalizeSearchBounds,
+  parseMarketplaceSearchState,
+  resolveMarketplaceGeoArea,
+} from '@/lib/marketplace-search-state'
 import { swedishMunicipalities } from '@/lib/swedish-regions.generated'
 import { buildSeoPath, slugifySeoPart, type SeoLocation, type SeoMarketCode } from '@/lib/seo-routes'
 
@@ -67,7 +72,16 @@ export async function generateMetadata({
       : translatePublic(locale, category.labels.en)
   const host = 'https://www.autorell.com'
   const filter = getSearchParam(resolvedSearchParams, 'filter')
-  const seo = getMarketplaceSeoCopy(category.slug, label, locale, filter)
+  const metadataMarkets = getSearchParamList(resolvedSearchParams, 'markets')
+  const metadataSearch = parseMarketplaceSearchState(getSearchParam(resolvedSearchParams, 'q') || filter, {
+    markets: metadataMarkets,
+  })
+  const metadataGeoArea =
+    resolveMarketplaceGeoArea(
+      getSearchParam(resolvedSearchParams, 'geoAreaId') ||
+      getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
+    ) || metadataSearch.geoArea
+  const seo = getMarketplaceSeoCopy(category.slug, label, locale, metadataGeoArea?.name || metadataSearch.make || filter)
   const pathname = requestHeaders.get('x-autorell-pathname')
   const canonicalPath = pathname || `/marketplace/${category.slug}`
   const marketplaceSeo = resolveMarketplaceSeoCanonical(
@@ -157,6 +171,25 @@ export default async function MarketplaceCategoryPage({
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
+  const initialMarkets = requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []
+  const initialQuery = getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')
+  const parsedInitialSearch = parseMarketplaceSearchState(initialQuery, {
+    markets: initialMarkets.length ? initialMarkets : [defaultCountry].filter(Boolean),
+  })
+  const initialGeoArea =
+    resolveMarketplaceGeoArea(
+      getSearchParam(resolvedSearchParams, 'geoAreaId') ||
+      getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
+    ) || parsedInitialSearch.geoArea
+  const initialGeoBounds = normalizeSearchBounds({
+    north: getSearchParam(resolvedSearchParams, 'north'),
+    east: getSearchParam(resolvedSearchParams, 'east'),
+    south: getSearchParam(resolvedSearchParams, 'south'),
+    west: getSearchParam(resolvedSearchParams, 'west'),
+  })
+  const initialMaxPrice =
+    getSearchParam(resolvedSearchParams, 'maxPrice') ||
+    (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
 
   const data = await getPublishedMarketplaceCategoryListings(
     requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
@@ -229,18 +262,20 @@ export default async function MarketplaceCategoryPage({
         locale={locale}
         defaultCountry={defaultCountry}
         automaticCountry={automaticCountry}
-        initialMarkets={requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []}
+        initialMarkets={initialMarkets}
         initialCategories={requestedCategories}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
-        initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
+        initialQuery={initialQuery}
         initialSearchChips={getSearchParamList(resolvedSearchParams, 'chips')}
-        initialMake={getSearchParam(resolvedSearchParams, 'make')}
+        initialMake={getSearchParam(resolvedSearchParams, 'make') || parsedInitialSearch.make}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
-        initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county')}
-        initialCity={getSearchParam(resolvedSearchParams, 'city')}
-        initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality')}
+        initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county') || initialGeoArea?.region || ''}
+        initialCity={getSearchParam(resolvedSearchParams, 'city') || initialGeoArea?.locality || ''}
+        initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality') || initialGeoArea?.municipality || ''}
+        initialGeoAreaId={initialGeoArea?.id || ''}
+        initialGeoBounds={initialGeoBounds}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
-        initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
+        initialMaxPrice={initialMaxPrice}
         initialMode={getSearchMode(resolvedSearchParams)}
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear')}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear')}

@@ -4,6 +4,14 @@ import test from 'node:test'
 
 const searchStateSource = readFileSync(new URL('../lib/marketplace-search-state.ts', import.meta.url), 'utf8')
 const searchSource = readFileSync(new URL('../lib/marketplace-search-v2.ts', import.meta.url), 'utf8')
+const vehicleSearchExperienceSource = readFileSync(
+  new URL('../app/components/VehicleSearchExperience.tsx', import.meta.url),
+  'utf8',
+)
+const marketplaceCategoryPageSource = readFileSync(
+  new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
+  'utf8',
+)
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
   'utf8',
@@ -72,5 +80,27 @@ test('geo search migration prepares stable IDs, polygons and indexed coordinates
     'marketplace_listings_lat_lng_idx',
   ]) {
     assert.ok(migrationSource.includes(snippet), `${snippet} should be present`)
+  }
+})
+
+test('marketplace UI hydrates geo search state into URL, API and map handoff', () => {
+  for (const snippet of [
+    'initialGeoAreaId',
+    'initialGeoBounds',
+    "setParam('geoAreaId'",
+    "setParam('north'",
+    'onSearchArea',
+    'geoBounds',
+  ]) {
+    assert.ok(vehicleSearchExperienceSource.includes(snippet), `VehicleSearchExperience should include ${snippet}`)
+  }
+
+  for (const snippet of [
+    'parseMarketplaceSearchState',
+    'normalizeSearchBounds',
+    'initialGeoAreaId=',
+    'initialGeoBounds=',
+  ]) {
+    assert.ok(marketplaceCategoryPageSource.includes(snippet), `marketplace category page should include ${snippet}`)
   }
 })

@@ -54,6 +54,7 @@ import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
+import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
@@ -94,6 +95,11 @@ function createSelectedSearchSuggestion(
   }
 }
 
+function formatGeoBound(value: number) {
+  if (!Number.isFinite(value)) return ''
+  return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
+}
+
 type SavedVehicleSearch = {
   savedAt: string
   filters: {
@@ -106,6 +112,8 @@ type SavedVehicleSearch = {
     region: string
     city: string
     municipality: string
+    geoAreaId?: string
+    geoBounds?: MarketplaceBoundingBox | null
     minPrice: string
     maxPrice: string
     minYear: string
@@ -475,6 +483,8 @@ export default function VehicleSearchExperience({
   initialRegion = '',
   initialCity = '',
   initialMunicipality = '',
+  initialGeoAreaId = '',
+  initialGeoBounds = null,
   initialMinPrice = '',
   initialMaxPrice = '',
   initialMode = 'sale',
@@ -510,6 +520,8 @@ export default function VehicleSearchExperience({
   initialRegion?: string
   initialCity?: string
   initialMunicipality?: string
+  initialGeoAreaId?: string
+  initialGeoBounds?: MarketplaceBoundingBox | null
   initialMinPrice?: string
   initialMaxPrice?: string
   initialMode?: SearchMode
@@ -570,6 +582,8 @@ export default function VehicleSearchExperience({
       initialRegion ||
       initialCity ||
       initialMunicipality ||
+      initialGeoAreaId ||
+      initialGeoBounds ||
       initialMinPrice ||
       initialMaxPrice ||
       initialMode !== 'sale' ||
@@ -621,6 +635,8 @@ export default function VehicleSearchExperience({
   const [region, setRegion] = useState(initialRegion)
   const [city, setCity] = useState(initialCity)
   const [municipality, setMunicipality] = useState(initialMunicipality)
+  const [geoAreaId, setGeoAreaId] = useState(initialGeoAreaId)
+  const [geoBounds, setGeoBounds] = useState<MarketplaceBoundingBox | null>(initialGeoBounds)
   const [fuel, setFuel] = useState(initialFuel)
   const [gearbox, setGearbox] = useState(initialGearbox)
   const [bodyType, setBodyType] = useState(initialBodyType)
@@ -667,6 +683,8 @@ export default function VehicleSearchExperience({
     region,
     city,
     municipality,
+    geoAreaId,
+    geoBounds,
     minPrice,
     maxPrice,
     minYear,
@@ -687,7 +705,7 @@ export default function VehicleSearchExperience({
     equipmentQuery: equipmentQuery.trim(),
     technicalFilters,
     sortBy,
-  }), [bodyType, city, color, condition, equipmentQuery, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, technicalFilters, verifiedOnly, fourWheelDrive])
+  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -711,6 +729,13 @@ export default function VehicleSearchExperience({
     setParam('region', region)
     setParam('city', city)
     setParam('municipality', municipality)
+    setParam('geoAreaId', geoAreaId)
+    if (geoBounds) {
+      setParam('north', formatGeoBound(geoBounds.north))
+      setParam('east', formatGeoBound(geoBounds.east))
+      setParam('south', formatGeoBound(geoBounds.south))
+      setParam('west', formatGeoBound(geoBounds.west))
+    }
     setParam('minPrice', minPrice)
     setParam('maxPrice', maxPrice)
     setParam('minYear', minYear)
@@ -732,7 +757,7 @@ export default function VehicleSearchExperience({
     Object.entries(technicalFilters).forEach(([key, value]) => setParam(`technical_${key}`, value))
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -793,6 +818,8 @@ export default function VehicleSearchExperience({
       setRegion(restored.region || '')
       setCity(restored.city || '')
       setMunicipality(restored.municipality || '')
+      setGeoAreaId(restored.geoAreaId || '')
+      setGeoBounds(restored.geoBounds || null)
       setFuel(restored.fuel || '')
       setGearbox(restored.gearbox || '')
       setBodyType(restored.bodyType || '')
@@ -1052,6 +1079,8 @@ export default function VehicleSearchExperience({
     setRegion(initialRegion)
     setCity(initialCity)
     setMunicipality(initialMunicipality)
+    setGeoAreaId(initialGeoAreaId)
+    setGeoBounds(initialGeoBounds)
     setFuel(initialFuel)
     setGearbox(initialGearbox)
     setBodyType(initialBodyType)
@@ -1168,6 +1197,8 @@ export default function VehicleSearchExperience({
         region,
         city,
         municipality,
+        geoAreaId,
+        geoBounds,
         minPrice,
         maxPrice,
         minYear,
@@ -2446,6 +2477,11 @@ export default function VehicleSearchExperience({
               }}
               searchInput={searchInput}
               selectedSearchSuggestions={selectedSearchSuggestions}
+              geoBounds={geoBounds}
+              onSearchArea={(bounds) => {
+                setGeoAreaId('')
+                setGeoBounds(bounds)
+              }}
               onRemoveSearchSuggestion={(suggestion) => {
                 setSelectedSearchSuggestions((current) => {
                   const next = current.filter((item) => item.chipId !== suggestion.chipId)
@@ -3216,6 +3252,8 @@ function VehicleSearchMap({
   onQueryChange,
   searchInput,
   selectedSearchSuggestions,
+  geoBounds,
+  onSearchArea,
   onRemoveSearchSuggestion,
   mobileOverlay = false,
   onCloseMobileMap,
@@ -3239,6 +3277,8 @@ function VehicleSearchMap({
   onQueryChange: (value: string) => void
   searchInput: string
   selectedSearchSuggestions: SelectedSearchSuggestion[]
+  geoBounds?: MarketplaceBoundingBox | null
+  onSearchArea: (bounds: MarketplaceBoundingBox) => void
   onRemoveSearchSuggestion: (suggestion: SelectedSearchSuggestion) => void
   mobileOverlay?: boolean
   onCloseMobileMap?: () => void
@@ -3348,7 +3388,10 @@ function VehicleSearchMap({
           .setLngLat(coordinates)
           .addTo(map)
       })
-      if (mapListings.length) {
+      if (geoBounds) {
+        const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
+        map.fitBounds(bounds, { padding: 70, maxZoom: 10.5, duration: 500 })
+      } else if (mapListings.length) {
         const bounds = new maplibregl.LngLatBounds()
         mapListings.forEach(({ coordinates }) => bounds.extend(coordinates))
         map.fitBounds(bounds, { padding: 70, maxZoom: 8.8, duration: 500 })
@@ -3361,7 +3404,7 @@ function VehicleSearchMap({
     return () => {
       cancelled = true
     }
-  }, [country, mapListings, mapReady, selectedListing?.id])
+  }, [country, geoBounds, mapListings, mapReady, selectedListing?.id])
 
   return (
     <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
@@ -3542,7 +3585,14 @@ function VehicleSearchMap({
       <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles in map view', 'fordon i kartvyn', 'Fahrzeuge in der Kartenansicht')}
       </div>
-      <button className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} hidden absolute left-1/2 z-20 -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}>
+      <button
+        type="button"
+        onClick={() => {
+          const bounds = readMapBounds(mapRef.current)
+          if (bounds) onSearchArea(bounds)
+        }}
+        className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} absolute left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}
+      >
         <SlidersHorizontal className="h-4 w-4" />
         {uiText(locale, 'Search in this area', 'Sök i detta område', 'In diesem Bereich suchen')}
       </button>
@@ -3808,6 +3858,17 @@ function listingCoordinates(listing: VehicleSearchListing, country: string, inde
     base[0] + Math.cos(ring * Math.PI * 2) * radius,
     base[1] + Math.sin(ring * Math.PI * 2) * radius * 0.55,
   ]
+}
+
+function readMapBounds(map: MapLibreMap | null): MarketplaceBoundingBox | null {
+  if (!map) return null
+  const bounds = map.getBounds()
+  return {
+    north: bounds.getNorth(),
+    east: bounds.getEast(),
+    south: bounds.getSouth(),
+    west: bounds.getWest(),
+  }
 }
 
 function isGenericCountryCoordinate(latitude: number, longitude: number, countryCode: string) {
