@@ -505,6 +505,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible = false,
   initialEquipmentQuery = '',
   initialSortBy = 'published',
+  disableUrlSync = false,
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
@@ -542,6 +543,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible?: boolean
   initialEquipmentQuery?: string
   initialSortBy?: string
+  disableUrlSync?: boolean
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
@@ -843,7 +845,7 @@ export default function VehicleSearchExperience({
   }, [currentSearchState, locale, safeAutomaticCountry, searchStateReady])
 
   useEffect(() => {
-    if (!searchStateReady || typeof window === 'undefined') return
+    if (disableUrlSync || !searchStateReady || typeof window === 'undefined') return
     const timer = window.setTimeout(() => {
       const nextQuery = marketplaceSearchParams.toString()
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
@@ -858,7 +860,7 @@ export default function VehicleSearchExperience({
     }, 350)
 
     return () => window.clearTimeout(timer)
-  }, [marketplaceSearchParams, searchStateReady])
+  }, [disableUrlSync, marketplaceSearchParams, searchStateReady])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearchPage(1), 0)
