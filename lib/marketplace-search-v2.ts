@@ -8,6 +8,12 @@ import {
   marketplaceRegionMunicipalitySearchTerms,
   marketplaceSearchLocationTermsForQuery,
 } from './marketplace-locations'
+import {
+  marketplaceGeoAreaOrFilters,
+  normalizeSearchBounds,
+  parseMarketplaceSearchState,
+  resolveMarketplaceGeoArea,
+} from './marketplace-search-state'
 import { createAdminClient } from './supabase/admin'
 import { fieldsForCategory } from './listing-schema'
 
@@ -33,6 +39,12 @@ export type MarketplaceSearchInput = {
   postalCode?: string | null
   county?: string | null
   region?: string | null
+  geoAreaId?: string | null
+  geoPlaceCode?: string | null
+  north?: string | number | null
+  east?: string | number | null
+  south?: string | number | null
+  west?: string | number | null
   minPrice?: string | number | null
   maxPrice?: string | number | null
   minYear?: string | number | null
@@ -277,19 +289,26 @@ async function fetchNormalRows(
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
   const categories = normalizeCategoryFilters(input.categories ?? input.category)
+  const markets = normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country)
+  const rawQuery = clean(input.q).slice(0, 80)
+  const parsedSearchState = parseMarketplaceSearchState(rawQuery, { markets })
+  const geoArea = resolveMarketplaceGeoArea(input.geoAreaId || input.geoPlaceCode) || parsedSearchState.geoArea
+  const bounds = normalizeSearchBounds(input)
   const sort = normalizeSort(input.sort)
   const cursor = decodeCursor(input.cursor, sort)
 
   return {
     categories,
-    markets: normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country),
-    q: clean(input.q).slice(0, 80),
-    make: clean(input.make).slice(0, 80),
+    markets,
+    q: parsedSearchState.query || rawQuery,
+    make: clean(input.make).slice(0, 80) || parsedSearchState.make,
     model: clean(input.model).slice(0, 80),
     city: clean(input.city).slice(0, 80),
     municipality: clean(input.municipality).slice(0, 80),
-    postalCode: clean(input.postalCode).slice(0, 40),
+    postalCode: clean(input.postalCode).slice(0, 40) || parsedSearchState.postalCode,
     county: clean(input.county || input.region).slice(0, 80),
+    geoArea,
+    bounds,
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
     bodyType: clean(input.bodyType).slice(0, 80),
@@ -302,7 +321,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     offerType: clean(input.offerType).toLowerCase(),
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
-    maxPrice: positiveNumber(input.maxPrice),
+    maxPrice: positiveNumber(input.maxPrice) ?? parsedSearchState.maxPrice,
     minYear: positiveNumber(input.minYear),
     maxYear: positiveNumber(input.maxYear),
     maxMileage: positiveNumber(input.maxMileage),
@@ -380,6 +399,17 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.postalCode) query = query.ilike('postal_code', filters.postalCode)
+  if (filters.geoArea) {
+    const geoAreaFilters = marketplaceGeoAreaOrFilters(filters.geoArea)
+    if (geoAreaFilters.length) query = query.or(geoAreaFilters.join(','))
+  }
+  if (filters.bounds) {
+    query = query
+      .gte('latitude', filters.bounds.south)
+      .lte('latitude', filters.bounds.north)
+      .gte('longitude', filters.bounds.west)
+      .lte('longitude', filters.bounds.east)
+  }
   if (filters.county) {
     const countyTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
       marketplaceRegionMunicipalitySearchTerms(country, filters.county),
