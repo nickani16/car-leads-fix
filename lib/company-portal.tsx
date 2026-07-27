@@ -46,6 +46,7 @@ export type CompanyPortalContext = {
     cancellation_effective_at: string | null
   } | null
   listingSummary: AccountListingSummary
+  listingOwnerUserIds: string[]
 }
 
 export type CompanyPortalPageKey =
@@ -134,6 +135,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     profile,
     subscription: subscription || null,
     listingSummary,
+    listingOwnerUserIds: scope.listingOwnerUserIds,
   }
 }
 

@@ -9,11 +9,14 @@ import {
   ExternalLink,
   Fuel,
   Gauge,
+  History,
   Info,
+  LineChart,
   Map as MapIcon,
   MapPin,
   ShieldCheck,
   Settings2,
+  Sparkles,
   TrendingDown,
 } from 'lucide-react'
 import ListingImageGallery from '@/app/components/ListingImageGallery'
@@ -50,6 +53,14 @@ import { selectedEquipmentGroups, translateListingEquipmentValue } from '@/lib/l
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { cleanSeoText } from '@/lib/market-seo'
 import { publicSellerName } from '@/lib/public-seller'
+import {
+  getListingHistory,
+  getListingMarketInsights,
+  getSimilarListings,
+  type InsightListingRow,
+  type ListingHistoryItem,
+  type MarketPriceInsight,
+} from '@/lib/marketplace-insights'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
@@ -397,6 +408,12 @@ export default async function ListingDetailPage({
   const fullscreenImages = listing.image_variants?.length
     ? listing.image_variants.map((image) => image.fullscreenUrl || image.listingUrl)
     : galleryImages
+  const insightsAdmin = createAdminClient()
+  const [marketInsight, listingHistory, similarListings] = await Promise.all([
+    getListingMarketInsights(insightsAdmin, listing as InsightListingRow),
+    getListingHistory(insightsAdmin, listing as InsightListingRow),
+    getSimilarListings(insightsAdmin, listing as InsightListingRow, 4),
+  ])
 
   return (
     <main className="min-h-screen bg-white text-[#101828]">
@@ -521,9 +538,14 @@ export default async function ListingDetailPage({
                   })}
                 </div>
               ) : null}
-                </section>
+              <PriceInsightPanel
+                insight={marketInsight}
+                locale={locale}
+                currentPriceDisplay={price.original}
+              />
+            </section>
 
-                <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
+            <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
               <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                 {localizedLabel(locale, 'Specifikationer', 'Specifications', 'Spezifikationen')}
               </h2>
@@ -539,18 +561,26 @@ export default async function ListingDetailPage({
                   </div>
                 ))}
               </div>
-                </section>
+            </section>
 
-                <ListingEquipmentSection
+            <VehicleProfileSection
+              listing={listing}
+              locale={locale}
+              marketInsight={marketInsight}
+              specsCount={specs.length}
+              equipmentCount={equipmentKeys.length || fallbackEquipment.length}
+            />
+
+            <ListingEquipmentSection
               title={localizedLabel(locale, 'Utrustning', 'Equipment', 'Ausstattung')}
               groups={equipmentGroups}
               fallbackItems={fallbackEquipment}
               showMoreLabel={localizedLabel(locale, 'Läs mer', 'Show more', 'Mehr anzeigen')}
               showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
-                />
+            />
 
-                {publicSellerDescription ? (
-                  <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
+            {publicSellerDescription ? (
+              <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
                 <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
@@ -561,10 +591,16 @@ export default async function ListingDetailPage({
                   showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
                 />
                 <SellerDescriptionTranslationButton text={publicSellerDescription} locale={locale} />
-                  </section>
-                ) : null}
+              </section>
+            ) : null}
 
-                <div id="listing-location-map" className="scroll-mt-24">
+            <SimilarListingsSection
+              listings={similarListings}
+              locale={locale}
+              displayCurrency={displayCurrency}
+            />
+
+            <div id="listing-location-map" className="scroll-mt-24">
               <ListingLocationMap
                 locale={locale}
                 title={localizedLabel(locale, 'Plats', 'Location', 'Standort')}
@@ -579,7 +615,7 @@ export default async function ListingDetailPage({
                 mapSource={mapCoordinates?.source}
                 mapQuery={mapCoordinates?.query}
               />
-                </div>
+            </div>
             </div>
             </div>
 
@@ -767,6 +803,8 @@ export default async function ListingDetailPage({
             </div>
           ) : null}
 
+          <ListingHistoryTimeline history={listingHistory} locale={locale} />
+
           <div className="mt-4 rounded-[12px] border border-[#edf1f6] bg-[#f8fafc] px-4 py-3 text-sm leading-5 text-[#475467]">
             {copy.euDisclaimer}
           </div>
@@ -795,6 +833,215 @@ async function fetchListingFromSlug(slug: string) {
   const data = await getMarketplaceListingForPublicDetail(id)
 
   return (data || null) as ListingRow | null
+}
+
+function PriceInsightPanel({
+  insight,
+  locale,
+  currentPriceDisplay,
+}: {
+  insight: MarketPriceInsight
+  locale: PublicLocale
+  currentPriceDisplay: string
+}) {
+  const copy = getInsightsCopy(locale)
+  const statusText = copy.priceStatus[insight.position]
+  const tone =
+    insight.position === 'below'
+      ? 'border-[#bbf7d0] bg-[#f0fdf4] text-[#027a48]'
+      : insight.position === 'above'
+        ? 'border-[#fed7aa] bg-[#fff7ed] text-[#9a3412]'
+        : insight.position === 'fair'
+          ? 'border-[#bfdbfe] bg-[#eff6ff] text-[#0866ff]'
+          : 'border-[#e4eaf3] bg-[#f8fbff] text-[#475467]'
+
+  return (
+    <div className="mt-4 rounded-[12px] border border-[#dfe6f2] bg-[#fbfdff] p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-[#0866ff]">
+            <LineChart className="h-4 w-4" />
+            {copy.marketValue}
+          </p>
+          <h2 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[#101828]">{statusText}</h2>
+          <p className="mt-1 text-sm leading-5 text-[#667085]">
+            {insight.sampleSize >= 3
+              ? copy.basedOn.replace('{count}', String(insight.sampleSize))
+              : copy.notEnoughData}
+          </p>
+        </div>
+        <span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${tone}`}>
+          {insight.differencePercent === null
+            ? copy.calculating
+            : `${Math.abs(insight.differencePercent)}% ${insight.differencePercent <= 0 ? copy.below : copy.above}`}
+        </span>
+      </div>
+      <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+        <MarketValue label={copy.currentPrice} value={currentPriceDisplay} />
+        <MarketValue label={copy.marketMedian} value={formatInsightPrice(insight.medianPrice, insight.currency, locale)} />
+        <MarketValue label={copy.marketRange} value={formatRange(insight.lowPrice, insight.highPrice, insight.currency, locale)} />
+      </div>
+    </div>
+  )
+}
+
+function MarketValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[10px] border border-[#e4eaf3] bg-white px-3 py-2">
+      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#667085]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#101828]">{value}</p>
+    </div>
+  )
+}
+
+function VehicleProfileSection({
+  listing,
+  locale,
+  marketInsight,
+  specsCount,
+  equipmentCount,
+}: {
+  listing: ListingRow
+  locale: PublicLocale
+  marketInsight: MarketPriceInsight
+  specsCount: number
+  equipmentCount: number
+}) {
+  const copy = getInsightsCopy(locale)
+  const profileItems = [
+    {
+      label: copy.profileIdentity,
+      value: [listing.make, listing.model, listing.model_year].filter(Boolean).join(' ') || listing.title,
+    },
+    {
+      label: copy.profileData,
+      value: copy.profileDataValue
+        .replace('{specs}', String(specsCount))
+        .replace('{equipment}', String(equipmentCount)),
+    },
+    {
+      label: copy.profileMarket,
+      value: marketInsight.sampleSize >= 3
+        ? copy.profileMarketValue.replace('{count}', String(marketInsight.sampleSize))
+        : copy.profileMarketLimited,
+    },
+  ]
+  return (
+    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf4ff] text-[#0866ff]">
+          <Sparkles className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
+            {copy.vehicleProfile}
+          </h2>
+          <p className="mt-1 text-sm leading-5 text-[#667085]">{copy.vehicleProfileIntro}</p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {profileItems.map((item) => (
+          <div key={item.label} className="rounded-[10px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-3">
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#667085]">{item.label}</p>
+            <p className="mt-1 text-sm font-semibold leading-5 text-[#101828]">{item.value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+async function SimilarListingsSection({
+  listings,
+  locale,
+  displayCurrency,
+}: {
+  listings: InsightListingRow[]
+  locale: PublicLocale
+  displayCurrency: string
+}) {
+  if (!listings.length) return null
+  const copy = getInsightsCopy(locale)
+  const cards = await Promise.all(listings.map(async (listing) => ({
+    listing,
+    price: await formatMarketplacePriceDisplay({
+      amount: Number(listing.price || 0),
+      currency: listing.currency || displayCurrency,
+      locale,
+      targetCurrency: displayCurrency,
+    }).catch(() => ({ original: listing.price ? `${listing.price} ${listing.currency || ''}` : '', approximate: null })),
+  })))
+
+  return (
+    <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
+      <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
+        {copy.similarListings}
+      </h2>
+      <p className="mt-1 text-sm leading-5 text-[#667085]">{copy.similarListingsIntro}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {cards.map(({ listing, price }) => {
+          const href = buildListingPath(listing as never, locale)
+          const image = listing.images?.[0]
+          const location = [listing.city, getEuCountryName(listing.country_code, locale)].filter(Boolean).join(', ')
+          return (
+            <Link
+              key={listing.id}
+              href={href}
+              className="grid gap-3 rounded-[12px] border border-[#e4eaf3] bg-white p-2 transition hover:border-[#0866ff] sm:grid-cols-[128px_minmax(0,1fr)]"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-[#f1f5f9]">
+                {image ? (
+                  <Image src={image} alt={listing.title} fill sizes="160px" className="object-cover" />
+                ) : (
+                  <div className="grid h-full place-items-center text-[#98a2b3]">
+                    <MapIcon className="h-5 w-5" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 py-1">
+                <p className="truncate text-sm font-semibold text-[#101828]">{listing.title}</p>
+                <p className="mt-1 text-xs font-medium text-[#667085]">{location}</p>
+                <p className="mt-2 text-sm font-semibold text-[#101828]">{price.original}</p>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function ListingHistoryTimeline({
+  history,
+  locale,
+}: {
+  history: ListingHistoryItem[]
+  locale: PublicLocale
+}) {
+  if (!history.length) return null
+  const copy = getInsightsCopy(locale)
+  return (
+    <div className="mt-4 rounded-[12px] border border-[#edf1f6] bg-white p-4">
+      <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-[#0866ff]">
+        <History className="h-4 w-4" />
+        {copy.history}
+      </p>
+      <ol className="mt-3 grid gap-2">
+        {history.map((item) => (
+          <li key={item.key} className="flex gap-3 text-sm">
+            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#0866ff]" />
+            <div className="min-w-0">
+              <p className="font-semibold text-[#101828]">{copy.historyLabels[item.labelKey]}</p>
+              <p className="text-xs font-medium text-[#667085]">
+                {formatDateTime(item.date, locale)}
+                {item.description ? ` · ${item.description}` : ''}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
 }
 
 async function getSellerDetails(
@@ -1065,6 +1312,44 @@ function localizedLabel(
   return translatePublic(locale, en)
 }
 
+function getInsightsCopy(locale: PublicLocale) {
+  return {
+    marketValue: localizedLabel(locale, 'Prisindikator', 'Price indicator', 'Preisindikator'),
+    priceStatus: {
+      below: localizedLabel(locale, 'Under jämförbara annonser', 'Below comparable listings', 'Unter vergleichbaren Anzeigen'),
+      fair: localizedLabel(locale, 'I nivå med marknaden', 'In line with the market', 'Im Marktbereich'),
+      above: localizedLabel(locale, 'Över jämförbara annonser', 'Above comparable listings', 'Über vergleichbaren Anzeigen'),
+      unknown: localizedLabel(locale, 'Marknadsdata byggs upp', 'Market data is being built', 'Marktdaten werden aufgebaut'),
+    },
+    basedOn: localizedLabel(locale, 'Baserat på {count} jämförbara publicerade annonser.', 'Based on {count} comparable published listings.', 'Basierend auf {count} vergleichbaren veröffentlichten Anzeigen.'),
+    notEnoughData: localizedLabel(locale, 'Det finns inte tillräckligt många jämförbara annonser ännu.', 'There are not enough comparable listings yet.', 'Es gibt noch nicht genügend vergleichbare Anzeigen.'),
+    calculating: localizedLabel(locale, 'Beräknas', 'Calculating', 'Wird berechnet'),
+    below: localizedLabel(locale, 'under marknad', 'below market', 'unter Markt'),
+    above: localizedLabel(locale, 'över marknad', 'above market', 'über Markt'),
+    currentPrice: localizedLabel(locale, 'Annonspris', 'Listing price', 'Anzeigenpreis'),
+    marketMedian: localizedLabel(locale, 'Median', 'Median', 'Median'),
+    marketRange: localizedLabel(locale, 'Marknadsspann', 'Market range', 'Marktspanne'),
+    vehicleProfile: localizedLabel(locale, 'Fordonsprofil', 'Vehicle profile', 'Fahrzeugprofil'),
+    vehicleProfileIntro: localizedLabel(locale, 'Samlad identitet, teknisk data och marknadsunderlag för annonsen.', 'Identity, technical data and market context collected for the listing.', 'Identität, technische Daten und Marktkontext für die Anzeige.'),
+    profileIdentity: localizedLabel(locale, 'Identitet', 'Identity', 'Identität'),
+    profileData: localizedLabel(locale, 'Datakvalitet', 'Data quality', 'Datenqualität'),
+    profileDataValue: localizedLabel(locale, '{specs} specifikationer och {equipment} utrustningsval.', '{specs} specifications and {equipment} equipment items.', '{specs} Spezifikationen und {equipment} Ausstattungsmerkmale.'),
+    profileMarket: localizedLabel(locale, 'Marknad', 'Market', 'Markt'),
+    profileMarketValue: localizedLabel(locale, '{count} jämförbara annonser i underlaget.', '{count} comparable listings in the sample.', '{count} vergleichbare Anzeigen in der Stichprobe.'),
+    profileMarketLimited: localizedLabel(locale, 'Underlaget växer när fler jämförbara annonser publiceras.', 'The sample grows as more comparable listings are published.', 'Die Stichprobe wächst mit weiteren vergleichbaren Anzeigen.'),
+    similarListings: localizedLabel(locale, 'Liknande fordon', 'Similar vehicles', 'Ähnliche Fahrzeuge'),
+    similarListingsIntro: localizedLabel(locale, 'Urvalet matchar kategori, märke, modell, plats och pris där data finns.', 'The selection matches category, make, model, location and price where data exists.', 'Die Auswahl passt Kategorie, Marke, Modell, Standort und Preis ab, soweit Daten vorhanden sind.'),
+    history: localizedLabel(locale, 'Annonshistorik', 'Listing history', 'Anzeigenhistorie'),
+    historyLabels: {
+      published: localizedLabel(locale, 'Publicerad', 'Published', 'Veröffentlicht'),
+      updated: localizedLabel(locale, 'Uppdaterad', 'Updated', 'Aktualisiert'),
+      priceChanged: localizedLabel(locale, 'Pris ändrat', 'Price changed', 'Preis geändert'),
+      sold: localizedLabel(locale, 'Markerad som såld', 'Marked as sold', 'Als verkauft markiert'),
+      reviewed: localizedLabel(locale, 'Granskad', 'Reviewed', 'Geprüft'),
+    },
+  }
+}
+
 function buildDesktopBreadcrumbItems({
   listing,
   locale,
@@ -1234,6 +1519,16 @@ function formatTechnicalValue(value: unknown, suffix: string) {
   if (value === null || value === undefined || value === '') return null
   const text = typeof value === 'number' ? value.toLocaleString('sv-SE') : String(value)
   return suffix ? `${text} ${suffix}` : text
+}
+
+function formatInsightPrice(value: number | null, currency: string | null, locale: PublicLocale) {
+  if (!value || !currency) return missingTechnicalLabel(locale)
+  return `${value.toLocaleString(detailNumberLocale(locale), { maximumFractionDigits: 0 })} ${currency}`
+}
+
+function formatRange(low: number | null, high: number | null, currency: string | null, locale: PublicLocale) {
+  if (!low || !high || !currency) return missingTechnicalLabel(locale)
+  return `${low.toLocaleString(detailNumberLocale(locale), { maximumFractionDigits: 0 })} - ${high.toLocaleString(detailNumberLocale(locale), { maximumFractionDigits: 0 })} ${currency}`
 }
 
 function translateSpecValue(locale: PublicLocale, value?: string | null) {
