@@ -1573,12 +1573,71 @@ const listingDetailTranslations: Record<string, Record<string, string>> = {
   },
 }
 
+const marketplaceEmptyStateTranslations: Record<string, Record<string, string>> = {
+  sv: {
+    'No listings match your search': 'Inga annonser matchar din sökning',
+    'There do not seem to be any results.': 'Det verkar inte finnas några resultat.',
+    'Try searching for another location, another vehicle or another make.': 'Prova att söka på en annan plats, ett annat fordon eller ett annat märke.',
+    'Search across all of Europe': 'Testa att söka inom hela Europa',
+  },
+  de: {
+    'No listings match your search': 'Keine Anzeigen passen zu deiner Suche',
+    'There do not seem to be any results.': 'Es scheint keine Ergebnisse zu geben.',
+    'Try searching for another location, another vehicle or another make.': 'Versuche es mit einem anderen Ort, einem anderen Fahrzeug oder einer anderen Marke.',
+    'Search across all of Europe': 'In ganz Europa suchen',
+  },
+  fr: {
+    'No listings match your search': 'Aucune annonce ne correspond à votre recherche',
+    'There do not seem to be any results.': 'Il ne semble pas y avoir de résultats.',
+    'Try searching for another location, another vehicle or another make.': 'Essayez une autre localisation, un autre véhicule ou une autre marque.',
+    'Search across all of Europe': 'Rechercher dans toute l’Europe',
+  },
+  es: {
+    'No listings match your search': 'Ningún anuncio coincide con tu búsqueda',
+    'There do not seem to be any results.': 'Parece que no hay resultados.',
+    'Try searching for another location, another vehicle or another make.': 'Prueba con otra ubicación, otro vehículo u otra marca.',
+    'Search across all of Europe': 'Buscar en toda Europa',
+  },
+  it: {
+    'No listings match your search': 'Nessun annuncio corrisponde alla tua ricerca',
+    'There do not seem to be any results.': 'Sembra che non ci siano risultati.',
+    'Try searching for another location, another vehicle or another make.': 'Prova con un’altra località, un altro veicolo o un’altra marca.',
+    'Search across all of Europe': 'Cerca in tutta Europa',
+  },
+  nl: {
+    'No listings match your search': 'Geen advertenties gevonden voor je zoekopdracht',
+    'There do not seem to be any results.': 'Er lijken geen resultaten te zijn.',
+    'Try searching for another location, another vehicle or another make.': 'Probeer een andere locatie, een ander voertuig of een ander merk.',
+    'Search across all of Europe': 'Zoek in heel Europa',
+  },
+  pl: {
+    'No listings match your search': 'Brak ogłoszeń pasujących do wyszukiwania',
+    'There do not seem to be any results.': 'Wygląda na to, że nie ma wyników.',
+    'Try searching for another location, another vehicle or another make.': 'Spróbuj wyszukać inną lokalizację, inny pojazd albo inną markę.',
+    'Search across all of Europe': 'Szukaj w całej Europie',
+  },
+  fi: {
+    'No listings match your search': 'Yksikään ilmoitus ei vastaa hakuasi',
+    'There do not seem to be any results.': 'Tuloksia ei näytä löytyvän.',
+    'Try searching for another location, another vehicle or another make.': 'Kokeile toista sijaintia, ajoneuvoa tai merkkiä.',
+    'Search across all of Europe': 'Hae koko Euroopasta',
+  },
+  da: {
+    'No listings match your search': 'Ingen annoncer matcher din søgning',
+    'There do not seem to be any results.': 'Der ser ikke ud til at være nogen resultater.',
+    'Try searching for another location, another vehicle or another make.': 'Prøv at søge efter en anden placering, et andet køretøj eller et andet mærke.',
+    'Search across all of Europe': 'Søg i hele Europa',
+  },
+}
+
 export function manualPublicTranslation(locale: string, value: string) {
   const normalizedLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
   const lease = leaseCreateListingTranslations[normalizedLocale]
   if (lease?.[value]) return lease[value]
   const listingDetail = listingDetailTranslations[normalizedLocale]
   if (listingDetail?.[value]) return listingDetail[value]
+  const marketplaceEmptyState = marketplaceEmptyStateTranslations[normalizedLocale]
+  if (marketplaceEmptyState?.[value]) return marketplaceEmptyState[value]
   const supplemental = supplementalActiveTranslations[normalizedLocale]
   if (supplemental?.[value]) return supplemental[value]
   const dictionary = activeMarketUiTranslations[normalizedLocale as keyof typeof activeMarketUiTranslations]
