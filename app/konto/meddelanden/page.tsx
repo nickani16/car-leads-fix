@@ -12,7 +12,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import {
-  isPublicLanguage,
   localizePublicHref,
   type PublicLocale,
 } from '@/lib/public-i18n'
@@ -45,7 +44,7 @@ type MessagesCopy = {
 const messagesCopy: Record<PublicLocale, MessagesCopy> = {
   sv: {
     title: 'Meddelanden',
-    intro: 'Frågor och svar mellan köpare och säljare samlade per annons.',
+    intro: 'Frågor och svar mellan köpare och säljare, samlade per annons.',
     empty: 'Du har inga konversationer ännu.',
     emptyText: 'Öppna en annons och välj Kontakta säljaren för att starta en trygg konversation.',
     browse: 'Utforska fordon',
@@ -166,7 +165,7 @@ const messagesCopy: Record<PublicLocale, MessagesCopy> = {
     title: 'Messaggi',
     intro: 'Domande e risposte tra acquirenti e venditori, organizzate per annuncio.',
     empty: 'Non hai ancora conversazioni.',
-    emptyText: "Apri un annuncio e scegli Contatta il venditore per avviare una conversazione sicura.",
+    emptyText: 'Apri un annuncio e scegli Contatta il venditore per avviare una conversazione sicura.',
     browse: 'Sfoglia veicoli',
     conversation: 'Conversazione',
     listingRemoved: "L'annuncio non è più disponibile",
@@ -262,17 +261,7 @@ export default async function MessagesPage({
   if (!user) redirect(localizePublicHref(requestLocale, '/'))
 
   const admin = createAdminClient()
-  const { data: ownProfile } = await admin
-    .from('marketplace_profiles')
-    .select('locale')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  const locale: PublicLocale =
-    ownProfile?.locale === 'sv' ||
-    ownProfile?.locale === 'de' ||
-    isPublicLanguage(ownProfile?.locale || '')
-      ? (ownProfile!.locale as PublicLocale)
-      : requestLocale
+  const locale: PublicLocale = requestLocale
   const text = messagesCopy[locale] || messagesCopy.en
 
   const { data: conversationData } = await admin
