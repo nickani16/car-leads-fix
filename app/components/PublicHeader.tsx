@@ -1522,16 +1522,35 @@ export default function PublicHeader({
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8082]">
                 {t.shopByCategory}
               </p>
+              <div className="mt-3 grid grid-cols-2 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+                {searchIntentOptions.map((option) => {
+                  const selected = searchMenuIntent === option.key
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => setSearchMenuIntent(option.key)}
+                      className={`min-h-10 rounded-[13px] px-3 text-[13px] font-semibold transition ${
+                        selected
+                          ? 'bg-white text-[#101828] shadow-[0_7px_18px_rgba(16,24,40,.08)]'
+                          : 'text-[#667085]'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
-                {buyItems.map(({ href, label, icon: Icon }, index) => {
-                  const categorySlug = marketplaceCategories[index]?.slug
+                {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                   const CategoryIcon =
                     (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                  const itemHref = searchCategoryHref(href)
 
                   return (
                     <Link
-                      key={href}
-                      href={href}
+                      key={`${searchMenuIntent}-${itemHref}`}
+                      href={itemHref}
                       onClick={closeMobile}
                       className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#344054] transition hover:border-[#bcd3ff] hover:bg-white"
                     >
@@ -1819,16 +1838,35 @@ export default function PublicHeader({
                 <X className="h-4 w-4" />
               </button>
             </div>
+            <div className="mb-3 grid grid-cols-2 gap-1 rounded-[14px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+              {searchIntentOptions.map((option) => {
+                const selected = searchMenuIntent === option.key
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setSearchMenuIntent(option.key)}
+                    className={`min-h-9 rounded-[11px] px-2 text-[12px] font-semibold transition ${
+                      selected
+                        ? 'bg-white text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.08)]'
+                        : 'text-[#667085]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
             <div className="grid grid-cols-2 gap-2">
-              {buyItems.map(({ href, label, icon: Icon }, index) => {
-                const categorySlug = marketplaceCategories[index]?.slug
+              {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                 const CategoryIcon =
                   (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                const itemHref = searchCategoryHref(href)
 
                 return (
                   <Link
-                    key={href}
-                    href={href}
+                    key={`${searchMenuIntent}-${itemHref}`}
+                    href={itemHref}
                     onClick={closeMobile}
                     className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828] transition active:scale-[.99]"
                   >
@@ -1905,14 +1943,33 @@ export default function PublicHeader({
             </section>
 
             <section className="mb-7">
+              <div className="mb-3 grid grid-cols-2 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+                {searchIntentOptions.map((option) => {
+                  const selected = searchMenuIntent === option.key
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => setSearchMenuIntent(option.key)}
+                      className={`min-h-10 rounded-[13px] px-3 text-[13px] font-semibold transition ${
+                        selected
+                          ? 'bg-white text-[#101828] shadow-[0_7px_18px_rgba(16,24,40,.08)]'
+                          : 'text-[#667085]'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
               <div className="-mx-1 flex flex-wrap gap-2">
-                {buyItems.map(({ href, label }, index) => {
-                  const categorySlug = marketplaceCategories[index]?.slug
+                {visibleSearchCategoryItems.map(({ href, label, slug: categorySlug }) => {
                   const isActive = categorySlug === mobileMenuActiveSlug
+                  const itemHref = searchCategoryHref(href)
                   return (
                     <Link
-                      key={href}
-                      href={href}
+                      key={`${searchMenuIntent}-${itemHref}`}
+                      href={itemHref}
                       onClick={closeMobile}
                       className={`min-h-8 rounded-full px-3 py-1.5 text-[13px] font-semibold shadow-[0_4px_14px_rgba(16,24,40,.09)] ring-1 transition active:scale-[.99] ${
                         isActive
