@@ -5,7 +5,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import BillingPortalButton from './BillingPortalButton'
+
+export const generateMetadata = generateAccountMetadata('payments')
 
 type InvoiceRow = {
   id: string

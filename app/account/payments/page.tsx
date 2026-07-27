@@ -1,1 +1,1 @@
-export { default } from '../../konto/betalningar/page'
+export { default, generateMetadata } from '../../konto/betalningar/page'

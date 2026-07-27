@@ -3,6 +3,9 @@ import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-porta
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { hasVerifiedEmailCode } from '@/lib/email-verification'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-profile')
 
 const baseCopy = {
   title: 'Company profile',

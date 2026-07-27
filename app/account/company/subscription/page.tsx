@@ -1,1 +1,1 @@
-export { default } from '../../business/subscription/page'
+export { default, generateMetadata } from '../../business/subscription/page'

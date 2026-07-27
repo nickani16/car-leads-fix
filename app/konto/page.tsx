@@ -259,7 +259,7 @@ export default async function AccountPage() {
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#0866ff]">
                 {copy.eyebrow}
               </p>
               <h1 className="mt-3 text-4xl tracking-[-0.055em] text-[#101828] sm:text-5xl">
@@ -272,7 +272,7 @@ export default async function AccountPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href={localizePublicHref(locale, '/')}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-bold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 {copy.home}
               </Link>
@@ -292,7 +292,7 @@ export default async function AccountPage() {
                 key={item.label}
                 href={item.href}
                 aria-current={item.active ? 'page' : undefined}
-                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] px-3 text-sm font-bold transition ${
+                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] px-3 text-sm font-semibold transition ${
                   item.active
                     ? 'bg-[#0866ff] text-white shadow-[0_10px_24px_rgba(8,102,255,.18)]'
                     : 'text-[#475467] hover:bg-white hover:text-[#0866ff]'
@@ -315,7 +315,7 @@ export default async function AccountPage() {
                   <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
                     {name}
                   </h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
                     <BadgeCheck className="h-3.5 w-3.5" />
                     {verificationLabel}
                   </span>
@@ -324,7 +324,7 @@ export default async function AccountPage() {
               </div>
               <a
                 href="#profile-details"
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-semibold text-white transition hover:bg-[#0866ff]"
               >
                 {copy.editProfile}
                 <ArrowRight className="h-4 w-4" />
@@ -357,7 +357,7 @@ export default async function AccountPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
                     <div>
-                      <h3 className="text-sm font-bold text-[#101828]">{copy.noUrgentActions}</h3>
+                      <h3 className="text-sm font-semibold text-[#101828]">{copy.noUrgentActions}</h3>
                       <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
                     </div>
                   </div>
@@ -397,7 +397,7 @@ export default async function AccountPage() {
         >
           <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
                 {copy.profileEyebrow}
               </p>
               <h2 className="mt-2 text-3xl tracking-[-0.045em]">{copy.profileTitle}</h2>
@@ -405,7 +405,7 @@ export default async function AccountPage() {
                 {copy.profileText}
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-bold text-[#0866ff]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-semibold text-[#0866ff]">
               <ShieldCheck className="h-4 w-4" />
               {copy.secureAccount}
             </span>
@@ -598,7 +598,7 @@ function OverviewMetric({
       <strong className="mt-3 block text-2xl tracking-[-0.04em] text-[#101828]">
         {value.toLocaleString()}
       </strong>
-      <span className="mt-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#667085]">
+      <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.1em] text-[#667085]">
         {label}
       </span>
     </Link>
@@ -622,9 +622,9 @@ function AttentionCard({ item }: { item: AttentionItem }) {
       <div className="flex items-start gap-3">
         <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-[#101828]">{item.title}</h3>
+          <h3 className="text-sm font-semibold text-[#101828]">{item.title}</h3>
           <p className="mt-1 text-sm leading-6 text-[#667085]">{item.text}</p>
-          <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-[#0866ff]">
+          <span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#0866ff]">
             {item.label}
             <ArrowRight className="h-4 w-4" />
           </span>

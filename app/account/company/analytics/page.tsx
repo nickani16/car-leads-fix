@@ -3,6 +3,9 @@ import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows 
 import { getSellerInsights } from '@/lib/marketplace-insights'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-analytics')
 
 const baseCopy = {
   title: 'Company analytics',

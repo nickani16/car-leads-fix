@@ -45,7 +45,7 @@ import {
   marketplaceLanguage,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
-import { localizePublicHref, translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublic, translatePublicObject, translationLocale, type PublicLocale } from '@/lib/public-i18n'
 import { getRequestLocale } from '@/lib/request-locale'
 import { getMarketplaceListingForPublicDetail } from '@/lib/marketplace-public-data'
 import { resolveListingMapLocation } from '@/lib/listing-map-location'
@@ -1309,8 +1309,101 @@ function localizedLabel(
 ) {
   if (locale === 'sv') return sv
   if (locale === 'de' || locale === 'at') return de
+  const normalizedLocale = translationLocale(locale)
+  const labels = insightLabelTranslations[normalizedLocale as keyof typeof insightLabelTranslations] as
+    | Partial<Record<string, string>>
+    | undefined
+  const insightLabel = labels?.[en]
+  if (insightLabel) return insightLabel
   return translatePublic(locale, en)
 }
+
+const insightLabelTranslations = {
+  fi: {
+    'Price indicator': 'Hintaindikaattori',
+    'Below comparable listings': 'Alle vastaavien ilmoitusten',
+    'In line with the market': 'Markkinatason mukainen',
+    'Above comparable listings': 'Yli vastaavien ilmoitusten',
+    'Market data is being built': 'Markkinadataa kerätään',
+    'There are not enough comparable listings yet.': 'Vastaavia ilmoituksia ei ole vielä tarpeeksi.',
+    'Calculating': 'Lasketaan',
+    'Listing price': 'Ilmoitushinta',
+    'Median': 'Mediaani',
+    'Market range': 'Markkinahaarukka',
+  },
+  da: {
+    'Price indicator': 'Prisindikator',
+    'Below comparable listings': 'Under sammenlignelige annoncer',
+    'In line with the market': 'På niveau med markedet',
+    'Above comparable listings': 'Over sammenlignelige annoncer',
+    'Market data is being built': 'Markedsdata opbygges',
+    'There are not enough comparable listings yet.': 'Der er endnu ikke nok sammenlignelige annoncer.',
+    'Calculating': 'Beregnes',
+    'Listing price': 'Annoncepris',
+    'Median': 'Median',
+    'Market range': 'Markedsinterval',
+  },
+  fr: {
+    'Price indicator': 'Indicateur de prix',
+    'Below comparable listings': 'Sous les annonces comparables',
+    'In line with the market': 'Conforme au marché',
+    'Above comparable listings': 'Au-dessus des annonces comparables',
+    'Market data is being built': 'Données de marché en cours',
+    'There are not enough comparable listings yet.': "Il n'y a pas encore assez d'annonces comparables.",
+    'Calculating': 'Calcul en cours',
+    'Listing price': "Prix de l'annonce",
+    'Median': 'Médiane',
+    'Market range': 'Fourchette du marché',
+  },
+  es: {
+    'Price indicator': 'Indicador de precio',
+    'Below comparable listings': 'Por debajo de anuncios comparables',
+    'In line with the market': 'En línea con el mercado',
+    'Above comparable listings': 'Por encima de anuncios comparables',
+    'Market data is being built': 'Creando datos de mercado',
+    'There are not enough comparable listings yet.': 'Todavía no hay suficientes anuncios comparables.',
+    'Calculating': 'Calculando',
+    'Listing price': 'Precio del anuncio',
+    'Median': 'Mediana',
+    'Market range': 'Rango de mercado',
+  },
+  it: {
+    'Price indicator': 'Indicatore prezzo',
+    'Below comparable listings': 'Sotto annunci comparabili',
+    'In line with the market': 'In linea con il mercato',
+    'Above comparable listings': 'Sopra annunci comparabili',
+    'Market data is being built': 'Dati di mercato in raccolta',
+    'There are not enough comparable listings yet.': 'Non ci sono ancora abbastanza annunci comparabili.',
+    'Calculating': 'Calcolo',
+    'Listing price': "Prezzo dell'annuncio",
+    'Median': 'Mediana',
+    'Market range': 'Fascia di mercato',
+  },
+  nl: {
+    'Price indicator': 'Prijsindicator',
+    'Below comparable listings': 'Onder vergelijkbare advertenties',
+    'In line with the market': 'In lijn met de markt',
+    'Above comparable listings': 'Boven vergelijkbare advertenties',
+    'Market data is being built': 'Marktdata wordt opgebouwd',
+    'There are not enough comparable listings yet.': 'Er zijn nog niet genoeg vergelijkbare advertenties.',
+    'Calculating': 'Berekenen',
+    'Listing price': 'Advertentieprijs',
+    'Median': 'Mediaan',
+    'Market range': 'Marktbereik',
+  },
+  pl: {
+    'Price indicator': 'Wskaźnik ceny',
+    'Below comparable listings': 'Poniżej podobnych ogłoszeń',
+    'In line with the market': 'Zgodnie z rynkiem',
+    'Above comparable listings': 'Powyżej podobnych ogłoszeń',
+    'Market data is being built': 'Dane rynkowe są zbierane',
+    'There are not enough comparable listings yet.': 'Nie ma jeszcze wystarczającej liczby podobnych ogłoszeń.',
+    'Calculating': 'Obliczanie',
+    'Listing price': 'Cena ogłoszenia',
+    'Median': 'Mediana',
+    'Market range': 'Zakres rynkowy',
+  },
+} as const
 
 function getInsightsCopy(locale: PublicLocale) {
   return {

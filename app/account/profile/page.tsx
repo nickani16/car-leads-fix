@@ -86,7 +86,7 @@ export default async function PrivateProfilePage() {
       <div className="mx-auto max-w-[1180px]">
         <Link
           href={localizePublicHref(locale, '/account')}
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#475467] transition hover:text-[#0866ff]"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#475467] transition hover:text-[#0866ff]"
         >
           <ArrowLeft className="h-4 w-4" />
           {copy.back}
@@ -95,7 +95,7 @@ export default async function PrivateProfilePage() {
         <section className="mt-6 rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
                 {copy.eyebrow}
               </p>
               <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] text-[#101828]">
@@ -105,7 +105,7 @@ export default async function PrivateProfilePage() {
                 {copy.intro}
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-bold text-[#0866ff]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-semibold text-[#0866ff]">
               <ShieldCheck className="h-4 w-4" />
               {copy.privateAccount}
             </span>

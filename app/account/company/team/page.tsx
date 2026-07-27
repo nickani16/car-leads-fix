@@ -3,7 +3,10 @@ import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows 
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCompanyTeamOverview } from '@/lib/business-team'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import TeamInviteForm from './TeamInviteForm'
+
+export const generateMetadata = generateAccountMetadata('company-team')
 
 const baseCopy = {
   title: 'Team',

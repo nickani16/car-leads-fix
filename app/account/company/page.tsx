@@ -6,6 +6,9 @@ import {
   getCompanyPortalContext,
 } from '@/lib/company-portal'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-overview')
 
 const baseCopy = {
   title: 'Company overview',

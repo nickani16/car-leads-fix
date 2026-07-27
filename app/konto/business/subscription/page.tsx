@@ -4,7 +4,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getRequestLocale } from '@/lib/request-locale'
 import { normalizeBillingMarket, type BillingMarket } from '@/lib/billing/product-catalog'
 import type { PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import BusinessPlanChooser from './BusinessPlanChooser'
+
+export const generateMetadata = generateAccountMetadata('business-subscription')
 
 export default async function BusinessSubscriptionPage({
   localeOverride,

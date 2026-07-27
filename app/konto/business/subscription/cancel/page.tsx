@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { formatMoneyMinor, normalizeBillingMarket, type BillingCurrency, type BillingMarket } from '@/lib/billing/product-catalog'
 import { localizePublicHref, translatePublicObject, translationLocale, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import CancelSubscriptionClient from './CancelSubscriptionClient'
+
+export const generateMetadata = generateAccountMetadata('business-subscription-cancel')
 
 const baseCopy = {
   back: 'Plan',

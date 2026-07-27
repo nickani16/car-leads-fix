@@ -1,6 +1,9 @@
 import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import { CompanyImportClient } from './CompanyImportClient'
+
+export const generateMetadata = generateAccountMetadata('company-import')
 
 const baseCopy = {
   title: 'Import listings',

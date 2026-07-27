@@ -293,7 +293,7 @@ function VerificationCard({
         </p>
         <div className="mt-4 grid gap-2 text-sm md:grid-cols-2">
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
-            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
             <strong className={`mt-1 flex items-center gap-1.5 ${emailConfirmed ? 'text-[#027a48]' : 'text-[#b42318]'}`}>
               {emailConfirmed ? <CheckCircle2 className="h-4 w-4" /> : null}
               {emailConfirmed ? copy.verified : copy.notVerified}
@@ -301,7 +301,7 @@ function VerificationCard({
             <span className="mt-1 block truncate text-xs font-medium text-[#667085]">{email}</span>
           </div>
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
-            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.phoneCheck}</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">{copy.phoneCheck}</span>
             <strong className="mt-1 block text-[#101828]">
               {phoneStatusLabel(phoneStatus, copy)}
             </strong>

@@ -2,6 +2,9 @@ import PublicHeader from '@/app/components/PublicHeader'
 import AcceptTeamInvitation from './AcceptTeamInvitation'
 import { getRequestLocale } from '@/lib/request-locale'
 import { translatePublicObject } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-team-accept')
 
 const baseCopy = {
   eyebrow: 'Company invitation',

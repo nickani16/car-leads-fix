@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { HelpCircle } from 'lucide-react'
 import { CompanyPortalShell, EmptyPanel, getCompanyPortalContext } from '@/lib/company-portal'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-support')
 
 const baseCopy = {
   title: 'Company support',

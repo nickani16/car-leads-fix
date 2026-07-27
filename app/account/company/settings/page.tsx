@@ -1,6 +1,9 @@
 import { Settings } from 'lucide-react'
 import { CompanyPortalShell, EmptyPanel, getCompanyPortalContext } from '@/lib/company-portal'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
+
+export const generateMetadata = generateAccountMetadata('company-settings')
 
 const baseCopy = {
   title: 'Company settings',
