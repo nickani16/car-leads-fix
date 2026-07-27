@@ -58,7 +58,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
 type ResultsLayout = 'single' | 'split'
-type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'market' | 'model' | null
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -923,6 +923,16 @@ export default function VehicleSearchExperience({
       ),
     [searchListings, selectedCategories, selectedMarkets],
   )
+  const bodyTypeTopOptions = useMemo(() => {
+    const liveValues = optionListings
+      .filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+      .map((listing) => listing.bodyType)
+      .filter((value): value is string => Boolean(value))
+    const facetValues = (searchFacets?.bodyTypes || [])
+      .map((item) => (typeof item === 'string' ? item : item.value))
+      .filter((value): value is string => Boolean(value))
+    return [...new Set(liveValues.length ? liveValues : facetValues)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
+  }, [mode, optionListings, searchFacets?.bodyTypes])
   const priceBounds = useMemo(() => {
     const prices = searchListings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
     const max = prices.length ? Math.max(...prices) : 700000
@@ -1574,14 +1584,14 @@ export default function VehicleSearchExperience({
         type="button"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           const rect = event.currentTarget.getBoundingClientRect()
-          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
           setDesktopFilterPopoverPosition({
             left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
             top: rect.bottom + 6,
           })
           setDesktopFilterMenu((current) => (current === menu ? null : menu))
         }}
-        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium transition sm:h-8 sm:px-3 sm:text-[13px] ${
+        className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium leading-none transition sm:h-8 sm:px-3 sm:text-[13px] ${
           open || active
             ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
             : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
@@ -1636,6 +1646,13 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'Leasing', 'Leasing', 'Leasing')
       : uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
+    const bodyTypeFilterDefinition = categoryFilterProfile(activeCategoryKey).find((filter) => filter.key === 'bodyType')
+    const bodyTypeFilterLabel = bodyTypeFilterDefinition
+      ? filterLabel(bodyTypeFilterDefinition, locale)
+      : uiText(locale, 'Body type', 'Kaross', 'Karosserie')
+    const bodyTypeLabel = bodyType
+      ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
+      : bodyTypeFilterLabel
     const marketLabel = selectedMarketCodes.length > 1
       ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
       : selectedMarketCodes.length === 1
@@ -1643,8 +1660,8 @@ export default function VehicleSearchExperience({
         : uiText(locale, 'Market', 'Marknad', 'Markt')
     const compactMobileFilterButton = placement === 'mobile' && mobileFilterRailScrolled
     const wrapperClassName = placement === 'desktop'
-      ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-1.5 sm:px-5'
-      : 'relative -mx-4 mt-2 w-screen max-w-[100vw] min-w-0 overflow-hidden border-t border-[#edf1f6] px-4 pt-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
+      ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-2 sm:px-5'
+      : 'relative -mx-4 mt-2 w-screen max-w-[100vw] min-w-0 overflow-hidden border-t border-[#edf1f6] px-4 py-2 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
     const saveSearchButton = (
       <button
         type="button"
@@ -1667,7 +1684,7 @@ export default function VehicleSearchExperience({
       >
         <div className="flex min-w-0 items-center gap-2">
           <div
-            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2 pb-1`}
+            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
             onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
             onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
           >
@@ -1678,7 +1695,7 @@ export default function VehicleSearchExperience({
                 setFiltersOpen(true)
                 setDesktopFilterMenu(null)
               }}
-              className={`inline-flex h-8 items-center rounded-full border text-[12px] font-medium transition-all duration-200 ease-out sm:text-[13px] ${
+              className={`inline-flex h-8 items-center justify-center rounded-full border text-[12px] font-medium leading-none transition-all duration-200 ease-out sm:text-[13px] ${
                 compactMobileFilterButton
                   ? 'w-8 justify-center gap-0 px-0'
                   : 'gap-1.5 px-2.5 sm:px-3'
@@ -1704,7 +1721,7 @@ export default function VehicleSearchExperience({
             </button>
           </div>
 
-          <div className="relative order-20 shrink-0">
+          <div className="relative order-10 shrink-0">
             {desktopMenuButton('mode', modeLabel, false)}
             {renderDesktopFilterPopover('mode', (
               <div className="space-y-1">
@@ -1729,7 +1746,7 @@ export default function VehicleSearchExperience({
             ), 'w-[260px]')}
           </div>
 
-          <div className="relative order-40 shrink-0">
+          <div className="relative order-50 shrink-0">
             {desktopMenuButton('price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
             {renderDesktopFilterPopover('price', (
               <div className="space-y-4">
@@ -1751,7 +1768,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative order-50 shrink-0">
+          <div className="relative order-60 shrink-0">
             {desktopMenuButton('year', minYear || maxYear ? `${uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}: ${minYear || '1950'}-${maxYear || 'max'}` : uiText(locale, 'Model year', 'Årsmodell', 'Baujahr'), Boolean(minYear || maxYear))}
             {renderDesktopFilterPopover('year', (
               <div className="space-y-4">
@@ -1773,7 +1790,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative order-60 shrink-0">
+          <div className="relative order-70 shrink-0">
             {desktopMenuButton('mileage', minMileage || maxMileage ? `${uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand'), Boolean(minMileage || maxMileage))}
             {renderDesktopFilterPopover('mileage', (
               <div className="space-y-4">
@@ -1795,7 +1812,7 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
-          <div className="relative order-10 shrink-0">
+          <div className="relative order-20 shrink-0">
             {desktopMenuButton('category', categoryLabel, false)}
             {renderDesktopFilterPopover('category', (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
@@ -1823,7 +1840,50 @@ export default function VehicleSearchExperience({
             ), 'w-[310px]')}
           </div>
 
-          <div className="relative order-70 shrink-0">
+          <div className="relative order-30 shrink-0">
+            {desktopMenuButton('bodyType', bodyTypeLabel, Boolean(bodyType))}
+            {renderDesktopFilterPopover('bodyType', (
+              <div className="space-y-3">
+                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                  {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
+                    const label = translatePublic(locale, vehicleValueInEnglish(option) || option)
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => {
+                          setBodyType(bodyType === option ? '' : option)
+                          setDesktopFilterMenu(null)
+                        }}
+                        className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                      >
+                        <span className="min-w-0 flex-1 truncate">{label}</span>
+                        {bodyType === option ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                      </button>
+                    )
+                  }) : (
+                    <p className="px-3 py-2 text-sm text-[#667085]">
+                      {uiText(locale, 'No body types available', 'Inga karosstyper tillgÃ¤ngliga', 'Keine Karosseriearten verfÃ¼gbar')}
+                    </p>
+                  )}
+                </div>
+                {bodyType ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBodyType('')
+                      setDesktopFilterMenu(null)
+                    }}
+                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                  >
+                    {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie lÃ¶schen')}
+                  </button>
+                ) : null}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative order-80 shrink-0">
             {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 1)}
             {renderDesktopFilterPopover('market', (
               <div className="space-y-3">
@@ -1869,7 +1929,7 @@ export default function VehicleSearchExperience({
             ), 'w-[310px]')}
           </div>
 
-          <div className="relative order-30 shrink-0">
+          <div className="relative order-40 shrink-0">
             {desktopMenuButton('model', modelLabel, Boolean(make || model))}
             {renderDesktopFilterPopover('model', (
               <div className="space-y-3">
@@ -1886,7 +1946,7 @@ export default function VehicleSearchExperience({
           </div>
           {placement === 'mobile' ? <div className="order-last shrink-0">{saveSearchButton}</div> : null}
           </div>
-          {placement === 'desktop' ? <div className="shrink-0 pb-1">{saveSearchButton}</div> : null}
+          {placement === 'desktop' ? <div className="shrink-0">{saveSearchButton}</div> : null}
         </div>
       </div>
     )
@@ -1903,7 +1963,7 @@ export default function VehicleSearchExperience({
     municipality ? { key: 'municipality', label: `${municipality} kommun`, onRemove: () => setMunicipality('') } : null,
     fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
     gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
-    bodyType ? { key: 'bodyType', label: bodyType, onRemove: () => setBodyType('') } : null,
+    bodyType ? { key: 'bodyType', label: translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType), onRemove: () => setBodyType('') } : null,
     condition ? { key: 'condition', label: condition, onRemove: () => setCondition('') } : null,
     color ? { key: 'color', label: color, onRemove: () => setColor('') } : null,
     sellerType !== 'all'
