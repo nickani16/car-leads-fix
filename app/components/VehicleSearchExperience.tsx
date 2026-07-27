@@ -2026,7 +2026,7 @@ export default function VehicleSearchExperience({
                           type="button"
                           onClick={() => setFiltersOpen(false)}
                           className="mr-0.5 grid h-9 w-9 shrink-0 translate-y-1 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
-                          aria-label="Stäng filter"
+                          aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
                         >
                           <X className="h-5 w-5" />
                         </button>
@@ -2035,20 +2035,20 @@ export default function VehicleSearchExperience({
                         type="button"
                         onClick={() => setFiltersOpen(false)}
                         className="absolute right-4 top-3 hidden h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:grid"
-                        aria-label="Stäng filter"
+                        aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
                       >
                         <X className="h-5 w-5" />
                       </button>
                     </div>
                     {activeFilters.length ? (
                       <div className="border-b border-[#edf1f6] bg-white px-4 py-2.5 sm:hidden">
-                        <ActiveFilterChips filters={activeFilters} />
+                        <ActiveFilterChips filters={activeFilters} locale={locale} />
                       </div>
                     ) : null}
                     <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6 max-sm:hidden">
                       {activeFilters.length ? (
                         <div className="flex flex-wrap items-center gap-2">
-                          <ActiveFilterChips filters={activeFilters} />
+                          <ActiveFilterChips filters={activeFilters} locale={locale} />
                           <button
                             type="button"
                             onClick={resetFilters}
@@ -2131,7 +2131,7 @@ export default function VehicleSearchExperience({
                           onClick={() => setFiltersOpen(false)}
                           className="h-12 rounded-[8px] bg-[#0866ff] px-4 text-sm font-medium text-white transition hover:bg-[#0757da]"
                         >
-                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(locale === 'sv' ? 'sv-SE' : undefined)} {uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')}
+                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')}
                         </button>
                       </div>
                     </div>
@@ -2418,14 +2418,14 @@ export default function VehicleSearchExperience({
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
                 <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 pb-3 pt-6 relative">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
-                    <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
+                    <p className="text-[15px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
+                    <p className="mt-0.5 text-xs font-medium text-[#667085]">{uiText(locale, 'Filters update the map immediately.', 'Filtren uppdaterar kartan direkt.', 'Filter aktualisieren die Karte sofort.')}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFiltersOpen(false)}
                     className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
-                    aria-label="Stäng filter"
+                    aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -2549,8 +2549,10 @@ function CollapsibleFilterSection({
 
 function ActiveFilterChips({
   filters,
+  locale,
 }: {
   filters: ActiveFilterChip[]
+  locale: PublicLocale
 }) {
   if (!filters.length) return null
 
@@ -2562,7 +2564,7 @@ function ActiveFilterChips({
           type="button"
           onClick={filter.onRemove}
           className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#eef5ff] px-3 text-[12px] font-normal text-[#0866ff] transition hover:bg-[#dceaff]"
-          aria-label={`Ta bort filter ${filter.label}`}
+          aria-label={`${uiText(locale, 'Remove filter', 'Ta bort filter', 'Filter entfernen')} ${filter.label}`}
         >
           {filter.icon}
           <span>{filter.label}</span>
@@ -3089,7 +3091,7 @@ function VehicleResultCard({
             }`}
           >
             <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Jämför</span>
+            <span className="hidden sm:inline">{uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}</span>
           </button>
         </div>
 
@@ -3334,13 +3336,13 @@ function VehicleSearchMap({
                 type="button"
                 onClick={onCloseMobileMap}
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm"
-                aria-label="Visa lista"
+                aria-label={uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div className="relative min-w-0 flex-1">
               <div className="group relative flex min-h-[50px] min-w-0 flex-1 items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
-                <span className="sr-only">Sök</span>
+                <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
                 {selectedSearchSuggestions.map((suggestion) => (
                   <span
                     key={suggestion.chipId}
@@ -3359,7 +3361,7 @@ function VehicleSearchMap({
                         onRemoveSearchSuggestion(suggestion)
                       }}
                       className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
-                      aria-label="Ta bort valt sökförslag"
+                      aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -3404,9 +3406,9 @@ function VehicleSearchMap({
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Sökfilter
+                {uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}
               </button>
-              <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} compact />
+              <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} compact />
             </div>
           </div>
           <button
@@ -3414,7 +3416,7 @@ function VehicleSearchMap({
             onClick={onCloseMobileMap}
             className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)]"
           >
-            Visa lista
+            {uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}
           </button>
         </>
       ) : fullscreen ? (
@@ -3442,7 +3444,7 @@ function VehicleSearchMap({
               className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff]"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Sökfilter</span>
+              <span className="hidden sm:inline">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</span>
             </button>
             <button
               type="button"
@@ -3462,11 +3464,11 @@ function VehicleSearchMap({
               className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0757da]"
             >
               <List className="h-4 w-4" />
-              <span className="hidden sm:inline">Visa lista</span>
+              <span className="hidden sm:inline">{uiText(locale, 'Show list', 'Visa lista', 'Liste anzeigen')}</span>
             </button>
           </div>
           <div className="absolute right-4 top-[78px] z-20 flex gap-2">
-            <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+            <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
           </div>
         </>
       ) : (
@@ -3477,17 +3479,17 @@ function VehicleSearchMap({
             className="inline-flex h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
           >
             <Expand className="h-4 w-4" />
-            Fullskärm
+            {uiText(locale, 'Fullscreen', 'Fullskärm', 'Vollbild')}
           </button>
-          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
         </div>
       )}
       <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
-        {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
+        {listings.length.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles in map view', 'fordon i kartvyn', 'Fahrzeuge in der Kartenansicht')}
       </div>
       <button className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} hidden absolute left-1/2 z-20 -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}>
         <SlidersHorizontal className="h-4 w-4" />
-        Sök i detta område
+        {uiText(locale, 'Search in this area', 'Sök i detta område', 'In diesem Bereich suchen')}
       </button>
       {selectedListing ? (
         <MapListingPreview
@@ -3635,12 +3637,17 @@ function MetaSeparatorList({
 function MapLayerPicker({
   mapLayer,
   onMapLayerChange,
+  locale,
   compact = false,
 }: {
   mapLayer: AutorellMapLayer
   onMapLayerChange: (layer: AutorellMapLayer) => void
+  locale: PublicLocale
   compact?: boolean
 }) {
+  const mapText = uiText(locale, 'Map', 'Karta', 'Karte')
+  const satelliteText = uiText(locale, 'Satellite', 'Satellit', 'Satellit')
+
   return (
     <div className={`${compact ? 'h-10 w-full min-w-0 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
       <button
@@ -3654,7 +3661,7 @@ function MapLayerPicker({
         }`}
       >
         <Layers className="h-4 w-4" />
-        <span>{compact ? 'Karta' : <span className="hidden sm:inline">Karta</span>}</span>
+        <span>{compact ? mapText : <span className="hidden sm:inline">{mapText}</span>}</span>
       </button>
       <button
         type="button"
@@ -3665,7 +3672,7 @@ function MapLayerPicker({
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
         }`}
       >
-        <span className="truncate">Satellit</span>
+        <span className="truncate">{satelliteText}</span>
       </button>
     </div>
   )
@@ -3977,13 +3984,35 @@ function formatSearchResultCountSummary({
     ? countYearRangeText(locale, minYear, maxYear)
     : ''
 
-  if (locale === 'sv') {
-    return `${formatted} ${subject} till salu${location ? ` i ${location}` : ''}${yearText}`
+  return formatForSaleCountText(locale, formatted, subject, location, yearText)
+}
+
+function formatForSaleCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject} till salu${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject} zum Verkauf${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject} à vendre${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject} en venta${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject} in vendita${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject} na sprzedaż${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject} te koop${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject} til salg${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject} myynnissä${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject} for sale${place ? ` in ${place}` : ''}${yearText}`
   }
-  if (locale === 'de') {
-    return `${formatted} ${subject} zum Verkauf${location ? ` in ${location}` : ''}${yearText}`
-  }
-  return `${formatted} ${subject} for sale${location ? ` in ${location}` : ''}${yearText}`
 }
 
 function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {
@@ -4007,21 +4036,51 @@ function countCategoryLabel(item: (typeof categories)[number], locale: PublicLoc
 }
 
 function countYearRangeText(locale: PublicLocale, minYear: string, maxYear: string) {
-  if (locale === 'sv') {
-    if (minYear && maxYear) return ` från ${minYear} till ${maxYear}`
-    if (minYear) return ` från ${minYear}`
-    return ` till ${maxYear}`
-  }
-  if (locale === 'de') {
-    if (minYear && maxYear) return ` von ${minYear} bis ${maxYear}`
-    if (minYear) return ` ab ${minYear}`
-    return ` bis ${maxYear}`
-  }
-  if (minYear && maxYear) return ` from ${minYear} to ${maxYear}`
-  if (minYear) return ` from ${minYear}`
-  return ` up to ${maxYear}`
-}
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
 
+  switch (effectiveLocale) {
+    case 'sv':
+      if (minYear && maxYear) return ` från ${minYear} till ${maxYear}`
+      if (minYear) return ` från ${minYear}`
+      return ` till ${maxYear}`
+    case 'de':
+      if (minYear && maxYear) return ` von ${minYear} bis ${maxYear}`
+      if (minYear) return ` ab ${minYear}`
+      return ` bis ${maxYear}`
+    case 'fr':
+      if (minYear && maxYear) return ` de ${minYear} à ${maxYear}`
+      if (minYear) return ` à partir de ${minYear}`
+      return ` jusqu'à ${maxYear}`
+    case 'es':
+      if (minYear && maxYear) return ` de ${minYear} a ${maxYear}`
+      if (minYear) return ` desde ${minYear}`
+      return ` hasta ${maxYear}`
+    case 'it':
+      if (minYear && maxYear) return ` da ${minYear} a ${maxYear}`
+      if (minYear) return ` dal ${minYear}`
+      return ` fino a ${maxYear}`
+    case 'pl':
+      if (minYear && maxYear) return ` od ${minYear} do ${maxYear}`
+      if (minYear) return ` od ${minYear}`
+      return ` do ${maxYear}`
+    case 'nl':
+      if (minYear && maxYear) return ` van ${minYear} tot ${maxYear}`
+      if (minYear) return ` vanaf ${minYear}`
+      return ` tot ${maxYear}`
+    case 'da':
+      if (minYear && maxYear) return ` fra ${minYear} til ${maxYear}`
+      if (minYear) return ` fra ${minYear}`
+      return ` til ${maxYear}`
+    case 'fi':
+      if (minYear && maxYear) return ` vuosilta ${minYear}-${maxYear}`
+      if (minYear) return ` alkaen ${minYear}`
+      return ` enintään ${maxYear}`
+    default:
+      if (minYear && maxYear) return ` from ${minYear} to ${maxYear}`
+      if (minYear) return ` from ${minYear}`
+      return ` up to ${maxYear}`
+  }
+}
 function countNumberLocale(locale: PublicLocale) {
   if (locale === 'sv') return 'sv-SE'
   if (locale === 'de' || locale === 'at') return 'de-DE'
