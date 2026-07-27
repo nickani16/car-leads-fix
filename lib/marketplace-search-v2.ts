@@ -41,6 +41,7 @@ export type MarketplaceSearchInput = {
   region?: string | null
   geoAreaId?: string | null
   geoPlaceCode?: string | null
+  geoFilterMode?: 'legacy' | 'strict' | null
   north?: string | number | null
   east?: string | number | null
   south?: string | number | null
@@ -311,6 +312,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     postalCode: clean(input.postalCode).slice(0, 40) || parsedSearchState.postalCode,
     county: clean(input.county || input.region).slice(0, 80),
     geoArea,
+    geoFilterMode: input.geoFilterMode === 'strict' ? 'strict' : 'legacy',
     bounds,
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
@@ -403,8 +405,12 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.postalCode) query = query.ilike('postal_code', filters.postalCode)
   if (filters.geoArea) {
-    const geoAreaFilters = marketplaceGeoAreaOrFilters(filters.geoArea)
-    if (geoAreaFilters.length) query = query.or(geoAreaFilters.join(','))
+    if (filters.geoFilterMode === 'strict' && filters.geoArea.level === 'municipality' && filters.geoArea.code) {
+      query = query.eq('geo_municipality_code', filters.geoArea.code)
+    } else {
+      const geoAreaFilters = marketplaceGeoAreaOrFilters(filters.geoArea)
+      if (geoAreaFilters.length) query = query.or(geoAreaFilters.join(','))
+    }
   }
   if (filters.bounds) {
     query = query

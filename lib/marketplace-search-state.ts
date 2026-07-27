@@ -69,7 +69,7 @@ const curatedSwedenGeoAreas: MarketplaceGeoArea[] = [
     region: 'Stockholm',
     municipality: 'Danderyd',
     centroid: { latitude: 59.4057, longitude: 18.0373 },
-    bounds: { north: 59.44, east: 18.13, south: 59.36, west: 17.98 },
+    bounds: { north: 59.4413844, east: 18.1224934, south: 59.3654089, west: 17.9914981 },
     aliases: ['danderyd', 'danderyds kommun', 'danderyd kommun'],
   },
   {

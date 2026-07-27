@@ -62,7 +62,7 @@ export default async function SwedishCarGeoLandingPage({
     category: 'cars',
     markets: ['SE'],
     geoAreaId: landing.geoArea.id,
-    municipality: landing.geoArea.municipality || landing.municipalityName,
+    geoFilterMode: 'strict',
     make: landing.make || undefined,
     mode: 'sale',
     sort: 'published',
@@ -102,8 +102,6 @@ export default async function SwedishCarGeoLandingPage({
           >
             {[
               { href: '/se/bilar/danderyd', label: 'Bilar i Danderyd' },
-              { href: '/se/bilar/goteborg', label: 'Bilar i Göteborg' },
-              { href: '/se/bilar/kramfors', label: 'Bilar i Kramfors' },
               { href: '/se/bilar/bmw/danderyd', label: 'BMW i Danderyd' },
             ].map((item) => (
               <Link
@@ -134,6 +132,7 @@ export default async function SwedishCarGeoLandingPage({
         initialMunicipality={landing.geoArea.municipality || landing.municipalityName}
         initialGeoAreaId={landing.geoArea.id}
         initialGeoBounds={landing.geoArea.bounds}
+        initialGeoGeometry={landing.geoFeatureCollection}
         initialMinPrice=""
         initialMaxPrice=""
         initialMode="sale"

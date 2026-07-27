@@ -3,6 +3,8 @@ import {
   resolveMarketplaceGeoArea,
   type MarketplaceGeoArea,
 } from './marketplace-search-state'
+import { danderydGeoArea } from './geo/danderyd'
+import { geoAreaToFeatureCollection, type GeoJsonFeatureCollection } from './geo/geojson'
 
 type SwedishCarGeoLanding = {
   market: 'se'
@@ -13,6 +15,9 @@ type SwedishCarGeoLanding = {
   makeSlug: string | null
   make: string | null
   geoArea: MarketplaceGeoArea
+  municipalityCode: '0162'
+  geoFeatureCollection: GeoJsonFeatureCollection
+  geoSource: string
   canonicalPath: string
   h1: string
   title: string
@@ -25,16 +30,7 @@ const swedishMunicipalityLandings = {
     name: 'Danderyd',
     officialName: 'Danderyds kommun',
     geoAreaId: 'SE:municipality:danderyd',
-  },
-  goteborg: {
-    name: 'G\u00f6teborg',
-    officialName: 'G\u00f6teborgs kommun',
-    geoAreaId: 'SE:municipality:goteborg',
-  },
-  kramfors: {
-    name: 'Kramfors',
-    officialName: 'Kramfors kommun',
-    geoAreaId: 'SE:municipality:kramfors',
+    municipalityCode: '0162',
   },
 } as const
 
@@ -86,6 +82,9 @@ export function resolveSwedishCarGeoLanding(
     makeSlug,
     make,
     geoArea,
+    municipalityCode: municipality.municipalityCode,
+    geoFeatureCollection: geoAreaToFeatureCollection(danderydGeoArea),
+    geoSource: danderydGeoArea.source,
     canonicalPath,
     h1,
     title: cleanSeoText(`${h1} | Autorell`, 60),
