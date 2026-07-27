@@ -1,4 +1,8 @@
+import type { MarketplaceCategorySlug } from './marketplace'
+import { swedishCounties, swedishMunicipalities } from './swedish-regions.generated'
+
 export type MarketplaceGeoLevel = 'country' | 'region' | 'municipality' | 'locality' | 'postal_code'
+export type MarketplaceOfferType = '' | 'sale' | 'leasing'
 
 export type MarketplaceBoundingBox = {
   north: number
@@ -12,6 +16,9 @@ export type MarketplaceGeoArea = {
   countryCode: string
   level: MarketplaceGeoLevel
   name: string
+  code?: string
+  slug?: string
+  parentId?: string
   region?: string
   municipality?: string
   locality?: string
@@ -28,17 +35,37 @@ export type MarketplaceSearchState = {
   rawQuery: string
   query: string
   make: string
+  categories: MarketplaceCategorySlug[]
+  offerType: MarketplaceOfferType
   geoArea: MarketplaceGeoArea | null
   postalCode: string
   maxPrice: number | null
 }
 
-const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
+const SWEDEN_BOUNDS: MarketplaceBoundingBox = { north: 69.1, east: 24.2, south: 55.2, west: 10.6 }
+const SWEDEN_CENTROID = { latitude: 62, longitude: 15 }
+
+const swedenCountryGeoArea: MarketplaceGeoArea = {
+  id: 'SE:country:sweden',
+  countryCode: 'SE',
+  level: 'country',
+  name: 'Sverige',
+  code: 'SE',
+  slug: 'sverige',
+  centroid: SWEDEN_CENTROID,
+  bounds: SWEDEN_BOUNDS,
+  aliases: ['sverige', 'sweden', 'hela sverige'],
+}
+
+const curatedSwedenGeoAreas: MarketplaceGeoArea[] = [
   {
     id: 'SE:municipality:goteborg',
     countryCode: 'SE',
     level: 'municipality',
     name: 'Goteborg',
+    code: '1480',
+    slug: 'goteborg',
+    parentId: 'SE:region:14',
     region: 'Vastra Gotaland',
     municipality: 'Goteborg',
     centroid: { latitude: 57.7089, longitude: 11.9746 },
@@ -50,6 +77,9 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     countryCode: 'SE',
     level: 'municipality',
     name: 'Stockholm',
+    code: '0180',
+    slug: 'stockholm',
+    parentId: 'SE:region:01',
     region: 'Stockholm',
     municipality: 'Stockholm',
     centroid: { latitude: 59.3293, longitude: 18.0686 },
@@ -61,6 +91,9 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     countryCode: 'SE',
     level: 'municipality',
     name: 'Huddinge',
+    code: '0126',
+    slug: 'huddinge',
+    parentId: 'SE:region:01',
     region: 'Stockholm',
     municipality: 'Huddinge',
     centroid: { latitude: 59.2369, longitude: 17.9824 },
@@ -72,6 +105,9 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     countryCode: 'SE',
     level: 'municipality',
     name: 'Kramfors',
+    code: '2282',
+    slug: 'kramfors',
+    parentId: 'SE:region:22',
     region: 'Vasternorrland',
     municipality: 'Kramfors',
     centroid: { latitude: 62.9316, longitude: 17.7765 },
@@ -83,6 +119,9 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     countryCode: 'SE',
     level: 'locality',
     name: 'Bollstabruk',
+    code: 'bollstabruk',
+    slug: 'bollstabruk',
+    parentId: 'SE:municipality:kramfors',
     region: 'Vasternorrland',
     municipality: 'Kramfors',
     locality: 'Bollstabruk',
@@ -95,6 +134,9 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     countryCode: 'SE',
     level: 'locality',
     name: 'Nyland',
+    code: 'nyland',
+    slug: 'nyland',
+    parentId: 'SE:municipality:kramfors',
     region: 'Vasternorrland',
     municipality: 'Kramfors',
     locality: 'Nyland',
@@ -103,6 +145,62 @@ const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = [
     aliases: ['nyland'],
   },
 ]
+
+const curatedSlugs = new Set(curatedSwedenGeoAreas.map((area) => area.slug).filter(Boolean))
+const countyByCode = new Map(swedishCounties.map((county) => [county.code, county]))
+
+const generatedSwedenCountyGeoAreas: MarketplaceGeoArea[] = swedishCounties.map((county) => {
+  const name = titleFromSlug(county.slug)
+  return {
+    id: `SE:region:${county.code}`,
+    countryCode: 'SE',
+    level: 'region',
+    name,
+    code: county.code,
+    slug: county.slug,
+    parentId: swedenCountryGeoArea.id,
+    region: name,
+    centroid: SWEDEN_CENTROID,
+    bounds: SWEDEN_BOUNDS,
+    aliases: uniqueAliases([county.slug, name, county.name, `${county.slug} lan`, `${county.slug} l\u00e4n`, county.code]),
+  }
+})
+
+const generatedSwedenMunicipalityGeoAreas: MarketplaceGeoArea[] = swedishMunicipalities
+  .filter((municipality) => !curatedSlugs.has(municipality.slug))
+  .map((municipality) => {
+    const county = countyByCode.get(municipality.countyCode)
+    const name = titleFromSlug(municipality.slug)
+    const region = county ? titleFromSlug(county.slug) : undefined
+    return {
+      id: `SE:municipality:${municipality.code}`,
+      countryCode: 'SE',
+      level: 'municipality',
+      name,
+      code: municipality.code,
+      slug: municipality.slug,
+      parentId: county ? `SE:region:${county.code}` : swedenCountryGeoArea.id,
+      region,
+      municipality: name,
+      centroid: SWEDEN_CENTROID,
+      bounds: SWEDEN_BOUNDS,
+      aliases: uniqueAliases([
+        municipality.slug,
+        name,
+        municipality.name,
+        `${municipality.slug} kommun`,
+        `${name} kommun`,
+        municipality.code,
+      ]),
+    }
+  })
+
+const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = dedupeGeoAreas([
+  swedenCountryGeoArea,
+  ...curatedSwedenGeoAreas,
+  ...generatedSwedenCountyGeoAreas,
+  ...generatedSwedenMunicipalityGeoAreas,
+])
 
 const knownVehicleMakes = [
   'Mercedes-Benz',
@@ -131,6 +229,21 @@ const knownVehicleMakes = [
   'VW',
 ]
 
+const categoryQueryEntries: Array<{ category: MarketplaceCategorySlug; aliases: string[] }> = [
+  { category: 'cars', aliases: ['bil', 'bilar', 'car', 'cars', 'auto', 'autos'] },
+  { category: 'vans', aliases: ['transportbil', 'transportbilar', 'van', 'vans', 'sk\u00e5pbil', 'sk\u00e5pbilar'] },
+  { category: 'motorcycles', aliases: ['motorcykel', 'motorcyklar', 'mc', 'motorcycle', 'motorcycles', 'motorbike'] },
+  { category: 'motorhomes', aliases: ['husbil', 'husbilar', 'motorhome', 'motorhomes', 'camper'] },
+  { category: 'caravans', aliases: ['husvagn', 'husvagnar', 'caravan', 'caravans'] },
+  { category: 'trucks', aliases: ['lastbil', 'lastbilar', 'truck', 'trucks', 'lorry', 'buss', 'bussar', 'bus'] },
+  { category: 'agriculture', aliases: ['lantbruk', 'lantbruksmaskin', 'lantbruksmaskiner', 'traktor', 'tractor', 'farm'] },
+  {
+    category: 'construction',
+    aliases: ['entreprenad', 'entreprenadmaskin', 'entreprenadmaskiner', 'gr\u00e4vmaskin', 'excavator', 'loader'],
+  },
+  { category: 'electric-bikes', aliases: ['cykel', 'cyklar', 'bike', 'bikes', 'bicycle', 'elcykel', 'e bike', 'e-bike'] },
+]
+
 const geoAreaById = new Map(swedenPhaseOneGeoAreas.map((area) => [normalizeSearchStateText(area.id), area]))
 const geoAliasEntries = swedenPhaseOneGeoAreas
   .flatMap((area) => area.aliases.map((alias) => ({ alias, key: normalizeSearchStateText(alias), area })))
@@ -144,6 +257,8 @@ export function parseMarketplaceSearchState(
   const markets = new Set((options.markets || []).map((market) => market.toUpperCase()))
   const canUseSweden = markets.size === 0 || markets.has('SE')
   const make = extractVehicleMake(rawQuery)
+  const categories = extractCategoryFilters(rawQuery)
+  const offerType = extractOfferType(rawQuery)
   const postalCode = canUseSweden ? extractSwedishPostalCode(rawQuery) : ''
   const maxPrice = extractMaxPrice(rawQuery)
   const geoArea = canUseSweden
@@ -152,8 +267,10 @@ export function parseMarketplaceSearchState(
 
   return {
     rawQuery,
-    query: removeSearchStateTerms(rawQuery, { make, geoArea, postalCode, maxPrice }),
+    query: removeSearchStateTerms(rawQuery, { make, categories, offerType, geoArea, postalCode, maxPrice }),
     make,
+    categories,
+    offerType,
     geoArea,
     postalCode,
     maxPrice,
@@ -167,6 +284,13 @@ export function resolveMarketplaceGeoArea(value: string | null | undefined) {
 }
 
 export function marketplaceGeoAreaOrFilters(area: MarketplaceGeoArea) {
+  const filters = new Set<string>()
+  filters.add(`geo_area_id.eq.${area.id}`)
+  filters.add(`geo_place_code.eq.${area.id}`)
+  if (area.level === 'region' && area.code) filters.add(`geo_region_code.eq.${area.code}`)
+  if (area.level === 'municipality' && area.code) filters.add(`geo_municipality_code.eq.${area.code}`)
+  if (area.level === 'locality' && area.code) filters.add(`geo_locality_code.eq.${area.code}`)
+
   const values = new Set<string>()
   values.add(area.name)
   if (area.locality) values.add(area.locality)
@@ -175,15 +299,14 @@ export function marketplaceGeoAreaOrFilters(area: MarketplaceGeoArea) {
   if (area.postalCode) values.add(area.postalCode)
   for (const alias of area.aliases) values.add(alias.replace(/\s+kommun$/i, '').trim())
 
-  return [...values].flatMap((value) => {
+  for (const value of values) {
     const escaped = escapePostgrestIlike(value)
-    return [
-      `city.ilike.${escaped}`,
-      `municipality.ilike.${escaped}`,
-      `postal_code.ilike.${escaped}`,
-      `geo_place_code.eq.${area.id}`,
-    ]
-  })
+    filters.add(`city.ilike.${escaped}`)
+    filters.add(`municipality.ilike.${escaped}`)
+    filters.add(`postal_code.ilike.${escaped}`)
+  }
+
+  return [...filters]
 }
 
 export function normalizeSearchBounds(input: {
@@ -201,6 +324,31 @@ export function normalizeSearchBounds(input: {
   return { north, east, south, west }
 }
 
+export function isPointInsideSearchBounds(
+  point: { latitude: number | null | undefined; longitude: number | null | undefined },
+  bounds: MarketplaceBoundingBox | null | undefined,
+) {
+  if (!bounds || point.latitude === null || point.latitude === undefined || point.longitude === null || point.longitude === undefined) {
+    return false
+  }
+  return (
+    point.latitude >= bounds.south &&
+    point.latitude <= bounds.north &&
+    point.longitude >= bounds.west &&
+    point.longitude <= bounds.east
+  )
+}
+
+export function searchBoundsToPolygon(bounds: MarketplaceBoundingBox) {
+  return [
+    [bounds.west, bounds.south],
+    [bounds.east, bounds.south],
+    [bounds.east, bounds.north],
+    [bounds.west, bounds.north],
+    [bounds.west, bounds.south],
+  ]
+}
+
 function findGeoArea(query: string) {
   const normalized = normalizeSearchStateText(query)
   if (!normalized) return null
@@ -216,22 +364,31 @@ function postalCodeGeoArea(postalCode: string): MarketplaceGeoArea {
     countryCode: 'SE',
     level: 'postal_code',
     name: postalCode,
+    code: compact,
     postalCode,
-    centroid: { latitude: 62, longitude: 15 },
-    bounds: { north: 69.1, east: 24.2, south: 55.2, west: 10.6 },
+    centroid: SWEDEN_CENTROID,
+    bounds: SWEDEN_BOUNDS,
     aliases: [postalCode, compact],
   }
 }
 
 function removeSearchStateTerms(
   query: string,
-  state: Pick<MarketplaceSearchState, 'make' | 'geoArea' | 'postalCode' | 'maxPrice'>,
+  state: Pick<MarketplaceSearchState, 'make' | 'categories' | 'offerType' | 'geoArea' | 'postalCode' | 'maxPrice'>,
 ) {
   let value = query
   if (state.make) {
     value = value.replace(new RegExp(`\\b${escapeRegex(state.make)}\\b`, 'gi'), ' ')
     if (state.make === 'Volkswagen') value = value.replace(/\bVW\b/gi, ' ')
     if (state.make === 'Mercedes-Benz') value = value.replace(/\bMercedes\b/gi, ' ')
+  }
+  for (const entry of categoryQueryEntries.filter((entry) => state.categories.includes(entry.category))) {
+    for (const alias of entry.aliases.sort((left, right) => right.length - left.length)) {
+      value = value.replace(new RegExp(`\\b${escapeRegex(alias)}\\b`, 'gi'), ' ')
+    }
+  }
+  if (state.offerType) {
+    value = value.replace(/\b(leasing|leasa|lease|leasingbil|leasingbilar|till salu|for sale|sale|s\u00e4ljes|saljes)\b/gi, ' ')
   }
   if (state.geoArea) {
     const aliases = [...state.geoArea.aliases, state.geoArea.name]
@@ -258,6 +415,33 @@ function extractVehicleMake(query: string) {
   if (match === 'VW') return 'Volkswagen'
   if (match === 'Mercedes') return 'Mercedes-Benz'
   return match
+}
+
+function extractCategoryFilters(query: string) {
+  const normalizedQuery = normalizeSearchStateText(query)
+  const categories = new Set<MarketplaceCategorySlug>()
+  for (const entry of categoryQueryEntries) {
+    if (entry.aliases.some((alias) => tokenBoundaryMatch(normalizedQuery, normalizeSearchStateText(alias)))) {
+      categories.add(entry.category)
+    }
+  }
+  return [...categories]
+}
+
+function extractOfferType(query: string): MarketplaceOfferType {
+  const normalizedQuery = normalizeSearchStateText(query)
+  if (tokenBoundaryMatch(normalizedQuery, 'leasing') || tokenBoundaryMatch(normalizedQuery, 'lease') || tokenBoundaryMatch(normalizedQuery, 'leasa')) {
+    return 'leasing'
+  }
+  if (
+    tokenBoundaryMatch(normalizedQuery, 'till salu') ||
+    tokenBoundaryMatch(normalizedQuery, 'for sale') ||
+    tokenBoundaryMatch(normalizedQuery, 'sale') ||
+    tokenBoundaryMatch(normalizedQuery, 'saljes')
+  ) {
+    return 'sale'
+  }
+  return ''
 }
 
 function extractSwedishPostalCode(query: string) {
@@ -304,4 +488,25 @@ function escapeRegex(value: string) {
 
 function escapePostgrestIlike(value: string) {
   return `%${String(value).replace(/[%_,]/g, '').trim()}%`
+}
+
+function titleFromSlug(slug: string) {
+  return slug
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function uniqueAliases(values: Array<string | null | undefined>) {
+  return [...new Set(values.map((value) => cleanQuery(value)).filter(Boolean))]
+}
+
+function dedupeGeoAreas(areas: MarketplaceGeoArea[]) {
+  const seenIds = new Set<string>()
+  return areas.filter((area) => {
+    const key = normalizeSearchStateText(area.id)
+    if (seenIds.has(key)) return false
+    seenIds.add(key)
+    return true
+  })
 }

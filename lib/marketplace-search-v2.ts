@@ -288,10 +288,13 @@ async function fetchNormalRows(
 }
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
-  const categories = normalizeCategoryFilters(input.categories ?? input.category)
+  const explicitCategories = normalizeCategoryFilters(input.categories ?? input.category)
   const markets = normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country)
   const rawQuery = clean(input.q).slice(0, 80)
   const parsedSearchState = parseMarketplaceSearchState(rawQuery, { markets })
+  const categories = explicitCategories.length
+    ? explicitCategories
+    : normalizeCategoryFilters(parsedSearchState.categories)
   const geoArea = resolveMarketplaceGeoArea(input.geoAreaId || input.geoPlaceCode) || parsedSearchState.geoArea
   const bounds = normalizeSearchBounds(input)
   const sort = normalizeSort(input.sort)
@@ -318,7 +321,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
-    offerType: clean(input.offerType).toLowerCase(),
+    offerType: clean(input.offerType).toLowerCase() || parsedSearchState.offerType,
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice) ?? parsedSearchState.maxPrice,

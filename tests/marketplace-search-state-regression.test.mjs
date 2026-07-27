@@ -23,11 +23,14 @@ test('marketplace search state defines one shared geo/search model', () => {
   assert.match(searchStateSource, /export type MarketplaceBoundingBox/)
   assert.match(searchStateSource, /parseMarketplaceSearchState/)
   assert.match(searchStateSource, /normalizeSearchBounds/)
+  assert.match(searchStateSource, /isPointInsideSearchBounds/)
+  assert.match(searchStateSource, /searchBoundsToPolygon/)
   assert.match(searchStateSource, /knownVehicleMakes/)
 })
 
 test('phase 1 Sweden fixtures include municipalities, localities, aliases and bounds', () => {
   for (const fixture of [
+    'SE:country:sweden',
     'SE:municipality:goteborg',
     'SE:municipality:stockholm',
     'SE:municipality:huddinge',
@@ -44,13 +47,19 @@ test('phase 1 Sweden fixtures include municipalities, localities, aliases and bo
 
   assert.match(searchStateSource, /bounds:\s*\{\s*north:/)
   assert.match(searchStateSource, /centroid:\s*\{\s*latitude:/)
+  assert.match(searchStateSource, /swedishMunicipalities/)
+  assert.match(searchStateSource, /swedishCounties/)
 })
 
-test('free text parsing removes location and price terms before full text tokens run', () => {
+test('free text parsing removes location, category, offer type and price terms before text tokens run', () => {
   assert.match(searchStateSource, /extractMaxPrice/)
   assert.match(searchStateSource, /extractVehicleMake/)
+  assert.match(searchStateSource, /extractCategoryFilters/)
+  assert.match(searchStateSource, /extractOfferType/)
   assert.match(searchStateSource, /removeSearchStateTerms/)
   assert.match(searchStateSource, /under\|max\|upp till/)
+  assert.match(searchStateSource, /transportbilar/)
+  assert.match(searchStateSource, /leasing/)
   assert.match(searchStateSource, /postalCodeGeoArea/)
   assert.match(searchStateSource, /'BMW'/)
 })
@@ -60,11 +69,24 @@ test('search-v2 consumes geo area and bounding box through the same normalized f
   assert.match(searchSource, /resolveMarketplaceGeoArea/)
   assert.match(searchSource, /marketplaceGeoAreaOrFilters/)
   assert.match(searchSource, /normalizeSearchBounds/)
+  assert.match(searchSource, /parsedSearchState\.categories/)
+  assert.match(searchSource, /parsedSearchState\.offerType/)
   assert.match(searchSource, /parsedSearchState\.make/)
   assert.match(searchSource, /filters\.geoArea/)
   assert.match(searchSource, /filters\.bounds/)
   assert.match(searchSource, /gte\('latitude', filters\.bounds\.south\)/)
   assert.match(searchSource, /lte\('longitude', filters\.bounds\.east\)/)
+})
+
+test('geo area filters prefer stable columns before text fallback', () => {
+  for (const snippet of [
+    'geo_area_id.eq',
+    'geo_region_code.eq',
+    'geo_municipality_code.eq',
+    'geo_locality_code.eq',
+  ]) {
+    assert.ok(searchStateSource.includes(snippet), `${snippet} should be present`)
+  }
 })
 
 test('geo search migration prepares stable IDs, polygons and indexed coordinates', () => {
@@ -91,6 +113,8 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
     "setParam('north'",
     'onSearchArea',
     'geoBounds',
+    'autorell-geo-bounds',
+    'searchBoundsToPolygon',
   ]) {
     assert.ok(vehicleSearchExperienceSource.includes(snippet), `VehicleSearchExperience should include ${snippet}`)
   }

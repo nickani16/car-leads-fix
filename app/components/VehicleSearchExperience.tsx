@@ -54,7 +54,7 @@ import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
-import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
+import { searchBoundsToPolygon, type MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
@@ -3388,6 +3388,7 @@ function VehicleSearchMap({
           .setLngLat(coordinates)
           .addTo(map)
       })
+      syncSearchBoundsLayer(map, geoBounds ?? null)
       if (geoBounds) {
         const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
         map.fitBounds(bounds, { padding: 70, maxZoom: 10.5, duration: 500 })
@@ -3868,6 +3869,58 @@ function readMapBounds(map: MapLibreMap | null): MarketplaceBoundingBox | null {
     east: bounds.getEast(),
     south: bounds.getSouth(),
     west: bounds.getWest(),
+  }
+}
+
+function syncSearchBoundsLayer(map: MapLibreMap, bounds: MarketplaceBoundingBox | null) {
+  const sourceId = 'autorell-geo-bounds'
+  const fillLayerId = 'autorell-geo-bounds-fill'
+  const lineLayerId = 'autorell-geo-bounds-line'
+
+  try {
+    if (!bounds) {
+      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId)
+      if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
+      if (map.getSource(sourceId)) map.removeSource(sourceId)
+      return
+    }
+
+    const data = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [searchBoundsToPolygon(bounds)],
+      },
+    }
+    const source = map.getSource(sourceId) as { setData?: (value: typeof data) => void } | undefined
+    if (source?.setData) {
+      source.setData(data)
+      return
+    }
+
+    map.addSource(sourceId, { type: 'geojson', data })
+    map.addLayer({
+      id: fillLayerId,
+      type: 'fill',
+      source: sourceId,
+      paint: {
+        'fill-color': '#0866ff',
+        'fill-opacity': 0.08,
+      },
+    })
+    map.addLayer({
+      id: lineLayerId,
+      type: 'line',
+      source: sourceId,
+      paint: {
+        'line-color': '#0866ff',
+        'line-opacity': 0.72,
+        'line-width': 2,
+      },
+    })
+  } catch {
+    // Map style swaps can briefly remove sources while MapLibre is repainting.
   }
 }
 
