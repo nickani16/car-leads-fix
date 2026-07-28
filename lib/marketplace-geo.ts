@@ -47,8 +47,6 @@ const supportedGeoCountries = new Set([
   'ES',
   'SE',
 ])
-const verifiedMunicipalityCountries = new Set(['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'])
-
 export function normalizeGeoCountry(countryCode: string | null | undefined) {
   const normalized = String(countryCode || '').trim().toUpperCase()
   return supportedGeoCountries.has(normalized) ? normalized : 'SE'
@@ -119,16 +117,6 @@ export async function validateGeoListingLocation({
   const manual = locationSource === 'manual'
   if (manual) {
     const manualName = (municipality || city || '').trim()
-    if (verifiedMunicipalityCountries.has(country)) {
-      return {
-        region: region || '',
-        municipality: manualName,
-        city: city || manualName,
-        geoPlaceCode: null,
-        locationSource: 'unverified' as const,
-        valid: false,
-      }
-    }
     return {
       region: region || '',
       municipality: manualName,

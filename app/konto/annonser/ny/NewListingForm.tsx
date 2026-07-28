@@ -336,6 +336,7 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: place.name,
+      city: current.city || place.city || place.name,
       county: place.regionName || place.regionCode || current.county || '',
       postalCode: place.postalCode || current.postalCode || '',
     }))
@@ -348,6 +349,7 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
+      city: current.city || value,
     }))
   }
 
@@ -357,6 +359,7 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
+      city: current.city || value,
     }))
   }
 
@@ -410,9 +413,6 @@ export default function NewListingForm({
         return missing(copy.errors.chooseField.replace('{field}', marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()))
       }
       if (!values.city) return missing(copy.errors.city)
-      if (usesMunicipalityDropdown && locationSource !== 'verified') {
-        return missing((copy.errors as Record<string, string>).location || 'Choose a verified place or use the manual fallback.')
-      }
       if (
         values.postalCode &&
         !validatePostalCode(values.postalCode, listingCountryCode)
@@ -513,7 +513,16 @@ export default function NewListingForm({
     form.set('category', category)
     form.set('sellerCountryCode', listingCountryCode)
     form.set('geoPlaceCode', usesMunicipalityDropdown ? geoPlaceCode : '')
-    form.set('locationSource', usesMunicipalityDropdown ? locationSource || 'unverified' : 'manual')
+    form.set(
+      'locationSource',
+      usesMunicipalityDropdown
+        ? locationSource === 'verified' && geoPlaceCode
+          ? 'verified'
+          : values.municipality || values.city
+            ? 'manual'
+            : 'unverified'
+        : 'manual',
+    )
     form.set('offerType', normalizeOfferType(values.offerType))
     const allowedTechnicalKeys = new Set(
       fieldsForCategoryAndSubcategory(category, values).map((field) => field.name),
@@ -764,11 +773,11 @@ export default function NewListingForm({
                     ? formatMunicipalityCount(placeOptions.length, listingCountryCode, locale)
                     : ''
                 }
-                manualLabel=""
-                allowManual={false}
+                manualLabel={localizeFormText(locale, 'Min ort saknas', 'My place is missing', 'Mein Ort fehlt')}
+                allowManual
                 onQueryChange={changeLocationPlaceQuery}
                 onSelect={changeLocationPlace}
-                onManual={() => {}}
+                onManual={changeManualMunicipality}
               />
             ) : (
               <Field
