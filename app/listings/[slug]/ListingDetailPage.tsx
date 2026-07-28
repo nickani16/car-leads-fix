@@ -1333,7 +1333,7 @@ function listingDetailOfferBadge(
 ) {
   if (offerType === 'lease') {
     return {
-      label: localizedLabel(locale, 'För leasing', 'For leasing', 'Zum Leasing'),
+      label: localizedLabel(locale, 'Till leasing', 'For leasing', 'Zum Leasing'),
       className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
     }
   }

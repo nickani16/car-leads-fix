@@ -57,7 +57,7 @@ export type LeaseData = {
 
 export const offerTypeValues: Array<{ value: OfferType; label: string }> = [
   { value: 'sale', label: 'Till salu' },
-  { value: 'lease', label: 'För leasing' },
+  { value: 'lease', label: 'Till leasing' },
 ]
 
 export const marketplaceCategoryFieldDefinitions: Record<MarketplaceCategorySlug, ListingFieldDefinition[]> =

@@ -4347,7 +4347,7 @@ function listingOfferBadge(locale: PublicLocale, listing: VehicleSearchListing) 
     en: 'For sale',
   }
   const leaseLabels: Partial<Record<PublicLocale, string>> = {
-    sv: 'För leasing',
+    sv: 'Till leasing',
     de: 'Leasing',
     fr: 'Leasing',
     es: 'Leasing',
