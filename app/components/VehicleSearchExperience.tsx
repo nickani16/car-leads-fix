@@ -3248,6 +3248,7 @@ function VehicleResultCard({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
+  const visibleMeta = layout === 'split' ? meta.slice(0, 2) : meta
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
 
@@ -3316,7 +3317,7 @@ function VehicleResultCard({
             <span className={`inline-flex w-max max-w-full rounded-full px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
               {offerBadge.label}
             </span>
-            <MetaSeparatorList items={meta} className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
+            <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName

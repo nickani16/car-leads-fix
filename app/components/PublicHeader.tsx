@@ -1255,8 +1255,8 @@ export default function PublicHeader({
                                       : 'text-[#475467] hover:bg-white/70 hover:text-[#101828]'
                                   }`}
                                 >
-                                  <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.shortLabel}</span>
-                                  <span className="mt-0.5 line-clamp-2 min-w-0 break-words text-[11px] font-[400] leading-4 text-[#667085]">{option.text}</span>
+                                  <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.label}</span>
+                                  <span className="mt-0.5 block min-w-0 truncate text-[11px] font-[400] leading-4 text-[#667085]">{option.text}</span>
                                 </button>
                               )
                             })}

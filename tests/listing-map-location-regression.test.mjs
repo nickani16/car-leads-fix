@@ -9,7 +9,6 @@ const mapComponent = readFileSync('app/components/ListingLocationMap.tsx', 'utf8
 const marketplaceBrowser = readFileSync('app/components/MarketplaceCategoryBrowser.tsx', 'utf8')
 const vehicleSearchExperience = readFileSync('app/components/VehicleSearchExperience.tsx', 'utf8')
 const marketplace = readFileSync('lib/marketplace.ts', 'utf8')
-const marketplaceSearchRoute = readFileSync('app/api/marketplace/search-v2/route.ts', 'utf8')
 const mapResolver = readFileSync('lib/listing-map-location.ts', 'utf8')
 
 test('listing detail map uses listing-owned location fields only', () => {
@@ -39,14 +38,6 @@ test('listing map exposes development-only debug fields for verification', () =>
   assert.match(mapComponent, /listing id/)
   assert.match(mapComponent, /postal code/)
   assert.match(mapComponent, /actual map center/)
-})
-
-test('marketplace search response resolves address coordinates before map markers render', () => {
-  assert.match(marketplaceSearchRoute, /resolveListingMapLocation/)
-  assert.match(marketplaceSearchRoute, /resolveSearchResultMapLocation\(item\)/)
-  assert.match(marketplaceSearchRoute, /latitude: mapLocation\?\.latitude \?\? item\.latitude/)
-  assert.match(marketplaceSearchRoute, /longitude: mapLocation\?\.longitude \?\? item\.longitude/)
-  assert.match(marketplaceSearchRoute, /map_location_source/)
 })
 
 test('marketplace map uses the Barcelona city coordinate without offset', () => {

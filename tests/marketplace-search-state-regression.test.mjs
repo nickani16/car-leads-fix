@@ -247,6 +247,8 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(publicHeaderSource, /useState<'all' \| 'sale' \| 'leasing'>\('all'\)/)
   assert.match(publicHeaderSource, /key: 'all' as const/)
   assert.match(publicHeaderSource, /shortLabel/)
+  assert.match(publicHeaderSource, /block min-w-0 truncate text-\[11px\]/)
+  assert.match(vehicleSearchExperienceSource, /const visibleMeta = layout === 'split' \? meta\.slice\(0, 2\) : meta/)
   assert.match(vehicleSearchExperienceSource, /createCategoryMapMarker/)
   assert.match(mapCategoryMarkerSource, /categoryIconPaths/)
   assert.match(mapCategoryMarkerSource, /offerType === 'lease'/)
