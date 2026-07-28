@@ -17,6 +17,7 @@ const swedishCarRouteSource = readFileSync(new URL('../app/[market]/bilar/[...se
 const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
 const seoRoutesSource = readFileSync(new URL('../lib/seo-routes.ts', import.meta.url), 'utf8')
+const marketplacePublicDataSource = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
 const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
@@ -206,6 +207,11 @@ test('leasing marketplace mode does not present map markers or result labels as 
   assert.match(vehicleSearchExperienceSource, /för leasing/)
   assert.match(vehicleSearchExperienceSource, /const baseColorClass = 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\]/)
+})
+
+test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {
+  assert.match(marketplacePublicDataSource, /export async function getMarketplaceListingForPublicDetail\(id: string\)/)
+  assert.doesNotMatch(marketplacePublicDataSource, /public-marketplace-listing-detail-by-id/)
 })
 
 test('proxy protects expensive crawl surfaces without blocking verified search bots', () => {

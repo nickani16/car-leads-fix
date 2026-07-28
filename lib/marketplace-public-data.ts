@@ -239,43 +239,39 @@ export const getFeaturedMarketplaceCategoryListings = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
-export const getMarketplaceListingForPublicDetail = unstable_cache(
-  async (id: string) => {
-    const admin = createAdminClient()
-    const [{ data }, { data: imageRows }] = await Promise.all([
-      admin
-        .from('marketplace_listings')
-        .select(`${marketplacePublicSelect},metadata`)
-        .eq('id', id)
-        .in('status', ['published', 'sold'])
-        .maybeSingle(),
-      admin
-        .from('marketplace_listing_images')
-        .select('webp_url,avif_url,position')
-        .eq('listing_id', id)
-        .is('deleted_at', null)
-        .order('position', { ascending: true }),
-    ])
+export async function getMarketplaceListingForPublicDetail(id: string) {
+  const admin = createAdminClient()
+  const [{ data }, { data: imageRows }] = await Promise.all([
+    admin
+      .from('marketplace_listings')
+      .select(`${marketplacePublicSelect},metadata`)
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle(),
+    admin
+      .from('marketplace_listing_images')
+      .select('webp_url,avif_url,position')
+      .eq('listing_id', id)
+      .is('deleted_at', null)
+      .order('position', { ascending: true }),
+  ])
 
-    if (!data) return null
+  if (!data) return null
 
-    const status = String(data.status || '')
-    const isExpiredPublished =
-      status === 'published' &&
-      data.expires_at &&
-      new Date(data.expires_at).getTime() <= Date.now()
+  const status = String(data.status || '')
+  const isExpiredPublished =
+    status === 'published' &&
+    data.expires_at &&
+    new Date(data.expires_at).getTime() <= Date.now()
 
-    if (isExpiredPublished) return null
-    const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
-    listing.image_variants = (imageRows || []).map((image) => ({
-      listingUrl: image.webp_url,
-      fullscreenUrl: image.avif_url,
-    }))
-    return listing
-  },
-  ['public-marketplace-listing-detail-by-id'],
-  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
-)
+  if (isExpiredPublished) return null
+  const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
+  listing.image_variants = (imageRows || []).map((image) => ({
+    listingUrl: image.webp_url,
+    fullscreenUrl: image.avif_url,
+  }))
+  return listing
+}
 
 export const getPublishedMarketplaceListingCount = unstable_cache(
   async (countryCode: string | null) => {
