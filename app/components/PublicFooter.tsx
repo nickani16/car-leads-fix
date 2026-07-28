@@ -32,7 +32,7 @@ const footerCopy = {
       'Autorell är en europeisk marknadsplats för fordonsannonser. Köpare kan hitta annonser och säljare kan nå rätt kunder på ett tryggt och tydligt sätt.',
     columns: [
       {
-        title: 'Marketplace',
+        title: 'Marknadsplats',
         links: [
           ['Bilar', '/marketplace/cars'],
           ['Transportbilar', '/marketplace/vans'],
@@ -49,7 +49,7 @@ const footerCopy = {
           ['Sälj transportbil', '/sell-van'],
           ['Sälj maskin', '/sell-construction'],
           ['Priser', '/pricing'],
-          ['Dealer solutions', '/business'],
+          ['Återförsäljarlösningar', '/business'],
         ],
       },
       {
@@ -114,7 +114,7 @@ const footerCopy = {
       'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
     columns: [
       {
-        title: 'Marketplace',
+        title: 'Marktplatz',
         links: [
           ['Autos', '/marketplace/cars'],
           ['Transporter', '/marketplace/vans'],
@@ -131,7 +131,7 @@ const footerCopy = {
           ['Transporter verkaufen', '/sell-van'],
           ['Baumaschine verkaufen', '/sell-construction'],
           ['Preise', '/pricing'],
-          ['Dealer solutions', '/business'],
+          ['Händlerlösungen', '/business'],
         ],
       },
       {
@@ -275,6 +275,21 @@ const footerCopy = {
   },
 } as const
 
+const footerCopyright: Record<PublicLocale, string> = {
+  sv: 'Alla rättigheter förbehållna.',
+  de: 'Alle Rechte vorbehalten.',
+  en: 'All rights reserved.',
+  at: 'Alle Rechte vorbehalten.',
+  be: 'Alle rechten voorbehouden.',
+  fr: 'Tous droits réservés.',
+  es: 'Todos los derechos reservados.',
+  it: 'Tutti i diritti riservati.',
+  pl: 'Wszelkie prawa zastrzeżone.',
+  nl: 'Alle rechten voorbehouden.',
+  fi: 'Kaikki oikeudet pidätetään.',
+  da: 'Alle rettigheder forbeholdes.',
+}
+
 const allMarkets = [
   ['EU', 'Europe', 'English'],
   ['AT', 'Austria', 'Deutsch'],
@@ -400,7 +415,7 @@ export default function PublicFooter({
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <p className="order-2 shrink-0 lg:order-1">© 2026 Autorell. All rights reserved.</p>
+            <p className="order-2 shrink-0 lg:order-1">© 2026 Autorell. {footerCopyright[locale]}</p>
 
             <nav className="order-1 flex flex-wrap gap-x-5 gap-y-2 font-medium lg:order-2 lg:justify-end">
               <Link href={termsHref} className="transition hover:text-[#075fff]">

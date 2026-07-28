@@ -699,6 +699,36 @@ const marketplaceFooterDescriptions: Record<PublicLocale, string> = {
   da: 'Autorell er en europæisk markedsplads for køretøjsannoncer. Købere kan finde annoncer, og sælgere kan nå de rette kunder på en sikker og tydelig måde.',
 }
 
+const marketplaceFooterCopyright: Record<PublicLocale, string> = {
+  sv: 'Alla rättigheter förbehållna.',
+  de: 'Alle Rechte vorbehalten.',
+  en: 'All rights reserved.',
+  at: 'Alle Rechte vorbehalten.',
+  be: 'Alle rechten voorbehouden.',
+  fr: 'Tous droits réservés.',
+  es: 'Todos los derechos reservados.',
+  it: 'Tutti i diritti riservati.',
+  pl: 'Wszelkie prawa zastrzeżone.',
+  nl: 'Alle rechten voorbehouden.',
+  fi: 'Kaikki oikeudet pidätetään.',
+  da: 'Alle rettigheder forbeholdes.',
+}
+
+const marketplaceBrandSubtitle: Record<PublicLocale, string> = {
+  sv: 'Marknadsplats',
+  de: 'Marktplatz',
+  en: 'Marketplace',
+  at: 'Marktplatz',
+  be: 'Marktplaats',
+  fr: 'Place de marché',
+  es: 'Mercado',
+  it: 'Marketplace',
+  pl: 'Platforma',
+  nl: 'Marktplaats',
+  fi: 'Markkinapaikka',
+  da: 'Markedsplads',
+}
+
 function formatRating(value: number, locale: PublicLocale) {
   return value.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, {
     maximumFractionDigits: 1,
@@ -3450,7 +3480,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           <div className="inline-flex w-[112px] flex-col items-center">
             <BrandLogo compact underline={false} />
             <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
-              Marketplace
+              {marketplaceBrandSubtitle[locale]}
             </span>
           </div>
           <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
@@ -3463,7 +3493,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </div>
       </div>
       <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
-        <p className="text-[12px] text-[#667085]">© 2026 Autorell</p>
+        <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
           <Link href={termsHref} className="hover:text-[#0866ff]">
             {uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}
@@ -3493,8 +3523,8 @@ function MarketplaceAppBadges({ locale }: { locale: PublicLocale }) {
         {uiText(locale, 'Download Autorell', 'Ladda ner Autorell', 'Autorell herunterladen')}
       </p>
       <div className="flex flex-wrap items-center gap-2.5">
-        <MarketplaceStoreBadge href={appStoreHref} src="/app-store-badge.svg" alt="Download on the App Store" width={120} height={36} />
-        <MarketplaceStoreBadge href={playStoreHref} src="/google-play-badge.svg" alt="Get it on Google Play" width={135} height={40} />
+        <MarketplaceStoreBadge href={appStoreHref} src="/app-store-badge.svg" alt={uiText(locale, 'Download on the App Store', 'Ladda ner i App Store', 'Im App Store laden')} width={120} height={36} />
+        <MarketplaceStoreBadge href={playStoreHref} src="/google-play-badge.svg" alt={uiText(locale, 'Get it on Google Play', 'Hämta på Google Play', 'Bei Google Play herunterladen')} width={135} height={40} />
       </div>
     </div>
   )

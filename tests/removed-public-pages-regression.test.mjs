@@ -47,6 +47,22 @@ test('removed public pages are not advertised in sitemap or public navigation', 
   }
 })
 
+test('public footers keep visible copyright and marketplace labels localized', () => {
+  assert.match(publicFooter, /const footerCopyright: Record<PublicLocale, string>/)
+  assert.match(publicFooter, /sv: 'Alla rättigheter förbehållna\.'/)
+  assert.match(publicFooter, /fr: 'Tous droits réservés\.'/)
+  assert.match(publicFooter, /pl: 'Wszelkie prawa zastrzeżone\.'/)
+  assert.doesNotMatch(publicFooter, />© 2026 Autorell\. All rights reserved\.<\/p>/)
+  assert.match(publicFooter, /\{footerCopyright\[locale\]\}/)
+  assert.match(publicFooter, /title: 'Marknadsplats'/)
+  assert.match(publicFooter, /\['Återförsäljarlösningar', '\/business'\]/)
+  assert.match(vehicleSearch, /const marketplaceFooterCopyright: Record<PublicLocale, string>/)
+  assert.match(vehicleSearch, /const marketplaceBrandSubtitle: Record<PublicLocale, string>/)
+  assert.match(vehicleSearch, /fr: 'Place de marché'/)
+  assert.match(vehicleSearch, /\{marketplaceFooterCopyright\[locale\]\}/)
+  assert.doesNotMatch(vehicleSearch, />Marketplace<\/span>/)
+})
+
 test('header keeps menu entries while routing them to live destinations', () => {
   assert.match(publicHeader, /Annonsera fordon på Autorell/)
   assert.match(publicHeader, /requiresLogin: true/)
