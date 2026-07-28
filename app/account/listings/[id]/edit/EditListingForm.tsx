@@ -24,6 +24,10 @@ type EditableListing = {
   id: string
   category: MarketplaceCategorySlug
   title: string
+  make: string
+  model: string
+  variant: string
+  modelYear: number | null
   price: number
   currency: string
   city: string
@@ -60,6 +64,10 @@ export default function EditListingForm({
   backHref: string
 }) {
   const router = useRouter()
+  const [make, setMake] = useState(listing.make)
+  const [model, setModel] = useState(listing.model)
+  const [variant, setVariant] = useState(listing.variant)
+  const [modelYear, setModelYear] = useState(listing.modelYear ? String(listing.modelYear) : '')
   const [price, setPrice] = useState(String(listing.price))
   const [city, setCity] = useState(listing.city)
   const [address, setAddress] = useState(listing.address)
@@ -127,6 +135,10 @@ export default function EditListingForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'update_listing',
+        make,
+        model,
+        variant,
+        modelYear,
         price,
         city,
         country: listing.country,
@@ -164,6 +176,49 @@ export default function EditListingForm({
           </label>
         </div>
         {listingImages.length ? <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">{listingImages.slice(0, 20).map((src, index) => <div key={`${src}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-[#e8edf5]"><Image src={src} alt={`Annonsbild ${index + 1}`} fill sizes="160px" unoptimized className="object-cover" /></div>)}</div> : <p className="mt-4 rounded-[12px] border border-dashed border-[#b9c6d8] bg-white p-5 text-center text-sm text-[#667085]">Annonsen saknar bilder. Lägg till minst en bild.</p>}
+      </section>
+      <section className="rounded-[18px] border border-[#dfe6f1] p-4">
+        <h2 className="text-lg font-semibold tracking-[-.03em]">Fordonsuppgifter</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">Märke eller tillverkare</span>
+            <input
+              value={make}
+              onChange={(event) => setMake(event.target.value)}
+              className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+              required
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">Modell</span>
+            <input
+              value={model}
+              onChange={(event) => setModel(event.target.value)}
+              className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+              required
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">Version / variant</span>
+            <input
+              value={variant}
+              onChange={(event) => setVariant(event.target.value)}
+              className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">Årsmodell</span>
+            <input
+              type="number"
+              min="1950"
+              max="2027"
+              value={modelYear}
+              onChange={(event) => setModelYear(event.target.value)}
+              className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+              required
+            />
+          </label>
+        </div>
       </section>
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block">

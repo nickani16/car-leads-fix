@@ -112,6 +112,10 @@ export async function PATCH(
   const body = (await request.json()) as {
     action?: string
     buyerUserId?: string
+    make?: string
+    model?: string
+    variant?: string
+    modelYear?: number | string
     price?: number | string
     city?: string
     address?: string
@@ -135,7 +139,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,make,model,variant,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
+    .select('id,seller_user_id,status,review_status,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
     .eq('id', id)
     .maybeSingle()
 
@@ -235,6 +239,10 @@ export async function PATCH(
     }
 
     const nextPrice = normalizePrice(body.price)
+    const make = clean(body.make)
+    const model = clean(body.model)
+    const variant = clean(body.variant)
+    const modelYear = Number(body.modelYear)
     const city = clean(body.city)
     const address = clean(body.address)
     const postalCode = clean(body.postalCode) || listing.postal_code
@@ -282,6 +290,12 @@ export async function PATCH(
         : body.phoneVisibility === 'public'
           ? 'public'
           : 'registered_only'
+    if (!make || !model || !Number.isInteger(modelYear) || modelYear < 1950 || modelYear > 2027) {
+      return NextResponse.json(
+        { error: 'Märke, modell och årsmodell krävs.' },
+        { status: 400 },
+      )
+    }
     if (!nextPrice || !city) {
       return NextResponse.json(
         { error: 'Pris och ort krävs.' },
@@ -292,6 +306,7 @@ export async function PATCH(
     const now = new Date().toISOString()
     const oldPrice = Number(listing.price)
     const priceChanged = oldPrice !== nextPrice
+    const nextTitle = [make, model, variant].filter(Boolean).join(' ')
     const geocoded = await geocodeListingLocation({
       address,
       postalCode,
@@ -302,6 +317,11 @@ export async function PATCH(
     const latitude = geocoded?.latitude ?? parseCoordinate(body.latitude) ?? listing.latitude
     const longitude = geocoded?.longitude ?? parseCoordinate(body.longitude) ?? listing.longitude
     const patch: Record<string, unknown> = {
+      title: nextTitle,
+      make,
+      model,
+      variant: variant || null,
+      model_year: modelYear,
       price: nextPrice,
       city,
       country,
@@ -329,18 +349,19 @@ export async function PATCH(
       ...(listing.structured_data && typeof listing.structured_data === 'object' ? listing.structured_data : {}),
       ...technicalData,
       category,
-      make: listing.make,
-      model: listing.model,
-      variant: listing.variant,
+      make,
+      model,
+      variant,
+      model_year: modelYear,
       equipment_keys: equipmentKeys,
     }
     patch.structured_data = structuredData
     patch.search_document = buildListingSearchDocument({
       category,
-      make: listing.make,
-      model: listing.model,
-      variant: listing.variant,
-        offerType: normalizeOfferType(listing.offer_type),
+      make,
+      model,
+      variant,
+      offerType: normalizeOfferType(listing.offer_type),
       technicalData: structuredData,
       equipment: equipmentTextFromKeys(equipmentKeys),
       leaseData: listing.lease_data,
@@ -418,6 +439,11 @@ export async function PATCH(
           new_price: nextPrice,
           currency: listing.currency,
           equipment_keys: equipmentKeys,
+          title: nextTitle,
+          make,
+          model,
+          variant,
+          model_year: modelYear,
           phone_visibility: phoneVisibility,
         },
       }),
