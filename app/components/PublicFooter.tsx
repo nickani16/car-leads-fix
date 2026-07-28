@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -19,12 +18,6 @@ import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
 import BrandLogo from './BrandLogo'
-
-const appStoreHref =
-  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
-const playStoreHref =
-  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
-  'https://play.google.com/store/search?q=autorell&c=apps'
 
 const footerCopy = {
   sv: {
@@ -74,12 +67,6 @@ const footerCopy = {
     newsletterTitle: 'Håll dig uppdaterad',
     newsletterText:
       'Få de senaste fordonen, marknadstrenderna och tipsen direkt till din inkorg.',
-    appDownloadTitle: 'Ladda ner Autorell',
-    appDownloadText: 'Ha sökningar, sparade fordon och nya annonser nära till hands.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Ladda ner i',
-    getItOn: 'Hämta på',
     emailPlaceholder: 'Ange din e-post',
     subscribe: 'Prenumerera',
     trust: [
@@ -156,12 +143,6 @@ const footerCopy = {
     newsletterTitle: 'Auf dem Laufenden bleiben',
     newsletterText:
       'Erhalten Sie neue Fahrzeuge, Markttrends und Tipps direkt in Ihr Postfach.',
-    appDownloadTitle: 'Autorell herunterladen',
-    appDownloadText: 'Suchen, gespeicherte Fahrzeuge und neue Anzeigen immer griffbereit.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Laden im',
-    getItOn: 'Jetzt bei',
     emailPlaceholder: 'E-Mail-Adresse eingeben',
     subscribe: 'Abonnieren',
     trust: [
@@ -238,12 +219,6 @@ const footerCopy = {
     newsletterTitle: 'Stay up to date',
     newsletterText:
       'Get the latest vehicles, market trends and tips straight to your inbox.',
-    appDownloadTitle: 'Download Autorell',
-    appDownloadText: 'Keep searches, saved vehicles and new listings close at hand.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Download on the',
-    getItOn: 'Get it on',
     emailPlaceholder: 'Enter your email',
     subscribe: 'Subscribe',
     trust: [
@@ -364,13 +339,6 @@ export default function PublicFooter({
                   <BrandLogo underline={false} />
                 </Link>
               </div>
-              <AppDownloadBadges
-                title={t.appDownloadTitle}
-                downloadOn={t.downloadOn}
-                getItOn={t.getItOn}
-                appStore={t.appStore}
-                playStore={t.playStore}
-              />
             </div>
             <SocialLinks />
           </div>
@@ -446,63 +414,6 @@ export default function PublicFooter({
         locale={locale}
       />
     </footer>
-  )
-}
-
-function AppDownloadBadges({
-  title,
-  downloadOn,
-  getItOn,
-  appStore,
-  playStore,
-}: {
-  title: string
-  downloadOn: string
-  getItOn: string
-  appStore: string
-  playStore: string
-}) {
-  return (
-    <div className="flex flex-col items-start gap-2.5">
-      <p className="text-[13px] font-semibold text-[#344054]">{title}</p>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <StoreBadge
-          href={appStoreHref}
-          imageSrc="/app-store-badge.svg"
-          alt={`${downloadOn} ${appStore}`}
-          width={96}
-        />
-        <StoreBadge
-          href={playStoreHref}
-          imageSrc="/google-play-badge.svg"
-          alt={`${getItOn} ${playStore}`}
-          width={108}
-        />
-      </div>
-    </div>
-  )
-}
-
-function StoreBadge({
-  href,
-  imageSrc,
-  alt,
-  width,
-}: {
-  href: string
-  imageSrc: string
-  alt: string
-  width: number
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex h-8 shrink-0 rounded-[5px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:h-9"
-    >
-      <Image src={imageSrc} alt={alt} width={width} height={32} className="h-full w-auto" />
-    </a>
   )
 }
 

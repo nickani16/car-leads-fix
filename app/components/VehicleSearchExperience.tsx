@@ -70,11 +70,6 @@ type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
 
 let selectedSearchSuggestionSequence = 0
 
-const appStoreHref =
-  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
-const playStoreHref =
-  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
-  'https://play.google.com/store/search?q=autorell&c=apps'
 const maxCompareListings = 4
 
 function searchSuggestionDedupeKey(suggestion: VehicleSmartSearchSuggestion) {
@@ -3488,7 +3483,6 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </p>
         </div>
         <div className="flex flex-col gap-5 lg:items-end">
-          <MarketplaceAppBadges locale={locale} />
           <MarketplaceSocialLinks />
         </div>
       </div>
@@ -3513,44 +3507,6 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </nav>
       </div>
     </footer>
-  )
-}
-
-function MarketplaceAppBadges({ locale }: { locale: PublicLocale }) {
-  return (
-    <div className="grid gap-2.5">
-      <p className="text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0866ff] max-lg:text-left">
-        {uiText(locale, 'Download Autorell', 'Ladda ner Autorell', 'Autorell herunterladen')}
-      </p>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <MarketplaceStoreBadge href={appStoreHref} src="/app-store-badge.svg" alt={uiText(locale, 'Download on the App Store', 'Ladda ner i App Store', 'Im App Store laden')} width={120} height={36} />
-        <MarketplaceStoreBadge href={playStoreHref} src="/google-play-badge.svg" alt={uiText(locale, 'Get it on Google Play', 'Hämta på Google Play', 'Bei Google Play herunterladen')} width={135} height={40} />
-      </div>
-    </div>
-  )
-}
-
-function MarketplaceStoreBadge({
-  href,
-  src,
-  alt,
-  width,
-  height,
-}: {
-  href: string
-  src: string
-  alt: string
-  width: number
-  height: number
-}) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex h-9 items-center transition hover:-translate-y-0.5 hover:opacity-85"
-      aria-label={alt}
-    >
-      <Image src={src} alt={alt} width={width} height={height} className="block h-full w-auto" />
-    </Link>
   )
 }
 

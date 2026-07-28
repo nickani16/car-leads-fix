@@ -61,6 +61,17 @@ test('public footers keep visible copyright and marketplace labels localized', (
   assert.match(vehicleSearch, /fr: 'Place de marché'/)
   assert.match(vehicleSearch, /\{marketplaceFooterCopyright\[locale\]\}/)
   assert.doesNotMatch(vehicleSearch, />Marketplace<\/span>/)
+  for (const removedAppDownloadSnippet of [
+    'AppDownloadBadges',
+    'MarketplaceAppBadges',
+    'app-store-badge.svg',
+    'google-play-badge.svg',
+    'NEXT_PUBLIC_APP_STORE_URL',
+    'NEXT_PUBLIC_PLAY_STORE_URL',
+  ]) {
+    assert.doesNotMatch(publicFooter, new RegExp(removedAppDownloadSnippet))
+    assert.doesNotMatch(vehicleSearch, new RegExp(removedAppDownloadSnippet))
+  }
 })
 
 test('header keeps menu entries while routing them to live destinations', () => {
