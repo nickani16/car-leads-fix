@@ -1256,7 +1256,7 @@ export default function PublicHeader({
                                   }`}
                                 >
                                   <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.label}</span>
-                                  <span className="mt-0.5 block min-w-0 overflow-hidden text-[11px] font-[400] leading-4 text-[#667085] line-clamp-2">{option.text}</span>
+                                  <span className="mt-0.5 block max-h-8 min-w-0 overflow-hidden whitespace-normal break-words text-[11px] font-[400] leading-4 text-[#667085] [overflow-wrap:anywhere]">{option.text}</span>
                                 </button>
                               )
                             })}
