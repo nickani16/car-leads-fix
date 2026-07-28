@@ -241,20 +241,33 @@ export const getFeaturedMarketplaceCategoryListings = unstable_cache(
 
 export async function getMarketplaceListingForPublicDetail(id: string) {
   const admin = createAdminClient()
-  const [{ data }, { data: imageRows }] = await Promise.all([
-    admin
-      .from('marketplace_listings')
-      .select(`${marketplacePublicSelect},metadata`)
-      .eq('id', id)
-      .in('status', ['published', 'sold'])
-      .maybeSingle(),
-    admin
+  const listingQuery = admin
+    .from('marketplace_listings')
+    .select(`${marketplacePublicSelect},metadata`)
+    .eq('id', id)
+    .in('status', ['published', 'sold'])
+    .maybeSingle()
+  const imageQuery = admin
       .from('marketplace_listing_images')
       .select('webp_url,avif_url,position')
       .eq('listing_id', id)
       .is('deleted_at', null)
-      .order('position', { ascending: true }),
+      .order('position', { ascending: true })
+
+  let [{ data, error }, { data: imageRows }] = await Promise.all([
+    listingQuery,
+    imageQuery,
   ])
+
+  if (error) {
+    const fallback = await admin
+      .from('marketplace_listings')
+      .select(marketplacePublicSelect)
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle()
+    data = fallback.data ? { ...fallback.data, metadata: null } : null
+  }
 
   if (!data) return null
 

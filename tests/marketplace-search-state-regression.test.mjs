@@ -213,6 +213,9 @@ test('leasing marketplace mode does not present map markers or result labels as 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {
   assert.match(marketplacePublicDataSource, /export async function getMarketplaceListingForPublicDetail\(id: string\)/)
   assert.doesNotMatch(marketplacePublicDataSource, /public-marketplace-listing-detail-by-id/)
+  assert.match(marketplacePublicDataSource, /\.select\(`\$\{marketplacePublicSelect\},metadata`\)/)
+  assert.match(marketplacePublicDataSource, /if \(error\) \{/)
+  assert.match(marketplacePublicDataSource, /\.select\(marketplacePublicSelect\)/)
 })
 
 test('proxy protects expensive crawl surfaces without blocking verified search bots', () => {
