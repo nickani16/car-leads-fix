@@ -272,7 +272,8 @@ test('marketplace cards and listing detail show stable rounded offer status', ()
   assert.match(listingDetailPageSource, /listingDetailOfferBadge\(locale, listing\.offer_type\)/)
   assert.match(listingDetailPageSource, /Till leasing/)
   assert.match(listingDetailPageSource, /Till salu/)
-  assert.match(listingDetailPageSource, /mt-3 inline-flex items-center rounded-full/)
+  assert.match(listingDetailPageSource, /mb-3 inline-flex w-max max-w-full items-center rounded-full[\s\S]*\{offerBadge\.label\}[\s\S]*<h1 className="max-w-4xl/)
+  assert.match(listingDetailPageSource, /<p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1\.5 text-xs font-medium text-\[#667085\] sm:mt-4 sm:text-sm">\s*<span className="inline-flex items-center gap-1\.5">\s*<MapPin/)
 })
 
 test('electric listing range uses localized WLTP help and map previews badge offer type first', () => {

@@ -510,6 +510,9 @@ export default async function ListingDetailPage({
               ) : null}
               <div className="flex flex-col items-stretch gap-4">
                 <div className="min-w-0 flex-1">
+                  <span className={`mb-3 inline-flex w-max max-w-full items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:text-sm ${offerBadge.className}`}>
+                    {offerBadge.label}
+                  </span>
                   <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-[-0.03em] sm:text-5xl sm:tracking-[-0.04em]">
                     {listing.title}
                   </h1>
@@ -519,9 +522,6 @@ export default async function ListingDetailPage({
                     </p>
                   ) : null}
                   <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-[#667085] sm:mt-4 sm:text-sm">
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:text-sm ${offerBadge.className}`}>
-                      {offerBadge.label}
-                    </span>
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-[#0866ff] sm:h-4 sm:w-4" />
                       {location}
