@@ -947,7 +947,7 @@ export default function VehicleSearchExperience({
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
-  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -2682,7 +2682,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}>
+                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid sm:grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (
                     <VehicleResultCard
                       key={listing.id}

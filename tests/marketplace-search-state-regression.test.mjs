@@ -313,8 +313,8 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   }
   assert.match(vehicleSearchExperienceSource, /buildVehicleCompareRows\(compareListings, locale, compareCopy\)/)
   assert.match(vehicleSearchExperienceSource, /type ResultsLayout = 'single' \| 'split'/)
-  assert.match(vehicleSearchExperienceSource, /useState<ResultsLayout>\('single'\)/)
-  assert.match(vehicleSearchExperienceSource, /grid grid-cols-2/)
+  assert.match(vehicleSearchExperienceSource, /useState<ResultsLayout>\('split'\)/)
+  assert.match(vehicleSearchExperienceSource, /grid sm:grid-cols-2/)
   assert.match(vehicleSearchExperienceSource, /layout=\{resultsLayout === 'split' && filteredListings\.length > 1 \? 'split' : 'single'\}/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /desktopSplit/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /min-\[1120px\]:grid-cols-2/)
