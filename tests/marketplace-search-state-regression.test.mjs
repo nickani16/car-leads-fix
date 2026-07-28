@@ -199,6 +199,7 @@ test('localized listing URLs render listing detail pages instead of falling thro
   assert.match(marketCatchAllSource, /localizedListingParams/)
   assert.match(marketCatchAllSource, /return generateListingMetadata\(\{ params: listingParams \}\)/)
   assert.match(marketCatchAllSource, /return <ListingDetailPage params=\{listingParams\} \/>/)
+  assert.match(proxySource, /LOCALIZED_AD_SEGMENTS\.has\(segments\[1\] \|\| ''\)/)
 })
 
 test('leasing marketplace mode does not present map markers or result labels as for-sale-only', () => {
