@@ -166,8 +166,9 @@ test('generated fallback seller descriptions are not shown as seller information
   assert.match(marketplacePublicData, /select\(`\$\{marketplacePublicSelect\},metadata`\)/)
 })
 
-test('private listing contact card does not draw dividers around the seller name', () => {
+test('listing contact card separates actions from seller identity', () => {
   assert.match(listingDetail, /function PrivateSellerProfileCard/)
+  assert.match(listingDetail, /grid gap-2\.5 border-b border-\[#edf1f6\] p-4 sm:p-5/)
   assert.doesNotMatch(listingDetail, /flex items-start gap-3 border-y border\[#dfe6f2\] py-4/)
   assert.doesNotMatch(listingDetail, /<div className="border-t border\[#edf1f6\] p-4 sm:p-5">\s*\{listing\.seller_type === 'private'/)
 })

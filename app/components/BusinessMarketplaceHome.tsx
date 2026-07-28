@@ -100,6 +100,7 @@ type HomeListingCardItem = {
   priceLabel: string
   meta: string
   countryCode: string
+  offerType: string | null
   sellerTrust: 'verified' | 'unverified'
   isFeatured: boolean
   isTopPlacement: boolean
@@ -459,6 +460,8 @@ function HomeListingCard({
   item: HomeListingCardItem
   locale: PublicLocale
 }) {
+  const offerBadge = homeListingOfferBadge(locale, item.offerType)
+
   return (
     <article className="group relative w-[76vw] max-w-[280px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
       <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[16/10]">
@@ -485,6 +488,9 @@ function HomeListingCard({
         ) : null}
       </div>
       <div className="p-3">
+        <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+          {offerBadge.label}
+        </span>
         <Link href={item.href} className="block">
           <h3 className="line-clamp-2 text-[15px] font-medium leading-5 text-[#101828] transition hover:text-[#0866ff]">
             {item.title}
@@ -611,6 +617,7 @@ type HomeListingSource = {
   boost_status?: string | null
   boost_started_at?: string | null
   boost_expires_at?: string | null
+  offer_type?: string | null
 }
 
 async function mapHomeListingCard(
@@ -649,9 +656,66 @@ async function mapHomeListingCard(
       : translatePublic(locale, 'Price on request'),
     meta: vehicleMeta,
     countryCode: listing.country_code,
+    offerType: listing.offer_type || 'sale',
     sellerTrust,
     isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
     isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
+  }
+}
+
+function homeListingOfferBadge(locale: PublicLocale, offerType?: string | null) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const saleLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Till salu',
+    de: 'Zum Verkauf',
+    fr: 'À vendre',
+    es: 'En venta',
+    it: 'In vendita',
+    pl: 'Na sprzedaż',
+    nl: 'Te koop',
+    da: 'Til salg',
+    fi: 'Myynnissä',
+    en: 'For sale',
+  }
+  const leaseLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Till leasing',
+    de: 'Leasing',
+    fr: 'Leasing',
+    es: 'Leasing',
+    it: 'Leasing',
+    pl: 'Leasing',
+    nl: 'Leasing',
+    da: 'Leasing',
+    fi: 'Leasing',
+    en: 'For leasing',
+  }
+  const bothLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Salu eller leasing',
+    de: 'Kauf oder Leasing',
+    fr: 'Vente ou leasing',
+    es: 'Venta o leasing',
+    it: 'Vendita o leasing',
+    pl: 'Sprzedaż lub leasing',
+    nl: 'Koop of leasing',
+    da: 'Salg eller leasing',
+    fi: 'Myynti tai leasing',
+    en: 'Sale or leasing',
+  }
+  if (offerType === 'lease') {
+    return {
+      label: leaseLabels[effectiveLocale] || translatePublic(locale, 'For leasing'),
+      className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
+    }
+  }
+  if (offerType === 'sale_and_lease') {
+    return {
+      label: bothLabels[effectiveLocale] || translatePublic(locale, 'Sale or leasing'),
+      className: 'bg-[#eef4ff] text-[#084dbb] ring-[#c9dcff]',
+    }
+  }
+  return {
+    label: saleLabels[effectiveLocale] || translatePublic(locale, 'For sale'),
+    className: 'bg-[#eef5ff] text-[#0757da] ring-[#c7dbff]',
   }
 }
 

@@ -338,6 +338,15 @@ test('featured listings have active-window queries for home and category UI', ()
   assert.match(publicData, /\.gt\('featured_expires_at', now\)/)
 })
 
+test('home listing cards show offer type above the title without widening cards', () => {
+  assert.match(home, /offerType: string \| null/)
+  assert.match(home, /const offerBadge = homeListingOfferBadge\(locale, item\.offerType\)/)
+  assert.match(home, /mb-1\.5 inline-flex w-max max-w-full rounded-full px-2 py-0\.5 text-\[11px\]/)
+  assert.match(home, /offer_type\?: string \| null/)
+  assert.match(home, /offerType: listing\.offer_type \|\| 'sale'/)
+  assert.match(home, /w-\[76vw\] max-w-\[280px\]/)
+})
+
 test('refresh credits are protected by RPC atomic locks and cooldown', () => {
   assert.match(migration, /for update;/)
   assert.match(migration, /last_refreshed_at > now\(\) - p_cooldown/)

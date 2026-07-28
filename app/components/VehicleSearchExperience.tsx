@@ -3305,6 +3305,9 @@ function VehicleResultCard({
 
         <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
+            <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+              {offerBadge.label}
+            </span>
             <span className={`${layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
@@ -3314,9 +3317,6 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
-            <span className={`inline-flex w-max max-w-full rounded-full px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
-              {offerBadge.label}
-            </span>
             <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader

@@ -248,7 +248,7 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(publicHeaderSource, /useState<'all' \| 'sale' \| 'leasing'>\('all'\)/)
   assert.match(publicHeaderSource, /key: 'all' as const/)
   assert.match(publicHeaderSource, /shortLabel/)
-  assert.match(publicHeaderSource, /block min-w-0 truncate text-\[11px\]/)
+  assert.match(publicHeaderSource, /block min-w-0 overflow-hidden text-\[11px\][^"]*line-clamp-2/)
   assert.match(vehicleSearchExperienceSource, /const visibleMeta = layout === 'split' \? meta\.slice\(0, 2\) : meta/)
   assert.match(vehicleSearchExperienceSource, /createCategoryMapMarker/)
   assert.match(mapCategoryMarkerSource, /categoryIconPaths/)
@@ -261,7 +261,7 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
 })
 
 test('marketplace cards and listing detail show stable rounded offer status', () => {
-  assert.match(vehicleSearchExperienceSource, /w-max max-w-full rounded-full/)
+  assert.match(vehicleSearchExperienceSource, /px-2 py-0\.5 text-\[11px\][\s\S]*\{offerBadge\.label\}[\s\S]*line-clamp-1 font-semibold/)
   assert.match(vehicleSearchExperienceSource, /truncate rounded-full bg-\[#f2f4f7\]/)
   assert.match(vehicleSearchExperienceSource, /inline-flex min-w-0 items-center gap-1\.5 rounded-full bg-\[#f2f4f7\]/)
   assert.match(listingDetailPageSource, /listingDetailOfferBadge\(locale, listing\.offer_type\)/)

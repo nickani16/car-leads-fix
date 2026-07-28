@@ -656,7 +656,7 @@ export default async function ListingDetailPage({
                 </p>
               </div>
 
-              <div className="grid gap-2.5 p-4 sm:p-5">
+              <div className="grid gap-2.5 border-b border-[#edf1f6] p-4 sm:p-5">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
