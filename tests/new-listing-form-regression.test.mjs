@@ -70,6 +70,13 @@ test('listing insert falls back when production schema lacks geo columns', () =>
   assert.match(createListingRoute, /delete \(listingInsert as Record<string, unknown>\)\.geo_place_code/)
 })
 
+test('created listings still return success if optional metadata side effects fail', () => {
+  assert.match(createListingRoute, /const optionalSideEffects = await Promise\.allSettled/)
+  assert.match(createListingRoute, /logOptionalListingSideEffect/)
+  assert.match(createListingRoute, /return NextResponse\.json\(\{\s*success: true,[\s\S]*listingId: listing\.id/)
+  assert.doesNotMatch(createListingRoute, /await Promise\.all\(\[\s*admin\.from\('marketplace_listing_identifiers'\)/)
+})
+
 test('new listing location accepts verified picks and manual missing-place fallback', () => {
   assert.match(form, /city: current\.city \|\| place\.city \|\| place\.name/)
   assert.match(form, /city: current\.city \|\| value/)

@@ -338,6 +338,19 @@ async function insertListingImageRows(
   }
 }
 
+function logOptionalListingSideEffect(
+  label: string,
+  result: PromiseSettledResult<{ error?: { message?: string } | null }>,
+) {
+  if (result.status === 'rejected') {
+    console.warn(`Optional listing side effect failed: ${label}`, result.reason)
+    return
+  }
+  if (result.value?.error) {
+    console.warn(`Optional listing side effect failed: ${label}`, result.value.error.message || result.value.error)
+  }
+}
+
 export async function POST(request: Request) {
   let quotaReservation: Extract<BusinessListingQuotaReservation, { allowed: true }> | null = null
   let quotaReservationAttached = false
@@ -856,7 +869,7 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       null
     const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
-    await Promise.all([
+    const optionalSideEffects = await Promise.allSettled([
       admin.from('marketplace_listing_identifiers').insert({
         listing_id: listing.id,
         seller_user_id: user.id,
@@ -968,6 +981,12 @@ export async function POST(request: Request) {
           })
         : Promise.resolve({ error: null }),
     ])
+    optionalSideEffects.forEach((result, index) => {
+      logOptionalListingSideEffect(
+        ['identifiers', 'legal_acceptances', 'listing_event', 'risk_events', 'serial_plate_document'][index] || `side_effect_${index}`,
+        result,
+      )
+    })
 
     return NextResponse.json({
       success: true,
