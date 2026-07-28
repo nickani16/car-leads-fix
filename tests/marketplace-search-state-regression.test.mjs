@@ -53,6 +53,11 @@ test('phase 1 Sweden fixtures include municipalities, localities, aliases and bo
   assert.match(searchStateSource, /centroid:\s*\{\s*latitude:/)
   assert.match(searchStateSource, /swedishMunicipalities/)
   assert.match(searchStateSource, /swedishCounties/)
+  assert.match(searchStateSource, /swedishDisplayName\(municipality\.name, municipality\.slug\)/)
+  assert.match(searchStateSource, /swedishDisplayName\(county\.name, county\.slug\)/)
+  assert.match(searchStateSource, /repairMojibake/)
+  assert.doesNotMatch(searchStateSource, /const name = titleFromSlug\(municipality\.slug\)/)
+  assert.doesNotMatch(searchStateSource, /const region = county \? titleFromSlug\(county\.slug\)/)
 })
 
 test('free text parsing removes location, category, offer type and price terms before text tokens run', () => {
@@ -119,6 +124,8 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
     'initialGeoAreaId',
     'initialGeoBounds',
     "setParam('geoAreaId'",
+    "setParam('region'",
+    "setParam('municipality'",
     "setParam('north'",
     'onSearchArea',
     'geoBounds',
@@ -137,6 +144,21 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
   ]) {
     assert.ok(marketplaceCategoryPageSource.includes(snippet), `marketplace category page should include ${snippet}`)
   }
+})
+
+test('marketplace exposes county and municipality filters in tabs and facets', () => {
+  assert.match(vehicleSearchExperienceSource, /'region' \| 'municipality'/)
+  assert.match(vehicleSearchExperienceSource, /searchFacets\?\.regions/)
+  assert.match(vehicleSearchExperienceSource, /searchFacets\?\.municipalities/)
+  assert.match(vehicleSearchExperienceSource, /desktopMenuButton\('region'/)
+  assert.match(vehicleSearchExperienceSource, /desktopMenuButton\('municipality'/)
+  assert.match(vehicleSearchExperienceSource, /renderLocationFilterSection/)
+  assert.match(vehicleSearchExperienceSource, /updateRegionFilter/)
+  assert.match(vehicleSearchExperienceSource, /updateMunicipalityFilter/)
+  assert.match(searchSource, /regions: MarketplaceFacetOption\[\]/)
+  assert.match(searchSource, /municipalities: MarketplaceFacetOption\[\]/)
+  assert.match(searchSource, /add\('regions', row\.region\)/)
+  assert.match(searchSource, /add\('municipalities', row\.municipality \|\| row\.city\)/)
 })
 
 test('geo SEO landings are market-wide, localized and backed by the geo directory', () => {

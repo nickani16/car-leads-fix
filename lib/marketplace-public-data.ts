@@ -42,6 +42,7 @@ type MarketplacePublicRow = Record<string, unknown> & {
   condition?: string | null
   country_code: string
   country?: string | null
+  region?: string | null
   city: string | null
   municipality?: string | null
   address?: string | null

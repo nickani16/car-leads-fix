@@ -180,6 +180,8 @@ function emptyStrictGeoSearchResult(limit: number) {
     facets: {
       makes: [],
       models: [],
+      regions: [],
+      municipalities: [],
       fuels: [],
       gearboxes: [],
       bodyTypes: [],

@@ -169,7 +169,7 @@ const curatedSlugs = new Set(curatedSwedenGeoAreas.map((area) => area.slug).filt
 const countyByCode = new Map(swedishCounties.map((county) => [county.code, county]))
 
 const generatedSwedenCountyGeoAreas: MarketplaceGeoArea[] = swedishCounties.map((county) => {
-  const name = titleFromSlug(county.slug)
+  const name = swedishDisplayName(county.name, county.slug)
   return {
     id: `SE:region:${county.code}`,
     countryCode: 'SE',
@@ -189,8 +189,8 @@ const generatedSwedenMunicipalityGeoAreas: MarketplaceGeoArea[] = swedishMunicip
   .filter((municipality) => !curatedSlugs.has(municipality.slug))
   .map((municipality) => {
     const county = countyByCode.get(municipality.countyCode)
-    const name = titleFromSlug(municipality.slug)
-    const region = county ? titleFromSlug(county.slug) : undefined
+    const name = swedishDisplayName(municipality.name, municipality.slug)
+    const region = county ? swedishDisplayName(county.name, county.slug) : undefined
     return {
       id: `SE:municipality:${municipality.code}`,
       countryCode: 'SE',
@@ -542,6 +542,22 @@ function titleFromSlug(slug: string) {
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
+}
+
+function swedishDisplayName(name: string | null | undefined, slug: string) {
+  const repaired = repairMojibake(name || '').trim()
+  return repaired || titleFromSlug(slug)
+}
+
+function repairMojibake(value: string) {
+  return String(value)
+    .replaceAll('Ã¥', '\u00e5')
+    .replaceAll('Ã¤', '\u00e4')
+    .replaceAll('Ã¶', '\u00f6')
+    .replaceAll('Ã…', '\u00c5')
+    .replaceAll('Ã„', '\u00c4')
+    .replaceAll('Ã–', '\u00d6')
+    .replaceAll('Ã©', '\u00e9')
 }
 
 function uniqueAliases(values: Array<string | null | undefined>) {

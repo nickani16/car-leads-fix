@@ -77,6 +77,8 @@ export type MarketplaceSearchResult = {
   facets: {
     makes: MarketplaceFacetOption[]
     models: MarketplaceFacetOption[]
+    regions: MarketplaceFacetOption[]
+    municipalities: MarketplaceFacetOption[]
     fuels: MarketplaceFacetOption[]
     gearboxes: MarketplaceFacetOption[]
     bodyTypes: MarketplaceFacetOption[]
@@ -781,6 +783,8 @@ function emptyMarketplaceFacets() {
   return {
     makes: [],
     models: [],
+    regions: [],
+    municipalities: [],
     fuels: [],
     gearboxes: [],
     bodyTypes: [],
@@ -794,7 +798,7 @@ async function getDynamicMarketplaceFacets(
 ) {
   let query = admin
     .from('marketplace_listings')
-    .select('category,make,model,fuel_type,gearbox,body_type,structured_data,offer_type')
+    .select('category,make,model,region,municipality,city,fuel_type,gearbox,body_type,structured_data,offer_type')
   query = applyMarketplaceListingFilters(query, filters)
   const { data, error } = await query.limit(10_000)
   if (error) throw new Error(error.message)
@@ -818,6 +822,8 @@ async function getDynamicMarketplaceFacets(
   for (const row of rows) {
     add('makes', row.make)
     add('models', row.model)
+    add('regions', row.region)
+    add('municipalities', row.municipality || row.city)
     add('fuels', row.fuel_type)
     add('gearboxes', row.gearbox)
     add('bodyTypes', row.body_type)
@@ -841,6 +847,8 @@ async function getDynamicMarketplaceFacets(
   return {
     makes: list('makes'),
     models: list('models'),
+    regions: list('regions'),
+    municipalities: list('municipalities'),
     fuels: list('fuels'),
     gearboxes: list('gearboxes'),
     bodyTypes: list('bodyTypes'),

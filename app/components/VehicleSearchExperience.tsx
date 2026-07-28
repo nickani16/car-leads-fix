@@ -60,7 +60,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 type SearchMode = 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
-type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'region' | 'municipality' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -99,6 +99,31 @@ function createSelectedSearchSuggestion(
 function formatGeoBound(value: number) {
   if (!Number.isFinite(value)) return ''
   return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
+}
+
+function normalizeFacetOption(option: string | { value: string; count: number }) {
+  if (typeof option === 'string') {
+    const value = option.trim()
+    return value ? { value, label: value } : null
+  }
+  const value = option.value.trim()
+  return value ? { value, label: `${value} (${option.count})` } : null
+}
+
+function isFacetSelectOption(option: ReturnType<typeof normalizeFacetOption>): option is { value: string; label: string } {
+  return option !== null
+}
+
+function countValues(values: string[]) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    const cleanValue = value.trim()
+    if (!cleanValue) continue
+    counts.set(cleanValue, (counts.get(cleanValue) || 0) + 1)
+  }
+  return new Map(
+    Array.from(counts.entries()).sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'sv-SE')),
+  )
 }
 
 type SavedVehicleSearch = {
@@ -153,6 +178,7 @@ export type VehicleSearchListing = {
   gearbox: string | null
   bodyType: string | null
   country: string
+  region: string | null
   city: string | null
   municipality: string | null
   latitude: number | null
@@ -184,6 +210,8 @@ type MarketplaceSearchApiResponse = {
   facets?: {
     makes?: Array<string | { value: string; count: number }>
     models?: Array<string | { value: string; count: number }>
+    regions?: Array<string | { value: string; count: number }>
+    municipalities?: Array<string | { value: string; count: number }>
     fuels?: Array<string | { value: string; count: number }>
     gearboxes?: Array<string | { value: string; count: number }>
     bodyTypes?: Array<string | { value: string; count: number }>
@@ -620,6 +648,7 @@ export default function VehicleSearchExperience({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [desktopFilterMenu, setDesktopFilterMenu] = useState<DesktopFilterMenu>(null)
   const [priceYearOpen, setPriceYearOpen] = useState(true)
+  const [locationFiltersOpen, setLocationFiltersOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
@@ -967,6 +996,23 @@ export default function VehicleSearchExperience({
       .filter((value): value is string => Boolean(value))
     return [...new Set(liveValues.length ? liveValues : facetValues)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
   }, [mode, optionListings, searchFacets?.bodyTypes])
+  const regionOptions = useMemo(() => {
+    const facetValues = (searchFacets?.regions || []).map(normalizeFacetOption).filter(isFacetSelectOption)
+    if (facetValues.length) return facetValues
+    return Array.from(
+      countValues(optionListings.map((listing) => listing.region || '')).entries(),
+    ).map(([value, count]) => ({ value, label: `${value} (${count})` }))
+  }, [optionListings, searchFacets?.regions])
+  const municipalityOptions = useMemo(() => {
+    const facetValues = (searchFacets?.municipalities || []).map(normalizeFacetOption).filter(isFacetSelectOption)
+    if (facetValues.length) return facetValues
+    const scopedListings = region
+      ? optionListings.filter((listing) => normalizeSearchText(listing.region) === normalizeSearchText(region))
+      : optionListings
+    return Array.from(
+      countValues(scopedListings.map((listing) => listing.municipality || listing.city || '')).entries(),
+    ).map(([value, count]) => ({ value, label: `${value} (${count})` }))
+  }, [optionListings, region, searchFacets?.municipalities])
   const priceBounds = useMemo(() => {
     const prices = searchListings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
     const max = prices.length ? Math.max(...prices) : 700000
@@ -1140,6 +1186,21 @@ export default function VehicleSearchExperience({
     clearUnsupportedCategoryFilters(next)
     setSelectedCategories(next)
     setMoreFiltersOpen(false)
+  }
+
+  function updateRegionFilter(value: string) {
+    setRegion(value)
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
+    if (!value) setMunicipality('')
+  }
+
+  function updateMunicipalityFilter(value: string) {
+    setMunicipality(value)
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
   }
 
   async function saveCurrentSearch() {
@@ -1623,7 +1684,7 @@ export default function VehicleSearchExperience({
         type="button"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           const rect = event.currentTarget.getBoundingClientRect()
-          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'region' || menu === 'municipality' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
           setDesktopFilterPopoverPosition({
             left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
             top: rect.bottom + 6,
@@ -1639,6 +1700,32 @@ export default function VehicleSearchExperience({
         <span>{label}</span>
         <ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} />
       </button>
+    )
+  }
+
+  function renderLocationFilterSection() {
+    return (
+      <CollapsibleFilterSection
+        title={uiText(locale, 'County and municipality', 'L\u00e4n och kommun', 'Region und Kommune')}
+        summary={[region, municipality].filter(Boolean).join(' \u00b7 ') || uiText(locale, 'Filter by county or municipality', 'Filtrera p\u00e5 l\u00e4n eller kommun', 'Nach Region oder Kommune filtern')}
+        open={locationFiltersOpen}
+        onToggle={() => setLocationFiltersOpen((open) => !open)}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FilterSelect
+            label={uiText(locale, 'County', 'L\u00e4n', 'Region')}
+            value={region}
+            onChange={updateRegionFilter}
+            options={regionOptions}
+          />
+          <FilterSelect
+            label={uiText(locale, 'Municipality', 'Kommun', 'Kommune')}
+            value={municipality}
+            onChange={updateMunicipalityFilter}
+            options={municipalityOptions}
+          />
+        </div>
+      </CollapsibleFilterSection>
     )
   }
 
@@ -1692,6 +1779,8 @@ export default function VehicleSearchExperience({
     const bodyTypeLabel = bodyType
       ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
       : bodyTypeFilterLabel
+    const regionLabel = region || uiText(locale, 'County', 'L\u00e4n', 'Region')
+    const municipalityLabel = municipality || uiText(locale, 'Municipality', 'Kommun', 'Kommune')
     const marketLabel = selectedMarketCodes.length > 1
       ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
       : selectedMarketCodes.length === 1
@@ -1916,6 +2005,86 @@ export default function VehicleSearchExperience({
                     className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                   >
                     {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie lÃ¶schen')}
+                  </button>
+                ) : null}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative order-35 shrink-0">
+            {desktopMenuButton('region', regionLabel, Boolean(region))}
+            {renderDesktopFilterPopover('region', (
+              <div className="space-y-3">
+                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                  {regionOptions.length ? regionOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        updateRegionFilter(region === option.value ? '' : option.value)
+                        setDesktopFilterMenu(null)
+                      }}
+                      className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                    >
+                      <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                      {region === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                    </button>
+                  )) : (
+                    <p className="px-3 py-2 text-sm text-[#667085]">
+                      {uiText(locale, 'No counties available', 'Inga l\u00e4n tillg\u00e4ngliga', 'Keine Regionen verf\u00fcgbar')}
+                    </p>
+                  )}
+                </div>
+                {region ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateRegionFilter('')
+                      setDesktopFilterMenu(null)
+                    }}
+                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                  >
+                    {uiText(locale, 'Clear county', 'Rensa l\u00e4n', 'Region l\u00f6schen')}
+                  </button>
+                ) : null}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative order-36 shrink-0">
+            {desktopMenuButton('municipality', municipalityLabel, Boolean(municipality))}
+            {renderDesktopFilterPopover('municipality', (
+              <div className="space-y-3">
+                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                  {municipalityOptions.length ? municipalityOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        updateMunicipalityFilter(municipality === option.value ? '' : option.value)
+                        setDesktopFilterMenu(null)
+                      }}
+                      className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                    >
+                      <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                      {municipality === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                    </button>
+                  )) : (
+                    <p className="px-3 py-2 text-sm text-[#667085]">
+                      {uiText(locale, 'No municipalities available', 'Inga kommuner tillg\u00e4ngliga', 'Keine Kommunen verf\u00fcgbar')}
+                    </p>
+                  )}
+                </div>
+                {municipality ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateMunicipalityFilter('')
+                      setDesktopFilterMenu(null)
+                    }}
+                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                  >
+                    {uiText(locale, 'Clear municipality', 'Rensa kommun', 'Kommune l\u00f6schen')}
                   </button>
                 ) : null}
               </div>
@@ -2162,6 +2331,7 @@ export default function VehicleSearchExperience({
                     </div>
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
+                    {renderLocationFilterSection()}
                     <div className="hidden">
                       <CollapsibleFilterSection
                         title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
@@ -2531,6 +2701,7 @@ export default function VehicleSearchExperience({
                 </div>
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   {renderCategoryFilterSections()}
+                  {renderLocationFilterSection()}
                   <div className="hidden">
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
@@ -4033,6 +4204,7 @@ function mapApiListingToVehicleSearchListing(
     gearbox: stringOrNull(listing.gearbox),
     bodyType: stringOrNull(listing.body_type),
     country: String(listing.country_code || ''),
+    region: stringOrNull(listing.region),
     city: stringOrNull(listing.city),
     municipality: stringOrNull(listing.municipality),
     latitude: numberOrNull(listing.latitude),

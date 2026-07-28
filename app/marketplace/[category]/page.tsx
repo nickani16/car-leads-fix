@@ -227,6 +227,7 @@ export default async function MarketplaceCategoryPage({
         gearbox: listing.gearbox,
         bodyType: listing.body_type,
         country: listing.country_code,
+        region: listing.region,
         city: listing.city,
         municipality: listing.municipality,
         latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
