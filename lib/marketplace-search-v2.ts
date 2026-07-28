@@ -798,7 +798,7 @@ async function getDynamicMarketplaceFacets(
 ) {
   let query = admin
     .from('marketplace_listings')
-    .select('category,make,model,region,municipality,city,fuel_type,gearbox,body_type,structured_data,offer_type')
+    .select('category,make,model,municipality,city,fuel_type,gearbox,body_type,structured_data,offer_type')
   query = applyMarketplaceListingFilters(query, filters)
   const { data, error } = await query.limit(10_000)
   if (error) throw new Error(error.message)
@@ -822,7 +822,7 @@ async function getDynamicMarketplaceFacets(
   for (const row of rows) {
     add('makes', row.make)
     add('models', row.model)
-    add('regions', row.region)
+    add('regions', row.municipality || row.city)
     add('municipalities', row.municipality || row.city)
     add('fuels', row.fuel_type)
     add('gearboxes', row.gearbox)

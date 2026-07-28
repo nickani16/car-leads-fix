@@ -157,7 +157,7 @@ test('marketplace exposes county and municipality filters in tabs and facets', (
   assert.match(vehicleSearchExperienceSource, /updateMunicipalityFilter/)
   assert.match(searchSource, /regions: MarketplaceFacetOption\[\]/)
   assert.match(searchSource, /municipalities: MarketplaceFacetOption\[\]/)
-  assert.match(searchSource, /add\('regions', row\.region\)/)
+  assert.match(searchSource, /add\('regions', row\.municipality \|\| row\.city\)/)
   assert.match(searchSource, /add\('municipalities', row\.municipality \|\| row\.city\)/)
 })
 

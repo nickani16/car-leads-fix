@@ -77,7 +77,7 @@ export default async function FindCarsPage({
         gearbox: listing.gearbox,
         bodyType: listing.body_type,
         country: listing.country_code,
-        region: listing.region,
+        region: listing.municipality || listing.city || '',
         city: listing.city,
         municipality: listing.municipality,
         latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
