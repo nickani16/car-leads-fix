@@ -58,6 +58,7 @@ import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
+type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
@@ -485,6 +486,7 @@ export default function VehicleSearchExperience({
   initialMunicipality = '',
   initialGeoAreaId = '',
   initialGeoBounds = null,
+  initialGeoFilterMode = 'legacy',
   initialMinPrice = '',
   initialMaxPrice = '',
   initialMode = 'sale',
@@ -523,6 +525,7 @@ export default function VehicleSearchExperience({
   initialMunicipality?: string
   initialGeoAreaId?: string
   initialGeoBounds?: MarketplaceBoundingBox | null
+  initialGeoFilterMode?: GeoFilterMode
   initialMinPrice?: string
   initialMaxPrice?: string
   initialMode?: SearchMode
@@ -639,6 +642,7 @@ export default function VehicleSearchExperience({
   const [municipality, setMunicipality] = useState(initialMunicipality)
   const [geoAreaId, setGeoAreaId] = useState(initialGeoAreaId)
   const [geoBounds, setGeoBounds] = useState<MarketplaceBoundingBox | null>(initialGeoBounds)
+  const [geoFilterMode, setGeoFilterMode] = useState<GeoFilterMode>(initialGeoFilterMode)
   const [fuel, setFuel] = useState(initialFuel)
   const [gearbox, setGearbox] = useState(initialGearbox)
   const [bodyType, setBodyType] = useState(initialBodyType)
@@ -732,6 +736,7 @@ export default function VehicleSearchExperience({
     setParam('city', city)
     setParam('municipality', municipality)
     setParam('geoAreaId', geoAreaId)
+    if (geoAreaId && geoFilterMode === 'strict') params.set('geoFilterMode', 'strict')
     if (geoBounds) {
       setParam('north', formatGeoBound(geoBounds.north))
       setParam('east', formatGeoBound(geoBounds.east))
@@ -759,7 +764,7 @@ export default function VehicleSearchExperience({
     Object.entries(technicalFilters).forEach(([key, value]) => setParam(`technical_${key}`, value))
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, geoFilterMode, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1083,6 +1088,7 @@ export default function VehicleSearchExperience({
     setMunicipality(initialMunicipality)
     setGeoAreaId(initialGeoAreaId)
     setGeoBounds(initialGeoBounds)
+    setGeoFilterMode(initialGeoFilterMode)
     setFuel(initialFuel)
     setGearbox(initialGearbox)
     setBodyType(initialBodyType)
