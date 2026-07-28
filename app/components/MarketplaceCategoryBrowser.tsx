@@ -1108,7 +1108,7 @@ export default function MarketplaceCategoryBrowser({
           ) : null}
 
           {compareEnabled && compareIds.length ? (
-            <div className="mb-5 overflow-hidden rounded-[8px] border border-[#c9d9ef] bg-[#f7fbff] shadow-sm">
+            <div className="fixed inset-x-3 bottom-[calc(5.15rem+env(safe-area-inset-bottom))] z-[125] mx-auto max-w-[640px] overflow-hidden rounded-[12px] border border-[#c9d9ef] bg-white/96 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur sm:bottom-5 sm:left-1/2 sm:right-auto sm:w-[min(640px,calc(100vw-32px))] sm:-translate-x-1/2">
               <div className="h-1 bg-[#0866ff]" />
               <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <button

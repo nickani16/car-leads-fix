@@ -2701,7 +2701,7 @@ export default function VehicleSearchExperience({
                 </div>
               )}
               {compareIds.length ? (
-                <div className="sticky bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 border-t border-[#d9e6ff] bg-white/95 px-4 py-3 backdrop-blur sm:bottom-0 sm:px-6">
+                <div className="fixed inset-x-3 bottom-[calc(5.15rem+env(safe-area-inset-bottom))] z-[125] mx-auto max-w-[640px] rounded-[12px] border border-[#c9d9ef] bg-white/96 px-3 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur sm:bottom-5 sm:left-1/2 sm:right-auto sm:w-[min(640px,calc(100vw-32px))] sm:-translate-x-1/2 sm:px-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#101828]">
@@ -2764,7 +2764,9 @@ export default function VehicleSearchExperience({
               type="button"
               onClick={() => setMobileMapOpen(true)}
               style={{ fontWeight: 500 }}
-              className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white transition-transform duration-200 active:scale-[.98] lg:hidden"
+              className={`fixed left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white transition-transform duration-200 active:scale-[.98] lg:hidden ${
+                compareIds.length ? 'bottom-[calc(10.4rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))]'
+              }`}
             >
               <MapPin className="h-4 w-4" />
               {translatePublic(locale, 'Map')}
