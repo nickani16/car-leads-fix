@@ -3,6 +3,7 @@
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { Layers, MapPin } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { createCategoryMapMarker } from './MapCategoryMarker'
 import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
 import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
@@ -16,6 +17,8 @@ type ListingLocationMapProps = {
   postalCode?: string | null
   city?: string | null
   country?: string | null
+  category?: string | null
+  offerType?: string | null
   approximate?: boolean
   mapSource?: string | null
   mapQuery?: string | null
@@ -31,6 +34,8 @@ export default function ListingLocationMap({
   postalCode,
   city,
   country,
+  category,
+  offerType,
   approximate = false,
   mapSource = null,
   mapQuery = null,
@@ -81,7 +86,13 @@ export default function ListingLocationMap({
           zoom: approximate ? 11 : 12.5,
           attributionControl: { compact: true },
         })
-        const marker = new maplibregl.Marker({ color: '#0866ff' })
+        const marker = new maplibregl.Marker({
+          element: createCategoryMapMarker({
+            category,
+            title,
+            offerType,
+          }),
+        })
           .setLngLat(coordinates)
           .addTo(map)
 
@@ -120,7 +131,7 @@ export default function ListingLocationMap({
       setMapReady(false)
       setMapFailed(false)
     }
-  }, [approximate, latitude, longitude, mapLayer])
+  }, [approximate, category, latitude, longitude, mapLayer, offerType, title])
 
   if (!hasCoordinates) {
     return (

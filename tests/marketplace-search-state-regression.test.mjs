@@ -16,6 +16,10 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
+const mapCategoryMarkerSource = readFileSync(
+  new URL('../app/components/MapCategoryMarker.ts', import.meta.url),
+  'utf8',
+)
 const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
@@ -226,9 +230,14 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(vehicleSearchExperienceSource, /listingOfferBadge\(locale, listing\)/)
   assert.match(homeHeroVehicleSearchSource, /useState<Intent>\('all'\)/)
   assert.match(homeHeroVehicleSearchSource, /\(\['all', 'sale', 'leasing'\] as const\)/)
+  assert.match(homeHeroVehicleSearchSource, /tabsShort/)
   assert.match(publicHeaderSource, /useState<'all' \| 'sale' \| 'leasing'>\('all'\)/)
   assert.match(publicHeaderSource, /key: 'all' as const/)
-  assert.match(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\] group-hover:bg-\[#15803d\]' : 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
+  assert.match(publicHeaderSource, /shortLabel/)
+  assert.match(vehicleSearchExperienceSource, /createCategoryMapMarker/)
+  assert.match(mapCategoryMarkerSource, /categoryIconPaths/)
+  assert.match(mapCategoryMarkerSource, /offerType === 'lease'/)
+  assert.match(mapCategoryMarkerSource, /bg-\[#16a34a\] group-hover:bg-\[#15803d\]/)
   assert.match(searchSource, /normalizeOfferTypeFilter\(input, parsedSearchState\.offerType\)/)
   assert.match(searchSource, /if \(mode === 'leasing'\) return 'lease'/)
   assert.match(searchSource, /if \(mode === 'sale'\) return 'sale'/)

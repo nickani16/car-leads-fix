@@ -26,6 +26,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
   useVehicleSmartSearchSuggestions,
@@ -3922,33 +3923,12 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
 }
 
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
-  const leasing = isLeasingListing(listing)
-  const baseColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const pointColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const markerElement = document.createElement('button')
-  markerElement.type = 'button'
-  markerElement.setAttribute('aria-label', listing.title)
-  markerElement.className = [
-    'group relative grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-transparent focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
-  ].filter(Boolean).join(' ')
-
-  const dot = document.createElement('span')
-  dot.className = [
-    'relative z-10 block h-5 w-5 rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-[background-color,box-shadow] duration-200 group-hover:shadow-[0_14px_34px_rgba(16,24,40,.28)]',
-    baseColorClass,
-    active ? 'bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
-  ].filter(Boolean).join(' ')
-  markerElement.appendChild(dot)
-
-  const point = document.createElement('span')
-  point.className = [
-    'absolute left-1/2 top-[31px] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-white transition-colors duration-200',
-    pointColorClass,
-    active ? 'bg-[#101828]' : '',
-  ].filter(Boolean).join(' ')
-  markerElement.appendChild(point)
-
-  return markerElement
+  return createCategoryMapMarker({
+    category: listing.category,
+    title: listing.title,
+    offerType: listing.offerType,
+    active,
+  })
 }
 
 function getTileCoordinate(latitude: number, longitude: number, zoom: number) {

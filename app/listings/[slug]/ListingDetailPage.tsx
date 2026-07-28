@@ -91,6 +91,7 @@ type ListingRow = {
   equipment: string | null
   equipment_keys: string[] | null
   structured_data: Record<string, string | number | string[] | null> | null
+  offer_type: 'sale' | 'lease' | 'sale_and_lease' | string | null
   country_code: string
   country: string | null
   city: string
@@ -608,6 +609,8 @@ export default async function ListingDetailPage({
                 postalCode={listing.postal_code}
                 city={listing.city}
                 country={countryName || listing.country_code}
+                category={listing.category}
+                offerType={listing.offer_type}
                 latitude={mapCoordinates?.latitude}
                 longitude={mapCoordinates?.longitude}
                 approximate={mapCoordinates?.approximate}

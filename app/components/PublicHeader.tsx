@@ -719,6 +719,7 @@ export default function PublicHeader({
     {
       key: 'all' as const,
       label: publicLabel('All', 'Alla', 'Alle'),
+      shortLabel: publicLabel('All', 'Alla', 'Alle'),
       text: publicLabel(
         'Show vehicles for sale and leasing together.',
         'Visa fordon till salu och leasing tillsammans.',
@@ -728,11 +729,13 @@ export default function PublicHeader({
     {
       key: 'sale' as const,
       label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
+      shortLabel: publicLabel('Buy', 'Köp', 'Kaufen'),
       text: searchMegaCopy[locale].saleText,
     },
     {
       key: 'leasing' as const,
       label: publicLabel('Vehicle leasing', 'Leasing av fordon', 'Fahrzeugleasing'),
+      shortLabel: publicLabel('Leasing', 'Leasing', 'Leasing'),
       text: searchMegaCopy[locale].leasingText,
     },
   ]
@@ -1634,7 +1637,7 @@ export default function PublicHeader({
                           : 'text-[#667085]'
                       }`}
                     >
-                      {option.label}
+                      <span className="whitespace-nowrap">{option.shortLabel}</span>
                     </button>
                   )
                 })}
@@ -1950,7 +1953,7 @@ export default function PublicHeader({
                         : 'text-[#667085]'
                     }`}
                   >
-                    {option.label}
+                    <span className="whitespace-nowrap">{option.shortLabel}</span>
                   </button>
                 )
               })}
@@ -2055,7 +2058,7 @@ export default function PublicHeader({
                           : 'text-[#667085]'
                       }`}
                     >
-                      {option.label}
+                    <span className="whitespace-nowrap">{option.shortLabel}</span>
                     </button>
                   )
                 })}

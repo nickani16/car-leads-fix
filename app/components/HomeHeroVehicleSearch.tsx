@@ -168,6 +168,7 @@ const copyByLocale = {
     searchAgain: 'Sök igen: Bilar',
     searchAgainSub: 'Fordon till salu',
     tabs: { all: 'Alla', sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
+    tabsShort: { all: 'Alla', sale: 'Köp', leasing: 'Leasing' },
     verified: 'Visa endast verifierade säljare',
     expandArea: 'Utöka sökområde',
     markets: 'Marknader',
@@ -197,6 +198,7 @@ const copyByLocale = {
     searchAgain: 'Search again: Cars',
     searchAgainSub: 'Vehicles for sale',
     tabs: { all: 'All', sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
+    tabsShort: { all: 'All', sale: 'Buy', leasing: 'Leasing' },
     verified: 'Show verified sellers only',
     expandArea: 'Expand search area',
     markets: 'Markets',
@@ -226,6 +228,7 @@ const copyByLocale = {
     searchAgain: 'Erneut suchen: Autos',
     searchAgainSub: 'Fahrzeuge kaufen',
     tabs: { all: 'Alle', sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
+    tabsShort: { all: 'Alle', sale: 'Kaufen', leasing: 'Leasing' },
     verified: 'Nur geprüfte Verkäufer anzeigen',
     expandArea: 'Suchgebiet erweitern',
     markets: 'Märkte',
@@ -598,13 +601,14 @@ export default function HomeHeroVehicleSearch({
                 key={tab}
                 type="button"
                 onClick={() => setIntent(tab)}
-                className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[46px] ${
+                className={`relative min-h-[56px] px-1 text-center text-[13px] transition sm:px-2 sm:text-[14px] lg:min-h-[46px] ${
                   intent === tab
                     ? '!font-medium text-[#101828]'
                     : '!font-normal text-[#344054] hover:text-[#0866ff]'
                 }`}
               >
-                {t.tabs[tab]}
+                <span className="whitespace-nowrap sm:hidden">{t.tabsShort[tab]}</span>
+                <span className="hidden sm:inline">{t.tabs[tab]}</span>
                 {intent === tab ? (
                   <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-[#0866ff] lg:h-[2px]" />
                 ) : null}
