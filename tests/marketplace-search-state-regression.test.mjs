@@ -282,6 +282,8 @@ test('electric listing range uses localized WLTP help and map previews badge off
   }
   assert.match(listingDetailPageSource, /Den faktiska räckvidden måste uppskattas/)
   assert.match(listingDetailPageSource, /group-hover:block group-focus-within:block/)
+  assert.doesNotMatch(listingDetailPageSource, /h-4 w-4 items-center justify-center rounded-full text-\[#0866ff\][\s\S]*<Info className="h-3 w-3"/)
+  assert.match(listingDetailPageSource, /<Info className="h-3\.5 w-3\.5" strokeWidth=\{2\.4\}/)
   assert.match(listingDetailPageSource, /labelNode: electricListing \? <WltpRangeLabel locale=\{locale\} \/> : undefined/)
   assert.match(vehicleSearchExperienceSource, /flex items-center justify-between gap-3 border-b border-\[#edf1f6\]/)
   assert.match(vehicleSearchExperienceSource, /rounded-full px-2\.5 py-1 text-\[12px\][\s\S]*\{offerBadge\.label\}[\s\S]*uiText\(locale, 'Close', 'St\\u00e4ng', 'Schlie\\u00dfen'\)/)

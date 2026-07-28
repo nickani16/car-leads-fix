@@ -1690,9 +1690,9 @@ function WltpRangeLabel({ locale }: { locale: PublicLocale }) {
         <span
           tabIndex={0}
           aria-label={copy.aria}
-          className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#0866ff] outline-none ring-1 ring-[#0866ff] transition focus-visible:ring-2 focus-visible:ring-[#0866ff]/35"
+          className="inline-flex h-4 w-4 items-center justify-center text-[#0866ff] outline-none transition hover:text-[#0757da] focus-visible:rounded-full focus-visible:ring-2 focus-visible:ring-[#0866ff]/25"
         >
-          <Info className="h-3 w-3" />
+          <Info className="h-3.5 w-3.5" strokeWidth={2.4} />
         </span>
         <span className="pointer-events-none absolute left-1/2 top-[calc(100%+0.5rem)] z-30 hidden w-[min(19rem,calc(100vw-3rem))] -translate-x-1/2 rounded-[8px] bg-[#101828] px-3 py-2.5 text-left text-[12px] font-semibold normal-case leading-5 tracking-normal text-white shadow-xl group-hover:block group-focus-within:block sm:left-0 sm:translate-x-0">
           {copy.tooltip}
