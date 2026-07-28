@@ -13,6 +13,7 @@ import {
 import { getMarketplaceSellerPublicProfiles } from '@/lib/marketplace-public-data'
 import { searchMarketplaceListings } from '@/lib/marketplace-search-v2'
 import { resolveSwedishCarGeoLanding } from '@/lib/seo-geo-landings'
+import type { MarketplaceSearchResult } from '@/lib/marketplace-search-v2'
 
 type PageParams = {
   market: string
@@ -58,7 +59,7 @@ export default async function SwedishCarGeoLandingPage({
   const landing = resolveSwedishCarGeoLanding(market, segments)
   if (!landing) notFound()
 
-  const result = await searchMarketplaceListings({
+  const result = await searchLandingListings({
     category: 'cars',
     markets: ['SE'],
     geoAreaId: landing.geoArea.id,
@@ -156,6 +157,43 @@ export default async function SwedishCarGeoLandingPage({
       />
     </>
   )
+}
+
+async function searchLandingListings(
+  input: Parameters<typeof searchMarketplaceListings>[0],
+): Promise<MarketplaceSearchResult> {
+  try {
+    return await searchMarketplaceListings(input)
+  } catch (error) {
+    console.warn('Geo landing search returned an empty fallback', {
+      geoAreaId: input.geoAreaId,
+      make: input.make,
+      message: error instanceof Error ? error.message : String(error),
+    })
+    return emptySearchResult(Number(input.limit) || 48)
+  }
+}
+
+function emptySearchResult(limit: number): MarketplaceSearchResult {
+  return {
+    items: [],
+    facets: {
+      makes: [],
+      models: [],
+      fuels: [],
+      gearboxes: [],
+      bodyTypes: [],
+      technical: {},
+    },
+    nextCursor: null,
+    totalEstimate: 0,
+    totalCount: 0,
+    page: 1,
+    pageSize: limit,
+    totalPages: 1,
+    limit,
+    hasNext: false,
+  }
 }
 
 async function mapRowsToVehicleSearchListings(
