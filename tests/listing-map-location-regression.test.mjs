@@ -9,6 +9,7 @@ const mapComponent = readFileSync('app/components/ListingLocationMap.tsx', 'utf8
 const marketplaceBrowser = readFileSync('app/components/MarketplaceCategoryBrowser.tsx', 'utf8')
 const vehicleSearchExperience = readFileSync('app/components/VehicleSearchExperience.tsx', 'utf8')
 const marketplace = readFileSync('lib/marketplace.ts', 'utf8')
+const marketplaceSearchRoute = readFileSync('app/api/marketplace/search-v2/route.ts', 'utf8')
 const mapResolver = readFileSync('lib/listing-map-location.ts', 'utf8')
 
 test('listing detail map uses listing-owned location fields only', () => {
@@ -40,6 +41,14 @@ test('listing map exposes development-only debug fields for verification', () =>
   assert.match(mapComponent, /actual map center/)
 })
 
+test('marketplace search response resolves address coordinates before map markers render', () => {
+  assert.match(marketplaceSearchRoute, /resolveListingMapLocation/)
+  assert.match(marketplaceSearchRoute, /resolveSearchResultMapLocation\(item\)/)
+  assert.match(marketplaceSearchRoute, /latitude: mapLocation\?\.latitude \?\? item\.latitude/)
+  assert.match(marketplaceSearchRoute, /longitude: mapLocation\?\.longitude \?\? item\.longitude/)
+  assert.match(marketplaceSearchRoute, /map_location_source/)
+})
+
 test('marketplace map uses the Barcelona city coordinate without offset', () => {
   assert.match(marketplaceBrowser, /barcelona: \[2\.177073, 41\.3825802\]/)
   assert.match(marketplaceBrowser, /if \(city\) return city/)
@@ -64,8 +73,8 @@ test('listing map resolver centers three listings from their own location data',
 
   const coordinateListing = await resolveListingMapLocation({
     id: 'listing-with-coordinates',
-    address: 'Sveavägen 10',
-    postalCode: '111 57',
+    address: null,
+    postalCode: null,
     city: 'Stockholm',
     countryCode: 'SE',
     latitude: 59.336,
@@ -76,6 +85,20 @@ test('listing map resolver centers three listings from their own location data',
   assert.equal(coordinateListing?.approximate, false)
   assert.equal(coordinateListing?.source, 'listing_coordinates')
   assert.equal(coordinateListing?.query, null)
+
+  geocodeResults.set('Sveavägen 10, 111 57, Stockholm, SE', [{ lat: '59.336900', lon: '18.062900' }])
+  const fullAddressBeatsStoredCoordinates = await resolveListingMapLocation({
+    id: 'listing-with-stale-city-coordinates',
+    address: 'Sveavägen 10',
+    postalCode: '111 57',
+    city: 'Stockholm',
+    countryCode: 'SE',
+    latitude: 59.3293,
+    longitude: 18.0686,
+  })
+  assert.equal(fullAddressBeatsStoredCoordinates?.source, 'geocoded_full_address')
+  assert.equal(fullAddressBeatsStoredCoordinates?.latitude, 59.3369)
+  assert.equal(fullAddressBeatsStoredCoordinates?.longitude, 18.0629)
 
   const fullAddressListing = await resolveListingMapLocation({
     id: 'listing-with-full-address',

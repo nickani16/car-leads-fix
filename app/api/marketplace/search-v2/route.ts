@@ -3,6 +3,7 @@ import {
   displayCurrencyForMarket,
   formatMarketplacePriceDisplay,
 } from '@/lib/currency-rates'
+import { resolveListingMapLocation } from '@/lib/listing-map-location'
 import { searchMarketplaceListings, type MarketplaceSearchInput } from '@/lib/marketplace-search-v2'
 import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
@@ -67,10 +68,19 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get('displayMarket'),
     )
     const items = await Promise.all(
-      result.items.map(async (item) => ({
-        ...item,
-        price_label: await formatSearchResultPriceLabel(item, locale, displayCurrency),
-      })),
+      result.items.map(async (item) => {
+        const [priceLabel, mapLocation] = await Promise.all([
+          formatSearchResultPriceLabel(item, locale, displayCurrency),
+          resolveSearchResultMapLocation(item),
+        ])
+        return {
+          ...item,
+          latitude: mapLocation?.latitude ?? item.latitude,
+          longitude: mapLocation?.longitude ?? item.longitude,
+          map_location_source: mapLocation?.source ?? null,
+          price_label: priceLabel,
+        }
+      }),
     )
     const body = JSON.stringify({
       ...result,
@@ -118,6 +128,32 @@ export async function GET(request: NextRequest) {
       { status: 503, headers: { 'Cache-Control': 'no-store' } },
     )
   }
+}
+
+async function resolveSearchResultMapLocation(item: Record<string, unknown>) {
+  try {
+    return await withTimeout(
+      resolveListingMapLocation({
+        id: String(item.id || 'marketplace-search-result'),
+        address: stringOrNull(item.address),
+        postalCode: stringOrNull(item.postal_code),
+        city: stringOrNull(item.city),
+        country: stringOrNull(item.country),
+        countryCode: stringOrNull(item.country_code),
+        latitude: typeof item.latitude === 'number' || typeof item.latitude === 'string' ? item.latitude : null,
+        longitude: typeof item.longitude === 'number' || typeof item.longitude === 'string' ? item.longitude : null,
+      }),
+      1_200,
+      'Marketplace map geocoding timed out.',
+    )
+  } catch {
+    return null
+  }
+}
+
+function stringOrNull(value: unknown) {
+  const text = String(value || '').trim()
+  return text || null
 }
 
 function marketplaceSearchCacheKey(request: NextRequest) {
