@@ -376,7 +376,7 @@ function writeMarketplaceReturnSearchState(locale: PublicLocale, state: Marketpl
 }
 
 function isLeasingListing(listing: VehicleSearchListing) {
-  return listing.offerType === 'lease' || listing.offerType === 'sale_and_lease' || (listing.equipment || '').toLowerCase().includes('leasing')
+  return listing.offerType === 'lease'
 }
 
 function listingEquipmentChips(equipment: string | null | undefined) {
@@ -749,6 +749,7 @@ export default function VehicleSearchExperience({
       if (cleanValue) params.set(key, cleanValue)
     }
     if (mode !== 'sale') params.set('mode', mode)
+    params.set('offerType', mode === 'leasing' ? 'lease' : 'sale')
     setParam('q', debouncedSearchInput)
     if (selectedSearchSuggestions.length) {
       params.set('chips', selectedSearchSuggestions.map((suggestion) => suggestion.title).join(','))
@@ -1036,6 +1037,7 @@ export default function VehicleSearchExperience({
     const minOperatingHoursValue = parseOptionalNumber(minOperatingHours)
     const maxOperatingHoursValue = parseOptionalNumber(maxOperatingHours)
     const matches = searchListings.filter((listing) => {
+      if (mode === 'sale' && listing.offerType !== 'sale') return false
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
       if (mode === 'leasing' && !isLeasingMarketplaceCategory(listing.category)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
@@ -3899,8 +3901,9 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
 }
 
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
-  const baseColorClass = 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const pointColorClass = 'bg-[#0866ff] group-hover:bg-[#0757da]'
+  const leasing = isLeasingListing(listing)
+  const baseColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
+  const pointColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
   const markerElement = document.createElement('button')
   markerElement.type = 'button'
   markerElement.setAttribute('aria-label', listing.title)

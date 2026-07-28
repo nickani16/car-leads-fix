@@ -202,12 +202,16 @@ test('localized listing URLs render listing detail pages instead of falling thro
   assert.match(proxySource, /LOCALIZED_AD_SEGMENTS\.has\(segments\[1\] \|\| ''\)/)
 })
 
-test('leasing marketplace mode does not present map markers or result labels as for-sale-only', () => {
+test('leasing and for-sale marketplace modes stay visually and query-separated', () => {
   assert.match(vehicleSearchExperienceSource, /resultActionSubjectLabel\(locale, mode\)/)
   assert.match(vehicleSearchExperienceSource, /formatLeasingCountText/)
   assert.match(vehicleSearchExperienceSource, /för leasing/)
-  assert.match(vehicleSearchExperienceSource, /const baseColorClass = 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
-  assert.doesNotMatch(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\]/)
+  assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', mode === 'leasing' \? 'lease' : 'sale'\)/)
+  assert.match(vehicleSearchExperienceSource, /if \(mode === 'sale' && listing\.offerType !== 'sale'\) return false/)
+  assert.match(vehicleSearchExperienceSource, /return listing\.offerType === 'lease'/)
+  assert.match(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\] group-hover:bg-\[#15803d\]' : 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
+  assert.match(searchSource, /normalizeOfferTypeFilter\(input, parsedSearchState\.offerType\)/)
+  assert.match(searchSource, /return clean\(input\.mode\) === 'leasing' \? 'lease' : 'sale'/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {

@@ -325,7 +325,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
-    offerType: clean(input.offerType).toLowerCase() || normalizeParsedOfferType(parsedSearchState.offerType),
+    offerType: normalizeOfferTypeFilter(input, parsedSearchState.offerType),
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice) ?? parsedSearchState.maxPrice,
@@ -347,6 +347,14 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
 
 function normalizeParsedOfferType(value: string) {
   return value === 'leasing' ? 'lease' : value
+}
+
+function normalizeOfferTypeFilter(input: MarketplaceSearchInput, parsedOfferType: string) {
+  const explicit = clean(input.offerType).toLowerCase()
+  if (explicit === 'sale' || explicit === 'lease') return explicit
+  const parsed = normalizeParsedOfferType(parsedOfferType)
+  if (parsed === 'sale' || parsed === 'lease') return parsed
+  return clean(input.mode) === 'leasing' ? 'lease' : 'sale'
 }
 
 function emptyMarketplaceSearchResult(filters: ReturnType<typeof normalizeMarketplaceSearchInput>): MarketplaceSearchResult {
