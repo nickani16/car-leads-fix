@@ -75,6 +75,7 @@ const appStoreHref =
 const playStoreHref =
   process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
   'https://play.google.com/store/search?q=autorell&c=apps'
+const maxCompareListings = 4
 
 function searchSuggestionDedupeKey(suggestion: VehicleSmartSearchSuggestion) {
   return [
@@ -416,6 +417,263 @@ function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
   return locale === 'en' ? en : translatePublic(locale, en)
 }
 
+function getCompareCopy(locale: PublicLocale) {
+  const copy = {
+    en: {
+      eyebrow: 'Compare',
+      title: 'Compare vehicles',
+      subtitle: 'Compare price, mileage, seller and location side by side.',
+      selectedSingular: 'listing selected',
+      selectedPlural: 'listings selected',
+      helper: 'Select 2-4 listings and compare the most important data.',
+      action: 'Compare',
+      clear: 'Clear comparison',
+      close: 'Close comparison',
+      remove: 'Remove from comparison',
+      limit: 'You can compare up to 4 listings.',
+      view: 'Open listing',
+      best: 'Best',
+      price: 'Price',
+      year: 'Model year',
+      mileage: 'Mileage',
+      fuel: 'Fuel',
+      gearbox: 'Gearbox',
+      bodyType: 'Body type',
+      condition: 'Condition',
+      seller: 'Seller',
+      location: 'Location',
+      offer: 'Offer',
+    },
+    sv: {
+      eyebrow: 'Jämför',
+      title: 'Jämför fordon',
+      subtitle: 'Jämför pris, miltal, säljare och plats sida vid sida.',
+      selectedSingular: 'annons vald',
+      selectedPlural: 'annonser valda',
+      helper: 'Välj 2-4 annonser och jämför viktigaste datan.',
+      action: 'Jämför',
+      clear: 'Rensa jämförelse',
+      close: 'Stäng jämförelse',
+      remove: 'Ta bort från jämförelse',
+      limit: 'Du kan jämföra max 4 annonser.',
+      view: 'Öppna annons',
+      best: 'Bäst',
+      price: 'Pris',
+      year: 'Årsmodell',
+      mileage: 'Miltal',
+      fuel: 'Drivmedel',
+      gearbox: 'Växellåda',
+      bodyType: 'Karosstyp',
+      condition: 'Skick',
+      seller: 'Säljare',
+      location: 'Plats',
+      offer: 'Erbjudande',
+    },
+    de: {
+      eyebrow: 'Vergleichen',
+      title: 'Fahrzeuge vergleichen',
+      subtitle: 'Preis, Kilometerstand, Verkäufer und Standort nebeneinander vergleichen.',
+      selectedSingular: 'Anzeige ausgewählt',
+      selectedPlural: 'Anzeigen ausgewählt',
+      helper: 'Wählen Sie 2-4 Anzeigen und vergleichen Sie die wichtigsten Daten.',
+      action: 'Vergleichen',
+      clear: 'Vergleich löschen',
+      close: 'Vergleich schließen',
+      remove: 'Aus Vergleich entfernen',
+      limit: 'Sie können maximal 4 Anzeigen vergleichen.',
+      view: 'Anzeige öffnen',
+      best: 'Beste',
+      price: 'Preis',
+      year: 'Baujahr',
+      mileage: 'Kilometer',
+      fuel: 'Kraftstoff',
+      gearbox: 'Getriebe',
+      bodyType: 'Karosserie',
+      condition: 'Zustand',
+      seller: 'Verkäufer',
+      location: 'Standort',
+      offer: 'Angebot',
+    },
+    fr: {
+      eyebrow: 'Comparer',
+      title: 'Comparer les véhicules',
+      subtitle: 'Comparez prix, kilométrage, vendeur et lieu côte à côte.',
+      selectedSingular: 'annonce sélectionnée',
+      selectedPlural: 'annonces sélectionnées',
+      helper: 'Sélectionnez 2 à 4 annonces et comparez les données clés.',
+      action: 'Comparer',
+      clear: 'Vider la comparaison',
+      close: 'Fermer la comparaison',
+      remove: 'Retirer de la comparaison',
+      limit: 'Vous pouvez comparer jusqu’à 4 annonces.',
+      view: 'Ouvrir l’annonce',
+      best: 'Meilleur',
+      price: 'Prix',
+      year: 'Année',
+      mileage: 'Kilométrage',
+      fuel: 'Carburant',
+      gearbox: 'Boîte',
+      bodyType: 'Carrosserie',
+      condition: 'État',
+      seller: 'Vendeur',
+      location: 'Lieu',
+      offer: 'Offre',
+    },
+    es: {
+      eyebrow: 'Comparar',
+      title: 'Comparar vehículos',
+      subtitle: 'Compara precio, kilometraje, vendedor y ubicación lado a lado.',
+      selectedSingular: 'anuncio seleccionado',
+      selectedPlural: 'anuncios seleccionados',
+      helper: 'Selecciona de 2 a 4 anuncios y compara los datos clave.',
+      action: 'Comparar',
+      clear: 'Borrar comparación',
+      close: 'Cerrar comparación',
+      remove: 'Quitar de la comparación',
+      limit: 'Puedes comparar hasta 4 anuncios.',
+      view: 'Abrir anuncio',
+      best: 'Mejor',
+      price: 'Precio',
+      year: 'Año',
+      mileage: 'Kilometraje',
+      fuel: 'Combustible',
+      gearbox: 'Cambio',
+      bodyType: 'Carrocería',
+      condition: 'Estado',
+      seller: 'Vendedor',
+      location: 'Ubicación',
+      offer: 'Oferta',
+    },
+    it: {
+      eyebrow: 'Confronta',
+      title: 'Confronta veicoli',
+      subtitle: 'Confronta prezzo, chilometraggio, venditore e luogo affiancati.',
+      selectedSingular: 'annuncio selezionato',
+      selectedPlural: 'annunci selezionati',
+      helper: 'Seleziona 2-4 annunci e confronta i dati principali.',
+      action: 'Confronta',
+      clear: 'Cancella confronto',
+      close: 'Chiudi confronto',
+      remove: 'Rimuovi dal confronto',
+      limit: 'Puoi confrontare fino a 4 annunci.',
+      view: 'Apri annuncio',
+      best: 'Migliore',
+      price: 'Prezzo',
+      year: 'Anno',
+      mileage: 'Chilometraggio',
+      fuel: 'Carburante',
+      gearbox: 'Cambio',
+      bodyType: 'Carrozzeria',
+      condition: 'Condizione',
+      seller: 'Venditore',
+      location: 'Luogo',
+      offer: 'Offerta',
+    },
+    nl: {
+      eyebrow: 'Vergelijken',
+      title: 'Voertuigen vergelijken',
+      subtitle: 'Vergelijk prijs, kilometerstand, verkoper en locatie naast elkaar.',
+      selectedSingular: 'advertentie geselecteerd',
+      selectedPlural: 'advertenties geselecteerd',
+      helper: 'Selecteer 2-4 advertenties en vergelijk de belangrijkste gegevens.',
+      action: 'Vergelijken',
+      clear: 'Vergelijking wissen',
+      close: 'Vergelijking sluiten',
+      remove: 'Uit vergelijking verwijderen',
+      limit: 'Je kunt maximaal 4 advertenties vergelijken.',
+      view: 'Advertentie openen',
+      best: 'Beste',
+      price: 'Prijs',
+      year: 'Bouwjaar',
+      mileage: 'Kilometerstand',
+      fuel: 'Brandstof',
+      gearbox: 'Transmissie',
+      bodyType: 'Carrosserie',
+      condition: 'Staat',
+      seller: 'Verkoper',
+      location: 'Locatie',
+      offer: 'Aanbod',
+    },
+    da: {
+      eyebrow: 'Sammenlign',
+      title: 'Sammenlign køretøjer',
+      subtitle: 'Sammenlign pris, kilometerstand, sælger og placering side om side.',
+      selectedSingular: 'annonce valgt',
+      selectedPlural: 'annoncer valgt',
+      helper: 'Vælg 2-4 annoncer og sammenlign de vigtigste data.',
+      action: 'Sammenlign',
+      clear: 'Ryd sammenligning',
+      close: 'Luk sammenligning',
+      remove: 'Fjern fra sammenligning',
+      limit: 'Du kan sammenligne op til 4 annoncer.',
+      view: 'Åbn annonce',
+      best: 'Bedst',
+      price: 'Pris',
+      year: 'Årgang',
+      mileage: 'Kilometerstand',
+      fuel: 'Brændstof',
+      gearbox: 'Gearkasse',
+      bodyType: 'Karrosseri',
+      condition: 'Stand',
+      seller: 'Sælger',
+      location: 'Placering',
+      offer: 'Tilbud',
+    },
+    fi: {
+      eyebrow: 'Vertaa',
+      title: 'Vertaile ajoneuvoja',
+      subtitle: 'Vertaa hintaa, ajomäärää, myyjää ja sijaintia rinnakkain.',
+      selectedSingular: 'ilmoitus valittu',
+      selectedPlural: 'ilmoitusta valittu',
+      helper: 'Valitse 2-4 ilmoitusta ja vertaile tärkeimpiä tietoja.',
+      action: 'Vertaa',
+      clear: 'Tyhjennä vertailu',
+      close: 'Sulje vertailu',
+      remove: 'Poista vertailusta',
+      limit: 'Voit vertailla enintään 4 ilmoitusta.',
+      view: 'Avaa ilmoitus',
+      best: 'Paras',
+      price: 'Hinta',
+      year: 'Vuosimalli',
+      mileage: 'Ajomäärä',
+      fuel: 'Polttoaine',
+      gearbox: 'Vaihteisto',
+      bodyType: 'Korimalli',
+      condition: 'Kunto',
+      seller: 'Myyjä',
+      location: 'Sijainti',
+      offer: 'Tarjous',
+    },
+    pl: {
+      eyebrow: 'Porównaj',
+      title: 'Porównaj pojazdy',
+      subtitle: 'Porównaj cenę, przebieg, sprzedawcę i lokalizację obok siebie.',
+      selectedSingular: 'ogłoszenie wybrane',
+      selectedPlural: 'ogłoszenia wybrane',
+      helper: 'Wybierz 2-4 ogłoszenia i porównaj najważniejsze dane.',
+      action: 'Porównaj',
+      clear: 'Wyczyść porównanie',
+      close: 'Zamknij porównanie',
+      remove: 'Usuń z porównania',
+      limit: 'Możesz porównać maksymalnie 4 ogłoszenia.',
+      view: 'Otwórz ogłoszenie',
+      best: 'Najlepsze',
+      price: 'Cena',
+      year: 'Rok',
+      mileage: 'Przebieg',
+      fuel: 'Paliwo',
+      gearbox: 'Skrzynia',
+      bodyType: 'Nadwozie',
+      condition: 'Stan',
+      seller: 'Sprzedawca',
+      location: 'Lokalizacja',
+      offer: 'Oferta',
+    },
+  }
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  return copy[effectiveLocale as keyof typeof copy] || copy.en
+}
+
 function buildSearchQueryFromSuggestions(
   suggestions: Array<{ title: string }>,
   input: string,
@@ -701,6 +959,7 @@ export default function VehicleSearchExperience({
   })
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
+  const [compareError, setCompareError] = useState('')
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
   const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
@@ -1325,10 +1584,18 @@ export default function VehicleSearchExperience({
   }
 
   const toggleCompare = (listingId: string) => {
+    setCompareError('')
     setCompareIds((current) => {
-      const next = current.includes(listingId)
-        ? current.filter((id) => id !== listingId)
-        : [...current, listingId].slice(-4)
+      if (current.includes(listingId)) {
+        const next = current.filter((id) => id !== listingId)
+        if (next.length < 2) setCompareOpen(false)
+        return next
+      }
+      if (current.length >= maxCompareListings) {
+        setCompareError(getCompareCopy(locale).limit)
+        return current
+      }
+      const next = [...current, listingId]
       if (next.length < 2) setCompareOpen(false)
       return next
     })
@@ -1338,6 +1605,8 @@ export default function VehicleSearchExperience({
   const compareListings = compareIds
     .map((id) => filteredListings.find((listing) => listing.id === id) || listings.find((listing) => listing.id === id))
     .filter((listing): listing is VehicleSearchListing => Boolean(listing))
+  const compareCopy = getCompareCopy(locale)
+  const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
   const marketSummary = selectedMarketCodes.length
@@ -2437,11 +2706,11 @@ export default function VehicleSearchExperience({
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#101828]">
                         {compareIds.length} {compareIds.length === 1
-                          ? uiText(locale, 'listing selected', 'annons vald', 'Anzeige ausgewählt')
-                          : uiText(locale, 'listings selected', 'annonser valda', 'Anzeigen ausgewählt')}
+                          ? compareCopy.selectedSingular
+                          : compareCopy.selectedPlural}
                       </p>
                       <p className="truncate text-xs font-medium text-[#667085]">
-                        {uiText(locale, 'Select at least two listings to compare.', 'Välj minst två annonser för att jämföra.', 'Wähle mindestens zwei Anzeigen zum Vergleichen.')}
+                        {compareError || compareCopy.helper}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -2452,15 +2721,16 @@ export default function VehicleSearchExperience({
                         className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0757da] disabled:bg-[#c8d2e2]"
                       >
                         <Scale className="h-4 w-4" />
-                        {uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+                        {compareCopy.action}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           setCompareIds([])
                           setCompareOpen(false)
+                          setCompareError('')
                         }}
-                        aria-label={uiText(locale, 'Clear comparison', 'Rensa jämförelse', 'Vergleich löschen')}
+                        aria-label={compareCopy.clear}
                         className="grid h-9 w-9 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#475467]"
                       >
                         <X className="h-4 w-4" />
@@ -2503,48 +2773,58 @@ export default function VehicleSearchExperience({
 
           {compareOpen && compareListings.length >= 2 ? (
             <div className="fixed inset-0 z-[260] grid place-items-center bg-[#101828]/35 px-4 py-6 backdrop-blur-[2px]">
-              <div className="max-h-[min(720px,calc(100svh-48px))] w-full max-w-4xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)]">
+              <div className="max-h-[min(820px,calc(100svh-48px))] w-full max-w-6xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)]">
                 <div className="flex items-center justify-between gap-4 border-b border-[#edf1f6] px-4 py-3 sm:px-5">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">
-                      {uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+                      {compareCopy.eyebrow}
                     </p>
                     <h2 className="text-lg font-semibold text-[#101828]">
-                      {uiText(locale, 'Selected listings', 'Valda annonser', 'Ausgewählte Anzeigen')}
+                      {compareCopy.title}
                     </h2>
+                    <p className="mt-0.5 text-sm font-medium text-[#667085]">{compareCopy.subtitle}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCompareOpen(false)}
-                    aria-label={uiText(locale, 'Close comparison', 'Stäng jämförelse', 'Vergleich schließen')}
+                    aria-label={compareCopy.close}
                     className="grid h-10 w-10 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828]"
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="grid max-h-[calc(min(720px,100svh-48px)-73px)] grid-cols-2 gap-0 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
-                  {compareListings.map((listing) => {
-                    const href = buildListingPath({
-                      id: listing.id,
-                      title: listing.title,
-                      make: listing.make,
-                      model: listing.model,
-                      year: listing.year,
-                      city: listing.city,
-                      country_code: listing.country,
-                    }, locale)
-                    return (
-                      <article key={listing.id} className="relative border-b border-r border-[#edf1f6] p-3 sm:p-4">
+                <div className="max-h-[calc(min(820px,100svh-48px)-92px)] overflow-auto">
+                  <div
+                    className="grid min-w-[860px]"
+                    style={{ gridTemplateColumns: `minmax(150px, .55fr) repeat(${compareListings.length}, minmax(170px, 1fr))` }}
+                  >
+                    <div className="sticky left-0 top-0 z-20 border-b border-r border-[#edf1f6] bg-[#f8fbff] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
+                        {compareIds.length}/{maxCompareListings}
+                      </p>
+                    </div>
+                    {compareListings.map((listing) => {
+                      const href = buildListingPath({
+                        id: listing.id,
+                        title: listing.title,
+                        make: listing.make,
+                        model: listing.model,
+                        year: listing.year,
+                        city: listing.city,
+                        country_code: listing.country,
+                      }, locale)
+                      return (
+                        <article key={listing.id} className="relative border-b border-r border-[#edf1f6] bg-white p-3 sm:p-4">
                         <button
                           type="button"
                           onClick={() => toggleCompare(listing.id)}
-                          aria-label={uiText(locale, 'Remove from comparison', 'Ta bort från jämförelse', 'Aus Vergleich entfernen')}
+                          aria-label={compareCopy.remove}
                           className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
                         >
                           <X className="h-4 w-4" />
                         </button>
                         <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
-                          <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+                          <div className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-[#eef3f8]">
                             {listing.imageUrls.length ? (
                               <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="(max-width: 640px) 50vw, 240px" className="object-cover" />
                             ) : (
@@ -2553,26 +2833,33 @@ export default function VehicleSearchExperience({
                               </div>
                             )}
                           </div>
-                          <h3 className="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                          <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
                           <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
-                          <dl className="mt-3 grid gap-2 text-xs text-[#667085]">
-                            <div>
-                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Year', 'År', 'Jahr')}</dt>
-                              <dd className="font-semibold text-[#101828]">{listing.year || '-'}</dd>
-                            </div>
-                            <div>
-                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Mileage', 'Miltal', 'Kilometer')}</dt>
-                              <dd className="font-semibold text-[#101828]">{listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : '-'}</dd>
-                            </div>
-                            <div>
-                              <dt className="font-medium uppercase tracking-[.08em]">{uiText(locale, 'Fuel', 'Drivmedel', 'Kraftstoff')}</dt>
-                              <dd className="font-semibold text-[#101828]">{listing.fuelType || '-'}</dd>
-                            </div>
-                          </dl>
+                          <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f8fbff]">
+                            {compareCopy.view}
+                          </span>
                         </Link>
                       </article>
-                    )
-                  })}
+                      )
+                    })}
+                    {compareRows.map((row) => (
+                      <div key={row.label} className="contents">
+                        <div className="sticky left-0 z-10 border-b border-r border-[#edf1f6] bg-[#f8fbff] px-4 py-3 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
+                          {row.label}
+                        </div>
+                        {row.values.map((item) => (
+                          <div key={`${row.label}-${item.id}`} className={`min-h-14 border-b border-r border-[#edf1f6] px-3 py-3 text-sm font-semibold text-[#101828] ${item.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
+                            <span className="block">{item.value}</span>
+                            {item.highlight ? (
+                              <span className="mt-1 inline-flex rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
+                                {compareCopy.best}
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -3204,6 +3491,98 @@ function MarketplaceSocialLinks() {
       ))}
     </nav>
   )
+}
+
+type CompareCopy = ReturnType<typeof getCompareCopy>
+type VehicleCompareRow = {
+  label: string
+  values: Array<{ id: string; value: string; highlight?: boolean }>
+}
+
+function buildVehicleCompareRows(
+  listings: VehicleSearchListing[],
+  locale: PublicLocale,
+  copy: CompareCopy,
+): VehicleCompareRow[] {
+  const finitePrices = listings
+    .map((listing) => listing.priceValue)
+    .filter((value) => Number.isFinite(value) && value > 0)
+  const years = listings
+    .map((listing) => Number(listing.year || 0))
+    .filter((value) => Number.isFinite(value) && value > 0)
+  const mileages = listings
+    .map((listing) => listing.mileageKm)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
+  const bestPrice = finitePrices.length ? Math.min(...finitePrices) : null
+  const newestYear = years.length ? Math.max(...years) : null
+  const lowestMileage = mileages.length ? Math.min(...mileages) : null
+  const valueOrDash = (value: string | null | undefined) => value?.trim() || '-'
+  const offerLabel = (listing: VehicleSearchListing) => listingOfferBadge(locale, listing).label
+
+  return [
+    {
+      label: copy.price,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.priceLabel || '-',
+        highlight: bestPrice !== null && listing.priceValue === bestPrice,
+      })),
+    },
+    {
+      label: copy.year,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: valueOrDash(listing.year),
+        highlight: newestYear !== null && Number(listing.year || 0) === newestYear,
+      })),
+    },
+    {
+      label: copy.mileage,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : '-',
+        highlight: lowestMileage !== null && listing.mileageKm === lowestMileage,
+      })),
+    },
+    {
+      label: copy.fuel,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.fuelType) })),
+    },
+    {
+      label: copy.gearbox,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.gearbox) })),
+    },
+    {
+      label: copy.bodyType,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.bodyType) })),
+    },
+    {
+      label: copy.condition,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.condition) })),
+    },
+    {
+      label: copy.offer,
+      values: listings.map((listing) => ({ id: listing.id, value: offerLabel(listing) })),
+    },
+    {
+      label: copy.seller,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.sellerIsTrader
+          ? valueOrDash(listing.sellerName)
+          : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer'),
+      })),
+    },
+    {
+      label: copy.location,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: [listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
+          .filter(Boolean)
+          .join(', ') || '-',
+      })),
+    },
+  ]
 }
 
 function VehicleResultCard({

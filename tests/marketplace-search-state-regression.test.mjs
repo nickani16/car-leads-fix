@@ -16,6 +16,10 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
+const marketplaceCategoryBrowserSource = readFileSync(
+  new URL('../app/components/MarketplaceCategoryBrowser.tsx', import.meta.url),
+  'utf8',
+)
 const mapCategoryMarkerSource = readFileSync(
   new URL('../app/components/MapCategoryMarker.ts', import.meta.url),
   'utf8',
@@ -269,6 +273,26 @@ test('marketplace cards and listing detail show stable rounded offer status', ()
   assert.match(listingDetailPageSource, /Till leasing/)
   assert.match(listingDetailPageSource, /Till salu/)
   assert.match(listingDetailPageSource, /mt-3 inline-flex items-center rounded-full/)
+})
+
+test('marketplace comparison is localized, capped at four and uses a comparison matrix', () => {
+  assert.match(vehicleSearchExperienceSource, /const maxCompareListings = 4/)
+  assert.match(vehicleSearchExperienceSource, /const \[compareError, setCompareError\] = useState\(''\)/)
+  assert.match(vehicleSearchExperienceSource, /current\.length >= maxCompareListings/)
+  assert.match(vehicleSearchExperienceSource, /getCompareCopy\(locale\)\.limit/)
+  assert.match(vehicleSearchExperienceSource, /function getCompareCopy\(locale: PublicLocale\)/)
+  for (const locale of ['sv', 'en', 'de', 'fr', 'es', 'it', 'nl', 'da', 'fi', 'pl']) {
+    assert.match(vehicleSearchExperienceSource, new RegExp(`${locale}: \\{[\\s\\S]*title:`))
+  }
+  assert.match(vehicleSearchExperienceSource, /buildVehicleCompareRows\(compareListings, locale, compareCopy\)/)
+  assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `minmax\(150px, \.55fr\) repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
+  assert.match(vehicleSearchExperienceSource, /copy\.price/)
+  assert.match(vehicleSearchExperienceSource, /copy\.seller/)
+  assert.match(vehicleSearchExperienceSource, /copy\.location/)
+  assert.match(marketplaceCategoryBrowserSource, /current\.length >= 4/)
+  assert.match(marketplaceCategoryBrowserSource, /max 4 annonser/)
+  assert.match(marketplaceCategoryBrowserSource, /up to 4 listings/)
+  assert.match(marketplaceCategoryBrowserSource, /maximal 4 Anzeigen/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {

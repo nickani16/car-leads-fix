@@ -373,7 +373,7 @@ export default function MarketplaceCategoryBrowser({
       if (current.includes(listing.id)) {
         return current.filter((id) => id !== listing.id)
       }
-      if (current.length >= 3) {
+      if (current.length >= 4) {
         setCompareError(copy.compareLimit)
         return current
       }
@@ -2298,8 +2298,8 @@ const marketplaceCopy = {
     compareClose: 'Stäng jämförelse',
     compareClear: 'Rensa jämförelse',
     compareRemove: 'Ta bort från jämförelse',
-    compareLimit: 'Du kan jämföra max 3 bilar.',
-    compareHelper: 'Välj upp till 3 bilar och jämför nyckeldata sida vid sida.',
+    compareLimit: 'Du kan jämföra max 4 annonser.',
+    compareHelper: 'Välj 2-4 annonser och jämför nyckeldata sida vid sida.',
     compareSelectedSingular: 'annons vald',
     compareSelectedPlural: 'annonser valda',
     compareStrengths: 'Styrkor',
@@ -2425,8 +2425,8 @@ const marketplaceCopy = {
     compareClose: 'Close comparison',
     compareClear: 'Clear comparison',
     compareRemove: 'Remove from comparison',
-    compareLimit: 'You can compare up to 3 cars.',
-    compareHelper: 'Select up to 3 cars and compare key data side by side.',
+    compareLimit: 'You can compare up to 4 listings.',
+    compareHelper: 'Select 2-4 listings and compare key data side by side.',
     compareSelectedSingular: 'listing selected',
     compareSelectedPlural: 'listings selected',
     compareStrengths: 'Strengths',
@@ -2552,8 +2552,8 @@ const marketplaceCopy = {
     compareClose: 'Vergleich schließen',
     compareClear: 'Vergleich löschen',
     compareRemove: 'Aus Vergleich entfernen',
-    compareLimit: 'Sie können maximal 3 Autos vergleichen.',
-    compareHelper: 'Wählen Sie bis zu 3 Autos und vergleichen Sie die wichtigsten Daten.',
+    compareLimit: 'Sie können maximal 4 Anzeigen vergleichen.',
+    compareHelper: 'Wählen Sie 2-4 Anzeigen und vergleichen Sie die wichtigsten Daten.',
     compareSelectedSingular: 'Anzeige ausgewählt',
     compareSelectedPlural: 'Anzeigen ausgewählt',
     compareStrengths: 'Stärken',
@@ -2618,8 +2618,8 @@ const svMarketplaceCopyFixes = {
   compareClose: 'Stäng jämförelse',
   compareClear: 'Rensa jämförelse',
   compareRemove: 'Ta bort från jämförelse',
-  compareLimit: 'Du kan jämföra max 3 bilar.',
-  compareHelper: 'Välj upp till 3 bilar och jämför nyckeldata sida vid sida.',
+  compareLimit: 'Du kan jämföra max 4 annonser.',
+  compareHelper: 'Välj 2-4 annonser och jämför nyckeldata sida vid sida.',
   compareNoStrengths: 'Inga tydliga fördelar hittades i annonsdatan.',
   compareBestPrice: 'Lägst pris',
   compareNewest: 'Nyast årsmodell',
