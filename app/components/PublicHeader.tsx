@@ -739,12 +739,12 @@ export default function PublicHeader({
       text: searchMegaCopy[locale].leasingText,
     },
   ]
-  const searchCategoryHref = (href: string) =>
-    searchMenuIntent === 'leasing'
-      ? `${href}?mode=leasing&offerType=lease`
-      : searchMenuIntent === 'sale'
-        ? `${href}?mode=sale&offerType=sale`
-        : href
+  const searchCategoryHref = (href: string) => {
+    const separator = href.includes('?') ? '&' : '?'
+    if (searchMenuIntent === 'leasing') return `${href}${separator}mode=leasing&offerType=lease`
+    if (searchMenuIntent === 'sale') return `${href}${separator}mode=sale&offerType=sale`
+    return `${href}${separator}mode=all`
+  }
   const visibleSearchCategoryItems =
     searchMenuIntent === 'leasing'
       ? buyItems.filter((item) => item.slug && isLeasingMarketplaceCategory(item.slug))
@@ -1249,14 +1249,14 @@ export default function PublicHeader({
                                   role="tab"
                                   aria-selected={selected}
                                   onClick={() => setSearchMenuIntent(option.key)}
-                                  className={`rounded-[11px] px-3.5 py-2.5 text-left transition ${
+                                  className={`min-w-0 overflow-hidden rounded-[11px] px-2.5 py-2.5 text-left transition ${
                                     selected
                                       ? 'bg-white text-[#101828] shadow-[0_8px_20px_rgba(16,24,40,.08)] ring-1 ring-[#d8e1ee]'
                                       : 'text-[#475467] hover:bg-white/70 hover:text-[#101828]'
                                   }`}
                                 >
-                                  <span className="block text-[13px] font-[500] leading-5">{option.label}</span>
-                                  <span className="mt-0.5 block text-[11px] font-[400] leading-4 text-[#667085]">{option.text}</span>
+                                  <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.shortLabel}</span>
+                                  <span className="mt-0.5 line-clamp-2 min-w-0 break-words text-[11px] font-[400] leading-4 text-[#667085]">{option.text}</span>
                                 </button>
                               )
                             })}

@@ -541,6 +541,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible = false,
   initialEquipmentQuery = '',
   initialSortBy = 'published',
+  initialModeExplicit = false,
   disableUrlSync = false,
 }: {
   listings: VehicleSearchListing[]
@@ -580,6 +581,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible?: boolean
   initialEquipmentQuery?: string
   initialSortBy?: string
+  initialModeExplicit?: boolean
   disableUrlSync?: boolean
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
@@ -625,6 +627,7 @@ export default function VehicleSearchExperience({
       initialGeoBounds ||
       initialMinPrice ||
       initialMaxPrice ||
+      initialModeExplicit ||
       initialMode !== 'all' ||
       initialMinYear ||
       initialMaxYear ||
@@ -3310,7 +3313,7 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
-            <span className={`inline-flex w-max max-w-full rounded-[6px] px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+            <span className={`inline-flex w-max max-w-full rounded-full px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
               {offerBadge.label}
             </span>
             <MetaSeparatorList items={meta} className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
@@ -3323,14 +3326,14 @@ function VehicleResultCard({
             </p>
             <div className={`${layout === 'split' ? 'hidden sm:flex' : 'flex'} min-w-0 flex-wrap items-center gap-1.5`}>
               {equipmentChips.map((item) => (
-                <span key={item} className="max-w-[150px] truncate rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                   {item}
                 </span>
               ))}
-              <span className="rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+              <span className="rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                 {sellerTypeLabel}
               </span>
-              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                 <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                 <span className="truncate">{countryLabel}</span>
               </span>

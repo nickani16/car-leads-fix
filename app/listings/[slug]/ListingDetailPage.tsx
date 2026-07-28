@@ -369,6 +369,7 @@ export default async function ListingDetailPage({
     },
   ].filter((fact) => Boolean(fact.value))
   const copy = getListingDetailCopy(locale)
+  const offerBadge = listingDetailOfferBadge(locale, listing.offer_type)
   const listingIdentity =
     listing.listing_number || listing.reference_number || listing.id.slice(0, 8).toUpperCase()
   const breadcrumbItems = buildDesktopBreadcrumbItems({
@@ -511,6 +512,9 @@ export default async function ListingDetailPage({
                     </p>
                   ) : null}
                   <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-[#667085] sm:mt-4 sm:text-sm">
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:text-sm ${offerBadge.className}`}>
+                      {offerBadge.label}
+                    </span>
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-[#0866ff] sm:h-4 sm:w-4" />
                       {location}
@@ -641,6 +645,9 @@ export default async function ListingDetailPage({
                 <div className="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-[34px]">
                   {price.original}
                 </div>
+                <span className={`mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 ${offerBadge.className}`}>
+                  {offerBadge.label}
+                </span>
                 {price.approximate ? (
                   <p className="mt-1.5 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
@@ -1318,6 +1325,28 @@ function localizedLabel(
   const insightLabel = labels?.[en]
   if (insightLabel) return insightLabel
   return translatePublic(locale, en)
+}
+
+function listingDetailOfferBadge(
+  locale: PublicLocale,
+  offerType: ListingRow['offer_type'],
+) {
+  if (offerType === 'lease') {
+    return {
+      label: localizedLabel(locale, 'För leasing', 'For leasing', 'Zum Leasing'),
+      className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
+    }
+  }
+  if (offerType === 'sale_and_lease') {
+    return {
+      label: localizedLabel(locale, 'Till salu och leasing', 'For sale and leasing', 'Zum Kauf und Leasing'),
+      className: 'bg-[#eef5ff] text-[#0866ff] ring-[#bfdbfe]',
+    }
+  }
+  return {
+    label: localizedLabel(locale, 'Till salu', 'For sale', 'Zum Kauf'),
+    className: 'bg-[#eef5ff] text-[#0866ff] ring-[#bfdbfe]',
+  }
 }
 
 const insightLabelTranslations = {

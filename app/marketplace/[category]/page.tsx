@@ -245,6 +245,10 @@ export default async function MarketplaceCategoryPage({
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,
+        offerType: normalizeListingOfferType(listing.offer_type),
+        leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
+          ? listing.lease_data as Record<string, unknown>
+          : null,
       }
     }),
   )
@@ -280,6 +284,7 @@ export default async function MarketplaceCategoryPage({
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
         initialMaxPrice={initialMaxPrice}
         initialMode={getSearchMode(resolvedSearchParams)}
+        initialModeExplicit={hasSearchParam(resolvedSearchParams, 'mode') || hasSearchParam(resolvedSearchParams, 'intent')}
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear')}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear')}
         initialMinMileage={getSearchParam(resolvedSearchParams, 'minMileage')}
@@ -308,6 +313,18 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function hasSearchParam(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  return Array.isArray(value) ? value.some((item) => String(item || '').trim()) : Boolean(String(value || '').trim())
+}
+
+function normalizeListingOfferType(value: unknown): VehicleSearchListing['offerType'] {
+  return value === 'lease' || value === 'sale_and_lease' || value === 'sale' ? value : null
 }
 
 function getSearchParamList(

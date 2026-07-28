@@ -449,6 +449,9 @@ export default function HomeHeroVehicleSearch({
     const params = new URLSearchParams()
     const trimmedQuery = query.trim()
     const chipLabels = selectedSearchSuggestions.map((suggestion) => suggestion.title.trim()).filter(Boolean)
+    if (intent === 'all') {
+      params.set('mode', 'all')
+    }
     if (trimmedQuery) params.set('q', trimmedQuery)
     if (chipLabels.length) params.set('chips', chipLabels.join(','))
     if (intent === 'sale') {

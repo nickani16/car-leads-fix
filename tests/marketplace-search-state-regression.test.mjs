@@ -24,6 +24,11 @@ const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
 )
+const findCarsPageSource = readFileSync(new URL('../app/find-cars/page.tsx', import.meta.url), 'utf8')
+const listingDetailPageSource = readFileSync(
+  new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url),
+  'utf8',
+)
 const marketCatchAllSource = readFileSync(new URL('../app/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const swedishCarRouteSource = readFileSync(new URL('../app/[market]/bilar/[...segments]/page.tsx', import.meta.url), 'utf8')
 const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
@@ -217,6 +222,8 @@ test('localized listing URLs render listing detail pages instead of falling thro
 test('marketplace mode defaults to all while sale and leasing stay query-separated', () => {
   assert.match(vehicleSearchExperienceSource, /type SearchMode = 'all' \| 'sale' \| 'leasing'/)
   assert.match(vehicleSearchExperienceSource, /initialMode = 'all'/)
+  assert.match(vehicleSearchExperienceSource, /initialModeExplicit = false/)
+  assert.match(vehicleSearchExperienceSource, /initialModeExplicit \|\|/)
   assert.match(vehicleSearchExperienceSource, /normalizeSearchMode\(initialMode\)/)
   assert.match(vehicleSearchExperienceSource, /marketplaceModeOptionLabel\(locale, 'all'\)/)
   assert.match(vehicleSearchExperienceSource, /resultActionSubjectLabel\(locale, mode\)/)
@@ -225,6 +232,12 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(vehicleSearchExperienceSource, /för leasing/)
   assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', 'sale'\)/)
   assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', 'lease'\)/)
+  assert.match(homeHeroVehicleSearchSource, /params\.set\('mode', 'all'\)/)
+  assert.match(publicHeaderSource, /mode=all/)
+  assert.match(marketplaceCategoryPageSource, /initialModeExplicit=\{hasSearchParam\(resolvedSearchParams, 'mode'\) \|\| hasSearchParam\(resolvedSearchParams, 'intent'\)\}/)
+  assert.match(findCarsPageSource, /initialModeExplicit=\{hasSearchParam\(resolvedSearchParams, 'mode'\) \|\| hasSearchParam\(resolvedSearchParams, 'intent'\)\}/)
+  assert.match(marketplaceCategoryPageSource, /offerType: normalizeListingOfferType\(listing\.offer_type\)/)
+  assert.match(findCarsPageSource, /offerType: normalizeListingOfferType\(listing\.offer_type\)/)
   assert.match(vehicleSearchExperienceSource, /if \(mode === 'sale' && listing\.offerType !== 'sale'\) return false/)
   assert.match(vehicleSearchExperienceSource, /return listing\.offerType === 'lease'/)
   assert.match(vehicleSearchExperienceSource, /listingOfferBadge\(locale, listing\)/)
@@ -242,6 +255,16 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(searchSource, /if \(mode === 'leasing'\) return 'lease'/)
   assert.match(searchSource, /if \(mode === 'sale'\) return 'sale'/)
   assert.match(searchSource, /return ''/)
+})
+
+test('marketplace cards and listing detail show stable rounded offer status', () => {
+  assert.match(vehicleSearchExperienceSource, /w-max max-w-full rounded-full/)
+  assert.match(vehicleSearchExperienceSource, /truncate rounded-full bg-\[#f2f4f7\]/)
+  assert.match(vehicleSearchExperienceSource, /inline-flex min-w-0 items-center gap-1\.5 rounded-full bg-\[#f2f4f7\]/)
+  assert.match(listingDetailPageSource, /listingDetailOfferBadge\(locale, listing\.offer_type\)/)
+  assert.match(listingDetailPageSource, /För leasing/)
+  assert.match(listingDetailPageSource, /Till salu/)
+  assert.match(listingDetailPageSource, /mt-3 inline-flex items-center rounded-full/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {
