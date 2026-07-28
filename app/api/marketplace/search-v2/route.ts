@@ -96,6 +96,16 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
+    if (input.geoFilterMode === 'strict' && input.geoAreaId) {
+      const body = JSON.stringify(emptyStrictGeoSearchResult(Number(input.limit) || 48))
+      return new Response(body, {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+          'X-Autorell-Search-Cache': 'geo-empty-fallback',
+        },
+      })
+    }
     console.error(JSON.stringify({
       level: 'error',
       route: '/api/marketplace/search-v2',
@@ -162,4 +172,26 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
       setTimeout(() => reject(new Error(message)), timeoutMs)
     }),
   ])
+}
+
+function emptyStrictGeoSearchResult(limit: number) {
+  return {
+    items: [],
+    facets: {
+      makes: [],
+      models: [],
+      fuels: [],
+      gearboxes: [],
+      bodyTypes: [],
+      technical: {},
+    },
+    nextCursor: null,
+    totalEstimate: 0,
+    totalCount: 0,
+    page: 1,
+    pageSize: limit,
+    totalPages: 1,
+    limit,
+    hasNext: false,
+  }
 }
