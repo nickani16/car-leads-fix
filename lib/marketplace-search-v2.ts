@@ -323,7 +323,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
-    offerType: clean(input.offerType).toLowerCase() || parsedSearchState.offerType,
+    offerType: clean(input.offerType).toLowerCase() || normalizeParsedOfferType(parsedSearchState.offerType),
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
     maxPrice: positiveNumber(input.maxPrice) ?? parsedSearchState.maxPrice,
@@ -341,6 +341,10 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     page: clampInt(input.page, 1, 10_000, 1),
     limit: clampInt(input.limit, 1, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE),
   }
+}
+
+function normalizeParsedOfferType(value: string) {
+  return value === 'leasing' ? 'lease' : value
 }
 
 function emptyMarketplaceSearchResult(filters: ReturnType<typeof normalizeMarketplaceSearchInput>): MarketplaceSearchResult {
@@ -405,8 +409,8 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.postalCode) query = query.ilike('postal_code', filters.postalCode)
   if (filters.geoArea) {
-    if (filters.geoFilterMode === 'strict' && filters.geoArea.level === 'municipality' && filters.geoArea.code) {
-      query = query.eq('geo_municipality_code', filters.geoArea.code)
+    if (filters.geoFilterMode === 'strict') {
+      query = applyStrictGeoAreaFilter(query, filters.geoArea)
     } else {
       const geoAreaFilters = marketplaceGeoAreaOrFilters(filters.geoArea)
       if (geoAreaFilters.length) query = query.or(geoAreaFilters.join(','))
@@ -501,6 +505,27 @@ function applyMarketplaceListingFilters<T extends {
   }
 
   return query
+}
+
+function applyStrictGeoAreaFilter<T extends {
+  eq: (column: string, value: string | boolean) => T
+}>(query: T, geoArea: NonNullable<ReturnType<typeof normalizeMarketplaceSearchInput>['geoArea']>) {
+  if (geoArea.level === 'country') {
+    return query.eq('country_code', geoArea.countryCode)
+  }
+  if (geoArea.level === 'region' && geoArea.code) {
+    return query.eq('geo_region_code', geoArea.code)
+  }
+  if (geoArea.level === 'municipality' && geoArea.code) {
+    return query.eq('geo_municipality_code', geoArea.code)
+  }
+  if (geoArea.level === 'locality' && geoArea.code) {
+    return query.eq('geo_locality_code', geoArea.code)
+  }
+  if (geoArea.level === 'postal_code' && geoArea.postalCode) {
+    return query.eq('postal_code', geoArea.postalCode)
+  }
+  return query.eq('geo_area_id', geoArea.id)
 }
 
 function marketplaceSearchTokens(query: string) {

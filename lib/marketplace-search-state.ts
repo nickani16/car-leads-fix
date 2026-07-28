@@ -1,4 +1,5 @@
 import type { MarketplaceCategorySlug } from './marketplace'
+import { activeMarketCountries, getEuCountryName } from './eu-countries'
 import { swedishCounties, swedishMunicipalities } from './swedish-regions.generated'
 
 export type MarketplaceGeoLevel = 'country' | 'region' | 'municipality' | 'locality' | 'postal_code'
@@ -45,6 +46,20 @@ export type MarketplaceSearchState = {
 const SWEDEN_BOUNDS: MarketplaceBoundingBox = { north: 69.1, east: 24.2, south: 55.2, west: 10.6 }
 const SWEDEN_CENTROID = { latitude: 62, longitude: 15 }
 
+const activeMarketCountryBounds: Record<string, { centroid: MarketplaceGeoArea['centroid']; bounds: MarketplaceBoundingBox }> = {
+  AT: { centroid: { latitude: 47.6, longitude: 14.1 }, bounds: { north: 49.1, east: 17.2, south: 46.3, west: 9.5 } },
+  BE: { centroid: { latitude: 50.6, longitude: 4.7 }, bounds: { north: 51.5, east: 6.4, south: 49.5, west: 2.5 } },
+  DE: { centroid: { latitude: 51.2, longitude: 10.4 }, bounds: { north: 55.1, east: 15.1, south: 47.2, west: 5.8 } },
+  DK: { centroid: { latitude: 56.1, longitude: 10 }, bounds: { north: 57.8, east: 15.2, south: 54.5, west: 8 } },
+  ES: { centroid: { latitude: 40.4, longitude: -3.7 }, bounds: { north: 43.8, east: 4.4, south: 36, west: -9.4 } },
+  FI: { centroid: { latitude: 64.5, longitude: 26 }, bounds: { north: 70.1, east: 31.6, south: 59.7, west: 19.1 } },
+  FR: { centroid: { latitude: 46.6, longitude: 2.3 }, bounds: { north: 51.2, east: 8.3, south: 41.3, west: -5.2 } },
+  IT: { centroid: { latitude: 42.8, longitude: 12.5 }, bounds: { north: 47.1, east: 18.8, south: 36.6, west: 6.6 } },
+  NL: { centroid: { latitude: 52.1, longitude: 5.3 }, bounds: { north: 53.7, east: 7.3, south: 50.7, west: 3.3 } },
+  PL: { centroid: { latitude: 52.1, longitude: 19.4 }, bounds: { north: 54.9, east: 24.2, south: 49, west: 14.1 } },
+  SE: { centroid: SWEDEN_CENTROID, bounds: SWEDEN_BOUNDS },
+}
+
 const swedenCountryGeoArea: MarketplaceGeoArea = {
   id: 'SE:country:sweden',
   countryCode: 'SE',
@@ -57,21 +72,11 @@ const swedenCountryGeoArea: MarketplaceGeoArea = {
   aliases: ['sverige', 'sweden', 'hela sverige'],
 }
 
+const activeMarketCountryGeoAreas: MarketplaceGeoArea[] = activeMarketCountries.map(([countryCode]) =>
+  countryArea(countryCode),
+)
+
 const curatedSwedenGeoAreas: MarketplaceGeoArea[] = [
-  {
-    id: 'SE:municipality:danderyd',
-    countryCode: 'SE',
-    level: 'municipality',
-    name: 'Danderyd',
-    code: '0162',
-    slug: 'danderyd',
-    parentId: 'SE:region:01',
-    region: 'Stockholm',
-    municipality: 'Danderyd',
-    centroid: { latitude: 59.4057, longitude: 18.0373 },
-    bounds: { north: 59.4413844, east: 18.1224934, south: 59.3654089, west: 17.9914981 },
-    aliases: ['danderyd', 'danderyds kommun', 'danderyd kommun'],
-  },
   {
     id: 'SE:municipality:goteborg',
     countryCode: 'SE',
@@ -209,8 +214,8 @@ const generatedSwedenMunicipalityGeoAreas: MarketplaceGeoArea[] = swedishMunicip
     }
   })
 
-const swedenPhaseOneGeoAreas: MarketplaceGeoArea[] = dedupeGeoAreas([
-  swedenCountryGeoArea,
+const phaseOneGeoAreas: MarketplaceGeoArea[] = dedupeGeoAreas([
+  ...activeMarketCountryGeoAreas,
   ...curatedSwedenGeoAreas,
   ...generatedSwedenCountyGeoAreas,
   ...generatedSwedenMunicipalityGeoAreas,
@@ -244,22 +249,22 @@ const knownVehicleMakes = [
 ]
 
 const categoryQueryEntries: Array<{ category: MarketplaceCategorySlug; aliases: string[] }> = [
-  { category: 'cars', aliases: ['bil', 'bilar', 'car', 'cars', 'auto', 'autos'] },
-  { category: 'vans', aliases: ['transportbil', 'transportbilar', 'van', 'vans', 'sk\u00e5pbil', 'sk\u00e5pbilar'] },
+  { category: 'cars', aliases: ['bil', 'bilar', 'car', 'cars', 'auto', 'autos', 'autot', 'coche', 'coches', 'voiture', 'voitures', 'vetture'] },
+  { category: 'vans', aliases: ['transportbil', 'transportbilar', 'van', 'vans', 'sk\u00e5pbil', 'sk\u00e5pbilar', 'pakettiauto', 'pakettiautot', 'furgone', 'furgoni', 'furgoneta', 'furgonetas', 'fourgon', 'fourgonnettes', 'bestelwagen', 'bestelwagens'] },
   { category: 'motorcycles', aliases: ['motorcykel', 'motorcyklar', 'mc', 'motorcycle', 'motorcycles', 'motorbike'] },
   { category: 'motorhomes', aliases: ['husbil', 'husbilar', 'motorhome', 'motorhomes', 'camper'] },
   { category: 'caravans', aliases: ['husvagn', 'husvagnar', 'caravan', 'caravans'] },
-  { category: 'trucks', aliases: ['lastbil', 'lastbilar', 'truck', 'trucks', 'lorry', 'buss', 'bussar', 'bus'] },
-  { category: 'agriculture', aliases: ['lantbruk', 'lantbruksmaskin', 'lantbruksmaskiner', 'traktor', 'tractor', 'farm'] },
+  { category: 'trucks', aliases: ['lastbil', 'lastbilar', 'truck', 'trucks', 'lorry', 'buss', 'bussar', 'bus', 'camion', 'camiones', 'autocarro', 'autocarri', 'lkw', 'kuorma-auto', 'kuorma-autot'] },
+  { category: 'agriculture', aliases: ['lantbruk', 'lantbruksmaskin', 'lantbruksmaskiner', 'traktor', 'tractor', 'farm', 'maatalouskone', 'maatalouskoneet', 'macchine agricole', 'maquinaria agricola', 'maquinaria agr\u00edcola', 'landmaschinen'] },
   {
     category: 'construction',
-    aliases: ['entreprenad', 'entreprenadmaskin', 'entreprenadmaskiner', 'gr\u00e4vmaskin', 'excavator', 'loader'],
+    aliases: ['entreprenad', 'entreprenadmaskin', 'entreprenadmaskiner', 'gr\u00e4vmaskin', 'excavator', 'loader', 'baumaschinen', 'macchine edili', 'maquinaria construccion', 'maquinaria construcci\u00f3n', 'engins chantier'],
   },
   { category: 'electric-bikes', aliases: ['cykel', 'cyklar', 'bike', 'bikes', 'bicycle', 'elcykel', 'e bike', 'e-bike'] },
 ]
 
-const geoAreaById = new Map(swedenPhaseOneGeoAreas.map((area) => [normalizeSearchStateText(area.id), area]))
-const geoAliasEntries = swedenPhaseOneGeoAreas
+const geoAreaById = new Map(phaseOneGeoAreas.map((area) => [normalizeSearchStateText(area.id), area]))
+const geoAliasEntries = phaseOneGeoAreas
   .flatMap((area) => area.aliases.map((alias) => ({ alias, key: normalizeSearchStateText(alias), area })))
   .sort((left, right) => right.key.length - left.key.length)
 
@@ -275,9 +280,7 @@ export function parseMarketplaceSearchState(
   const offerType = extractOfferType(rawQuery)
   const postalCode = canUseSweden ? extractSwedishPostalCode(rawQuery) : ''
   const maxPrice = extractMaxPrice(rawQuery)
-  const geoArea = canUseSweden
-    ? findGeoArea(rawQuery) || (postalCode ? postalCodeGeoArea(postalCode) : null)
-    : null
+  const geoArea = findGeoArea(rawQuery, markets) || (canUseSweden && postalCode ? postalCodeGeoArea(postalCode) : null)
 
   return {
     rawQuery,
@@ -295,6 +298,19 @@ export function resolveMarketplaceGeoArea(value: string | null | undefined) {
   const key = normalizeSearchStateText(value || '')
   if (!key) return null
   return geoAreaById.get(key) || findGeoArea(value || '')
+}
+
+export function resolveMarketplaceGeoAreaBySlug(countryCode: string, slug: string | null | undefined) {
+  const normalizedCountry = String(countryCode || '').trim().toUpperCase()
+  const normalizedSlug = normalizeSearchStateText(slug || '')
+  if (!normalizedCountry || !normalizedSlug) return null
+  return (
+    phaseOneGeoAreas.find(
+      (area) =>
+        area.countryCode === normalizedCountry &&
+        normalizeSearchStateText(area.slug || '') === normalizedSlug,
+    ) || null
+  )
 }
 
 export function marketplaceGeoAreaOrFilters(area: MarketplaceGeoArea) {
@@ -353,12 +369,20 @@ export function isPointInsideSearchBounds(
   )
 }
 
-function findGeoArea(query: string) {
+function findGeoArea(query: string, markets: Set<string> = new Set()) {
   const normalized = normalizeSearchStateText(query)
   if (!normalized) return null
   const exact = geoAreaById.get(normalized)
-  if (exact) return exact
-  return geoAliasEntries.find(({ key }) => tokenBoundaryMatch(normalized, key))?.area || null
+  if (exact && canUseGeoAreaInMarkets(exact, markets)) return exact
+  return (
+    geoAliasEntries.find(
+      ({ key, area }) => canUseGeoAreaInMarkets(area, markets) && tokenBoundaryMatch(normalized, key),
+    )?.area || null
+  )
+}
+
+function canUseGeoAreaInMarkets(area: MarketplaceGeoArea, markets: Set<string>) {
+  return markets.size === 0 || markets.has(area.countryCode)
 }
 
 function postalCodeGeoArea(postalCode: string): MarketplaceGeoArea {
@@ -373,6 +397,25 @@ function postalCodeGeoArea(postalCode: string): MarketplaceGeoArea {
     centroid: SWEDEN_CENTROID,
     bounds: SWEDEN_BOUNDS,
     aliases: [postalCode, compact],
+  }
+}
+
+function countryArea(countryCode: string): MarketplaceGeoArea {
+  const code = countryCode.toUpperCase()
+  const name = code === 'SE' ? 'Sverige' : getEuCountryName(code, 'en')
+  const localName = getEuCountryName(code, code === 'AT' ? 'de' : code === 'BE' ? 'nl' : code.toLowerCase())
+  const slug = normalizeSearchStateText(localName).replace(/\s+/g, '-')
+  const geo = activeMarketCountryBounds[code] || { centroid: { latitude: 50, longitude: 10 }, bounds: { north: 72, east: 32, south: 35, west: -10 } }
+  return {
+    id: `${code}:country:${slug}`,
+    countryCode: code,
+    level: 'country',
+    name,
+    code,
+    slug,
+    centroid: geo.centroid,
+    bounds: geo.bounds,
+    aliases: uniqueAliases([slug, name, localName, code]),
   }
 }
 

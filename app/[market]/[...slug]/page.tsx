@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
+import GeoLandingSearchPage from '@/app/components/GeoLandingSearchPage'
 import PricingPage from '@/app/components/PricingPage'
 import BusinessPage from '@/app/foretag/page'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
@@ -26,6 +27,11 @@ import CompanyProfilePage from '@/app/account/company/profile/page'
 import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
 import RegisterPage from '@/app/registrera/page'
+import {
+  buildGeoLandingMetadata,
+  isGeoLandingCandidate,
+  resolveGeoLandingRoute,
+} from '@/lib/seo-geo-landings'
 
 const removedPublicPages = new Set([
   'sell-vehicle',
@@ -47,7 +53,12 @@ export async function generateMetadata({
 }: {
   params: Promise<{ market: string; slug: string[] }>
 }) {
-  await params
+  const { market, slug } = await params
+  const [categorySlug, ...segments] = slug
+  const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
+  if (landing) {
+    return buildGeoLandingMetadata(landing)
+  }
 
   return {}
 }
@@ -66,6 +77,15 @@ export default async function LocalizedMarketPage({
 
   const slugPath = slug.join('/')
   if (removedPublicPages.has(slugPath)) {
+    notFound()
+  }
+
+  const [categorySlug, ...geoSegments] = slug
+  const geoLanding = await resolveGeoLandingRoute(marketCode, categorySlug, geoSegments)
+  if (geoLanding) {
+    return <GeoLandingSearchPage landing={geoLanding} />
+  }
+  if (isGeoLandingCandidate(marketCode, categorySlug, geoSegments)) {
     notFound()
   }
 

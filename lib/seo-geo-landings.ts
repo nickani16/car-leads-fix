@@ -1,19 +1,37 @@
+import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
+import { type MarketplaceCategorySlug } from './marketplace'
 import {
-  resolveMarketplaceGeoArea,
+  resolveMarketplaceGeoAreaBySlug,
   type MarketplaceGeoArea,
 } from './marketplace-search-state'
+import { getGeoRegions, searchGeoPlaces } from './marketplace-geo'
+import type { PublicLocale } from './public-i18n'
 
-type SwedishCarGeoLanding = {
-  market: 'se'
-  category: 'cars'
-  municipalitySlug: string
-  municipalityName: string
-  municipalityOfficialName: string
+type GeoCategoryRoute = {
+  category: MarketplaceCategorySlug
+  plural: string
+}
+
+type GeoMarketRouteConfig = {
+  locale: PublicLocale
+  countryCode: string
+  categories: Record<string, GeoCategoryRoute>
+  title: (subject: string, place: string) => string
+  description: (subject: string, place: string) => string
+  zeroResults: (subject: string, place: string) => string
+}
+
+export type GeoLandingRoute = {
+  market: string
+  locale: PublicLocale
+  countryCode: string
+  category: MarketplaceCategorySlug
+  categorySlug: string
+  categoryLabel: string
+  place: MarketplaceGeoArea
   makeSlug: string | null
   make: string | null
-  geoArea: MarketplaceGeoArea
-  municipalityCode: '0162'
   canonicalPath: string
   h1: string
   title: string
@@ -21,77 +39,339 @@ type SwedishCarGeoLanding = {
   zeroResultsText: string
 }
 
-const swedishMunicipalityLandings = {
-  danderyd: {
-    name: 'Danderyd',
-    officialName: 'Danderyds kommun',
-    geoAreaId: 'SE:municipality:danderyd',
-    municipalityCode: '0162',
+const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
+  se: {
+    locale: 'sv',
+    countryCode: 'SE',
+    categories: {
+      bilar: category('cars', 'bilar'),
+      transportbilar: category('vans', 'transportbilar'),
+      lastbilar: category('trucks', 'lastbilar'),
+      lantbruksmaskiner: category('agriculture', 'lantbruksmaskiner'),
+      entreprenadmaskiner: category('construction', 'entreprenadmaskiner'),
+    },
+    title: (subject, place) => `${subject} till salu i ${place}`,
+    description: (subject, place) =>
+      `Se ${lower(subject)} till salu i ${place}. J\u00e4mf\u00f6r fordon fr\u00e5n privata s\u00e4ljare och f\u00f6retag p\u00e5 Autorell.`,
+    zeroResults: (subject, place) => `Inga ${lower(subject)} till salu i ${place} just nu`,
   },
-} as const
+  de: deMarket('de', 'DE'),
+  at: deMarket('at', 'AT'),
+  fr: {
+    locale: 'fr',
+    countryCode: 'FR',
+    categories: {
+      voitures: category('cars', 'voitures'),
+      utilitaires: category('vans', 'utilitaires'),
+      camions: category('trucks', 'camions'),
+      'machines-agricoles': category('agriculture', 'machines agricoles'),
+      'engins-chantier': category('construction', 'engins de chantier'),
+    },
+    title: (subject, place) => `${subject} \u00e0 vendre \u00e0 ${place}`,
+    description: (subject, place) =>
+      `Voir ${lower(subject)} \u00e0 vendre \u00e0 ${place}. Comparez les v\u00e9hicules de particuliers et de professionnels sur Autorell.`,
+    zeroResults: (subject, place) => `Aucune annonce pour ${lower(subject)} \u00e0 ${place} pour le moment`,
+  },
+  it: {
+    locale: 'it',
+    countryCode: 'IT',
+    categories: {
+      auto: category('cars', 'auto'),
+      furgoni: category('vans', 'furgoni'),
+      autocarri: category('trucks', 'autocarri'),
+      'macchine-agricole': category('agriculture', 'macchine agricole'),
+      'macchine-edili': category('construction', 'macchine edili'),
+    },
+    title: (subject, place) => `${subject} in vendita a ${place}`,
+    description: (subject, place) =>
+      `Scopri ${lower(subject)} in vendita a ${place}. Confronta veicoli da privati e aziende su Autorell.`,
+    zeroResults: (subject, place) => `Nessun annuncio per ${lower(subject)} a ${place} al momento`,
+  },
+  es: {
+    locale: 'es',
+    countryCode: 'ES',
+    categories: {
+      coches: category('cars', 'coches'),
+      furgonetas: category('vans', 'furgonetas'),
+      camiones: category('trucks', 'camiones'),
+      'maquinaria-agricola': category('agriculture', 'maquinaria agr\u00edcola'),
+      'maquinaria-construccion': category('construction', 'maquinaria de construcci\u00f3n'),
+    },
+    title: (subject, place) => `${subject} en venta en ${place}`,
+    description: (subject, place) =>
+      `Ver ${lower(subject)} en venta en ${place}. Compara veh\u00edculos de particulares y empresas en Autorell.`,
+    zeroResults: (subject, place) => `No hay anuncios de ${lower(subject)} en ${place} ahora mismo`,
+  },
+  nl: nlMarket('nl', 'NL'),
+  be: nlMarket('be', 'BE'),
+  pl: {
+    locale: 'pl',
+    countryCode: 'PL',
+    categories: {
+      samochody: category('cars', 'samochody'),
+      dostawcze: category('vans', 'samochody dostawcze'),
+      ciezarowki: category('trucks', 'ci\u0119\u017car\u00f3wki'),
+      'maszyny-rolnicze': category('agriculture', 'maszyny rolnicze'),
+      'maszyny-budowlane': category('construction', 'maszyny budowlane'),
+    },
+    title: (subject, place) => `${subject} na sprzeda\u017c w ${place}`,
+    description: (subject, place) =>
+      `Zobacz ${lower(subject)} na sprzeda\u017c w ${place}. Por\u00f3wnaj pojazdy od os\u00f3b prywatnych i firm w Autorell.`,
+    zeroResults: (subject, place) => `Brak og\u0142osze\u0144 dla ${lower(subject)} w ${place}`,
+  },
+  dk: {
+    locale: 'da',
+    countryCode: 'DK',
+    categories: {
+      biler: category('cars', 'biler'),
+      varevogne: category('vans', 'varevogne'),
+      lastbiler: category('trucks', 'lastbiler'),
+      landbrugsmaskiner: category('agriculture', 'landbrugsmaskiner'),
+      entreprenormaskiner: category('construction', 'entrepren\u00f8rmaskiner'),
+    },
+    title: (subject, place) => `${subject} til salg i ${place}`,
+    description: (subject, place) =>
+      `Se ${lower(subject)} til salg i ${place}. Sammenlign k\u00f8ret\u00f8jer fra private og virksomheder p\u00e5 Autorell.`,
+    zeroResults: (subject, place) => `Ingen annoncer for ${lower(subject)} i ${place} lige nu`,
+  },
+  fi: {
+    locale: 'fi',
+    countryCode: 'FI',
+    categories: {
+      autot: category('cars', 'autot'),
+      pakettiautot: category('vans', 'pakettiautot'),
+      'kuorma-autot': category('trucks', 'kuorma-autot'),
+      maatalouskoneet: category('agriculture', 'maatalouskoneet'),
+      maanrakennuskoneet: category('construction', 'maanrakennuskoneet'),
+    },
+    title: (subject, place) => `${subject} myyt\u00e4v\u00e4n\u00e4 kohteessa ${place}`,
+    description: (subject, place) =>
+      `Katso ${lower(subject)} myyt\u00e4v\u00e4n\u00e4 kohteessa ${place}. Vertaa yksityisten ja yritysten ajoneuvoja Autorellissa.`,
+    zeroResults: (subject, place) => `Ei ilmoituksia haulle ${lower(subject)} kohteessa ${place}`,
+  },
+}
 
-const swedishMakeLandings = {
+const knownMakeLabels: Record<string, string> = {
+  audi: 'Audi',
   bmw: 'BMW',
-} as const
+  mercedes: 'Mercedes-Benz',
+  'mercedes-benz': 'Mercedes-Benz',
+  tesla: 'Tesla',
+  toyota: 'Toyota',
+  volkswagen: 'Volkswagen',
+  volvo: 'Volvo',
+}
 
-export function resolveSwedishCarGeoLanding(
+export async function resolveGeoLandingRoute(
   market: string,
+  categorySlug: string | undefined,
   segments: string[] | undefined,
-): SwedishCarGeoLanding | null {
-  if (market !== 'se' || !segments?.length) return null
+): Promise<GeoLandingRoute | null> {
+  const normalizedMarket = normalizeSegment(market)
+  const config = marketRouteConfigs[normalizedMarket]
+  if (!config || !categorySlug || !segments?.length) return null
+
+  const normalizedCategorySlug = normalizeSegment(categorySlug)
+  const categoryRoute = config.categories[normalizedCategorySlug]
+  if (!categoryRoute) return null
   if (segments.length !== 1 && segments.length !== 2) return null
 
-  const [first, second] = segments.map((segment) => normalizeSeoSegment(segment))
-  const makeSlug = segments.length === 2 ? first : null
-  const municipalitySlug = segments.length === 2 ? second : first
+  const normalizedSegments = segments.map((segment) => normalizeSegment(segment))
+  const makeSlug = normalizedSegments.length === 2 ? normalizedSegments[0] : null
+  const placeSlug = normalizedSegments.length === 2 ? normalizedSegments[1] : normalizedSegments[0]
+  if (!placeSlug) return null
 
-  if (!municipalitySlug || !(municipalitySlug in swedishMunicipalityLandings)) {
-    return null
-  }
-  if (makeSlug && !(makeSlug in swedishMakeLandings)) {
-    return null
-  }
+  const place = await resolveGeoLandingPlace(config.countryCode, placeSlug)
+  if (!place) return null
 
-  const municipality =
-    swedishMunicipalityLandings[
-      municipalitySlug as keyof typeof swedishMunicipalityLandings
-    ]
-  const geoArea = resolveMarketplaceGeoArea(municipality.geoAreaId)
-  if (!geoArea) return null
-
-  const make = makeSlug
-    ? swedishMakeLandings[makeSlug as keyof typeof swedishMakeLandings]
-    : null
-  const baseLabel = make || 'Bilar'
-  const h1 = `${baseLabel} till salu i ${municipality.name}`
+  const make = makeSlug ? knownMakeLabels[makeSlug] || toTitleCase(makeSlug) : null
+  const subject = make || capitalize(categoryRoute.plural)
+  const h1 = config.title(subject, place.name)
   const canonicalPath = makeSlug
-    ? `/se/bilar/${makeSlug}/${municipalitySlug}`
-    : `/se/bilar/${municipalitySlug}`
-  const descriptionSubject = make ? make : 'bilar'
+    ? `/${normalizedMarket}/${normalizedCategorySlug}/${makeSlug}/${placeSlug}`
+    : `/${normalizedMarket}/${normalizedCategorySlug}/${placeSlug}`
 
   return {
-    market: 'se',
-    category: 'cars',
-    municipalitySlug,
-    municipalityName: municipality.name,
-    municipalityOfficialName: municipality.officialName,
+    market: normalizedMarket,
+    locale: config.locale,
+    countryCode: config.countryCode,
+    category: categoryRoute.category,
+    categorySlug: normalizedCategorySlug,
+    categoryLabel: capitalize(categoryRoute.plural),
+    place,
     makeSlug,
     make,
-    geoArea,
-    municipalityCode: municipality.municipalityCode,
     canonicalPath,
     h1,
     title: cleanSeoText(`${h1} | Autorell`, 60),
-    description: cleanSeoText(
-      `Se ${descriptionSubject} till salu i ${municipality.officialName}. J\u00e4mf\u00f6r fordon fr\u00e5n privata s\u00e4ljare och f\u00f6retag p\u00e5 Autorell.`,
-      155,
-    ),
-    zeroResultsText: make
-      ? `Inga ${make} till salu i ${municipality.name} just nu`
-      : `Inga bilar till salu i ${municipality.name} just nu`,
+    description: cleanSeoText(config.description(subject, place.name), 155),
+    zeroResultsText: config.zeroResults(subject, place.name),
   }
 }
 
-function normalizeSeoSegment(value: string | undefined) {
+export function isGeoLandingCandidate(
+  market: string,
+  categorySlug: string | undefined,
+  segments: string[] | undefined,
+) {
+  const config = marketRouteConfigs[normalizeSegment(market)]
+  return Boolean(config && categorySlug && config.categories[normalizeSegment(categorySlug)] && segments?.length)
+}
+
+export function buildGeoLandingMetadata(landing: GeoLandingRoute): Metadata {
+  const canonical = `https://www.autorell.com${landing.canonicalPath}`
+  return {
+    title: { absolute: landing.title },
+    description: landing.description,
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    openGraph: {
+      title: landing.title,
+      description: landing.description,
+      url: canonical,
+      siteName: 'Autorell',
+      type: 'website',
+    },
+  }
+}
+
+function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {
+  return { category: categorySlug, plural }
+}
+
+async function resolveGeoLandingPlace(countryCode: string, placeSlug: string) {
+  const staticPlace = resolveMarketplaceGeoAreaBySlug(countryCode, placeSlug)
+  if (staticPlace) return staticPlace
+
+  const [regions, places] = await Promise.all([
+    getGeoRegions(countryCode),
+    searchGeoPlaces({
+      countryCode,
+      query: placeSlug.replace(/-/g, ' '),
+      limit: 50,
+    }),
+  ])
+  const normalizedSlug = slugify(placeSlug)
+  const region = regions.find((item) => slugify(item.code) === normalizedSlug || slugify(item.name) === normalizedSlug)
+  if (region) {
+    return {
+      id: `${countryCode}:region:${region.code}`,
+      countryCode,
+      level: 'region',
+      name: region.name,
+      code: region.code,
+      slug: normalizedSlug,
+      region: region.name,
+      centroid: countryCentroid(countryCode),
+      bounds: countryBounds(countryCode),
+      aliases: [region.code, region.name, normalizedSlug],
+    } satisfies MarketplaceGeoArea
+  }
+
+  const place = places.find((item) => slugify(item.code.split(':').pop() || item.code) === normalizedSlug || slugify(item.name) === normalizedSlug || slugify(item.city) === normalizedSlug)
+  if (!place) return null
+
+  return {
+    id: `${countryCode}:locality:${place.code}`,
+    countryCode,
+    level: 'locality',
+    name: place.name,
+    code: place.code,
+    slug: normalizedSlug,
+    region: place.regionName,
+    municipality: place.name,
+    locality: place.city || place.name,
+    postalCode: place.postalCode || undefined,
+    centroid: countryCentroid(countryCode),
+    bounds: countryBounds(countryCode),
+    aliases: [place.code, place.name, place.city, normalizedSlug].filter(Boolean),
+  } satisfies MarketplaceGeoArea
+}
+
+function deMarket(locale: 'de' | 'at', countryCode: 'DE' | 'AT'): GeoMarketRouteConfig {
+  return {
+    locale,
+    countryCode,
+    categories: {
+      autos: category('cars', 'Autos'),
+      transporter: category('vans', 'Transporter'),
+      lkw: category('trucks', 'Lkw'),
+      landmaschinen: category('agriculture', 'Landmaschinen'),
+      baumaschinen: category('construction', 'Baumaschinen'),
+    },
+    title: (subject, place) => `${subject} kaufen in ${place}`,
+    description: (subject, place) =>
+      `${subject} in ${place} kaufen. Vergleichen Sie Fahrzeuge von privaten Verk\u00e4ufern und Unternehmen auf Autorell.`,
+    zeroResults: (subject, place) => `Keine Anzeigen f\u00fcr ${subject} in ${place} im Moment`,
+  }
+}
+
+function nlMarket(locale: 'nl' | 'be', countryCode: 'NL' | 'BE'): GeoMarketRouteConfig {
+  return {
+    locale,
+    countryCode,
+    categories: {
+      autos: category('cars', "auto's"),
+      bestelwagens: category('vans', 'bestelwagens'),
+      vrachtwagens: category('trucks', 'vrachtwagens'),
+      landbouwmachines: category('agriculture', 'landbouwmachines'),
+      bouwmachines: category('construction', 'bouwmachines'),
+    },
+    title: (subject, place) => `${subject} te koop in ${place}`,
+    description: (subject, place) =>
+      `Bekijk ${lower(subject)} te koop in ${place}. Vergelijk voertuigen van particulieren en bedrijven op Autorell.`,
+    zeroResults: (subject, place) => `Geen advertenties voor ${lower(subject)} in ${place} op dit moment`,
+  }
+}
+
+function normalizeSegment(value: string | undefined) {
   return String(value || '').trim().toLowerCase()
+}
+
+const routeCountryBounds: Record<string, { centroid: MarketplaceGeoArea['centroid']; bounds: MarketplaceGeoArea['bounds'] }> = {
+  AT: { centroid: { latitude: 47.6, longitude: 14.1 }, bounds: { north: 49.1, east: 17.2, south: 46.3, west: 9.5 } },
+  BE: { centroid: { latitude: 50.6, longitude: 4.7 }, bounds: { north: 51.5, east: 6.4, south: 49.5, west: 2.5 } },
+  DE: { centroid: { latitude: 51.2, longitude: 10.4 }, bounds: { north: 55.1, east: 15.1, south: 47.2, west: 5.8 } },
+  DK: { centroid: { latitude: 56.1, longitude: 10 }, bounds: { north: 57.8, east: 15.2, south: 54.5, west: 8 } },
+  ES: { centroid: { latitude: 40.4, longitude: -3.7 }, bounds: { north: 43.8, east: 4.4, south: 36, west: -9.4 } },
+  FI: { centroid: { latitude: 64.5, longitude: 26 }, bounds: { north: 70.1, east: 31.6, south: 59.7, west: 19.1 } },
+  FR: { centroid: { latitude: 46.6, longitude: 2.3 }, bounds: { north: 51.2, east: 8.3, south: 41.3, west: -5.2 } },
+  IT: { centroid: { latitude: 42.8, longitude: 12.5 }, bounds: { north: 47.1, east: 18.8, south: 36.6, west: 6.6 } },
+  NL: { centroid: { latitude: 52.1, longitude: 5.3 }, bounds: { north: 53.7, east: 7.3, south: 50.7, west: 3.3 } },
+  PL: { centroid: { latitude: 52.1, longitude: 19.4 }, bounds: { north: 54.9, east: 24.2, south: 49, west: 14.1 } },
+  SE: { centroid: { latitude: 62, longitude: 15 }, bounds: { north: 69.1, east: 24.2, south: 55.2, west: 10.6 } },
+}
+
+function countryCentroid(countryCode: string) {
+  return routeCountryBounds[countryCode]?.centroid || { latitude: 50, longitude: 10 }
+}
+
+function countryBounds(countryCode: string) {
+  return routeCountryBounds[countryCode]?.bounds || { north: 72, east: 32, south: 35, west: -10 }
+}
+
+function slugify(value: string) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function capitalize(value: string) {
+  return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value
+}
+
+function lower(value: string) {
+  return value.toLocaleLowerCase()
+}
+
+function toTitleCase(value: string) {
+  return value
+    .split('-')
+    .filter(Boolean)
+    .map((part) => capitalize(part))
+    .join(' ')
 }

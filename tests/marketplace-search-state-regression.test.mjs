@@ -12,6 +12,7 @@ const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
 )
+const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
   'utf8',
@@ -24,7 +25,6 @@ test('marketplace search state defines one shared geo/search model', () => {
   assert.match(searchStateSource, /parseMarketplaceSearchState/)
   assert.match(searchStateSource, /normalizeSearchBounds/)
   assert.match(searchStateSource, /isPointInsideSearchBounds/)
-  assert.match(searchStateSource, /searchBoundsToPolygon/)
   assert.match(searchStateSource, /knownVehicleMakes/)
 })
 
@@ -73,6 +73,7 @@ test('search-v2 consumes geo area and bounding box through the same normalized f
   assert.match(searchSource, /parsedSearchState\.offerType/)
   assert.match(searchSource, /parsedSearchState\.make/)
   assert.match(searchSource, /filters\.geoArea/)
+  assert.match(searchSource, /applyStrictGeoAreaFilter/)
   assert.match(searchSource, /filters\.bounds/)
   assert.match(searchSource, /gte\('latitude', filters\.bounds\.south\)/)
   assert.match(searchSource, /lte\('longitude', filters\.bounds\.east\)/)
@@ -87,6 +88,10 @@ test('geo area filters prefer stable columns before text fallback', () => {
   ]) {
     assert.ok(searchStateSource.includes(snippet), `${snippet} should be present`)
   }
+  assert.match(searchSource, /geoArea\.level === 'region'/)
+  assert.match(searchSource, /geoArea\.level === 'municipality'/)
+  assert.match(searchSource, /geoArea\.level === 'locality'/)
+  assert.match(searchSource, /geoArea\.level === 'postal_code'/)
 })
 
 test('geo search migration prepares stable IDs, polygons and indexed coordinates', () => {
@@ -113,8 +118,7 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
     "setParam('north'",
     'onSearchArea',
     'geoBounds',
-    'autorell-geo-bounds',
-    'searchBoundsToPolygon',
+    'map.fitBounds(bounds',
   ]) {
     assert.ok(vehicleSearchExperienceSource.includes(snippet), `VehicleSearchExperience should include ${snippet}`)
   }
@@ -122,9 +126,26 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
   for (const snippet of [
     'parseMarketplaceSearchState',
     'normalizeSearchBounds',
+    'initialSearchChips.push(initialGeoArea.name)',
     'initialGeoAreaId=',
     'initialGeoBounds=',
+    "initialGeoFilterMode={initialGeoArea ? 'strict' : 'legacy'}",
   ]) {
     assert.ok(marketplaceCategoryPageSource.includes(snippet), `marketplace category page should include ${snippet}`)
   }
+})
+
+test('geo SEO landings are market-wide, localized and backed by the geo directory', () => {
+  for (const market of ['se', 'de', 'at', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'dk', 'fi']) {
+    assert.match(geoLandingSource, new RegExp(`\\b${market}:`), `${market} should have a route config`)
+  }
+  for (const slug of ['bilar', 'lastbilar', 'lkw', 'camions', 'autocarri', 'camiones', 'vrachtwagens', 'ciezarowki', 'lastbiler', 'kuorma-autot']) {
+    assert.ok(geoLandingSource.includes(slug), `${slug} should be routable`)
+  }
+  assert.match(geoLandingSource, /export async function resolveGeoLandingRoute/)
+  assert.match(geoLandingSource, /searchGeoPlaces/)
+  assert.match(geoLandingSource, /getGeoRegions/)
+  assert.match(geoLandingSource, /buildGeoLandingMetadata/)
+  assert.doesNotMatch(geoLandingSource, /resolveSwedishCarGeoLanding/)
+  assert.doesNotMatch(geoLandingSource, /municipalityCode/)
 })

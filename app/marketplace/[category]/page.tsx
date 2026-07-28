@@ -186,7 +186,11 @@ export default async function MarketplaceCategoryPage({
     east: getSearchParam(resolvedSearchParams, 'east'),
     south: getSearchParam(resolvedSearchParams, 'south'),
     west: getSearchParam(resolvedSearchParams, 'west'),
-  })
+  }) || initialGeoArea?.bounds || null
+  const initialSearchChips = getSearchParamList(resolvedSearchParams, 'chips')
+  if (!initialSearchChips.length && initialGeoArea) {
+    initialSearchChips.push(initialGeoArea.name)
+  }
   const initialMaxPrice =
     getSearchParam(resolvedSearchParams, 'maxPrice') ||
     (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
@@ -266,7 +270,7 @@ export default async function MarketplaceCategoryPage({
         initialCategories={requestedCategories}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
         initialQuery={initialQuery}
-        initialSearchChips={getSearchParamList(resolvedSearchParams, 'chips')}
+        initialSearchChips={initialSearchChips}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || parsedInitialSearch.make}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
         initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county') || initialGeoArea?.region || ''}
@@ -274,6 +278,7 @@ export default async function MarketplaceCategoryPage({
         initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality') || initialGeoArea?.municipality || ''}
         initialGeoAreaId={initialGeoArea?.id || ''}
         initialGeoBounds={initialGeoBounds}
+        initialGeoFilterMode={initialGeoArea ? 'strict' : 'legacy'}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
         initialMaxPrice={initialMaxPrice}
         initialMode={getSearchMode(resolvedSearchParams)}
