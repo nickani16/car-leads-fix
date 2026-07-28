@@ -142,13 +142,15 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   for (const market of ['se', 'de', 'at', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'dk', 'fi']) {
     assert.match(geoLandingSource, new RegExp(`\\b${market}:`), `${market} should have a route config`)
   }
-  for (const slug of ['bilar', 'lastbilar', 'lkw', 'camions', 'autocarri', 'camiones', 'vrachtwagens', 'ciezarowki', 'lastbiler', 'kuorma-autot']) {
+  for (const slug of ['bilar', 'motorcyklar', 'husbilar', 'husvagnar', 'cyklar', 'leasingbilar', 'lastbilar', 'lkw', 'leasingautos', 'camions', 'autocarri', 'camiones', 'vrachtwagens', 'leaseautos', 'ciezarowki', 'lastbiler', 'kuorma-autot']) {
     assert.ok(geoLandingSource.includes(slug), `${slug} should be routable`)
   }
   assert.match(geoLandingSource, /export async function resolveGeoLandingRoute/)
   assert.match(geoLandingSource, /searchGeoPlaces/)
   assert.match(geoLandingSource, /getGeoRegions/)
   assert.match(geoLandingSource, /buildGeoMarketplaceHref/)
+  assert.match(geoLandingSource, /leasingPossible/)
+  assert.match(geoLandingSource, /mode', 'leasing'/)
   assert.doesNotMatch(geoLandingSource, /buildGeoLandingMetadata/)
   assert.match(marketCatchAllSource, /redirect\(buildGeoMarketplaceHref\(geoLanding\)\)/)
   assert.match(swedishCarRouteSource, /redirect\(buildGeoMarketplaceHref\(landing\)\)/)

@@ -10,6 +10,7 @@ import type { PublicLocale } from './public-i18n'
 type GeoCategoryRoute = {
   category: MarketplaceCategorySlug
   plural: string
+  leasing?: boolean
 }
 
 type GeoMarketRouteConfig = {
@@ -28,6 +29,7 @@ export type GeoLandingRoute = {
   category: MarketplaceCategorySlug
   categorySlug: string
   categoryLabel: string
+  leasing: boolean
   place: MarketplaceGeoArea
   makeSlug: string | null
   make: string | null
@@ -45,9 +47,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       bilar: category('cars', 'bilar'),
       transportbilar: category('vans', 'transportbilar'),
+      motorcyklar: category('motorcycles', 'motorcyklar'),
+      husbilar: category('motorhomes', 'husbilar'),
+      husvagnar: category('caravans', 'husvagnar'),
       lastbilar: category('trucks', 'lastbilar'),
       lantbruksmaskiner: category('agriculture', 'lantbruksmaskiner'),
       entreprenadmaskiner: category('construction', 'entreprenadmaskiner'),
+      cyklar: category('electric-bikes', 'cyklar'),
+      leasingbilar: leasingCategory('cars', 'leasingbilar'),
+      leasingtransportbilar: leasingCategory('vans', 'leasingtransportbilar'),
+      leasinglastbilar: leasingCategory('trucks', 'leasinglastbilar'),
+      leasinglantbruksmaskiner: leasingCategory('agriculture', 'leasinglantbruksmaskiner'),
+      leasingentreprenadmaskiner: leasingCategory('construction', 'leasingentreprenadmaskiner'),
     },
     title: (subject, place) => `${subject} till salu i ${place}`,
     description: (subject, place) =>
@@ -62,9 +73,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       voitures: category('cars', 'voitures'),
       utilitaires: category('vans', 'utilitaires'),
+      motos: category('motorcycles', 'motos'),
+      'camping-cars': category('motorhomes', 'camping-cars'),
+      caravanes: category('caravans', 'caravanes'),
       camions: category('trucks', 'camions'),
       'machines-agricoles': category('agriculture', 'machines agricoles'),
       'engins-chantier': category('construction', 'engins de chantier'),
+      'velos-electriques': category('electric-bikes', 'v\u00e9los \u00e9lectriques'),
+      'leasing-voitures': leasingCategory('cars', 'voitures en leasing'),
+      'leasing-utilitaires': leasingCategory('vans', 'utilitaires en leasing'),
+      'leasing-camions': leasingCategory('trucks', 'camions en leasing'),
+      'leasing-machines-agricoles': leasingCategory('agriculture', 'machines agricoles en leasing'),
+      'leasing-engins-chantier': leasingCategory('construction', 'engins de chantier en leasing'),
     },
     title: (subject, place) => `${subject} \u00e0 vendre \u00e0 ${place}`,
     description: (subject, place) =>
@@ -77,9 +97,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       auto: category('cars', 'auto'),
       furgoni: category('vans', 'furgoni'),
+      moto: category('motorcycles', 'moto'),
+      camper: category('motorhomes', 'camper'),
+      caravan: category('caravans', 'caravan'),
       autocarri: category('trucks', 'autocarri'),
       'macchine-agricole': category('agriculture', 'macchine agricole'),
       'macchine-edili': category('construction', 'macchine edili'),
+      'bici-elettriche': category('electric-bikes', 'bici elettriche'),
+      'leasing-auto': leasingCategory('cars', 'auto in leasing'),
+      'leasing-furgoni': leasingCategory('vans', 'furgoni in leasing'),
+      'leasing-autocarri': leasingCategory('trucks', 'autocarri in leasing'),
+      'leasing-macchine-agricole': leasingCategory('agriculture', 'macchine agricole in leasing'),
+      'leasing-macchine-edili': leasingCategory('construction', 'macchine edili in leasing'),
     },
     title: (subject, place) => `${subject} in vendita a ${place}`,
     description: (subject, place) =>
@@ -92,9 +121,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       coches: category('cars', 'coches'),
       furgonetas: category('vans', 'furgonetas'),
+      motos: category('motorcycles', 'motos'),
+      autocaravanas: category('motorhomes', 'autocaravanas'),
+      caravanas: category('caravans', 'caravanas'),
       camiones: category('trucks', 'camiones'),
       'maquinaria-agricola': category('agriculture', 'maquinaria agr\u00edcola'),
       'maquinaria-construccion': category('construction', 'maquinaria de construcci\u00f3n'),
+      'bicicletas-electricas': category('electric-bikes', 'bicicletas el\u00e9ctricas'),
+      'leasing-coches': leasingCategory('cars', 'coches de leasing'),
+      'leasing-furgonetas': leasingCategory('vans', 'furgonetas de leasing'),
+      'leasing-camiones': leasingCategory('trucks', 'camiones de leasing'),
+      'leasing-maquinaria-agricola': leasingCategory('agriculture', 'maquinaria agr\u00edcola de leasing'),
+      'leasing-maquinaria-construccion': leasingCategory('construction', 'maquinaria de construcci\u00f3n de leasing'),
     },
     title: (subject, place) => `${subject} en venta en ${place}`,
     description: (subject, place) =>
@@ -109,9 +147,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       samochody: category('cars', 'samochody'),
       dostawcze: category('vans', 'samochody dostawcze'),
+      motocykle: category('motorcycles', 'motocykle'),
+      kampery: category('motorhomes', 'kampery'),
+      przyczepy: category('caravans', 'przyczepy kempingowe'),
       ciezarowki: category('trucks', 'ci\u0119\u017car\u00f3wki'),
       'maszyny-rolnicze': category('agriculture', 'maszyny rolnicze'),
       'maszyny-budowlane': category('construction', 'maszyny budowlane'),
+      'rowery-elektryczne': category('electric-bikes', 'rowery elektryczne'),
+      'leasing-samochody': leasingCategory('cars', 'samochody w leasingu'),
+      'leasing-dostawcze': leasingCategory('vans', 'samochody dostawcze w leasingu'),
+      'leasing-ciezarowki': leasingCategory('trucks', 'ci\u0119\u017car\u00f3wki w leasingu'),
+      'leasing-maszyny-rolnicze': leasingCategory('agriculture', 'maszyny rolnicze w leasingu'),
+      'leasing-maszyny-budowlane': leasingCategory('construction', 'maszyny budowlane w leasingu'),
     },
     title: (subject, place) => `${subject} na sprzeda\u017c w ${place}`,
     description: (subject, place) =>
@@ -124,9 +171,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       biler: category('cars', 'biler'),
       varevogne: category('vans', 'varevogne'),
+      motorcykler: category('motorcycles', 'motorcykler'),
+      autocampere: category('motorhomes', 'autocampere'),
+      campingvogne: category('caravans', 'campingvogne'),
       lastbiler: category('trucks', 'lastbiler'),
       landbrugsmaskiner: category('agriculture', 'landbrugsmaskiner'),
       entreprenormaskiner: category('construction', 'entrepren\u00f8rmaskiner'),
+      elcykler: category('electric-bikes', 'elcykler'),
+      leasingbiler: leasingCategory('cars', 'leasingbiler'),
+      leasingvarevogne: leasingCategory('vans', 'leasingvarevogne'),
+      leasinglastbiler: leasingCategory('trucks', 'leasinglastbiler'),
+      leasinglandbrugsmaskiner: leasingCategory('agriculture', 'leasinglandbrugsmaskiner'),
+      leasingentreprenormaskiner: leasingCategory('construction', 'leasingentrepren\u00f8rmaskiner'),
     },
     title: (subject, place) => `${subject} til salg i ${place}`,
     description: (subject, place) =>
@@ -139,9 +195,18 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
     categories: {
       autot: category('cars', 'autot'),
       pakettiautot: category('vans', 'pakettiautot'),
+      moottoripyorat: category('motorcycles', 'moottoripy\u00f6r\u00e4t'),
+      matkailuautot: category('motorhomes', 'matkailuautot'),
+      asuntovaunut: category('caravans', 'asuntovaunut'),
       'kuorma-autot': category('trucks', 'kuorma-autot'),
       maatalouskoneet: category('agriculture', 'maatalouskoneet'),
       maanrakennuskoneet: category('construction', 'maanrakennuskoneet'),
+      sahkopyorat: category('electric-bikes', 's\u00e4hk\u00f6py\u00f6r\u00e4t'),
+      leasingautot: leasingCategory('cars', 'leasingautot'),
+      leasingpakettiautot: leasingCategory('vans', 'leasingpakettiautot'),
+      'leasing-kuorma-autot': leasingCategory('trucks', 'leasing-kuorma-autot'),
+      leasingmaatalouskoneet: leasingCategory('agriculture', 'leasingmaatalouskoneet'),
+      leasingmaanrakennuskoneet: leasingCategory('construction', 'leasingmaanrakennuskoneet'),
     },
     title: (subject, place) => `${subject} myyt\u00e4v\u00e4n\u00e4 kohteessa ${place}`,
     description: (subject, place) =>
@@ -197,6 +262,7 @@ export async function resolveGeoLandingRoute(
     category: categoryRoute.category,
     categorySlug: normalizedCategorySlug,
     categoryLabel: capitalize(categoryRoute.plural),
+    leasing: Boolean(categoryRoute.leasing),
     place,
     makeSlug,
     make,
@@ -224,12 +290,20 @@ export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
   params.set('geoAreaId', landing.place.id)
   params.set('geoFilterMode', 'strict')
   params.set('chips', landing.place.name)
+  if (landing.leasing) {
+    params.set('mode', 'leasing')
+    params.set('leasingPossible', 'true')
+  }
   if (landing.make) params.set('make', landing.make)
   return `/${landing.market}/marketplace/${landing.category}?${params.toString()}`
 }
 
 function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {
   return { category: categorySlug, plural }
+}
+
+function leasingCategory(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {
+  return { category: categorySlug, plural, leasing: true }
 }
 
 async function resolveGeoLandingPlace(countryCode: string, placeSlug: string) {
@@ -288,9 +362,18 @@ function deMarket(locale: 'de' | 'at', countryCode: 'DE' | 'AT'): GeoMarketRoute
     categories: {
       autos: category('cars', 'Autos'),
       transporter: category('vans', 'Transporter'),
+      motorraeder: category('motorcycles', 'Motorr\u00e4der'),
+      wohnmobile: category('motorhomes', 'Wohnmobile'),
+      wohnwagen: category('caravans', 'Wohnwagen'),
       lkw: category('trucks', 'Lkw'),
       landmaschinen: category('agriculture', 'Landmaschinen'),
       baumaschinen: category('construction', 'Baumaschinen'),
+      fahrraeder: category('electric-bikes', 'Fahrr\u00e4der'),
+      leasingautos: leasingCategory('cars', 'Leasingautos'),
+      leasingtransporter: leasingCategory('vans', 'Leasingtransporter'),
+      leasinglkw: leasingCategory('trucks', 'Leasing-Lkw'),
+      leasinglandmaschinen: leasingCategory('agriculture', 'Leasing-Landmaschinen'),
+      leasingbaumaschinen: leasingCategory('construction', 'Leasing-Baumaschinen'),
     },
     title: (subject, place) => `${subject} kaufen in ${place}`,
     description: (subject, place) =>
@@ -306,9 +389,18 @@ function nlMarket(locale: 'nl' | 'be', countryCode: 'NL' | 'BE'): GeoMarketRoute
     categories: {
       autos: category('cars', "auto's"),
       bestelwagens: category('vans', 'bestelwagens'),
+      motoren: category('motorcycles', 'motoren'),
+      campers: category('motorhomes', 'campers'),
+      caravans: category('caravans', 'caravans'),
       vrachtwagens: category('trucks', 'vrachtwagens'),
       landbouwmachines: category('agriculture', 'landbouwmachines'),
       bouwmachines: category('construction', 'bouwmachines'),
+      'elektrische-fietsen': category('electric-bikes', 'elektrische fietsen'),
+      leaseautos: leasingCategory('cars', "leaseauto's"),
+      leasebestelwagens: leasingCategory('vans', 'leasebestelwagens'),
+      leasevrachtwagens: leasingCategory('trucks', 'leasevrachtwagens'),
+      leaselandbouwmachines: leasingCategory('agriculture', 'leaselandbouwmachines'),
+      leasebouwmachines: leasingCategory('construction', 'leasebouwmachines'),
     },
     title: (subject, place) => `${subject} te koop in ${place}`,
     description: (subject, place) =>
