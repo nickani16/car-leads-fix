@@ -8,8 +8,12 @@ const migration = readFileSync(
 )
 const form = readFileSync(new URL('../app/konto/annonser/ny/NewListingForm.tsx', import.meta.url), 'utf8')
 const geoHelper = readFileSync(new URL('../lib/marketplace-geo.ts', import.meta.url), 'utf8')
+const staticGeoDatasets = readFileSync(new URL('../lib/geo-static-datasets.ts', import.meta.url), 'utf8')
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
+const largeMarketRows = JSON.parse(
+  readFileSync(new URL('../scripts/data/geonames-large-market-places-2026.json', import.meta.url), 'utf8'),
+)
 
 test('geo directory creates public read tables with indexed bounded search', () => {
   assert.match(migration, /create table if not exists public\.geo_regions/)
@@ -36,7 +40,7 @@ test('create listing uses market country and server-backed place search', () => 
   assert.doesNotMatch(form, /name="sellerCountryCode"/)
   assert.match(form, /\/api\/geo\/regions\?country=/)
   assert.match(form, /\/api\/geo\/places\?\$\{params\.toString\(\)\}/)
-  assert.match(form, /const usesMunicipalityDropdown = \['SE', 'DK', 'FI', 'NL', 'BE', 'AT'\]\.includes\(listingCountryCode\)/)
+  assert.match(form, /const usesMunicipalityDropdown = \['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'\]\.includes\(listingCountryCode\)/)
   assert.match(form, /limit: '500'/)
   assert.match(form, /<GeoPlaceCombobox\s+name="municipality"/)
   assert.match(form, /<Field\s+name="municipality"/)
@@ -102,7 +106,7 @@ test('Netherlands, Belgium and Austria use complete municipality datasets', () =
   assert.ok(rowsFor('geo_places', 'AT').some((place) => place.name === 'Eisenstadt'))
 })
 
-test('large markets seed region level only and do not reuse old city subsets', () => {
+test('initial SQL seed keeps large markets region level only', () => {
   const expectedRegionCounts = new Map([
     ['FR', 13],
     ['DE', 16],
@@ -114,6 +118,32 @@ test('large markets seed region level only and do not reuse old city subsets', (
     assert.equal(rowsFor('geo_regions', country).length, expectedRegions)
     assert.equal(rowsFor('geo_places', country).length, 0)
   }
+})
+
+test('large market static fallback covers towns for every large language market', () => {
+  const expectedPlaceCounts = new Map([
+    ['DE', 10949],
+    ['ES', 7339],
+    ['FR', 14900],
+    ['IT', 11339],
+    ['PL', 3348],
+  ])
+  for (const [country, expectedPlaces] of expectedPlaceCounts) {
+    const rows = largeMarketRows.filter((row) => row.countryCode === country)
+    assert.equal(rows.length, expectedPlaces)
+    assert.equal(new Set(rows.map((row) => slug(row.municipalityName))).size, expectedPlaces)
+    assert.ok(rows.every((row) => row.regionName && row.municipalityName && row.municipalityCode))
+  }
+
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'DE' && row.municipalityName === 'Berlin'))
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'DE' && row.municipalityName === 'München'))
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'FR' && row.municipalityName === 'Paris'))
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'ES' && row.municipalityName === 'Barcelona'))
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'IT' && row.municipalityName === 'Roma'))
+  assert.ok(largeMarketRows.some((row) => row.countryCode === 'PL' && row.municipalityName === 'Warszawa'))
+  assert.match(staticGeoDatasets, /geonames-large-market-places-2026/)
+  assert.match(staticGeoDatasets, /buildLargeMarketDataset\('DE', 16, 10949\)/)
+  assert.match(staticGeoDatasets, /buildLargeMarketDataset\('FR', 13, 14900\)/)
 })
 
 test('geo helper prefers database rows and uses static datasets only as fallback', () => {
@@ -135,7 +165,7 @@ test('manual location fallback is tracked separately from verified places', () =
   assert.match(form, /usesMunicipalityDropdown \? locationSource \|\| 'unverified' : 'manual'/)
   assert.match(form, /setLocationSource\('manual'\)/)
   assert.match(form, /setLocationSource\('verified'\)/)
-  assert.match(geoHelper, /verifiedMunicipalityCountries = new Set\(\['SE', 'DK', 'FI', 'NL', 'BE', 'AT'\]\)/)
+  assert.match(geoHelper, /verifiedMunicipalityCountries = new Set\(\['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'\]\)/)
   assert.match(geoHelper, /locationSource: 'manual' as const/)
   assert.match(geoHelper, /locationSource: 'verified' as const/)
 })
@@ -150,6 +180,7 @@ test('geo marketplace routes are advertised through dynamic sitemaps for every m
   assert.match(sitemapRoute, /getGeoSitemapMarketConfig/)
   assert.match(sitemapRoute, /getStaticGeoDataset/)
   assert.match(sitemapRoute, /\/\$\{config\.market\}\/\$\{categorySlug\}\/\$\{area\.slug\}/)
+  assert.match(sitemapRoute, /const dedupeKey = area\.slug/)
 })
 
 function assertSeedCount(countryCode, expectedRegions, expectedPlaces) {
@@ -194,4 +225,29 @@ function parseTuple(line) {
     code: values[1],
     name: values[2],
   }
+}
+
+function slug(value) {
+  return value
+    .replaceAll('Æ', 'Ae')
+    .replaceAll('Ø', 'O')
+    .replaceAll('Å', 'A')
+    .replaceAll('æ', 'ae')
+    .replaceAll('ø', 'o')
+    .replaceAll('å', 'a')
+    .replaceAll('Ä', 'A')
+    .replaceAll('Ö', 'O')
+    .replaceAll('Ü', 'U')
+    .replaceAll('ä', 'a')
+    .replaceAll('ö', 'o')
+    .replaceAll('ü', 'u')
+    .replaceAll('ß', 'ss')
+    .replaceAll('Ł', 'L')
+    .replaceAll('ł', 'l')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, '-')
 }

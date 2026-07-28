@@ -47,7 +47,7 @@ const supportedGeoCountries = new Set([
   'ES',
   'SE',
 ])
-const verifiedMunicipalityCountries = new Set(['SE', 'DK', 'FI', 'NL', 'BE', 'AT'])
+const verifiedMunicipalityCountries = new Set(['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'])
 
 export function normalizeGeoCountry(countryCode: string | null | undefined) {
   const normalized = String(countryCode || '').trim().toUpperCase()

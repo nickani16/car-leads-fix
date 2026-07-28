@@ -178,7 +178,7 @@ export default function NewListingForm({
     ? offerTypeValues
     : offerTypeValues.filter((item) => item.value !== 'lease')
   const progress = Math.round(((step + 1) / steps.length) * 100)
-  const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT'].includes(listingCountryCode)
+  const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'].includes(listingCountryCode)
   const orderedImages = useMemo(() => {
     if (!mainImageId) return images
     const main = images.find((image) => image.id === mainImageId)

@@ -137,7 +137,7 @@ async function geoSitemapAreas(countryCode: string) {
   return rows
     .filter((area) => {
       if (!area.slug) return false
-      const dedupeKey = `${area.key}:${area.slug}`
+      const dedupeKey = area.slug
       if (seen.has(dedupeKey)) return false
       seen.add(dedupeKey)
       return true

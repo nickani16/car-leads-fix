@@ -2,6 +2,7 @@
 import austriaRows from '../scripts/data/austria-municipalities-2026.json'
 import belgiumRows from '../scripts/data/belgium-refnis-municipalities-2025.json'
 import finlandRows from '../scripts/data/finland-municipalities-regions-2026.json'
+import largeMarketRows from '../scripts/data/geonames-large-market-places-2026.json'
 import netherlandsRows from '../scripts/data/netherlands-municipalities-2026.json'
 
 export type StaticGeoRegion = {
@@ -210,7 +211,11 @@ const finlandDataset: StaticGeoDataset = {
   source: 'statistics-finland-2026-complete-308',
   expectedRegions: 19,
   expectedPlaces: 308,
-  regions: finlandRegions.map(({ municipalities, ...region }) => region),
+  regions: finlandRegions.map((region) => ({
+    code: region.code,
+    name: region.name,
+    sortOrder: region.sortOrder,
+  })),
   places: finlandRegions.flatMap((region) =>
     region.municipalities.map((name) => ({
       code: `${region.code}:${slug(name)}`,
@@ -247,99 +252,12 @@ const austriaDataset = buildSmallMarketDataset({
   rows: austriaRows as SmallMarketGeoRow[],
 })
 
-const largeRegionDatasets = [
-  buildRegionOnlyDataset('FR', 'autorell-region-only-large-market', [
-    'Auvergne-Rh\u00f4ne-Alpes',
-    'Bourgogne-Franche-Comt\u00e9',
-    'Bretagne',
-    'Centre-Val de Loire',
-    'Corse',
-    'Grand Est',
-    'Hauts-de-France',
-    '\u00cele-de-France',
-    'Normandie',
-    'Nouvelle-Aquitaine',
-    'Occitanie',
-    'Pays de la Loire',
-    'Provence-Alpes-C\u00f4te d\u2019Azur',
-  ]),
-  buildRegionOnlyDataset('DE', 'autorell-region-only-large-market', [
-    'Baden-W\u00fcrttemberg',
-    'Bayern',
-    'Berlin',
-    'Brandenburg',
-    'Bremen',
-    'Hamburg',
-    'Hessen',
-    'Mecklenburg-Vorpommern',
-    'Niedersachsen',
-    'Nordrhein-Westfalen',
-    'Rheinland-Pfalz',
-    'Saarland',
-    'Sachsen',
-    'Sachsen-Anhalt',
-    'Schleswig-Holstein',
-    'Th\u00fcringen',
-  ]),
-  buildRegionOnlyDataset('ES', 'autorell-region-only-large-market', [
-    'Andaluc\u00eda',
-    'Arag\u00f3n',
-    'Asturias',
-    'Illes Balears',
-    'Canarias',
-    'Cantabria',
-    'Castilla-La Mancha',
-    'Castilla y Le\u00f3n',
-    'Catalu\u00f1a',
-    'Comunitat Valenciana',
-    'Extremadura',
-    'Galicia',
-    'La Rioja',
-    'Madrid',
-    'Murcia',
-    'Navarra',
-    'Pa\u00eds Vasco',
-  ]),
-  buildRegionOnlyDataset('IT', 'autorell-region-only-large-market', [
-    'Abruzzo',
-    'Basilicata',
-    'Calabria',
-    'Campania',
-    'Emilia-Romagna',
-    'Friuli-Venezia Giulia',
-    'Lazio',
-    'Liguria',
-    'Lombardia',
-    'Marche',
-    'Molise',
-    'Piemonte',
-    'Puglia',
-    'Sardegna',
-    'Sicilia',
-    'Toscana',
-    'Trentino-Alto Adige',
-    'Umbria',
-    'Valle d\u2019Aosta',
-    'Veneto',
-  ]),
-  buildRegionOnlyDataset('PL', 'autorell-region-only-large-market', [
-    'Dolno\u015bl\u0105skie',
-    'Kujawsko-Pomorskie',
-    'Lubelskie',
-    'Lubuskie',
-    '\u0141\u00f3dzkie',
-    'Ma\u0142opolskie',
-    'Mazowieckie',
-    'Opolskie',
-    'Podkarpackie',
-    'Podlaskie',
-    'Pomorskie',
-    '\u015al\u0105skie',
-    '\u015awi\u0119tokrzyskie',
-    'Warmi\u0144sko-Mazurskie',
-    'Wielkopolskie',
-    'Zachodniopomorskie',
-  ]),
+const largeMarketDatasets = [
+  buildLargeMarketDataset('DE', 16, 10949),
+  buildLargeMarketDataset('ES', 19, 7339),
+  buildLargeMarketDataset('FR', 13, 14900),
+  buildLargeMarketDataset('IT', 20, 11339),
+  buildLargeMarketDataset('PL', 16, 3348),
 ]
 const datasets = new Map([
   [austriaDataset.countryCode, austriaDataset],
@@ -348,7 +266,7 @@ const datasets = new Map([
   [swedenDataset.countryCode, swedenDataset],
   [finlandDataset.countryCode, finlandDataset],
   [netherlandsDataset.countryCode, netherlandsDataset],
-  ...largeRegionDatasets.map((dataset) => [dataset.countryCode, dataset] as const),
+  ...largeMarketDatasets.map((dataset) => [dataset.countryCode, dataset] as const),
 ])
 
 for (const dataset of datasets.values()) {
@@ -432,19 +350,23 @@ function buildSmallMarketDataset({
   }
 }
 
-function buildRegionOnlyDataset(countryCode: string, source: string, regionNames: string[]): StaticGeoDataset {
-  return {
+function buildLargeMarketDataset(countryCode: string, expectedRegions: number, expectedPlaces: number) {
+  const rows = (largeMarketRows as LargeMarketGeoRow[])
+    .filter((row) => row.countryCode === countryCode)
+    .map((row) => ({
+      regionCode: row.regionCode,
+      regionName: row.regionName,
+      municipalityCode: row.municipalityCode,
+      municipalityName: row.municipalityName,
+    }))
+
+  return buildSmallMarketDataset({
     countryCode,
-    source,
-    expectedRegions: regionNames.length,
-    expectedPlaces: 0,
-    regions: regionNames.map((name, index) => ({
-      code: slug(name),
-      name,
-      sortOrder: index + 1,
-    })),
-    places: [],
-  }
+    source: 'geonames-cities500-large-market-places-2026',
+    expectedRegions,
+    expectedPlaces,
+    rows,
+  })
 }
 
 function foldGeoLetters(value: string) {
@@ -502,6 +424,13 @@ type SmallMarketGeoRow = {
   regionName: string
   municipalityCode: string
   municipalityName: string
+}
+
+type LargeMarketGeoRow = SmallMarketGeoRow & {
+  countryCode: string
+  asciiName?: string
+  population?: number
+  featureCode?: string
 }
 
 function classificationName(item: FinlandGeoItem) {
