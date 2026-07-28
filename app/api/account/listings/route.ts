@@ -88,6 +88,10 @@ function isMissingGeoListingColumnError(error: { code?: string; message?: string
   return /geo_place_code|location_source/i.test(error.message || '')
 }
 
+function normalizeListingPackageId(packageId: string) {
+  return packageId in listingPackageDetails ? packageId : 'free_7d'
+}
+
 function numberOrNull(value: string) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
@@ -452,10 +456,7 @@ export async function POST(request: Request) {
     const category = normalizeMarketplaceCategory(
       getCategoryPricing(text(form, 'category')).slug,
     )
-    const packageId = text(form, 'packageId')
-    if (!(packageId in listingPackageDetails)) {
-      return listingFormError('Välj ett giltigt annonspaket.', 4, 'packageId')
-    }
+    const packageId = normalizeListingPackageId(text(form, 'packageId'))
     if (form.get('listingTerms') !== 'on') {
       return listingFormError('Godkänn annons- och betalningsvillkoren.', 4, 'listingTerms')
     }

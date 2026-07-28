@@ -110,6 +110,7 @@ const swedishMileageFactor = 10
 const minModelYear = 1950
 const maxModelYear = 2027
 const listingRequestTimeoutMs = 60_000
+const listingPackageIds = new Set(['free_7d', 'standard_15d', 'premium_30d'])
 const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
@@ -136,7 +137,7 @@ export default function NewListingForm({
     normalizeMarketplaceCategory(defaultCategory),
   )
   const createInitialValues = () => ({
-    packageId: 'free_7d',
+    packageId: normalizeListingPackageId(''),
     currency: defaultCurrency,
     phoneVisibility: 'public',
     offerType: 'sale' as OfferType,
@@ -193,7 +194,11 @@ export default function NewListingForm({
         const saved = window.localStorage.getItem(draftKey)
         if (saved) {
           const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[] }
-          if (draft.values) setValues((current) => ({ ...current, ...draft.values }))
+          if (draft.values) setValues((current) => ({
+            ...current,
+            ...draft.values,
+            packageId: normalizeListingPackageId(draft.values?.packageId),
+          }))
           if (draft.category) setCategory(normalizeMarketplaceCategory(draft.category))
           if (draft.equipment) setEquipment(draft.equipment)
           if (typeof draft.step === 'number') setStep(Math.min(4, Math.max(0, draft.step)) as StepId)
@@ -442,7 +447,7 @@ export default function NewListingForm({
     }
 
     if (targetStep === 4) {
-      if (!values.packageId) return missing(copy.errors.package)
+      if (!normalizeListingPackageId(values.packageId)) return missing(copy.errors.package)
       if (values.listingTerms !== 'on') {
         return missing(copy.errors.terms)
       }
@@ -512,6 +517,8 @@ export default function NewListingForm({
     const form = new FormData()
     form.set('category', category)
     form.set('sellerCountryCode', listingCountryCode)
+    const selectedPackageId = normalizeListingPackageId(values.packageId)
+    form.set('packageId', selectedPackageId)
     form.set('geoPlaceCode', usesMunicipalityDropdown ? geoPlaceCode : '')
     form.set(
       'locationSource',
@@ -528,6 +535,7 @@ export default function NewListingForm({
       fieldsForCategoryAndSubcategory(category, values).map((field) => field.name),
     )
     Object.entries(values).forEach(([key, value]) => {
+      if (key === 'packageId') return
       if (structuredListingFieldNames.includes(key) && !allowedTechnicalKeys.has(key)) return
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
@@ -545,7 +553,7 @@ export default function NewListingForm({
       console.info('[autorell:create-listing] submit started', {
         imageCount: orderedImages.length,
         totalImageBytes: orderedImages.reduce((sum, image) => sum + image.size, 0),
-        packageId: values.packageId,
+        packageId: selectedPackageId,
         country: listingCountryCode,
         locale,
       })
@@ -583,7 +591,7 @@ export default function NewListingForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             listingId: result.listingId,
-            packageId: result.packageId || values.packageId,
+            packageId: result.packageId || selectedPackageId,
             market: billingMarketCode || listingCountryCode,
             locale,
           }),
@@ -593,24 +601,24 @@ export default function NewListingForm({
           url?: string
         }
         if (!checkoutResponse.ok || !checkout.url) {
-          setError(checkout.error || copy.errors.checkout)
-          setLoading(false)
+          window.location.assign(createdListingHref(locale, result.listingId, 'checkout_failed'))
           return
         }
         window.location.assign(checkout.url)
         return
       } catch (caught) {
-        setError(
-          caught instanceof DOMException && caught.name === 'AbortError'
-            ? copy.errors.checkoutTimeout
-            : copy.errors.checkout,
+        window.location.assign(
+          createdListingHref(
+            locale,
+            result.listingId,
+            caught instanceof DOMException && caught.name === 'AbortError' ? 'checkout_timeout' : 'checkout_failed',
+          ),
         )
-        setLoading(false)
         return
       }
     }
     window.location.assign(
-      localizePublicHref(locale, `/account/listings/created?listing=${encodeURIComponent(result.listingId)}`),
+      createdListingHref(locale, result.listingId),
     )
   }
 
@@ -3217,6 +3225,16 @@ function localizeFormText(locale: PublicLocale, sv: string, en: string, de: stri
   if (locale === 'sv') return sv
   if (locale === 'de' || locale === 'at') return de
   return translatePublic(locale, en)
+}
+
+function normalizeListingPackageId(packageId?: string) {
+  return packageId && listingPackageIds.has(packageId) ? packageId : 'free_7d'
+}
+
+function createdListingHref(locale: PublicLocale, listingId: string, payment?: 'checkout_failed' | 'checkout_timeout') {
+  const params = new URLSearchParams({ listing: listingId })
+  if (payment) params.set('payment', payment)
+  return localizePublicHref(locale, `/account/listings/created?${params.toString()}`)
 }
 
 function currentDocumentLocale(): PublicLocale {

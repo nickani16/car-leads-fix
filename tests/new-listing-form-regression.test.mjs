@@ -56,11 +56,23 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.match(form, /market: billingMarketCode \|\| listingCountryCode/)
   assert.match(form, /locale,/)
   assert.match(form, /window\.location\.assign\(checkout\.url\)/)
-  assert.match(form, /localizePublicHref\(locale, `\/account\/listings\/created\?listing=/)
+  assert.match(form, /createdListingHref\(locale, result\.listingId\)/)
+  assert.match(form, /createdListingHref\(locale,\s*result\.listingId,\s*'checkout_failed'\)/)
+  assert.match(form, /createdListingHref\([\s\S]*'checkout_timeout'/)
   assert.match(form, /Publiceringen tog f/)
   assert.doesNotMatch(form, /router\.push\(`\/account\/listings\?choosePackage=1&listing=/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
   assert.doesNotMatch(form, /onAddToBatch/)
+})
+
+test('stale or invalid package drafts fall back to the free listing package', () => {
+  assert.match(form, /const listingPackageIds = new Set\(\['free_7d', 'standard_15d', 'premium_30d'\]\)/)
+  assert.match(form, /packageId: normalizeListingPackageId\(draft\.values\?\.packageId\)/)
+  assert.match(form, /const selectedPackageId = normalizeListingPackageId\(values\.packageId\)/)
+  assert.match(form, /if \(key === 'packageId'\) return/)
+  assert.match(createListingRoute, /function normalizeListingPackageId\(packageId: string\)/)
+  assert.match(createListingRoute, /return packageId in listingPackageDetails \? packageId : 'free_7d'/)
+  assert.doesNotMatch(createListingRoute, /Välj ett giltigt annonspaket\./)
 })
 
 test('listing insert falls back when production schema lacks geo columns', () => {
