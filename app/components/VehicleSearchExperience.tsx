@@ -60,7 +60,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
-type ResultsLayout = 'single' | 'split'
+type ResultsLayout = 'single' | 'split' | 'desktopSplit'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
@@ -922,7 +922,7 @@ export default function VehicleSearchExperience({
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
-  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -2626,7 +2626,7 @@ export default function VehicleSearchExperience({
                 <button
                   type="button"
                   onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
+                  className={`hidden h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] min-[1120px]:grid ${
                     resultsLayout === 'split'
                       ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                       : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2657,7 +2657,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}>
+                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid min-[1120px]:grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (
                     <VehicleResultCard
                       key={listing.id}
@@ -2666,7 +2666,7 @@ export default function VehicleSearchExperience({
                       compareActive={compareIds.includes(listing.id)}
                       onCompare={() => toggleCompare(listing.id)}
                       onBeforeNavigate={rememberSearchBeforeListingNavigation}
-                      layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
+                      layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'desktopSplit' : 'single'}
                     />
                   ))}
                 </div>
@@ -3695,20 +3695,32 @@ function VehicleResultCard({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
-  const visibleMeta = layout === 'split' ? meta.slice(0, 2) : meta
+  const visibleMeta = layout === 'split' || layout === 'desktopSplit' ? meta.slice(0, 2) : meta
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
-      layout === 'split' ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
+      layout === 'split'
+        ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4'
+        : layout === 'desktopSplit'
+          ? 'mx-0 px-4 py-5 sm:mx-6 sm:px-0 min-[1120px]:mx-0 min-[1120px]:px-4 min-[1120px]:py-4 min-[1120px]:odd:border-r'
+          : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
     }`}>
       <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
       <div className={`pointer-events-none relative z-20 grid gap-4 ${
-        layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
+        layout === 'split'
+          ? 'grid-cols-1'
+          : layout === 'desktopSplit'
+            ? 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start min-[1120px]:grid-cols-1 min-[1120px]:items-stretch'
+            : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
       }`}>
         <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
-          layout === 'split' ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]' : 'h-[246px] sm:h-[174px]'
+          layout === 'split'
+            ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]'
+            : layout === 'desktopSplit'
+              ? 'h-[246px] sm:h-[174px] min-[1120px]:h-auto min-[1120px]:min-h-[138px] min-[1120px]:aspect-[4/3]'
+              : 'h-[246px] sm:h-[174px]'
         }`}>
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
@@ -3716,7 +3728,7 @@ function VehicleResultCard({
               title={listing.title}
               href={href}
               onNavigate={onBeforeNavigate}
-              sizes={layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : '(max-width: 640px) 100vw, 260px'}
+              sizes={layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : layout === 'desktopSplit' ? '(max-width: 640px) 100vw, (max-width: 1119px) 260px, 360px' : '(max-width: 640px) 100vw, 260px'}
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
@@ -3755,7 +3767,7 @@ function VehicleResultCard({
             <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
               {offerBadge.label}
             </span>
-            <span className={`${layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
+            <span className={`${layout === 'split' ? 'text-[14px] sm:text-[16px]' : layout === 'desktopSplit' ? 'text-[18px] min-[1120px]:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
             <p className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
@@ -3764,7 +3776,7 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
-            <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
+            <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' || layout === 'desktopSplit' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName
@@ -3772,7 +3784,7 @@ function VehicleResultCard({
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
-            <div className={`${layout === 'split' ? 'hidden sm:flex' : 'flex'} min-w-0 flex-wrap items-center gap-1.5`}>
+            <div className={`${layout === 'split' ? 'hidden sm:flex' : layout === 'desktopSplit' ? 'flex min-[1120px]:hidden' : 'flex'} min-w-0 flex-wrap items-center gap-1.5`}>
               {equipmentChips.map((item) => (
                 <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                   {item}
@@ -3798,7 +3810,7 @@ function VehicleResultCard({
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
+                  <span className={`${layout === 'split' || layout === 'desktopSplit' ? 'hidden' : 'relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
                   <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                 </span>
               ) : null}
