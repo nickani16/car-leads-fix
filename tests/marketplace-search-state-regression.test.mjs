@@ -14,6 +14,7 @@ const marketplaceCategoryPageSource = readFileSync(
 )
 const marketCatchAllSource = readFileSync(new URL('../app/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const swedishCarRouteSource = readFileSync(new URL('../app/[market]/bilar/[...segments]/page.tsx', import.meta.url), 'utf8')
+const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
@@ -151,8 +152,11 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.doesNotMatch(geoLandingSource, /buildGeoLandingMetadata/)
   assert.match(marketCatchAllSource, /redirect\(buildGeoMarketplaceHref\(geoLanding\)\)/)
   assert.match(swedishCarRouteSource, /redirect\(buildGeoMarketplaceHref\(landing\)\)/)
+  assert.match(internalSeoRouteSource, /redirect\(destination\)/)
+  assert.match(internalSeoRouteSource, /buildGeoMarketplaceHref\(geoLanding\)/)
   assert.doesNotMatch(marketCatchAllSource, /GeoLandingSearchPage/)
   assert.doesNotMatch(swedishCarRouteSource, /GeoLandingSearchPage/)
+  assert.doesNotMatch(internalSeoRouteSource, /PublicHeader|PublicFooter|getSeoLandingData/)
   assert.doesNotMatch(geoLandingSource, /resolveSwedishCarGeoLanding/)
   assert.doesNotMatch(geoLandingSource, /municipalityCode/)
 })
