@@ -89,6 +89,12 @@ test('created listings still return success if optional metadata side effects fa
   assert.doesNotMatch(createListingRoute, /await Promise\.all\(\[\s*admin\.from\('marketplace_listing_identifiers'\)/)
 })
 
+test('empty seller notes still satisfy the required listing description column', () => {
+  assert.match(createListingRoute, /function buildDefaultListingDescription/)
+  assert.match(createListingRoute, /const description = sellerNote \|\| buildDefaultListingDescription\(\{ title, city, offerType \}\)/)
+  assert.doesNotMatch(createListingRoute, /const description = sellerNote \|\| null/)
+})
+
 test('new listing location accepts verified picks and manual missing-place fallback', () => {
   assert.match(form, /city: current\.city \|\| place\.city \|\| place\.name/)
   assert.match(form, /city: current\.city \|\| value/)

@@ -23,7 +23,7 @@ import {
   fieldsForCategoryAndSubcategory,
   listingColorOptions,
 } from '@/lib/listing-form-options'
-import { buildListingSearchDocument, isLeaseOffer, isSaleOffer, normalizeOfferType, type LeaseData } from '@/lib/listing-schema'
+import { buildListingSearchDocument, isLeaseOffer, isSaleOffer, normalizeOfferType, type LeaseData, type OfferType } from '@/lib/listing-schema'
 import {
   equipmentLabel,
   equipmentOptionByKey,
@@ -90,6 +90,22 @@ function isMissingGeoListingColumnError(error: { code?: string; message?: string
 
 function normalizeListingPackageId(packageId: string) {
   return packageId in listingPackageDetails ? packageId : 'free_7d'
+}
+
+function buildDefaultListingDescription({
+  title,
+  city,
+  offerType,
+}: {
+  title: string
+  city: string
+  offerType: OfferType
+}) {
+  const listingTitle = title || 'Fordon'
+  const offerLabel = offerType === 'lease' ? 'leasing' : 'till salu'
+  return city
+    ? `${listingTitle} ${offerLabel} i ${city}.`
+    : `${listingTitle} ${offerLabel}.`
 }
 
 function numberOrNull(value: string) {
@@ -469,10 +485,12 @@ export async function POST(request: Request) {
 
     const make = text(form, 'make')
     const model = text(form, 'model')
+    const variant = text(form, 'variant')
+    const title = `${make} ${model} ${variant}`.trim()
     const offerType = normalizeOfferType(form.get('offerType'))
     const sellerNote = text(form, 'sellerNote')
-    const description = sellerNote || null
     const city = text(form, 'city')
+    const description = sellerNote || buildDefaultListingDescription({ title, city, offerType })
     const rawRegion = text(form, 'county') || text(form, 'region')
     const rawMunicipality = text(form, 'municipality')
     const geoPlaceCode = text(form, 'geoPlaceCode')
@@ -762,11 +780,11 @@ export async function POST(request: Request) {
     const listingInsert = {
         seller_user_id: user.id,
         category,
-        title: `${make} ${model} ${text(form, 'variant')}`.trim(),
+        title,
         description,
         make,
         model,
-        variant: text(form, 'variant') || null,
+        variant: variant || null,
         registration_reference: identifiers.registrationNumber || null,
         model_year: Number.isInteger(modelYear) ? modelYear : null,
         mileage_km: Number.isFinite(mileage)
