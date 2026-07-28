@@ -12,7 +12,9 @@ import {
   ChevronRight,
   GripVertical,
   ImagePlus,
+  Loader2,
   Search,
+  ShieldCheck,
   Star,
   Trash2,
   X,
@@ -151,6 +153,7 @@ export default function NewListingForm({
   const [draggedImageId, setDraggedImageId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [publishProgress, setPublishProgress] = useState(0)
   const [draftNotice, setDraftNotice] = useState(false)
   const [regionOptions, setRegionOptions] = useState<GeoRegionOption[]>([])
   const [placeOptions, setPlaceOptions] = useState<GeoPlaceOption[]>([])
@@ -245,6 +248,22 @@ export default function NewListingForm({
         : current
     ))
   }, [leasingAllowedForCategory])
+
+  useEffect(() => {
+    if (!loading) {
+      setPublishProgress(0)
+      return
+    }
+    setPublishProgress(8)
+    const interval = window.setInterval(() => {
+      setPublishProgress((current) => {
+        if (current >= 92) return current
+        const increment = current < 35 ? 9 : current < 70 ? 6 : 3
+        return Math.min(92, current + increment)
+      })
+    }, 650)
+    return () => window.clearInterval(interval)
+  }, [loading])
 
   useEffect(() => {
     if (!draftImagesRestored.current) return
@@ -582,6 +601,7 @@ export default function NewListingForm({
       setLoading(false)
       return
     }
+    setPublishProgress(100)
     window.localStorage.removeItem(draftKey)
     void deleteDraftImages(draftKey)
     if (result.requiresPayment) {
@@ -625,8 +645,10 @@ export default function NewListingForm({
   return (
     <form
       onSubmit={submit}
-      className="overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
+      aria-busy={loading}
+      className="relative overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
     >
+      {loading ? <PublishingOverlay copy={copy} progress={publishProgress} /> : null}
       {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>{copy.draftRestoredTitle}</strong> {copy.draftRestoredText}</div> : null}
       <div ref={stepHeaderRef} className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -967,14 +989,73 @@ export default function NewListingForm({
         ) : (
           <button
             disabled={loading}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:opacity-60"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:opacity-80"
           >
             {loading ? copy.publishing : copy.publish}
-            <Check className="h-4 w-4" />
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
           </button>
         )}
       </div>
     </form>
+  )
+}
+
+function PublishingOverlay({
+  copy,
+  progress,
+}: {
+  copy: ListingFormCopy
+  progress: number
+}) {
+  const visibleProgress = Math.max(1, Math.min(100, Math.round(progress)))
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="absolute inset-0 z-20 flex items-end bg-white/88 p-4 backdrop-blur-[3px] sm:items-center sm:justify-center sm:p-8"
+    >
+      <div className="w-full rounded-[24px] border border-[#d7e5ff] bg-white p-5 shadow-[0_24px_80px_rgba(16,24,40,.18)] sm:max-w-lg sm:p-7">
+        <div className="flex items-start gap-4">
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+            <ShieldCheck className="h-6 w-6" />
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#0866ff] text-white">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            </span>
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#101828]">{copy.publishWaitingTitle}</h3>
+            <p className="mt-1 text-sm leading-6 text-[#475467]">{copy.publishWaitingText}</p>
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-[#101828]">
+            <span>{copy.publishWaitingPercentLabel}</span>
+            <span>{visibleProgress} %</span>
+          </div>
+          <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#e8eef7]">
+            <div
+              className="h-full rounded-full bg-[#0866ff] transition-all duration-500 ease-out"
+              style={{ width: `${visibleProgress}%` }}
+            />
+          </div>
+        </div>
+        <div className="mt-5 grid gap-2 text-sm text-[#344054] sm:grid-cols-3">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <Check className="h-4 w-4 text-[#16a34a]" />
+            {copy.publishWaitingReview}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <Loader2 className="h-4 w-4 animate-spin text-[#0866ff]" />
+            {copy.publishWaitingImages}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <ShieldCheck className="h-4 w-4 text-[#0866ff]" />
+            {copy.publishWaitingPayment}
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -2362,6 +2443,12 @@ function getListingFormCopy(locale: PublicLocale) {
     back: 'Back',
     next: 'Next',
     publishing: 'Publishing...',
+    publishWaitingTitle: 'Please wait, we are publishing your listing',
+    publishWaitingText: 'We are checking the details, uploading images and preparing the listing. Keep this window open.',
+    publishWaitingPercentLabel: 'Publishing progress',
+    publishWaitingReview: 'Details checked',
+    publishWaitingImages: 'Images uploaded',
+    publishWaitingPayment: 'Package prepared',
     publish: 'Publish listing',
     draftRestoredTitle: 'Your draft has been restored.',
     draftRestoredText: 'Details and images are saved automatically in this browser while you work.',
@@ -2467,6 +2554,12 @@ function getListingFormCopy(locale: PublicLocale) {
       back: 'Tillbaka',
       next: 'Nästa',
       publishing: 'Publicerar...',
+      publishWaitingTitle: 'Vänta, vi publicerar din annons',
+      publishWaitingText: 'Vi kontrollerar uppgifterna, laddar upp bilderna och förbereder annonsen. Låt fönstret vara öppet.',
+      publishWaitingPercentLabel: 'Publiceringsstatus',
+      publishWaitingReview: 'Uppgifter kontrolleras',
+      publishWaitingImages: 'Bilder laddas upp',
+      publishWaitingPayment: 'Paket förbereds',
       publish: 'Publicera annons',
       draftRestoredTitle: 'Ditt utkast har återställts.',
       draftRestoredText: 'Uppgifter och bilder sparas automatiskt i den här webbläsaren medan du arbetar.',
@@ -2505,6 +2598,12 @@ function getListingFormCopy(locale: PublicLocale) {
       next: 'Weiter',
       publish: 'Anzeige veröffentlichen',
       publishing: 'Wird veröffentlicht...',
+      publishWaitingTitle: 'Bitte warten, wir veröffentlichen Ihre Anzeige',
+      publishWaitingText: 'Wir prüfen die Angaben, laden die Bilder hoch und bereiten die Anzeige vor. Lassen Sie dieses Fenster geöffnet.',
+      publishWaitingPercentLabel: 'Veröffentlichungsfortschritt',
+      publishWaitingReview: 'Angaben geprüft',
+      publishWaitingImages: 'Bilder werden hochgeladen',
+      publishWaitingPayment: 'Paket wird vorbereitet',
       processingImages: 'Bilder werden verarbeitet...',
       batchTitle: 'Mehrere Anzeigen gleichzeitig erstellen',
       batchText: 'Fertige Anzeige in die Warteschlange legen, die nächste erstellen, alles prüfen und gemeinsam veröffentlichen.',
@@ -2594,6 +2693,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Valitse väri',
     chooseEquipment: 'Valitse varusteet',
     processingImages: 'Kuvia käsitellään...',
+    publishWaitingTitle: 'Odota, julkaisemme ilmoitustasi',
+    publishWaitingText: 'Tarkistamme tiedot, lataamme kuvat ja valmistelemme ilmoituksen. Pidä tämä ikkuna avoinna.',
+    publishWaitingPercentLabel: 'Julkaisun edistyminen',
+    publishWaitingReview: 'Tiedot tarkistetaan',
+    publishWaitingImages: 'Kuvia ladataan',
+    publishWaitingPayment: 'Pakettia valmistellaan',
     imagesTitle: 'Kuvat',
     previewTitle: 'Esikatselu',
     technicalTitle: 'Tekniset tiedot ja tarkistus',
@@ -2613,6 +2718,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Vælg farve',
     chooseEquipment: 'Vælg udstyr',
     processingImages: 'Behandler billeder...',
+    publishWaitingTitle: 'Vent, vi publicerer din annonce',
+    publishWaitingText: 'Vi kontrollerer oplysningerne, uploader billederne og gør annoncen klar. Hold vinduet åbent.',
+    publishWaitingPercentLabel: 'Publiceringsstatus',
+    publishWaitingReview: 'Oplysninger kontrolleres',
+    publishWaitingImages: 'Billeder uploades',
+    publishWaitingPayment: 'Pakke forberedes',
     imagesTitle: 'Billeder',
     previewTitle: 'Forhåndsvisning',
     errors: {
@@ -2620,6 +2731,14 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
       checkout: 'Annoncen blev gemt, men Stripe Checkout kunne ikke åbnes. Gå til Mine annoncer, og prøv betalingen igen.',
       checkoutTimeout: 'Annoncen blev gemt, men Stripe Checkout tog for lang tid om at åbne. Gå til Mine annoncer, og prøv betalingen igen.',
     },
+  },
+  be: {
+    publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
+    publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
+    publishWaitingPercentLabel: 'Publicatievoortgang',
+    publishWaitingReview: 'Gegevens gecontroleerd',
+    publishWaitingImages: 'Afbeeldingen geüpload',
+    publishWaitingPayment: 'Pakket voorbereid',
   },
   fr: {
     steps: ['Catégorie et base', 'Détails techniques', 'Images', 'Aperçu', 'Forfait et publication'],
@@ -2630,6 +2749,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Choisir la couleur',
     chooseEquipment: 'Choisir les équipements',
     processingImages: 'Traitement des images...',
+    publishWaitingTitle: 'Veuillez patienter, nous publions votre annonce',
+    publishWaitingText: 'Nous vérifions les informations, téléversons les images et préparons l’annonce. Gardez cette fenêtre ouverte.',
+    publishWaitingPercentLabel: 'Progression de la publication',
+    publishWaitingReview: 'Informations vérifiées',
+    publishWaitingImages: 'Images téléversées',
+    publishWaitingPayment: 'Forfait préparé',
     errors: {
       submit: 'L’annonce ne peut pas être créée pour le moment. Vérifiez les informations et réessayez.',
       checkout: 'L’annonce a été enregistrée, mais Stripe Checkout n’a pas pu être ouvert. Ouvrez Mes annonces et réessayez le paiement.',
@@ -2645,6 +2770,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Elegir color',
     chooseEquipment: 'Elegir equipamiento',
     processingImages: 'Procesando imágenes...',
+    publishWaitingTitle: 'Espera, estamos publicando tu anuncio',
+    publishWaitingText: 'Estamos revisando los datos, subiendo las imágenes y preparando el anuncio. Mantén esta ventana abierta.',
+    publishWaitingPercentLabel: 'Progreso de publicación',
+    publishWaitingReview: 'Datos revisados',
+    publishWaitingImages: 'Imágenes subidas',
+    publishWaitingPayment: 'Paquete preparado',
     errors: {
       submit: 'El anuncio no se puede crear ahora mismo. Revisa los datos e inténtalo de nuevo.',
       checkout: 'El anuncio se ha guardado, pero no se pudo abrir Stripe Checkout. Abre Mis anuncios e intenta pagar de nuevo.',
@@ -2660,6 +2791,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Scegli colore',
     chooseEquipment: 'Scegli equipaggiamento',
     processingImages: 'Elaborazione immagini...',
+    publishWaitingTitle: 'Attendi, stiamo pubblicando il tuo annuncio',
+    publishWaitingText: 'Controlliamo i dati, carichiamo le immagini e prepariamo l’annuncio. Tieni aperta questa finestra.',
+    publishWaitingPercentLabel: 'Avanzamento pubblicazione',
+    publishWaitingReview: 'Dati controllati',
+    publishWaitingImages: 'Immagini caricate',
+    publishWaitingPayment: 'Pacchetto preparato',
     errors: {
       submit: 'Non è possibile creare l’annuncio in questo momento. Controlla i dati e riprova.',
       checkout: 'L’annuncio è stato salvato, ma non è stato possibile aprire Stripe Checkout. Apri I miei annunci e riprova il pagamento.',
@@ -2675,6 +2812,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Kies kleur',
     chooseEquipment: 'Kies uitrusting',
     processingImages: 'Afbeeldingen verwerken...',
+    publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
+    publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
+    publishWaitingPercentLabel: 'Publicatievoortgang',
+    publishWaitingReview: 'Gegevens gecontroleerd',
+    publishWaitingImages: 'Afbeeldingen geüpload',
+    publishWaitingPayment: 'Pakket voorbereid',
     errors: {
       submit: 'De advertentie kan nu niet worden aangemaakt. Controleer de gegevens en probeer het opnieuw.',
       checkout: 'De advertentie is opgeslagen, maar Stripe Checkout kon niet worden geopend. Open Mijn advertenties en probeer de betaling opnieuw.',
@@ -2690,6 +2833,12 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     chooseColor: 'Wybierz kolor',
     chooseEquipment: 'Wybierz wyposażenie',
     processingImages: 'Przetwarzanie zdjęć...',
+    publishWaitingTitle: 'Poczekaj, publikujemy Twoje ogłoszenie',
+    publishWaitingText: 'Sprawdzamy dane, przesyłamy zdjęcia i przygotowujemy ogłoszenie. Pozostaw to okno otwarte.',
+    publishWaitingPercentLabel: 'Postęp publikacji',
+    publishWaitingReview: 'Dane sprawdzone',
+    publishWaitingImages: 'Zdjęcia przesłane',
+    publishWaitingPayment: 'Pakiet przygotowany',
     errors: {
       submit: 'Nie można teraz utworzyć ogłoszenia. Sprawdź dane i spróbuj ponownie.',
       checkout: 'Ogłoszenie zostało zapisane, ale nie udało się otworzyć Stripe Checkout. Otwórz Moje ogłoszenia i spróbuj zapłacić ponownie.',

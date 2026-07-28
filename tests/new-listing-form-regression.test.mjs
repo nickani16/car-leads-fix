@@ -48,6 +48,11 @@ test('preview does not show package before package step', () => {
 
 test('publishing never leaves the form in an endless spinner and bulk UI is hidden', () => {
   assert.match(form, /const listingRequestTimeoutMs = 60_000/)
+  assert.match(form, /const \[publishProgress, setPublishProgress\] = useState\(0\)/)
+  assert.match(form, /<PublishingOverlay copy=\{copy\} progress=\{publishProgress\} \/>/)
+  assert.match(form, /role="status"/)
+  assert.match(form, /publishWaitingPercentLabel/)
+  assert.match(form, /Loader2 className="h-4 w-4 animate-spin"/)
   assert.match(form, /\[autorell:create-listing\] submit started/)
   assert.match(form, /\[autorell:create-listing\] submit failed before response/)
   assert.match(form, /values\.listingTerms === 'on'[\s\S]*form\.set\('listingTerms', 'on'\)/)
@@ -60,6 +65,11 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.match(form, /createdListingHref\(locale,\s*result\.listingId,\s*'checkout_failed'\)/)
   assert.match(form, /createdListingHref\([\s\S]*'checkout_timeout'/)
   assert.match(form, /Publiceringen tog f/)
+  assert.match(form, /Vänta, vi publicerar din annons/)
+  assert.match(form, /Bitte warten, wir veröffentlichen Ihre Anzeige/)
+  for (const locale of ['fi', 'da', 'be', 'fr', 'es', 'it', 'nl', 'pl']) {
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*publishWaitingTitle:`))
+  }
   assert.doesNotMatch(form, /router\.push\(`\/account\/listings\?choosePackage=1&listing=/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
   assert.doesNotMatch(form, /onAddToBatch/)
