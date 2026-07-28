@@ -2119,7 +2119,7 @@ export default function VehicleSearchExperience({
         data-marketplace-filter-surface
         className={wrapperClassName}
       >
-        <div className="flex h-full min-w-0 items-center gap-2">
+        <div className={`flex h-full min-w-0 items-center gap-2 ${placement === 'mobile' ? 'translate-y-[3px]' : ''}`}>
           <div
             className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
             onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
