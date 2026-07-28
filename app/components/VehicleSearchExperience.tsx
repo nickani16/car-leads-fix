@@ -4144,13 +4144,16 @@ function MapListingPreview({
 
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
-      <div className="flex justify-end border-b border-[#edf1f6] px-3 py-2">
+      <div className="flex items-center justify-between gap-3 border-b border-[#edf1f6] px-3 py-2">
+        <span className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+          {offerBadge.label}
+        </span>
         <button
           type="button"
           onClick={onClose}
           className="inline-flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-xs font-semibold text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff]"
         >
-          Stäng
+          {uiText(locale, 'Close', 'St\u00e4ng', 'Schlie\u00dfen')}
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -4192,9 +4195,6 @@ function MapListingPreview({
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <p className="text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
-            <span className={`inline-flex rounded-[6px] px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
-              {offerBadge.label}
-            </span>
           </div>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
           <div className="mt-4 flex items-center justify-between gap-3">

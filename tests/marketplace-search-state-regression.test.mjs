@@ -275,6 +275,18 @@ test('marketplace cards and listing detail show stable rounded offer status', ()
   assert.match(listingDetailPageSource, /mt-3 inline-flex items-center rounded-full/)
 })
 
+test('electric listing range uses localized WLTP help and map previews badge offer type first', () => {
+  assert.match(listingDetailPageSource, /function wltpRangeCopy\(locale: PublicLocale\)/)
+  for (const locale of ['sv', 'en', 'de', 'fr', 'es', 'it', 'nl', 'da', 'fi', 'pl']) {
+    assert.match(listingDetailPageSource, new RegExp(`${locale}: \\{[\\s\\S]*label: '[^']*\\(WLTP\\)'`))
+  }
+  assert.match(listingDetailPageSource, /Den faktiska räckvidden måste uppskattas/)
+  assert.match(listingDetailPageSource, /group-hover:block group-focus-within:block/)
+  assert.match(listingDetailPageSource, /labelNode: electricListing \? <WltpRangeLabel locale=\{locale\} \/> : undefined/)
+  assert.match(vehicleSearchExperienceSource, /flex items-center justify-between gap-3 border-b border-\[#edf1f6\]/)
+  assert.match(vehicleSearchExperienceSource, /rounded-full px-2\.5 py-1 text-\[12px\][\s\S]*\{offerBadge\.label\}[\s\S]*uiText\(locale, 'Close', 'St\\u00e4ng', 'Schlie\\u00dfen'\)/)
+})
+
 test('marketplace comparison is localized, capped at four and uses a comparison matrix', () => {
   assert.match(vehicleSearchExperienceSource, /const maxCompareListings = 4/)
   assert.match(vehicleSearchExperienceSource, /const \[compareError, setCompareError\] = useState\(''\)/)

@@ -1,4 +1,5 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -121,6 +122,12 @@ type ListingRow = {
   published_at: string | null
   sold_at: string | null
   expires_at: string | null
+}
+
+type ListingSpec = {
+  label: string
+  labelNode?: ReactNode
+  value: string | number
 }
 
 type ListingTechnicalDetails = {
@@ -343,7 +350,7 @@ export default async function ListingDetailPage({
       icon: Fuel,
     },
     {
-      label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'),
+      label: electricListing ? <WltpRangeLabel locale={locale} /> : localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'),
       value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null),
       icon: Gauge,
     },
@@ -531,7 +538,7 @@ export default async function ListingDetailPage({
                   {headlineFacts.slice(0, 8).map((fact) => {
                     const Icon = fact.icon
                     return (
-                      <div key={fact.label} className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#edf1f6] bg-[#f8fbff] px-2.5 py-2 sm:gap-2.5 sm:rounded-[11px] sm:px-3 sm:py-2.5">
+                      <div key={typeof fact.label === 'string' ? fact.label : 'range-wltp'} className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#edf1f6] bg-[#f8fbff] px-2.5 py-2 sm:gap-2.5 sm:rounded-[11px] sm:px-3 sm:py-2.5">
                         <Icon className="h-4 w-4 shrink-0 text-[#202124]" />
                         <div className="min-w-0">
                           <p className="break-words text-[11px] font-medium leading-3.5 text-[#667085]">{fact.label}</p>
@@ -557,7 +564,7 @@ export default async function ListingDetailPage({
                 {specs.map((spec) => (
                   <div key={spec.label} className="rounded-[9px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-2.5 sm:rounded-[10px] sm:px-3 sm:py-2.5">
                     <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[#667085] sm:text-[9px] sm:tracking-[0.12em]">
-                      {spec.label}
+                      {spec.labelNode || spec.label}
                     </p>
                     <p className="mt-1 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:mt-1 sm:text-[13px] sm:leading-4">
                       {spec.value}
@@ -1538,7 +1545,7 @@ function buildSpecs(
   const electricRange = technical.electricRangeKm ?? technical.rangeKm
   const batteryCapacity = technical.batteryCapacityKWh ?? technical.batteryCapacityWh
   const motorPower = technical.motorPowerKw ?? technical.motorPowerW
-  const specs: Array<{ label: string; value: string | number | null | undefined }> = [
+  const specs: Array<{ label: string; labelNode?: ReactNode; value: string | number | null | undefined }> = [
     { label: localizedLabel(locale, 'Kategori', 'Category', 'Kategorie'), value: categoryLabel },
     { label: localizedLabel(locale, 'Märke', 'Make', 'Marke'), value: listing.make },
     { label: localizedLabel(locale, 'Modell', 'Model', 'Modell'), value: [listing.model, listing.variant].filter(Boolean).join(' ') },
@@ -1570,7 +1577,7 @@ function buildSpecs(
     { label: localizedLabel(locale, 'Motoreffekt', 'Motor power', 'Motorleistung'), value: formatTechnicalValue(motorPower, motorPower === technical.motorPowerKw ? 'kW' : 'W') || (electricListing ? missingTechnicalLabel(locale) : null) },
     { label: localizedLabel(locale, 'Batterikapacitet', 'Battery capacity', 'Batteriekapazität'), value: formatTechnicalValue(batteryCapacity, batteryCapacity === technical.batteryCapacityKWh ? 'kWh' : 'Wh') || (electricListing ? missingTechnicalLabel(locale) : null) },
     { label: localizedLabel(locale, 'Batterispänning', 'Battery voltage', 'Batteriespannung'), value: formatTechnicalValue(technical.batteryVoltageV, 'V') },
-    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null) },
+    { label: localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'), labelNode: electricListing ? <WltpRangeLabel locale={locale} /> : undefined, value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null) },
     { label: localizedLabel(locale, 'Maxhastighet', 'Maximum speed', 'Höchstgeschwindigkeit'), value: formatTechnicalValue(technical.maxSpeedKmh, 'km/h') },
     { label: localizedLabel(locale, 'Maskintyp', 'Machine type', 'Maschinentyp'), value: translateSpecValue(locale, formatTechnicalValue(technical.machineType, '')) },
     { label: localizedLabel(locale, 'Maskinvikt', 'Operating weight', 'Betriebsgewicht'), value: formatTechnicalValue(technical.operatingWeightKg, 'kg') },
@@ -1589,7 +1596,7 @@ function buildSpecs(
   ]
 
   return specs.filter(
-    (item): item is { label: string; value: string | number } =>
+    (item): item is ListingSpec =>
       item.value !== null && item.value !== undefined && item.value !== '',
   )
 }
@@ -1615,6 +1622,86 @@ function isElectricListing(
     .some((value) => String(value || '').trim().toLowerCase() === 'el')
 }
 
+function wltpRangeCopy(locale: PublicLocale) {
+  const normalizedLocale = translationLocale(locale)
+  const copy: Record<string, { label: string; tooltip: string; aria: string }> = {
+    sv: {
+      label: 'Räckvidd (WLTP)',
+      tooltip: 'WLTP är ett värde från när fordonet var nytt. Den faktiska räckvidden måste uppskattas med hänsyn till fordonets ålder, miltal, körmönster, väder och temperatur.',
+      aria: 'Information om WLTP-räckvidd',
+    },
+    en: {
+      label: 'Range (WLTP)',
+      tooltip: 'WLTP is a value from when the vehicle was new. The actual range must be estimated based on age, mileage, driving pattern, weather and temperature.',
+      aria: 'Information about WLTP range',
+    },
+    de: {
+      label: 'Reichweite (WLTP)',
+      tooltip: 'WLTP ist ein Wert aus dem Neuzustand des Fahrzeugs. Die tatsächliche Reichweite muss anhand von Alter, Kilometerstand, Fahrprofil, Wetter und Temperatur geschätzt werden.',
+      aria: 'Information zur WLTP-Reichweite',
+    },
+    fr: {
+      label: 'Autonomie (WLTP)',
+      tooltip: 'WLTP est une valeur mesurée lorsque le véhicule était neuf. L’autonomie réelle doit être estimée selon l’âge, le kilométrage, le style de conduite, la météo et la température.',
+      aria: 'Information sur l’autonomie WLTP',
+    },
+    es: {
+      label: 'Autonomía (WLTP)',
+      tooltip: 'WLTP es un valor de cuando el vehículo era nuevo. La autonomía real debe estimarse según la antigüedad, el kilometraje, el patrón de conducción, el clima y la temperatura.',
+      aria: 'Información sobre la autonomía WLTP',
+    },
+    it: {
+      label: 'Autonomia (WLTP)',
+      tooltip: 'WLTP è un valore rilevato quando il veicolo era nuovo. L’autonomia reale deve essere stimata in base a età, chilometraggio, stile di guida, meteo e temperatura.',
+      aria: 'Informazioni sull’autonomia WLTP',
+    },
+    nl: {
+      label: 'Actieradius (WLTP)',
+      tooltip: 'WLTP is een waarde van toen het voertuig nieuw was. De werkelijke actieradius moet worden geschat op basis van leeftijd, kilometerstand, rijpatroon, weer en temperatuur.',
+      aria: 'Informatie over WLTP-actieradius',
+    },
+    da: {
+      label: 'Rækkevidde (WLTP)',
+      tooltip: 'WLTP er en værdi fra da køretøjet var nyt. Den faktiske rækkevidde skal estimeres ud fra alder, kilometerstand, kørselsmønster, vejr og temperatur.',
+      aria: 'Information om WLTP-rækkevidde',
+    },
+    fi: {
+      label: 'Toimintamatka (WLTP)',
+      tooltip: 'WLTP on arvo ajalta, jolloin ajoneuvo oli uusi. Todellinen toimintamatka on arvioitava iän, kilometrimäärän, ajotavan, sään ja lämpötilan perusteella.',
+      aria: 'Tietoa WLTP-toimintamatkasta',
+    },
+    pl: {
+      label: 'Zasięg (WLTP)',
+      tooltip: 'WLTP to wartość z czasu, gdy pojazd był nowy. Rzeczywisty zasięg należy szacować z uwzględnieniem wieku, przebiegu, stylu jazdy, pogody i temperatury.',
+      aria: 'Informacje o zasięgu WLTP',
+    },
+  }
+
+  return copy[normalizedLocale] || copy.en
+}
+
+function WltpRangeLabel({ locale }: { locale: PublicLocale }) {
+  const copy = wltpRangeCopy(locale)
+
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5 align-middle">
+      <span className="truncate">{copy.label}</span>
+      <span className="group relative inline-flex shrink-0 items-center">
+        <span
+          tabIndex={0}
+          aria-label={copy.aria}
+          className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#0866ff] outline-none ring-1 ring-[#0866ff] transition focus-visible:ring-2 focus-visible:ring-[#0866ff]/35"
+        >
+          <Info className="h-3 w-3" />
+        </span>
+        <span className="pointer-events-none absolute left-1/2 top-[calc(100%+0.5rem)] z-30 hidden w-[min(19rem,calc(100vw-3rem))] -translate-x-1/2 rounded-[8px] bg-[#101828] px-3 py-2.5 text-left text-[12px] font-semibold normal-case leading-5 tracking-normal text-white shadow-xl group-hover:block group-focus-within:block sm:left-0 sm:translate-x-0">
+          {copy.tooltip}
+          <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-[#101828] sm:left-4 sm:translate-x-0" />
+        </span>
+      </span>
+    </span>
+  )
+}
 function missingTechnicalLabel(locale: PublicLocale) {
   if (locale === 'sv') return 'Ej angivet'
   if (locale === 'de' || locale === 'at') return 'Nicht angegeben'
