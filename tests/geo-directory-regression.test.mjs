@@ -114,12 +114,13 @@ test('large markets seed region level only and do not reuse old city subsets', (
   }
 })
 
-test('geo helper prefers database rows and only uses complete static small-market fallback', () => {
+test('geo helper prefers database rows and uses static datasets only as fallback', () => {
   assert.match(geoHelper, /\.from\('geo_regions'\)/)
   assert.match(geoHelper, /\.from\('geo_places'\)/)
   assert.match(geoHelper, /fallbackGeoPlaces/)
   assert.match(geoHelper, /getStaticGeoDataset/)
-  assert.match(geoHelper, /if \(staticDataset\?\.expectedPlaces\)/)
+  assert.match(geoHelper, /if \(dbRows\.length\) return dbRows\.map\(mapGeoPlaceRow\)/)
+  assert.match(geoHelper, /return fallbackGeoPlaces\(\{ countryCode: country, region, query, limit: safeLimit \}\)/)
   assert.doesNotMatch(geoHelper, /getMarketplaceCountryLocations/)
   assert.doesNotMatch(geoHelper, /inferMarketplaceLocation/)
   assert.match(geoHelper, /Math\.min\(Math\.max\(Number\(limit\) \|\| 20, 1\), 500\)/)

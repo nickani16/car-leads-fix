@@ -57,12 +57,6 @@ export function normalizeGeoCountry(countryCode: string | null | undefined) {
 export async function getGeoRegions(countryCode: string) {
   const country = normalizeGeoCountry(countryCode)
   const staticDataset = getStaticGeoDataset(country)
-  if (staticDataset?.expectedPlaces) {
-    return staticDataset.regions.map((region) => ({
-      code: region.code,
-      name: region.name,
-    }))
-  }
 
   const rows = await readGeoRegions(country)
   if (rows.length) {
@@ -93,10 +87,6 @@ export async function searchGeoPlaces({
 }) {
   const country = normalizeGeoCountry(countryCode)
   const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 500)
-  const staticDataset = getStaticGeoDataset(country)
-  if (staticDataset?.expectedPlaces) {
-    return fallbackGeoPlaces({ countryCode: country, region, query, limit: safeLimit })
-  }
 
   const dbRows = await readGeoPlaces({
     countryCode: country,
