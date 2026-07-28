@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { buildListingPath, listingMarketPath } from '@/lib/listing-url'
 import { marketplaceCategories, type MarketplaceCategorySlug } from '@/lib/marketplace'
+import { getStaticGeoDataset } from '@/lib/geo-static-datasets'
+import { getGeoSitemapMarketConfig } from '@/lib/seo-geo-landings'
 import {
   buildSeoPath,
   getPopularSeoLocations,
@@ -36,11 +38,14 @@ export async function GET(
   const normalizedName = name.replace(/\.xml$/i, '')
   const market = marketFromSitemapName(normalizedName)
   const listingCountry = listingCountryFromSitemapName(normalizedName)
+  const geoSitemap = geoSitemapFromName(normalizedName)
   const vehicleNewsMarket = normalizedName.match(/^vehicle-news-(se|de|es|pl|fr)$/)?.[1]
-  if (!market && !listingCountry && !vehicleNewsMarket) notFound()
+  if (!market && !listingCountry && !geoSitemap && !vehicleNewsMarket) notFound()
 
   const urls = vehicleNewsMarket
     ? await vehicleNewsUrls(vehicleNewsMarket)
+    : geoSitemap
+    ? await geoSitemapUrls(geoSitemap.market, geoSitemap.page)
     : normalizedName.startsWith('listings-')
     ? await listingUrls(listingCountry!, pageFromSitemapName(normalizedName))
     : staticSeoUrls(market!, normalizedName)
@@ -78,6 +83,66 @@ async function vehicleNewsUrls(market: string) {
     .limit(maxUrlsPerSitemap - 1)
   if (error) return base
   return [...base, ...(data || []).map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
+}
+
+async function geoSitemapUrls(market: string, page: number) {
+  const config = getGeoSitemapMarketConfig(market)
+  if (!config) return []
+  const areas = await geoSitemapAreas(config.countryCode)
+  const urlsPerArea = config.categorySlugs.length
+  const maxAreasPerPage = Math.max(1, Math.floor(maxUrlsPerSitemap / urlsPerArea))
+  const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
+  return pageAreas.flatMap((area) =>
+    config.categorySlugs.map((categorySlug) =>
+      sitemapUrl(`/${config.market}/${categorySlug}/${area.slug}`, undefined, 'daily', '0.8'),
+    ),
+  )
+}
+
+async function geoSitemapAreas(countryCode: string) {
+  const [regions, places] = await Promise.all([
+    readGeoRegions(countryCode),
+    readGeoPlaces(countryCode),
+  ])
+  const staticDataset = getStaticGeoDataset(countryCode)
+  const rows = [
+    ...regions.map((region) => ({
+      key: `region:${region.code}`,
+      slug: slugify(region.name || region.code),
+      name: region.name || region.code,
+    })),
+    ...places.map((place) => ({
+      key: `place:${place.code}`,
+      slug: slugify(place.name || place.city || place.code.split(':').pop() || place.code),
+      name: place.name || place.city || place.code,
+    })),
+  ]
+
+  if (staticDataset) {
+    rows.push(
+      ...staticDataset.regions.map((region) => ({
+        key: `region:${region.code}`,
+        slug: slugify(region.name || region.code),
+        name: region.name || region.code,
+      })),
+      ...staticDataset.places.map((place) => ({
+        key: `place:${place.code}`,
+        slug: slugify(place.name || place.city || place.code.split(':').pop() || place.code),
+        name: place.name || place.city || place.code,
+      })),
+    )
+  }
+
+  const seen = new Set<string>()
+  return rows
+    .filter((area) => {
+      if (!area.slug) return false
+      const dedupeKey = `${area.key}:${area.slug}`
+      if (seen.has(dedupeKey)) return false
+      seen.add(dedupeKey)
+      return true
+    })
+    .sort((left, right) => left.name.localeCompare(right.name, 'en'))
 }
 
 function staticSeoUrls(market: SeoMarketCode, name: string) {
@@ -151,6 +216,37 @@ async function listingUrls(country: string, page: number) {
   ))
 }
 
+async function readGeoRegions(countryCode: string) {
+  try {
+    const { data } = await createAdminClient()
+      .from('geo_regions')
+      .select('code,name')
+      .eq('country_code', countryCode)
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true })
+      .limit(maxUrlsPerSitemap)
+    return (data || []) as Array<{ code: string; name: string }>
+  } catch {
+    return []
+  }
+}
+
+async function readGeoPlaces(countryCode: string) {
+  try {
+    const { data } = await createAdminClient()
+      .from('geo_places')
+      .select('code,name,city')
+      .eq('country_code', countryCode)
+      .eq('active', true)
+      .order('name', { ascending: true })
+      .limit(maxUrlsPerSitemap)
+    return (data || []) as Array<{ code: string; name: string; city: string | null }>
+  } catch {
+    return []
+  }
+}
+
 function listingCountryFromSitemapName(name: string) {
   const code = name.match(/^listings-([a-z]{2})-\d+$/i)?.[1]?.toLowerCase()
   if (!code || !listingSitemapCountries[code]) return null
@@ -158,9 +254,26 @@ function listingCountryFromSitemapName(name: string) {
   return marketPath.prefix ? listingSitemapCountries[code] : null
 }
 
+function geoSitemapFromName(name: string) {
+  const match = name.match(/^geo-([a-z]{2})-(\d+)$/i)
+  if (!match) return null
+  const page = Number(match[2])
+  return Number.isFinite(page) && page > 0 ? { market: match[1].toLowerCase(), page } : null
+}
+
 function pageFromSitemapName(name: string) {
   const page = Number(name.match(/-(\d+)$/)?.[1] || '1')
   return Number.isFinite(page) && page > 0 ? page : 1
+}
+
+function slugify(value: string) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 function sitemapUrl(path: string, lastmod?: string, changefreq?: string, priority?: string) {

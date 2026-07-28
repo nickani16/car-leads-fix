@@ -1,4 +1,6 @@
 import { seoMarkets, type SeoMarketCode } from '@/lib/seo-routes'
+import { getGeoSitemapMarketCodes, getGeoSitemapMarketConfig } from '@/lib/seo-geo-landings'
+import { getStaticGeoDataset } from '@/lib/geo-static-datasets'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const host = 'https://www.autorell.com'
@@ -28,9 +30,11 @@ export async function GET() {
     `locations-${market}`,
   ])
   const listingSitemapNames = await getListingSitemapNames()
+  const geoSitemapNames = await getGeoSitemapNames()
   const vehicleNewsSitemapNames = ['se', 'de', 'es', 'pl', 'fr'].map((market) => `vehicle-news-${market}`)
   const sitemapNames = [
     ...seoSitemapNames,
+    ...geoSitemapNames,
     ...vehicleNewsSitemapNames,
     ...listingSitemapNames,
   ]
@@ -70,6 +74,47 @@ async function getListingSitemapNames() {
     }),
   )
   return names.sort()
+}
+
+async function getGeoSitemapNames() {
+  const names: string[] = []
+  await Promise.all(
+    getGeoSitemapMarketCodes().map(async (market) => {
+      const config = getGeoSitemapMarketConfig(market)
+      if (!config) return
+      const areaCount = await getGeoSitemapAreaCount(config.countryCode)
+      const urlsPerArea = config.categorySlugs.length
+      const pages = Math.max(1, Math.ceil((areaCount * urlsPerArea) / maxUrlsPerSitemap))
+      for (let page = 1; page <= pages; page += 1) {
+        names.push(`geo-${market}-${page}`)
+      }
+    }),
+  )
+  return names.sort()
+}
+
+async function getGeoSitemapAreaCount(countryCode: string) {
+  const [regionCount, placeCount] = await Promise.all([
+    getGeoTableCount('geo_regions', countryCode),
+    getGeoTableCount('geo_places', countryCode),
+  ])
+  const staticDataset = getStaticGeoDataset(countryCode)
+  const staticCount = staticDataset ? staticDataset.regions.length + staticDataset.places.length : 0
+  const dbCount = regionCount + placeCount
+  return Math.max(dbCount, staticCount)
+}
+
+async function getGeoTableCount(table: 'geo_regions' | 'geo_places', countryCode: string) {
+  try {
+    const { count } = await createAdminClient()
+      .from(table)
+      .select('id', { count: 'exact', head: true })
+      .eq('country_code', countryCode)
+      .eq('active', true)
+    return count || 0
+  } catch {
+    return 0
+  }
 }
 
 export function marketFromSitemapName(name: string): SeoMarketCode | null {

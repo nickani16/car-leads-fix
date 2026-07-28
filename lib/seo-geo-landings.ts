@@ -13,6 +13,12 @@ type GeoCategoryRoute = {
   leasing?: boolean
 }
 
+export type GeoSitemapMarketConfig = {
+  market: string
+  countryCode: string
+  categorySlugs: string[]
+}
+
 type GeoMarketRouteConfig = {
   locale: PublicLocale
   countryCode: string
@@ -296,6 +302,21 @@ export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
   }
   if (landing.make) params.set('make', landing.make)
   return `/${landing.market}/marketplace/${landing.category}?${params.toString()}`
+}
+
+export function getGeoSitemapMarketCodes() {
+  return Object.keys(marketRouteConfigs).sort()
+}
+
+export function getGeoSitemapMarketConfig(market: string): GeoSitemapMarketConfig | null {
+  const normalizedMarket = normalizeSegment(market)
+  const config = marketRouteConfigs[normalizedMarket]
+  if (!config) return null
+  return {
+    market: normalizedMarket,
+    countryCode: config.countryCode,
+    categorySlugs: Object.keys(config.categories),
+  }
 }
 
 function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {

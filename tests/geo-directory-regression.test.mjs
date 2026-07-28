@@ -8,6 +8,8 @@ const migration = readFileSync(
 )
 const form = readFileSync(new URL('../app/konto/annonser/ny/NewListingForm.tsx', import.meta.url), 'utf8')
 const geoHelper = readFileSync(new URL('../lib/marketplace-geo.ts', import.meta.url), 'utf8')
+const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
+const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
 
 test('geo directory creates public read tables with indexed bounded search', () => {
   assert.match(migration, /create table if not exists public\.geo_regions/)
@@ -136,6 +138,18 @@ test('manual location fallback is tracked separately from verified places', () =
   assert.match(geoHelper, /verifiedMunicipalityCountries = new Set\(\['SE', 'DK', 'FI', 'NL', 'BE', 'AT'\]\)/)
   assert.match(geoHelper, /locationSource: 'manual' as const/)
   assert.match(geoHelper, /locationSource: 'verified' as const/)
+})
+
+test('geo marketplace routes are advertised through dynamic sitemaps for every market', () => {
+  assert.match(sitemapIndex, /getGeoSitemapMarketCodes/)
+  assert.match(sitemapIndex, /getGeoSitemapNames/)
+  assert.match(sitemapIndex, /names\.push\(`geo-\$\{market\}-\$\{page\}`\)/)
+  assert.match(sitemapIndex, /Math\.ceil\(\(areaCount \* urlsPerArea\) \/ maxUrlsPerSitemap\)/)
+  assert.match(sitemapRoute, /geoSitemapFromName/)
+  assert.match(sitemapRoute, /geoSitemapUrls/)
+  assert.match(sitemapRoute, /getGeoSitemapMarketConfig/)
+  assert.match(sitemapRoute, /getStaticGeoDataset/)
+  assert.match(sitemapRoute, /\/\$\{config\.market\}\/\$\{categorySlug\}\/\$\{area\.slug\}/)
 })
 
 function assertSeedCount(countryCode, expectedRegions, expectedPlaces) {
