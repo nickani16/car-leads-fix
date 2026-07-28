@@ -17,6 +17,7 @@ const swedishCarRouteSource = readFileSync(new URL('../app/[market]/bilar/[...se
 const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
 const seoRoutesSource = readFileSync(new URL('../lib/seo-routes.ts', import.meta.url), 'utf8')
+const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
   'utf8',
@@ -187,4 +188,17 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.doesNotMatch(internalSeoRouteSource, /PublicHeader|PublicFooter|getSeoLandingData/)
   assert.doesNotMatch(geoLandingSource, /resolveSwedishCarGeoLanding/)
   assert.doesNotMatch(geoLandingSource, /municipalityCode/)
+})
+
+test('proxy protects expensive crawl surfaces without blocking verified search bots', () => {
+  assert.match(proxySource, /SEARCH_CRAWLER_PATTERN/)
+  assert.match(proxySource, /googlebot\|bingbot/)
+  assert.match(proxySource, /SUSPICIOUS_BOT_PATTERN/)
+  assert.match(proxySource, /claudebot\|gptbot/)
+  assert.match(proxySource, /isBotProtectedPath/)
+  assert.match(proxySource, /\/api\/marketplace\/search-v2/)
+  assert.match(proxySource, /\/sitemaps\/:path\*/)
+  assert.match(proxySource, /proxyBotRateLimit/)
+  assert.match(proxySource, /botRateLimitedResponse/)
+  assert.match(proxySource, /botBlockedResponse/)
 })

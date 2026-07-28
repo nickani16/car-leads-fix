@@ -38,9 +38,29 @@ const MARKET_BY_HOST: Record<string, Market> = {
 
 const SEARCH_CRAWLER_PATTERN =
   /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|applebot/i
+const SUSPICIOUS_BOT_PATTERN =
+  /ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|claudebot|gptbot|ccbot|perplexitybot|amazonbot|python-requests|scrapy|curl|wget|go-http-client|headlesschrome/i
+const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
+type RateBucket = {
+  count: number
+  resetAt: number
+}
+
+declare global {
+  var __autorellProxyRateBuckets: Map<string, RateBucket> | undefined
+}
+
+const proxyRateBuckets =
+  globalThis.__autorellProxyRateBuckets ||
+  (globalThis.__autorellProxyRateBuckets = new Map<string, RateBucket>())
+const proxyRateWindowMs = 60_000
+const proxyVisitorRateLimit = 180
+const proxyBotRateLimit = 60
+const proxySitemapRateLimit = 90
+const proxyMaxRateBuckets = 10_000
 const LOCALIZED_PUBLIC_ALIASES = new Map([
   ['cookie-policy', 'cookies'],
   ['privacy', 'privacy'],
@@ -449,6 +469,8 @@ export async function proxy(request: NextRequest) {
   const selectedMarket = request.nextUrl.searchParams.get('market')
   const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
+  const botProtectionResponse = protectExpensiveCrawlSurfaces(request, pathname)
+  if (botProtectionResponse) return botProtectionResponse
 
   if (methodCanRedirect) {
     const goneListingResponse = await responseForPermanentlyRemovedListing(request)
@@ -1083,8 +1105,108 @@ function goneListingHtml() {
   ].join('')
 }
 
+function protectExpensiveCrawlSurfaces(request: NextRequest, pathname: string) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null
+  if (!isBotProtectedPath(pathname)) return null
+
+  const userAgent = request.headers.get('user-agent') || ''
+  if (SEARCH_CRAWLER_PATTERN.test(userAgent)) return null
+
+  const suspiciousBot = SUSPICIOUS_BOT_PATTERN.test(userAgent)
+  const genericBot = GENERIC_BOT_PATTERN.test(userAgent)
+  if (!userAgent || suspiciousBot) return botBlockedResponse()
+
+  const limit = pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')
+    ? proxySitemapRateLimit
+    : genericBot
+      ? proxyBotRateLimit
+      : proxyVisitorRateLimit
+  const result = proxyRateLimit(
+    `${clientIp(request)}:${botProtectedBucketKey(pathname)}:${genericBot ? 'bot' : 'visitor'}`,
+    limit,
+  )
+
+  return result.allowed ? null : botRateLimitedResponse(result.retryAfter)
+}
+
+function isBotProtectedPath(pathname: string) {
+  if (pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')) return true
+  if (pathname === '/api/marketplace/search-v2') return true
+
+  const segments = pathname.split('/').filter(Boolean)
+  if (!segments[0]) return false
+  if (segments[1] === 'marketplace') return true
+  return segments.length >= 3 && isSeoVehiclePath(segments[0], segments.slice(1))
+}
+
+function botProtectedBucketKey(pathname: string) {
+  if (pathname === '/api/marketplace/search-v2') return 'api-marketplace-search'
+  if (pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')) return 'sitemaps'
+  const segments = pathname.split('/').filter(Boolean)
+  return `${segments[0] || 'root'}:${segments[1] || 'home'}`
+}
+
+function clientIp(request: NextRequest) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  )
+}
+
+function proxyRateLimit(key: string, limit: number) {
+  const now = Date.now()
+  const current = proxyRateBuckets.get(key)
+  if (!current || current.resetAt <= now) {
+    pruneProxyRateBuckets(now)
+    proxyRateBuckets.set(key, { count: 1, resetAt: now + proxyRateWindowMs })
+    return { allowed: true, retryAfter: 0 }
+  }
+
+  current.count += 1
+  if (current.count <= limit) return { allowed: true, retryAfter: 0 }
+  return {
+    allowed: false,
+    retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
+  }
+}
+
+function pruneProxyRateBuckets(now: number) {
+  if (proxyRateBuckets.size < proxyMaxRateBuckets) return
+  for (const [key, bucket] of proxyRateBuckets) {
+    if (bucket.resetAt <= now || proxyRateBuckets.size >= proxyMaxRateBuckets) {
+      proxyRateBuckets.delete(key)
+    }
+    if (proxyRateBuckets.size < proxyMaxRateBuckets) return
+  }
+}
+
+function botBlockedResponse() {
+  return new Response('Forbidden', {
+    status: 403,
+    headers: {
+      'Cache-Control': 'no-store',
+      'X-Autorell-Bot-Protection': 'blocked',
+    },
+  })
+}
+
+function botRateLimitedResponse(retryAfter: number) {
+  return new Response('Too Many Requests', {
+    status: 429,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Retry-After': String(retryAfter),
+      'X-Autorell-Bot-Protection': 'rate-limited',
+    },
+  })
+}
+
 export const config = {
   matcher: [
+    '/api/marketplace/search-v2',
+    '/sitemap.xml',
+    '/sitemaps/:path*',
     '/((?!api|_next/static|_next/image|favicon.ico|favicon-.*\\.png|icon.*\\.png|apple-icon.png|manifest.webmanifest|.*\\..*).*)',
   ],
 }
