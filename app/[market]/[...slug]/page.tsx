@@ -1,6 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
-import GeoLandingSearchPage from '@/app/components/GeoLandingSearchPage'
 import PricingPage from '@/app/components/PricingPage'
 import BusinessPage from '@/app/foretag/page'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
@@ -28,7 +27,7 @@ import CompanySettingsPage from '@/app/account/company/settings/page'
 import CompanySupportPage from '@/app/account/company/support/page'
 import RegisterPage from '@/app/registrera/page'
 import {
-  buildGeoLandingMetadata,
+  buildGeoMarketplaceHref,
   isGeoLandingCandidate,
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
@@ -57,7 +56,7 @@ export async function generateMetadata({
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
-    return buildGeoLandingMetadata(landing)
+    return { robots: { index: false, follow: true } }
   }
 
   return {}
@@ -83,7 +82,7 @@ export default async function LocalizedMarketPage({
   const [categorySlug, ...geoSegments] = slug
   const geoLanding = await resolveGeoLandingRoute(marketCode, categorySlug, geoSegments)
   if (geoLanding) {
-    return <GeoLandingSearchPage landing={geoLanding} />
+    redirect(buildGeoMarketplaceHref(geoLanding))
   }
   if (isGeoLandingCandidate(marketCode, categorySlug, geoSegments)) {
     notFound()

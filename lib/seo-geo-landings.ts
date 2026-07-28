@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
 import { type MarketplaceCategorySlug } from './marketplace'
 import {
@@ -218,21 +217,15 @@ export function isGeoLandingCandidate(
   return Boolean(config && categorySlug && config.categories[normalizeSegment(categorySlug)] && segments?.length)
 }
 
-export function buildGeoLandingMetadata(landing: GeoLandingRoute): Metadata {
-  const canonical = `https://www.autorell.com${landing.canonicalPath}`
-  return {
-    title: { absolute: landing.title },
-    description: landing.description,
-    alternates: { canonical },
-    robots: { index: true, follow: true },
-    openGraph: {
-      title: landing.title,
-      description: landing.description,
-      url: canonical,
-      siteName: 'Autorell',
-      type: 'website',
-    },
-  }
+export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
+  const params = new URLSearchParams()
+  params.set('categories', landing.category)
+  params.set('markets', landing.countryCode)
+  params.set('geoAreaId', landing.place.id)
+  params.set('geoFilterMode', 'strict')
+  params.set('chips', landing.place.name)
+  if (landing.make) params.set('make', landing.make)
+  return `/${landing.market}/marketplace/${landing.category}?${params.toString()}`
 }
 
 function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {

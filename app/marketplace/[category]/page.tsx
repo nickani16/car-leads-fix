@@ -33,8 +33,6 @@ import {
   parseMarketplaceSearchState,
   resolveMarketplaceGeoArea,
 } from '@/lib/marketplace-search-state'
-import { swedishMunicipalities } from '@/lib/swedish-regions.generated'
-import { buildSeoPath, slugifySeoPart, type SeoLocation, type SeoMarketCode } from '@/lib/seo-routes'
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -81,13 +79,12 @@ export async function generateMetadata({
       getSearchParam(resolvedSearchParams, 'geoAreaId') ||
       getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
     ) || metadataSearch.geoArea
-  const seo = getMarketplaceSeoCopy(category.slug, label, locale, metadataGeoArea?.name || metadataSearch.make || filter)
+  const seo = metadataGeoArea
+    ? getGeoMarketplaceSeoCopy(category.slug, label, locale, metadataGeoArea.name, metadataSearch.make)
+    : getMarketplaceSeoCopy(category.slug, label, locale, metadataSearch.make || filter)
   const pathname = requestHeaders.get('x-autorell-pathname')
   const canonicalPath = pathname || `/marketplace/${category.slug}`
   const marketplaceSeo = resolveMarketplaceSeoCanonical(
-    locale,
-    marketCode,
-    category.slug,
     resolvedSearchParams,
     canonicalPath,
   )
@@ -376,6 +373,80 @@ function getMarketplaceSeoCopy(
   }
 }
 
+function getGeoMarketplaceSeoCopy(
+  slug: string,
+  label: string,
+  locale: PublicLocale,
+  place: string,
+  make?: string,
+) {
+  const allVehicles = slug === 'vehicles'
+  const subject = make || (allVehicles ? getLocalizedVehicleName(locale) : label)
+  const lowerSubject = subject.toLocaleLowerCase()
+  const templates = {
+    sv: {
+      title: `${subject} till salu i ${place} | Autorell`,
+      description: `Se ${lowerSubject} till salu i ${place}. J\u00e4mf\u00f6r annonser fr\u00e5n privata s\u00e4ljare och f\u00f6retag p\u00e5 Autorell.`,
+    },
+    de: {
+      title: `${subject} kaufen in ${place} | Autorell`,
+      description: `${subject} in ${place} suchen und vergleichen. Finden Sie Angebote von privaten und gewerblichen Verk\u00e4ufern auf Autorell.`,
+    },
+    fr: {
+      title: `${subject} \u00e0 vendre \u00e0 ${place} | Autorell`,
+      description: `Recherchez ${lowerSubject} \u00e0 vendre \u00e0 ${place}. Comparez les annonces de particuliers et professionnels sur Autorell.`,
+    },
+    es: {
+      title: `${subject} en venta en ${place} | Autorell`,
+      description: `Busca ${lowerSubject} en venta en ${place}. Compara anuncios de particulares y empresas en Autorell.`,
+    },
+    it: {
+      title: `${subject} in vendita a ${place} | Autorell`,
+      description: `Cerca ${lowerSubject} in vendita a ${place}. Confronta annunci di privati e aziende su Autorell.`,
+    },
+    pl: {
+      title: `${subject} na sprzeda\u017c w ${place} | Autorell`,
+      description: `Szukaj ${lowerSubject} na sprzeda\u017c w ${place}. Por\u00f3wnuj og\u0142oszenia prywatne i firmowe w Autorell.`,
+    },
+    nl: {
+      title: `${subject} te koop in ${place} | Autorell`,
+      description: `Zoek ${lowerSubject} te koop in ${place}. Vergelijk advertenties van particuliere en zakelijke verkopers op Autorell.`,
+    },
+    da: {
+      title: `${subject} til salg i ${place} | Autorell`,
+      description: `S\u00f8g ${lowerSubject} til salg i ${place}. Sammenlign annoncer fra private og virksomheder p\u00e5 Autorell.`,
+    },
+    fi: {
+      title: `${subject} myynniss\u00e4 paikassa ${place} | Autorell`,
+      description: `Etsi ${lowerSubject} myynniss\u00e4 paikassa ${place}. Vertaa yksityisten ja yritysten ilmoituksia Autorellissa.`,
+    },
+    en: {
+      title: `${subject} for sale in ${place} | Autorell`,
+      description: `Search ${lowerSubject} for sale in ${place}. Compare listings from private and business sellers on Autorell.`,
+    },
+  } as Partial<Record<PublicLocale, { title: string; description: string }>>
+  const copy = templates[locale] || templates.en!
+  return {
+    title: cleanSeoText(copy.title, 65),
+    description: cleanSeoText(copy.description, 150),
+  }
+}
+
+function getLocalizedVehicleName(locale: PublicLocale) {
+  return ({
+    sv: 'Fordon',
+    de: 'Fahrzeuge',
+    fr: 'V\u00e9hicules',
+    es: 'Veh\u00edculos',
+    it: 'Veicoli',
+    pl: 'Pojazdy',
+    nl: 'Voertuigen',
+    da: 'K\u00f8ret\u00f8jer',
+    fi: 'Ajoneuvot',
+    en: 'Vehicles',
+  } as Partial<Record<PublicLocale, string>>)[locale] || 'Vehicles'
+}
+
 function getMarketplaceSeoTemplates(
   locale: PublicLocale,
   name: string,
@@ -480,9 +551,6 @@ function normalizeFilterLabel(filter?: string) {
 }
 
 function resolveMarketplaceSeoCanonical(
-  locale: PublicLocale,
-  marketCode: string | undefined,
-  category: string,
   params: { [key: string]: string | string[] | undefined },
   fallbackPath: string,
 ) {
@@ -495,40 +563,15 @@ function resolveMarketplaceSeoCanonical(
     }
   }
 
-  const canonicalAllowed = new Set(['category', 'categories', 'make', 'model', 'city', 'municipality', 'markets', 'page'])
-  const keys = [...meaningfulParams.keys()]
-  const canCanonicalizeToSeo = keys.every((key) => canonicalAllowed.has(key))
-  const page = normalizeCanonicalPage(getSearchParam(params, 'page'))
-  const onlyPagination = keys.every((key) => key === 'page')
-  const seoMarket = marketplaceSeoMarket(locale, marketCode)
-  const seoCategory = normalizeMarketplaceCategory(getSearchParam(params, 'categories') || getSearchParam(params, 'category') || category)
-  const make = getSearchParam(params, 'make') || undefined
-  const model = getSearchParam(params, 'model') || undefined
-  const location = seoLocationFromMarketplaceParams(seoMarket, params)
-  const canonicalPath = canCanonicalizeToSeo && seoMarket && !onlyPagination
-    ? buildSeoPath({
-        market: seoMarket,
-        category: seoCategory,
-        make,
-        model,
-        location,
-      })
-    : null
   const selfCanonical = `${host}${fallbackPath}?${meaningfulParams.toString()}`
-  const pagedCanonical = canonicalPath && page > 1 ? `${canonicalPath}?page=${page}` : canonicalPath
 
   return {
-    canonical: pagedCanonical ? `${host}${pagedCanonical}` : selfCanonical,
+    canonical: selfCanonical,
     robots: {
-      index: Boolean(pagedCanonical || onlyPagination),
+      index: true,
       follow: true,
     },
   }
-}
-
-function normalizeCanonicalPage(value: string) {
-  const page = Number(value)
-  return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1
 }
 
 function canonicalSearchParams(params: { [key: string]: string | string[] | undefined }) {
@@ -543,32 +586,6 @@ function canonicalSearchParams(params: { [key: string]: string | string[] | unde
     }
   }
   return searchParams
-}
-
-function marketplaceSeoMarket(locale: PublicLocale, marketCode: string | undefined): SeoMarketCode | null {
-  const code = (marketCode || '').toUpperCase()
-  if (code === 'SE' || locale === 'sv') return 'se'
-  if (code === 'DE' || locale === 'de') return 'de'
-  if (code === 'ES' || locale === 'es') return 'es'
-  return null
-}
-
-function seoLocationFromMarketplaceParams(
-  market: SeoMarketCode | null,
-  params: { [key: string]: string | string[] | undefined },
-): SeoLocation | undefined {
-  if (!market) return undefined
-  const city = getSearchParam(params, 'city')
-  if (city) {
-    return { market, type: 'city', name: city, slug: slugifySeoPart(city) }
-  }
-  const municipality = getSearchParam(params, 'municipality')
-  if (!municipality || market !== 'se') return undefined
-  const normalized = municipality.replace(/\s+kommun$/i, '')
-  const item = swedishMunicipalities.find((candidate) => candidate.name.toLowerCase() === normalized.toLowerCase())
-  return item
-    ? { market, type: 'municipality', name: `${item.name} kommun`, slug: `${item.slug}-kommun` }
-    : undefined
 }
 
 
