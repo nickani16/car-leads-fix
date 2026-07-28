@@ -10,6 +10,7 @@ const listingBackButton = readFileSync(new URL('../app/components/ListingBackBut
 const listingEquipmentSection = readFileSync(new URL('../app/components/ListingEquipmentSection.tsx', import.meta.url), 'utf8')
 const listingLocationMap = readFileSync(new URL('../app/components/ListingLocationMap.tsx', import.meta.url), 'utf8')
 const listingImageGallery = readFileSync(new URL('../app/components/ListingImageGallery.tsx', import.meta.url), 'utf8')
+const marketplacePublicData = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
 const globalsCss = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const listingCreateRoute = readFileSync(new URL('../app/api/account/listings/route.ts', import.meta.url), 'utf8')
@@ -158,8 +159,17 @@ test('listing detail shows electric vehicle technical values from current form k
 
 test('generated fallback seller descriptions are not shown as seller information', () => {
   assert.match(listingDetail, /isPublicSellerDescription/)
+  assert.match(listingDetail, /function publicSellerDescriptionFromListing/)
+  assert.match(listingDetail, /listing\.metadata\.seller_note_original/)
   assert.match(listingDetail, /Strukturerad Autorell-annons:/)
-  assert.match(listingCreateRoute, /const description = sellerNote \|\| null/)
+  assert.match(listingCreateRoute, /Strukturerad Autorell-annons:/)
+  assert.match(marketplacePublicData, /select\(`\$\{marketplacePublicSelect\},metadata`\)/)
+})
+
+test('private listing contact card does not draw dividers around the seller name', () => {
+  assert.match(listingDetail, /function PrivateSellerProfileCard/)
+  assert.doesNotMatch(listingDetail, /flex items-start gap-3 border-y border\[#dfe6f2\] py-4/)
+  assert.doesNotMatch(listingDetail, /<div className="border-t border\[#edf1f6\] p-4 sm:p-5">\s*\{listing\.seller_type === 'private'/)
 })
 
 test('new listing creation includes fuel type when collecting electric technical fields', () => {

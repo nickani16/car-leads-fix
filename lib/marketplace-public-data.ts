@@ -30,6 +30,7 @@ type MarketplacePublicRow = Record<string, unknown> & {
   category?: string | null
   title: string
   description?: string | null
+  metadata?: Record<string, unknown> | null
   make: string | null
   model: string | null
   variant?: string | null
@@ -244,7 +245,7 @@ export const getMarketplaceListingForPublicDetail = unstable_cache(
     const [{ data }, { data: imageRows }] = await Promise.all([
       admin
         .from('marketplace_listings')
-        .select(marketplacePublicSelect)
+        .select(`${marketplacePublicSelect},metadata`)
         .eq('id', id)
         .in('status', ['published', 'sold'])
         .maybeSingle(),

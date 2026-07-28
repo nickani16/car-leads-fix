@@ -92,6 +92,7 @@ test('created listings still return success if optional metadata side effects fa
 test('empty seller notes still satisfy the required listing description column', () => {
   assert.match(createListingRoute, /function buildDefaultListingDescription/)
   assert.match(createListingRoute, /const description = sellerNote \|\| buildDefaultListingDescription\(\{ title, city, offerType \}\)/)
+  assert.match(createListingRoute, /Strukturerad Autorell-annons:/)
   assert.doesNotMatch(createListingRoute, /const description = sellerNote \|\| null/)
 })
 

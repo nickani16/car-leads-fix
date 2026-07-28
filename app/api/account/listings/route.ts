@@ -103,9 +103,10 @@ function buildDefaultListingDescription({
 }) {
   const listingTitle = title || 'Fordon'
   const offerLabel = offerType === 'lease' ? 'leasing' : 'till salu'
-  return city
+  const description = city
     ? `${listingTitle} ${offerLabel} i ${city}.`
     : `${listingTitle} ${offerLabel}.`
+  return `Strukturerad Autorell-annons: ${description}`
 }
 
 function numberOrNull(value: string) {

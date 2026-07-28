@@ -74,6 +74,7 @@ type ListingRow = {
   category: MarketplaceCategorySlug
   title: string
   description: string | null
+  metadata: Record<string, unknown> | null
   make: string | null
   model: string | null
   variant: string | null
@@ -310,9 +311,7 @@ export default async function ListingDetailPage({
   const technicalData = mergedTechnicalDetails.technicalData
   const electricListing = isElectricListing(listing, technicalData)
   const electricRange = technicalData.electricRangeKm ?? technicalData.rangeKm
-  const publicSellerDescription = isPublicSellerDescription(listing.description)
-    ? listing.description
-    : null
+  const publicSellerDescription = publicSellerDescriptionFromListing(listing)
   const headlineSubtitle = [
     listing.variant,
     translateSpecValue(locale, listing.body_type),
@@ -686,7 +685,7 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              <div className="border-t border-[#edf1f6] p-4 sm:p-5">
+              <div className="p-4 sm:p-5">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -1217,7 +1216,7 @@ function PrivateSellerProfileCard({
     : copy.privateSellerFallback
 
   return (
-    <div className="flex items-start gap-3 border-y border-[#dfe6f2] py-4">
+    <div className="flex items-start gap-3 py-4">
       <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
         <div className="absolute left-1/2 top-[12px] h-[28px] w-[28px] -translate-x-1/2 rounded-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
         <div className="absolute left-1/2 top-[44px] h-[42px] w-[54px] -translate-x-1/2 rounded-t-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
@@ -1566,6 +1565,14 @@ function buildSpecs(
 function isPublicSellerDescription(value: string | null): value is string {
   if (!value) return false
   return !/^Strukturerad Autorell-annons:/i.test(value.trim())
+}
+
+function publicSellerDescriptionFromListing(listing: ListingRow) {
+  const originalSellerNote = textOrNull(
+    isRecord(listing.metadata) ? listing.metadata.seller_note_original : null,
+  )
+  if (originalSellerNote) return originalSellerNote
+  return isPublicSellerDescription(listing.description) ? listing.description : null
 }
 
 function isElectricListing(
