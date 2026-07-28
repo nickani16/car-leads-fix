@@ -16,6 +16,7 @@ const marketCatchAllSource = readFileSync(new URL('../app/[market]/[...slug]/pag
 const swedishCarRouteSource = readFileSync(new URL('../app/[market]/bilar/[...segments]/page.tsx', import.meta.url), 'utf8')
 const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
+const seoRoutesSource = readFileSync(new URL('../lib/seo-routes.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
   'utf8',
@@ -151,6 +152,9 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.match(geoLandingSource, /buildGeoMarketplaceHref/)
   assert.match(geoLandingSource, /leasingPossible/)
   assert.match(geoLandingSource, /mode', 'leasing'/)
+  for (const slug of ['husbilar', 'leasingbilar', 'wohnmobile', 'leasingautos', 'camping-cars', 'leaseautos', 'leasing-kuorma-autot']) {
+    assert.ok(seoRoutesSource.includes(slug), `${slug} should be proxy-routable`)
+  }
   assert.doesNotMatch(geoLandingSource, /buildGeoLandingMetadata/)
   assert.match(marketCatchAllSource, /redirect\(buildGeoMarketplaceHref\(geoLanding\)\)/)
   assert.match(swedishCarRouteSource, /redirect\(buildGeoMarketplaceHref\(landing\)\)/)
