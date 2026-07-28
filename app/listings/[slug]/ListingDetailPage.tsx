@@ -578,6 +578,7 @@ export default async function ListingDetailPage({
               listing={listing}
               locale={locale}
               marketInsight={marketInsight}
+              listingHistory={listingHistory}
               specsCount={specs.length}
               equipmentCount={equipmentKeys.length || fallbackEquipment.length}
             />
@@ -914,37 +915,78 @@ function VehicleProfileSection({
   listing,
   locale,
   marketInsight,
+  listingHistory,
   specsCount,
   equipmentCount,
 }: {
   listing: ListingRow
   locale: PublicLocale
   marketInsight: MarketPriceInsight
+  listingHistory: ListingHistoryItem[]
   specsCount: number
   equipmentCount: number
 }) {
   const copy = getInsightsCopy(locale)
+  const completeness = buildVehicleProfileCompleteness(listing, specsCount, equipmentCount)
+  const identity = [listing.make, listing.model, listing.model_year].filter(Boolean).join(' ') || listing.title
+  const location = [listing.city, listing.municipality, getEuCountryName(listing.country_code, locale)].filter(Boolean).join(', ')
+  const profileStatus = saleFormLabel(listing, locale)
+  const marketStatus = marketInsight.sampleSize >= 3
+    ? `${copy.priceStatus[marketInsight.position]} · ${copy.profileMarketValue.replace('{count}', String(marketInsight.sampleSize))}`
+    : copy.profileMarketLimited
+  const historyStatus = listingHistory.length
+    ? `${copy.historyLabels[listingHistory[0].labelKey]} · ${formatDate(listingHistory[0].date, locale)}`
+    : localizedLabel(locale, 'Ingen historik registrerad ännu', 'No history recorded yet', 'Noch keine Historie erfasst')
   const profileItems = [
     {
       label: copy.profileIdentity,
-      value: [listing.make, listing.model, listing.model_year].filter(Boolean).join(' ') || listing.title,
+      value: identity,
+      helper: profileStatus,
     },
     {
       label: copy.profileData,
-      value: copy.profileDataValue
+      value: localizedLabel(locale, '{score}% komplett', '{score}% complete', '{score}% vollständig')
+        .replace('{score}', String(completeness.score)),
+      helper: copy.profileDataValue
         .replace('{specs}', String(specsCount))
         .replace('{equipment}', String(equipmentCount)),
     },
     {
       label: copy.profileMarket,
-      value: marketInsight.sampleSize >= 3
-        ? copy.profileMarketValue.replace('{count}', String(marketInsight.sampleSize))
-        : copy.profileMarketLimited,
+      value: marketStatus,
+      helper: marketInsight.matchingCriteria.length
+        ? marketInsight.matchingCriteria.join(' · ')
+        : localizedLabel(locale, 'Matchas automatiskt mot publicerade annonser.', 'Automatically matched against published listings.', 'Automatisch mit veröffentlichten Anzeigen abgeglichen.'),
+    },
+    {
+      label: localizedLabel(locale, 'Historik', 'History', 'Historie'),
+      value: historyStatus,
+      helper: localizedLabel(locale, '{count} händelser kopplade till annonsen.', '{count} events connected to the listing.', '{count} Ereignisse mit der Anzeige verknüpft.')
+        .replace('{count}', String(listingHistory.length)),
+    },
+    {
+      label: localizedLabel(locale, 'Platsprofil', 'Location profile', 'Standortprofil'),
+      value: location || getEuCountryName(listing.country_code, locale) || listing.country_code,
+      helper: listing.latitude !== null && listing.longitude !== null
+        ? localizedLabel(locale, 'Har koordinater för karta och lokala sökningar.', 'Has coordinates for map and local searches.', 'Hat Koordinaten für Karte und lokale Suche.')
+        : localizedLabel(locale, 'Byggs från adress, postnummer och ort.', 'Built from address, postal code and city.', 'Wird aus Adresse, Postleitzahl und Ort erstellt.'),
+    },
+    {
+      label: localizedLabel(locale, 'Publiceringsdata', 'Publishing data', 'Veröffentlichungsdaten'),
+      value: listing.published_at
+        ? formatDate(listing.published_at, locale)
+        : localizedLabel(locale, 'Väntar på publicering', 'Waiting for publication', 'Wartet auf Veröffentlichung'),
+      helper: listing.edited_at
+        ? localizedLabel(locale, 'Senast uppdaterad {date}', 'Last updated {date}', 'Zuletzt aktualisiert {date}')
+          .replace('{date}', formatDate(listing.edited_at, locale))
+        : localizedLabel(locale, 'Uppdateras när annonsen ändras.', 'Updates when the listing changes.', 'Aktualisiert sich, wenn die Anzeige geändert wird.'),
     },
   ]
+
   return (
     <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
-      <div className="flex items-start gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf4ff] text-[#0866ff]">
           <Sparkles className="h-5 w-5" />
         </span>
@@ -954,17 +996,62 @@ function VehicleProfileSection({
           </h2>
           <p className="mt-1 text-sm leading-5 text-[#667085]">{copy.vehicleProfileIntro}</p>
         </div>
+        </div>
+        <span className="inline-flex items-center rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff] ring-1 ring-[#c7dbff]">
+          {localizedLabel(locale, 'Automatisk profil', 'Automatic profile', 'Automatisches Profil')}
+        </span>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+      <div className="mt-4 rounded-[12px] border border-[#d7e3f5] bg-[#f8fbff] p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#475467]">
+            {localizedLabel(locale, 'Datatäckning', 'Data coverage', 'Datenabdeckung')}
+          </p>
+          <p className="text-sm font-semibold text-[#101828]">{completeness.score}%</p>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e4eaf3]">
+          <div className="h-full rounded-full bg-[#0866ff]" style={{ width: `${completeness.score}%` }} />
+        </div>
+        <p className="mt-2 text-xs font-medium leading-4 text-[#667085]">
+          {localizedLabel(locale, '{filled} av {total} viktiga datapunkter är ifyllda.', '{filled} of {total} key data points are filled in.', '{filled} von {total} wichtigen Datenpunkten sind ausgefüllt.')
+            .replace('{filled}', String(completeness.filled))
+            .replace('{total}', String(completeness.total))}
+        </p>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {profileItems.map((item) => (
           <div key={item.label} className="rounded-[10px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-3">
             <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#667085]">{item.label}</p>
             <p className="mt-1 text-sm font-semibold leading-5 text-[#101828]">{item.value}</p>
+            <p className="mt-1 text-xs font-medium leading-4 text-[#667085]">{item.helper}</p>
           </div>
         ))}
       </div>
     </section>
   )
+}
+
+function buildVehicleProfileCompleteness(listing: ListingRow, specsCount: number, equipmentCount: number) {
+  const checks = [
+    listing.make && listing.model,
+    listing.model_year,
+    Number(listing.price) > 0,
+    listing.mileage_km !== null || listing.operating_hours !== null,
+    listing.fuel_type,
+    listing.gearbox,
+    listing.body_type,
+    listing.condition,
+    listing.city && listing.country_code,
+    listing.images?.length,
+    specsCount >= 8,
+    equipmentCount > 0,
+  ]
+  const filled = checks.filter(Boolean).length
+  const total = checks.length
+  return {
+    filled,
+    total,
+    score: Math.round((filled / total) * 100),
+  }
 }
 
 async function SimilarListingsSection({
