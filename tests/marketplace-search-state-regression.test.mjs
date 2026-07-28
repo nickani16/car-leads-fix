@@ -190,6 +190,24 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.doesNotMatch(geoLandingSource, /municipalityCode/)
 })
 
+test('localized listing URLs render listing detail pages instead of falling through to market catch-all', () => {
+  assert.match(marketCatchAllSource, /import ListingDetailPage, \{ generateListingMetadata \}/)
+  for (const segment of ['annons', 'anzeige', 'advertentie', 'annonce', 'anuncio', 'annuncio', 'ogloszenie', 'ilmoitus']) {
+    assert.ok(marketCatchAllSource.includes(segment), `${segment} should route to listing detail`)
+  }
+  assert.match(marketCatchAllSource, /localizedListingParams/)
+  assert.match(marketCatchAllSource, /return generateListingMetadata\(\{ params: listingParams \}\)/)
+  assert.match(marketCatchAllSource, /return <ListingDetailPage params=\{listingParams\} \/>/)
+})
+
+test('leasing marketplace mode does not present map markers or result labels as for-sale-only', () => {
+  assert.match(vehicleSearchExperienceSource, /resultActionSubjectLabel\(locale, mode\)/)
+  assert.match(vehicleSearchExperienceSource, /formatLeasingCountText/)
+  assert.match(vehicleSearchExperienceSource, /för leasing/)
+  assert.match(vehicleSearchExperienceSource, /const baseColorClass = 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\]/)
+})
+
 test('proxy protects expensive crawl surfaces without blocking verified search bots', () => {
   assert.match(proxySource, /SEARCH_CRAWLER_PATTERN/)
   assert.match(proxySource, /googlebot\|bingbot/)

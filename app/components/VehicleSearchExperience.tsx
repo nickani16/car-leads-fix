@@ -1344,6 +1344,7 @@ export default function VehicleSearchExperience({
     city,
     municipality,
     region,
+    mode,
   })
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
@@ -2318,7 +2319,7 @@ export default function VehicleSearchExperience({
                           onClick={() => setFiltersOpen(false)}
                           className="h-12 rounded-[8px] bg-[#0866ff] px-4 text-sm font-medium text-white transition hover:bg-[#0757da]"
                         >
-                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')}
+                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(countNumberLocale(locale))} {resultActionSubjectLabel(locale, mode)}
                         </button>
                       </div>
                     </div>
@@ -3898,9 +3899,8 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
 }
 
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
-  const leasing = isLeasingListing(listing)
-  const baseColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const pointColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
+  const baseColorClass = 'bg-[#0866ff] group-hover:bg-[#0757da]'
+  const pointColorClass = 'bg-[#0866ff] group-hover:bg-[#0757da]'
   const markerElement = document.createElement('button')
   markerElement.type = 'button'
   markerElement.setAttribute('aria-label', listing.title)
@@ -4167,6 +4167,7 @@ function formatSearchResultCountSummary({
   city,
   municipality,
   region,
+  mode,
 }: {
   locale: PublicLocale
   count: number
@@ -4180,6 +4181,7 @@ function formatSearchResultCountSummary({
   city: string
   municipality: string
   region: string
+  mode: SearchMode
 }) {
   if (count === 0) return translatePublic(locale, 'No listings match your search')
 
@@ -4198,7 +4200,16 @@ function formatSearchResultCountSummary({
     ? countYearRangeText(locale, minYear, maxYear)
     : ''
 
-  return formatForSaleCountText(locale, formatted, subject, location, yearText)
+  return mode === 'leasing'
+    ? formatLeasingCountText(locale, formatted, subject, location, yearText)
+    : formatForSaleCountText(locale, formatted, subject, location, yearText)
+}
+
+function resultActionSubjectLabel(locale: PublicLocale, mode: SearchMode) {
+  if (mode === 'leasing') {
+    return uiText(locale, 'leasing vehicles', 'leasingfordon', 'Leasingfahrzeuge')
+  }
+  return uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')
 }
 
 function formatForSaleCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
@@ -4226,6 +4237,34 @@ function formatForSaleCountText(locale: PublicLocale, formatted: string, subject
       return `${formatted} ${subject} myynnissä${place ? ` alueella ${place}` : ''}${yearText}`
     default:
       return `${formatted} ${subject} for sale${place ? ` in ${place}` : ''}${yearText}`
+  }
+}
+
+function formatLeasingCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject} för leasing${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject} zum Leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject} en leasing${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject} en leasing${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject} in leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject} w leasingu${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject} voor leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject} til leasing${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject} leasingiin${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject} for leasing${place ? ` in ${place}` : ''}${yearText}`
   }
 }
 

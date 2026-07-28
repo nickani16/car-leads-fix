@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import BusinessPage from '@/app/foretag/page'
+import ListingDetailPage, { generateListingMetadata } from '@/app/listings/[slug]/ListingDetailPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
 import { renderListingCreatedPage } from '@/app/account/listings/created/page'
@@ -47,12 +48,42 @@ const removedPublicPages = new Set([
   'dealer-solutions',
 ])
 
+const localizedListingSegments = new Set([
+  'annons',
+  'anzeige',
+  'advertentie',
+  'annonce',
+  'anuncio',
+  'annuncio',
+  'ogloszenie',
+  'ilmoitus',
+])
+
+function localizedListingParams({
+  market,
+  slug,
+}: {
+  market: string
+  slug: string[]
+}) {
+  const [segment, id, readableSlug] = slug
+  if (!localizedListingSegments.has(segment) || !id || !readableSlug || slug.length !== 3) {
+    return null
+  }
+  return Promise.resolve({ market, slug: `${readableSlug}-${id}` })
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ market: string; slug: string[] }>
 }) {
   const { market, slug } = await params
+  const listingParams = localizedListingParams({ market, slug })
+  if (listingParams) {
+    return generateListingMetadata({ params: listingParams })
+  }
+
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
@@ -77,6 +108,11 @@ export default async function LocalizedMarketPage({
   const slugPath = slug.join('/')
   if (removedPublicPages.has(slugPath)) {
     notFound()
+  }
+
+  const listingParams = localizedListingParams({ market: marketCode, slug })
+  if (listingParams) {
+    return <ListingDetailPage params={listingParams} />
   }
 
   const [categorySlug, ...geoSegments] = slug
