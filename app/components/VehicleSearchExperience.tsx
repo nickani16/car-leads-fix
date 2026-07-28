@@ -2772,30 +2772,96 @@ export default function VehicleSearchExperience({
           ) : null}
 
           {compareOpen && compareListings.length >= 2 ? (
-            <div className="fixed inset-0 z-[260] grid place-items-center bg-[#101828]/35 px-4 py-6 backdrop-blur-[2px]">
-              <div className="max-h-[min(820px,calc(100svh-48px))] w-full max-w-6xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)]">
-                <div className="flex items-center justify-between gap-4 border-b border-[#edf1f6] px-4 py-3 sm:px-5">
-                  <div>
+            <div className="fixed inset-0 z-[260] grid place-items-center bg-[#101828]/35 px-3 py-4 backdrop-blur-[2px] sm:px-4 sm:py-6">
+              <div className="max-h-[min(860px,calc(100svh-32px))] w-full max-w-6xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)] sm:max-h-[min(820px,calc(100svh-48px))]">
+                <div className="flex items-start justify-between gap-3 border-b border-[#edf1f6] px-4 py-3 sm:items-center sm:gap-4 sm:px-5">
+                  <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">
                       {compareCopy.eyebrow}
                     </p>
-                    <h2 className="text-lg font-semibold text-[#101828]">
+                    <h2 className="text-lg font-semibold leading-6 text-[#101828]">
                       {compareCopy.title}
                     </h2>
-                    <p className="mt-0.5 text-sm font-medium text-[#667085]">{compareCopy.subtitle}</p>
+                    <p className="mt-0.5 text-sm font-medium leading-5 text-[#667085]">{compareCopy.subtitle}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCompareOpen(false)}
                     aria-label={compareCopy.close}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828]"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828]"
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="max-h-[calc(min(820px,100svh-48px)-92px)] overflow-auto">
+                <div className="max-h-[calc(min(860px,100svh-32px)-104px)] overflow-auto sm:max-h-[calc(min(820px,100svh-48px)-92px)]">
+                  <div className="grid gap-3 p-3 sm:hidden">
+                    <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
+                      {compareIds.length}/{maxCompareListings}
+                    </p>
+                    {compareListings.map((listing) => {
+                      const href = buildListingPath({
+                        id: listing.id,
+                        title: listing.title,
+                        make: listing.make,
+                        model: listing.model,
+                        year: listing.year,
+                        city: listing.city,
+                        country_code: listing.country,
+                      }, locale)
+                      return (
+                        <article key={listing.id} className="overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white">
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => toggleCompare(listing.id)}
+                              aria-label={compareCopy.remove}
+                              className="absolute right-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
+                              <div className="relative aspect-[16/9] overflow-hidden bg-[#eef3f8]">
+                                {listing.imageUrls.length ? (
+                                  <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="calc(100vw - 48px)" className="object-cover" />
+                                ) : (
+                                  <div className="grid h-full place-items-center text-[#0866ff]">
+                                    <AutorellCarIcon className="h-10 w-10" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-3">
+                                <h3 className="line-clamp-2 text-base font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                                <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
+                                <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff]">
+                                  {compareCopy.view}
+                                </span>
+                              </div>
+                            </Link>
+                          </div>
+                          <dl className="divide-y divide-[#edf1f6] border-t border-[#edf1f6]">
+                            {compareRows.map((row) => {
+                              const item = row.values.find((value) => value.id === listing.id)
+                              return (
+                                <div key={`${listing.id}-${row.label}`} className={`grid grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] gap-3 px-3 py-2.5 ${item?.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
+                                  <dt className="text-[11px] font-semibold uppercase tracking-[.12em] text-[#667085]">{row.label}</dt>
+                                  <dd className="min-w-0 text-sm font-semibold text-[#101828]">
+                                    <span className="break-words">{item?.value || '-'}</span>
+                                    {item?.highlight ? (
+                                      <span className="mt-1 block w-max rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
+                                        {compareCopy.best}
+                                      </span>
+                                    ) : null}
+                                  </dd>
+                                </div>
+                              )
+                            })}
+                          </dl>
+                        </article>
+                      )
+                    })}
+                  </div>
                   <div
-                    className="grid min-w-[860px]"
+                    className="hidden min-w-[860px] sm:grid"
                     style={{ gridTemplateColumns: `minmax(150px, .55fr) repeat(${compareListings.length}, minmax(170px, 1fr))` }}
                   >
                     <div className="sticky left-0 top-0 z-20 border-b border-r border-[#edf1f6] bg-[#f8fbff] p-4">

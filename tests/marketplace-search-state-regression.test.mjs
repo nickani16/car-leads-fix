@@ -312,6 +312,10 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
     assert.match(vehicleSearchExperienceSource, new RegExp(`${locale}: \\{[\\s\\S]*title:`))
   }
   assert.match(vehicleSearchExperienceSource, /buildVehicleCompareRows\(compareListings, locale, compareCopy\)/)
+  assert.match(vehicleSearchExperienceSource, /grid gap-3 p-3 sm:hidden/)
+  assert.match(vehicleSearchExperienceSource, /sizes="calc\(100vw - 48px\)"/)
+  assert.match(vehicleSearchExperienceSource, /grid grid-cols-\[minmax\(0,\.9fr\)_minmax\(0,1\.1fr\)\]/)
+  assert.match(vehicleSearchExperienceSource, /className="hidden min-w-\[860px\] sm:grid"/)
   assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `minmax\(150px, \.55fr\) repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
   assert.match(vehicleSearchExperienceSource, /copy\.price/)
   assert.match(vehicleSearchExperienceSource, /copy\.seller/)
