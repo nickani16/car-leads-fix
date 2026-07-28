@@ -57,7 +57,7 @@ import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
-type SearchMode = 'sale' | 'leasing'
+type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
@@ -379,6 +379,11 @@ function isLeasingListing(listing: VehicleSearchListing) {
   return listing.offerType === 'lease'
 }
 
+function normalizeSearchMode(value?: string | null): SearchMode {
+  if (value === 'sale' || value === 'leasing') return value
+  return 'all'
+}
+
 function listingEquipmentChips(equipment: string | null | undefined) {
   return Array.from(
     new Set(
@@ -517,7 +522,7 @@ export default function VehicleSearchExperience({
   initialGeoFilterMode = 'legacy',
   initialMinPrice = '',
   initialMaxPrice = '',
-  initialMode = 'sale',
+  initialMode = 'all',
   initialMinYear = '',
   initialMaxYear = '',
   initialMinMileage = '',
@@ -619,7 +624,7 @@ export default function VehicleSearchExperience({
       initialGeoBounds ||
       initialMinPrice ||
       initialMaxPrice ||
-      initialMode !== 'sale' ||
+      initialMode !== 'all' ||
       initialMinYear ||
       initialMaxYear ||
       initialMinMileage ||
@@ -638,7 +643,7 @@ export default function VehicleSearchExperience({
       initialEquipmentQuery ||
       (initialSortBy && initialSortBy !== 'published'),
   )
-  const [mode, setMode] = useState<SearchMode>(initialMode === 'leasing' ? 'leasing' : 'sale')
+  const [mode, setMode] = useState<SearchMode>(normalizeSearchMode(initialMode))
   const [query, setQuery] = useState(initialChipQuery)
   const [searchInput, setSearchInput] = useState(initialQuery)
   const [debouncedSearchInput, setDebouncedSearchInput] = useState(initialQuery)
@@ -748,8 +753,14 @@ export default function VehicleSearchExperience({
       const cleanValue = value.trim()
       if (cleanValue) params.set(key, cleanValue)
     }
-    if (mode !== 'sale') params.set('mode', mode)
-    params.set('offerType', mode === 'leasing' ? 'lease' : 'sale')
+    if (mode === 'sale') {
+      params.set('mode', 'sale')
+      params.set('offerType', 'sale')
+    }
+    if (mode === 'leasing') {
+      params.set('mode', 'leasing')
+      params.set('offerType', 'lease')
+    }
     setParam('q', debouncedSearchInput)
     if (selectedSearchSuggestions.length) {
       params.set('chips', selectedSearchSuggestions.map((suggestion) => suggestion.title).join(','))
@@ -827,7 +838,7 @@ export default function VehicleSearchExperience({
     }
 
     const timer = window.setTimeout(() => {
-      const restoredMode = restored.mode === 'leasing' ? 'leasing' : 'sale'
+      const restoredMode = normalizeSearchMode(restored.mode)
       setMode(restoredMode)
       setSelectedSearchSuggestions([])
       setSearchInput(restored.query || '')
@@ -1115,6 +1126,7 @@ export default function VehicleSearchExperience({
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
     setSelectedSearchSuggestions(initialSearchSuggestions)
+    setMode(normalizeSearchMode(initialMode))
     setSearchInput(initialQuery)
     setDebouncedSearchInput(initialQuery)
     setQuery(initialChipQuery)
@@ -1771,9 +1783,7 @@ export default function VehicleSearchExperience({
         selectableCategories[0],
       locale,
     )
-    const modeLabel = mode === 'leasing'
-      ? uiText(locale, 'Leasing', 'Leasing', 'Leasing')
-      : uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
+    const modeLabel = marketplaceModeLabel(locale, mode)
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
     const bodyTypeFilterDefinition = categoryFilterProfile(activeCategoryKey).find((filter) => filter.key === 'bodyType')
     const bodyTypeFilterLabel = bodyTypeFilterDefinition
@@ -1855,6 +1865,7 @@ export default function VehicleSearchExperience({
             {renderDesktopFilterPopover('mode', (
               <div className="space-y-1">
                 {[
+                  { value: 'all' as SearchMode, label: marketplaceModeOptionLabel(locale, 'all') },
                   { value: 'sale' as SearchMode, label: uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen') },
                   { value: 'leasing' as SearchMode, label: uiText(locale, 'Leasing vehicles', 'Leasing av fordon', 'Leasingfahrzeuge') },
                 ].map((option) => (
@@ -3234,6 +3245,7 @@ function VehicleResultCard({
     listing.gearbox,
   ].filter(Boolean)
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+  const offerBadge = listingOfferBadge(locale, listing)
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
@@ -3297,6 +3309,9 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
+            <span className={`inline-flex w-max max-w-full rounded-[6px] px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+              {offerBadge.label}
+            </span>
             <MetaSeparatorList items={meta} className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader
@@ -3741,6 +3756,7 @@ function MapListingPreview({
     listing.gearbox,
   ].filter(Boolean)
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+  const offerBadge = listingOfferBadge(locale, listing)
 
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
@@ -3790,7 +3806,12 @@ function MapListingPreview({
               <SavedListingButton listingId={listing.id} />
             </div>
           </div>
-          <p className="mt-4 text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <p className="text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
+            <span className={`inline-flex rounded-[6px] px-2 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+              {offerBadge.label}
+            </span>
+          </div>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
           <div className="mt-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
@@ -4203,16 +4224,72 @@ function formatSearchResultCountSummary({
     ? countYearRangeText(locale, minYear, maxYear)
     : ''
 
-  return mode === 'leasing'
-    ? formatLeasingCountText(locale, formatted, subject, location, yearText)
-    : formatForSaleCountText(locale, formatted, subject, location, yearText)
+  if (mode === 'leasing') return formatLeasingCountText(locale, formatted, subject, location, yearText)
+  if (mode === 'sale') return formatForSaleCountText(locale, formatted, subject, location, yearText)
+  return formatAllCountText(locale, formatted, subject, location, yearText)
+}
+
+function marketplaceModeLabel(locale: PublicLocale, mode: SearchMode) {
+  if (mode === 'leasing') return uiText(locale, 'Leasing', 'Leasing', 'Leasing')
+  if (mode === 'sale') return uiText(locale, 'For sale', 'Till salu', 'Zum Verkauf')
+  return marketplaceModeOptionLabel(locale, 'all')
+}
+
+function marketplaceModeOptionLabel(locale: PublicLocale, mode: SearchMode) {
+  if (mode === 'leasing') return uiText(locale, 'Leasing vehicles', 'Leasing av fordon', 'Leasingfahrzeuge')
+  if (mode === 'sale') return uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const labels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Alla',
+    de: 'Alle',
+    fr: 'Tous',
+    es: 'Todos',
+    it: 'Tutti',
+    pl: 'Wszystkie',
+    nl: 'Alles',
+    da: 'Alle',
+    fi: 'Kaikki',
+    en: 'All',
+  }
+  return labels[effectiveLocale] || translatePublic(locale, 'All')
 }
 
 function resultActionSubjectLabel(locale: PublicLocale, mode: SearchMode) {
   if (mode === 'leasing') {
     return uiText(locale, 'leasing vehicles', 'leasingfordon', 'Leasingfahrzeuge')
   }
+  if (mode === 'all') {
+    return uiText(locale, 'vehicles', 'fordon', 'Fahrzeuge')
+  }
   return uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')
+}
+
+function formatAllCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject}${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject}${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject}${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject}${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject}${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject}${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+  }
 }
 
 function formatForSaleCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
@@ -4268,6 +4345,62 @@ function formatLeasingCountText(locale: PublicLocale, formatted: string, subject
       return `${formatted} ${subject} leasingiin${place ? ` alueella ${place}` : ''}${yearText}`
     default:
       return `${formatted} ${subject} for leasing${place ? ` in ${place}` : ''}${yearText}`
+  }
+}
+
+function listingOfferBadge(locale: PublicLocale, listing: VehicleSearchListing) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const saleLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Till salu',
+    de: 'Zum Verkauf',
+    fr: 'À vendre',
+    es: 'En venta',
+    it: 'In vendita',
+    pl: 'Na sprzedaż',
+    nl: 'Te koop',
+    da: 'Til salg',
+    fi: 'Myynnissä',
+    en: 'For sale',
+  }
+  const leaseLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'För leasing',
+    de: 'Leasing',
+    fr: 'Leasing',
+    es: 'Leasing',
+    it: 'Leasing',
+    pl: 'Leasing',
+    nl: 'Leasing',
+    da: 'Leasing',
+    fi: 'Leasing',
+    en: 'For leasing',
+  }
+  const bothLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Salu eller leasing',
+    de: 'Kauf oder Leasing',
+    fr: 'Vente ou leasing',
+    es: 'Venta o leasing',
+    it: 'Vendita o leasing',
+    pl: 'Sprzedaż lub leasing',
+    nl: 'Koop of leasing',
+    da: 'Salg eller leasing',
+    fi: 'Myynti tai leasing',
+    en: 'Sale or leasing',
+  }
+  if (listing.offerType === 'sale_and_lease') {
+    return {
+      label: bothLabels[effectiveLocale] || translatePublic(locale, 'Sale or leasing'),
+      className: 'bg-[#eef4ff] text-[#084dbb] ring-[#c9dcff]',
+    }
+  }
+  if (isLeasingListing(listing)) {
+    return {
+      label: leaseLabels[effectiveLocale] || translatePublic(locale, 'For leasing'),
+      className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
+    }
+  }
+  return {
+    label: saleLabels[effectiveLocale] || translatePublic(locale, 'For sale'),
+    className: 'bg-[#eef5ff] text-[#0757da] ring-[#c7dbff]',
   }
 }
 

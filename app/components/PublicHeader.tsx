@@ -488,7 +488,7 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [searchMenuOpen, setSearchMenuOpen] = useState(false)
-  const [searchMenuIntent, setSearchMenuIntent] = useState<'sale' | 'leasing'>('sale')
+  const [searchMenuIntent, setSearchMenuIntent] = useState<'all' | 'sale' | 'leasing'>('all')
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
@@ -717,6 +717,15 @@ export default function PublicHeader({
   })
   const searchIntentOptions = [
     {
+      key: 'all' as const,
+      label: publicLabel('All', 'Alla', 'Alle'),
+      text: publicLabel(
+        'Show vehicles for sale and leasing together.',
+        'Visa fordon till salu och leasing tillsammans.',
+        'Fahrzeuge zum Kauf und Leasing gemeinsam anzeigen.',
+      ),
+    },
+    {
       key: 'sale' as const,
       label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
       text: searchMegaCopy[locale].saleText,
@@ -728,7 +737,11 @@ export default function PublicHeader({
     },
   ]
   const searchCategoryHref = (href: string) =>
-    searchMenuIntent === 'leasing' ? `${href}?mode=leasing` : href
+    searchMenuIntent === 'leasing'
+      ? `${href}?mode=leasing&offerType=lease`
+      : searchMenuIntent === 'sale'
+        ? `${href}?mode=sale&offerType=sale`
+        : href
   const visibleSearchCategoryItems =
     searchMenuIntent === 'leasing'
       ? buyItems.filter((item) => item.slug && isLeasingMarketplaceCategory(item.slug))
@@ -1223,7 +1236,7 @@ export default function PublicHeader({
                               {searchMegaCopy[locale].intro}
                             </p>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
+                          <div className="grid grid-cols-3 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
                             {searchIntentOptions.map((option) => {
                               const selected = searchMenuIntent === option.key
                               return (
@@ -1268,7 +1281,9 @@ export default function PublicHeader({
                                       <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
                                         {searchMenuIntent === 'leasing'
                                           ? searchMegaCopy[locale].openLeasing
-                                          : searchMegaCopy[locale].openCategory}
+                                          : searchMenuIntent === 'sale'
+                                            ? searchMegaCopy[locale].openCategory
+                                            : publicLabel('Open all', 'Öppna alla', 'Alle öffnen')}
                                       </span>
                                     </span>
                                   </span>
@@ -1605,7 +1620,7 @@ export default function PublicHeader({
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8082]">
                 {t.shopByCategory}
               </p>
-              <div className="mt-3 grid grid-cols-2 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+              <div className="mt-3 grid grid-cols-3 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
                 {searchIntentOptions.map((option) => {
                   const selected = searchMenuIntent === option.key
                   return (
@@ -1921,7 +1936,7 @@ export default function PublicHeader({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mb-3 grid grid-cols-2 gap-1 rounded-[14px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+            <div className="mb-3 grid grid-cols-3 gap-1 rounded-[14px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
               {searchIntentOptions.map((option) => {
                 const selected = searchMenuIntent === option.key
                 return (
@@ -2026,7 +2041,7 @@ export default function PublicHeader({
             </section>
 
             <section className="mb-7">
-              <div className="mb-3 grid grid-cols-2 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
+              <div className="mb-3 grid grid-cols-3 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
                 {searchIntentOptions.map((option) => {
                   const selected = searchMenuIntent === option.key
                   return (

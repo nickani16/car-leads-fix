@@ -8,6 +8,14 @@ const vehicleSearchExperienceSource = readFileSync(
   new URL('../app/components/VehicleSearchExperience.tsx', import.meta.url),
   'utf8',
 )
+const homeHeroVehicleSearchSource = readFileSync(
+  new URL('../app/components/HomeHeroVehicleSearch.tsx', import.meta.url),
+  'utf8',
+)
+const publicHeaderSource = readFileSync(
+  new URL('../app/components/PublicHeader.tsx', import.meta.url),
+  'utf8',
+)
 const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
@@ -202,16 +210,29 @@ test('localized listing URLs render listing detail pages instead of falling thro
   assert.match(proxySource, /LOCALIZED_AD_SEGMENTS\.has\(segments\[1\] \|\| ''\)/)
 })
 
-test('leasing and for-sale marketplace modes stay visually and query-separated', () => {
+test('marketplace mode defaults to all while sale and leasing stay query-separated', () => {
+  assert.match(vehicleSearchExperienceSource, /type SearchMode = 'all' \| 'sale' \| 'leasing'/)
+  assert.match(vehicleSearchExperienceSource, /initialMode = 'all'/)
+  assert.match(vehicleSearchExperienceSource, /normalizeSearchMode\(initialMode\)/)
+  assert.match(vehicleSearchExperienceSource, /marketplaceModeOptionLabel\(locale, 'all'\)/)
   assert.match(vehicleSearchExperienceSource, /resultActionSubjectLabel\(locale, mode\)/)
+  assert.match(vehicleSearchExperienceSource, /formatAllCountText/)
   assert.match(vehicleSearchExperienceSource, /formatLeasingCountText/)
   assert.match(vehicleSearchExperienceSource, /för leasing/)
-  assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', mode === 'leasing' \? 'lease' : 'sale'\)/)
+  assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', 'sale'\)/)
+  assert.match(vehicleSearchExperienceSource, /params\.set\('offerType', 'lease'\)/)
   assert.match(vehicleSearchExperienceSource, /if \(mode === 'sale' && listing\.offerType !== 'sale'\) return false/)
   assert.match(vehicleSearchExperienceSource, /return listing\.offerType === 'lease'/)
+  assert.match(vehicleSearchExperienceSource, /listingOfferBadge\(locale, listing\)/)
+  assert.match(homeHeroVehicleSearchSource, /useState<Intent>\('all'\)/)
+  assert.match(homeHeroVehicleSearchSource, /\(\['all', 'sale', 'leasing'\] as const\)/)
+  assert.match(publicHeaderSource, /useState<'all' \| 'sale' \| 'leasing'>\('all'\)/)
+  assert.match(publicHeaderSource, /key: 'all' as const/)
   assert.match(vehicleSearchExperienceSource, /leasing \? 'bg-\[#16a34a\] group-hover:bg-\[#15803d\]' : 'bg-\[#0866ff\] group-hover:bg-\[#0757da\]'/)
   assert.match(searchSource, /normalizeOfferTypeFilter\(input, parsedSearchState\.offerType\)/)
-  assert.match(searchSource, /return clean\(input\.mode\) === 'leasing' \? 'lease' : 'sale'/)
+  assert.match(searchSource, /if \(mode === 'leasing'\) return 'lease'/)
+  assert.match(searchSource, /if \(mode === 'sale'\) return 'sale'/)
+  assert.match(searchSource, /return ''/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {

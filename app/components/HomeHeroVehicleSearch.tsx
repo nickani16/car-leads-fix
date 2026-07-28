@@ -51,7 +51,7 @@ import {
   type VehicleSmartSearchSuggestion,
 } from './VehicleSmartSearchSuggestions'
 
-type Intent = 'sale' | 'leasing'
+type Intent = 'all' | 'sale' | 'leasing'
 
 type LastSearch = {
   label: string
@@ -167,7 +167,7 @@ const copyByLocale = {
     note: 'Autorell samlar annonser från flera europeiska marknader på ett ställe.',
     searchAgain: 'Sök igen: Bilar',
     searchAgainSub: 'Fordon till salu',
-    tabs: { sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
+    tabs: { all: 'Alla', sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
     verified: 'Visa endast verifierade säljare',
     expandArea: 'Utöka sökområde',
     markets: 'Marknader',
@@ -196,7 +196,7 @@ const copyByLocale = {
     note: 'Autorell gathers listings from several European markets in one place.',
     searchAgain: 'Search again: Cars',
     searchAgainSub: 'Vehicles for sale',
-    tabs: { sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
+    tabs: { all: 'All', sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
     verified: 'Show verified sellers only',
     expandArea: 'Expand search area',
     markets: 'Markets',
@@ -225,7 +225,7 @@ const copyByLocale = {
     note: 'Autorell bündelt Anzeigen aus mehreren europäischen Märkten an einem Ort.',
     searchAgain: 'Erneut suchen: Autos',
     searchAgainSub: 'Fahrzeuge kaufen',
-    tabs: { sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
+    tabs: { all: 'Alle', sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
     verified: 'Nur geprüfte Verkäufer anzeigen',
     expandArea: 'Suchgebiet erweitern',
     markets: 'Märkte',
@@ -300,7 +300,7 @@ export default function HomeHeroVehicleSearch({
           ? copyByLocale.sv
           : translatePublicObject(locale, copyByLocale.en)
   const searchPlaceholder = getVehicleSearchPlaceholder(locale)
-  const [intent, setIntent] = useState<Intent>('sale')
+  const [intent, setIntent] = useState<Intent>('all')
   const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
   const [query, setQuery] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(false)
@@ -448,7 +448,14 @@ export default function HomeHeroVehicleSearch({
     const chipLabels = selectedSearchSuggestions.map((suggestion) => suggestion.title.trim()).filter(Boolean)
     if (trimmedQuery) params.set('q', trimmedQuery)
     if (chipLabels.length) params.set('chips', chipLabels.join(','))
-    if (intent === 'leasing') params.set('mode', 'leasing')
+    if (intent === 'sale') {
+      params.set('mode', 'sale')
+      params.set('offerType', 'sale')
+    }
+    if (intent === 'leasing') {
+      params.set('mode', 'leasing')
+      params.set('offerType', 'lease')
+    }
     if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
     if (verifiedOnly) params.set('verified', 'true')
     Object.entries(advancedFilters).forEach(([key, value]) => {
@@ -585,8 +592,8 @@ export default function HomeHeroVehicleSearch({
         role="search"
       >
         <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-transparent lg:mx-0 lg:mt-0 lg:bg-white lg:border-[#d8d8d8]">
-          <div className="grid grid-cols-2">
-            {(['sale', 'leasing'] as const).map((tab) => (
+          <div className="grid grid-cols-3">
+            {(['all', 'sale', 'leasing'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"

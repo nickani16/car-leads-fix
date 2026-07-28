@@ -354,7 +354,10 @@ function normalizeOfferTypeFilter(input: MarketplaceSearchInput, parsedOfferType
   if (explicit === 'sale' || explicit === 'lease') return explicit
   const parsed = normalizeParsedOfferType(parsedOfferType)
   if (parsed === 'sale' || parsed === 'lease') return parsed
-  return clean(input.mode) === 'leasing' ? 'lease' : 'sale'
+  const mode = clean(input.mode).toLowerCase()
+  if (mode === 'leasing') return 'lease'
+  if (mode === 'sale') return 'sale'
+  return ''
 }
 
 function emptyMarketplaceSearchResult(filters: ReturnType<typeof normalizeMarketplaceSearchInput>): MarketplaceSearchResult {

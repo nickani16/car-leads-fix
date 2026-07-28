@@ -165,7 +165,8 @@ function getSearchMode(
   params: { [key: string]: string | string[] | undefined },
 ) {
   const value = (getSearchParam(params, 'mode') || getSearchParam(params, 'intent')).toLowerCase()
-  return value === 'leasing' ? 'leasing' : 'sale'
+  if (value === 'sale' || value === 'leasing') return value
+  return 'all'
 }
 
 function getBooleanSearchParam(
