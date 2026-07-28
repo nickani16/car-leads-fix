@@ -60,7 +60,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 type SearchMode = 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
-type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'region' | 'municipality' | 'market' | 'model' | null
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -1684,7 +1684,7 @@ export default function VehicleSearchExperience({
         type="button"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           const rect = event.currentTarget.getBoundingClientRect()
-          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'region' || menu === 'municipality' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
           setDesktopFilterPopoverPosition({
             left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
             top: rect.bottom + 6,
@@ -1779,8 +1779,6 @@ export default function VehicleSearchExperience({
     const bodyTypeLabel = bodyType
       ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
       : bodyTypeFilterLabel
-    const regionLabel = region || uiText(locale, 'County', 'L\u00e4n', 'Region')
-    const municipalityLabel = municipality || uiText(locale, 'Municipality', 'Kommun', 'Kommune')
     const marketLabel = selectedMarketCodes.length > 1
       ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
       : selectedMarketCodes.length === 1
@@ -2005,86 +2003,6 @@ export default function VehicleSearchExperience({
                     className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                   >
                     {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie lÃ¶schen')}
-                  </button>
-                ) : null}
-              </div>
-            ), 'w-[310px]')}
-          </div>
-
-          <div className="relative order-35 shrink-0">
-            {desktopMenuButton('region', regionLabel, Boolean(region))}
-            {renderDesktopFilterPopover('region', (
-              <div className="space-y-3">
-                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
-                  {regionOptions.length ? regionOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        updateRegionFilter(region === option.value ? '' : option.value)
-                        setDesktopFilterMenu(null)
-                      }}
-                      className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
-                    >
-                      <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                      {region === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
-                    </button>
-                  )) : (
-                    <p className="px-3 py-2 text-sm text-[#667085]">
-                      {uiText(locale, 'No counties available', 'Inga l\u00e4n tillg\u00e4ngliga', 'Keine Regionen verf\u00fcgbar')}
-                    </p>
-                  )}
-                </div>
-                {region ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateRegionFilter('')
-                      setDesktopFilterMenu(null)
-                    }}
-                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-                  >
-                    {uiText(locale, 'Clear county', 'Rensa l\u00e4n', 'Region l\u00f6schen')}
-                  </button>
-                ) : null}
-              </div>
-            ), 'w-[310px]')}
-          </div>
-
-          <div className="relative order-36 shrink-0">
-            {desktopMenuButton('municipality', municipalityLabel, Boolean(municipality))}
-            {renderDesktopFilterPopover('municipality', (
-              <div className="space-y-3">
-                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
-                  {municipalityOptions.length ? municipalityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        updateMunicipalityFilter(municipality === option.value ? '' : option.value)
-                        setDesktopFilterMenu(null)
-                      }}
-                      className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
-                    >
-                      <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                      {municipality === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
-                    </button>
-                  )) : (
-                    <p className="px-3 py-2 text-sm text-[#667085]">
-                      {uiText(locale, 'No municipalities available', 'Inga kommuner tillg\u00e4ngliga', 'Keine Kommunen verf\u00fcgbar')}
-                    </p>
-                  )}
-                </div>
-                {municipality ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateMunicipalityFilter('')
-                      setDesktopFilterMenu(null)
-                    }}
-                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-                  >
-                    {uiText(locale, 'Clear municipality', 'Rensa kommun', 'Kommune l\u00f6schen')}
                   </button>
                 ) : null}
               </div>

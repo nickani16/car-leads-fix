@@ -147,12 +147,12 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
   }
 })
 
-test('marketplace exposes county and municipality filters in tabs and facets', () => {
-  assert.match(vehicleSearchExperienceSource, /'region' \| 'municipality'/)
+test('marketplace keeps county and municipality in full filters and facets, not desktop tabs', () => {
+  assert.doesNotMatch(vehicleSearchExperienceSource, /'region' \| 'municipality'/)
   assert.match(vehicleSearchExperienceSource, /searchFacets\?\.regions/)
   assert.match(vehicleSearchExperienceSource, /searchFacets\?\.municipalities/)
-  assert.match(vehicleSearchExperienceSource, /desktopMenuButton\('region'/)
-  assert.match(vehicleSearchExperienceSource, /desktopMenuButton\('municipality'/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /desktopMenuButton\('region'/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /desktopMenuButton\('municipality'/)
   assert.match(vehicleSearchExperienceSource, /renderLocationFilterSection/)
   assert.match(vehicleSearchExperienceSource, /updateRegionFilter/)
   assert.match(vehicleSearchExperienceSource, /updateMunicipalityFilter/)
