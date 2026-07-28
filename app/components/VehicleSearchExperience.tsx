@@ -54,8 +54,7 @@ import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
-import { searchBoundsToPolygon, type MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
-import type { GeoJsonFeatureCollection } from '@/lib/geo/geojson'
+import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'sale' | 'leasing'
@@ -486,7 +485,6 @@ export default function VehicleSearchExperience({
   initialMunicipality = '',
   initialGeoAreaId = '',
   initialGeoBounds = null,
-  initialGeoGeometry = null,
   initialMinPrice = '',
   initialMaxPrice = '',
   initialMode = 'sale',
@@ -525,7 +523,6 @@ export default function VehicleSearchExperience({
   initialMunicipality?: string
   initialGeoAreaId?: string
   initialGeoBounds?: MarketplaceBoundingBox | null
-  initialGeoGeometry?: GeoJsonFeatureCollection | null
   initialMinPrice?: string
   initialMaxPrice?: string
   initialMode?: SearchMode
@@ -589,7 +586,6 @@ export default function VehicleSearchExperience({
       initialMunicipality ||
       initialGeoAreaId ||
       initialGeoBounds ||
-      initialGeoGeometry ||
       initialMinPrice ||
       initialMaxPrice ||
       initialMode !== 'sale' ||
@@ -643,7 +639,6 @@ export default function VehicleSearchExperience({
   const [municipality, setMunicipality] = useState(initialMunicipality)
   const [geoAreaId, setGeoAreaId] = useState(initialGeoAreaId)
   const [geoBounds, setGeoBounds] = useState<MarketplaceBoundingBox | null>(initialGeoBounds)
-  const [geoGeometry, setGeoGeometry] = useState<GeoJsonFeatureCollection | null>(initialGeoGeometry)
   const [fuel, setFuel] = useState(initialFuel)
   const [gearbox, setGearbox] = useState(initialGearbox)
   const [bodyType, setBodyType] = useState(initialBodyType)
@@ -827,7 +822,6 @@ export default function VehicleSearchExperience({
       setMunicipality(restored.municipality || '')
       setGeoAreaId(restored.geoAreaId || '')
       setGeoBounds(restored.geoBounds || null)
-      setGeoGeometry(null)
       setFuel(restored.fuel || '')
       setGearbox(restored.gearbox || '')
       setBodyType(restored.bodyType || '')
@@ -1089,7 +1083,6 @@ export default function VehicleSearchExperience({
     setMunicipality(initialMunicipality)
     setGeoAreaId(initialGeoAreaId)
     setGeoBounds(initialGeoBounds)
-    setGeoGeometry(initialGeoGeometry)
     setFuel(initialFuel)
     setGearbox(initialGearbox)
     setBodyType(initialBodyType)
@@ -2487,11 +2480,9 @@ export default function VehicleSearchExperience({
               searchInput={searchInput}
               selectedSearchSuggestions={selectedSearchSuggestions}
               geoBounds={geoBounds}
-              geoGeometry={geoGeometry}
               onSearchArea={(bounds) => {
                 setGeoAreaId('')
                 setGeoBounds(bounds)
-                setGeoGeometry(null)
               }}
               onRemoveSearchSuggestion={(suggestion) => {
                 setSelectedSearchSuggestions((current) => {
@@ -3264,7 +3255,6 @@ function VehicleSearchMap({
   searchInput,
   selectedSearchSuggestions,
   geoBounds,
-  geoGeometry,
   onSearchArea,
   onRemoveSearchSuggestion,
   mobileOverlay = false,
@@ -3290,7 +3280,6 @@ function VehicleSearchMap({
   searchInput: string
   selectedSearchSuggestions: SelectedSearchSuggestion[]
   geoBounds?: MarketplaceBoundingBox | null
-  geoGeometry?: GeoJsonFeatureCollection | null
   onSearchArea: (bounds: MarketplaceBoundingBox) => void
   onRemoveSearchSuggestion: (suggestion: SelectedSearchSuggestion) => void
   mobileOverlay?: boolean
@@ -3401,8 +3390,6 @@ function VehicleSearchMap({
           .setLngLat(coordinates)
           .addTo(map)
       })
-      syncGeoAreaGeometryLayer(map, geoGeometry ?? null)
-      syncSearchBoundsLayer(map, geoGeometry ? null : geoBounds ?? null)
       if (geoBounds) {
         const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
         map.fitBounds(bounds, { padding: 70, maxZoom: 10.5, duration: 500 })
@@ -3419,7 +3406,7 @@ function VehicleSearchMap({
     return () => {
       cancelled = true
     }
-  }, [country, geoBounds, geoGeometry, mapListings, mapReady, selectedListing?.id])
+  }, [country, geoBounds, mapListings, mapReady, selectedListing?.id])
 
   return (
     <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
@@ -3883,102 +3870,6 @@ function readMapBounds(map: MapLibreMap | null): MarketplaceBoundingBox | null {
     east: bounds.getEast(),
     south: bounds.getSouth(),
     west: bounds.getWest(),
-  }
-}
-
-function syncGeoAreaGeometryLayer(map: MapLibreMap, data: GeoJsonFeatureCollection | null) {
-  const sourceId = 'autorell-geo-area'
-  const fillLayerId = 'autorell-geo-area-fill'
-  const lineLayerId = 'autorell-geo-area-line'
-
-  try {
-    if (!data) {
-      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId)
-      if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
-      if (map.getSource(sourceId)) map.removeSource(sourceId)
-      return
-    }
-
-    const source = map.getSource(sourceId) as { setData?: (value: GeoJsonFeatureCollection) => void } | undefined
-    if (source?.setData) {
-      source.setData(data)
-      return
-    }
-
-    map.addSource(sourceId, { type: 'geojson', data })
-    map.addLayer({
-      id: fillLayerId,
-      type: 'fill',
-      source: sourceId,
-      paint: {
-        'fill-color': '#0866ff',
-        'fill-opacity': 0.14,
-      },
-    })
-    map.addLayer({
-      id: lineLayerId,
-      type: 'line',
-      source: sourceId,
-      paint: {
-        'line-color': '#0866ff',
-        'line-opacity': 0.86,
-        'line-width': 2.4,
-      },
-    })
-  } catch {
-    // Map style swaps can briefly remove sources while MapLibre is repainting.
-  }
-}
-
-function syncSearchBoundsLayer(map: MapLibreMap, bounds: MarketplaceBoundingBox | null) {
-  const sourceId = 'autorell-geo-bounds'
-  const fillLayerId = 'autorell-geo-bounds-fill'
-  const lineLayerId = 'autorell-geo-bounds-line'
-
-  try {
-    if (!bounds) {
-      if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId)
-      if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
-      if (map.getSource(sourceId)) map.removeSource(sourceId)
-      return
-    }
-
-    const data = {
-      type: 'Feature' as const,
-      properties: {},
-      geometry: {
-        type: 'Polygon' as const,
-        coordinates: [searchBoundsToPolygon(bounds)],
-      },
-    }
-    const source = map.getSource(sourceId) as { setData?: (value: typeof data) => void } | undefined
-    if (source?.setData) {
-      source.setData(data)
-      return
-    }
-
-    map.addSource(sourceId, { type: 'geojson', data })
-    map.addLayer({
-      id: fillLayerId,
-      type: 'fill',
-      source: sourceId,
-      paint: {
-        'fill-color': '#0866ff',
-        'fill-opacity': 0.08,
-      },
-    })
-    map.addLayer({
-      id: lineLayerId,
-      type: 'line',
-      source: sourceId,
-      paint: {
-        'line-color': '#0866ff',
-        'line-opacity': 0.72,
-        'line-width': 2,
-      },
-    })
-  } catch {
-    // Map style swaps can briefly remove sources while MapLibre is repainting.
   }
 }
 

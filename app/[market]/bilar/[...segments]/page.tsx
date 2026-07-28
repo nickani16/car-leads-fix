@@ -132,7 +132,6 @@ export default async function SwedishCarGeoLandingPage({
         initialMunicipality={landing.geoArea.municipality || landing.municipalityName}
         initialGeoAreaId={landing.geoArea.id}
         initialGeoBounds={landing.geoArea.bounds}
-        initialGeoGeometry={landing.geoFeatureCollection}
         initialMinPrice=""
         initialMaxPrice=""
         initialMode="sale"

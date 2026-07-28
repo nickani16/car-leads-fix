@@ -3,8 +3,6 @@ import {
   resolveMarketplaceGeoArea,
   type MarketplaceGeoArea,
 } from './marketplace-search-state'
-import { danderydGeoArea } from './geo/danderyd'
-import { geoAreaToFeatureCollection, type GeoJsonFeatureCollection } from './geo/geojson'
 
 type SwedishCarGeoLanding = {
   market: 'se'
@@ -16,8 +14,6 @@ type SwedishCarGeoLanding = {
   make: string | null
   geoArea: MarketplaceGeoArea
   municipalityCode: '0162'
-  geoFeatureCollection: GeoJsonFeatureCollection
-  geoSource: string
   canonicalPath: string
   h1: string
   title: string
@@ -83,8 +79,6 @@ export function resolveSwedishCarGeoLanding(
     make,
     geoArea,
     municipalityCode: municipality.municipalityCode,
-    geoFeatureCollection: geoAreaToFeatureCollection(danderydGeoArea),
-    geoSource: danderydGeoArea.source,
     canonicalPath,
     h1,
     title: cleanSeoText(`${h1} | Autorell`, 60),

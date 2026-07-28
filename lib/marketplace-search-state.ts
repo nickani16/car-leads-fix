@@ -353,16 +353,6 @@ export function isPointInsideSearchBounds(
   )
 }
 
-export function searchBoundsToPolygon(bounds: MarketplaceBoundingBox) {
-  return [
-    [bounds.west, bounds.south],
-    [bounds.east, bounds.south],
-    [bounds.east, bounds.north],
-    [bounds.west, bounds.north],
-    [bounds.west, bounds.south],
-  ]
-}
-
 function findGeoArea(query: string) {
   const normalized = normalizeSearchStateText(query)
   if (!normalized) return null
