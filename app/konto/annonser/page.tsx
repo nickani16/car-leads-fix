@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import {
   AlertTriangle,
   CalendarClock,
@@ -20,7 +21,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { listingLifecycle } from '@/lib/listing-lifecycle'
 import {
@@ -29,6 +30,7 @@ import {
   getProductAmount,
   legacyListingPackageToProductKey,
   normalizeBillingMarket,
+  type BillingMarket,
   type BillingProduct,
 } from '@/lib/billing/product-catalog'
 import {
@@ -56,12 +58,22 @@ type BillingPriceRow = {
 
 export default async function AccountListingsPage({
   searchParams,
+  localeOverride,
+  marketOverride,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
+  localeOverride?: PublicLocale
+  marketOverride?: string
 }) {
   const query = await searchParams
   const renderedAt = new Date().getTime()
-  const locale = await getRequestLocale()
+  const locale = localeOverride || await getRequestLocale()
+  const requestHeaders = await headers()
+  const billingMarket = normalizeBillingMarket(
+    marketOverride ||
+    requestHeaders.get('x-autorell-market') ||
+    billingMarketForLocale(locale),
+  )
   const copy = listingPageCopy(locale)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -103,7 +115,7 @@ export default async function AccountListingsPage({
     redirect(`${localizePublicHref(locale, '/account/listings')}?${params.toString()}`)
   }
 
-  const markets = [...new Set(result.items.map((listing) => normalizeBillingMarket(listing.country_code)))]
+  const markets = [billingMarket]
   const productKeys = billingProductCatalog
     .filter((product) => product.kind === 'listing_package' || product.kind === 'addon')
     .map((product) => product.productKey)
@@ -170,8 +182,9 @@ export default async function AccountListingsPage({
               listing={listing}
               locale={locale}
               accountType={accountType}
-              packages={packageOptions(listing, locale, priceMap)}
-              marketing={marketingOptions(listing, locale, priceMap)}
+              billingMarket={billingMarket}
+              packages={packageOptions(listing, locale, priceMap, billingMarket)}
+              marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
               autoOpen={query.choosePackage === '1' && query.listing === listing.id}
               renderedAt={renderedAt}
             />
@@ -184,10 +197,11 @@ export default async function AccountListingsPage({
   )
 }
 
-function ListingCard({ listing, locale, accountType, packages, marketing, autoOpen, renderedAt }: {
+function ListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, renderedAt }: {
   listing: ManagedListing
   locale: PublicLocale
   accountType: string
+  billingMarket: BillingMarket
   packages: PackageOption[]
   marketing: MarketingOption[]
   autoOpen: boolean
@@ -213,7 +227,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
           <div className="flex flex-wrap items-center gap-2">
             <LifecycleBadge label={localizedLifecycleLabel(lifecycle.group, listing.status, locale)} tone={lifecycle.tone} />
             {activeBoost ? <PromotionBadge label={copy.topPlacement} /> : null}
-            {activeFeatured ? <PromotionBadge label="Featured" /> : null}
+            {activeFeatured ? <PromotionBadge label={copy.featured} /> : null}
           </div>
           <h2 className="mt-3 truncate text-xl font-semibold tracking-[-.025em] text-[#101828]">{listing.title}</h2>
           <p className="mt-1 text-lg font-semibold text-[#101828]">{new Intl.NumberFormat(locale, { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.price)}</p>
@@ -227,7 +241,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-[#667085]">
             <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">ID: {listing.reference_number || listing.id.slice(0, 8)}</span>
             {listing.listing_number ? <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{copy.stockNumber}: {listing.listing_number}</span> : null}
-            <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{packageLabel(listing.package_id)}</span>
+            <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{packageLabel(listing.package_id, locale)}</span>
           </div>
 
           <div className="mt-4 flex items-center gap-4 border-t border-[#eef2f7] pt-3 text-xs text-[#667085]">
@@ -242,7 +256,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
             listingId={listing.id}
             status={listing.status}
             packageId={listing.package_id}
-            market={listing.country_code.toLowerCase()}
+            market={billingMarket}
             packages={packages}
             marketingOptions={marketing}
             lastRefreshedAt={listing.last_refreshed_at}
@@ -326,24 +340,31 @@ function PromotionBadge({ label }: { label: string }) {
   return <span className="inline-flex items-center gap-1 rounded-full bg-[#f5f3ff] px-2.5 py-1 text-[11px] font-semibold text-[#6d28d9]"><Megaphone className="h-3 w-3" />{label}</span>
 }
 
-function packageOptions(listing: ManagedListing, locale: string, prices: Map<string, BillingPriceRow>): PackageOption[] {
-  const market = normalizeBillingMarket(listing.country_code)
+function packageOptions(listing: ManagedListing, locale: PublicLocale, prices: Map<string, BillingPriceRow>, market: BillingMarket): PackageOption[] {
+  const copy = optionCopy(locale)
   const definitions = [
-    { id: 'free_7d', title: 'Start', duration: 5, description: locale === 'sv' ? 'En vanlig annons för att komma igång.' : 'A standard listing to get started.' },
-    { id: 'standard_15d', title: 'Standard', duration: 15, description: locale === 'sv' ? 'Längre annonstid för en seriös försäljning.' : 'A longer listing period for a serious sale.' },
-    { id: 'premium_30d', title: 'Premium', duration: 30, description: locale === 'sv' ? 'Extra synlighet och inkluderad toppplacering.' : 'Extra visibility and included top placement.' },
+    { id: 'free_7d', title: copy.start, duration: 5, description: copy.startDescription },
+    { id: 'standard_15d', title: copy.standard, duration: 15, description: copy.standardDescription },
+    { id: 'premium_30d', title: copy.premium, duration: 30, description: copy.premiumDescription },
   ]
   return definitions.map((definition) => {
     const key = legacyListingPackageToProductKey(listing.category, definition.id)
     const product = key ? billingProductCatalog.find((item) => item.productKey === key) : null
     const amount = product ? configuredAmount(product, market, prices) : null
     if (!amount) console.error('[account-listings] Missing package price', { productKey: key, market })
-    return { id: definition.id, title: definition.title, duration: `${definition.duration} ${locale === 'sv' ? 'dagar' : 'days'}`, description: definition.description, price: amount ? amount.amountMinor === 0 ? locale === 'sv' ? 'Gratis' : 'Free' : formatMoneyMinor(amount.amountMinor, amount.currency, locale) : locale === 'sv' ? 'Ej tillgängligt' : 'Unavailable', available: Boolean(amount) }
+    return {
+      id: definition.id,
+      title: definition.title,
+      duration: `${definition.duration} ${copy.days}`,
+      description: definition.description,
+      price: amount ? amount.amountMinor === 0 ? copy.free : formatMoneyMinor(amount.amountMinor, amount.currency, locale) : copy.unavailable,
+      available: Boolean(amount),
+    }
   })
 }
 
-function marketingOptions(listing: ManagedListing, locale: string, prices: Map<string, BillingPriceRow>): MarketingOption[] {
-  const market = normalizeBillingMarket(listing.country_code)
+function marketingOptions(listing: ManagedListing, locale: PublicLocale, prices: Map<string, BillingPriceRow>, market: BillingMarket): MarketingOption[] {
+  const copy = optionCopy(locale)
   return billingProductCatalog.flatMap((product): MarketingOption[] => {
     if (product.kind !== 'addon' || !product.addon) return []
     if (product.addon.startsWith('refresh') && product.addon !== 'refresh_single') return []
@@ -353,18 +374,18 @@ function marketingOptions(listing: ManagedListing, locale: string, prices: Map<s
       return []
     }
     const type = product.addon.startsWith('refresh') ? 'refresh' : product.addon.startsWith('top_placement') ? 'top' : 'featured'
-    const period = type === 'refresh' ? (locale === 'sv' ? '1 direkt lyft' : '1 instant boost') : `${product.durationDays} ${locale === 'sv' ? 'dagar' : 'days'}`
-    const title = type === 'refresh' ? (locale === 'sv' ? 'Lyft annons' : 'Boost listing') : type === 'top' ? (locale === 'sv' ? 'Toppplacering' : 'Top placement') : 'Featured'
+    const period = type === 'refresh' ? copy.instantBoost : `${product.durationDays} ${copy.days}`
+    const title = type === 'refresh' ? copy.boostTitle : type === 'top' ? copy.topPlacement : copy.featured
     const description = type === 'refresh'
-      ? (locale === 'sv' ? 'Flyttar upp annonsen bland de senaste resultaten. Ett nytt lyft kan göras efter 24 timmar.' : 'Moves the listing among the newest results. Available again after 24 hours.')
+      ? copy.boostDescription
       : type === 'top'
-        ? (locale === 'sv' ? 'Ger prioriterad placering högst upp i relevanta sökresultat. Flera toppannonser kan rotera.' : 'Prioritized placement at the top of relevant search results. Multiple top listings may rotate.')
-        : (locale === 'sv' ? 'Ger annonskortet en tydlig Featured-markering och exponering i utvalda ytor.' : 'Adds a clear Featured treatment and exposure in selected placements.')
+        ? copy.topDescription
+        : copy.featuredDescription
     const detail = type === 'refresh'
-      ? (locale === 'sv' ? 'Effekten startar när Stripe-betalningen har verifierats via webhook.' : 'Starts after Stripe payment is verified by webhook.')
+      ? copy.boostDetail
       : type === 'top'
-        ? `${locale === 'sv' ? 'Gäller annonsens kategori och marknad' : 'Applies to the listing category and market'} · ${listing.country_code.toUpperCase()}`
-        : (locale === 'sv' ? 'Skiljer sig från toppplacering: visuell markering och utvald exponering, inte fast topprioritet.' : 'Unlike top placement: visual treatment and selected exposure, not fixed top priority.')
+        ? `${copy.topDetail} · ${listing.country_code.toUpperCase()}`
+        : copy.featuredDetail
     return [{ productKey: product.productKey, type, title, price: formatMoneyMinor(amount.amountMinor, amount.currency, locale), period, description, detail }]
   })
 }
@@ -418,16 +439,88 @@ function localizedLifecycleLabel(group: ReturnType<typeof listingLifecycle>['gro
 }
 function isFuture(value: string | null) { return Boolean(value && new Date(value).getTime() > Date.now()) }
 function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) }
-function packageLabel(value: string) { return value === 'premium_30d' ? 'Premium · 30' : value === 'standard_15d' ? 'Standard · 15' : 'Start · 5' }
-function categoryLabel(value: string, locale: string) { const labels: Record<string, [string, string]> = { cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'], motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'], agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'], 'electric-bikes': ['Elcyklar', 'Electric bikes'] }; return labels[value]?.[locale === 'sv' ? 0 : 1] || value }
+function packageLabel(value: string, locale: PublicLocale) {
+  const copy = optionCopy(locale)
+  return value === 'premium_30d' ? `${copy.premium} · 30` : value === 'standard_15d' ? `${copy.standard} · 15` : `${copy.start} · 5`
+}
+function categoryLabel(value: string, locale: PublicLocale) {
+  const labels: Record<string, string> = {
+    cars: 'Cars',
+    vans: 'Vans',
+    motorcycles: 'Motorcycles',
+    motorhomes: 'Motorhomes',
+    caravans: 'Caravans',
+    trucks: 'Trucks',
+    agriculture: 'Agriculture',
+    construction: 'Construction',
+    'electric-bikes': 'Electric bikes',
+  }
+  return translateText(locale, labels[value] || value, value)
+}
+
+function billingMarketForLocale(locale: PublicLocale) {
+  const marketByLocale: Record<PublicLocale, BillingMarket> = {
+    sv: 'se',
+    de: 'de',
+    en: 'de',
+    at: 'at',
+    be: 'be',
+    fr: 'fr',
+    es: 'es',
+    it: 'it',
+    pl: 'pl',
+    nl: 'nl',
+    fi: 'fi',
+    da: 'dk',
+  }
+  return marketByLocale[locale] || 'de'
+}
+
+function translateText(locale: PublicLocale, en: string, sv?: string) {
+  return locale === 'sv' ? (sv || en) : translatePublicObject(locale, en)
+}
+
+function optionCopy(locale: PublicLocale) {
+  return {
+    start: translateText(locale, 'Start'),
+    standard: translateText(locale, 'Standard'),
+    premium: translateText(locale, 'Premium'),
+    days: translateText(locale, 'days', 'dagar'),
+    free: translateText(locale, 'Free', 'Gratis'),
+    unavailable: translateText(locale, 'Unavailable', 'Ej tillgängligt'),
+    startDescription: translateText(locale, 'A standard listing to get started.', 'En vanlig annons för att komma igång.'),
+    standardDescription: translateText(locale, 'A longer listing period for a serious sale.', 'Längre annonstid för en seriös försäljning.'),
+    premiumDescription: translateText(locale, 'Extra visibility and included top placement.', 'Extra synlighet och inkluderad toppplacering.'),
+    instantBoost: translateText(locale, '1 instant boost', '1 direkt lyft'),
+    boostTitle: translateText(locale, 'Boost listing', 'Lyft annons'),
+    topPlacement: translateText(locale, 'Top placement', 'Toppplacering'),
+    featured: translateText(locale, 'Featured', 'Utvald'),
+    boostDescription: translateText(locale, 'Moves the listing among the newest results. Available again after 24 hours.', 'Flyttar upp annonsen bland de senaste resultaten. Ett nytt lyft kan göras efter 24 timmar.'),
+    topDescription: translateText(locale, 'Prioritized placement at the top of relevant search results. Multiple top listings may rotate.', 'Ger prioriterad placering högst upp i relevanta sökresultat. Flera toppannonser kan rotera.'),
+    featuredDescription: translateText(locale, 'Adds a clear Featured treatment and exposure in selected placements.', 'Ger annonskortet en tydlig utvald markering och exponering i utvalda ytor.'),
+    boostDetail: translateText(locale, 'Starts after Stripe payment is verified by webhook.', 'Effekten startar när Stripe-betalningen har verifierats via webhook.'),
+    topDetail: translateText(locale, 'Applies to the listing category and market', 'Gäller annonsens kategori och marknad'),
+    featuredDetail: translateText(locale, 'Unlike top placement: visual treatment and selected exposure, not fixed top priority.', 'Skiljer sig från toppplacering: visuell markering och utvald exponering, inte fast topprioritet.'),
+  }
+}
 
 function listingPageCopy(locale: PublicLocale) {
+  if (locale !== 'sv') {
+    return translatePublicObject(locale, {
+      eyebrow: 'Account · Listing management', title: 'My listings', intro: 'Search, filter and manage your vehicle inventory without long lists or dead ends.', create: 'Create listing',
+      summary: 'Summary', active: 'Active listings', payment: 'Awaiting payment', review: 'In review', sold: 'Sold', totalViews: 'Total views', totalFavorites: 'Total favorites',
+      needsAttention: 'Needs your attention', attentionPayment: 'listings await payment', attentionImages: 'listings have no images', attentionExpiring: 'listings expire within three days', attentionReview: 'listings need review or action', attentionFailed: 'listings have a failed payment', completePayment: 'Complete payment', addImages: 'Add images', renew: 'Renew', readReason: 'Read reason', tryAgain: 'Try again',
+      results: 'listings', page: 'Page', of: 'of', noImage: 'No image', selectListing: 'Select listing', expires: 'Expires', stockNumber: 'Stock number', views: 'views', favorites: 'favorites', edit: 'Edit', topPlacement: 'Top placement', featured: 'Featured',
+      noSearchResults: 'No listings matched your search', noSearchText: 'Try another search or clear search and filters.', clearFilters: 'Clear search and filters', emptyAll: 'You have no listings yet', emptyActive: 'You have no active listings', emptyPayment: 'No listings await payment', emptyReview: 'No listings are in review', emptyDraft: 'You have no saved drafts', emptyPaused: 'You have no paused listings', emptyExpired: 'You have no expired listings', emptySold: 'You have no sold listings', emptyDeleted: 'You have no deleted listings', emptyText: 'Create a listing when you are ready to reach buyers on Autorell.',
+      pagination: 'Pagination', previous: 'Previous', next: 'Next', paymentCancelledTitle: 'Payment cancelled - nothing was published.', paymentCancelledText: 'The listing is saved and can be resumed below.', paymentProcessingTitle: 'We are confirming the payment.', paymentProcessingText: 'Status updates after the verified Stripe webhook is processed.', listingCreatedTitle: 'The listing has been created.', listingCreatedText: 'If approved, it is visible now. Otherwise it stays here while Autorell reviews the details.', loadError: 'My listings could not be loaded.',
+    })
+  }
   const sv = locale === 'sv'
   return {
     eyebrow: sv ? 'Konto · Annonshantering' : 'Account · Listing management', title: sv ? 'Mina annonser' : 'My listings', intro: sv ? 'Sök, filtrera och hantera hela ditt fordonslager utan långa listor eller återvändsgränder.' : 'Search, filter and manage your vehicle inventory without long lists or dead ends.', create: sv ? 'Skapa annons' : 'Create listing',
     summary: sv ? 'Sammanfattning' : 'Summary', active: sv ? 'Aktiva annonser' : 'Active listings', payment: sv ? 'Väntar på betalning' : 'Awaiting payment', review: sv ? 'Under granskning' : 'In review', sold: sv ? 'Sålda' : 'Sold', totalViews: sv ? 'Totala visningar' : 'Total views', totalFavorites: sv ? 'Totala favoriter' : 'Total favorites',
     needsAttention: sv ? 'Behöver din uppmärksamhet' : 'Needs your attention', attentionPayment: sv ? 'annonser väntar på betalning' : 'listings await payment', attentionImages: sv ? 'annonser saknar bilder' : 'listings have no images', attentionExpiring: sv ? 'annonser löper ut inom tre dagar' : 'listings expire within three days', attentionReview: sv ? 'annonser behöver granskas eller åtgärdas' : 'listings need review or action', attentionFailed: sv ? 'annonser har en misslyckad betalning' : 'listings have a failed payment', completePayment: sv ? 'Slutför betalning' : 'Complete payment', addImages: sv ? 'Lägg till bilder' : 'Add images', renew: sv ? 'Förnya' : 'Renew', readReason: sv ? 'Läs orsak' : 'Read reason', tryAgain: sv ? 'Försök igen' : 'Try again',
-    results: sv ? 'annonser' : 'listings', page: sv ? 'Sida' : 'Page', of: sv ? 'av' : 'of', noImage: sv ? 'Ingen bild' : 'No image', selectListing: sv ? 'Välj annons' : 'Select listing', expires: sv ? 'Utgår' : 'Expires', stockNumber: sv ? 'Lagernummer' : 'Stock number', views: sv ? 'visningar' : 'views', favorites: sv ? 'favoriter' : 'favorites', edit: sv ? 'Redigera' : 'Edit', topPlacement: sv ? 'Toppplacering' : 'Top placement',
+    results: sv ? 'annonser' : 'listings', page: sv ? 'Sida' : 'Page', of: sv ? 'av' : 'of', noImage: sv ? 'Ingen bild' : 'No image', selectListing: sv ? 'Välj annons' : 'Select listing', expires: sv ? 'Utgår' : 'Expires', stockNumber: sv ? 'Lagernummer' : 'Stock number', views: sv ? 'visningar' : 'views', favorites: sv ? 'favoriter' : 'favorites', edit: sv ? 'Redigera' : 'Edit', topPlacement: sv ? 'Toppplacering' : 'Top placement', featured: sv ? 'Utvald' : 'Featured',
     noSearchResults: sv ? 'Inga annonser matchade din sökning' : 'No listings matched your search', noSearchText: sv ? 'Prova ett annat sökord eller rensa sökning och filter.' : 'Try another search or clear search and filters.', clearFilters: sv ? 'Rensa sökning och filter' : 'Clear search and filters', emptyAll: sv ? 'Du har inga annonser ännu' : 'You have no listings yet', emptyActive: sv ? 'Du har inga aktiva annonser just nu' : 'You have no active listings', emptyPayment: sv ? 'Inga annonser väntar på betalning' : 'No listings await payment', emptyReview: sv ? 'Inga annonser är under granskning' : 'No listings are in review', emptyDraft: sv ? 'Du har inga sparade utkast' : 'You have no saved drafts', emptyPaused: sv ? 'Du har inga pausade annonser' : 'You have no paused listings', emptyExpired: sv ? 'Du har inga utgångna annonser' : 'You have no expired listings', emptySold: sv ? 'Du har inga sålda annonser' : 'You have no sold listings', emptyDeleted: sv ? 'Du har inga borttagna annonser' : 'You have no deleted listings', emptyText: sv ? 'Skapa en annons när du är redo att nå köpare på Autorell.' : 'Create a listing when you are ready to reach buyers on Autorell.',
     pagination: sv ? 'Sidnavigering' : 'Pagination', previous: sv ? 'Föregående' : 'Previous', next: sv ? 'Nästa' : 'Next', paymentCancelledTitle: sv ? 'Betalningen avbröts – inget publicerades.' : 'Payment cancelled — nothing was published.', paymentCancelledText: sv ? 'Annonsen är sparad och kan återupptas nedan.' : 'The listing is saved and can be resumed below.', paymentProcessingTitle: sv ? 'Vi bekräftar betalningen.' : 'We are confirming the payment.', paymentProcessingText: sv ? 'Status uppdateras när den verifierade Stripe-webhooken har behandlats.' : 'Status updates after the verified Stripe webhook is processed.', listingCreatedTitle: sv ? 'Annonsen är skapad.' : 'The listing has been created.', listingCreatedText: sv ? 'Om den är godkänd syns den direkt. Annars visas den här medan Autorell granskar uppgifterna.' : 'If approved, it is visible now. Otherwise it stays here while Autorell reviews the details.', loadError: sv ? 'Mina annonser kunde inte laddas just nu.' : 'My listings could not be loaded.',
   }

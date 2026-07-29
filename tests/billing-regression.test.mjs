@@ -25,6 +25,8 @@ const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', 
 const nextConfig = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8')
 const businessPlanChooser = readFileSync(new URL('../app/konto/business/subscription/BusinessPlanChooser.tsx', import.meta.url), 'utf8')
 const newListingForm = readFileSync(new URL('../app/konto/annonser/ny/NewListingForm.tsx', import.meta.url), 'utf8')
+const accountListingsPage = readFileSync(new URL('../app/konto/annonser/page.tsx', import.meta.url), 'utf8')
+const accountListingsFilters = readFileSync(new URL('../app/konto/annonser/ListingsFilters.tsx', import.meta.url), 'utf8')
 const listingStatusActions = readFileSync(new URL('../app/konto/annonser/ListingStatusActions.tsx', import.meta.url), 'utf8')
 const businessSubscriptionPlans = readFileSync(new URL('../lib/business-subscription-plans.ts', import.meta.url), 'utf8')
 const pricingPage = readFileSync(new URL('../app/components/PricingPage.tsx', import.meta.url), 'utf8')
@@ -140,6 +142,22 @@ test('paid account flows show localized Stripe trust messaging before checkout',
     assert.match(listingStatusActions, new RegExp(`${locale}: \\{[\\s\\S]*Stripe`))
     assert.match(businessPlanChooser, new RegExp(`${locale}: \\{[\\s\\S]*Stripe`))
   }
+})
+
+test('account listing management uses active URL market for paid packages and localized copy', () => {
+  assert.match(accountListingsPage, /marketOverride/)
+  assert.match(accountListingsPage, /requestHeaders\.get\('x-autorell-market'\)/)
+  assert.match(accountListingsPage, /const billingMarket = normalizeBillingMarket/)
+  assert.match(accountListingsPage, /const markets = \[billingMarket\]/)
+  assert.match(accountListingsPage, /market=\{billingMarket\}/)
+  assert.match(accountListingsPage, /packageOptions\(listing, locale, priceMap, billingMarket\)/)
+  assert.match(accountListingsPage, /marketingOptions\(listing, locale, priceMap, billingMarket\)/)
+  assert.doesNotMatch(accountListingsPage, /market=\{listing\.country_code\.toLowerCase\(\)\}/)
+  assert.doesNotMatch(accountListingsPage, /const market = normalizeBillingMarket\(listing\.country_code\)/)
+  assert.match(accountListingsPage, /translatePublicObject\(locale/)
+  assert.match(accountListingsPage, /billingMarketForLocale/)
+  assert.match(accountListingsFilters, /translatePublic\(locale/)
+  assert.doesNotMatch(accountListingsFilters, /tabLabels\[tab\]\[isSwedish/)
 })
 
 test('business subscriptions support Stripe invoice terms for B2B customers', () => {

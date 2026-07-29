@@ -199,7 +199,7 @@ export default function ListingStatusActions({
               : action === 'mark_sold' ? () => soldDialogRef.current?.showModal()
               : action === 'delete' ? () => { if (window.confirm(text('Ta bort annonsen?', 'Delete this listing?'))) void mutate('delete') }
               : () => mutate(action)
-            return <button key={action} type="button" role="menuitem" onClick={handler} className="rounded-[9px] px-3 py-2 text-left text-sm font-medium text-[#344054] outline-none hover:bg-[#f2f6ff] hover:text-[#0866ff] focus-visible:bg-[#f2f6ff]">{actionLabel(action, swedish)}</button>
+            return <button key={action} type="button" role="menuitem" onClick={handler} className="rounded-[9px] px-3 py-2 text-left text-sm font-medium text-[#344054] outline-none hover:bg-[#f2f6ff] hover:text-[#0866ff] focus-visible:bg-[#f2f6ff]">{actionLabel(action, locale)}</button>
           })}
         </div> : null}
       </div>
@@ -277,7 +277,7 @@ export default function ListingStatusActions({
 }
 
 function DialogHeader({ eyebrow, title, description, titleId, close }: { eyebrow: string; title: string; description: string; titleId: string; close: () => void }) {
-  return <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{eyebrow}</p><h2 id={titleId} className="mt-2 text-2xl font-semibold">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{description}</p></div><button type="button" onClick={close} aria-label="Stäng" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button></div>
+  return <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{eyebrow}</p><h2 id={titleId} className="mt-2 text-2xl font-semibold">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{description}</p></div><button type="button" onClick={close} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button></div>
 }
 
 function PaymentTrustStrip({ copy }: { copy: { title: string; text: string } }) {
@@ -352,7 +352,7 @@ function secondaryActions(status: string) {
   return []
 }
 
-function actionLabel(action: string, swedish: boolean) {
+function actionLabel(action: string, locale: PublicLocale) {
   const labels: Record<string, [string, string]> = {
     package: ['Välj eller byt paket', 'Choose or change package'],
     review: ['Visa granskningsstatus', 'View review status'],
@@ -362,7 +362,9 @@ function actionLabel(action: string, swedish: boolean) {
     duplicate: ['Duplicera', 'Duplicate'],
     delete: ['Ta bort', 'Delete'],
   }
-  return labels[action]?.[swedish ? 0 : 1] || action
+  const label = labels[action]
+  if (!label) return action
+  return locale === 'sv' ? label[0] : translatePublic(locale, label[1])
 }
 
 function formatDateTime(value: string, locale: string) {

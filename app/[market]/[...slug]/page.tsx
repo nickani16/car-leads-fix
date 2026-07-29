@@ -161,7 +161,7 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'account/listings' || slugPath === 'konto/annonser' || slugPath === 'account/company/listings') {
-    return <AccountListingsPage searchParams={searchParams} />
+    return <AccountListingsPage searchParams={searchParams} localeOverride={locale} marketOverride={normalizedMarket} />
   }
 
   if (slugPath === 'account/listings/created' || slugPath === 'konto/annonser/klar') {
