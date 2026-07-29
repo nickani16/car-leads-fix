@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
+  ChevronRight,
   Check,
   Columns2,
   Expand,
@@ -2413,7 +2414,7 @@ export default function VehicleSearchExperience({
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
-            ), 'w-[340px]')}
+            ), 'w-[calc(100vw-16px)] sm:w-[640px]')}
           </div>
           {placement === 'mobile' ? <div className="order-last shrink-0">{saveSearchButton}</div> : null}
           </div>
@@ -3290,16 +3291,23 @@ function MakeModelFilter({
   onModelChange: (value: string) => void
   compact?: boolean
 }) {
-  const visibleMakes = makeOptions.filter((option) => !make || normalizeSearchText(option.value).includes(normalizeSearchText(make))).slice(0, compact ? 12 : 18)
-  const visibleModels = modelOptions.filter((option) => !model || normalizeSearchText(option.value).includes(normalizeSearchText(model))).slice(0, compact ? 10 : 16)
+  const normalizedMake = normalizeSearchText(make)
+  const normalizedModel = normalizeSearchText(model)
+  const exactMake = makeOptions.find((option) => normalizeSearchText(option.value) === normalizedMake)
+  const visibleMakes = makeOptions.filter((option) => !normalizedMake || normalizeSearchText(option.value).includes(normalizedMake))
+  const visibleModels = modelOptions.filter((option) => !normalizedModel || normalizeSearchText(option.value).includes(normalizedModel))
+  const panelHeight = compact ? 'max-h-[260px]' : 'max-h-[320px]'
+  const modelIntro = exactMake
+    ? uiText(locale, 'Models for selected make', 'Modeller för valt märke', 'Modelle der gewählten Marke')
+    : uiText(locale, 'Live model suggestions', 'Liveförslag på modeller', 'Live-Modellvorschläge')
   const noMakesLabel = uiText(locale, 'No live makes in this selection yet', 'Inga live-märken i detta urval ännu', 'Noch keine Live-Marken in dieser Auswahl')
   const noModelsLabel = make
     ? uiText(locale, 'No live models for this make yet', 'Inga live-modeller för detta märke ännu', 'Noch keine Live-Modelle für diese Marke')
-    : uiText(locale, 'Choose a make to see live models', 'Välj ett märke för att se live-modeller', 'Marke wählen, um Live-Modelle zu sehen')
+    : uiText(locale, 'Type or choose a make to narrow models', 'Skriv eller välj märke för att smalna av modeller', 'Marke eingeben oder wählen, um Modelle einzugrenzen')
 
   return (
-    <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2 sm:grid-cols-2'}`}>
-      <div className="min-w-0">
+    <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
+      <div className={`grid gap-3 ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <TextFilterInput
           label={uiText(locale, 'Make', 'Märke', 'Marke')}
           value={make}
@@ -3308,7 +3316,15 @@ function MakeModelFilter({
             if (!value.trim()) onModelChange('')
           }}
         />
-        <OptionPillGrid
+        <TextFilterInput
+          label={uiText(locale, 'Model', 'Modell', 'Modell')}
+          value={model}
+          onChange={onModelChange}
+        />
+      </div>
+      <div className={`grid overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
+        <OptionSelectionList
+          title={uiText(locale, 'Live makes', 'Live-märken', 'Live-Marken')}
           options={visibleMakes}
           emptyLabel={noMakesLabel}
           activeValue={make}
@@ -3316,76 +3332,91 @@ function MakeModelFilter({
             onMakeChange(value)
             onModelChange('')
           }}
-          className="mt-2"
+          className={`${panelHeight} border-b border-[#eaecf0] sm:border-b-0 sm:border-r`}
+          showChevron
         />
-      </div>
-      <div className="min-w-0">
-        <TextFilterInput
-          label={uiText(locale, 'Model', 'Modell', 'Modell')}
-          value={model}
-          onChange={onModelChange}
-        />
-        <OptionPillGrid
+        <OptionSelectionList
+          title={modelIntro}
           options={visibleModels}
           emptyLabel={noModelsLabel}
           activeValue={model}
           onSelect={onModelChange}
-          disabled={!make && !visibleModels.length}
-          className="mt-2"
+          className={panelHeight}
         />
       </div>
+      <p className="text-[11px] font-medium leading-4 text-[#667085]">
+        {uiText(
+          locale,
+          'The lists are built automatically from live listings in the selected category and market. You can still type a custom make or model.',
+          'Listorna byggs automatiskt från live-annonser i vald kategori och marknad. Du kan fortfarande skriva eget märke eller modell.',
+          'Die Listen werden automatisch aus Live-Anzeigen der gewählten Kategorie und des Marktes erstellt. Eigene Marken oder Modelle können weiterhin eingegeben werden.',
+        )}
+      </p>
     </div>
   )
 }
 
-function OptionPillGrid({
+function OptionSelectionList({
+  title,
   options,
   emptyLabel,
   activeValue,
   onSelect,
-  disabled = false,
   className = '',
+  showChevron = false,
 }: {
+  title: string
   options: MakeModelOption[]
   emptyLabel: string
   activeValue: string
   onSelect: (value: string) => void
-  disabled?: boolean
   className?: string
+  showChevron?: boolean
 }) {
+  const activeNormalized = normalizeSearchText(activeValue)
+
   if (!options.length) {
     return (
-      <p className={`${className} rounded-[8px] bg-[#f8fbff] px-3 py-2 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]`}>
-        {emptyLabel}
-      </p>
+      <div className={`${className} min-h-[120px] overflow-y-auto bg-[#fbfcff] p-3`}>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0866ff]">{title}</p>
+        <p className="mt-3 rounded-[8px] bg-white px-3 py-2 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]">
+          {emptyLabel}
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className={`${className} flex max-h-[156px] flex-wrap gap-1.5 overflow-y-auto pr-1 [scrollbar-width:thin]`}>
-      {options.map((option) => {
-        const active = normalizeSearchText(activeValue) === normalizeSearchText(option.value)
-        return (
-          <button
-            key={option.value}
-            type="button"
-            disabled={disabled}
-            onClick={() => onSelect(option.value)}
-            className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium leading-5 transition ${
-              active
-                ? 'border-[#0866ff] bg-[#e8f1ff] text-[#0866ff]'
-                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
-            } disabled:cursor-not-allowed disabled:opacity-55`}
-          >
-            <span className="truncate">{option.label}</span>
-            <span className="text-[11px] text-[#667085]">{option.count}</span>
-          </button>
-        )
-      })}
+    <div className={`${className} overflow-y-auto bg-[#fbfcff] p-2 [scrollbar-width:thin]`}>
+      <div className="sticky top-0 z-10 bg-[#fbfcff] px-1 pb-2 pt-1">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0866ff]">{title}</p>
+      </div>
+      <div className="space-y-1">
+        {options.map((option) => {
+          const active = activeNormalized === normalizeSearchText(option.value)
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onSelect(option.value)}
+              className={`flex min-h-10 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] font-semibold transition ${
+                active
+                  ? 'bg-[#e8f1ff] text-[#0866ff] ring-1 ring-[#b9d6ff]'
+                  : 'text-[#101828] hover:bg-white hover:ring-1 hover:ring-[#d0d5dd]'
+              }`}
+            >
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${active ? 'bg-white text-[#0866ff]' : 'bg-[#eef2f7] text-[#667085]'}`}>
+                {option.count}
+              </span>
+              {showChevron ? <ChevronRight className={`h-4 w-4 shrink-0 ${active ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} /> : null}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
-
 function RangeFilter({
   title,
   minValue,
