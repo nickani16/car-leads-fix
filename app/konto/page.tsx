@@ -283,31 +283,20 @@ export default async function AccountPage() {
             </div>
           </div>
 
-          <nav
-            aria-label={copy.accountNavigation}
-            className="mt-7 flex gap-2 overflow-x-auto rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-2"
-          >
-            {secondaryNavigation.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                aria-current={item.active ? 'page' : undefined}
-                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] px-3 text-sm font-semibold transition ${
-                  item.active
-                    ? 'bg-[#0866ff] text-white shadow-[0_10px_24px_rgba(8,102,255,.18)]'
-                    : 'text-[#475467] hover:bg-white hover:text-[#0866ff]'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </div>
       </section>
 
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-6 sm:px-8 lg:py-9">
-        <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[288px_minmax(0,1fr)] lg:py-9">
+        <AccountSidebar
+          copy={copy}
+          email={user.email || profile.email}
+          name={name}
+          navigation={secondaryNavigation}
+          verificationLabel={verificationLabel}
+        />
+
+        <div className="min-w-0 space-y-6">
+        <section className="grid gap-4 xl:grid-cols-[1fr_360px]">
           <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
@@ -367,13 +356,13 @@ export default async function AccountPage() {
           </aside>
         </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {primaryActions.map((card) => (
             <AccountCard key={card.title} {...card} />
           ))}
         </section>
 
-        <section className="mt-6 grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-3">
           <SummaryPanel title={copy.buying} text={copy.buyingText} items={[
             [copy.savedListings, savedListingCount, localizePublicHref(locale, '/account/saved-listings')],
             [copy.savedSearches, savedSearchCount, localizePublicHref(locale, '/account/saved-searches')],
@@ -417,6 +406,7 @@ export default async function AccountPage() {
           locale={locale}
           homeHref={localizePublicHref(locale, '/')}
         />
+        </div>
       </div>
     </main>
   )
@@ -555,7 +545,7 @@ function AccountCard({
         </span>
         {badge ? (
           <span
-            className={`rounded-full px-2.5 py-1 text-xs font-black ${
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
               cta ? 'bg-white/20 text-white' : 'bg-[#f2f6ff] text-[#0866ff]'
             }`}
           >
@@ -611,6 +601,82 @@ type AttentionItem = {
   text: string
   href: string
   label: string
+}
+
+type AccountNavigationItem = {
+  label: string
+  href: string
+  icon: LucideIcon
+  active?: boolean
+}
+
+function AccountSidebar({
+  copy,
+  email,
+  name,
+  navigation,
+  verificationLabel,
+}: {
+  copy: ReturnType<typeof getPrivateAccountCopy>
+  email: string
+  name: string
+  navigation: AccountNavigationItem[]
+  verificationLabel: string
+}) {
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  return (
+    <aside className="lg:sticky lg:top-24 lg:self-start">
+      <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-4 shadow-[0_16px_46px_rgba(16,24,40,.045)]">
+        <div className="flex items-center gap-3 rounded-[18px] bg-[#f8fbff] p-3">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#0866ff] text-sm font-semibold text-white">
+            {initials || 'AR'}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#101828]">{name}</p>
+            <p className="truncate text-xs text-[#667085]">{email}</p>
+            <p className="mt-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-[#0866ff]">
+              {verificationLabel}
+            </p>
+          </div>
+        </div>
+
+        <nav
+          aria-label={copy.accountNavigation}
+          className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1"
+        >
+          {navigation.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              aria-current={item.active ? 'page' : undefined}
+              className={`group flex min-h-12 items-center gap-3 rounded-[14px] border px-3 text-sm font-semibold transition ${
+                item.active
+                  ? 'border-[#0866ff] bg-[#0866ff] text-white'
+                  : 'border-transparent bg-white text-[#475467] hover:border-[#d6e4f5] hover:bg-[#f8fbff] hover:text-[#0866ff]'
+              }`}
+            >
+              <span
+                className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ${
+                  item.active
+                    ? 'bg-white/18 text-white'
+                    : 'bg-[#eef5ff] text-[#344054] group-hover:text-[#0866ff]'
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 truncate">{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </aside>
+  )
 }
 
 function AttentionCard({ item }: { item: AttentionItem }) {
@@ -764,6 +830,80 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       'Keep contact, address and account details updated so listings and messages work smoothly.',
     secureAccount: 'Secure account',
   }
+
+  const sv = {
+    ...en,
+    eyebrow: 'Mina sidor',
+    welcome: 'Välkommen',
+    intro:
+      'En enkel översikt för köp, försäljning, sparade fordon, meddelanden och betalningar på Autorell.',
+    home: 'Startsida',
+    signOut: 'Logga ut',
+    user: 'Autorell-användare',
+    privateAccount: 'Privatkonto',
+    verified: 'Verifierad',
+    reviewPending: 'Granskning pågår',
+    editProfile: 'Redigera profil',
+    accountNavigation: 'Kontonavigation',
+    overview: 'Översikt',
+    profile: 'Profil',
+    listings: 'Annonser',
+    createListing: 'Skapa annons',
+    createListingText: 'Starta en ny fordonsannons och spara den som utkast medan du arbetar.',
+    manageListings: 'Mina annonser',
+    manageListingsText: 'Fortsätt utkast, slutför betalning, redigera, pausa eller markera som såld.',
+    savedListings: 'Sparade annonser',
+    savedListingsText: 'Fordon du sparat för att kunna jämföra och återvända senare.',
+    savedSearches: 'Sparade sökningar',
+    savedSearchesText: 'Sparade filter och sökningar för fordon du bevakar.',
+    messages: 'Meddelanden',
+    messagesText: 'Läs och svara på förfrågningar från köpare och säljare.',
+    payments: 'Betalningar',
+    paymentsText: 'Se annonsordrar, betalningsstatus och kvitton när de finns.',
+    settings: 'Inställningar',
+    support: 'Hjälp',
+    activeListings: 'Aktiva',
+    awaitingPaymentShort: 'Betalning',
+    inReview: 'Granskning',
+    draftsShort: 'Utkast',
+    nextSteps: 'Nästa steg',
+    nextStepsText: 'Bara det som behöver din uppmärksamhet.',
+    profileNeedsWork: 'Komplettera profilen',
+    profileNeedsWorkText: 'Lägg till kontakt- och adressuppgifter innan du publicerar annonser.',
+    completeProfile: 'Komplettera profil',
+    awaitingPayment: 'annonser väntar på betalning',
+    awaitingPaymentText: 'Betalning krävs innan annonsen kan gå vidare.',
+    continuePayment: 'Fortsätt betalning',
+    drafts: 'sparade utkast',
+    draftsText: 'Du kan fortsätta från den senast sparade versionen.',
+    continueDraft: 'Fortsätt utkast',
+    expiringSoon: 'annonser går snart ut',
+    expiringSoonText: 'Se över dem innan annonsperioden tar slut.',
+    reviewListings: 'Se annonser',
+    noUrgentActions: 'Allt ser lugnt ut',
+    noUrgentActionsText: 'Inga utkast, betalningar eller profilåtgärder kräver direkt uppmärksamhet.',
+    buying: 'Köpa',
+    buyingText: 'Sparade fordon, sökningar och konversationer följer ditt konto.',
+    selling: 'Sälja',
+    sellingText: 'Följ dina annonser från utkast till betalning, granskning, aktiv och såld.',
+    safety: 'Konto',
+    safetyText: 'Ditt privatkonto hålls separerat från företag och adminflöden.',
+    soldListings: 'Sålda',
+    expiredListings: 'Utgångna',
+    profileStatus: 'Profilstatus',
+    complete: 'Komplett',
+    needsUpdate: 'Behöver uppdateras',
+    accountType: 'Kontotyp',
+    country: 'Land',
+    notSet: 'Ej valt',
+    profileEyebrow: 'Profil och säkerhet',
+    profileTitle: 'Kontouppgifter',
+    profileText:
+      'Håll kontakt-, adress- och kontouppgifter uppdaterade så att annonser och meddelanden fungerar smidigt.',
+    secureAccount: 'Säkert konto',
+  }
+
+  if ((locale as string) === 'sv') return sv
 
   if (locale === 'sv') {
     return {
