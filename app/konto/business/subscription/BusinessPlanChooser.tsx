@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { Check, Info, X } from 'lucide-react'
+import { Check, Info, ShieldCheck, X } from 'lucide-react'
 import {
   currencyForMarket,
   formatMoneyMinor,
@@ -80,6 +80,7 @@ export default function BusinessPlanChooser({
 }) {
   const copy = useMemo(() => translatePublicObject(locale, baseCopy), [locale])
   const plans = useMemo(() => translatePublicObject(locale, businessSubscriptionPlans), [locale])
+  const paymentTrust = useMemo(() => businessPaymentTrustCopy(locale), [locale])
   const currentPeriod = currentProductKey?.endsWith('.annual') ? 'annual' : 'monthly'
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>(currentPeriod)
   const [error, setError] = useState('')
@@ -189,6 +190,16 @@ export default function BusinessPlanChooser({
         ) : null}
 
         {error ? <p className="mt-5 rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+
+        <div className="mt-5 grid gap-3 rounded-[14px] border border-[#cfe0ff] bg-white p-4 text-sm text-[#475467] shadow-[0_18px_46px_rgba(16,24,40,.045)] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <strong className="block text-[#101828]">{paymentTrust.title}</strong>
+            <span className="mt-1 block leading-6">{paymentTrust.text}</span>
+          </div>
+        </div>
 
         <div className="mt-8 grid gap-4 xl:grid-cols-5">
           {plans.map((plan) => (
@@ -378,6 +389,53 @@ function planStatusText(status: string | null | undefined, paymentStatus: string
   if (status === 'past_due') return copy.pastDue
   if (status === 'trialing') return copy.trialing
   return copy.waiting
+}
+
+function businessPaymentTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg kortbetalning med Stripe',
+      text: 'Kortbetalningar öppnas i TLS/SSL-krypterad Stripe Checkout. Stripe hanterar kortuppgifterna och Autorell ser eller lagrar aldrig ditt kortnummer.',
+    },
+    en: {
+      title: 'Secure card payment with Stripe',
+      text: 'Card payments open in TLS/SSL-encrypted Stripe Checkout. Stripe handles card details and Autorell never sees or stores your card number.',
+    },
+    de: {
+      title: 'Sichere Kartenzahlung mit Stripe',
+      text: 'Kartenzahlungen öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Stripe verarbeitet die Kartendaten und Autorell sieht oder speichert Ihre Kartennummer nie.',
+    },
+    fr: {
+      title: 'Paiement par carte sécurisé avec Stripe',
+      text: 'Les paiements par carte s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Stripe traite les données de carte et Autorell ne voit ni ne stocke jamais votre numéro de carte.',
+    },
+    es: {
+      title: 'Pago seguro con tarjeta mediante Stripe',
+      text: 'Los pagos con tarjeta se abren en Stripe Checkout cifrado con TLS/SSL. Stripe gestiona los datos de la tarjeta y Autorell nunca ve ni almacena tu número de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con carta tramite Stripe',
+      text: 'I pagamenti con carta si aprono in Stripe Checkout crittografato TLS/SSL. Stripe gestisce i dati della carta e Autorell non vede né conserva mai il numero della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met kaart via Stripe',
+      text: 'Kaartbetalingen openen in TLS/SSL-versleutelde Stripe Checkout. Stripe verwerkt kaartgegevens en Autorell ziet of bewaart je kaartnummer nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność kartą przez Stripe',
+      text: 'Płatności kartą otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Stripe obsługuje dane karty, a Autorell nigdy nie widzi ani nie przechowuje numeru karty.',
+    },
+    fi: {
+      title: 'Turvallinen korttimaksu Stripen kautta',
+      text: 'Korttimaksut avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Stripe käsittelee korttitiedot, eikä Autorell koskaan näe tai tallenna korttinumeroasi.',
+    },
+    da: {
+      title: 'Sikker kortbetaling med Stripe',
+      text: 'Kortbetalinger åbnes i TLS/SSL-krypteret Stripe Checkout. Stripe håndterer kortoplysningerne, og Autorell ser eller gemmer aldrig dit kortnummer.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function formatPrice(amountMinor: number, currency: string, localeTag: string) {

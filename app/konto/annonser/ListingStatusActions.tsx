@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, X } from 'lucide-react'
+import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, ShieldCheck, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { localizedAccountError } from '@/lib/account-error-i18n'
@@ -173,6 +173,7 @@ export default function ListingStatusActions({
   }
 
   const secondary = secondaryActions(status)
+  const paymentTrust = paymentTrustCopy(locale)
   const button = 'inline-flex min-h-10 items-center justify-center rounded-[11px] border border-[#cbd7e8] bg-white px-3.5 text-sm font-semibold text-[#344054] outline-none transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20 disabled:opacity-50'
   const primary = 'inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.18)] outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30 disabled:opacity-50'
 
@@ -215,6 +216,7 @@ export default function ListingStatusActions({
               <span className="text-xs font-semibold text-[#0866ff]">{item.duration}</span><strong className="mt-2 block text-lg font-semibold">{item.title}</strong><span className="mt-1 block text-xl font-semibold">{item.price}</span><span className="mt-3 block text-sm leading-6 text-[#667085]">{item.description}</span>{selected ? <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#0866ff]"><CheckCircle2 className="h-4 w-4" />{text('Valt', 'Selected')}</span> : null}
             </button>
           })}</div> : <p className="mt-6 rounded-[14px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{text('Inget paket har ett aktivt pris för denna marknad. Kontakta support.', 'No package has an active price for this market. Contact support.')}</p>}
+          <PaymentTrustStrip copy={paymentTrust} />
           {message ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</p> : null}
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" className={button} onClick={() => packageDialogRef.current?.close()}>{text('Spara och fortsätt senare', 'Save and continue later')}</button><button type="button" className={primary} disabled={loading === 'package' || !availablePackages.some((item) => item.id === selectedPackage)} onClick={continueWithPackage}>{loading === 'package' ? text('Öppnar…', 'Opening…') : selectedPackage === 'free_7d' ? text('Publicera gratis', 'Publish free') : text('Fortsätt till säker betalning', 'Continue to secure payment')}</button></div>
         </div>
@@ -234,6 +236,7 @@ export default function ListingStatusActions({
               <button type="button" disabled={disabled || Boolean(loading)} onClick={() => startMarketing(option.productKey)} className={`${primary} mt-5 w-full`}>{loading === option.productKey ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{disabled ? text('24-timmarsspärr aktiv', '24-hour cooldown active') : text('Välj och betala', 'Select and pay')}</button>
             </article>
           })}</div> : <p className="mt-6 rounded-[14px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{text('Ingen marknadsföringsprodukt har ett aktivt pris för denna marknad.', 'No promotion product has an active price for this market.')}</p>}
+          <PaymentTrustStrip copy={paymentTrust} />
           {message ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</p> : null}
         </div>
       </dialog>
@@ -275,6 +278,67 @@ export default function ListingStatusActions({
 
 function DialogHeader({ eyebrow, title, description, titleId, close }: { eyebrow: string; title: string; description: string; titleId: string; close: () => void }) {
   return <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{eyebrow}</p><h2 id={titleId} className="mt-2 text-2xl font-semibold">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{description}</p></div><button type="button" onClick={close} aria-label="Stäng" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button></div>
+}
+
+function PaymentTrustStrip({ copy }: { copy: { title: string; text: string } }) {
+  return (
+    <div className="mt-4 grid gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f7fbff] p-4 text-sm text-[#475467] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+      <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#0866ff] shadow-sm">
+        <ShieldCheck className="h-5 w-5" />
+      </span>
+      <div>
+        <strong className="block text-[#101828]">{copy.title}</strong>
+        <span className="mt-1 block leading-6">{copy.text}</span>
+      </div>
+    </div>
+  )
+}
+
+function paymentTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg betalning med Stripe',
+      text: 'Betalda val öppnas i TLS/SSL-krypterad Stripe Checkout. Autorell ser eller lagrar aldrig dina kortuppgifter.',
+    },
+    en: {
+      title: 'Secure payment with Stripe',
+      text: 'Paid choices open in TLS/SSL-encrypted Stripe Checkout. Autorell never sees or stores your card details.',
+    },
+    de: {
+      title: 'Sichere Zahlung mit Stripe',
+      text: 'Kostenpflichtige Optionen öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Autorell sieht oder speichert Ihre Kartendaten nie.',
+    },
+    fr: {
+      title: 'Paiement sécurisé avec Stripe',
+      text: 'Les options payantes s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Autorell ne voit ni ne stocke jamais vos données de carte.',
+    },
+    es: {
+      title: 'Pago seguro con Stripe',
+      text: 'Las opciones de pago se abren en Stripe Checkout cifrado con TLS/SSL. Autorell nunca ve ni almacena tus datos de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con Stripe',
+      text: 'Le opzioni a pagamento si aprono in Stripe Checkout crittografato TLS/SSL. Autorell non vede né conserva mai i dati della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met Stripe',
+      text: 'Betaalde keuzes openen in TLS/SSL-versleutelde Stripe Checkout. Autorell ziet of bewaart je kaartgegevens nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność przez Stripe',
+      text: 'Płatne opcje otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Autorell nigdy nie widzi ani nie przechowuje danych karty.',
+    },
+    fi: {
+      title: 'Turvallinen maksu Stripen kautta',
+      text: 'Maksulliset valinnat avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Autorell ei koskaan näe tai tallenna korttitietojasi.',
+    },
+    da: {
+      title: 'Sikker betaling med Stripe',
+      text: 'Betalte valg åbnes i TLS/SSL-krypteret Stripe Checkout. Autorell ser eller gemmer aldrig dine kortoplysninger.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function secondaryActions(status: string) {

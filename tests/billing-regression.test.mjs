@@ -24,6 +24,8 @@ const countryFlag = readFileSync(new URL('../app/components/CountryFlag.tsx', im
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const nextConfig = readFileSync(new URL('../next.config.ts', import.meta.url), 'utf8')
 const businessPlanChooser = readFileSync(new URL('../app/konto/business/subscription/BusinessPlanChooser.tsx', import.meta.url), 'utf8')
+const newListingForm = readFileSync(new URL('../app/konto/annonser/ny/NewListingForm.tsx', import.meta.url), 'utf8')
+const listingStatusActions = readFileSync(new URL('../app/konto/annonser/ListingStatusActions.tsx', import.meta.url), 'utf8')
 const businessSubscriptionPlans = readFileSync(new URL('../lib/business-subscription-plans.ts', import.meta.url), 'utf8')
 const pricingPage = readFileSync(new URL('../app/components/PricingPage.tsx', import.meta.url), 'utf8')
 const accountPage = readFileSync(new URL('../app/konto/page.tsx', import.meta.url), 'utf8')
@@ -94,19 +96,40 @@ test('checkout sessions use Autorell branding and product copy', () => {
   assert.doesNotMatch(checkout, /submit_type: 'pay'/)
   assert.match(checkout, /display_name: 'Autorell'/)
   assert.match(checkout, /button_color: '#0866ff'/)
+  assert.match(checkout, /icon: \{[\s\S]*autorell-brand-mark-color\.png/)
   assert.match(checkout, /url: 'https:\/\/www\.autorell\.com\/autorell-logo-primary\.png'/)
   assert.doesNotMatch(checkout, /autorell-brand-logo-color\.png/)
   assert.doesNotMatch(checkout, /images: \[checkoutBranding\.logo\.url\]/)
+  assert.match(checkout, /billing_address_collection: 'auto'/)
+  assert.match(checkout, /customer_creation: product\.billingType === 'payment' \? 'if_required' : undefined/)
   assert.match(checkout, /name: checkoutProduct\.name/)
   assert.match(checkout, /description: checkoutProduct\.description/)
+  assert.match(checkout, /images: \[checkoutProduct\.imageUrl\]/)
   assert.match(checkout, /packageLabel = packageName === 'premium' \? t\('Premium listing'\) : t\('Standard listing'\)/)
   assert.match(checkout, /name: `\$\{packageLabel\} .+ \$\{categoryLabel\}`/)
   assert.match(checkout, /name: `\$\{t\('Top placement'\)\} .+ \$\{days\}`/)
   assert.match(checkout, /name: `\$\{t\('Business'\)\} .+ \$\{capitalize\(plan\)\}`/)
+  assert.match(checkout, /checkoutSecurityCopy\(locale\)/)
+  assert.match(checkout, /TLS\/SSL/)
+  assert.match(checkout, /Autorell never sees or stores your card number/)
   assert.match(checkout, /custom_text: \{[\s\S]*submitText/)
   assert.match(checkout, /after_submit: \{[\s\S]*afterSubmitText/)
   assert.match(checkout, /locale: stripeLocaleForCheckout\(checkoutLocale, market\)/)
   assert.match(checkout, /localizePublicHref\(checkoutLocale/)
+})
+
+test('paid account flows show localized Stripe trust messaging before checkout', () => {
+  for (const source of [newListingForm, listingStatusActions, businessPlanChooser]) {
+    assert.match(source, /TLS\/SSL/)
+    assert.match(source, /Stripe/)
+    assert.match(source, /Autorell/)
+    assert.match(source, /ShieldCheck/)
+  }
+  for (const locale of ['sv', 'en', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'fi', 'da']) {
+    assert.match(newListingForm, new RegExp(`${locale}: \\{[\\s\\S]*Stripe`))
+    assert.match(listingStatusActions, new RegExp(`${locale}: \\{[\\s\\S]*Stripe`))
+    assert.match(businessPlanChooser, new RegExp(`${locale}: \\{[\\s\\S]*Stripe`))
+  }
 })
 
 test('business subscriptions support Stripe invoice terms for B2B customers', () => {

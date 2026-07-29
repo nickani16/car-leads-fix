@@ -491,6 +491,8 @@ export async function POST(request: Request) {
       branding_settings: checkoutBranding,
       locale: stripeLocaleForCheckout(checkoutLocale, market),
       submit_type: product.billingType === 'payment' ? 'pay' : undefined,
+      billing_address_collection: 'auto',
+      customer_creation: product.billingType === 'payment' ? 'if_required' : undefined,
       customer_email: profile.email,
       client_reference_id: order.id,
       line_items: [
@@ -505,6 +507,7 @@ export async function POST(request: Request) {
             product_data: {
               name: checkoutProduct.name,
               description: checkoutProduct.description,
+              images: [checkoutProduct.imageUrl],
               metadata: {
                 product_key: product.productKey,
                 source: price.source,
@@ -607,6 +610,10 @@ function createCheckoutBranding() {
     button_color: '#0866ff',
     border_style: 'rounded' as const,
     font_family: 'inter' as const,
+    icon: {
+      type: 'url' as const,
+      url: 'https://www.autorell.com/autorell-brand-mark-color.png',
+    },
     logo: {
       type: 'url' as const,
       url: 'https://www.autorell.com/autorell-logo-primary.png',
@@ -616,8 +623,10 @@ function createCheckoutBranding() {
 
 function createCheckoutProductCopy(productKey: string, listingTitle: string | null | undefined, locale: PublicLocale) {
   const t = (value: string) => translatePublic(locale, value)
+  const security = checkoutSecurityCopy(locale)
   const listingContext = listingTitle ? `${listingTitle} - ` : ''
-  const afterSubmitText = t('Secure payment via Stripe. You will be sent back to Autorell after the purchase is complete.')
+  const afterSubmitText = security.afterSubmit
+  const baseImageUrl = 'https://www.autorell.com/autorell-brand-mark-color.png'
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
@@ -632,9 +641,10 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
           : `${listingContext}${duration} ${t('publication on Autorells European vehicle marketplace.')}`,
       submitText:
         packageName === 'premium'
-          ? t('The listing gets higher visibility automatically when the payment has been confirmed.')
-          : t('The listing is published automatically when the payment has been confirmed.'),
+          ? `${t('The listing gets higher visibility automatically when the payment has been confirmed.')} ${security.cardDetails}`
+          : `${t('The listing is published automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
+      imageUrl: baseImageUrl,
     }
   }
 
@@ -643,8 +653,9 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
     return {
       name: `${t('Top placement')} - ${days}`,
       description: `${listingContext}${t('Move the listing higher in the results for')} ${days}.`,
-      submitText: t('The top placement is activated automatically when the payment has been confirmed.'),
+      submitText: `${t('The top placement is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
+      imageUrl: baseImageUrl,
     }
   }
 
@@ -653,8 +664,9 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
     return {
       name: `${t('Featured listing')} - ${days}`,
       description: `${listingContext}${t('Show the listing as featured on Autorell for')} ${days}.`,
-      submitText: t('Featured visibility is activated automatically when the payment has been confirmed.'),
+      submitText: `${t('Featured visibility is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
+      imageUrl: baseImageUrl,
     }
   }
 
@@ -662,8 +674,9 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
     return {
       name: t('Listing refresh'),
       description: `${listingContext}${t('Refresh the listing sorting date and get new visibility.')}`,
-      submitText: t('The refresh is activated automatically when the payment has been confirmed.'),
+      submitText: `${t('The refresh is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
+      imageUrl: baseImageUrl,
     }
   }
 
@@ -673,17 +686,66 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
     return {
       name: `${t('Business')} - ${capitalize(plan)}`,
       description: `${period} ${t('for companies selling vehicles on Autorell.')}`,
-      submitText: t('The business subscription is activated automatically when the payment has been confirmed.'),
+      submitText: `${t('The business subscription is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
+      imageUrl: baseImageUrl,
     }
   }
 
   return {
     name: 'Autorell',
     description: t('Autorell payment'),
-    submitText: t('The payment is handled securely via Stripe.'),
+    submitText: `${t('The payment is handled securely via Stripe.')} ${security.cardDetails}`,
     afterSubmitText,
+    imageUrl: baseImageUrl,
   }
+}
+
+function checkoutSecurityCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { cardDetails: string; afterSubmit: string }> = {
+    sv: {
+      cardDetails: 'Betalningen är TLS/SSL-krypterad. Stripe hanterar kortuppgifterna och Autorell ser eller lagrar aldrig ditt kortnummer.',
+      afterSubmit: 'När Stripe har bekräftat betalningen skickas du tillbaka till Autorell och tjänsten aktiveras automatiskt.',
+    },
+    en: {
+      cardDetails: 'Payment is TLS/SSL encrypted. Stripe handles card details and Autorell never sees or stores your card number.',
+      afterSubmit: 'After Stripe confirms the payment, you are sent back to Autorell and the service is activated automatically.',
+    },
+    de: {
+      cardDetails: 'Die Zahlung ist TLS/SSL-verschlüsselt. Stripe verarbeitet die Kartendaten; Autorell sieht oder speichert Ihre Kartennummer nie.',
+      afterSubmit: 'Nachdem Stripe die Zahlung bestätigt hat, werden Sie zu Autorell zurückgeleitet und der Dienst wird automatisch aktiviert.',
+    },
+    fr: {
+      cardDetails: 'Le paiement est chiffré TLS/SSL. Stripe traite les données de carte et Autorell ne voit ni ne stocke jamais votre numéro de carte.',
+      afterSubmit: 'Après confirmation du paiement par Stripe, vous revenez sur Autorell et le service est activé automatiquement.',
+    },
+    es: {
+      cardDetails: 'El pago está cifrado con TLS/SSL. Stripe gestiona los datos de la tarjeta y Autorell nunca ve ni almacena tu número de tarjeta.',
+      afterSubmit: 'Cuando Stripe confirme el pago, volverás a Autorell y el servicio se activará automáticamente.',
+    },
+    it: {
+      cardDetails: 'Il pagamento è crittografato TLS/SSL. Stripe gestisce i dati della carta e Autorell non vede né conserva mai il numero della carta.',
+      afterSubmit: 'Dopo la conferma del pagamento da parte di Stripe, torni su Autorell e il servizio viene attivato automaticamente.',
+    },
+    nl: {
+      cardDetails: 'De betaling is TLS/SSL-versleuteld. Stripe verwerkt kaartgegevens en Autorell ziet of bewaart je kaartnummer nooit.',
+      afterSubmit: 'Nadat Stripe de betaling heeft bevestigd, keer je terug naar Autorell en wordt de dienst automatisch geactiveerd.',
+    },
+    pl: {
+      cardDetails: 'Płatność jest szyfrowana TLS/SSL. Stripe obsługuje dane karty, a Autorell nigdy nie widzi ani nie przechowuje numeru karty.',
+      afterSubmit: 'Po potwierdzeniu płatności przez Stripe wrócisz do Autorell, a usługa zostanie aktywowana automatycznie.',
+    },
+    fi: {
+      cardDetails: 'Maksu on TLS/SSL-salattu. Stripe käsittelee korttitiedot, eikä Autorell koskaan näe tai tallenna korttinumeroasi.',
+      afterSubmit: 'Kun Stripe on vahvistanut maksun, palaat Autorelliin ja palvelu aktivoidaan automaattisesti.',
+    },
+    da: {
+      cardDetails: 'Betalingen er TLS/SSL-krypteret. Stripe håndterer kortoplysninger, og Autorell ser eller gemmer aldrig dit kortnummer.',
+      afterSubmit: 'Når Stripe har bekræftet betalingen, sendes du tilbage til Autorell, og tjenesten aktiveres automatisk.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function checkoutCategoryLabel(category: string) {

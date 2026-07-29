@@ -1828,6 +1828,7 @@ function PublishStep({
   marketCode: string
 }) {
   const billingMarket = normalizeBillingMarket(marketCode)
+  const trustCopy = getCheckoutTrustCopy(locale)
   const numberLocale =
     locale === 'sv' ? 'sv-SE' :
     locale === 'da' ? 'da-DK' :
@@ -1879,6 +1880,15 @@ function PublishStep({
             </button>
           )
         })}
+      </div>
+      <div className="mt-4 grid gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f7fbff] p-4 text-sm text-[#475467] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#0866ff] shadow-sm">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <strong className="block text-[#101828]">{trustCopy.title}</strong>
+          <span className="mt-1 block leading-6">{trustCopy.text}</span>
+        </div>
       </div>
       {accountType === 'private' ? (
         <section className="mt-6 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
@@ -3375,6 +3385,53 @@ function localizeFormText(locale: PublicLocale, sv: string, en: string, de: stri
   if (locale === 'sv') return sv
   if (locale === 'de' || locale === 'at') return de
   return translatePublic(locale, en)
+}
+
+function getCheckoutTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg betalning med Stripe',
+      text: 'Betalda paket öppnas i TLS/SSL-krypterad Stripe Checkout. Autorell ser eller lagrar aldrig dina kortuppgifter.',
+    },
+    en: {
+      title: 'Secure payment with Stripe',
+      text: 'Paid packages open in TLS/SSL-encrypted Stripe Checkout. Autorell never sees or stores your card details.',
+    },
+    de: {
+      title: 'Sichere Zahlung mit Stripe',
+      text: 'Kostenpflichtige Pakete öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Autorell sieht oder speichert Ihre Kartendaten nie.',
+    },
+    fr: {
+      title: 'Paiement sécurisé avec Stripe',
+      text: 'Les forfaits payants s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Autorell ne voit ni ne stocke jamais vos données de carte.',
+    },
+    es: {
+      title: 'Pago seguro con Stripe',
+      text: 'Los paquetes de pago se abren en Stripe Checkout cifrado con TLS/SSL. Autorell nunca ve ni almacena tus datos de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con Stripe',
+      text: 'I pacchetti a pagamento si aprono in Stripe Checkout crittografato TLS/SSL. Autorell non vede né conserva mai i dati della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met Stripe',
+      text: 'Betaalde pakketten openen in TLS/SSL-versleutelde Stripe Checkout. Autorell ziet of bewaart je kaartgegevens nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność przez Stripe',
+      text: 'Płatne pakiety otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Autorell nigdy nie widzi ani nie przechowuje danych karty.',
+    },
+    fi: {
+      title: 'Turvallinen maksu Stripen kautta',
+      text: 'Maksulliset paketit avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Autorell ei koskaan näe tai tallenna korttitietojasi.',
+    },
+    da: {
+      title: 'Sikker betaling med Stripe',
+      text: 'Betalte pakker åbnes i TLS/SSL-krypteret Stripe Checkout. Autorell ser eller gemmer aldrig dine kortoplysninger.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function normalizeListingPackageId(packageId?: string) {
