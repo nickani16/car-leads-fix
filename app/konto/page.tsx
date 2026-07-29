@@ -296,65 +296,67 @@ export default async function AccountPage() {
         />
 
         <div className="min-w-0 space-y-6">
-        <section className="grid gap-4 xl:grid-cols-[1fr_360px]">
-          <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
-                    {name}
-                  </h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    {verificationLabel}
-                  </span>
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
+                      {name}
+                    </h2>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      {verificationLabel}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
                 </div>
-                <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
+                <a
+                  href="#profile-details"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-semibold text-white transition hover:bg-[#0866ff]"
+                >
+                  {copy.editProfile}
+                  <ArrowRight className="h-4 w-4" />
+                </a>
               </div>
-              <a
-                href="#profile-details"
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-semibold text-white transition hover:bg-[#0866ff]"
-              >
-                {copy.editProfile}
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
-              <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
-              <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
-              <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
-            </div>
-          </div>
-
-          <aside className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef5ff] text-[#0866ff]">
-                <Bell className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{copy.nextSteps}</h2>
-                <p className="text-sm text-[#667085]">{copy.nextStepsText}</p>
+              <div className="mt-6 overflow-hidden rounded-[18px] border border-[#dfe7f2]">
+                <div className="grid grid-cols-2 divide-x divide-y divide-[#dfe7f2] md:grid-cols-4 md:divide-y-0">
+                  <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
+                  <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
+                  <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
+                  <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
+                </div>
               </div>
             </div>
-            <div className="mt-4 grid gap-2">
-              {attentionItems.length ? attentionItems.map((item) => (
-                <AttentionCard key={item.title} item={item} />
-              )) : (
-                <div className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#101828]">{copy.noUrgentActions}</h3>
-                      <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
+
+            <aside className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
+                  <Bell className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{copy.nextSteps}</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.nextStepsText}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2">
+                {attentionItems.length ? attentionItems.map((item) => (
+                  <AttentionCard key={item.title} item={item} />
+                )) : (
+                  <div className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#101828]">{copy.noUrgentActions}</h3>
+                        <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </aside>
-        </section>
+                )}
+              </div>
+            </aside>
+          </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {primaryActions.map((card) => (
@@ -582,15 +584,19 @@ function OverviewMetric({
   return (
     <Link
       href={href}
-      className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
+      className="group flex min-w-0 items-center gap-3 bg-[#f8fbff] px-3 py-4 transition hover:bg-white sm:px-4"
     >
-      <Icon className="h-4 w-4 text-[#0866ff]" />
-      <strong className="mt-3 block text-2xl tracking-[-0.04em] text-[#101828]">
-        {value.toLocaleString()}
-      </strong>
-      <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.1em] text-[#667085]">
-        {label}
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef]">
+        <Icon className="h-4 w-4" />
       </span>
+      <div className="min-w-0">
+        <strong className="block text-2xl font-semibold tracking-[-0.04em] text-[#101828]">
+          {value.toLocaleString()}
+        </strong>
+        <span className="mt-0.5 block truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085] sm:text-xs">
+          {label}
+        </span>
+      </div>
     </Link>
   )
 }
