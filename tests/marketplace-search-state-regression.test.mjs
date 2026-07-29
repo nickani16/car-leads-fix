@@ -150,12 +150,13 @@ test('marketplace UI hydrates geo search state into URL, API and map handoff', (
     "setParam('region'",
     "setParam('municipality'",
     "setParam('north'",
-    'onSearchArea',
     'geoBounds',
     'map.fitBounds(bounds',
   ]) {
     assert.ok(vehicleSearchExperienceSource.includes(snippet), `VehicleSearchExperience should include ${snippet}`)
   }
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Search in this area/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Sök i detta område/)
 
   for (const snippet of [
     'parseMarketplaceSearchState',
@@ -263,6 +264,19 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(searchSource, /if \(mode === 'leasing'\) return 'lease'/)
   assert.match(searchSource, /if \(mode === 'sale'\) return 'sale'/)
   assert.match(searchSource, /return ''/)
+})
+
+test('marketplace make and model filters use live category-scoped options while keeping free text', () => {
+  assert.match(vehicleSearchExperienceSource, /const makeModelOptions = useMemo/)
+  assert.match(vehicleSearchExperienceSource, /optionListings\.filter/)
+  assert.match(vehicleSearchExperienceSource, /countValues\(scopedListings\.map\(\(listing\) => listing\.make\)/)
+  assert.match(vehicleSearchExperienceSource, /filter\(\(listing\) => !make \|\| normalizeSearchText\(listing\.make\) === normalizeSearchText\(make\)\)/)
+  assert.match(vehicleSearchExperienceSource, /<MakeModelFilter[\s\S]*makeOptions=\{makeModelOptions\.makes\}[\s\S]*modelOptions=\{makeModelOptions\.models\}/)
+  assert.match(vehicleSearchExperienceSource, /function MakeModelFilter/)
+  assert.match(vehicleSearchExperienceSource, /function OptionPillGrid/)
+  assert.match(vehicleSearchExperienceSource, /<TextFilterInput[\s\S]*label=\{uiText\(locale, 'Make'/)
+  assert.match(vehicleSearchExperienceSource, /onMakeChange\(value\)[\s\S]*onModelChange\(''\)/)
+  assert.match(vehicleSearchExperienceSource, /onSelect=\{onModelChange\}/)
 })
 
 test('marketplace cards and listing detail show stable rounded offer status', () => {

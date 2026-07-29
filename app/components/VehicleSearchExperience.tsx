@@ -1296,6 +1296,24 @@ export default function VehicleSearchExperience({
       .filter((value): value is string => Boolean(value))
     return [...new Set(liveValues.length ? liveValues : facetValues)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
   }, [mode, optionListings, searchFacets?.bodyTypes])
+  const makeModelOptions = useMemo(() => {
+    const scopedListings = optionListings.filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+    const makeCounts = countValues(scopedListings.map((listing) => listing.make).filter(Boolean))
+    const modelCounts = countValues(
+      scopedListings
+        .filter((listing) => !make || normalizeSearchText(listing.make) === normalizeSearchText(make))
+        .map((listing) => listing.model)
+        .filter(Boolean),
+    )
+    return {
+      makes: Array.from(makeCounts.entries())
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((left, right) => left.value.localeCompare(right.value, locale)),
+      models: Array.from(modelCounts.entries())
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((left, right) => left.value.localeCompare(right.value, locale)),
+    }
+  }, [locale, make, mode, optionListings])
   const regionOptions = useMemo(() => {
     const facetValues = (searchFacets?.regions || []).map(normalizeFacetOption).filter(isFacetSelectOption)
     if (facetValues.length) return facetValues
@@ -1341,8 +1359,8 @@ export default function VehicleSearchExperience({
       if (mode === 'leasing' && !isLeasingMarketplaceCategory(listing.category)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
-      if (make && listing.make !== make) return false
-      if (model && listing.model !== model) return false
+      if (make && normalizeSearchText(listing.make) !== normalizeSearchText(make)) return false
+      if (model && normalizeSearchText(listing.model) !== normalizeSearchText(model)) return false
       if (region && !marketplaceListingMatchesLocationQuery({
         query: region,
         countryCode: listing.country,
@@ -1942,11 +1960,18 @@ export default function VehicleSearchExperience({
     return (
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
-            setMake(value)
-            setModel('')
-          }} />
-          <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+          <MakeModelFilter
+            locale={locale}
+            make={make}
+            model={model}
+            makeOptions={makeModelOptions.makes}
+            modelOptions={makeModelOptions.models}
+            onMakeChange={(value) => {
+              setMake(value)
+              setModel('')
+            }}
+            onModelChange={setModel}
+          />
           <div className="grid gap-3 sm:col-span-2">
             <RangeFilter
               title={uiText(locale, 'Price', 'Pris', 'Preis')}
@@ -2370,12 +2395,20 @@ export default function VehicleSearchExperience({
           <div className="relative order-40 shrink-0">
             {desktopMenuButton('model', modelLabel, Boolean(make || model))}
             {renderDesktopFilterPopover('model', (
-              <div className="space-y-3">
-                <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
-                  setMake(value)
-                  if (!value.trim()) setModel('')
-                }} />
-                <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+              <div className="space-y-4">
+                <MakeModelFilter
+                  locale={locale}
+                  make={make}
+                  model={model}
+                  makeOptions={makeModelOptions.makes}
+                  modelOptions={makeModelOptions.models}
+                  onMakeChange={(value) => {
+                    setMake(value)
+                    setModel('')
+                  }}
+                  onModelChange={setModel}
+                  compact
+                />
                 <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
@@ -2972,10 +3005,6 @@ export default function VehicleSearchExperience({
               searchInput={searchInput}
               selectedSearchSuggestions={selectedSearchSuggestions}
               geoBounds={geoBounds}
-              onSearchArea={(bounds) => {
-                setGeoAreaId('')
-                setGeoBounds(bounds)
-              }}
               onRemoveSearchSuggestion={(suggestion) => {
                 setSelectedSearchSuggestions((current) => {
                   const next = current.filter((item) => item.chipId !== suggestion.chipId)
@@ -3233,6 +3262,127 @@ function TextFilterInput({
         className="h-11 w-full rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[12px] font-normal outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff]"
       />
     </label>
+  )
+}
+
+type MakeModelOption = {
+  value: string
+  label: string
+  count: number
+}
+
+function MakeModelFilter({
+  locale,
+  make,
+  model,
+  makeOptions,
+  modelOptions,
+  onMakeChange,
+  onModelChange,
+  compact = false,
+}: {
+  locale: PublicLocale
+  make: string
+  model: string
+  makeOptions: MakeModelOption[]
+  modelOptions: MakeModelOption[]
+  onMakeChange: (value: string) => void
+  onModelChange: (value: string) => void
+  compact?: boolean
+}) {
+  const visibleMakes = makeOptions.filter((option) => !make || normalizeSearchText(option.value).includes(normalizeSearchText(make))).slice(0, compact ? 12 : 18)
+  const visibleModels = modelOptions.filter((option) => !model || normalizeSearchText(option.value).includes(normalizeSearchText(model))).slice(0, compact ? 10 : 16)
+  const noMakesLabel = uiText(locale, 'No live makes in this selection yet', 'Inga live-märken i detta urval ännu', 'Noch keine Live-Marken in dieser Auswahl')
+  const noModelsLabel = make
+    ? uiText(locale, 'No live models for this make yet', 'Inga live-modeller för detta märke ännu', 'Noch keine Live-Modelle für diese Marke')
+    : uiText(locale, 'Choose a make to see live models', 'Välj ett märke för att se live-modeller', 'Marke wählen, um Live-Modelle zu sehen')
+
+  return (
+    <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2 sm:grid-cols-2'}`}>
+      <div className="min-w-0">
+        <TextFilterInput
+          label={uiText(locale, 'Make', 'Märke', 'Marke')}
+          value={make}
+          onChange={(value) => {
+            onMakeChange(value)
+            if (!value.trim()) onModelChange('')
+          }}
+        />
+        <OptionPillGrid
+          options={visibleMakes}
+          emptyLabel={noMakesLabel}
+          activeValue={make}
+          onSelect={(value) => {
+            onMakeChange(value)
+            onModelChange('')
+          }}
+          className="mt-2"
+        />
+      </div>
+      <div className="min-w-0">
+        <TextFilterInput
+          label={uiText(locale, 'Model', 'Modell', 'Modell')}
+          value={model}
+          onChange={onModelChange}
+        />
+        <OptionPillGrid
+          options={visibleModels}
+          emptyLabel={noModelsLabel}
+          activeValue={model}
+          onSelect={onModelChange}
+          disabled={!make && !visibleModels.length}
+          className="mt-2"
+        />
+      </div>
+    </div>
+  )
+}
+
+function OptionPillGrid({
+  options,
+  emptyLabel,
+  activeValue,
+  onSelect,
+  disabled = false,
+  className = '',
+}: {
+  options: MakeModelOption[]
+  emptyLabel: string
+  activeValue: string
+  onSelect: (value: string) => void
+  disabled?: boolean
+  className?: string
+}) {
+  if (!options.length) {
+    return (
+      <p className={`${className} rounded-[8px] bg-[#f8fbff] px-3 py-2 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]`}>
+        {emptyLabel}
+      </p>
+    )
+  }
+
+  return (
+    <div className={`${className} flex max-h-[156px] flex-wrap gap-1.5 overflow-y-auto pr-1 [scrollbar-width:thin]`}>
+      {options.map((option) => {
+        const active = normalizeSearchText(activeValue) === normalizeSearchText(option.value)
+        return (
+          <button
+            key={option.value}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(option.value)}
+            className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium leading-5 transition ${
+              active
+                ? 'border-[#0866ff] bg-[#e8f1ff] text-[#0866ff]'
+                : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
+            } disabled:cursor-not-allowed disabled:opacity-55`}
+          >
+            <span className="truncate">{option.label}</span>
+            <span className="text-[11px] text-[#667085]">{option.count}</span>
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -3806,7 +3956,6 @@ function VehicleSearchMap({
   searchInput,
   selectedSearchSuggestions,
   geoBounds,
-  onSearchArea,
   onRemoveSearchSuggestion,
   mobileOverlay = false,
   onCloseMobileMap,
@@ -3831,7 +3980,6 @@ function VehicleSearchMap({
   searchInput: string
   selectedSearchSuggestions: SelectedSearchSuggestion[]
   geoBounds?: MarketplaceBoundingBox | null
-  onSearchArea: (bounds: MarketplaceBoundingBox) => void
   onRemoveSearchSuggestion: (suggestion: SelectedSearchSuggestion) => void
   mobileOverlay?: boolean
   onCloseMobileMap?: () => void
@@ -4138,17 +4286,6 @@ function VehicleSearchMap({
       <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles in map view', 'fordon i kartvyn', 'Fahrzeuge in der Kartenansicht')}
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          const bounds = readMapBounds(mapRef.current)
-          if (bounds) onSearchArea(bounds)
-        }}
-        className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} absolute left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}
-      >
-        <SlidersHorizontal className="h-4 w-4" />
-        {uiText(locale, 'Search in this area', 'Sök i detta område', 'In diesem Bereich suchen')}
-      </button>
       {selectedListing ? (
         <MapListingPreview
           listing={selectedListing}
@@ -4396,17 +4533,6 @@ function listingCoordinates(listing: VehicleSearchListing, country: string, inde
     base[0] + Math.cos(ring * Math.PI * 2) * radius,
     base[1] + Math.sin(ring * Math.PI * 2) * radius * 0.55,
   ]
-}
-
-function readMapBounds(map: MapLibreMap | null): MarketplaceBoundingBox | null {
-  if (!map) return null
-  const bounds = map.getBounds()
-  return {
-    north: bounds.getNorth(),
-    east: bounds.getEast(),
-    south: bounds.getSouth(),
-    west: bounds.getWest(),
-  }
 }
 
 function isGenericCountryCoordinate(latitude: number, longitude: number, countryCode: string) {
