@@ -320,13 +320,11 @@ export default async function AccountPage() {
                 </a>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-[18px] border border-[#dfe7f2]">
-                <div className="grid grid-cols-2 divide-x divide-y divide-[#dfe7f2] md:grid-cols-4 md:divide-y-0">
-                  <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
-                  <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
-                  <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
-                  <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
-                </div>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
+                <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
+                <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
+                <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
               </div>
             </div>
 
@@ -584,16 +582,16 @@ function OverviewMetric({
   return (
     <Link
       href={href}
-      className="group flex min-w-0 items-center gap-3 bg-[#f8fbff] px-3 py-4 transition hover:bg-white sm:px-4"
+      className="group flex min-w-0 items-center gap-4 rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef]">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef]">
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <strong className="block text-2xl font-semibold tracking-[-0.04em] text-[#101828]">
+        <strong className="block text-3xl font-semibold leading-none tracking-[-0.04em] text-[#101828]">
           {value.toLocaleString()}
         </strong>
-        <span className="mt-0.5 block truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-[#667085] sm:text-xs">
+        <span className="mt-2 block text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-[#667085]">
           {label}
         </span>
       </div>
