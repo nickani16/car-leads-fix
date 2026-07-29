@@ -507,7 +507,6 @@ export async function POST(request: Request) {
             product_data: {
               name: checkoutProduct.name,
               description: checkoutProduct.description,
-              images: [checkoutProduct.imageUrl],
               metadata: {
                 product_key: product.productKey,
                 source: price.source,
@@ -612,7 +611,7 @@ function createCheckoutBranding() {
     font_family: 'inter' as const,
     icon: {
       type: 'url' as const,
-      url: 'https://www.autorell.com/autorell-brand-mark-color.png',
+      url: 'https://www.autorell.com/favicon-96.png?v=8',
     },
     logo: {
       type: 'url' as const,
@@ -626,7 +625,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
   const security = checkoutSecurityCopy(locale)
   const listingContext = listingTitle ? `${listingTitle} - ` : ''
   const afterSubmitText = security.afterSubmit
-  const baseImageUrl = 'https://www.autorell.com/autorell-brand-mark-color.png'
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
@@ -644,7 +642,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
           ? `${t('The listing gets higher visibility automatically when the payment has been confirmed.')} ${security.cardDetails}`
           : `${t('The listing is published automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
-      imageUrl: baseImageUrl,
     }
   }
 
@@ -655,7 +652,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
       description: `${listingContext}${t('Move the listing higher in the results for')} ${days}.`,
       submitText: `${t('The top placement is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
-      imageUrl: baseImageUrl,
     }
   }
 
@@ -666,7 +662,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
       description: `${listingContext}${t('Show the listing as featured on Autorell for')} ${days}.`,
       submitText: `${t('Featured visibility is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
-      imageUrl: baseImageUrl,
     }
   }
 
@@ -676,7 +671,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
       description: `${listingContext}${t('Refresh the listing sorting date and get new visibility.')}`,
       submitText: `${t('The refresh is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
-      imageUrl: baseImageUrl,
     }
   }
 
@@ -688,7 +682,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
       description: `${period} ${t('for companies selling vehicles on Autorell.')}`,
       submitText: `${t('The business subscription is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
       afterSubmitText,
-      imageUrl: baseImageUrl,
     }
   }
 
@@ -697,7 +690,6 @@ function createCheckoutProductCopy(productKey: string, listingTitle: string | nu
     description: t('Autorell payment'),
     submitText: `${t('The payment is handled securely via Stripe.')} ${security.cardDetails}`,
     afterSubmitText,
-    imageUrl: baseImageUrl,
   }
 }
 
