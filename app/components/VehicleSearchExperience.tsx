@@ -184,6 +184,7 @@ export type VehicleSearchListing = {
   longitude: number | null
   priceLabel: string
   priceValue: number
+  displayPriceValue?: number | null
   imageUrl: string | null
   imageUrls: string[]
   sellerLogoUrl: string | null
@@ -412,6 +413,26 @@ function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
   if (locale === 'sv') return sv
   if (locale === 'de') return de || en
   return locale === 'en' ? en : translatePublic(locale, en)
+}
+
+function priceFilterValue(listing: VehicleSearchListing) {
+  const value = listing.displayPriceValue ?? listing.priceValue
+  return Number.isFinite(value) ? value : 0
+}
+
+function defaultPriceFilterMax(currency: string) {
+  switch (currency.toUpperCase()) {
+    case 'EUR':
+      return 100000
+    case 'PLN':
+      return 500000
+    case 'DKK':
+      return 750000
+    case 'SEK':
+      return 700000
+    default:
+      return 100000
+  }
 }
 
 function getCompareCopy(locale: PublicLocale) {
@@ -1333,11 +1354,16 @@ export default function VehicleSearchExperience({
       countValues(scopedListings.map((listing) => listing.municipality || listing.city || '')).entries(),
     ).map(([value, count]) => ({ value, label: `${value} (${count})` }))
   }, [optionListings, region, searchFacets?.municipalities])
+  const priceFilterCurrency = selectedMarkets.filter(Boolean).length === 1
+    ? currencyForCountry(selectedMarkets.filter(Boolean)[0])
+    : currencyForLocale(locale)
   const priceBounds = useMemo(() => {
-    const prices = searchListings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
-    const max = prices.length ? Math.max(...prices) : 700000
-    return { min: 0, max: Math.max(700000, Math.ceil(max / 10000) * 10000) }
-  }, [searchListings])
+    const prices = searchListings.map(priceFilterValue).filter((value) => Number.isFinite(value) && value > 0)
+    const defaultMax = defaultPriceFilterMax(priceFilterCurrency)
+    const step = priceFilterCurrency === 'EUR' ? 5000 : 10000
+    const max = prices.length ? Math.max(...prices) : defaultMax
+    return { min: 0, max: Math.max(defaultMax, Math.ceil(max / step) * step) }
+  }, [priceFilterCurrency, searchListings])
   const mileageBounds = useMemo(() => {
     const mileages = searchListings.map((listing) => listing.mileageKm).filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
     const max = mileages.length ? Math.max(...mileages) : 200000
@@ -1383,8 +1409,9 @@ export default function VehicleSearchExperience({
       if (fourWheelDrive && !(listing.equipment || '').toLowerCase().includes('fyrhjuls')) return false
       if (leasingPossible && !(listing.equipment || '').toLowerCase().includes('leasing')) return false
       if (equipmentQuery.trim() && !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())) return false
-      if (minPriceValue !== null && listing.priceValue < minPriceValue) return false
-      if (maxPriceValue !== null && listing.priceValue > maxPriceValue) return false
+      const comparablePrice = priceFilterValue(listing)
+      if (minPriceValue !== null && comparablePrice < minPriceValue) return false
+      if (maxPriceValue !== null && comparablePrice > maxPriceValue) return false
       const listingYear = parseOptionalNumber(listing.year)
       if (minYearValue !== null && (listingYear === null || listingYear < minYearValue)) return false
       if (maxYearValue !== null && (listingYear === null || listingYear > maxYearValue)) return false
@@ -1423,13 +1450,13 @@ export default function VehicleSearchExperience({
       if (sortBy === 'mileage-asc') return (a.mileageKm ?? Number.MAX_SAFE_INTEGER) - (b.mileageKm ?? Number.MAX_SAFE_INTEGER)
       if (sortBy === 'mileage-desc') return (b.mileageKm ?? -1) - (a.mileageKm ?? -1)
       if (sortBy === 'model') return [a.make, a.model].filter(Boolean).join(' ').localeCompare([b.make, b.model].filter(Boolean).join(' '), 'sv-SE')
-      if (sortBy === 'price-asc') return a.priceValue - b.priceValue
-      if (sortBy === 'price-desc') return b.priceValue - a.priceValue
+      if (sortBy === 'price-asc') return priceFilterValue(a) - priceFilterValue(b)
+      if (sortBy === 'price-desc') return priceFilterValue(b) - priceFilterValue(a)
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, locale, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -1654,9 +1681,6 @@ export default function VehicleSearchExperience({
   const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
-  const priceFilterCurrency = selectedMarketCodes.length === 1
-    ? currencyForCountry(selectedMarketCodes[0])
-    : currencyForLocale(locale)
   const marketSummary = selectedMarketCodes.length
     ? selectedMarketCodes.map((code) => getEuCountryName(code, locale)).join(', ')
     : uiText(locale, 'All of Europe', 'Hela Europa', 'Ganz Europa')
@@ -2088,7 +2112,7 @@ export default function VehicleSearchExperience({
             left: desktopFilterPopoverPosition?.left ?? 16,
             top: desktopFilterPopoverPosition?.top ?? 112,
           }}
-          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[74vh] max-sm:overflow-y-auto max-sm:rounded-[18px] max-sm:p-4`}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:rounded-[18px] max-sm:p-4`}
         >
           {children}
         </div>
@@ -3519,7 +3543,7 @@ function MakeModelFilter({
               onModelChange('')
               setMobilePanel('model')
             }}
-            className="max-h-[300px]"
+            className="max-h-[min(42vh,340px)] overscroll-contain"
             showChevron
           />
         ) : (
@@ -3529,7 +3553,7 @@ function MakeModelFilter({
             emptyLabel={noModelsLabel}
             activeValue={model}
             onSelect={onModelChange}
-            className="max-h-[300px]"
+            className="max-h-[min(42vh,340px)] overscroll-contain"
           />
         )}
       </div>
@@ -3948,7 +3972,7 @@ function buildVehicleCompareRows(
   copy: CompareCopy,
 ): VehicleCompareRow[] {
   const finitePrices = listings
-    .map((listing) => listing.priceValue)
+    .map(priceFilterValue)
     .filter((value) => Number.isFinite(value) && value > 0)
   const years = listings
     .map((listing) => Number(listing.year || 0))
@@ -3968,7 +3992,7 @@ function buildVehicleCompareRows(
       values: listings.map((listing) => ({
         id: listing.id,
         value: listing.priceLabel || '-',
-        highlight: bestPrice !== null && listing.priceValue === bestPrice,
+        highlight: bestPrice !== null && priceFilterValue(listing) === bestPrice,
       })),
     },
     {
@@ -4935,6 +4959,7 @@ function mapApiListingToVehicleSearchListing(
     longitude: numberOrNull(listing.longitude),
     priceLabel: stringOrNull(listing.price_label) || formatApiPrice(priceValue, currency, locale),
     priceValue,
+    displayPriceValue: numberOrNull(listing.display_price_value),
     imageUrl: images[0] || null,
     imageUrls: images,
     sellerLogoUrl: null,

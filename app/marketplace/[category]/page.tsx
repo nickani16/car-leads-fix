@@ -234,6 +234,7 @@ export default async function MarketplaceCategoryPage({
         longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
         priceLabel: price.label,
         priceValue: Number(listing.price),
+        displayPriceValue: price.displayAmount,
         imageUrl: listing.images?.[0] || null,
         imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
         sellerLogoUrl: sellerProfile?.logoUrl || null,

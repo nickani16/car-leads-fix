@@ -29,6 +29,7 @@ export type PriceDisplay = {
   original: string
   approximate: string | null
   label: string
+  displayAmount: number
   targetCurrency: SupportedCurrency
   sourceCurrency: SupportedCurrency
 }
@@ -71,6 +72,7 @@ export async function formatMarketplacePriceDisplay({
       original: displayPrice,
       approximate: null,
       label: displayPrice,
+      displayAmount: amount,
       targetCurrency: displayCurrency,
       sourceCurrency,
     }
@@ -79,12 +81,13 @@ export async function formatMarketplacePriceDisplay({
   const converted = await convertCurrency(amount, sourceCurrency, displayCurrency, exchangeRates || undefined)
   if (converted === null) {
     return {
-      original: sourcePrice,
-      approximate: null,
-      label: sourcePrice,
-      targetCurrency: displayCurrency,
-      sourceCurrency,
-    }
+    original: sourcePrice,
+    approximate: null,
+    label: sourcePrice,
+    displayAmount: amount,
+    targetCurrency: displayCurrency,
+    sourceCurrency,
+  }
   }
 
   const displayPrice = formatMarketplacePrice(converted, displayCurrency, locale)
@@ -92,6 +95,7 @@ export async function formatMarketplacePriceDisplay({
     original: displayPrice,
     approximate: null,
     label: displayPrice,
+    displayAmount: converted,
     targetCurrency: displayCurrency,
     sourceCurrency,
   }

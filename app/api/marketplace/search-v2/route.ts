@@ -43,6 +43,10 @@ export async function GET(request: NextRequest) {
   if (countries.length > 1) input.countries = countries
   if (categories.length > 1) input.categories = categories
   input.limit = String(Math.min(Math.max(Number(input.limit || 48), 1), 48))
+  if (input.minPrice || input.maxPrice) {
+    input.minPrice = ''
+    input.maxPrice = ''
+  }
 
   try {
     const cacheKey = marketplaceSearchCacheKey(request)
@@ -67,10 +71,14 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get('displayMarket'),
     )
     const items = await Promise.all(
-      result.items.map(async (item) => ({
-        ...item,
-        price_label: await formatSearchResultPriceLabel(item, locale, displayCurrency),
-      })),
+      result.items.map(async (item) => {
+        const price = await formatSearchResultPrice(item, locale, displayCurrency)
+        return {
+          ...item,
+          price_label: price?.label || null,
+          display_price_value: price?.displayAmount ?? null,
+        }
+      }),
     )
     const body = JSON.stringify({
       ...result,
@@ -148,21 +156,19 @@ function normalizeLocale(value: string | null): PublicLocale {
   return 'en'
 }
 
-async function formatSearchResultPriceLabel(
+async function formatSearchResultPrice(
   item: Record<string, unknown>,
   locale: PublicLocale,
   displayCurrency: string,
 ) {
   const amount = Number(item.price)
   if (!Number.isFinite(amount) || amount <= 0) return null
-  return (
-    await formatMarketplacePriceDisplay({
-      amount,
-      currency: String(item.currency || 'EUR'),
-      locale,
-      targetCurrency: displayCurrency,
-    })
-  ).label
+  return formatMarketplacePriceDisplay({
+    amount,
+    currency: String(item.currency || 'EUR'),
+    locale,
+    targetCurrency: displayCurrency,
+  })
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {

@@ -28,6 +28,7 @@ const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
 )
+const searchRouteSource = readFileSync(new URL('../app/api/marketplace/search-v2/route.ts', import.meta.url), 'utf8')
 const findCarsPageSource = readFileSync(new URL('../app/find-cars/page.tsx', import.meta.url), 'utf8')
 const listingDetailPageSource = readFileSync(
   new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url),
@@ -301,11 +302,20 @@ test('marketplace make and model filters use live category-scoped options while 
 test('marketplace price filters use the active market currency instead of hardcoded SEK', () => {
   assert.match(vehicleSearchExperienceSource, /import \{ currencyForCountry, isLeasingMarketplaceCategory \} from '@\/lib\/marketplace'/)
   assert.match(vehicleSearchExperienceSource, /import \{ currencyForLocale \} from '@\/lib\/market-locale'/)
-  assert.match(vehicleSearchExperienceSource, /const priceFilterCurrency = selectedMarketCodes\.length === 1/)
-  assert.match(vehicleSearchExperienceSource, /currencyForCountry\(selectedMarketCodes\[0\]\)/)
+  assert.match(vehicleSearchExperienceSource, /const priceFilterCurrency = selectedMarkets\.filter\(Boolean\)\.length === 1/)
+  assert.match(vehicleSearchExperienceSource, /currencyForCountry\(selectedMarkets\.filter\(Boolean\)\[0\]\)/)
   assert.match(vehicleSearchExperienceSource, /currencyForLocale\(locale\)/)
+  assert.match(vehicleSearchExperienceSource, /displayPriceValue\?: number \| null/)
+  assert.match(vehicleSearchExperienceSource, /function priceFilterValue\(listing: VehicleSearchListing\)/)
+  assert.match(vehicleSearchExperienceSource, /case 'EUR':\s*return 100000/)
+  assert.match(vehicleSearchExperienceSource, /searchListings\.map\(priceFilterValue\)/)
+  assert.match(vehicleSearchExperienceSource, /const comparablePrice = priceFilterValue\(listing\)/)
   assert.match(vehicleSearchExperienceSource, /unit=\{priceFilterCurrency\}/)
   assert.match(vehicleSearchExperienceSource, /\+ ' ' \+ priceFilterCurrency/)
+  assert.match(vehicleSearchExperienceSource, /displayPriceValue: numberOrNull\(listing\.display_price_value\)/)
+  assert.match(marketplaceCategoryPageSource, /displayPriceValue: price\.displayAmount/)
+  assert.match(searchRouteSource, /display_price_value: price\?\.displayAmount \?\? null/)
+  assert.match(searchRouteSource, /input\.minPrice = ''[\s\S]*input\.maxPrice = ''/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /unit="SEK"/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /\+ ' SEK'/)
 })
