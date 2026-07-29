@@ -15,6 +15,7 @@ import { marketFromSitemapName, xmlResponse } from '@/app/sitemap.xml/route'
 
 const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
+const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
 const listingSitemapCountries: Record<string, string> = {
   se: 'SE',
@@ -90,7 +91,7 @@ async function geoSitemapUrls(market: string, page: number) {
   if (!config) return []
   const areas = await geoSitemapAreas(config.countryCode)
   const urlsPerArea = config.categorySlugs.length
-  const maxAreasPerPage = Math.max(1, Math.floor(maxUrlsPerSitemap / urlsPerArea))
+  const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
   const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
   return pageAreas.flatMap((area) =>
     config.categorySlugs.map((categorySlug) =>

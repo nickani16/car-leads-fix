@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
+const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
 const listingSitemapMarkets = ['se', 'de', 'es', 'fr', 'it', 'nl', 'be', 'pl', 'at', 'dk', 'fi'] as const
 const listingCountries: Record<(typeof listingSitemapMarkets)[number], string> = {
@@ -84,7 +85,7 @@ async function getGeoSitemapNames() {
       if (!config) return
       const areaCount = await getGeoSitemapAreaCount(config.countryCode)
       const urlsPerArea = config.categorySlugs.length
-      const pages = Math.max(1, Math.ceil((areaCount * urlsPerArea) / maxUrlsPerSitemap))
+      const pages = Math.max(1, Math.ceil((areaCount * urlsPerArea) / maxGeoUrlsPerSitemap))
       for (let page = 1; page <= pages; page += 1) {
         names.push(`geo-${market}-${page}`)
       }
