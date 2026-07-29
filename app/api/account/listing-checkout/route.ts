@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
-import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import {
   getBillingProduct,
   legacyListingPackageToProductKey,
@@ -616,76 +616,412 @@ function createCheckoutBranding() {
 }
 
 function createCheckoutProductCopy(productKey: string, listingTitle: string | null | undefined, locale: PublicLocale) {
-  const t = (value: string) => translatePublic(locale, value)
+  const copy = checkoutProductCopy(locale)
   const security = checkoutSecurityCopy(locale)
   const listingContext = listingTitle ? `${listingTitle} - ` : ''
   const afterSubmitText = security.afterSubmit
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
-    const categoryLabel = t(checkoutCategoryLabel(category))
-    const packageLabel = packageName === 'premium' ? t('Premium listing') : t('Standard listing')
-    const duration = packageName === 'premium' ? t('30 days') : t('15 days')
+    const categoryLabel = copy.categories[category] || checkoutCategoryFallback(category)
+    const packageLabel = packageName === 'premium' ? copy.premiumListing : copy.standardListing
+    const duration = packageName === 'premium' ? copy.days30 : copy.days15
     return {
       name: `${packageLabel} - ${categoryLabel}`,
       description:
         packageName === 'premium'
-          ? `${listingContext}${duration} ${t('publication with extra visibility and included top placement.')}`
-          : `${listingContext}${duration} ${t('publication on Autorells European vehicle marketplace.')}`,
+          ? `${listingContext}${duration} ${copy.premiumDescription}`
+          : `${listingContext}${duration} ${copy.standardDescription}`,
       submitText:
         packageName === 'premium'
-          ? `${t('The listing gets higher visibility automatically when the payment has been confirmed.')} ${security.cardDetails}`
-          : `${t('The listing is published automatically when the payment has been confirmed.')} ${security.cardDetails}`,
+          ? `${copy.premiumSubmit} ${security.cardDetails}`
+          : `${copy.standardSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.top_placement')) {
-    const days = productKey.includes('14') ? t('14 days') : productKey.includes('7') ? t('7 days') : t('3 days')
+    const days = productKey.includes('14') ? copy.days14 : productKey.includes('7') ? copy.days7 : copy.days3
     return {
-      name: `${t('Top placement')} - ${days}`,
-      description: `${listingContext}${t('Move the listing higher in the results for')} ${days}.`,
-      submitText: `${t('The top placement is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
+      name: `${copy.topPlacement} - ${days}`,
+      description: `${listingContext}${copy.topPlacementDescription(days)}`,
+      submitText: `${copy.topPlacementSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.featured')) {
-    const days = productKey.includes('30') ? t('30 days') : t('7 days')
+    const days = productKey.includes('30') ? copy.days30 : copy.days7
     return {
-      name: `${t('Featured listing')} - ${days}`,
-      description: `${listingContext}${t('Show the listing as featured on Autorell for')} ${days}.`,
-      submitText: `${t('Featured visibility is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
+      name: `${copy.featuredListing} - ${days}`,
+      description: `${listingContext}${copy.featuredDescription(days)}`,
+      submitText: `${copy.featuredSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.refresh')) {
     return {
-      name: t('Listing refresh'),
-      description: `${listingContext}${t('Refresh the listing sorting date and get new visibility.')}`,
-      submitText: `${t('The refresh is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
+      name: copy.listingRefresh,
+      description: `${listingContext}${copy.refreshDescription}`,
+      submitText: `${copy.refreshSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('subscription.business.')) {
     const plan = productKey.split('.')[2] || 'business'
-    const period = productKey.endsWith('.annual') ? t('Annual subscription') : t('Monthly subscription')
+    const period = productKey.endsWith('.annual') ? copy.annualSubscription : copy.monthlySubscription
     return {
-      name: `${t('Business')} - ${capitalize(plan)}`,
-      description: `${period} ${t('for companies selling vehicles on Autorell.')}`,
-      submitText: `${t('The business subscription is activated automatically when the payment has been confirmed.')} ${security.cardDetails}`,
+      name: `${copy.business} - ${capitalize(plan)}`,
+      description: `${period} ${copy.businessDescription}`,
+      submitText: `${copy.businessSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   return {
     name: 'Autorell',
-    description: t('Autorell payment'),
-    submitText: `${t('The payment is handled securely via Stripe.')} ${security.cardDetails}`,
+    description: copy.autorellPayment,
+    submitText: `${copy.paymentSubmit} ${security.cardDetails}`,
     afterSubmitText,
   }
+}
+
+function checkoutProductCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, {
+    standardListing: string
+    premiumListing: string
+    topPlacement: string
+    featuredListing: string
+    listingRefresh: string
+    business: string
+    autorellPayment: string
+    days3: string
+    days7: string
+    days14: string
+    days15: string
+    days30: string
+    monthlySubscription: string
+    annualSubscription: string
+    standardDescription: string
+    premiumDescription: string
+    standardSubmit: string
+    premiumSubmit: string
+    topPlacementDescription: (days: string) => string
+    topPlacementSubmit: string
+    featuredDescription: (days: string) => string
+    featuredSubmit: string
+    refreshDescription: string
+    refreshSubmit: string
+    businessDescription: string
+    businessSubmit: string
+    paymentSubmit: string
+    categories: Record<string, string>
+  }> = {
+    sv: {
+      standardListing: 'Standardannons',
+      premiumListing: 'Premiumannons',
+      topPlacement: 'Toppplacering',
+      featuredListing: 'Utvald annons',
+      listingRefresh: 'Lyft annons',
+      business: 'Företag',
+      autorellPayment: 'Autorell-betalning',
+      days3: '3 dagar',
+      days7: '7 dagar',
+      days14: '14 dagar',
+      days15: '15 dagar',
+      days30: '30 dagar',
+      monthlySubscription: 'Månadsabonnemang',
+      annualSubscription: 'Årsabonnemang',
+      standardDescription: 'publicering på Autorells europeiska fordonsmarknad.',
+      premiumDescription: 'publicering med extra synlighet och inkluderad toppplacering.',
+      standardSubmit: 'Annonsen publiceras automatiskt när betalningen har bekräftats.',
+      premiumSubmit: 'Annonsen får högre synlighet automatiskt när betalningen har bekräftats.',
+      topPlacementDescription: (days) => `Flytta annonsen högre i resultaten i ${days}.`,
+      topPlacementSubmit: 'Toppplaceringen aktiveras automatiskt när betalningen har bekräftats.',
+      featuredDescription: (days) => `Visa annonsen som utvald på Autorell i ${days}.`,
+      featuredSubmit: 'Utvald synlighet aktiveras automatiskt när betalningen har bekräftats.',
+      refreshDescription: 'Förnya annonsens sorteringsdatum och få ny synlighet.',
+      refreshSubmit: 'Lyftet aktiveras automatiskt när betalningen har bekräftats.',
+      businessDescription: 'för företag som säljer fordon på Autorell.',
+      businessSubmit: 'Företagsabonnemanget aktiveras automatiskt när betalningen har bekräftats.',
+      paymentSubmit: 'Betalningen hanteras säkert via Stripe.',
+      categories: { cars: 'Bil', vans: 'Transportbil', motorcycles: 'Motorcykel', motorhomes: 'Husbil', caravans: 'Husvagn', trucks: 'Lastbil', agriculture: 'Lantbruksmaskin', construction: 'Entreprenadmaskin', 'electric-bikes': 'Elcykel' },
+    },
+    en: {
+      standardListing: 'Standard listing',
+      premiumListing: 'Premium listing',
+      topPlacement: 'Top placement',
+      featuredListing: 'Featured listing',
+      listingRefresh: 'Listing refresh',
+      business: 'Business',
+      autorellPayment: 'Autorell payment',
+      days3: '3 days',
+      days7: '7 days',
+      days14: '14 days',
+      days15: '15 days',
+      days30: '30 days',
+      monthlySubscription: 'Monthly subscription',
+      annualSubscription: 'Annual subscription',
+      standardDescription: 'publication on Autorells European vehicle marketplace.',
+      premiumDescription: 'publication with extra visibility and included top placement.',
+      standardSubmit: 'The listing is published automatically when the payment has been confirmed.',
+      premiumSubmit: 'The listing gets higher visibility automatically when the payment has been confirmed.',
+      topPlacementDescription: (days) => `Move the listing higher in the results for ${days}.`,
+      topPlacementSubmit: 'The top placement is activated automatically when the payment has been confirmed.',
+      featuredDescription: (days) => `Show the listing as featured on Autorell for ${days}.`,
+      featuredSubmit: 'Featured visibility is activated automatically when the payment has been confirmed.',
+      refreshDescription: 'Refresh the listing sorting date and get new visibility.',
+      refreshSubmit: 'The refresh is activated automatically when the payment has been confirmed.',
+      businessDescription: 'for companies selling vehicles on Autorell.',
+      businessSubmit: 'The business subscription is activated automatically when the payment has been confirmed.',
+      paymentSubmit: 'The payment is handled securely via Stripe.',
+      categories: { cars: 'Car', vans: 'Van', motorcycles: 'Motorcycle', motorhomes: 'Motorhome', caravans: 'Caravan', trucks: 'Truck', agriculture: 'Agricultural machine', construction: 'Construction machine', 'electric-bikes': 'Electric bike' },
+    },
+    de: {
+      standardListing: 'Standardanzeige',
+      premiumListing: 'Premiumanzeige',
+      topPlacement: 'Top-Platzierung',
+      featuredListing: 'Hervorgehobene Anzeige',
+      listingRefresh: 'Anzeige aktualisieren',
+      business: 'Unternehmen',
+      autorellPayment: 'Autorell-Zahlung',
+      days3: '3 Tage',
+      days7: '7 Tage',
+      days14: '14 Tage',
+      days15: '15 Tage',
+      days30: '30 Tage',
+      monthlySubscription: 'Monatsabonnement',
+      annualSubscription: 'Jahresabonnement',
+      standardDescription: 'Veröffentlichung auf Autorells europäischem Fahrzeugmarktplatz.',
+      premiumDescription: 'Veröffentlichung mit zusätzlicher Sichtbarkeit und enthaltener Top-Platzierung.',
+      standardSubmit: 'Die Anzeige wird automatisch veröffentlicht, sobald die Zahlung bestätigt wurde.',
+      premiumSubmit: 'Die Anzeige erhält automatisch mehr Sichtbarkeit, sobald die Zahlung bestätigt wurde.',
+      topPlacementDescription: (days) => `Anzeige für ${days} weiter oben in den Ergebnissen platzieren.`,
+      topPlacementSubmit: 'Die Top-Platzierung wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      featuredDescription: (days) => `Anzeige für ${days} als hervorgehoben auf Autorell anzeigen.`,
+      featuredSubmit: 'Die hervorgehobene Sichtbarkeit wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      refreshDescription: 'Sortierdatum der Anzeige erneuern und neue Sichtbarkeit erhalten.',
+      refreshSubmit: 'Die Aktualisierung wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      businessDescription: 'für Unternehmen, die Fahrzeuge auf Autorell verkaufen.',
+      businessSubmit: 'Das Unternehmensabonnement wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      paymentSubmit: 'Die Zahlung wird sicher über Stripe abgewickelt.',
+      categories: { cars: 'Auto', vans: 'Transporter', motorcycles: 'Motorrad', motorhomes: 'Wohnmobil', caravans: 'Wohnwagen', trucks: 'Lkw', agriculture: 'Landmaschine', construction: 'Baumaschine', 'electric-bikes': 'E-Bike' },
+    },
+    fr: {
+      standardListing: 'Annonce standard',
+      premiumListing: 'Annonce premium',
+      topPlacement: 'Placement en tête',
+      featuredListing: 'Annonce mise en avant',
+      listingRefresh: 'Remonter l’annonce',
+      business: 'Entreprise',
+      autorellPayment: 'Paiement Autorell',
+      days3: '3 jours',
+      days7: '7 jours',
+      days14: '14 jours',
+      days15: '15 jours',
+      days30: '30 jours',
+      monthlySubscription: 'Abonnement mensuel',
+      annualSubscription: 'Abonnement annuel',
+      standardDescription: 'de publication sur la place de marché européenne de véhicules Autorell.',
+      premiumDescription: 'de publication avec visibilité renforcée et placement en tête inclus.',
+      standardSubmit: 'L’annonce est publiée automatiquement lorsque le paiement est confirmé.',
+      premiumSubmit: 'L’annonce obtient automatiquement plus de visibilité lorsque le paiement est confirmé.',
+      topPlacementDescription: (days) => `Placez l’annonce plus haut dans les résultats pendant ${days}.`,
+      topPlacementSubmit: 'Le placement en tête est activé automatiquement lorsque le paiement est confirmé.',
+      featuredDescription: (days) => `Affichez l’annonce comme mise en avant sur Autorell pendant ${days}.`,
+      featuredSubmit: 'La visibilité mise en avant est activée automatiquement lorsque le paiement est confirmé.',
+      refreshDescription: 'Actualisez la date de tri de l’annonce et obtenez une nouvelle visibilité.',
+      refreshSubmit: 'La remontée est activée automatiquement lorsque le paiement est confirmé.',
+      businessDescription: 'pour les entreprises qui vendent des véhicules sur Autorell.',
+      businessSubmit: 'L’abonnement entreprise est activé automatiquement lorsque le paiement est confirmé.',
+      paymentSubmit: 'Le paiement est traité de manière sécurisée via Stripe.',
+      categories: { cars: 'Voiture', vans: 'Utilitaire', motorcycles: 'Moto', motorhomes: 'Camping-car', caravans: 'Caravane', trucks: 'Camion', agriculture: 'Machine agricole', construction: 'Engin de chantier', 'electric-bikes': 'Vélo électrique' },
+    },
+    es: {
+      standardListing: 'Anuncio estándar',
+      premiumListing: 'Anuncio premium',
+      topPlacement: 'Posición destacada',
+      featuredListing: 'Anuncio destacado',
+      listingRefresh: 'Impulsar anuncio',
+      business: 'Empresa',
+      autorellPayment: 'Pago de Autorell',
+      days3: '3 días',
+      days7: '7 días',
+      days14: '14 días',
+      days15: '15 días',
+      days30: '30 días',
+      monthlySubscription: 'Suscripción mensual',
+      annualSubscription: 'Suscripción anual',
+      standardDescription: 'de publicación en el marketplace europeo de vehículos de Autorell.',
+      premiumDescription: 'de publicación con visibilidad adicional y posición destacada incluida.',
+      standardSubmit: 'El anuncio se publica automáticamente cuando se confirma el pago.',
+      premiumSubmit: 'El anuncio obtiene automáticamente mayor visibilidad cuando se confirma el pago.',
+      topPlacementDescription: (days) => `Mueve el anuncio más arriba en los resultados durante ${days}.`,
+      topPlacementSubmit: 'La posición destacada se activa automáticamente cuando se confirma el pago.',
+      featuredDescription: (days) => `Muestra el anuncio como destacado en Autorell durante ${days}.`,
+      featuredSubmit: 'La visibilidad destacada se activa automáticamente cuando se confirma el pago.',
+      refreshDescription: 'Actualiza la fecha de ordenación del anuncio y gana nueva visibilidad.',
+      refreshSubmit: 'El impulso se activa automáticamente cuando se confirma el pago.',
+      businessDescription: 'para empresas que venden vehículos en Autorell.',
+      businessSubmit: 'La suscripción de empresa se activa automáticamente cuando se confirma el pago.',
+      paymentSubmit: 'El pago se procesa de forma segura mediante Stripe.',
+      categories: { cars: 'Coche', vans: 'Furgoneta', motorcycles: 'Moto', motorhomes: 'Autocaravana', caravans: 'Caravana', trucks: 'Camión', agriculture: 'Maquinaria agrícola', construction: 'Maquinaria de construcción', 'electric-bikes': 'Bicicleta eléctrica' },
+    },
+    it: {
+      standardListing: 'Annuncio standard',
+      premiumListing: 'Annuncio premium',
+      topPlacement: 'Posizionamento in alto',
+      featuredListing: 'Annuncio in evidenza',
+      listingRefresh: 'Rilancia annuncio',
+      business: 'Azienda',
+      autorellPayment: 'Pagamento Autorell',
+      days3: '3 giorni',
+      days7: '7 giorni',
+      days14: '14 giorni',
+      days15: '15 giorni',
+      days30: '30 giorni',
+      monthlySubscription: 'Abbonamento mensile',
+      annualSubscription: 'Abbonamento annuale',
+      standardDescription: 'di pubblicazione sul marketplace europeo di veicoli Autorell.',
+      premiumDescription: 'di pubblicazione con visibilità extra e posizionamento in alto incluso.',
+      standardSubmit: 'L’annuncio viene pubblicato automaticamente quando il pagamento è confermato.',
+      premiumSubmit: 'L’annuncio ottiene automaticamente maggiore visibilità quando il pagamento è confermato.',
+      topPlacementDescription: (days) => `Sposta l’annuncio più in alto nei risultati per ${days}.`,
+      topPlacementSubmit: 'Il posizionamento in alto viene attivato automaticamente quando il pagamento è confermato.',
+      featuredDescription: (days) => `Mostra l’annuncio in evidenza su Autorell per ${days}.`,
+      featuredSubmit: 'La visibilità in evidenza viene attivata automaticamente quando il pagamento è confermato.',
+      refreshDescription: 'Aggiorna la data di ordinamento dell’annuncio e ottieni nuova visibilità.',
+      refreshSubmit: 'Il rilancio viene attivato automaticamente quando il pagamento è confermato.',
+      businessDescription: 'per aziende che vendono veicoli su Autorell.',
+      businessSubmit: 'L’abbonamento aziendale viene attivato automaticamente quando il pagamento è confermato.',
+      paymentSubmit: 'Il pagamento viene gestito in modo sicuro tramite Stripe.',
+      categories: { cars: 'Auto', vans: 'Furgone', motorcycles: 'Moto', motorhomes: 'Camper', caravans: 'Roulotte', trucks: 'Camion', agriculture: 'Macchina agricola', construction: 'Macchina da cantiere', 'electric-bikes': 'Bici elettrica' },
+    },
+    nl: {
+      standardListing: 'Standaardadvertentie',
+      premiumListing: 'Premiumadvertentie',
+      topPlacement: 'Topplaatsing',
+      featuredListing: 'Uitgelichte advertentie',
+      listingRefresh: 'Advertentie omhoog plaatsen',
+      business: 'Zakelijk',
+      autorellPayment: 'Autorell-betaling',
+      days3: '3 dagen',
+      days7: '7 dagen',
+      days14: '14 dagen',
+      days15: '15 dagen',
+      days30: '30 dagen',
+      monthlySubscription: 'Maandabonnement',
+      annualSubscription: 'Jaarabonnement',
+      standardDescription: 'publicatie op Autorells Europese voertuigmarktplaats.',
+      premiumDescription: 'publicatie met extra zichtbaarheid en inbegrepen topplaatsing.',
+      standardSubmit: 'De advertentie wordt automatisch gepubliceerd zodra de betaling is bevestigd.',
+      premiumSubmit: 'De advertentie krijgt automatisch meer zichtbaarheid zodra de betaling is bevestigd.',
+      topPlacementDescription: (days) => `Plaats de advertentie ${days} hoger in de resultaten.`,
+      topPlacementSubmit: 'De topplaatsing wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      featuredDescription: (days) => `Toon de advertentie ${days} als uitgelicht op Autorell.`,
+      featuredSubmit: 'Uitgelichte zichtbaarheid wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      refreshDescription: 'Vernieuw de sorteerdatum van de advertentie en krijg nieuwe zichtbaarheid.',
+      refreshSubmit: 'De boost wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      businessDescription: 'voor bedrijven die voertuigen verkopen op Autorell.',
+      businessSubmit: 'Het zakelijke abonnement wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      paymentSubmit: 'De betaling wordt veilig verwerkt via Stripe.',
+      categories: { cars: 'Auto', vans: 'Bestelwagen', motorcycles: 'Motor', motorhomes: 'Camper', caravans: 'Caravan', trucks: 'Vrachtwagen', agriculture: 'Landbouwmachine', construction: 'Bouwmachine', 'electric-bikes': 'Elektrische fiets' },
+    },
+    pl: {
+      standardListing: 'Ogłoszenie standardowe',
+      premiumListing: 'Ogłoszenie premium',
+      topPlacement: 'Wyróżnienie na górze',
+      featuredListing: 'Ogłoszenie wyróżnione',
+      listingRefresh: 'Odśwież ogłoszenie',
+      business: 'Firma',
+      autorellPayment: 'Płatność Autorell',
+      days3: '3 dni',
+      days7: '7 dni',
+      days14: '14 dni',
+      days15: '15 dni',
+      days30: '30 dni',
+      monthlySubscription: 'Subskrypcja miesięczna',
+      annualSubscription: 'Subskrypcja roczna',
+      standardDescription: 'publikacji na europejskim marketplace pojazdów Autorell.',
+      premiumDescription: 'publikacji z dodatkową widocznością i wyróżnieniem na górze.',
+      standardSubmit: 'Ogłoszenie zostanie opublikowane automatycznie po potwierdzeniu płatności.',
+      premiumSubmit: 'Ogłoszenie automatycznie otrzyma większą widoczność po potwierdzeniu płatności.',
+      topPlacementDescription: (days) => `Przenieś ogłoszenie wyżej w wynikach na ${days}.`,
+      topPlacementSubmit: 'Wyróżnienie na górze zostanie aktywowane automatycznie po potwierdzeniu płatności.',
+      featuredDescription: (days) => `Pokaż ogłoszenie jako wyróżnione na Autorell przez ${days}.`,
+      featuredSubmit: 'Wyróżniona widoczność zostanie aktywowana automatycznie po potwierdzeniu płatności.',
+      refreshDescription: 'Odśwież datę sortowania ogłoszenia i uzyskaj nową widoczność.',
+      refreshSubmit: 'Odświeżenie zostanie aktywowane automatycznie po potwierdzeniu płatności.',
+      businessDescription: 'dla firm sprzedających pojazdy na Autorell.',
+      businessSubmit: 'Subskrypcja firmowa zostanie aktywowana automatycznie po potwierdzeniu płatności.',
+      paymentSubmit: 'Płatność jest bezpiecznie obsługiwana przez Stripe.',
+      categories: { cars: 'Samochód', vans: 'Van', motorcycles: 'Motocykl', motorhomes: 'Kamper', caravans: 'Przyczepa kempingowa', trucks: 'Ciężarówka', agriculture: 'Maszyna rolnicza', construction: 'Maszyna budowlana', 'electric-bikes': 'Rower elektryczny' },
+    },
+    fi: {
+      standardListing: 'Standardi-ilmoitus',
+      premiumListing: 'Premium-ilmoitus',
+      topPlacement: 'Kärkisijoitus',
+      featuredListing: 'Nostettu ilmoitus',
+      listingRefresh: 'Nosta ilmoitus',
+      business: 'Yritys',
+      autorellPayment: 'Autorell-maksu',
+      days3: '3 päivää',
+      days7: '7 päivää',
+      days14: '14 päivää',
+      days15: '15 päivää',
+      days30: '30 päivää',
+      monthlySubscription: 'Kuukausitilaus',
+      annualSubscription: 'Vuositilaus',
+      standardDescription: 'julkaisua Autorellin eurooppalaisella ajoneuvomarkkinapaikalla.',
+      premiumDescription: 'julkaisua lisänäkyvyydellä ja mukana olevalla kärkisijoituksella.',
+      standardSubmit: 'Ilmoitus julkaistaan automaattisesti, kun maksu on vahvistettu.',
+      premiumSubmit: 'Ilmoitus saa automaattisesti enemmän näkyvyyttä, kun maksu on vahvistettu.',
+      topPlacementDescription: (days) => `Siirrä ilmoitus ylemmäs tuloksissa ajaksi ${days}.`,
+      topPlacementSubmit: 'Kärkisijoitus aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      featuredDescription: (days) => `Näytä ilmoitus nostettuna Autorellissa ajan ${days}.`,
+      featuredSubmit: 'Nostettu näkyvyys aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      refreshDescription: 'Päivitä ilmoituksen lajittelupäivä ja saa uutta näkyvyyttä.',
+      refreshSubmit: 'Nosto aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      businessDescription: 'yrityksille, jotka myyvät ajoneuvoja Autorellissa.',
+      businessSubmit: 'Yritystilaus aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      paymentSubmit: 'Maksu käsitellään turvallisesti Stripen kautta.',
+      categories: { cars: 'Auto', vans: 'Pakettiauto', motorcycles: 'Moottoripyörä', motorhomes: 'Matkailuauto', caravans: 'Asuntovaunu', trucks: 'Kuorma-auto', agriculture: 'Maatalouskone', construction: 'Maarakennuskone', 'electric-bikes': 'Sähköpyörä' },
+    },
+    da: {
+      standardListing: 'Standardannonce',
+      premiumListing: 'Premiumannonce',
+      topPlacement: 'Topplacering',
+      featuredListing: 'Fremhævet annonce',
+      listingRefresh: 'Løft annonce',
+      business: 'Virksomhed',
+      autorellPayment: 'Autorell-betaling',
+      days3: '3 dage',
+      days7: '7 dage',
+      days14: '14 dage',
+      days15: '15 dage',
+      days30: '30 dage',
+      monthlySubscription: 'Månedsabonnement',
+      annualSubscription: 'Årsabonnement',
+      standardDescription: 'publicering på Autorells europæiske køretøjsmarkedsplads.',
+      premiumDescription: 'publicering med ekstra synlighed og inkluderet topplacering.',
+      standardSubmit: 'Annoncen offentliggøres automatisk, når betalingen er bekræftet.',
+      premiumSubmit: 'Annoncen får automatisk mere synlighed, når betalingen er bekræftet.',
+      topPlacementDescription: (days) => `Flyt annoncen højere op i resultaterne i ${days}.`,
+      topPlacementSubmit: 'Topplaceringen aktiveres automatisk, når betalingen er bekræftet.',
+      featuredDescription: (days) => `Vis annoncen som fremhævet på Autorell i ${days}.`,
+      featuredSubmit: 'Fremhævet synlighed aktiveres automatisk, når betalingen er bekræftet.',
+      refreshDescription: 'Forny annoncens sorteringsdato og få ny synlighed.',
+      refreshSubmit: 'Løftet aktiveres automatisk, når betalingen er bekræftet.',
+      businessDescription: 'for virksomheder, der sælger køretøjer på Autorell.',
+      businessSubmit: 'Virksomhedsabonnementet aktiveres automatisk, når betalingen er bekræftet.',
+      paymentSubmit: 'Betalingen håndteres sikkert via Stripe.',
+      categories: { cars: 'Bil', vans: 'Varebil', motorcycles: 'Motorcykel', motorhomes: 'Autocamper', caravans: 'Campingvogn', trucks: 'Lastbil', agriculture: 'Landbrugsmaskine', construction: 'Entreprenørmaskine', 'electric-bikes': 'Elcykel' },
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function checkoutSecurityCopy(locale: PublicLocale) {
@@ -735,19 +1071,8 @@ function checkoutSecurityCopy(locale: PublicLocale) {
   return copy[normalized] || copy.en
 }
 
-function checkoutCategoryLabel(category: string) {
-  const labels: Record<string, string> = {
-    cars: 'Car',
-    vans: 'Van',
-    motorcycles: 'Motorcycle',
-    motorhomes: 'Motorhome',
-    caravans: 'Caravan',
-    trucks: 'Truck',
-    agriculture: 'Agricultural machine',
-      construction: 'Construction machine',
-      'electric-bikes': 'Electric bike',
-  }
-  return labels[category] || capitalize(category.replace(/-/g, ' '))
+function checkoutCategoryFallback(category: string) {
+  return capitalize(category.replace(/-/g, ' '))
 }
 
 function publicLocaleForMarket(market: string): PublicLocale {
