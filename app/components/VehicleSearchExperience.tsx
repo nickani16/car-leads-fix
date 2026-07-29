@@ -2962,71 +2962,78 @@ export default function VehicleSearchExperience({
                       )
                     })}
                   </div>
-                  <div
-                    className="hidden min-w-[860px] sm:grid"
-                    style={{ gridTemplateColumns: `minmax(150px, .55fr) repeat(${compareListings.length}, minmax(170px, 1fr))` }}
-                  >
-                    <div className="sticky left-0 top-0 z-20 border-b border-r border-[#edf1f6] bg-[#f8fbff] p-4">
+                  <div className="hidden min-w-[860px] sm:block">
+                    <div className="border-b border-[#edf1f6] bg-[#f8fbff] px-4 py-2">
                       <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
                         {compareIds.length}/{maxCompareListings}
                       </p>
                     </div>
-                    {compareListings.map((listing) => {
-                      const href = buildListingPath({
-                        id: listing.id,
-                        title: listing.title,
-                        make: listing.make,
-                        model: listing.model,
-                        year: listing.year,
-                        city: listing.city,
-                        country_code: listing.country,
-                      }, locale)
-                      return (
-                        <article key={listing.id} className="relative border-b border-r border-[#edf1f6] bg-white p-3 sm:p-4">
-                        <button
-                          type="button"
-                          onClick={() => toggleCompare(listing.id)}
-                          aria-label={compareCopy.remove}
-                          className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                        <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
-                          <div className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-[#eef3f8]">
-                            {listing.imageUrls.length ? (
-                              <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="(max-width: 640px) 50vw, 240px" className="object-cover" />
-                            ) : (
-                              <div className="grid h-full place-items-center text-[#0866ff]">
-                                <AutorellCarIcon className="h-10 w-10" />
+                    <div
+                      className="grid"
+                      style={{ gridTemplateColumns: `repeat(${compareListings.length}, minmax(170px, 1fr))` }}
+                    >
+                      {compareListings.map((listing) => {
+                        const href = buildListingPath({
+                          id: listing.id,
+                          title: listing.title,
+                          make: listing.make,
+                          model: listing.model,
+                          year: listing.year,
+                          city: listing.city,
+                          country_code: listing.country,
+                        }, locale)
+                        return (
+                          <article key={listing.id} className="relative border-b border-r border-[#edf1f6] bg-white p-3 sm:p-4">
+                            <button
+                              type="button"
+                              onClick={() => toggleCompare(listing.id)}
+                              aria-label={compareCopy.remove}
+                              className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
+                              <div className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+                                {listing.imageUrls.length ? (
+                                  <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="(max-width: 640px) 50vw, 240px" className="object-cover" />
+                                ) : (
+                                  <div className="grid h-full place-items-center text-[#0866ff]">
+                                    <AutorellCarIcon className="h-10 w-10" />
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
-                          <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
-                          <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f8fbff]">
-                            {compareCopy.view}
-                          </span>
-                        </Link>
-                      </article>
-                      )
-                    })}
-                    {compareRows.map((row) => (
-                      <div key={row.label} className="contents">
-                        <div className="sticky left-0 z-10 border-b border-r border-[#edf1f6] bg-[#f8fbff] px-4 py-3 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
-                          {row.label}
-                        </div>
-                        {row.values.map((item) => (
-                          <div key={`${row.label}-${item.id}`} className={`min-h-14 border-b border-r border-[#edf1f6] px-3 py-3 text-sm font-semibold text-[#101828] ${item.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
-                            <span className="block">{item.value}</span>
-                            {item.highlight ? (
-                              <span className="mt-1 inline-flex rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
-                                {compareCopy.best}
+                              <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                              <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
+                              <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f8fbff]">
+                                {compareCopy.view}
                               </span>
-                            ) : null}
+                            </Link>
+                          </article>
+                        )
+                      })}
+                    </div>
+                    <div
+                      className="grid"
+                      style={{ gridTemplateColumns: `minmax(150px, .55fr) repeat(${compareListings.length}, minmax(170px, 1fr))` }}
+                    >
+                      {compareRows.map((row) => (
+                        <div key={row.label} className="contents">
+                          <div className="sticky left-0 z-10 border-b border-r border-[#edf1f6] bg-[#f8fbff] px-4 py-3 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
+                            {row.label}
                           </div>
-                        ))}
-                      </div>
-                    ))}
+                          {row.values.map((item) => (
+                            <div key={`${row.label}-${item.id}`} className={`min-h-14 border-b border-r border-[#edf1f6] px-3 py-3 text-sm font-semibold text-[#101828] ${item.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
+                              <span className="block">{item.value}</span>
+                              {item.highlight ? (
+                                <span className="mt-1 inline-flex rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
+                                  {compareCopy.best}
+                                </span>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
