@@ -55,7 +55,8 @@ import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/pu
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
-import { isLeasingMarketplaceCategory } from '@/lib/marketplace'
+import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
+import { currencyForLocale } from '@/lib/market-locale'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
@@ -1653,6 +1654,9 @@ export default function VehicleSearchExperience({
   const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
+  const priceFilterCurrency = selectedMarketCodes.length === 1
+    ? currencyForCountry(selectedMarketCodes[0])
+    : currencyForLocale(locale)
   const marketSummary = selectedMarketCodes.length
     ? selectedMarketCodes.map((code) => getEuCountryName(code, locale)).join(', ')
     : uiText(locale, 'All of Europe', 'Hela Europa', 'Ganz Europa')
@@ -1982,7 +1986,7 @@ export default function VehicleSearchExperience({
               onMaxChange={setMaxPrice}
               minLimit={priceBounds.min}
               maxLimit={priceBounds.max}
-              unit="SEK"
+              unit={priceFilterCurrency}
               step={1000}
             />
             <RangeFilter
@@ -2222,7 +2226,7 @@ export default function VehicleSearchExperience({
                   onMaxChange={setMaxPrice}
                   minLimit={priceBounds.min}
                   maxLimit={priceBounds.max}
-                  unit="SEK"
+                  unit={priceFilterCurrency}
                   step={1000}
                 />
                 <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
@@ -2442,7 +2446,7 @@ export default function VehicleSearchExperience({
       ? { key: 'sellerType', label: sellerType === 'business' ? uiText(locale, 'Business', 'Företag', 'Unternehmen') : uiText(locale, 'Private seller', 'Privatperson', 'Privatperson'), onRemove: () => setSellerType('all') }
       : null,
     minPrice || maxPrice
-      ? { key: 'price', label: uiText(locale, 'Price', 'Pris', 'Preis') + ' ' + (minPrice || '0') + '-' + (maxPrice || 'max') + ' SEK', onRemove: () => {
+      ? { key: 'price', label: uiText(locale, 'Price', 'Pris', 'Preis') + ' ' + (minPrice || '0') + '-' + (maxPrice || 'max') + ' ' + priceFilterCurrency, onRemove: () => {
         setMinPrice('')
         setMaxPrice('')
       } }
@@ -2612,7 +2616,7 @@ export default function VehicleSearchExperience({
                             onMaxChange={setMaxPrice}
                             minLimit={priceBounds.min}
                             maxLimit={priceBounds.max}
-                            unit="SEK"
+                            unit={priceFilterCurrency}
                             step={1000}
                           />
                           <RangeFilter
@@ -3064,7 +3068,7 @@ export default function VehicleSearchExperience({
                           onMaxChange={setMaxPrice}
                           minLimit={priceBounds.min}
                           maxLimit={priceBounds.max}
-                          unit="SEK"
+                          unit={priceFilterCurrency}
                           step={1000}
                         />
                         <RangeFilter
@@ -3272,6 +3276,167 @@ type MakeModelOption = {
   count: number
 }
 
+function makeModelPickerCopy(locale: PublicLocale) {
+  const copy: Record<PublicLocale, {
+    title: string
+    intro: string
+    make: string
+    model: string
+    makes: string
+    models: string
+    noMakes: string
+    noModelsForMake: string
+    chooseMake: string
+    autoHint: string
+  }> = {
+    sv: {
+      title: 'Märke och modell',
+      intro: 'Sök fritt eller välj bland märken och modeller som finns i den här kategorin.',
+      make: 'Märke',
+      model: 'Modell',
+      makes: 'Märken',
+      models: 'Modeller',
+      noMakes: 'Inga märken matchar urvalet',
+      noModelsForMake: 'Inga modeller matchar märket',
+      chooseMake: 'Välj ett märke för att avgränsa modellerna',
+      autoHint: 'Listorna uppdateras automatiskt från annonserna i vald kategori och marknad.',
+    },
+    en: {
+      title: 'Make and model',
+      intro: 'Search freely or choose from the makes and models available in this category.',
+      make: 'Make',
+      model: 'Model',
+      makes: 'Makes',
+      models: 'Models',
+      noMakes: 'No makes match this selection',
+      noModelsForMake: 'No models match this make',
+      chooseMake: 'Choose a make to narrow the model list',
+      autoHint: 'The lists update automatically from listings in the selected category and market.',
+    },
+    de: {
+      title: 'Marke und Modell',
+      intro: 'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
+      make: 'Marke',
+      model: 'Modell',
+      makes: 'Marken',
+      models: 'Modelle',
+      noMakes: 'Keine Marken passen zu dieser Auswahl',
+      noModelsForMake: 'Keine Modelle passen zu dieser Marke',
+      chooseMake: 'Marke wählen, um die Modellliste einzugrenzen',
+      autoHint: 'Die Listen werden automatisch aus den Anzeigen der gewählten Kategorie und des Marktes aktualisiert.',
+    },
+    at: {
+      title: 'Marke und Modell',
+      intro: 'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
+      make: 'Marke',
+      model: 'Modell',
+      makes: 'Marken',
+      models: 'Modelle',
+      noMakes: 'Keine Marken passen zu dieser Auswahl',
+      noModelsForMake: 'Keine Modelle passen zu dieser Marke',
+      chooseMake: 'Marke wählen, um die Modellliste einzugrenzen',
+      autoHint: 'Die Listen werden automatisch aus den Anzeigen der gewählten Kategorie und des Marktes aktualisiert.',
+    },
+    be: {
+      title: 'Merk en model',
+      intro: 'Zoek vrij of kies uit merken en modellen in deze categorie.',
+      make: 'Merk',
+      model: 'Model',
+      makes: 'Merken',
+      models: 'Modellen',
+      noMakes: 'Geen merken passen bij deze selectie',
+      noModelsForMake: 'Geen modellen passen bij dit merk',
+      chooseMake: 'Kies een merk om de modellenlijst te verfijnen',
+      autoHint: 'De lijsten worden automatisch bijgewerkt vanuit advertenties in de gekozen categorie en markt.',
+    },
+    nl: {
+      title: 'Merk en model',
+      intro: 'Zoek vrij of kies uit merken en modellen in deze categorie.',
+      make: 'Merk',
+      model: 'Model',
+      makes: 'Merken',
+      models: 'Modellen',
+      noMakes: 'Geen merken passen bij deze selectie',
+      noModelsForMake: 'Geen modellen passen bij dit merk',
+      chooseMake: 'Kies een merk om de modellenlijst te verfijnen',
+      autoHint: 'De lijsten worden automatisch bijgewerkt vanuit advertenties in de gekozen categorie en markt.',
+    },
+    fr: {
+      title: 'Marque et modèle',
+      intro: 'Recherchez librement ou choisissez parmi les marques et modèles de cette catégorie.',
+      make: 'Marque',
+      model: 'Modèle',
+      makes: 'Marques',
+      models: 'Modèles',
+      noMakes: 'Aucune marque ne correspond à cette sélection',
+      noModelsForMake: 'Aucun modèle ne correspond à cette marque',
+      chooseMake: 'Choisissez une marque pour filtrer les modèles',
+      autoHint: 'Les listes se mettent à jour automatiquement à partir des annonces de la catégorie et du marché choisis.',
+    },
+    es: {
+      title: 'Marca y modelo',
+      intro: 'Busca libremente o elige entre las marcas y modelos de esta categoría.',
+      make: 'Marca',
+      model: 'Modelo',
+      makes: 'Marcas',
+      models: 'Modelos',
+      noMakes: 'Ninguna marca coincide con esta selección',
+      noModelsForMake: 'Ningún modelo coincide con esta marca',
+      chooseMake: 'Elige una marca para acotar la lista de modelos',
+      autoHint: 'Las listas se actualizan automáticamente con los anuncios de la categoría y el mercado seleccionados.',
+    },
+    it: {
+      title: 'Marca e modello',
+      intro: 'Cerca liberamente o scegli tra marche e modelli disponibili in questa categoria.',
+      make: 'Marca',
+      model: 'Modello',
+      makes: 'Marche',
+      models: 'Modelli',
+      noMakes: 'Nessuna marca corrisponde a questa selezione',
+      noModelsForMake: 'Nessun modello corrisponde a questa marca',
+      chooseMake: 'Scegli una marca per restringere l’elenco dei modelli',
+      autoHint: 'Gli elenchi si aggiornano automaticamente dagli annunci nella categoria e nel mercato selezionati.',
+    },
+    pl: {
+      title: 'Marka i model',
+      intro: 'Wyszukaj ręcznie albo wybierz markę i model dostępne w tej kategorii.',
+      make: 'Marka',
+      model: 'Model',
+      makes: 'Marki',
+      models: 'Modele',
+      noMakes: 'Brak marek pasujących do tego wyboru',
+      noModelsForMake: 'Brak modeli pasujących do tej marki',
+      chooseMake: 'Wybierz markę, aby zawęzić listę modeli',
+      autoHint: 'Listy aktualizują się automatycznie na podstawie ogłoszeń w wybranej kategorii i rynku.',
+    },
+    fi: {
+      title: 'Merkki ja malli',
+      intro: 'Hae vapaasti tai valitse tämän kategorian merkeistä ja malleista.',
+      make: 'Merkki',
+      model: 'Malli',
+      makes: 'Merkit',
+      models: 'Mallit',
+      noMakes: 'Mikään merkki ei vastaa valintaa',
+      noModelsForMake: 'Mikään malli ei vastaa tätä merkkiä',
+      chooseMake: 'Valitse merkki rajataksesi mallilistaa',
+      autoHint: 'Listat päivittyvät automaattisesti valitun kategorian ja markkinan ilmoituksista.',
+    },
+    da: {
+      title: 'Mærke og model',
+      intro: 'Søg frit eller vælg blandt mærker og modeller i denne kategori.',
+      make: 'Mærke',
+      model: 'Model',
+      makes: 'Mærker',
+      models: 'Modeller',
+      noMakes: 'Ingen mærker matcher dette valg',
+      noModelsForMake: 'Ingen modeller matcher dette mærke',
+      chooseMake: 'Vælg et mærke for at indsnævre modellisten',
+      autoHint: 'Listerne opdateres automatisk fra annoncer i den valgte kategori og det valgte marked.',
+    },
+  }
+  return copy[locale] || copy.en
+}
+
 function MakeModelFilter({
   locale,
   make,
@@ -3292,36 +3457,26 @@ function MakeModelFilter({
   compact?: boolean
 }) {
   const [mobilePanel, setMobilePanel] = useState<'make' | 'model'>('make')
+  const copy = makeModelPickerCopy(locale)
   const normalizedMake = normalizeSearchText(make)
   const normalizedModel = normalizeSearchText(model)
-  const exactMake = makeOptions.find((option) => normalizeSearchText(option.value) === normalizedMake)
   const visibleMakes = makeOptions.filter((option) => !normalizedMake || normalizeSearchText(option.value).includes(normalizedMake))
   const visibleModels = modelOptions.filter((option) => !normalizedModel || normalizeSearchText(option.value).includes(normalizedModel))
   const panelHeight = compact ? 'max-h-[280px]' : 'max-h-[340px]'
-  const modelIntro = exactMake
-    ? uiText(locale, 'Models', 'Modeller', 'Modelle')
-    : uiText(locale, 'Models', 'Modeller', 'Modelle')
-  const noMakesLabel = uiText(locale, 'No makes match this selection', 'Inga märken matchar urvalet', 'Keine Marken passen zu dieser Auswahl')
-  const noModelsLabel = make
-    ? uiText(locale, 'No models match this make', 'Inga modeller matchar märket', 'Keine Modelle passen zu dieser Marke')
-    : uiText(locale, 'Choose a make to narrow the model list', 'Välj ett märke för att avgränsa modellerna', 'Marke wählen, um die Modellliste einzugrenzen')
+  const modelIntro = copy.models
+  const noModelsLabel = make ? copy.noModelsForMake : copy.chooseMake
 
   return (
     <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
       <div className="space-y-1">
-        <p className="text-[15px] font-bold text-[#101828]">{uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')}</p>
+        <p className="text-[15px] font-bold text-[#101828]">{copy.title}</p>
         <p className="text-[12px] font-medium leading-5 text-[#667085]">
-          {uiText(
-            locale,
-            'Search freely or choose from the makes and models available in this category.',
-            'Sök fritt eller välj bland märken och modeller som finns i den här kategorin.',
-            'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
-          )}
+          {copy.intro}
         </p>
       </div>
       <div className={`grid gap-2 ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <TextFilterInput
-          label={uiText(locale, 'Make', 'Märke', 'Marke')}
+          label={copy.make}
           value={make}
           onChange={(value) => {
             onMakeChange(value)
@@ -3330,7 +3485,7 @@ function MakeModelFilter({
           }}
         />
         <TextFilterInput
-          label={uiText(locale, 'Model', 'Modell', 'Modell')}
+          label={copy.model}
           value={model}
           onChange={onModelChange}
         />
@@ -3343,21 +3498,21 @@ function MakeModelFilter({
             onClick={() => setMobilePanel('make')}
             className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'make' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
           >
-            {uiText(locale, 'Makes', 'Märken', 'Marken')}
+            {copy.makes}
           </button>
           <button
             type="button"
             onClick={() => setMobilePanel('model')}
             className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'model' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
           >
-            {uiText(locale, 'Models', 'Modeller', 'Modelle')}
+            {copy.models}
           </button>
         </div>
         {mobilePanel === 'make' ? (
           <OptionSelectionList
-            title={uiText(locale, 'Makes', 'Märken', 'Marken')}
+            title={copy.makes}
             options={visibleMakes}
-            emptyLabel={noMakesLabel}
+            emptyLabel={copy.noMakes}
             activeValue={make}
             onSelect={(value) => {
               onMakeChange(value)
@@ -3381,9 +3536,9 @@ function MakeModelFilter({
 
       <div className={`hidden overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white sm:grid ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <OptionSelectionList
-          title={uiText(locale, 'Makes', 'Märken', 'Marken')}
+          title={copy.makes}
           options={visibleMakes}
-          emptyLabel={noMakesLabel}
+          emptyLabel={copy.noMakes}
           activeValue={make}
           onSelect={(value) => {
             onMakeChange(value)
@@ -3403,12 +3558,7 @@ function MakeModelFilter({
         />
       </div>
       <p className="hidden text-[11px] font-medium leading-4 text-[#667085] sm:block">
-        {uiText(
-          locale,
-          'The lists are built automatically from live listings in the selected category and market. You can still type a custom make or model.',
-          'Listorna byggs automatiskt från live-annonser i vald kategori och marknad. Du kan fortfarande skriva eget märke eller modell.',
-          'Die Listen werden automatisch aus Live-Anzeigen der gewählten Kategorie und des Marktes erstellt. Eigene Marken oder Modelle können weiterhin eingegeben werden.',
-        )}
+        {copy.autoHint}
       </p>
     </div>
   )
@@ -3457,7 +3607,7 @@ function OptionSelectionList({
               key={option.value}
               type="button"
               onClick={() => onSelect(option.value)}
-              className={`flex min-h-10 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] font-semibold transition ${
+              className={`flex min-h-10 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] font-semibold ring-inset transition ${
                 active
                   ? 'bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#a8ccff]'
                   : 'text-[#101828] hover:bg-[#f8fafc] hover:ring-1 hover:ring-[#d0d5dd]'

@@ -289,9 +289,25 @@ test('marketplace make and model filters use live category-scoped options while 
   assert.doesNotMatch(vehicleSearchExperienceSource, /Live makes/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /Live-m/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /Live model suggestions/)
-  assert.match(vehicleSearchExperienceSource, /<TextFilterInput[\s\S]*label=\{uiText\(locale, 'Make'/)
+  assert.match(vehicleSearchExperienceSource, /function makeModelPickerCopy/)
+  assert.match(vehicleSearchExperienceSource, /fi: \{[\s\S]*title: 'Merkki ja malli'/)
+  assert.match(vehicleSearchExperienceSource, /pl: \{[\s\S]*title: 'Marka i model'/)
+  assert.match(vehicleSearchExperienceSource, /<TextFilterInput[\s\S]*label=\{copy\.make\}/)
+  assert.match(vehicleSearchExperienceSource, /<TextFilterInput[\s\S]*label=\{copy\.model\}/)
   assert.match(vehicleSearchExperienceSource, /onMakeChange\(value\)[\s\S]*onModelChange\(''\)/)
   assert.match(vehicleSearchExperienceSource, /onSelect=\{onModelChange\}/)
+})
+
+test('marketplace price filters use the active market currency instead of hardcoded SEK', () => {
+  assert.match(vehicleSearchExperienceSource, /import \{ currencyForCountry, isLeasingMarketplaceCategory \} from '@\/lib\/marketplace'/)
+  assert.match(vehicleSearchExperienceSource, /import \{ currencyForLocale \} from '@\/lib\/market-locale'/)
+  assert.match(vehicleSearchExperienceSource, /const priceFilterCurrency = selectedMarketCodes\.length === 1/)
+  assert.match(vehicleSearchExperienceSource, /currencyForCountry\(selectedMarketCodes\[0\]\)/)
+  assert.match(vehicleSearchExperienceSource, /currencyForLocale\(locale\)/)
+  assert.match(vehicleSearchExperienceSource, /unit=\{priceFilterCurrency\}/)
+  assert.match(vehicleSearchExperienceSource, /\+ ' ' \+ priceFilterCurrency/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /unit="SEK"/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /\+ ' SEK'/)
 })
 
 test('marketplace cards and listing detail show stable rounded offer status', () => {
