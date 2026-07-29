@@ -319,29 +319,24 @@ export async function POST(request: Request) {
         },
       })).id
 
-      const stripeProduct = price.stripePriceId
-        ? null
-        : await stripe.products.create({
-            name: checkoutProduct.name,
-            description: checkoutProduct.description,
-            metadata: {
-              product_key: product.productKey,
-              source: price.source,
-              required_env: price.requiredEnv || '',
-            },
-          })
-      const subscriptionItem: Stripe.SubscriptionCreateParams.Item =
-        price.stripePriceId
-          ? { price: price.stripePriceId, quantity: 1 }
-          : {
-              price_data: {
-                currency: price.currency,
-                unit_amount: price.amountMinor,
-                recurring: { interval: product.billingInterval || 'month' },
-                product: stripeProduct!.id,
-              },
-              quantity: 1,
-            }
+      const stripeProduct = await stripe.products.create({
+        name: checkoutProduct.name,
+        description: checkoutProduct.description,
+        metadata: {
+          product_key: product.productKey,
+          source: price.source,
+          required_env: price.requiredEnv || '',
+        },
+      })
+      const subscriptionItem: Stripe.SubscriptionCreateParams.Item = {
+        price_data: {
+          currency: price.currency,
+          unit_amount: price.amountMinor,
+          recurring: { interval: product.billingInterval || 'month' },
+          product: stripeProduct.id,
+        },
+        quantity: 1,
+      }
       const bankTransferSettings = createInvoiceBankTransferSettings(price.currency)
 
       const subscription = await stripe.subscriptions.create({
@@ -611,7 +606,7 @@ function createCheckoutBranding() {
     font_family: 'inter' as const,
     icon: {
       type: 'url' as const,
-      url: 'https://www.autorell.com/favicon-96.png?v=8',
+      url: 'https://www.autorell.com/favicon-96.png',
     },
     logo: {
       type: 'url' as const,
