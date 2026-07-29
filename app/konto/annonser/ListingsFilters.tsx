@@ -8,7 +8,8 @@ import {
   type AccountListingFilters,
   type AccountListingTab,
 } from '@/lib/account-listings-management'
-import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { type PublicLocale } from '@/lib/public-i18n'
+import { accountListingText } from '@/lib/account-listings-i18n'
 
 const tabLabels: Record<AccountListingTab, { sv: string; en: string }> = {
   all: { sv: 'Alla', en: 'All' },
@@ -43,7 +44,7 @@ export default function ListingsFilters({
   const [search, setSearch] = useState(filters.query)
   const searchTouched = useRef(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const t = (sv: string, en: string) => locale === 'sv' ? sv : translatePublic(locale, en)
+  const t = (sv: string, en: string) => accountListingText(locale, en, sv)
 
   const update = useCallback((changes: Record<string, string | number | null>) => {
     const params = new URLSearchParams(currentParams.toString())
@@ -223,5 +224,5 @@ function categoryLabel(value: string, locale: PublicLocale) {
   }
   const label = labels[value]
   if (!label) return value
-  return locale === 'sv' ? label.sv : translatePublic(locale, label.en)
+  return accountListingText(locale, label.en, label.sv)
 }

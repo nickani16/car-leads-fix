@@ -4,7 +4,8 @@ import { LoaderCircle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { localizedAccountError } from '@/lib/account-error-i18n'
-import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { type PublicLocale } from '@/lib/public-i18n'
+import { accountListingText } from '@/lib/account-listings-i18n'
 
 const labels: Record<string, string> = {
   pause: 'Pausa',
@@ -26,7 +27,6 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
   const [pendingAction, setPendingAction] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const swedish = locale === 'sv'
 
   function selectedInputs() {
     return [...document.querySelectorAll<HTMLInputElement>('input[name="listingId"][form="bulk-listing-form"]:checked')]
@@ -74,10 +74,10 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
   }
 
   function text(sv: string, en: string) {
-    return swedish ? sv : translatePublic(locale, en)
+    return accountListingText(locale, en, sv)
   }
   function actionText(actionKey: string) {
-    return swedish ? labels[actionKey] || actionKey : translatePublic(locale, labelKeys[actionKey] || actionKey)
+    return accountListingText(locale, labelKeys[actionKey] || actionKey, labels[actionKey])
   }
 
   return (
@@ -101,7 +101,7 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
 
       <dialog ref={dialogRef} aria-labelledby="bulk-confirm-title" className="w-[min(92vw,480px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
         <div className="flex items-start justify-between gap-4 p-6">
-          <div><h2 id="bulk-confirm-title" className="text-xl font-semibold">{text('Bekräfta bulkåtgärd', 'Confirm bulk action')}</h2><p className="mt-2 text-sm leading-6 text-[#667085]">{swedish ? `${labels[pendingAction] || 'Åtgärden'} påverkar ${selectedCount} annonser. Status och ägarskap kontrolleras igen på servern innan något ändras.` : translatePublic(locale, 'This action affects selected listings. Status and ownership are rechecked on the server.').replace('selected', String(selectedCount))}</p></div>
+          <div><h2 id="bulk-confirm-title" className="text-xl font-semibold">{text('Bekräfta bulkåtgärd', 'Confirm bulk action')}</h2><p className="mt-2 text-sm leading-6 text-[#667085]">{accountListingText(locale, 'This action affects {count} listings. Status and ownership are rechecked on the server.').replace('{count}', String(selectedCount))}</p></div>
           <button type="button" onClick={() => dialogRef.current?.close()} aria-label={text('Stäng', 'Close')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-4 w-4" /></button>
         </div>
         <div className="flex flex-col-reverse gap-3 border-t border-[#e4eaf3] p-5 sm:flex-row sm:justify-end"><button type="button" onClick={() => dialogRef.current?.close()} className="h-11 rounded-[12px] border border-[#cbd5e1] px-4 text-sm font-semibold outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20">{text('Avbryt', 'Cancel')}</button><button type="button" onClick={confirmAction} disabled={loading} className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-semibold text-white outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25 disabled:opacity-50">{loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{text('Bekräfta', 'Confirm')}</button></div>

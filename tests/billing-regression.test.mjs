@@ -27,6 +27,7 @@ const businessPlanChooser = readFileSync(new URL('../app/konto/business/subscrip
 const newListingForm = readFileSync(new URL('../app/konto/annonser/ny/NewListingForm.tsx', import.meta.url), 'utf8')
 const accountListingsPage = readFileSync(new URL('../app/konto/annonser/page.tsx', import.meta.url), 'utf8')
 const accountListingsFilters = readFileSync(new URL('../app/konto/annonser/ListingsFilters.tsx', import.meta.url), 'utf8')
+const accountListingsI18n = readFileSync(new URL('../lib/account-listings-i18n.ts', import.meta.url), 'utf8')
 const listingStatusActions = readFileSync(new URL('../app/konto/annonser/ListingStatusActions.tsx', import.meta.url), 'utf8')
 const businessSubscriptionPlans = readFileSync(new URL('../lib/business-subscription-plans.ts', import.meta.url), 'utf8')
 const pricingPage = readFileSync(new URL('../app/components/PricingPage.tsx', import.meta.url), 'utf8')
@@ -154,10 +155,25 @@ test('account listing management uses active URL market for paid packages and lo
   assert.match(accountListingsPage, /marketingOptions\(listing, locale, priceMap, billingMarket\)/)
   assert.doesNotMatch(accountListingsPage, /market=\{listing\.country_code\.toLowerCase\(\)\}/)
   assert.doesNotMatch(accountListingsPage, /const market = normalizeBillingMarket\(listing\.country_code\)/)
-  assert.match(accountListingsPage, /translatePublicObject\(locale/)
+  assert.match(accountListingsPage, /accountListingObject\(locale/)
   assert.match(accountListingsPage, /billingMarketForLocale/)
-  assert.match(accountListingsFilters, /translatePublic\(locale/)
+  assert.match(accountListingsFilters, /accountListingText\(locale/)
   assert.doesNotMatch(accountListingsFilters, /tabLabels\[tab\]\[isSwedish/)
+  for (const [locale, title] of Object.entries({
+    de: 'Meine Anzeigen',
+    fr: 'Mes annonces',
+    es: 'Mis anuncios',
+    it: 'I miei annunci',
+    nl: 'Mijn advertenties',
+    pl: 'Moje ogłoszenia',
+    fi: 'Omat ilmoitukset',
+    da: 'Mine annoncer',
+  })) {
+    assert.match(accountListingsI18n, new RegExp(`${locale}: \\{[\\s\\S]*${title}`))
+  }
+  assert.match(accountListingsI18n, /'Search your listings': 'Zoek in je advertenties'/)
+  assert.match(accountListingsI18n, /'Awaiting payment': 'Wacht op betaling'/)
+  assert.match(accountListingsI18n, /Filters: 'Filters'/)
 })
 
 test('business subscriptions support Stripe invoice terms for B2B customers', () => {

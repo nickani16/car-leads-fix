@@ -21,7 +21,8 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { accountListingObject, accountListingText } from '@/lib/account-listings-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { listingLifecycle } from '@/lib/listing-lifecycle'
 import {
@@ -432,8 +433,14 @@ function canBulkManage(status: string) { return ['published', 'paused', 'draft',
 function localizedLifecycleLabel(group: ReturnType<typeof listingLifecycle>['group'], status: string, locale: string) {
   if (locale === 'sv') return listingLifecycle(status).label
   const labels: Record<ReturnType<typeof listingLifecycle>['group'], string> = {
-    active: 'Active', review: status === 'rejected' ? 'Action required' : 'In review', payment: 'Awaiting payment',
-    draft: 'Draft', paused: 'Paused', sold: 'Sold', expired: 'Expired', deleted: 'Deleted',
+    active: accountListingText(locale as PublicLocale, 'Active'),
+    review: status === 'rejected' ? accountListingText(locale as PublicLocale, 'Action required') : accountListingText(locale as PublicLocale, 'In review'),
+    payment: accountListingText(locale as PublicLocale, 'Awaiting payment'),
+    draft: accountListingText(locale as PublicLocale, 'Drafts'),
+    paused: accountListingText(locale as PublicLocale, 'Paused'),
+    sold: accountListingText(locale as PublicLocale, 'Sold'),
+    expired: accountListingText(locale as PublicLocale, 'Expired'),
+    deleted: accountListingText(locale as PublicLocale, 'Deleted'),
   }
   return labels[group]
 }
@@ -477,7 +484,7 @@ function billingMarketForLocale(locale: PublicLocale) {
 }
 
 function translateText(locale: PublicLocale, en: string, sv?: string) {
-  return locale === 'sv' ? (sv || en) : translatePublicObject(locale, en)
+  return accountListingText(locale, en, sv)
 }
 
 function optionCopy(locale: PublicLocale) {
@@ -506,7 +513,7 @@ function optionCopy(locale: PublicLocale) {
 
 function listingPageCopy(locale: PublicLocale) {
   if (locale !== 'sv') {
-    return translatePublicObject(locale, {
+    return accountListingObject(locale, {
       eyebrow: 'Account · Listing management', title: 'My listings', intro: 'Search, filter and manage your vehicle inventory without long lists or dead ends.', create: 'Create listing',
       summary: 'Summary', active: 'Active listings', payment: 'Awaiting payment', review: 'In review', sold: 'Sold', totalViews: 'Total views', totalFavorites: 'Total favorites',
       needsAttention: 'Needs your attention', attentionPayment: 'listings await payment', attentionImages: 'listings have no images', attentionExpiring: 'listings expire within three days', attentionReview: 'listings need review or action', attentionFailed: 'listings have a failed payment', completePayment: 'Complete payment', addImages: 'Add images', renew: 'Renew', readReason: 'Read reason', tryAgain: 'Try again',

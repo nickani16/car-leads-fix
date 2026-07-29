@@ -4,7 +4,8 @@ import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, ShieldCheck, X }
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { localizedAccountError } from '@/lib/account-error-i18n'
-import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { type PublicLocale } from '@/lib/public-i18n'
+import { accountListingText } from '@/lib/account-listings-i18n'
 
 export type PackageOption = {
   id: string
@@ -163,7 +164,7 @@ export default function ListingStatusActions({
   }
 
   function text(sv: string, en: string) {
-    return swedish ? sv : translatePublic(locale, en)
+    return accountListingText(locale, en, sv)
   }
 
   function openPackage() {
@@ -364,7 +365,7 @@ function actionLabel(action: string, locale: PublicLocale) {
   }
   const label = labels[action]
   if (!label) return action
-  return locale === 'sv' ? label[0] : translatePublic(locale, label[1])
+  return accountListingText(locale, label[1], label[0])
 }
 
 function formatDateTime(value: string, locale: string) {
