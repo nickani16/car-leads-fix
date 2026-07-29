@@ -2084,7 +2084,7 @@ export default function VehicleSearchExperience({
             left: desktopFilterPopoverPosition?.left ?? 16,
             top: desktopFilterPopoverPosition?.top ?? 112,
           }}
-          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)]`}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[74vh] max-sm:overflow-y-auto max-sm:rounded-[18px] max-sm:p-4`}
         >
           {children}
         </div>
@@ -3299,16 +3299,27 @@ function MakeModelFilter({
   const visibleModels = modelOptions.filter((option) => !normalizedModel || normalizeSearchText(option.value).includes(normalizedModel))
   const panelHeight = compact ? 'max-h-[280px]' : 'max-h-[340px]'
   const modelIntro = exactMake
-    ? uiText(locale, 'Models for selected make', 'Modeller för valt märke', 'Modelle der gewählten Marke')
-    : uiText(locale, 'Live model suggestions', 'Liveförslag på modeller', 'Live-Modellvorschläge')
-  const noMakesLabel = uiText(locale, 'No live makes in this selection yet', 'Inga live-märken i detta urval ännu', 'Noch keine Live-Marken in dieser Auswahl')
+    ? uiText(locale, 'Models', 'Modeller', 'Modelle')
+    : uiText(locale, 'Models', 'Modeller', 'Modelle')
+  const noMakesLabel = uiText(locale, 'No makes match this selection', 'Inga märken matchar urvalet', 'Keine Marken passen zu dieser Auswahl')
   const noModelsLabel = make
-    ? uiText(locale, 'No live models for this make yet', 'Inga live-modeller för detta märke ännu', 'Noch keine Live-Modelle für diese Marke')
-    : uiText(locale, 'Type or choose a make to narrow models', 'Skriv eller välj märke för att smalna av modeller', 'Marke eingeben oder wählen, um Modelle einzugrenzen')
+    ? uiText(locale, 'No models match this make', 'Inga modeller matchar märket', 'Keine Modelle passen zu dieser Marke')
+    : uiText(locale, 'Choose a make to narrow the model list', 'Välj ett märke för att avgränsa modellerna', 'Marke wählen, um die Modellliste einzugrenzen')
 
   return (
     <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
-      <div className={`grid gap-3 ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
+      <div className="space-y-1">
+        <p className="text-[15px] font-bold text-[#101828]">{uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')}</p>
+        <p className="text-[12px] font-medium leading-5 text-[#667085]">
+          {uiText(
+            locale,
+            'Search freely or choose from the makes and models available in this category.',
+            'Sök fritt eller välj bland märken och modeller som finns i den här kategorin.',
+            'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
+          )}
+        </p>
+      </div>
+      <div className={`grid gap-2 ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <TextFilterInput
           label={uiText(locale, 'Make', 'Märke', 'Marke')}
           value={make}
@@ -3325,26 +3336,26 @@ function MakeModelFilter({
         />
       </div>
 
-      <div className="rounded-[14px] border border-[#d0d5dd] bg-white p-2 shadow-[0_1px_2px_rgba(16,24,40,.04)] sm:hidden">
-        <div className="mb-2 grid grid-cols-2 gap-1 rounded-[10px] bg-[#f2f4f7] p-1">
+      <div className="rounded-[14px] border border-[#d0d5dd] bg-[#f8fafc] p-2 shadow-[0_1px_2px_rgba(16,24,40,.04)] sm:hidden">
+        <div className="mb-2 grid grid-cols-2 gap-1 rounded-[999px] bg-[#eef2f7] p-1">
           <button
             type="button"
             onClick={() => setMobilePanel('make')}
-            className={`h-9 rounded-[8px] text-[13px] font-bold transition ${mobilePanel === 'make' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+            className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'make' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
           >
             {uiText(locale, 'Makes', 'Märken', 'Marken')}
           </button>
           <button
             type="button"
             onClick={() => setMobilePanel('model')}
-            className={`h-9 rounded-[8px] text-[13px] font-bold transition ${mobilePanel === 'model' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+            className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'model' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
           >
             {uiText(locale, 'Models', 'Modeller', 'Modelle')}
           </button>
         </div>
         {mobilePanel === 'make' ? (
           <OptionSelectionList
-            title={uiText(locale, 'Live makes', 'Live-märken', 'Live-Marken')}
+            title={uiText(locale, 'Makes', 'Märken', 'Marken')}
             options={visibleMakes}
             emptyLabel={noMakesLabel}
             activeValue={make}
@@ -3370,7 +3381,7 @@ function MakeModelFilter({
 
       <div className={`hidden overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white sm:grid ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <OptionSelectionList
-          title={uiText(locale, 'Live makes', 'Live-märken', 'Live-Marken')}
+          title={uiText(locale, 'Makes', 'Märken', 'Marken')}
           options={visibleMakes}
           emptyLabel={noMakesLabel}
           activeValue={make}
@@ -3424,9 +3435,9 @@ function OptionSelectionList({
 
   if (!options.length) {
     return (
-      <div className={`${className} min-h-[120px] overflow-y-auto bg-[#fbfcff] p-3`}>
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0866ff]">{title}</p>
-        <p className="mt-3 rounded-[8px] bg-white px-3 py-2 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]">
+      <div className={`${className} min-h-[120px] overflow-y-auto bg-white p-3`}>
+        <p className="text-[12px] font-bold text-[#101828]">{title}</p>
+        <p className="mt-3 rounded-[10px] bg-[#f8fafc] px-3 py-3 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]">
           {emptyLabel}
         </p>
       </div>
@@ -3434,9 +3445,9 @@ function OptionSelectionList({
   }
 
   return (
-    <div className={`${className} overflow-y-auto bg-[#fbfcff] p-2 [scrollbar-width:thin]`}>
-      <div className="sticky top-0 z-10 bg-[#fbfcff] px-1 pb-2 pt-1">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0866ff]">{title}</p>
+    <div className={`${className} overflow-y-auto bg-white p-2 [scrollbar-width:thin]`}>
+      <div className="sticky top-0 z-10 bg-white px-1 pb-2 pt-1">
+        <p className="text-[12px] font-bold text-[#101828]">{title}</p>
       </div>
       <div className="space-y-1">
         {options.map((option) => {
@@ -3448,12 +3459,12 @@ function OptionSelectionList({
               onClick={() => onSelect(option.value)}
               className={`flex min-h-10 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] font-semibold transition ${
                 active
-                  ? 'bg-[#e8f1ff] text-[#0866ff] ring-1 ring-[#b9d6ff]'
-                  : 'text-[#101828] hover:bg-white hover:ring-1 hover:ring-[#d0d5dd]'
+                  ? 'bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#a8ccff]'
+                  : 'text-[#101828] hover:bg-[#f8fafc] hover:ring-1 hover:ring-[#d0d5dd]'
               }`}
             >
               <span className="min-w-0 flex-1 truncate">{option.label}</span>
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${active ? 'bg-white text-[#0866ff]' : 'bg-[#eef2f7] text-[#667085]'}`}>
+              <span className={`min-w-7 rounded-full px-2 py-0.5 text-center text-[11px] font-bold ${active ? 'bg-white text-[#0866ff]' : 'bg-[#eef2f7] text-[#667085]'}`}>
                 {option.count}
               </span>
               {showChevron ? <ChevronRight className={`h-4 w-4 shrink-0 ${active ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} /> : null}
