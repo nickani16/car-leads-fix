@@ -186,7 +186,7 @@ export default async function AccountListingsPage({
 
 function ListingCard({ listing, locale, accountType, packages, marketing, autoOpen, renderedAt }: {
   listing: ManagedListing
-  locale: string
+  locale: PublicLocale
   accountType: string
   packages: PackageOption[]
   marketing: MarketingOption[]

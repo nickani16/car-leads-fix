@@ -8,6 +8,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 type Profile = {
   account_type: 'private' | 'business'
@@ -73,7 +74,7 @@ export default function ProfileForm({
       body: JSON.stringify(Object.fromEntries(form)),
     })
     const result = (await response.json()) as { error?: string }
-    setMessage(response.ok ? copy.saved : result.error || copy.saveError)
+    setMessage(response.ok ? copy.saved : localizedAccountError(locale, result, copy.saveError))
   }
 
   async function uploadLogo(file?: File) {
@@ -89,7 +90,7 @@ export default function ProfileForm({
     const result = (await response.json()) as { error?: string; logoUrl?: string }
     setLogoUploading(false)
     if (!response.ok || !result.logoUrl) {
-      setMessage(result.error || copy.logoUploadError)
+      setMessage(localizedAccountError(locale, result, copy.logoUploadError))
       return
     }
     setLogoUrl(result.logoUrl)
@@ -107,7 +108,7 @@ export default function ProfileForm({
     const result = (await response.json().catch(() => null)) as { error?: string } | null
     setEmailVerificationLoading(false)
     if (!response.ok) {
-      setEmailVerificationMessage(result?.error || copy.emailCodeSendError)
+      setEmailVerificationMessage(localizedAccountError(locale, result, copy.emailCodeSendError))
       return
     }
     setEmailCodeSent(true)
@@ -131,7 +132,7 @@ export default function ProfileForm({
     const result = (await response.json().catch(() => null)) as { error?: string } | null
     setEmailVerificationLoading(false)
     if (!response.ok) {
-      setEmailVerificationMessage(result?.error || copy.emailCodeVerifyError)
+      setEmailVerificationMessage(localizedAccountError(locale, result, copy.emailCodeVerifyError))
       return
     }
     setEmailVerificationMessage(copy.emailVerifiedNow)

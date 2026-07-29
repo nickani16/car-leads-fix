@@ -61,6 +61,7 @@ import {
   marketplaceMunicipalityLabel,
   marketplaceRegionLabel,
 } from '@/lib/marketplace-locations'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 type StepId = 0 | 1 | 2 | 3 | 4
 type Values = Record<string, string>
@@ -3502,16 +3503,7 @@ function localizedSubmissionError(
   result: ListingCreationError,
   fallback: string,
 ) {
-  const raw = (result.error || '').trim()
-  if (!raw) return fallback
-  if (result.code === 'listing_create_failed') return fallback
-  if (/Annonsen kunde inte skapas|Listing could not be created/i.test(raw)) return fallback
-  if (locale !== 'sv' && looksLikeSwedishApiError(raw)) return fallback
-  return raw
-}
-
-function looksLikeSwedishApiError(value: string) {
-  return /annons|annonspaket|publicering|konto|Kontakta support|försök|fyll i|välj|godkänn|ladda upp/i.test(value)
+  return localizedAccountError(locale, result, fallback)
 }
 
 function localizedVehicleTerm(locale: PublicLocale, english: string) {

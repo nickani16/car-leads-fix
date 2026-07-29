@@ -19,6 +19,8 @@ import {
   listingRequirementsByCategory,
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type EditableListing = {
   id: string
@@ -59,11 +61,14 @@ const swedishMileageFactor = 10
 export default function EditListingForm({
   listing,
   backHref,
+  locale,
 }: {
   listing: EditableListing
   backHref: string
+  locale: PublicLocale
 }) {
   const router = useRouter()
+  const copy = getEditListingFormCopy(locale)
   const [make, setMake] = useState(listing.make)
   const [model, setModel] = useState(listing.model)
   const [variant, setVariant] = useState(listing.variant)
@@ -121,7 +126,7 @@ export default function EditListingForm({
     const response = await fetch(`/api/account/listings/${listing.id}/images`, { method: 'POST', body: form })
     const result = (await response.json().catch(() => ({}))) as { error?: string; images?: string[] }
     setUploadingImages(false)
-    if (!response.ok || !result.images) return setError(result.error || 'Bilderna kunde inte laddas upp.')
+    if (!response.ok || !result.images) return setError(localizedAccountError(locale, result, copy.imagesUploadError))
     setListingImages(result.images)
     router.refresh()
   }
@@ -156,7 +161,7 @@ export default function EditListingForm({
     })
     const result = (await response.json()) as { error?: string }
     if (!response.ok) {
-      setError(result.error || 'Annonsen kunde inte sparas.')
+      setError(localizedAccountError(locale, result, copy.saveError))
       setSaving(false)
       return
     }
@@ -563,6 +568,20 @@ function TechnicalField({
       />
     </label>
   )
+}
+
+function getEditListingFormCopy(locale: PublicLocale) {
+  const en = {
+    imagesUploadError: 'The images could not be uploaded.',
+    saveError: 'The listing could not be saved.',
+  }
+  if (locale === 'sv') {
+    return {
+      imagesUploadError: 'Bilderna kunde inte laddas upp.',
+      saveError: 'Annonsen kunde inte sparas.',
+    }
+  }
+  return translatePublicObject(locale, en)
 }
 
 function isSwedishMileageCountry(country: string) {

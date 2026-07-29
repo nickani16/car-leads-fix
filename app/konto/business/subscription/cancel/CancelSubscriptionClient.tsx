@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 const baseCopy = {
   reasonLabel: 'Reason for cancellation',
@@ -43,7 +44,7 @@ export default function CancelSubscriptionClient({
       setLoading(false)
       return
     }
-    setError(result.error || copy.error)
+    setError(localizedAccountError(locale, result, copy.error))
     setLoading(false)
   }
 

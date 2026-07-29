@@ -6,6 +6,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 export default function DeleteAccountPanel({
   locale,
@@ -34,7 +35,7 @@ export default function DeleteAccountPanel({
       })
       const result = (await response.json()) as { error?: string }
       if (!response.ok) {
-        setMessage(result.error || copy.error)
+        setMessage(localizedAccountError(locale, result, copy.error))
         setIsSubmitting(false)
         return
       }

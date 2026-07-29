@@ -3,6 +3,8 @@
 import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 export type PackageOption = {
   id: string
@@ -54,7 +56,7 @@ export default function ListingStatusActions({
   featuredExpiresAt: string | null
   reviewMessage: string | null
   autoOpen?: boolean
-  locale: string
+  locale: PublicLocale
 }) {
   const router = useRouter()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -106,7 +108,7 @@ export default function ListingStatusActions({
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string }
     setLoading('')
-    if (!response.ok) return setMessage(result.error || text('Annonsen kunde inte uppdateras.', 'The listing could not be updated.'))
+    if (!response.ok) return setMessage(localizedAccountError(locale, result, text('Annonsen kunde inte uppdateras.', 'The listing could not be updated.')))
     after?.()
     router.refresh()
   }
@@ -122,7 +124,7 @@ export default function ListingStatusActions({
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (!response.ok) {
       setLoading('')
-      return setMessage(result.error || text('Paketet kunde inte väljas.', 'The package could not be selected.'))
+      return setMessage(localizedAccountError(locale, result, text('Paketet kunde inte väljas.', 'The package could not be selected.')))
     }
     if (result.url) return window.location.assign(result.url)
     setLoading('')
@@ -143,7 +145,7 @@ export default function ListingStatusActions({
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (result.url) return window.location.assign(result.url)
     setLoading('')
-    setMessage(result.error || text('Köpet kunde inte startas.', 'The purchase could not be started.'))
+    setMessage(localizedAccountError(locale, result, text('Köpet kunde inte startas.', 'The purchase could not be started.')))
   }
 
   async function duplicate() {
@@ -156,12 +158,12 @@ export default function ListingStatusActions({
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string; listingId?: string }
     setLoading('')
-    if (!response.ok || !result.listingId) return setMessage(result.error || text('Annonsen kunde inte dupliceras.', 'The listing could not be duplicated.'))
+    if (!response.ok || !result.listingId) return setMessage(localizedAccountError(locale, result, text('Annonsen kunde inte dupliceras.', 'The listing could not be duplicated.')))
     router.push(`/account/listings/${result.listingId}/edit`)
   }
 
   function text(sv: string, en: string) {
-    return swedish ? sv : en
+    return swedish ? sv : translatePublic(locale, en)
   }
 
   function openPackage() {

@@ -203,7 +203,7 @@ async function BusinessPaymentsPage({
               <h1 className="mt-3 text-4xl font-semibold tracking-[-.045em] text-[#101828]">{copy.title}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085]">{copy.intro}</p>
             </div>
-            {subscription?.stripe_customer_id ? <BillingPortalButton label={copy.openStripe} /> : null}
+            {subscription?.stripe_customer_id ? <BillingPortalButton label={copy.openStripe} locale={locale} /> : null}
           </div>
 
           <div className="mt-7 grid gap-3 md:grid-cols-3">

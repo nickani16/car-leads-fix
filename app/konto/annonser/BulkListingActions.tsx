@@ -3,6 +3,8 @@
 import { LoaderCircle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 const labels: Record<string, string> = {
   pause: 'Pausa',
@@ -10,7 +12,7 @@ const labels: Record<string, string> = {
   mark_sold: 'Markera som sålda',
   delete: 'Ta bort',
 }
-export default function BulkListingActions({ pageItemCount, locale }: { pageItemCount: number; locale: string }) {
+export default function BulkListingActions({ pageItemCount, locale }: { pageItemCount: number; locale: PublicLocale }) {
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [selectedCount, setSelectedCount] = useState(0)
@@ -33,7 +35,7 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
   function requestAction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage('')
-    if (!action || !selectedCount) return setMessage(swedish ? 'Välj annonser och en åtgärd.' : 'Select listings and an action.')
+    if (!action || !selectedCount) return setMessage(text('Välj annonser och en åtgärd.', 'Select listings and an action.'))
     setPendingAction(action)
     dialogRef.current?.showModal()
   }
@@ -51,7 +53,7 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
     setLoading(false)
     if (!response.ok) {
       dialogRef.current?.close()
-      return setMessage(result.error || (swedish ? 'Åtgärden kunde inte genomföras.' : 'The action could not be completed.'))
+      return setMessage(localizedAccountError(locale, result, text('Åtgärden kunde inte genomföras.', 'The action could not be completed.')))
     }
     selectedInputs().forEach((input) => { input.checked = false })
     setSelectedCount(0)
@@ -63,6 +65,10 @@ export default function BulkListingActions({ pageItemCount, locale }: { pageItem
   function togglePage(checked: boolean) {
     document.querySelectorAll<HTMLInputElement>('input[name="listingId"][form="bulk-listing-form"]').forEach((input) => { input.checked = checked })
     setSelectedCount(checked ? pageItemCount : 0)
+  }
+
+  function text(sv: string, en: string) {
+    return swedish ? sv : translatePublic(locale, en)
   }
 
   return (

@@ -21,6 +21,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 type BillingMethod = 'card' | 'invoice'
 
@@ -122,7 +123,7 @@ export default function BusinessPlanChooser({
       window.location.assign(result.url)
       return
     }
-    setError(result.error || copy.paymentError)
+    setError(localizedAccountError(locale, result, copy.paymentError))
     setLoading('')
   }
 

@@ -151,6 +151,7 @@ export default async function ReviewsPage() {
         opportunities={opportunities}
         visibleReviews={visibleReviews}
         copy={copy.panel}
+        locale={locale}
       />
     </main>
   )
@@ -175,6 +176,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
       submitting: 'Submitting...',
       submitted: 'Review submitted for Autorell review.',
       visibleTitle: 'Reviews about you',
+      error: 'Review could not be saved.',
     },
   }
   if (locale === 'sv') {
@@ -197,6 +199,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
         submitting: 'Skickar...',
         submitted: 'Omdömet har skickats för granskning av Autorell.',
         visibleTitle: 'Omdömen om dig',
+        error: 'Omdömet kunde inte sparas.',
       },
     }
   }
@@ -219,6 +222,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
         submitting: 'Wird gesendet...',
         submitted: 'Bewertung wurde zur Prüfung an Autorell gesendet.',
         visibleTitle: 'Bewertungen über Sie',
+        error: 'Die Bewertung konnte nicht gespeichert werden.',
       },
     }
   }

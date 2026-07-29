@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from 'react'
 import { Send } from 'lucide-react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 type TeamInviteFormProps = {
   copy: {
@@ -10,10 +12,12 @@ type TeamInviteFormProps = {
     sendInvite: string
     sending: string
     sent: string
+    invitationError?: string
   }
+  locale: PublicLocale
 }
 
-export default function TeamInviteForm({ copy }: TeamInviteFormProps) {
+export default function TeamInviteForm({ copy, locale }: TeamInviteFormProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('sales')
   const [loading, setLoading] = useState(false)
@@ -33,14 +37,14 @@ export default function TeamInviteForm({ copy }: TeamInviteFormProps) {
       })
       const result = (await response.json()) as { error?: string }
       if (!response.ok) {
-        setError(result.error || 'Invitation could not be sent.')
+        setError(localizedAccountError(locale, result, copy.invitationError || 'Invitation could not be sent.'))
         return
       }
       setEmail('')
       setRole('sales')
       setMessage(copy.sent)
     } catch {
-      setError('Invitation could not be sent.')
+      setError(copy.invitationError || 'Invitation could not be sent.')
     } finally {
       setLoading(false)
     }

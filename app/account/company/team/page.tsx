@@ -24,6 +24,7 @@ const baseCopy = {
   sendInvite: 'Send invitation',
   sending: 'Sending...',
   sent: 'Invitation sent.',
+  invitationError: 'Invitation could not be sent.',
 }
 
 export default async function CompanyTeamPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
@@ -57,7 +58,7 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
               </div>
             ) : null}
           </div>
-          <TeamInviteForm copy={copy} />
+          <TeamInviteForm copy={copy} locale={context.locale} />
         </section>
         <section className="rounded-[16px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
           <div className="grid h-11 w-11 place-items-center rounded-[13px] bg-[#eef5ff] text-[#0866ff]"><Users className="h-5 w-5" /></div>

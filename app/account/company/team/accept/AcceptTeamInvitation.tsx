@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 export default function AcceptTeamInvitation({
   locale,
@@ -36,7 +37,7 @@ export default function AcceptTeamInvitation({
       })
       const result = (await response.json()) as { error?: string; destination?: string }
       if (!response.ok) {
-        setError(response.status === 401 ? copy.signInFirst : result.error || copy.failed)
+        setError(response.status === 401 ? copy.signInFirst : localizedAccountError(locale, result, copy.failed))
         if (response.status === 401) {
           const next = `${window.location.pathname}${window.location.search}`
           window.setTimeout(() => router.push(localizePublicHref(locale, `/login?next=${encodeURIComponent(next)}`)), 500)

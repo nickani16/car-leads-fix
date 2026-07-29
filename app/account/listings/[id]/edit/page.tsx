@@ -96,6 +96,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           </p>
         </div>
         <EditListingForm
+          locale={locale}
           listing={{
             id: listing.id,
             category,
