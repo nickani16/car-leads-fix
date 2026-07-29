@@ -3291,12 +3291,13 @@ function MakeModelFilter({
   onModelChange: (value: string) => void
   compact?: boolean
 }) {
+  const [mobilePanel, setMobilePanel] = useState<'make' | 'model'>('make')
   const normalizedMake = normalizeSearchText(make)
   const normalizedModel = normalizeSearchText(model)
   const exactMake = makeOptions.find((option) => normalizeSearchText(option.value) === normalizedMake)
   const visibleMakes = makeOptions.filter((option) => !normalizedMake || normalizeSearchText(option.value).includes(normalizedMake))
   const visibleModels = modelOptions.filter((option) => !normalizedModel || normalizeSearchText(option.value).includes(normalizedModel))
-  const panelHeight = compact ? 'max-h-[260px]' : 'max-h-[320px]'
+  const panelHeight = compact ? 'max-h-[280px]' : 'max-h-[340px]'
   const modelIntro = exactMake
     ? uiText(locale, 'Models for selected make', 'Modeller för valt märke', 'Modelle der gewählten Marke')
     : uiText(locale, 'Live model suggestions', 'Liveförslag på modeller', 'Live-Modellvorschläge')
@@ -3314,6 +3315,7 @@ function MakeModelFilter({
           onChange={(value) => {
             onMakeChange(value)
             if (!value.trim()) onModelChange('')
+            setMobilePanel(value.trim() ? 'model' : 'make')
           }}
         />
         <TextFilterInput
@@ -3322,7 +3324,51 @@ function MakeModelFilter({
           onChange={onModelChange}
         />
       </div>
-      <div className={`grid overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
+
+      <div className="rounded-[14px] border border-[#d0d5dd] bg-white p-2 shadow-[0_1px_2px_rgba(16,24,40,.04)] sm:hidden">
+        <div className="mb-2 grid grid-cols-2 gap-1 rounded-[10px] bg-[#f2f4f7] p-1">
+          <button
+            type="button"
+            onClick={() => setMobilePanel('make')}
+            className={`h-9 rounded-[8px] text-[13px] font-bold transition ${mobilePanel === 'make' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+          >
+            {uiText(locale, 'Makes', 'Märken', 'Marken')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePanel('model')}
+            className={`h-9 rounded-[8px] text-[13px] font-bold transition ${mobilePanel === 'model' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+          >
+            {uiText(locale, 'Models', 'Modeller', 'Modelle')}
+          </button>
+        </div>
+        {mobilePanel === 'make' ? (
+          <OptionSelectionList
+            title={uiText(locale, 'Live makes', 'Live-märken', 'Live-Marken')}
+            options={visibleMakes}
+            emptyLabel={noMakesLabel}
+            activeValue={make}
+            onSelect={(value) => {
+              onMakeChange(value)
+              onModelChange('')
+              setMobilePanel('model')
+            }}
+            className="max-h-[300px]"
+            showChevron
+          />
+        ) : (
+          <OptionSelectionList
+            title={modelIntro}
+            options={visibleModels}
+            emptyLabel={noModelsLabel}
+            activeValue={model}
+            onSelect={onModelChange}
+            className="max-h-[300px]"
+          />
+        )}
+      </div>
+
+      <div className={`hidden overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white sm:grid ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
         <OptionSelectionList
           title={uiText(locale, 'Live makes', 'Live-märken', 'Live-Marken')}
           options={visibleMakes}
@@ -3331,6 +3377,7 @@ function MakeModelFilter({
           onSelect={(value) => {
             onMakeChange(value)
             onModelChange('')
+            setMobilePanel('model')
           }}
           className={`${panelHeight} border-b border-[#eaecf0] sm:border-b-0 sm:border-r`}
           showChevron
@@ -3344,7 +3391,7 @@ function MakeModelFilter({
           className={panelHeight}
         />
       </div>
-      <p className="text-[11px] font-medium leading-4 text-[#667085]">
+      <p className="hidden text-[11px] font-medium leading-4 text-[#667085] sm:block">
         {uiText(
           locale,
           'The lists are built automatically from live listings in the selected category and market. You can still type a custom make or model.',
