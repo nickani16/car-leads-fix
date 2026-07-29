@@ -40,6 +40,7 @@ const internalSeoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slu
 const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', import.meta.url), 'utf8')
 const seoRoutesSource = readFileSync(new URL('../lib/seo-routes.ts', import.meta.url), 'utf8')
 const marketplacePublicDataSource = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
+const manualPublicTranslationsSource = readFileSync(new URL('../lib/manual-public-translations.ts', import.meta.url), 'utf8')
 const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const migrationSource = readFileSync(
   new URL('../supabase/migrations/20260727110000_marketplace_geo_search_state.sql', import.meta.url),
@@ -318,6 +319,32 @@ test('marketplace price filters use the active market currency instead of hardco
   assert.match(searchRouteSource, /input\.minPrice = ''[\s\S]*input\.maxPrice = ''/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /unit="SEK"/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /\+ ' SEK'/)
+})
+
+test('marketplace range and select filters localize short UI labels', () => {
+  assert.match(vehicleSearchExperienceSource, /function RangeFilter\(\{\s*locale,/)
+  assert.match(vehicleSearchExperienceSource, /const clearLabel = translatePublic\(locale, 'Clear'\)/)
+  assert.match(vehicleSearchExperienceSource, /const minLabel = translatePublic\(locale, 'Min'\)/)
+  assert.match(vehicleSearchExperienceSource, /const maxLabel = translatePublic\(locale, 'Max'\)/)
+  assert.match(vehicleSearchExperienceSource, /<FilterInput label=\{minLabel\}/)
+  assert.match(vehicleSearchExperienceSource, /<FilterInput label=\{maxLabel\}/)
+  assert.match(vehicleSearchExperienceSource, /function FilterSelect\(\{\s*locale,/)
+  assert.match(vehicleSearchExperienceSource, /<option value="">\{translatePublic\(locale, 'All'\)\}<\/option>/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, />\s*Rensa\s*</)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /<option value="">Alla<\/option>/)
+
+  assert.match(manualPublicTranslationsSource, /const marketplaceFilterTranslations/)
+  assert.match(manualPublicTranslationsSource, /const marketplaceFilter = marketplaceFilterTranslations\[normalizedLocale\]/)
+  assert.match(manualPublicTranslationsSource, /if \(marketplaceFilter\?\.\[value\]\) return marketplaceFilter\[value\]/)
+  for (const locale of ['sv', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'da', 'fi']) {
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*Clear:`), `${locale} should translate Clear`)
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*All:`), `${locale} should translate All`)
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Clear filters':`), `${locale} should translate Clear filters`)
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*Mileage:`), `${locale} should translate Mileage`)
+  }
+  assert.match(manualPublicTranslationsSource, /fi: \{[\s\S]*Clear: 'Tyhjennä'/)
+  assert.match(manualPublicTranslationsSource, /fi: \{[\s\S]*Price: 'Hinta'/)
+  assert.match(manualPublicTranslationsSource, /fi: \{[\s\S]*Mileage: 'Kilometrit'/)
 })
 
 test('marketplace cards and listing detail show stable rounded offer status', () => {

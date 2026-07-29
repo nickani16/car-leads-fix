@@ -1881,6 +1881,7 @@ export default function VehicleSearchExperience({
         {entries.map(([key, options]) => (
           <FilterSelect
             key={key}
+            locale={locale}
             label={technicalFacetLabel(key)}
             value={technicalFilters[key] || ''}
             onChange={(value) => setTechnicalFilters((current) => ({ ...current, ...(value ? { [key]: value } : (() => { const next = { ...current }; delete next[key]; return next })()) }))}
@@ -1914,6 +1915,7 @@ export default function VehicleSearchExperience({
       return (
         <RangeFilter
           key={filter.key}
+          locale={locale}
           title={filterLabel(filter, locale)}
           minValue={minMileage}
           maxValue={maxMileage}
@@ -1930,6 +1932,7 @@ export default function VehicleSearchExperience({
       return (
         <RangeFilter
           key={filter.key}
+          locale={locale}
           title={filterLabel(filter, locale)}
           minValue={minOperatingHours}
           maxValue={maxOperatingHours}
@@ -1943,19 +1946,19 @@ export default function VehicleSearchExperience({
       )
     }
     if (filter.key === 'fuel') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={fuel} onChange={setFuel} options={categoryScopedOptions(categoryKey, 'fuelType')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={fuel} onChange={setFuel} options={categoryScopedOptions(categoryKey, 'fuelType')} />
     }
     if (filter.key === 'gearbox') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={gearbox} onChange={setGearbox} options={categoryScopedOptions(categoryKey, 'gearbox')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={gearbox} onChange={setGearbox} options={categoryScopedOptions(categoryKey, 'gearbox')} />
     }
     if (filter.key === 'bodyType') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={bodyType} onChange={setBodyType} options={categoryScopedOptions(categoryKey, 'bodyType')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={bodyType} onChange={setBodyType} options={categoryScopedOptions(categoryKey, 'bodyType')} />
     }
     if (filter.key === 'condition') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={condition} onChange={setCondition} options={categoryScopedOptions(categoryKey, 'condition')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={condition} onChange={setCondition} options={categoryScopedOptions(categoryKey, 'condition')} />
     }
     if (filter.key === 'color') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={color} onChange={setColor} options={categoryScopedOptions(categoryKey, 'color')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={color} onChange={setColor} options={categoryScopedOptions(categoryKey, 'color')} />
     }
     if (filter.key === 'fourWheelDrive') {
       return <ToggleFilter key={filter.key} label={filterLabel(filter, locale)} checked={fourWheelDrive} onChange={setFourWheelDrive} />
@@ -2003,6 +2006,7 @@ export default function VehicleSearchExperience({
           />
           <div className="grid gap-3 sm:col-span-2">
             <RangeFilter
+              locale={locale}
               title={uiText(locale, 'Price', 'Pris', 'Preis')}
               minValue={minPrice}
               maxValue={maxPrice}
@@ -2014,6 +2018,7 @@ export default function VehicleSearchExperience({
               step={1000}
             />
             <RangeFilter
+              locale={locale}
               title={translatePublic(locale, 'Model year')}
               minValue={minYear}
               maxValue={maxYear}
@@ -2080,12 +2085,14 @@ export default function VehicleSearchExperience({
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <FilterSelect
+            locale={locale}
             label={uiText(locale, 'County', 'L\u00e4n', 'Region')}
             value={region}
             onChange={updateRegionFilter}
             options={regionOptions}
           />
           <FilterSelect
+            locale={locale}
             label={uiText(locale, 'Municipality', 'Kommun', 'Kommune')}
             value={municipality}
             onChange={updateMunicipalityFilter}
@@ -2243,6 +2250,7 @@ export default function VehicleSearchExperience({
             {renderDesktopFilterPopover('price', (
               <div className="space-y-4">
                 <RangeFilter
+                  locale={locale}
                   title={uiText(locale, 'Price', 'Pris', 'Preis')}
                   minValue={minPrice}
                   maxValue={maxPrice}
@@ -2265,6 +2273,7 @@ export default function VehicleSearchExperience({
             {renderDesktopFilterPopover('year', (
               <div className="space-y-4">
                 <RangeFilter
+                  locale={locale}
                   title={translatePublic(locale, 'Model year')}
                   minValue={minYear}
                   maxValue={maxYear}
@@ -2287,6 +2296,7 @@ export default function VehicleSearchExperience({
             {renderDesktopFilterPopover('mileage', (
               <div className="space-y-4">
                 <RangeFilter
+                  locale={locale}
                   title={uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}
                   minValue={minMileage}
                   maxValue={maxMileage}
@@ -2633,6 +2643,7 @@ export default function VehicleSearchExperience({
                       >
                         <div className="grid gap-3">
                           <RangeFilter
+                            locale={locale}
                             title={uiText(locale, 'Price', 'Pris', 'Preis')}
                             minValue={minPrice}
                             maxValue={maxPrice}
@@ -2644,6 +2655,7 @@ export default function VehicleSearchExperience({
                             step={1000}
                           />
                           <RangeFilter
+                            locale={locale}
                             title={translatePublic(locale, 'Model year')}
                             minValue={minYear}
                             maxValue={maxYear}
@@ -2664,8 +2676,9 @@ export default function VehicleSearchExperience({
                       onToggle={() => setSellerFiltersOpen((open) => !open)}
                     >
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                        <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
                         <FilterSelect
+                          locale={locale}
                           label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                           value={sellerType}
                           onChange={setSellerType}
@@ -3085,6 +3098,7 @@ export default function VehicleSearchExperience({
                     >
                       <div className="grid gap-3">
                         <RangeFilter
+                          locale={locale}
                           title={uiText(locale, 'Price', 'Pris', 'Preis')}
                           minValue={minPrice}
                           maxValue={maxPrice}
@@ -3096,6 +3110,7 @@ export default function VehicleSearchExperience({
                           step={1000}
                         />
                         <RangeFilter
+                          locale={locale}
                           title={translatePublic(locale, 'Model year')}
                           minValue={minYear}
                           maxValue={maxYear}
@@ -3116,8 +3131,9 @@ export default function VehicleSearchExperience({
                     onToggle={() => setSellerFiltersOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                      <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
                       <FilterSelect
+                        locale={locale}
                         label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                         value={sellerType}
                         onChange={setSellerType}
@@ -3650,6 +3666,7 @@ function OptionSelectionList({
   )
 }
 function RangeFilter({
+  locale,
   title,
   minValue,
   maxValue,
@@ -3661,6 +3678,7 @@ function RangeFilter({
   step,
   startLabel,
 }: {
+  locale: PublicLocale
   title: string
   minValue: string
   maxValue: string
@@ -3686,6 +3704,9 @@ function RangeFilter({
   const lowerPercent = ((lowerValue - safeMinLimit) / rangeSpan) * 100
   const upperPercent = ((upperValue - safeMinLimit) / rangeSpan) * 100
   const trackBackground = `linear-gradient(to right, #e8eef6 0%, #e8eef6 ${lowerPercent}%, #0866ff ${lowerPercent}%, #0866ff ${upperPercent}%, #e8eef6 ${upperPercent}%, #e8eef6 100%)`
+  const clearLabel = translatePublic(locale, 'Clear')
+  const minLabel = translatePublic(locale, 'Min')
+  const maxLabel = translatePublic(locale, 'Max')
 
   const normalizeMinChange = useCallback((nextValue: string) => {
     const nextNumber = clampNumber(Number(nextValue), safeMinLimit, upperValue)
@@ -3744,7 +3765,7 @@ function RangeFilter({
             }}
             className="text-xs font-semibold text-[#0866ff]"
           >
-            Rensa
+            {clearLabel}
           </button>
         ) : null}
       </div>
@@ -3795,19 +3816,21 @@ function RangeFilter({
         <span>{formatFilterNumber(upperValue)}{unit ? ` ${unit}` : ''}{!maxValue ? '+' : ''}</span>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <FilterInput label="Min" value={minValue} onChange={onMinChange} suffix={unit} />
-        <FilterInput label="Max" value={maxValue} onChange={onMaxChange} suffix={unit} />
+        <FilterInput label={minLabel} value={minValue} onChange={onMinChange} suffix={unit} />
+        <FilterInput label={maxLabel} value={maxValue} onChange={onMaxChange} suffix={unit} />
       </div>
     </section>
   )
 }
 
 function FilterSelect({
+  locale,
   label,
   value,
   onChange,
   options,
 }: {
+  locale: PublicLocale
   label: string
   value: string
   onChange: (value: string) => void
@@ -3821,7 +3844,7 @@ function FilterSelect({
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-[12px] font-normal outline-none transition focus:border-[#0866ff]"
       >
-        <option value="">Alla</option>
+        <option value="">{translatePublic(locale, 'All')}</option>
         {options.map((option) => {
           const optionValue = typeof option === 'string' ? option : option.value
           const optionLabel = typeof option === 'string' ? option : option.label
