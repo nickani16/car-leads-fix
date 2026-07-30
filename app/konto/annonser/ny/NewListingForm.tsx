@@ -78,6 +78,20 @@ type GeoPlaceOption = {
   postalCode: string | null
   source?: 'verified'
 }
+type CompanyLocationOption = {
+  id: string
+  name: string
+  locationType: string
+  countryCode: string
+  region: string
+  municipality: string
+  city: string
+  postalCode: string
+  addressLine1: string
+  contactEmail: string
+  contactPhone: string
+  isPrimary: boolean
+}
 type UploadImage = {
   id: string
   file: File
@@ -126,6 +140,7 @@ export default function NewListingForm({
   defaultCurrency,
   defaultCategory,
   locale,
+  companyLocations = [],
 }: {
   accountType: 'private' | 'business'
   countryCode: string
@@ -133,6 +148,7 @@ export default function NewListingForm({
   defaultCurrency: SupportedCurrency
   defaultCategory: string
   locale: PublicLocale
+  companyLocations?: CompanyLocationOption[]
 }) {
   const [step, setStep] = useState<StepId>(0)
   const listingCountryCode = countryCode.toUpperCase()
@@ -161,6 +177,7 @@ export default function NewListingForm({
   const [placeQuery, setPlaceQuery] = useState('')
   const [geoPlaceCode, setGeoPlaceCode] = useState('')
   const [locationSource, setLocationSource] = useState<'verified' | 'manual' | ''>('')
+  const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const draftRestored = useRef(false)
   const draftImagesRestored = useRef(false)
@@ -385,6 +402,24 @@ export default function NewListingForm({
       ...current,
       municipality: value,
       city: current.city || value,
+    }))
+  }
+
+  function changeCompanyLocation(locationId: string) {
+    setSelectedCompanyLocationId(locationId)
+    const location = companyLocations.find((item) => item.id === locationId)
+    if (!location) return
+    setGeoPlaceCode('')
+    setLocationSource('manual')
+    setPlaceQuery(location.municipality || location.city || '')
+    setValues((current) => ({
+      ...current,
+      county: location.region || current.county || '',
+      municipality: location.municipality || location.city || current.municipality || '',
+      city: location.city || current.city || '',
+      postalCode: location.postalCode || current.postalCode || '',
+      addressLine1: location.addressLine1 || current.addressLine1 || '',
+      sellerCountryCode: location.countryCode || current.sellerCountryCode || listingCountryCode,
     }))
   }
 
@@ -776,6 +811,21 @@ export default function NewListingForm({
               <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
             ) : null}
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
+            {accountType === 'business' && companyLocations.length ? (
+              <SelectNative
+                name="companyLocation"
+                label={copy.companyLocation}
+                value={selectedCompanyLocationId}
+                onValueChange={(_, value) => changeCompanyLocation(value)}
+              >
+                <option value="">{copy.chooseCompanyLocation}</option>
+                {companyLocations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {[location.name, location.city].filter(Boolean).join(' - ')}
+                  </option>
+                ))}
+              </SelectNative>
+            ) : null}
             <SelectNative
               name="county"
               label={marketplaceRegionLabel(listingCountryCode, locale)}
@@ -2395,6 +2445,8 @@ function getListingFormCopy(locale: PublicLocale) {
     price: 'Price',
     currency: 'Currency',
     country: 'Country',
+    companyLocation: 'Company branch',
+    chooseCompanyLocation: 'Choose saved branch',
     county: 'Region',
     city: 'City',
     municipality: 'Municipality',
@@ -2506,6 +2558,8 @@ function getListingFormCopy(locale: PublicLocale) {
       price: 'Pris',
       currency: 'Valuta',
       country: 'Land',
+      companyLocation: 'Företagsfilial',
+      chooseCompanyLocation: 'Välj sparad filial',
       county: 'Län',
       city: 'Ort',
       municipality: 'Kommun',
@@ -2622,6 +2676,8 @@ function getListingFormCopy(locale: PublicLocale) {
       publishBatch: 'Warteschlange veröffentlichen',
       batchCount: '{count} Anzeigen bereit',
       removeFromBatch: 'Aus Warteschlange entfernen',
+      companyLocation: 'Unternehmensstandort',
+      chooseCompanyLocation: 'Gespeicherten Standort wählen',
       volumeOffers: [
         { title: '3 für 2', text: 'Gut für kleinere Pakete und wiederkehrende Verkäufer.' },
         { title: '6 für 4', text: 'Besserer Preis bei größerem Bestand.' },

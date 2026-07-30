@@ -1,8 +1,9 @@
-import { Building2, CheckCircle2, MapPin, Plus, Route, Store, type LucideIcon } from 'lucide-react'
+import { Building2, CheckCircle2, MapPin, Route, Store, type LucideIcon } from 'lucide-react'
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { CompanyLocationForm } from './CompanyLocationForm'
 
 export const generateMetadata = generateAccountMetadata('company-locations')
 
@@ -36,11 +37,25 @@ const baseCopy = {
   noLocationsTitle: 'No separate branches yet',
   noLocationsText: 'Start with the company profile as the main location. Branch inventory can be split into separate locations as the dealership grows.',
   addBranch: 'Add branch',
-  comingNext: 'Creation and editing opens after the company location table is active in production.',
+  comingNext: 'Create branches here and use the same branch names in manual listings or CSV imports.',
   routingTitle: 'How this helps larger dealers',
   routingText: 'Each branch can keep its own city, municipality, address and contact details. Listings can then be routed to the right sales team and shown more accurately in marketplace filters, maps and company pages.',
   dataTitle: 'Branch data model',
   dataText: 'The database foundation is ready for headquarters, branches, showrooms, storage and service locations with address, geo and contact fields.',
+  formIntro: 'Add one physical place at a time. For groups with many locations, use the same names in the CSV branch column.',
+  name: 'Name',
+  type: 'Type',
+  countryCode: 'Country code',
+  region: 'Region',
+  municipality: 'Municipality',
+  city: 'City',
+  postalCode: 'Postal code',
+  addressLine1: 'Street address',
+  contactEmail: 'Contact email',
+  contactPhone: 'Contact phone',
+  saveBranch: 'Save branch',
+  saving: 'Saving',
+  saved: 'Branch saved',
 }
 
 export default async function CompanyLocationsPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
@@ -73,10 +88,6 @@ export default async function CompanyLocationsPage({ localeOverride }: { localeO
         <div className="rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold tracking-[-.025em] text-[#101828]">{copy.title}</h2>
-            <button type="button" disabled className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white opacity-60">
-              <Plus className="h-4 w-4" />
-              {copy.addBranch}
-            </button>
           </div>
           <p className="mt-2 text-sm leading-6 text-[#667085]">{copy.comingNext}</p>
           <div className="mt-5 grid gap-3">
@@ -93,6 +104,7 @@ export default async function CompanyLocationsPage({ localeOverride }: { localeO
         </div>
 
         <aside className="grid gap-4">
+          <CompanyLocationForm copy={copy} defaultCountryCode={(context.profile.country_code || 'SE').toUpperCase()} />
           <InfoCard icon={Route} title={copy.routingTitle} text={copy.routingText} />
           <InfoCard icon={Building2} title={copy.dataTitle} text={copy.dataText} />
         </aside>

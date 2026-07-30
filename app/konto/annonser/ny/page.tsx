@@ -42,7 +42,7 @@ export async function renderNewListingPage({
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,country_code')
+    .select('account_type,country_code,company_id')
     .eq('user_id', user.id)
     .single()
   if (!profile) redirect(localizePublicHref(locale, '/register'))
@@ -74,6 +74,9 @@ export async function renderNewListingPage({
       ? currencyForCountry(listingCountryCode)
       : currencyForLocale(locale)
   const copy = getNewListingPageCopy(locale)
+  const companyLocations = profile.account_type === 'business'
+    ? await loadCompanyLocations(admin, profile.company_id)
+    : []
 
   return (
     <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
@@ -111,6 +114,7 @@ export async function renderNewListingPage({
               defaultCurrency={listingCurrency}
               defaultCategory={category}
               locale={locale}
+              companyLocations={companyLocations}
             />
           </div>
         </div>
@@ -118,6 +122,37 @@ export async function renderNewListingPage({
       </div>
     </main>
   )
+}
+
+async function loadCompanyLocations(admin: ReturnType<typeof createAdminClient>, companyId: string | null) {
+  if (!companyId) return []
+  try {
+    const { data, error } = await admin
+      .from('marketplace_company_locations')
+      .select('id,name,location_type,country_code,region,municipality,city,postal_code,address_line_1,contact_email,contact_phone,is_primary')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .order('is_primary', { ascending: false })
+      .order('name', { ascending: true })
+      .limit(250)
+    if (error || !data) return []
+    return data.map((item) => ({
+      id: String(item.id),
+      name: String(item.name || ''),
+      locationType: String(item.location_type || 'branch'),
+      countryCode: String(item.country_code || ''),
+      region: String(item.region || ''),
+      municipality: String(item.municipality || ''),
+      city: String(item.city || ''),
+      postalCode: String(item.postal_code || ''),
+      addressLine1: String(item.address_line_1 || ''),
+      contactEmail: String(item.contact_email || ''),
+      contactPhone: String(item.contact_phone || ''),
+      isPrimary: Boolean(item.is_primary),
+    }))
+  } catch {
+    return []
+  }
 }
 
 function getNewListingPageCopy(locale: PublicLocale) {

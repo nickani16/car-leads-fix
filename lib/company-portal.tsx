@@ -86,7 +86,7 @@ const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideI
   { key: 'overview', href: '/account/company', icon: LayoutDashboard },
   { key: 'listings', href: '/account/company/listings', icon: FileText },
   { key: 'create', href: '/account/company/listings/create', icon: Plus },
-  { key: 'import', href: '/account/company/import', icon: Upload, requiredPlan: 'Growth' },
+  { key: 'import', href: '/account/company/import', icon: Upload },
   { key: 'analytics', href: '/account/company/analytics', icon: BarChart3 },
   { key: 'locations', href: '/account/company/locations', icon: MapPin },
   { key: 'team', href: '/account/company/team', icon: Users, requiredPlan: 'Growth' },

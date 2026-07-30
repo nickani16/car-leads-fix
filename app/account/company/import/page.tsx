@@ -1,4 +1,4 @@
-import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
+import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { CompanyImportClient } from './CompanyImportClient'
@@ -8,7 +8,6 @@ export const generateMetadata = generateAccountMetadata('company-import')
 const baseCopy = {
   title: 'Import listings',
   description: 'Prepare many listings at once with a structured template. Valid rows become drafts and reserve the company quota for the current billing period.',
-  lockedText: 'Bulk import is available from Growth because it can create many listings and must respect quota, moderation and image requirements.',
   templateTitle: 'Structured import template',
   templateText: 'Download the CSV template, fill in one row per vehicle and keep the original reference number so your team can track the draft later.',
   downloadTemplate: 'Download CSV template',
@@ -32,19 +31,12 @@ const baseCopy = {
   quota: 'Period quota',
   created: 'Drafts created',
   openListings: 'Open listings',
+  quotaNote: 'Imports follow the company listing quota. Free company accounts can import drafts within the included active listing limit.',
 }
 
 export default async function CompanyImportPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
   const copy = translatePublicObject(context.locale, baseCopy)
-  const plan = String(context.subscription?.plan_key || 'free')
-  if (!planAllows(plan, 'growth')) {
-    return (
-      <CompanyPortalShell context={context} active="import" title={copy.title} description={copy.description}>
-        <LockedFeature locale={context.locale} requiredPlan="Growth" text={copy.lockedText} />
-      </CompanyPortalShell>
-    )
-  }
 
   return (
     <CompanyPortalShell context={context} active="import" title={copy.title} description={copy.description}>

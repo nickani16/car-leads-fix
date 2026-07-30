@@ -17,6 +17,7 @@ type ImportRow = {
     currency: string
     countryCode: string
     city: string
+    branchName: string | null
   }
 }
 
@@ -64,6 +65,7 @@ type Copy = {
   quota: string
   created: string
   openListings: string
+  quotaNote: string
 }
 
 export function CompanyImportClient({
@@ -119,6 +121,7 @@ export function CompanyImportClient({
           </div>
           <h2 className="mt-4 text-xl font-semibold tracking-[-.025em] text-[#101828]">{copy.templateTitle}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{copy.templateText}</p>
+          <p className="mt-3 rounded-[12px] bg-[#f8fbff] px-3 py-2 text-sm font-medium leading-6 text-[#475467]">{copy.quotaNote}</p>
           <a href="/templates/autorell-business-import.csv" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">
             <FileSpreadsheet className="h-4 w-4" />
             {copy.downloadTemplate}
@@ -224,7 +227,10 @@ export function CompanyImportClient({
                     </td>
                     <td className="px-5 py-4 text-[#475467]">{row.data.category}</td>
                     <td className="px-5 py-4 text-[#475467]">{row.data.price ? `${row.data.price} ${row.data.currency}` : '-'}</td>
-                    <td className="px-5 py-4 text-[#475467]">{row.data.city}, {row.data.countryCode}</td>
+                    <td className="px-5 py-4 text-[#475467]">
+                      <p>{row.data.city}, {row.data.countryCode}</p>
+                      {row.data.branchName ? <p className="mt-1 text-xs font-semibold text-[#0866ff]">{row.data.branchName}</p> : null}
+                    </td>
                     <td className="px-5 py-4">
                       {row.valid ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-2.5 py-1 text-xs font-bold text-[#0866ff]">

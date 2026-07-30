@@ -10,7 +10,6 @@ import {
   reserveBusinessListingQuota,
 } from '@/lib/billing/business-limits'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
-import { planAllows } from '@/lib/company-portal'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -31,7 +30,8 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) return NextResponse.json({ error: 'CSV file is required.' }, { status: 400 })
     if (file.size > COMPANY_IMPORT_MAX_FILE_SIZE) return NextResponse.json({ error: 'CSV file is too large.' }, { status: 413 })
 
-    const preview = parseCompanyListingImportCsv(await file.text())
+    const branches = await loadCompanyBranches(access.profile.company_id)
+    const preview = parseCompanyListingImportCsv(await file.text(), { branches })
     if (preview.errors.length || preview.invalidRows || !preview.validRows) {
       return NextResponse.json({ error: 'Fix validation errors before importing.', ...preview }, { status: 422 })
     }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
       const { data: listing, error } = await admin
         .from('marketplace_listings')
-        .insert(toListingInsert(row, user.id, access.profile.company_name || 'Autorell'))
+        .insert(toListingInsert(row, user.id, access.profile.company_name || 'Autorell', branches))
         .select('id,status,review_status,reference_number,listing_number')
         .single()
 
@@ -113,7 +113,10 @@ export async function POST(request: Request) {
   }
 }
 
-function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerName: string) {
+function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerName: string, branches: Awaited<ReturnType<typeof loadCompanyBranches>>) {
+  const branch = row.data.branchName
+    ? branches.find((item) => normalizeBranchKey(item.name) === normalizeBranchKey(row.data.branchName))
+    : null
   return {
     seller_user_id: userId,
     category: row.data.category,
@@ -126,10 +129,10 @@ function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerNam
     mileage_km: row.data.mileageKm,
     body_type: row.data.category,
     condition: 'used',
-    country_code: row.data.countryCode,
-    country: row.data.countryCode,
-    city: row.data.city,
-    municipality: row.data.municipality,
+    country_code: branch?.country_code || row.data.countryCode,
+    country: branch?.country_code || row.data.countryCode,
+    city: branch?.city || row.data.city,
+    municipality: branch?.municipality || row.data.municipality,
     price: row.data.price,
     currency: row.data.currency,
     images: [],
@@ -142,6 +145,13 @@ function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerNam
     risk_flags: [],
     package_id: 'free_7d',
     priority: 0,
+    address: branch?.address_line_1 || null,
+    postal_code: branch?.postal_code || null,
+    structured_data: {
+      import_source: 'company_csv',
+      branch_name: branch?.name || row.data.branchName || null,
+      branch_id: branch?.id || null,
+    },
   }
 }
 
@@ -162,10 +172,6 @@ async function getImportAccess(userId: string) {
   if (!entitlement.allowed) {
     return { allowed: false as const, status: 403, error: entitlement.code, code: entitlement.code }
   }
-  if (!planAllows(entitlement.planKey, 'growth')) {
-    return { allowed: false as const, status: 403, error: 'Bulk import requires Growth, Professional or Enterprise.' }
-  }
-
   return {
     allowed: true as const,
     profile,
@@ -177,4 +183,25 @@ async function getImportAccess(userId: string) {
       remaining: Math.max(0, entitlement.activeListingLimit - entitlement.activeListingCount),
     },
   }
+}
+
+async function loadCompanyBranches(companyId: string | null | undefined) {
+  if (!companyId) return []
+  try {
+    const admin = createAdminClient()
+    const { data, error } = await admin
+      .from('marketplace_company_locations')
+      .select('id,name,country_code,region,municipality,city,postal_code,address_line_1,contact_email,contact_phone,is_active')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .limit(250)
+    if (error || !data) return []
+    return data
+  } catch {
+    return []
+  }
+}
+
+function normalizeBranchKey(value: string | null | undefined) {
+  return String(value || '').trim().toLowerCase()
 }
