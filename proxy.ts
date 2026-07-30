@@ -44,6 +44,7 @@ const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
+const MARKET_SELECTION_PARAM = 'market'
 type RateBucket = {
   count: number
   resetAt: number
@@ -205,6 +206,200 @@ const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
   FI: 'fi',
   DK: 'da',
   BE: 'be',
+}
+
+const MARKET_CATEGORY_SEGMENTS: Record<string, Record<string, string>> = {
+  se: {
+    bilar: 'cars',
+    transportbilar: 'vans',
+    motorcyklar: 'motorcycles',
+    husbilar: 'motorhomes',
+    husvagnar: 'caravans',
+    lastbilar: 'trucks',
+    lantbruksmaskiner: 'agriculture',
+    entreprenadmaskiner: 'construction',
+    cyklar: 'electric-bikes',
+    leasingbilar: 'cars',
+    leasingtransportbilar: 'vans',
+    leasinglastbilar: 'trucks',
+    leasinglantbruksmaskiner: 'agriculture',
+    leasingentreprenadmaskiner: 'construction',
+  },
+  de: {
+    autos: 'cars',
+    transporter: 'vans',
+    motorraeder: 'motorcycles',
+    wohnmobile: 'motorhomes',
+    wohnwagen: 'caravans',
+    lkw: 'trucks',
+    landmaschinen: 'agriculture',
+    baumaschinen: 'construction',
+    fahrraeder: 'electric-bikes',
+    leasingautos: 'cars',
+    leasingtransporter: 'vans',
+    leasinglkw: 'trucks',
+    leasinglandmaschinen: 'agriculture',
+    leasingbaumaschinen: 'construction',
+  },
+  at: {
+    autos: 'cars',
+    transporter: 'vans',
+    motorraeder: 'motorcycles',
+    wohnmobile: 'motorhomes',
+    wohnwagen: 'caravans',
+    lkw: 'trucks',
+    landmaschinen: 'agriculture',
+    baumaschinen: 'construction',
+    fahrraeder: 'electric-bikes',
+    leasingautos: 'cars',
+    leasingtransporter: 'vans',
+    leasinglkw: 'trucks',
+    leasinglandmaschinen: 'agriculture',
+    leasingbaumaschinen: 'construction',
+  },
+  fr: {
+    voitures: 'cars',
+    utilitaires: 'vans',
+    motos: 'motorcycles',
+    'camping-cars': 'motorhomes',
+    caravanes: 'caravans',
+    camions: 'trucks',
+    'machines-agricoles': 'agriculture',
+    'engins-chantier': 'construction',
+    'velos-electriques': 'electric-bikes',
+    'leasing-voitures': 'cars',
+    'leasing-utilitaires': 'vans',
+    'leasing-camions': 'trucks',
+    'leasing-machines-agricoles': 'agriculture',
+    'leasing-engins-chantier': 'construction',
+  },
+  it: {
+    auto: 'cars',
+    furgoni: 'vans',
+    moto: 'motorcycles',
+    camper: 'motorhomes',
+    caravan: 'caravans',
+    autocarri: 'trucks',
+    'macchine-agricole': 'agriculture',
+    'macchine-edili': 'construction',
+    'bici-elettriche': 'electric-bikes',
+    'leasing-auto': 'cars',
+    'leasing-furgoni': 'vans',
+    'leasing-autocarri': 'trucks',
+    'leasing-macchine-agricole': 'agriculture',
+    'leasing-macchine-edili': 'construction',
+  },
+  es: {
+    coches: 'cars',
+    furgonetas: 'vans',
+    motos: 'motorcycles',
+    autocaravanas: 'motorhomes',
+    caravanas: 'caravans',
+    camiones: 'trucks',
+    'maquinaria-agricola': 'agriculture',
+    'maquinaria-construccion': 'construction',
+    'bicicletas-electricas': 'electric-bikes',
+    'leasing-coches': 'cars',
+    'leasing-furgonetas': 'vans',
+    'leasing-camiones': 'trucks',
+    'leasing-maquinaria-agricola': 'agriculture',
+    'leasing-maquinaria-construccion': 'construction',
+  },
+  nl: {
+    autos: 'cars',
+    bestelwagens: 'vans',
+    motoren: 'motorcycles',
+    campers: 'motorhomes',
+    caravans: 'caravans',
+    vrachtwagens: 'trucks',
+    landbouwmachines: 'agriculture',
+    bouwmachines: 'construction',
+    'elektrische-fietsen': 'electric-bikes',
+    leaseautos: 'cars',
+    leasebestelwagens: 'vans',
+    leasevrachtwagens: 'trucks',
+    leaselandbouwmachines: 'agriculture',
+    leasebouwmachines: 'construction',
+  },
+  be: {
+    autos: 'cars',
+    bestelwagens: 'vans',
+    motoren: 'motorcycles',
+    campers: 'motorhomes',
+    caravans: 'caravans',
+    vrachtwagens: 'trucks',
+    landbouwmachines: 'agriculture',
+    bouwmachines: 'construction',
+    'elektrische-fietsen': 'electric-bikes',
+    leaseautos: 'cars',
+    leasebestelwagens: 'vans',
+    leasevrachtwagens: 'trucks',
+    leaselandbouwmachines: 'agriculture',
+    leasebouwmachines: 'construction',
+  },
+  pl: {
+    samochody: 'cars',
+    dostawcze: 'vans',
+    motocykle: 'motorcycles',
+    kampery: 'motorhomes',
+    przyczepy: 'caravans',
+    ciezarowki: 'trucks',
+    'maszyny-rolnicze': 'agriculture',
+    'maszyny-budowlane': 'construction',
+    'rowery-elektryczne': 'electric-bikes',
+    'leasing-samochody': 'cars',
+    'leasing-dostawcze': 'vans',
+    'leasing-ciezarowki': 'trucks',
+    'leasing-maszyny-rolnicze': 'agriculture',
+    'leasing-maszyny-budowlane': 'construction',
+  },
+  dk: {
+    biler: 'cars',
+    varevogne: 'vans',
+    motorcykler: 'motorcycles',
+    autocampere: 'motorhomes',
+    campingvogne: 'caravans',
+    lastbiler: 'trucks',
+    landbrugsmaskiner: 'agriculture',
+    entreprenormaskiner: 'construction',
+    elcykler: 'electric-bikes',
+    leasingbiler: 'cars',
+    leasingvarevogne: 'vans',
+    leasinglastbiler: 'trucks',
+    leasinglandbrugsmaskiner: 'agriculture',
+    leasingentreprenormaskiner: 'construction',
+  },
+  fi: {
+    autot: 'cars',
+    pakettiautot: 'vans',
+    moottoripyorat: 'motorcycles',
+    matkailuautot: 'motorhomes',
+    asuntovaunut: 'caravans',
+    'kuorma-autot': 'trucks',
+    maatalouskoneet: 'agriculture',
+    maanrakennuskoneet: 'construction',
+    sahkopyorat: 'electric-bikes',
+    leasingautot: 'cars',
+    leasingpakettiautot: 'vans',
+    'leasing-kuorma-autot': 'trucks',
+    leasingmaatalouskoneet: 'agriculture',
+    leasingmaanrakennuskoneet: 'construction',
+  },
+}
+
+const MARKET_COUNTRY_CODES: Record<string, string> = {
+  sv: 'SE',
+  se: 'SE',
+  de: 'DE',
+  at: 'AT',
+  fr: 'FR',
+  es: 'ES',
+  it: 'IT',
+  pl: 'PL',
+  nl: 'NL',
+  fi: 'FI',
+  dk: 'DK',
+  be: 'BE',
 }
 
 const LOCALIZED_CORE_ROUTES = {
@@ -463,10 +658,118 @@ function withMarketCookie(response: NextResponse, market: string) {
   return response
 }
 
+function pathPrefixForMarket(market: string) {
+  if (market === 'sv') return 'se'
+  if (market === 'en') return ''
+  return market
+}
+
+function categoryFromMarketSegment(pathMarket: string, segment: string | undefined) {
+  if (!segment) return null
+  return MARKET_CATEGORY_SEGMENTS[pathMarket]?.[segment] || null
+}
+
+function isLeasingMarketSegment(segment: string | undefined) {
+  if (!segment) return false
+  return segment.includes('leasing') || segment.startsWith('lease')
+}
+
+function marketSegmentForCategory(
+  targetPathMarket: string,
+  category: string,
+  leasing: boolean,
+) {
+  const entries = Object.entries(MARKET_CATEGORY_SEGMENTS[targetPathMarket] || {})
+  const preferred = entries.find(([segment, value]) => {
+    if (value !== category) return false
+    return leasing
+      ? isLeasingMarketSegment(segment)
+      : !isLeasingMarketSegment(segment)
+  })
+  return preferred?.[0] || null
+}
+
+function shouldGeoRedirectLocalizedPath(
+  request: NextRequest,
+  currentMarket: string,
+  selectedMarket: string | null,
+) {
+  if (selectedMarket) return null
+  if (getPreferredMarket(request)) return null
+
+  const userAgent = request.headers.get('user-agent') || ''
+  if (SEARCH_CRAWLER_PATTERN.test(userAgent)) return null
+
+  const countryMarket = getCountryMarket(request)
+  if (!countryMarket || countryMarket === currentMarket) return null
+
+  return countryMarket
+}
+
+function buildGeoMarketRedirect(
+  request: NextRequest,
+  pathMarket: string,
+  targetMarket: string,
+  segments: string[],
+) {
+  const url = request.nextUrl.clone()
+  const targetPrefix = pathPrefixForMarket(targetMarket)
+  const targetBase = targetPrefix ? `/${targetPrefix}` : ''
+  const section = segments[1]
+
+  url.searchParams.delete(MARKET_SELECTION_PARAM)
+
+  if (!section) {
+    url.pathname = targetBase || '/'
+    return NextResponse.redirect(url, 307)
+  }
+
+  if (section === 'marketplace') {
+    url.pathname = `${targetBase}/${segments.slice(1).join('/')}` || '/'
+    const countryCode = MARKET_COUNTRY_CODES[targetMarket]
+    if (countryCode && !url.searchParams.has('markets')) {
+      url.searchParams.set('markets', countryCode)
+    }
+    return NextResponse.redirect(url, 307)
+  }
+
+  const seoCategory = categoryFromMarketSegment(pathMarket, section)
+  if (seoCategory) {
+    const leasing = isLeasingMarketSegment(section)
+    const targetSegment = targetPrefix
+      ? marketSegmentForCategory(targetPrefix, seoCategory, leasing)
+      : null
+    if (targetSegment) {
+      url.pathname = `${targetBase}/${targetSegment}`
+      url.search = ''
+      return NextResponse.redirect(url, 307)
+    }
+
+    url.pathname = `${targetBase}/marketplace/${seoCategory}`
+    url.search = ''
+    const countryCode = MARKET_COUNTRY_CODES[targetMarket]
+    if (countryCode) url.searchParams.set('markets', countryCode)
+    if (leasing) {
+      url.searchParams.set('mode', 'leasing')
+      url.searchParams.set('leasingPossible', 'true')
+    }
+    return NextResponse.redirect(url, 307)
+  }
+
+  const localizedInternalPath = internalPathFromLocalizedSegments(segments.slice(1))
+  if (localizedInternalPath && localizedInternalPath !== '/') {
+    url.pathname = `${targetBase}${localizedInternalPath}`
+    return NextResponse.redirect(url, 307)
+  }
+
+  url.pathname = targetBase || '/'
+  return NextResponse.redirect(url, 307)
+}
+
 export async function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
-  const selectedMarket = request.nextUrl.searchParams.get('market')
+  const selectedMarket = request.nextUrl.searchParams.get(MARKET_SELECTION_PARAM)
   const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
   const botProtectionResponse = protectExpensiveCrawlSurfaces(request, pathname)
@@ -588,6 +891,22 @@ export async function proxy(request: NextRequest) {
       : null
 
     if (localeContext) {
+      const geoRedirectMarket = methodCanRedirect
+        ? shouldGeoRedirectLocalizedPath(
+            request,
+            localeContext.market,
+            selectedMarket,
+          )
+        : null
+      if (geoRedirectMarket) {
+        return buildGeoMarketRedirect(
+          request,
+          pathMarket,
+          geoRedirectMarket,
+          segments,
+        )
+      }
+
       const retiredLocalizedCategoryTarget = segments[1]
         ? RETIRED_CATEGORY_ROUTES.get(`/${segments[1]}`)
         : null
