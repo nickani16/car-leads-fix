@@ -52,7 +52,7 @@ export default async function CompanyOverviewPage({ localeOverride }: { localeOv
     summary.failedPayments > 0 ? `${summary.failedPayments} payment issue${summary.failedPayments === 1 ? '' : 's'}` : '',
     summary.missingImages > 0 ? `${summary.missingImages} listing${summary.missingImages === 1 ? '' : 's'} missing images` : '',
     summary.expiringSoon > 0 ? `${summary.expiringSoon} listing${summary.expiringSoon === 1 ? '' : 's'} expiring soon` : '',
-    context.subscription?.payment_status === 'failed' || context.subscription?.status === 'past_due' ? 'Subscription payment needs attention' : '',
+    context.subscription?.payment_status === 'failed' || ['past_due', 'unpaid'].includes(String(context.subscription?.status || '')) ? 'Subscription payment needs attention' : '',
   ].filter(Boolean)
 
   return (

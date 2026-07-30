@@ -26,6 +26,7 @@ type SubscriptionRow = {
   status: string | null
   market: string | null
   currency: string | null
+  manually_activated: boolean | null
 }
 
 export async function GET(request: Request) {
@@ -93,6 +94,10 @@ export async function GET(request: Request) {
       if (sent.delivered) reminders += 1
     }
 
+    if (daysLeft < 0 && subscription.manually_activated) {
+      continue
+    }
+
     if (daysLeft < 0 && subscription.status !== 'unpaid') {
       await admin
         .from('business_subscriptions')
@@ -155,7 +160,7 @@ export async function GET(request: Request) {
 async function getSubscription(admin: ReturnType<typeof createAdminClient>, subscriptionId: string | null, userId: string): Promise<SubscriptionRow | null> {
   const query = admin
     .from('business_subscriptions')
-    .select('id,user_id,stripe_subscription_id,plan_key,active_listing_limit,status,market,currency')
+    .select('id,user_id,stripe_subscription_id,plan_key,active_listing_limit,status,market,currency,manually_activated')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false })
     .limit(1)
