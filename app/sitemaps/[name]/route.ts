@@ -11,7 +11,14 @@ import {
   type SeoMarketCode,
 } from '@/lib/seo-routes'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { marketFromSitemapName, xmlResponse } from '@/app/sitemap.xml/route'
+import {
+  allSitemapMarkets,
+  marketFromSitemapName,
+  popularGeoMakeSlugs,
+  sitemapMarketCountries,
+  type SitemapMarketCode,
+  xmlResponse,
+} from '@/app/sitemap.xml/route'
 
 const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
@@ -40,11 +47,17 @@ export async function GET(
   const market = marketFromSitemapName(normalizedName)
   const listingCountry = listingCountryFromSitemapName(normalizedName)
   const geoSitemap = geoSitemapFromName(normalizedName)
-  const vehicleNewsMarket = normalizedName.match(/^vehicle-news-(se|de|es|pl|fr)$/)?.[1]
-  if (!market && !listingCountry && !geoSitemap && !vehicleNewsMarket) notFound()
+  const geoMakeSitemap = geoMakeSitemapFromName(normalizedName)
+  const marketplaceSearchMarket = marketFromPrefixedSitemapName(normalizedName, 'marketplace')
+  const vehicleNewsMarket = marketFromPrefixedSitemapName(normalizedName, 'vehicle-news')
+  if (!market && !listingCountry && !geoSitemap && !geoMakeSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
 
   const urls = vehicleNewsMarket
     ? await vehicleNewsUrls(vehicleNewsMarket)
+    : marketplaceSearchMarket
+    ? marketplaceSearchUrls(marketplaceSearchMarket)
+    : geoMakeSitemap
+    ? await geoMakeSitemapUrls(geoMakeSitemap.market, geoMakeSitemap.page)
     : geoSitemap
     ? await geoSitemapUrls(geoSitemap.market, geoSitemap.page)
     : normalizedName.startsWith('listings-')
@@ -98,6 +111,45 @@ async function geoSitemapUrls(market: string, page: number) {
       sitemapUrl(`/${config.market}/${categorySlug}/${area.slug}`, undefined, 'daily', '0.8'),
     ),
   )
+}
+
+async function geoMakeSitemapUrls(market: SitemapMarketCode, page: number) {
+  const config = getGeoSitemapMarketConfig(market)
+  const carCategorySlug = geoMakeCarCategorySlugs[market]
+  if (!config || !carCategorySlug) return []
+  const areas = await geoSitemapAreas(config.countryCode)
+  const urlsPerArea = popularGeoMakeSlugs.length
+  const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
+  const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
+  return pageAreas.flatMap((area) =>
+    popularGeoMakeSlugs.map((makeSlug) =>
+      sitemapUrl(`/${market}/${carCategorySlug}/${makeSlug}/${area.slug}`, undefined, 'daily', '0.78'),
+    ),
+  )
+}
+
+function marketplaceSearchUrls(market: SitemapMarketCode) {
+  const country = sitemapMarketCountries[market]
+  const now = undefined
+  const urls = [
+    sitemapUrl(`/${market}/marketplace`, now, 'daily', '0.9'),
+    sitemapUrl(`/${market}/marketplace?markets=${country}`, now, 'daily', '0.82'),
+    sitemapUrl(`/${market}/marketplace?markets=EU`, now, 'daily', '0.78'),
+    sitemapUrl(`/${market}/marketplace?mode=sale&markets=${country}`, now, 'daily', '0.82'),
+    sitemapUrl(`/${market}/marketplace?mode=leasing&leasingPossible=true&markets=${country}`, now, 'daily', '0.82'),
+  ]
+
+  for (const category of marketplaceCategories) {
+    urls.push(
+      sitemapUrl(`/${market}/marketplace/${category.slug}`, now, 'daily', '0.88'),
+      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&markets=${country}`, now, 'daily', '0.82'),
+      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&mode=sale&markets=${country}`, now, 'daily', '0.8'),
+      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&mode=leasing&leasingPossible=true&markets=${country}`, now, 'daily', '0.8'),
+      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&markets=EU`, now, 'daily', '0.76'),
+    )
+  }
+
+  return urls
 }
 
 async function geoSitemapAreas(countryCode: string) {
@@ -260,6 +312,37 @@ function geoSitemapFromName(name: string) {
   if (!match) return null
   const page = Number(match[2])
   return Number.isFinite(page) && page > 0 ? { market: match[1].toLowerCase(), page } : null
+}
+
+function geoMakeSitemapFromName(name: string) {
+  const match = name.match(/^geo-makes-([a-z]{2})-(\d+)$/i)
+  if (!match) return null
+  const market = match[1].toLowerCase()
+  const page = Number(match[2])
+  return isSitemapMarket(market) && Number.isFinite(page) && page > 0 ? { market, page } : null
+}
+
+function marketFromPrefixedSitemapName(name: string, prefix: string) {
+  const market = name.match(new RegExp(`^${prefix}-([a-z]{2})$`, 'i'))?.[1]?.toLowerCase()
+  return market && isSitemapMarket(market) ? market : null
+}
+
+function isSitemapMarket(value: string): value is SitemapMarketCode {
+  return (allSitemapMarkets as readonly string[]).includes(value)
+}
+
+const geoMakeCarCategorySlugs: Record<SitemapMarketCode, string> = {
+  se: 'bilar',
+  de: 'autos',
+  es: 'coches',
+  fr: 'voitures',
+  it: 'auto',
+  nl: 'autos',
+  be: 'autos',
+  pl: 'samochody',
+  at: 'autos',
+  dk: 'biler',
+  fi: 'autot',
 }
 
 function pageFromSitemapName(name: string) {

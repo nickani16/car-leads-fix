@@ -7,8 +7,9 @@ const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
-const listingSitemapMarkets = ['se', 'de', 'es', 'fr', 'it', 'nl', 'be', 'pl', 'at', 'dk', 'fi'] as const
-const listingCountries: Record<(typeof listingSitemapMarkets)[number], string> = {
+export const allSitemapMarkets = ['se', 'de', 'es', 'fr', 'it', 'nl', 'be', 'pl', 'at', 'dk', 'fi'] as const
+export type SitemapMarketCode = (typeof allSitemapMarkets)[number]
+export const sitemapMarketCountries: Record<SitemapMarketCode, string> = {
   se: 'SE',
   de: 'DE',
   es: 'ES',
@@ -30,12 +31,16 @@ export async function GET() {
     `models-${market}`,
     `locations-${market}`,
   ])
+  const marketplaceSitemapNames = allSitemapMarkets.map((market) => `marketplace-${market}`)
   const listingSitemapNames = await getListingSitemapNames()
   const geoSitemapNames = await getGeoSitemapNames()
-  const vehicleNewsSitemapNames = ['se', 'de', 'es', 'pl', 'fr'].map((market) => `vehicle-news-${market}`)
+  const geoMakeSitemapNames = await getGeoMakeSitemapNames()
+  const vehicleNewsSitemapNames = allSitemapMarkets.map((market) => `vehicle-news-${market}`)
   const sitemapNames = [
     ...seoSitemapNames,
+    ...marketplaceSitemapNames,
     ...geoSitemapNames,
+    ...geoMakeSitemapNames,
     ...vehicleNewsSitemapNames,
     ...listingSitemapNames,
   ]
@@ -58,12 +63,12 @@ export async function GET() {
 async function getListingSitemapNames() {
   const names: string[] = []
   await Promise.all(
-    listingSitemapMarkets.map(async (market) => {
+    allSitemapMarkets.map(async (market) => {
       const { count } = await createAdminClient()
         .from('marketplace_listings')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published')
-        .eq('country_code', listingCountries[market])
+        .eq('country_code', sitemapMarketCountries[market])
         .not('published_at', 'is', null)
         .is('sold_at', null)
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
@@ -88,6 +93,23 @@ async function getGeoSitemapNames() {
       const pages = Math.max(1, Math.ceil((areaCount * urlsPerArea) / maxGeoUrlsPerSitemap))
       for (let page = 1; page <= pages; page += 1) {
         names.push(`geo-${market}-${page}`)
+      }
+    }),
+  )
+  return names.sort()
+}
+
+async function getGeoMakeSitemapNames() {
+  const names: string[] = []
+  await Promise.all(
+    allSitemapMarkets.map(async (market) => {
+      const config = getGeoSitemapMarketConfig(market)
+      if (!config) return
+      const areaCount = await getGeoSitemapAreaCount(config.countryCode)
+      const urlsPerArea = popularGeoMakeSlugs.length
+      const pages = Math.max(1, Math.ceil((areaCount * urlsPerArea) / maxGeoUrlsPerSitemap))
+      for (let page = 1; page <= pages; page += 1) {
+        names.push(`geo-makes-${market}-${page}`)
       }
     }),
   )
@@ -122,6 +144,16 @@ export function marketFromSitemapName(name: string): SeoMarketCode | null {
   const market = name.match(/-(se|de|es)(?:-\d+)?$/)?.[1]
   return market && market in seoMarkets ? (market as SeoMarketCode) : null
 }
+
+export const popularGeoMakeSlugs = [
+  'audi',
+  'bmw',
+  'mercedes-benz',
+  'tesla',
+  'toyota',
+  'volkswagen',
+  'volvo',
+] as const
 
 export function xmlResponse(body: string) {
   return new Response(body, {
