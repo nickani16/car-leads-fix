@@ -977,21 +977,45 @@ export default function PublicHeader({
   ]
   const savedListingBadge = savedListingCount > 99 ? '99+' : savedListingCount ? String(savedListingCount) : ''
   const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
-  const profileMenuLinks = [
-    { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
-    ...(isBusinessAccount
-      ? [{ href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 }]
-      : []),
-    { href: isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
-    ...(isBusinessAccount
-      ? [{ href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard }]
-      : []),
-    { href: accountListingsHref, label: publicLabel('My listings', 'Mina annonser', 'Meine Anzeigen'), icon: CarFront },
-  ]
+  const accountMenuCopyByLocale: Record<
+    PublicLocale,
+    { profile: string; create: string; listings: string; settings: string; signOut: string }
+  > = {
+    sv: { profile: 'Min profil', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut' },
+    de: { profile: 'Mein Profil', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
+    en: { profile: 'My profile', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out' },
+    at: { profile: 'Mein Profil', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
+    be: { profile: 'Mijn profiel', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
+    fr: { profile: 'Mon profil', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion' },
+    es: { profile: 'Mi perfil', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión' },
+    it: { profile: 'Il mio profilo', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci' },
+    pl: { profile: 'Mój profil', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj' },
+    nl: { profile: 'Mijn profiel', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
+    fi: { profile: 'Oma profiili', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos' },
+    da: { profile: 'Min profil', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud' },
+  }
+  const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
+  const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
+  const accountSettingsHref = isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : `${marketPathPrefix}/account/settings`
+  const profileMenuLinks = isBusinessAccount
+    ? [
+        { href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 },
+        { href: accountProfileHref, label: accountMenuCopy.profile, icon: UserRound },
+        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
+        { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
+        { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
+        { href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard },
+      ]
+    : [
+        { href: accountProfileHref, label: accountMenuCopy.profile, icon: UserRound },
+        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
+        { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
+        { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
+      ]
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
-  const mobileProfileLabel = publicLabel('My profile', 'Min profil', t.profileNav)
+  const mobileProfileLabel = accountMenuCopy.profile
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()
@@ -1528,7 +1552,7 @@ export default function PublicHeader({
                       <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e9f0fd] text-[10px] font-semibold text-[#0866ff]">
                         {mobileAccountInitials}
                       </span>
-                      <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
+                      <span>{accountMenuCopy.profile}</span>
                       <ChevronDown className={`h-4 w-4 transition ${profileMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <div
@@ -1555,7 +1579,7 @@ export default function PublicHeader({
                         className="flex min-h-11 w-full items-center gap-3 border-t border-[#edf1f6] px-4 pt-2 text-left text-sm font-medium text-[#b42318] transition hover:bg-[#fff5f5]"
                       >
                         <LogOut className="h-4.5 w-4.5" strokeWidth={1.9} />
-                        {publicLabel('Sign out', 'Logga ut', 'Abmelden')}
+                        {accountMenuCopy.signOut}
                       </button>
                     </div>
                   </div>
@@ -1790,9 +1814,9 @@ export default function PublicHeader({
               </p>
               {headerAccount.authenticated ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Link href={accountHref} onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
+                  <Link href={accountProfileHref} onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
                     <UserRound size={17} />
-                    {t.myAutorell}
+                    {accountMenuCopy.profile}
                   </Link>
                   <Link href={accountMessagesHref} onClick={closeMobile} className="relative flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-sm text-white">
                     <MessageSquareText size={17} />
