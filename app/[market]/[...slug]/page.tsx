@@ -21,6 +21,7 @@ import PaymentsPage from '@/app/konto/betalningar/page'
 import CompanyOverviewPage from '@/app/account/company/page'
 import CompanyImportPage from '@/app/account/company/import/page'
 import CompanyAnalyticsPage from '@/app/account/company/analytics/page'
+import CompanyLocationsPage from '@/app/account/company/locations/page'
 import CompanyTeamPage from '@/app/account/company/team/page'
 import AcceptCompanyTeamInvitationPage from '@/app/account/company/team/accept/page'
 import CompanyProfilePage from '@/app/account/company/profile/page'
@@ -182,6 +183,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'account/company/analytics') {
     return <CompanyAnalyticsPage localeOverride={locale} />
+  }
+
+  if (slugPath === 'account/company/locations') {
+    return <CompanyLocationsPage localeOverride={locale} />
   }
 
   if (slugPath === 'account/company/team') {

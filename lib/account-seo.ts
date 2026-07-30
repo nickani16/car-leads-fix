@@ -25,6 +25,7 @@ type AccountSeoKey =
   | 'company-team-accept'
   | 'company-import'
   | 'company-analytics'
+  | 'company-locations'
   | 'company-listings'
   | 'company-listing-create'
   | 'company-settings'
@@ -116,6 +117,10 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
     'company-analytics': {
       title: 'Företagsanalys | Autorell',
       description: 'Följ visningar, sparade annonser och aktivitet för företagets lager.',
+    },
+    'company-locations': {
+      title: 'Filialer och platser | Autorell',
+      description: 'Hantera företagets filialer, lagerplatser, kontaktvägar och geografiska närvaro.',
     },
     'company-listings': {
       title: 'Företagsannonser | Autorell',
@@ -215,6 +220,10 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
       title: 'Unternehmensanalyse | Autorell',
       description: 'Aufrufe, gespeicherte Anzeigen und Aktivität Ihres Bestands verfolgen.',
     },
+    'company-locations': {
+      title: 'Standorte und Filialen | Autorell',
+      description: 'Filialen, Lagerstandorte, Kontaktwege und regionale Präsenz verwalten.',
+    },
     'company-listings': {
       title: 'Unternehmensanzeigen | Autorell',
       description: 'Veröffentlichte Anzeigen, Entwürfe und Prüfungen des Unternehmens verwalten.',
@@ -312,6 +321,10 @@ const accountSeoCopy: Record<'sv' | 'de' | 'en', Record<AccountSeoKey, AccountSe
     'company-analytics': {
       title: 'Company analytics | Autorell',
       description: 'Track views, saved listings and activity for company inventory.',
+    },
+    'company-locations': {
+      title: 'Locations and branches | Autorell',
+      description: 'Manage company branches, inventory locations, contact routing and local presence.',
     },
     'company-listings': {
       title: 'Company listings | Autorell',
@@ -556,6 +569,7 @@ function fallbackAccountPath(page: AccountSeoKey, locale: PublicLocale) {
     'company-team-accept': '/account/company/team/accept',
     'company-import': '/account/company/import',
     'company-analytics': '/account/company/analytics',
+    'company-locations': '/account/company/locations',
     'company-listings': '/account/company/listings',
     'company-listing-create': '/account/company/listings/create',
     'company-settings': '/account/company/settings',
@@ -601,6 +615,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Tiimikutsu | Autorell',
     'company-import': 'Tuo ilmoituksia | Autorell',
     'company-analytics': 'Yritysanalytiikka | Autorell',
+    'company-locations': 'Toimipisteet ja haarat | Autorell',
     'company-listings': 'Yritysilmoitukset | Autorell',
     'company-listing-create': 'Luo yritysilmoitus | Autorell',
     'company-settings': 'Yritysasetukset | Autorell',
@@ -627,6 +642,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Teaminvitation | Autorell',
     'company-import': 'Importer annoncer | Autorell',
     'company-analytics': 'Firmaanalyse | Autorell',
+    'company-locations': 'Lokationer og filialer | Autorell',
     'company-listings': 'Firmaannoncer | Autorell',
     'company-listing-create': 'Opret firmaannonce | Autorell',
     'company-settings': 'Firmaindstillinger | Autorell',
@@ -653,6 +669,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Invitation équipe | Autorell',
     'company-import': 'Importer annonces | Autorell',
     'company-analytics': 'Analyse entreprise | Autorell',
+    'company-locations': 'Sites et agences | Autorell',
     'company-listings': 'Annonces entreprise | Autorell',
     'company-listing-create': 'Créer annonce entreprise | Autorell',
     'company-settings': 'Paramètres entreprise | Autorell',
@@ -679,6 +696,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Invitación equipo | Autorell',
     'company-import': 'Importar anuncios | Autorell',
     'company-analytics': 'Analítica empresa | Autorell',
+    'company-locations': 'Ubicaciones y sucursales | Autorell',
     'company-listings': 'Anuncios empresa | Autorell',
     'company-listing-create': 'Crear anuncio empresa | Autorell',
     'company-settings': 'Ajustes empresa | Autorell',
@@ -705,6 +723,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Invito team | Autorell',
     'company-import': 'Importa annunci | Autorell',
     'company-analytics': 'Analisi azienda | Autorell',
+    'company-locations': 'Sedi e filiali | Autorell',
     'company-listings': 'Annunci azienda | Autorell',
     'company-listing-create': 'Crea annuncio azienda | Autorell',
     'company-settings': 'Impostazioni azienda | Autorell',
@@ -731,6 +750,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Teamuitnodiging | Autorell',
     'company-import': 'Advertenties importeren | Autorell',
     'company-analytics': 'Bedrijfsanalyse | Autorell',
+    'company-locations': 'Locaties en vestigingen | Autorell',
     'company-listings': 'Bedrijfsadvertenties | Autorell',
     'company-listing-create': 'Bedrijfsadvertentie maken | Autorell',
     'company-settings': 'Bedrijfsinstellingen | Autorell',
@@ -757,6 +777,7 @@ const localizedAccountTitles: Record<'fi' | 'da' | 'fr' | 'es' | 'it' | 'nl' | '
     'company-team-accept': 'Zaproszenie do zespołu | Autorell',
     'company-import': 'Import ogłoszeń | Autorell',
     'company-analytics': 'Analityka firmy | Autorell',
+    'company-locations': 'Lokalizacje i oddziały | Autorell',
     'company-listings': 'Ogłoszenia firmy | Autorell',
     'company-listing-create': 'Dodaj ogłoszenie firmy | Autorell',
     'company-settings': 'Ustawienia firmy | Autorell',
@@ -796,6 +817,7 @@ function localizedDescriptions(profile: string, general: string): Record<Account
     'company-team-accept': general,
     'company-import': general,
     'company-analytics': general,
+    'company-locations': general,
     'company-listings': general,
     'company-listing-create': general,
     'company-settings': profile,

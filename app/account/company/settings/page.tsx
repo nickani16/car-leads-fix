@@ -1,6 +1,7 @@
+import Link from 'next/link'
 import { Bell, Building2, Globe2, MapPin, MessageSquare, type LucideIcon } from 'lucide-react'
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 
 export const generateMetadata = generateAccountMetadata('company-settings')
@@ -18,7 +19,12 @@ const baseCopy = {
   notificationText: 'Control email notifications for verification, new leads, payment warnings, imports and account changes.',
   verificationTitle: 'Autorell verification',
   verificationText: 'Company verification remains handled by Autorell. New applications generate an admin notification so they can be reviewed before larger listing access is granted.',
-  ready: 'Foundation ready',
+  active: 'Active',
+  managed: 'Managed',
+  openLocations: 'Open locations',
+  editProfile: 'Edit profile',
+  manageTeam: 'Manage team',
+  contactSupport: 'Contact support',
 }
 
 export default async function CompanySettingsPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
@@ -27,11 +33,11 @@ export default async function CompanySettingsPage({ localeOverride }: { localeOv
   return (
     <CompanyPortalShell context={context} active="settings" title={copy.title} description={copy.description}>
       <div className="grid gap-4 lg:grid-cols-2">
-        <SettingsCard icon={MapPin} title={copy.branchTitle} text={copy.branchText} badge={copy.ready} />
-        <SettingsCard icon={MessageSquare} title={copy.leadTitle} text={copy.leadText} badge={copy.ready} />
-        <SettingsCard icon={Globe2} title={copy.marketTitle} text={copy.marketText} badge={copy.ready} />
-        <SettingsCard icon={Bell} title={copy.notificationTitle} text={copy.notificationText} badge={copy.ready} />
-        <SettingsCard icon={Building2} title={copy.verificationTitle} text={copy.verificationText} badge={copy.ready} wide />
+        <SettingsCard icon={MapPin} title={copy.branchTitle} text={copy.branchText} badge={copy.active} action={copy.openLocations} href="/account/company/locations" locale={context.locale} />
+        <SettingsCard icon={MessageSquare} title={copy.leadTitle} text={copy.leadText} badge={copy.managed} action={copy.manageTeam} href="/account/company/team" locale={context.locale} />
+        <SettingsCard icon={Globe2} title={copy.marketTitle} text={copy.marketText} badge={copy.managed} action={copy.editProfile} href="/account/company/profile" locale={context.locale} />
+        <SettingsCard icon={Bell} title={copy.notificationTitle} text={copy.notificationText} badge={copy.active} action={copy.contactSupport} href="/account/company/support" locale={context.locale} />
+        <SettingsCard icon={Building2} title={copy.verificationTitle} text={copy.verificationText} badge={copy.active} action={copy.editProfile} href="/account/company/profile" locale={context.locale} wide />
       </div>
     </CompanyPortalShell>
   )
@@ -42,12 +48,18 @@ function SettingsCard({
   title,
   text,
   badge,
+  action,
+  href,
+  locale,
   wide = false,
 }: {
   icon: LucideIcon
   title: string
   text: string
   badge: string
+  action: string
+  href: string
+  locale: PublicLocale
   wide?: boolean
 }) {
   return (
@@ -60,6 +72,9 @@ function SettingsCard({
       </div>
       <h2 className="mt-4 text-xl font-semibold tracking-[-.025em] text-[#101828]">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
+      <Link href={localizePublicHref(locale, href)} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-[10px] border border-[#c7d7eb] px-4 text-sm font-bold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#eef5ff]">
+        {action}
+      </Link>
     </section>
   )
 }

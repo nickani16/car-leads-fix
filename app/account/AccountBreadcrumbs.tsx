@@ -22,6 +22,7 @@ export type AccountCrumbKey =
   | 'companyImport'
   | 'companyTeam'
   | 'companyAnalytics'
+  | 'companyLocations'
   | 'companySubscription'
 
 export type AccountBreadcrumbItem = {
@@ -53,6 +54,7 @@ const englishBreadcrumbs: BreadcrumbCopy = {
   companyImport: 'Import',
   companyTeam: 'Team',
   companyAnalytics: 'Analytics',
+  companyLocations: 'Locations',
   companySubscription: 'Plans',
 }
 
@@ -78,6 +80,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Import',
     companyTeam: 'Team',
     companyAnalytics: 'Analys',
+    companyLocations: 'Filialer',
     companySubscription: 'Abonnemang',
   },
   de: {
@@ -98,6 +101,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Bestand',
     companyListingCreate: 'Neue Anzeige',
     companyAnalytics: 'Analyse',
+    companyLocations: 'Standorte',
     companySubscription: 'Tarife',
   },
   nl: {
@@ -118,6 +122,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Voorraad',
     companyListingCreate: 'Nieuwe advertentie',
     companyAnalytics: 'Analyse',
+    companyLocations: 'Locaties',
     companySubscription: 'Abonnementen',
   },
   fr: {
@@ -138,6 +143,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Stock',
     companyListingCreate: 'Nouvelle annonce',
     companyAnalytics: 'Analyse',
+    companyLocations: 'Sites',
     companySubscription: 'Abonnements',
   },
   es: {
@@ -161,6 +167,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Importación',
     companyTeam: 'Equipo',
     companyAnalytics: 'Analítica',
+    companyLocations: 'Ubicaciones',
     companySubscription: 'Planes',
   },
   it: {
@@ -183,6 +190,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListingCreate: 'Nuovo annuncio',
     companyImport: 'Importazione',
     companyAnalytics: 'Analisi',
+    companyLocations: 'Sedi',
     companySubscription: 'Piani',
   },
   pl: {
@@ -205,6 +213,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListingCreate: 'Nowe ogłoszenie',
     companyTeam: 'Zespół',
     companyAnalytics: 'Analityka',
+    companyLocations: 'Lokalizacje',
     companySubscription: 'Plany',
   },
   fi: {
@@ -227,6 +236,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListingCreate: 'Uusi ilmoitus',
     companyImport: 'Tuonti',
     companyAnalytics: 'Analytiikka',
+    companyLocations: 'Toimipisteet',
     companySubscription: 'Tilaukset',
   },
   da: {
@@ -249,6 +259,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListingCreate: 'Ny annonce',
     companyTeam: 'Team',
     companyAnalytics: 'Analyse',
+    companyLocations: 'Lokationer',
     companySubscription: 'Abonnementer',
   },
 }
