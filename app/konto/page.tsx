@@ -636,8 +636,8 @@ function AccountSidebar({
 
   return (
     <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-hidden">
-      <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-4 shadow-[0_16px_46px_rgba(16,24,40,.045)] lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
-        <div className="flex items-center gap-3 rounded-[18px] bg-[#f8fbff] p-3">
+      <div className="rounded-[22px] border border-[#dfe7f2] bg-white p-3 shadow-[0_16px_46px_rgba(16,24,40,.045)] sm:p-4 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
+        <div className="hidden items-center gap-3 rounded-[18px] bg-[#f8fbff] p-3 lg:flex">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#0866ff] text-sm font-semibold text-white">
             {initials || 'AR'}
           </span>
@@ -652,21 +652,21 @@ function AccountSidebar({
 
         <nav
           aria-label={copy.accountNavigation}
-          className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-h-0 lg:grid-cols-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1"
+          className="grid grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:mt-4 lg:min-h-0 lg:grid-cols-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1"
         >
           {navigation.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               aria-current={item.active ? 'page' : undefined}
-              className={`group flex min-h-12 items-center gap-3 rounded-[14px] border px-3 text-sm font-semibold transition ${
+              className={`group flex min-h-[52px] items-center gap-3 rounded-[16px] border px-3 py-2.5 text-[15px] font-semibold leading-tight transition sm:text-sm ${
                 item.active
-                  ? 'border-[#0866ff] bg-[#0866ff] text-white'
-                  : 'border-transparent bg-white text-[#475467] hover:border-[#d6e4f5] hover:bg-[#f8fbff] hover:text-[#0866ff]'
+                  ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_12px_24px_rgba(8,102,255,.2)]'
+                  : 'border-[#edf2f8] bg-[#fbfdff] text-[#475467] hover:border-[#d6e4f5] hover:bg-white hover:text-[#0866ff]'
               }`}
             >
               <span
-                className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ${
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-[12px] ${
                   item.active
                     ? 'bg-white/18 text-white'
                     : 'bg-[#eef5ff] text-[#344054] group-hover:text-[#0866ff]'
@@ -674,7 +674,7 @@ function AccountSidebar({
               >
                 <item.icon className="h-4 w-4" />
               </span>
-              <span className="min-w-0 truncate">{item.label}</span>
+              <span className="min-w-0 whitespace-normal break-words">{item.label}</span>
             </Link>
           ))}
         </nav>
