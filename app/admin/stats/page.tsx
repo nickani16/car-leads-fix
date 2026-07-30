@@ -114,7 +114,7 @@ export default async function AdminStatsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-4 text-xl font-black">Annonser per kategori</h2>
+        <h2 className="mb-4 text-xl font-semibold">Annonser per kategori</h2>
         <AdminTable columns={['Kategori', 'Totalt', 'Publicerade', 'Pausade/avvisade']}>
           {visibleCategoryRows.map((row) => (
             <tr key={row.category} className="hover:bg-[#f8fafc]">

@@ -65,13 +65,13 @@ export function AdminFilters({
       {children}
       <button
         type="submit"
-        className="h-11 rounded-[10px] bg-[#0866ff] px-6 text-sm font-bold text-white transition hover:bg-[#075ce6]"
+        className="h-11 rounded-[10px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075ce6]"
       >
         Filtrera
       </button>
       <Link
         href="?"
-        className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d7deea] px-4 text-sm font-bold text-[#475467] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+        className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d7deea] px-4 text-sm font-semibold text-[#475467] transition hover:border-[#0866ff] hover:text-[#0866ff]"
       >
         Rensa
       </Link>
@@ -188,10 +188,10 @@ export function AdminStatCard({
 }) {
   return (
     <article className="rounded-[14px] border border-[#dce3ee] bg-white p-5 shadow-[0_8px_22px_rgba(16,24,40,.04)]">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#667085]">
         {label}
       </p>
-      <p className="mt-3 text-3xl font-black tracking-tight text-[#101828]">
+      <p className="mt-3 text-3xl font-semibold tracking-tight text-[#101828]">
         {value}
       </p>
       {helper ? <p className="mt-2 text-xs text-[#667085]">{helper}</p> : null}
@@ -216,7 +216,7 @@ export function AdminTable({
                 <th
                   key={column}
                   scope="col"
-                  className="whitespace-nowrap px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-[#667085]"
+                  className="whitespace-nowrap px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.12em] text-[#667085]"
                 >
                   {column}
                 </th>
@@ -253,7 +253,7 @@ export function AdminPagination({
         <Link
           aria-disabled={page <= 1}
           href={`${basePath}?${previousQuery.toString()}`}
-          className={`rounded-[10px] border px-4 py-2 font-bold ${
+          className={`rounded-[10px] border px-4 py-2 font-semibold ${
             page <= 1
               ? 'pointer-events-none border-[#e4e7ec] text-[#98a2b3]'
               : 'border-[#d7deea] text-[#344054]'
@@ -264,7 +264,7 @@ export function AdminPagination({
         <Link
           aria-disabled={!hasNext}
           href={`${basePath}?${nextQuery.toString()}`}
-          className={`rounded-[10px] border px-4 py-2 font-bold ${
+          className={`rounded-[10px] border px-4 py-2 font-semibold ${
             !hasNext
               ? 'pointer-events-none border-[#e4e7ec] text-[#98a2b3]'
               : 'border-[#d7deea] text-[#344054]'

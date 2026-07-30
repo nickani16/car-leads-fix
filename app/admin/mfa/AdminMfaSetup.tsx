@@ -112,7 +112,7 @@ export default function AdminMfaSetup() {
               {enrollment.existing ? <KeyRound className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
             </span>
             <div>
-              <h2 className="font-black text-[#101828]">{enrollment.existing ? 'Verifiera din authenticator' : 'Skanna QR-koden'}</h2>
+              <h2 className="font-semibold text-[#101828]">{enrollment.existing ? 'Verifiera din authenticator' : 'Skanna QR-koden'}</h2>
               <p className="mt-1 text-sm leading-6 text-[#667085]">
                 {enrollment.existing ? 'Ange den aktuella sexsiffriga koden.' : 'Använd valfri TOTP-app och spara återställningsinformationen säkert.'}
               </p>
