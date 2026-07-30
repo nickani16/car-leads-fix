@@ -128,8 +128,8 @@ export async function GET(request: Request) {
       await createAdminBillingNotification(admin, {
         createdByEvent: `business-billing-cron-blocked-${invoice.stripe_invoice_id}`,
         type: 'business_invoice_overdue',
-        title: 'Business account restricted for overdue invoice',
-        body: `${invoice.invoice_number || invoice.stripe_invoice_id} is overdue and the business account was restricted.`,
+        title: 'Business listing creation restricted for overdue invoice',
+        body: `${invoice.invoice_number || invoice.stripe_invoice_id} is overdue. Listing creation and publication were restricted, but the company account data remains available.`,
         priority: 'critical',
         resourceId: invoice.stripe_invoice_id,
         actionUrl: '/admin/payments',

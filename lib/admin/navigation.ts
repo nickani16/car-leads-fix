@@ -35,6 +35,7 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
     label: 'Ekonomi',
     items: [
       { label: 'Betalningar', href: '/admin/payments', icon: 'payments', permission: 'payments.read', available: true },
+      { label: 'Företagsfakturor', href: '/admin/invoices', icon: 'payments', permission: 'payments.read', available: true },
       { label: 'Abonnemang & paket', href: '/admin/subscriptions', icon: 'subscriptions', permission: 'subscriptions.read', available: true },
     ],
   },

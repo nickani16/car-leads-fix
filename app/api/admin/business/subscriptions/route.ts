@@ -14,7 +14,7 @@ export async function PATCH(request: Request) {
   if ('error' in auth) return auth.error
   const body = (await request.json()) as {
     id?: string
-    action?: 'reactivate_unpaid' | 'restrict_unpaid'
+    action?: 'reactivate_unpaid' | 'restrict_unpaid' | 'clear_manual_activation'
     status?: string
     manuallyActivated?: boolean
     temporaryQuota?: number | null
@@ -35,6 +35,10 @@ export async function PATCH(request: Request) {
     patch.manually_activated = false
     patch.payment_warning_at = new Date().toISOString()
     patch.grace_period_ends_at = new Date().toISOString()
+  }
+  if (body.action === 'clear_manual_activation') {
+    patch.manually_activated = false
+    patch.payment_status = 'pending'
   }
   if (body.status) patch.status = body.status
   if (typeof body.manuallyActivated === 'boolean') patch.manually_activated = body.manuallyActivated

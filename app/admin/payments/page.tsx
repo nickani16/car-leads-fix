@@ -1,5 +1,5 @@
-import AdminResourcePage from '../AdminResourcePage'
 import AdminOperationForm from '../AdminOperationForm'
+import AdminResourcePage from '../AdminResourcePage'
 import type { AdminSearchParams } from '../admin-helpers'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +13,7 @@ export default function AdminPaymentsPage({ searchParams }: { searchParams: Admi
       select="id,product_key,market,currency,amount_minor,status,failure_reason,created_at,paid_at"
       title="Betalningar"
       eyebrow="Ekonomi"
-      description="Transaktioner, betalstatus och avvikelser samlade i en revisionssäker vy. Stripe-identiteter visas inte i listvyn."
+      description="Transaktioner, betalstatus och avvikelser samlade i en revisionssäker vy. Företagsfakturor finns i den separata ekonomivyn."
       basePath="/admin/payments"
       searchColumns={['product_key', 'failure_reason']}
       statusOptions={[
@@ -30,6 +30,7 @@ export default function AdminPaymentsPage({ searchParams }: { searchParams: Admi
         { key: 'amount_minor', label: 'Belopp', format: 'money' },
         { key: 'status', label: 'Status', format: 'status' },
         { key: 'failure_reason', label: 'Avvikelse' },
+        { key: 'paid_at', label: 'Betald', format: 'date' },
         { key: 'created_at', label: 'Skapad', format: 'date' },
       ]}
       emptyText="Inga betalningar matchar filtret."
