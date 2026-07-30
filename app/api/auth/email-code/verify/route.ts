@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-    if (challengeError?.code === 'PGRST204') {
+    if (challengeError?.code === 'PGRST204' || challengeError?.code === '42703') {
       const fallback = await admin
         .from('auth_email_codes')
         .select('id,code_hash,attempts,expires_at')

@@ -92,7 +92,10 @@ export async function POST(request: Request) {
     }
 
     let { error: insertError } = await admin.from('auth_email_codes').insert(challengeRow)
-    if (insertError?.code === 'PGRST204' && 'redirect_path' in challengeRow) {
+    if (
+      (insertError?.code === 'PGRST204' || insertError?.code === '42703') &&
+      'redirect_path' in challengeRow
+    ) {
       delete challengeRow.redirect_path
       ;({ error: insertError } = await admin.from('auth_email_codes').insert(challengeRow))
     }
