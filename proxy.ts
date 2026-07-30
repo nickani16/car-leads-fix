@@ -209,6 +209,22 @@ const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
 }
 
 const MARKET_CATEGORY_SEGMENTS: Record<string, Record<string, string>> = {
+  en: {
+    cars: 'cars',
+    vans: 'vans',
+    motorcycles: 'motorcycles',
+    motorhomes: 'motorhomes',
+    caravans: 'caravans',
+    trucks: 'trucks',
+    agriculture: 'agriculture',
+    construction: 'construction',
+    'electric-bikes': 'electric-bikes',
+    'leasing-cars': 'cars',
+    'leasing-vans': 'vans',
+    'leasing-trucks': 'trucks',
+    'leasing-agriculture': 'agriculture',
+    'leasing-construction': 'construction',
+  },
   se: {
     bilar: 'cars',
     transportbilar: 'vans',
@@ -674,6 +690,28 @@ function isLeasingMarketSegment(segment: string | undefined) {
   return segment.includes('leasing') || segment.startsWith('lease')
 }
 
+function isSearchEngineReferral(request: NextRequest) {
+  const referrer = request.headers.get('referer') || request.headers.get('referrer')
+  if (!referrer) return false
+
+  try {
+    const hostname = new URL(referrer).hostname.toLowerCase()
+    return (
+      /(^|\.)google\./.test(hostname) ||
+      hostname === 'bing.com' ||
+      hostname.endsWith('.bing.com') ||
+      hostname === 'duckduckgo.com' ||
+      hostname.endsWith('.duckduckgo.com') ||
+      hostname === 'search.yahoo.com' ||
+      hostname.endsWith('.search.yahoo.com') ||
+      hostname === 'ecosia.org' ||
+      hostname.endsWith('.ecosia.org')
+    )
+  } catch {
+    return false
+  }
+}
+
 function marketSegmentForCategory(
   targetPathMarket: string,
   category: string,
@@ -695,7 +733,9 @@ function shouldGeoRedirectLocalizedPath(
   selectedMarket: string | null,
 ) {
   if (selectedMarket) return null
-  if (getPreferredMarket(request)) return null
+  if (getPreferredMarket(request) && !isSearchEngineReferral(request)) {
+    return null
+  }
 
   const userAgent = request.headers.get('user-agent') || ''
   if (SEARCH_CRAWLER_PATTERN.test(userAgent)) return null
@@ -861,6 +901,21 @@ export async function proxy(request: NextRequest) {
     hostname === MARKET_HOSTS.en &&
     (pathname === '/en' || pathname.startsWith('/en/'))
   ) {
+    const segments = pathname.split('/').filter(Boolean)
+    const geoRedirectMarket = shouldGeoRedirectLocalizedPath(
+      request,
+      'en',
+      selectedMarket,
+    )
+    if (geoRedirectMarket) {
+      return buildGeoMarketRedirect(
+        request,
+        'en',
+        geoRedirectMarket,
+        segments,
+      )
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = pathname === '/en' ? '/' : pathname.slice(3)
     return NextResponse.redirect(url, 308)
@@ -1029,8 +1084,11 @@ export async function proxy(request: NextRequest) {
   }
 
   const currentMarket = MARKET_BY_HOST[hostname]
-  const preferredLanguage = request.cookies.get('autorell-language')?.value
-  const preferredMarket = getPreferredMarket(request)
+  const searchEngineReferral = isSearchEngineReferral(request)
+  const preferredLanguage = searchEngineReferral
+    ? null
+    : request.cookies.get('autorell-language')?.value
+  const preferredMarket = searchEngineReferral ? null : getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
     request.headers.get('user-agent') || '',
   )
