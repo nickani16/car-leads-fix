@@ -6,6 +6,7 @@ import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { BUSINESS_INVOICE_DAYS_UNTIL_DUE } from '@/lib/billing/business-invoice-terms'
 import {
   getBillingProduct,
   legacyListingPackageToProductKey,
@@ -342,7 +343,7 @@ export async function POST(request: Request) {
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         collection_method: 'send_invoice',
-        days_until_due: 30,
+        days_until_due: BUSINESS_INVOICE_DAYS_UNTIL_DUE,
         items: [subscriptionItem],
         ...(bankTransferSettings ? { payment_settings: bankTransferSettings } : {}),
         metadata,
@@ -422,7 +423,7 @@ export async function POST(request: Request) {
           stripe_subscription_id: subscription.id,
           stripe_invoice_id: latestInvoice?.id || null,
           invoice_email_sent: true,
-          days_until_due: 30,
+          days_until_due: BUSINESS_INVOICE_DAYS_UNTIL_DUE,
           bank_transfer_enabled: Boolean(bankTransferSettings),
         },
       })

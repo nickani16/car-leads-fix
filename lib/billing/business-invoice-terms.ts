@@ -1,0 +1,1 @@
+export const BUSINESS_INVOICE_DAYS_UNTIL_DUE = 14
