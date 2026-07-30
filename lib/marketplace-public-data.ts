@@ -357,7 +357,7 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
     const privateVerified =
       profile.account_type !== 'business' &&
-      ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+      ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
     trust.set(profile.user_id, businessVerified || privateVerified ? 'verified' : 'unverified')
   }
   return trust
@@ -397,7 +397,7 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
     const privateVerified =
       profile.account_type !== 'business' &&
-      ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+      ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
     const stats = reviewStats.get(profile.user_id)
     profiles.set(profile.user_id, {
       logoUrl: typeof profile.logo_url === 'string' && profile.logo_url ? profile.logo_url : null,

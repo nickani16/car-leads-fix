@@ -1235,7 +1235,7 @@ async function getSellerDetails(
     }
   }
 
-  const verified = profile?.identity_status === 'verified' || profile?.identity_status === 'basic_checked'
+  const verified = profile?.identity_status === 'verified' || profile?.identity_status === 'format_validated'
   return verified
     ? {
         ...base,

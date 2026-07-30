@@ -271,24 +271,28 @@ export function AccountBreadcrumbs({
 
   return (
     <nav aria-label={copy.breadcrumbs} className={className}>
-      <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#667085]">
+      <ol className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-[16px] border border-[#dfe7f2] bg-white/86 p-1.5 text-sm text-[#667085] shadow-[0_12px_30px_rgba(16,24,40,.045)]">
         {items.map((item, index) => {
           const isLast = index === items.length - 1
           const label = copy[item.key]
 
           return (
-            <li key={`${item.key}-${index}`} className="flex min-w-0 items-center gap-2">
-              {index > 0 ? <ChevronRight className="h-4 w-4 shrink-0 text-[#98a2b3]" aria-hidden="true" /> : null}
+            <li key={`${item.key}-${index}`} className="flex min-w-0 items-center gap-1.5">
+              {index > 0 ? <ChevronRight className="h-4 w-4 shrink-0 text-[#b8c2d0]" aria-hidden="true" /> : null}
               {item.href && !isLast ? (
                 <Link
                   href={localizePublicHref(locale, item.href)}
-                  className="min-w-0 truncate font-semibold text-[#475467] transition hover:text-[#0866ff]"
+                  className="min-h-8 min-w-0 truncate rounded-[12px] px-3 py-1.5 font-semibold text-[#475467] transition hover:bg-[#eef5ff] hover:text-[#0866ff]"
                 >
                   {label}
                 </Link>
               ) : (
                 <span
-                  className={isLast ? 'min-w-0 truncate font-semibold text-[#101828]' : 'min-w-0 truncate font-semibold text-[#475467]'}
+                  className={
+                    isLast
+                      ? 'min-h-8 min-w-0 truncate rounded-[12px] bg-[#eef5ff] px-3 py-1.5 font-semibold text-[#0866ff]'
+                      : 'min-h-8 min-w-0 truncate rounded-[12px] px-3 py-1.5 font-semibold text-[#475467]'
+                  }
                   aria-current={isLast ? 'page' : undefined}
                 >
                   {label}

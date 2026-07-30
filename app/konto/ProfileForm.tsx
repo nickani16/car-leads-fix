@@ -56,6 +56,7 @@ export default function ProfileForm({
   const [logoUploading, setLogoUploading] = useState(false)
   const [emailCodeSent, setEmailCodeSent] = useState(false)
   const [emailCode, setEmailCode] = useState('')
+  const [emailVerified, setEmailVerified] = useState(emailConfirmed)
   const [emailVerificationMessage, setEmailVerificationMessage] = useState('')
   const [emailVerificationLoading, setEmailVerificationLoading] = useState(false)
   const countries = useMemo(
@@ -129,6 +130,7 @@ export default function ProfileForm({
         email: profile.email,
         code: emailCode,
         locale,
+        purpose: 'email_verification',
         next: window.location.pathname,
       }),
     })
@@ -138,6 +140,9 @@ export default function ProfileForm({
       setEmailVerificationMessage(localizedAccountError(locale, result, copy.emailCodeVerifyError))
       return
     }
+    setEmailVerified(true)
+    setEmailCode('')
+    setEmailCodeSent(false)
     setEmailVerificationMessage(copy.emailVerifiedNow)
     router.refresh()
   }
@@ -155,7 +160,7 @@ export default function ProfileForm({
         riskStatus={profile.risk_status}
         phoneStatus={profile.phone_verification_status || 'unverified'}
         email={profile.email}
-        emailConfirmed={emailConfirmed}
+        emailConfirmed={emailVerified}
         emailCode={emailCode}
         emailCodeSent={emailCodeSent}
         emailVerificationLoading={emailVerificationLoading}

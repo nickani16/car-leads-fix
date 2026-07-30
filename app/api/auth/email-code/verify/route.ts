@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       code?: string
       locale?: string
       next?: string
+      purpose?: string
     }
     const locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
@@ -85,14 +86,27 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
-    const { data: challenge } = await admin
+    let { data: challenge, error: challengeError } = await admin
       .from('auth_email_codes')
-      .select('id,code_hash,attempts,expires_at')
+      .select('id,code_hash,attempts,expires_at,redirect_path')
       .eq('email_hash', emailHash(email))
       .is('consumed_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
+    if (challengeError?.code === 'PGRST204') {
+      const fallback = await admin
+        .from('auth_email_codes')
+        .select('id,code_hash,attempts,expires_at')
+        .eq('email_hash', emailHash(email))
+        .is('consumed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      challenge = fallback.data ? { ...fallback.data, redirect_path: null } : null
+      challengeError = fallback.error
+    }
+    if (challengeError) throw challengeError
 
     if (
       !challenge ||
@@ -120,6 +134,48 @@ export async function POST(request: Request) {
     if (consumeError) throw consumeError
     if (!consumedChallenge) {
       return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+    }
+
+    const isEmailVerification = body.purpose === 'email_verification' || challenge.redirect_path === 'email_verification'
+    if (isEmailVerification) {
+      const supabase = await createClient()
+      const { data: sessionUser, error: userError } = await supabase.auth.getUser()
+      if (userError || !sessionUser.user) {
+        return NextResponse.json({ error: copy.codeError }, { status: 401 })
+      }
+      if (normalizeEmail(sessionUser.user.email) !== email) {
+        return NextResponse.json({ error: copy.codeError }, { status: 403 })
+      }
+
+      const now = new Date().toISOString()
+      const [{ data: profile }, authUpdate] = await Promise.all([
+        admin
+          .from('marketplace_profiles')
+          .select('account_type,identity_status')
+          .eq('user_id', sessionUser.user.id)
+          .maybeSingle(),
+        admin.auth.admin.updateUserById(sessionUser.user.id, {
+          email_confirm: true,
+        }),
+      ])
+      if (authUpdate.error) throw authUpdate.error
+
+      if (
+        profile?.account_type === 'private' &&
+        !['verified', 'format_validated'].includes(String(profile.identity_status || ''))
+      ) {
+        const { error: profileError } = await admin
+          .from('marketplace_profiles')
+          .update({
+            identity_status: 'format_validated',
+            verified_at: now,
+            verification_updated_at: now,
+          })
+          .eq('user_id', sessionUser.user.id)
+        if (profileError) throw profileError
+      }
+
+      return NextResponse.json({ success: true, emailVerified: true })
     }
 
     let link = await admin.auth.admin.generateLink({
@@ -199,13 +255,13 @@ export async function POST(request: Request) {
 
     if (
       profile?.account_type === 'private' &&
-      !['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+      !['verified', 'format_validated'].includes(String(profile.identity_status || ''))
     ) {
       const now = new Date().toISOString()
       await admin
         .from('marketplace_profiles')
         .update({
-          identity_status: 'basic_checked',
+          identity_status: 'format_validated',
           verified_at: now,
           verification_updated_at: now,
         })

@@ -388,7 +388,7 @@ async function getVerifiedMarketplaceSellerIds() {
         ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
       const privateVerified =
         profile.account_type !== 'business' &&
-        ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+        ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
       return businessVerified || privateVerified
     })
     .map((profile) => profile.user_id)
