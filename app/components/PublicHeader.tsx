@@ -979,20 +979,20 @@ export default function PublicHeader({
   const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
   const accountMenuCopyByLocale: Record<
     PublicLocale,
-    { profile: string; create: string; listings: string; settings: string; signOut: string }
+    { pages: string; create: string; listings: string; settings: string; signOut: string }
   > = {
-    sv: { profile: 'Min profil', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut' },
-    de: { profile: 'Mein Profil', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
-    en: { profile: 'My profile', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out' },
-    at: { profile: 'Mein Profil', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
-    be: { profile: 'Mijn profiel', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
-    fr: { profile: 'Mon profil', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion' },
-    es: { profile: 'Mi perfil', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión' },
-    it: { profile: 'Il mio profilo', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci' },
-    pl: { profile: 'Mój profil', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj' },
-    nl: { profile: 'Mijn profiel', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
-    fi: { profile: 'Oma profiili', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos' },
-    da: { profile: 'Min profil', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud' },
+    sv: { pages: 'Mina sidor', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut' },
+    de: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
+    en: { pages: 'My pages', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out' },
+    at: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden' },
+    be: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
+    fr: { pages: 'Mes pages', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion' },
+    es: { pages: 'Mis páginas', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión' },
+    it: { pages: 'Le mie pagine', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci' },
+    pl: { pages: 'Moje strony', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj' },
+    nl: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen' },
+    fi: { pages: 'Omat sivut', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos' },
+    da: { pages: 'Mine sider', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud' },
   }
   const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
   const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
@@ -1000,14 +1000,14 @@ export default function PublicHeader({
   const profileMenuLinks = isBusinessAccount
     ? [
         { href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 },
-        { href: accountProfileHref, label: accountMenuCopy.profile, icon: UserRound },
+        { href: accountProfileHref, label: accountMenuCopy.pages, icon: UserRound },
         { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
         { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
         { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
         { href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard },
       ]
     : [
-        { href: accountProfileHref, label: accountMenuCopy.profile, icon: UserRound },
+        { href: accountHref, label: accountMenuCopy.pages, icon: UserRound },
         { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
         { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
         { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
@@ -1015,7 +1015,7 @@ export default function PublicHeader({
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
-  const mobileProfileLabel = accountMenuCopy.profile
+  const mobileProfileLabel = accountMenuCopy.pages
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()
@@ -1552,7 +1552,7 @@ export default function PublicHeader({
                       <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e9f0fd] text-[10px] font-semibold text-[#0866ff]">
                         {mobileAccountInitials}
                       </span>
-                      <span>{accountMenuCopy.profile}</span>
+                      <span>{accountMenuCopy.pages}</span>
                       <ChevronDown className={`h-4 w-4 transition ${profileMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <div
@@ -1814,9 +1814,9 @@ export default function PublicHeader({
               </p>
               {headerAccount.authenticated ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Link href={accountProfileHref} onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
+                  <Link href={accountHref} onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
                     <UserRound size={17} />
-                    {accountMenuCopy.profile}
+                    {accountMenuCopy.pages}
                   </Link>
                   <Link href={accountMessagesHref} onClick={closeMobile} className="relative flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-sm text-white">
                     <MessageSquareText size={17} />
