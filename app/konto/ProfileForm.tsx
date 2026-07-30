@@ -9,6 +9,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { localizedAccountError } from '@/lib/account-error-i18n'
+import { normalizePlaceName } from '@/lib/place-name'
 
 type Profile = {
   account_type: 'private' | 'business'
@@ -68,6 +69,8 @@ export default function ProfileForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
+    form.set('city', normalizePlaceName(form.get('city')))
+    form.set('region', normalizePlaceName(form.get('region')))
     const response = await fetch('/api/account/profile', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -163,7 +166,7 @@ export default function ProfileForm({
       />
       <form
         onSubmit={submit}
-        className="grid gap-4 rounded-[22px] border border-[#e1e5ec] bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-8"
+        className="grid min-w-0 gap-4 overflow-hidden rounded-[22px] border border-[#e1e5ec] bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-8"
       >
         <Field name="firstName" label={copy.firstName} defaultValue={profile.first_name || ''} required />
         <Field name="lastName" label={copy.lastName} defaultValue={profile.last_name || ''} required />
@@ -227,8 +230,8 @@ export default function ProfileForm({
         <Field name="addressLine1" label={copy.addressLine1} defaultValue={profile.address_line_1 || ''} required />
         <Field name="addressLine2" label={copy.addressLine2} defaultValue={profile.address_line_2 || ''} />
         <Field name="postalCode" label={copy.postalCode} defaultValue={profile.postal_code || ''} required />
-        <Field name="city" label={copy.city} defaultValue={profile.city || ''} required />
-        <Field name="region" label={copy.region} defaultValue={profile.region || ''} />
+        <Field name="city" label={copy.city} defaultValue={normalizePlaceName(profile.city)} normalizePlace required />
+        <Field name="region" label={copy.region} defaultValue={normalizePlaceName(profile.region)} normalizePlace />
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">{copy.email}</span>
           <input value={profile.email} disabled className={`${controlClass} bg-[#f5f6f8]`} />
@@ -357,14 +360,21 @@ function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy
 }
 
 const controlClass =
-  'h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm outline-none focus:border-[#0866ff]'
+  'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm outline-none focus:border-[#0866ff]'
 
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  const { label, ...rest } = props
+function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; normalizePlace?: boolean }) {
+  const { label, normalizePlace, onBlur, ...rest } = props
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-sm font-semibold">{label}</span>
-      <input {...rest} className={controlClass} />
+      <input
+        {...rest}
+        onBlur={(event) => {
+          if (normalizePlace) event.currentTarget.value = normalizePlaceName(event.currentTarget.value)
+          onBlur?.(event)
+        }}
+        className={`${controlClass} ${rest.type === 'date' ? 'appearance-none' : ''}`}
+      />
     </label>
   )
 }
