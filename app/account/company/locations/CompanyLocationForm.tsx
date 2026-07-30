@@ -19,6 +19,7 @@ type Copy = {
   saveBranch: string
   saving: string
   saved: string
+  saveError: string
   formIntro: string
   branch: string
   showroom: string
@@ -52,10 +53,10 @@ export function CompanyLocationForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.fromEntries(form.entries())),
     })
-    const data = await response.json().catch(() => ({}))
+    await response.json().catch(() => ({}))
     setSaving(false)
     if (!response.ok) {
-      setError(String(data.error || 'Could not save company location.'))
+      setError(copy.saveError)
       return
     }
     event.currentTarget.reset()
@@ -64,21 +65,21 @@ export function CompanyLocationForm({
   }
 
   return (
-    <form onSubmit={submit} className="rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+    <form onSubmit={submit} className="min-w-0 overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
       <div className="flex items-start gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] bg-[#eef5ff] text-[#0866ff]">
           <Plus className="h-5 w-5" />
         </span>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-[-.025em] text-[#101828]">{copy.addBranch}</h2>
           <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.formIntro}</p>
         </div>
       </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid min-w-0 gap-3 min-[1500px]:grid-cols-2">
         <Input name="name" label={copy.name} required />
-        <label className="grid gap-1.5">
+        <label className="grid min-w-0 gap-1.5">
           <span className="text-sm font-medium text-[#344054]">{copy.type}</span>
-          <select name="locationType" defaultValue="branch" className="min-h-12 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none focus:border-[#0866ff]">
+          <select name="locationType" defaultValue="branch" className="min-h-12 w-full min-w-0 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none focus:border-[#0866ff]">
             <option value="branch">{copy.branch}</option>
             <option value="showroom">{copy.showroom}</option>
             <option value="storage">{copy.storage}</option>
@@ -98,7 +99,7 @@ export function CompanyLocationForm({
       </div>
       {error ? <p className="mt-4 rounded-[12px] border border-[#ffd0d0] bg-[#fff5f5] px-3 py-2 text-sm font-medium text-[#b42318]">{error}</p> : null}
       {success ? <p className="mt-4 rounded-[12px] border border-[#b7ebc6] bg-[#f0fff5] px-3 py-2 text-sm font-medium text-[#067647]">{success}</p> : null}
-      <button type="submit" disabled={saving} className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#075be3] disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="submit" disabled={saving} className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#075be3] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         {saving ? copy.saving : copy.saveBranch}
       </button>
@@ -122,7 +123,7 @@ function Input({
   required?: boolean
 }) {
   return (
-    <label className="grid gap-1.5">
+    <label className="grid min-w-0 gap-1.5">
       <span className="text-sm font-medium text-[#344054]">{label}</span>
       <input
         name={name}
@@ -130,7 +131,7 @@ function Input({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        className="min-h-12 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff]"
+        className="min-h-12 w-full min-w-0 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff]"
       />
     </label>
   )

@@ -21,7 +21,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublicObject, translationLocale, type PublicLocale } from '@/lib/public-i18n'
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountBreadcrumbs'
@@ -80,6 +80,169 @@ const baseCopy = {
   locked: 'Locked',
   requires: 'Requires',
   upgrade: 'Upgrade plan',
+}
+
+const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<typeof baseCopy>>> = {
+  sv: {
+    portal: 'Företagsportal',
+    overview: 'Översikt',
+    listings: 'Annonser',
+    create: 'Skapa annons',
+    import: 'Importera annonser',
+    analytics: 'Analys',
+    locations: 'Filialer',
+    team: 'Team',
+    subscription: 'Prenumeration och betalning',
+    profile: 'Företagsprofil',
+    settings: 'Inställningar',
+    support: 'Hjälp',
+    locked: 'Låst',
+    requires: 'Kräver',
+    upgrade: 'Uppgradera plan',
+  },
+  de: {
+    portal: 'Unternehmensportal',
+    overview: 'Übersicht',
+    listings: 'Anzeigen',
+    create: 'Anzeige erstellen',
+    import: 'Anzeigen importieren',
+    analytics: 'Analysen',
+    locations: 'Standorte',
+    team: 'Team',
+    subscription: 'Abo und Abrechnung',
+    profile: 'Unternehmensprofil',
+    settings: 'Einstellungen',
+    support: 'Support',
+    locked: 'Gesperrt',
+    requires: 'Erfordert',
+    upgrade: 'Plan upgraden',
+  },
+  fr: {
+    portal: 'Portail entreprise',
+    overview: 'Vue d’ensemble',
+    listings: 'Annonces',
+    create: 'Créer une annonce',
+    import: 'Importer des annonces',
+    analytics: 'Analyses',
+    locations: 'Sites',
+    team: 'Équipe',
+    subscription: 'Abonnement et facturation',
+    profile: 'Profil entreprise',
+    settings: 'Paramètres',
+    support: 'Support',
+    locked: 'Verrouillé',
+    requires: 'Nécessite',
+    upgrade: 'Changer de plan',
+  },
+  es: {
+    portal: 'Portal de empresa',
+    overview: 'Resumen',
+    listings: 'Anuncios',
+    create: 'Crear anuncio',
+    import: 'Importar anuncios',
+    analytics: 'Analítica',
+    locations: 'Ubicaciones',
+    team: 'Equipo',
+    subscription: 'Suscripción y facturación',
+    profile: 'Perfil de empresa',
+    settings: 'Configuración',
+    support: 'Soporte',
+    locked: 'Bloqueado',
+    requires: 'Requiere',
+    upgrade: 'Mejorar plan',
+  },
+  it: {
+    portal: 'Portale aziendale',
+    overview: 'Panoramica',
+    listings: 'Annunci',
+    create: 'Crea annuncio',
+    import: 'Importa annunci',
+    analytics: 'Analisi',
+    locations: 'Sedi',
+    team: 'Team',
+    subscription: 'Abbonamento e fatturazione',
+    profile: 'Profilo aziendale',
+    settings: 'Impostazioni',
+    support: 'Supporto',
+    locked: 'Bloccato',
+    requires: 'Richiede',
+    upgrade: 'Aggiorna piano',
+  },
+  nl: {
+    portal: 'Bedrijfsportaal',
+    overview: 'Overzicht',
+    listings: 'Advertenties',
+    create: 'Advertentie maken',
+    import: 'Advertenties importeren',
+    analytics: 'Analyse',
+    locations: 'Locaties',
+    team: 'Team',
+    subscription: 'Abonnement en facturatie',
+    profile: 'Bedrijfsprofiel',
+    settings: 'Instellingen',
+    support: 'Support',
+    locked: 'Vergrendeld',
+    requires: 'Vereist',
+    upgrade: 'Plan upgraden',
+  },
+  fi: {
+    portal: 'Yritysportaali',
+    overview: 'Yleiskatsaus',
+    listings: 'Ilmoitukset',
+    create: 'Luo ilmoitus',
+    import: 'Tuo ilmoituksia',
+    analytics: 'Analytiikka',
+    locations: 'Toimipisteet',
+    team: 'Tiimi',
+    subscription: 'Tilaus ja laskutus',
+    profile: 'Yritysprofiili',
+    settings: 'Asetukset',
+    support: 'Tuki',
+    locked: 'Lukittu',
+    requires: 'Vaatii',
+    upgrade: 'Päivitä paketti',
+  },
+  da: {
+    portal: 'Virksomhedsportal',
+    overview: 'Oversigt',
+    listings: 'Annoncer',
+    create: 'Opret annonce',
+    import: 'Importér annoncer',
+    analytics: 'Analyse',
+    locations: 'Lokationer',
+    team: 'Team',
+    subscription: 'Abonnement og fakturering',
+    profile: 'Virksomhedsprofil',
+    settings: 'Indstillinger',
+    support: 'Support',
+    locked: 'Låst',
+    requires: 'Kræver',
+    upgrade: 'Opgrader plan',
+  },
+  pl: {
+    portal: 'Portal firmowy',
+    overview: 'Przegląd',
+    listings: 'Ogłoszenia',
+    create: 'Utwórz ogłoszenie',
+    import: 'Importuj ogłoszenia',
+    analytics: 'Analityka',
+    locations: 'Lokalizacje',
+    team: 'Zespół',
+    subscription: 'Subskrypcja i płatności',
+    profile: 'Profil firmy',
+    settings: 'Ustawienia',
+    support: 'Wsparcie',
+    locked: 'Zablokowane',
+    requires: 'Wymaga',
+    upgrade: 'Ulepsz plan',
+  },
+}
+
+function getCompanyPortalCopy(locale: PublicLocale) {
+  return {
+    ...translatePublicObject(locale, baseCopy),
+    ...(localeCopy[translationLocale(locale)] || {}),
+  } as typeof baseCopy
 }
 
 const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideIcon; requiredPlan?: string }> = [
@@ -171,7 +334,7 @@ export function CompanyPortalShell({
   description: string
   children: React.ReactNode
 }) {
-  const copy = translatePublicObject(context.locale, baseCopy)
+  const copy = getCompanyPortalCopy(context.locale)
   const plan = String(context.subscription?.plan_key || 'free').toLowerCase()
   const currentCrumb = companyBreadcrumbKey[active]
   const breadcrumbItems =
@@ -241,7 +404,7 @@ export function LockedFeature({
   requiredPlan: string
   text: string
 }) {
-  const copy = translatePublicObject(locale, baseCopy)
+  const copy = getCompanyPortalCopy(locale)
   return (
     <div className="rounded-[16px] border border-[#d9e2ef] bg-white p-6 text-center shadow-[0_18px_50px_rgba(16,24,40,.045)]">
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-[14px] bg-[#eef5ff] text-[#0866ff]">

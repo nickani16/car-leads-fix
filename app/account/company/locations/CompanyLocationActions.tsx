@@ -27,6 +27,8 @@ type Copy = {
   deactivating: string
   saving: string
   saved: string
+  updateError: string
+  deactivateError: string
   name: string
   type: string
   countryCode: string
@@ -64,10 +66,10 @@ export function CompanyLocationActions({ location, copy }: { location: Location;
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...body, id: location.id, isPrimary: form.get('isPrimary') === 'on' }),
     })
-    const data = await response.json().catch(() => ({}))
+    await response.json().catch(() => ({}))
     setBusy(null)
     if (!response.ok) {
-      setError(String(data.error || 'Could not update company location.'))
+      setError(copy.updateError)
       return
     }
     setOpen(false)
@@ -79,10 +81,10 @@ export function CompanyLocationActions({ location, copy }: { location: Location;
     setBusy('delete')
     setError('')
     const response = await fetch(`/api/account/company/locations?id=${encodeURIComponent(location.id)}`, { method: 'DELETE' })
-    const data = await response.json().catch(() => ({}))
+    await response.json().catch(() => ({}))
     setBusy(null)
     if (!response.ok) {
-      setError(String(data.error || 'Could not deactivate company location.'))
+      setError(copy.deactivateError)
       return
     }
     router.refresh()
@@ -113,11 +115,11 @@ export function CompanyLocationActions({ location, copy }: { location: Location;
       {error ? <p className="mt-3 rounded-[12px] border border-[#ffd0d0] bg-[#fff5f5] px-3 py-2 text-sm font-medium text-[#b42318]">{error}</p> : null}
 
       {open ? (
-        <form onSubmit={submit} className="mt-4 grid gap-3 rounded-[14px] border border-[#e4ebf5] bg-white p-4 sm:grid-cols-2">
+        <form onSubmit={submit} className="mt-4 grid min-w-0 gap-3 overflow-hidden rounded-[14px] border border-[#e4ebf5] bg-white p-4 md:grid-cols-2">
           <Input name="name" label={copy.name} defaultValue={location.name || ''} required />
-          <label className="grid gap-1.5">
+          <label className="grid min-w-0 gap-1.5">
             <span className="text-sm font-medium text-[#344054]">{copy.type}</span>
-            <select name="locationType" defaultValue={location.location_type || 'branch'} className="min-h-11 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none focus:border-[#0866ff]">
+            <select name="locationType" defaultValue={location.location_type || 'branch'} className="min-h-11 w-full min-w-0 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none focus:border-[#0866ff]">
               <option value="branch">{copy.branch}</option>
               <option value="showroom">{copy.showroom}</option>
               <option value="storage">{copy.storage}</option>
@@ -139,11 +141,11 @@ export function CompanyLocationActions({ location, copy }: { location: Location;
             {copy.primaryLocation}
           </label>
           <div className="flex flex-wrap gap-2 sm:col-span-2">
-            <button type="submit" disabled={busy !== null} className="inline-flex min-h-10 items-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#075be3] disabled:opacity-60">
+            <button type="submit" disabled={busy !== null} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#075be3] disabled:opacity-60">
               {busy === 'save' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {busy === 'save' ? copy.saving : copy.saveChanges}
             </button>
-            <button type="button" onClick={() => setOpen(false)} className="inline-flex min-h-10 items-center rounded-[10px] border border-[#d0d8e6] bg-white px-4 text-sm font-semibold text-[#344054]">
+            <button type="button" onClick={() => setOpen(false)} className="inline-flex min-h-10 items-center justify-center rounded-[10px] border border-[#d0d8e6] bg-white px-4 text-sm font-semibold text-[#344054]">
               {copy.cancel}
             </button>
           </div>
@@ -169,7 +171,7 @@ function Input({
   required?: boolean
 }) {
   return (
-    <label className="grid gap-1.5">
+    <label className="grid min-w-0 gap-1.5">
       <span className="text-sm font-medium text-[#344054]">{label}</span>
       <input
         name={name}
@@ -177,7 +179,7 @@ function Input({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        className="min-h-11 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff]"
+        className="min-h-11 w-full min-w-0 rounded-[12px] border border-[#d0d8e6] bg-white px-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff]"
       />
     </label>
   )
