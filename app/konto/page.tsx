@@ -320,7 +320,7 @@ export default async function AccountPage() {
                 </a>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3">
                 <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
                 <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
                 <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
@@ -582,16 +582,16 @@ function OverviewMetric({
   return (
     <Link
       href={href}
-      className="group flex min-w-0 items-center gap-4 rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
+      className="group flex min-w-0 flex-col items-center justify-center gap-3 rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-3 text-center transition hover:border-[#aac5ef] hover:bg-white sm:flex-row sm:justify-start sm:gap-4 sm:p-4 sm:text-left"
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef]">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef] sm:h-10 sm:w-10">
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <strong className="block text-3xl font-semibold leading-none tracking-[-0.04em] text-[#101828]">
+        <strong className="block text-3xl font-semibold leading-none tracking-[-0.04em] text-[#101828] sm:text-3xl">
           {value.toLocaleString()}
         </strong>
-        <span className="mt-2 block text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-[#667085]">
+        <span className="mt-2 block max-w-full break-words text-[10px] font-semibold uppercase leading-4 tracking-[0.04em] text-[#667085] sm:text-xs sm:tracking-[0.08em]">
           {label}
         </span>
       </div>
