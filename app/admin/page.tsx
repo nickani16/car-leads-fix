@@ -80,6 +80,8 @@ export default async function AdminDashboardPage({
     openReports,
     failedPayments,
     paidPayments,
+    openBusinessInvoices,
+    overdueBusinessInvoices,
     activeSubscriptions,
     expiringListings,
     suspiciousEvents,
@@ -95,6 +97,8 @@ export default async function AdminDashboardPage({
     canReadReports ? adminClient.from('marketplace_reports').select('id', { count: 'exact', head: true }).in('status', ['new', 'reviewing', 'investigating']) : emptyCount(),
     canReadPayments ? adminClient.from('payment_orders').select('id', { count: 'exact', head: true }).in('status', ['failed', 'expired']).gte('updated_at', from) : emptyCount(),
     canReadPayments ? adminClient.from('payment_orders').select('id', { count: 'exact', head: true }).in('status', ['paid', 'fulfilled']).gte('updated_at', from) : emptyCount(),
+    canReadPayments ? adminClient.from('business_invoices').select('id', { count: 'exact', head: true }).in('status', ['open', 'draft', 'uncollectible']) : emptyCount(),
+    canReadPayments ? adminClient.from('business_invoices').select('id', { count: 'exact', head: true }).in('status', ['open', 'uncollectible']).not('due_at', 'is', null).lt('due_at', nowIso) : emptyCount(),
     canReadSubscriptions ? adminClient.from('business_subscriptions').select('id', { count: 'exact', head: true }).in('status', ['active', 'trialing']) : emptyCount(),
     canReadListings ? listingCount().eq('status', 'published').gte('expires_at', nowIso).lte('expires_at', inSevenDays) : emptyCount(),
     canReadModeration || canReadSecurity ? adminClient.from('marketplace_listing_risk_events').select('id', { count: 'exact', head: true }).in('severity', ['high', 'critical']).gte('created_at', from) : emptyCount(),
@@ -115,6 +119,8 @@ export default async function AdminDashboardPage({
     ...(canReadCompanies ? [{ label: 'Företag att verifiera', value: pendingCompanies.count, helper: 'Manuell kontroll', href: '/admin/companies/verification', icon: Building2, tone: pendingCompanies.count ? 'amber' as const : 'green' as const }] : []),
     ...(canReadReports ? [{ label: 'Öppna rapporter', value: openReports.count, helper: 'Trust & safety', href: '/admin/reports', icon: Flag, tone: openReports.count ? 'red' as const : 'green' as const }] : []),
     ...(canReadPayments ? [{ label: 'Misslyckade betalningar', value: failedPayments.count, helper: 'Valt intervall', href: '#system-status', icon: CircleDollarSign, tone: failedPayments.count ? 'red' as const : 'green' as const }] : []),
+    ...(canReadPayments ? [{ label: 'Öppna företagsfakturor', value: openBusinessInvoices.count, helper: 'Kräver uppföljning', href: '/admin/invoices?status=open', icon: CircleDollarSign, tone: openBusinessInvoices.count ? 'amber' as const : 'green' as const }] : []),
+    ...(canReadPayments ? [{ label: 'Förfallna fakturor', value: overdueBusinessInvoices.count, helper: 'Spärrar annonsskapande', href: '/admin/invoices?status=open', icon: AlertTriangle, tone: overdueBusinessInvoices.count ? 'red' as const : 'green' as const }] : []),
     ...(canReadListings ? [{ label: 'Annonser löper ut', value: expiringListings.count, helper: 'Inom sju dagar', href: '/admin/listings?status=published', icon: AlertTriangle, tone: expiringListings.count ? 'amber' as const : 'green' as const }] : []),
     ...(canReadModeration || canReadSecurity ? [{ label: 'Säkerhetssignaler', value: suspiciousEvents.count, helper: 'Hög eller kritisk risk', href: '/admin/moderation?queue=risk', icon: ShieldAlert, tone: suspiciousEvents.count ? 'red' as const : 'green' as const }] : []),
   ]
@@ -126,6 +132,8 @@ export default async function AdminDashboardPage({
     pendingCompanies,
     openReports,
     failedPayments,
+    openBusinessInvoices,
+    overdueBusinessInvoices,
   ].some((result) => Boolean(result.error))
 
   return (
@@ -227,6 +235,7 @@ export default async function AdminDashboardPage({
               <StatusRow label="Supabase dataåtkomst" ok={!queryError} detail={queryError ? 'Delvis fel' : 'Ansluten'} />
               {canReadSystem ? <StatusRow label="Stripe-webhookar" ok={!failedWebhooks.count} detail={failedWebhooks.count ? `${failedWebhooks.count} fel` : 'Inga fel i intervallet'} /> : null}
               {canReadPayments ? <StatusRow label="Betalningar" ok={!failedPayments.count} detail={`${formatNumber(paidPayments.count)} lyckade`} /> : null}
+              {canReadPayments ? <StatusRow label="Företagsfakturor" ok={!overdueBusinessInvoices.count} detail={overdueBusinessInvoices.count ? `${formatNumber(overdueBusinessInvoices.count)} förfallna` : `${formatNumber(openBusinessInvoices.count)} öppna`} /> : null}
               {canReadSubscriptions ? <StatusRow label="Företagsabonnemang" ok detail={`${formatNumber(activeSubscriptions.count)} aktiva`} /> : null}
               {permissions.includes('support.read') ? <StatusRow label="Supportdatamodell" ok={false} detail="Ej driftsatt" neutral /> : null}
             </div>

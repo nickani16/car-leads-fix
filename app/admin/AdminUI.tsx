@@ -14,7 +14,7 @@ export function AdminPageHeader({
 }) {
   return (
     <header className="mb-7">
-      {backHref && (
+      {backHref ? (
         <Link
           href={backHref}
           className="mb-5 inline-flex items-center gap-2 text-sm text-[#62686c] hover:text-[#242424]"
@@ -22,7 +22,7 @@ export function AdminPageHeader({
           <ArrowLeft size={16} />
           Tillbaka
         </Link>
-      )}
+      ) : null}
       <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#70767a]">
         {eyebrow}
       </p>
@@ -59,19 +59,19 @@ export function AdminFilters({
           name="q"
           defaultValue={search}
           placeholder={searchPlaceholder}
-          className="h-11 w-full rounded-[10px] border border-[#d7deea] bg-[#f8fafc] pl-11 pr-4 text-sm outline-none focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
+          className="h-11 w-full rounded-[10px] border border-[#d7deea] bg-[#f8fafc] pl-11 pr-4 text-sm outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
         />
       </label>
       {children}
       <button
         type="submit"
-        className="h-11 rounded-[10px] bg-[#0866ff] px-6 text-sm font-bold text-white"
+        className="h-11 rounded-[10px] bg-[#0866ff] px-6 text-sm font-bold text-white transition hover:bg-[#075ce6]"
       >
         Filtrera
       </button>
       <Link
         href="?"
-        className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d7deea] px-4 text-sm font-bold text-[#475467]"
+        className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d7deea] px-4 text-sm font-bold text-[#475467] transition hover:border-[#0866ff] hover:text-[#0866ff]"
       >
         Rensa
       </Link>
@@ -95,7 +95,7 @@ export function FilterSelect({
       name={name}
       defaultValue={value || ''}
       aria-label={label}
-    className="h-11 rounded-[10px] border border-[#d7deea] bg-white px-4 text-sm text-[#52616b] outline-none focus:border-[#0866ff]"
+      className="h-11 min-w-[150px] rounded-[10px] border border-[#d7deea] bg-white px-4 text-sm text-[#52616b] outline-none focus:border-[#0866ff]"
     >
       <option value="">{label}</option>
       {options.map((option) => (
@@ -169,7 +169,7 @@ export function DetailGrid({
             {item.label}
           </dt>
           <dd className="mt-1 break-words text-sm text-[#242424]">
-            {item.value || 'Not provided'}
+            {item.value || 'Ej angivet'}
           </dd>
         </div>
       ))}
@@ -216,7 +216,7 @@ export function AdminTable({
                 <th
                   key={column}
                   scope="col"
-                  className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-[#667085]"
+                  className="whitespace-nowrap px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-[#667085]"
                 >
                   {column}
                 </th>
