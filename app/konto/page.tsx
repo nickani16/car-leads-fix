@@ -28,6 +28,7 @@ import AccountLogoutButton from './AccountLogoutButton'
 import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { getAdminContext } from '@/lib/admin/context'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -77,6 +78,9 @@ export default async function AccountPage() {
   if (!user) redirect(localizePublicHref(locale, '/login'))
 
   const admin = createAdminClient()
+  const adminContext = await getAdminContext().catch(() => null)
+  if (adminContext) redirect('/admin')
+
   const { data: profile } = await supabase
     .from('marketplace_profiles')
     .select(`

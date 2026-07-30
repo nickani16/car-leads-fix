@@ -190,6 +190,7 @@ type HeaderAccount = {
   authenticated: boolean
   displayName?: string
   accountType?: 'private' | 'business' | null
+  isAdmin?: boolean
   unreadMessages: number
   conversationCount: number
 }
@@ -870,6 +871,7 @@ export default function PublicHeader({
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
   const isBusinessAccount = headerAccount.accountType === 'business'
+  const isAdminAccount = Boolean(headerAccount.isAdmin)
   const createListingHref = isBusinessAccount
     ? `${marketPathPrefix}/account/company/listings/create`
     : localizePublicHref(locale, '/account/listings/new')
@@ -1018,7 +1020,11 @@ export default function PublicHeader({
   const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
   const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
   const accountSettingsHref = isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : `${marketPathPrefix}/account/settings`
-  const profileMenuLinks = isBusinessAccount
+  const profileMenuLinks = isAdminAccount
+    ? [
+        { href: '/admin', label: 'Admin', icon: ShieldCheck },
+      ]
+    : isBusinessAccount
     ? [
         { href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 },
         { href: accountProfileHref, label: accountMenuCopy.pages, icon: UserRound },
@@ -1036,7 +1042,7 @@ export default function PublicHeader({
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
-  const mobileProfileLabel = accountMenuCopy.pages
+  const mobileProfileLabel = isAdminAccount ? 'Admin' : accountMenuCopy.pages
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()

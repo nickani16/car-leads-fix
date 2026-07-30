@@ -6,6 +6,7 @@ declare global {
       authenticated?: boolean
       displayName?: string
       accountType?: string | null
+      isAdmin?: boolean
       unreadMessages?: number
       conversationCount?: number
     }
