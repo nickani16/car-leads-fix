@@ -13,7 +13,7 @@ export const BUSINESS_TEAM_SEAT_LIMITS = {
   enterprise: 200,
 } as const
 
-export const COMPANY_TEAM_ROLES = ['admin', 'manager', 'sales', 'staff', 'viewer'] as const
+export const COMPANY_TEAM_ROLES = ['admin', 'manager', 'finance', 'sales', 'staff', 'viewer'] as const
 export type CompanyTeamRole = (typeof COMPANY_TEAM_ROLES)[number]
 
 export type CompanyTeamMember = {
@@ -22,6 +22,7 @@ export type CompanyTeamMember = {
   createdAt: string | null
   name: string
   email: string
+  billingNotificationsEnabled: boolean
 }
 
 export type CompanyTeamInvitation = {
@@ -69,7 +70,7 @@ export async function getCompanyTeamOverview(
   const [{ data: members }, { data: invitations }] = await Promise.all([
     admin
       .from('marketplace_company_members')
-      .select('user_id,role,created_at')
+      .select('user_id,role,created_at,billing_notifications_enabled')
       .eq('company_id', companyId)
       .order('created_at', { ascending: true }),
     admin
@@ -103,6 +104,7 @@ export async function getCompanyTeamOverview(
       createdAt: member.created_at || null,
       name,
       email: String(profile?.email || ''),
+      billingNotificationsEnabled: Boolean(member.billing_notifications_enabled),
     }
   })
 
@@ -241,6 +243,7 @@ function roleLabel(role: CompanyTeamRole, locale: EmailLocale) {
   const sv: Record<CompanyTeamRole, string> = {
     admin: 'admin',
     manager: 'ansvarig',
+    finance: 'ekonomi',
     sales: 'säljare',
     staff: 'personal',
     viewer: 'läsbehörig',

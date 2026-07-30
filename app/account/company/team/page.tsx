@@ -1,10 +1,11 @@
 import { Mail, Users } from 'lucide-react'
 import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject, translationLocale, type PublicLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCompanyTeamOverview } from '@/lib/business-team'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import TeamInviteForm from './TeamInviteForm'
+import TeamBillingRecipientToggle from './TeamBillingRecipientToggle'
 
 export const generateMetadata = generateAccountMetadata('company-team')
 
@@ -25,11 +26,75 @@ const baseCopy = {
   sending: 'Sending...',
   sent: 'Invitation sent.',
   invitationError: 'Invitation could not be sent.',
+  billingRecipient: 'Receives invoices',
+  billingRecipientOn: 'On',
+  billingRecipientOff: 'Off',
+  billingRecipientError: 'Invoice recipient could not be saved.',
+}
+
+const billingRecipientCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<typeof baseCopy>>> = {
+  sv: {
+    billingRecipient: 'Tar emot fakturor',
+    billingRecipientOn: 'På',
+    billingRecipientOff: 'Av',
+    billingRecipientError: 'Fakturamottagaren kunde inte sparas.',
+  },
+  da: {
+    billingRecipient: 'Modtager fakturaer',
+    billingRecipientOn: 'Til',
+    billingRecipientOff: 'Fra',
+    billingRecipientError: 'Fakturamodtageren kunne ikke gemmes.',
+  },
+  fi: {
+    billingRecipient: 'Vastaanottaa laskut',
+    billingRecipientOn: 'Päällä',
+    billingRecipientOff: 'Pois',
+    billingRecipientError: 'Laskun vastaanottajaa ei voitu tallentaa.',
+  },
+  de: {
+    billingRecipient: 'Erhält Rechnungen',
+    billingRecipientOn: 'Ein',
+    billingRecipientOff: 'Aus',
+    billingRecipientError: 'Rechnungsempfänger konnte nicht gespeichert werden.',
+  },
+  fr: {
+    billingRecipient: 'Reçoit les factures',
+    billingRecipientOn: 'Oui',
+    billingRecipientOff: 'Non',
+    billingRecipientError: 'Le destinataire des factures n’a pas pu être enregistré.',
+  },
+  it: {
+    billingRecipient: 'Riceve fatture',
+    billingRecipientOn: 'Attivo',
+    billingRecipientOff: 'Disattivo',
+    billingRecipientError: 'Il destinatario delle fatture non è stato salvato.',
+  },
+  es: {
+    billingRecipient: 'Recibe facturas',
+    billingRecipientOn: 'Sí',
+    billingRecipientOff: 'No',
+    billingRecipientError: 'No se pudo guardar el destinatario de facturas.',
+  },
+  nl: {
+    billingRecipient: 'Ontvangt facturen',
+    billingRecipientOn: 'Aan',
+    billingRecipientOff: 'Uit',
+    billingRecipientError: 'Factuurontvanger kon niet worden opgeslagen.',
+  },
+  pl: {
+    billingRecipient: 'Otrzymuje faktury',
+    billingRecipientOn: 'Wł.',
+    billingRecipientOff: 'Wył.',
+    billingRecipientError: 'Nie udało się zapisać odbiorcy faktur.',
+  },
 }
 
 export default async function CompanyTeamPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
-  const copy = translatePublicObject(context.locale, baseCopy)
+  const copy = {
+    ...translatePublicObject(context.locale, baseCopy),
+    ...(billingRecipientCopy[translationLocale(context.locale)] || {}),
+  }
   const plan = String(context.subscription?.plan_key || 'free')
   if (!planAllows(plan, 'growth')) {
     return (
@@ -70,6 +135,14 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
                   <p className="text-sm font-bold text-[#101828]">{member.name}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{member.role}</p>
                   {member.email ? <p className="mt-1 truncate text-sm text-[#667085]">{member.email}</p> : null}
+                  {member.email ? (
+                    <TeamBillingRecipientToggle
+                      userId={member.userId}
+                      enabled={member.billingNotificationsEnabled}
+                      locale={context.locale}
+                      copy={copy}
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>

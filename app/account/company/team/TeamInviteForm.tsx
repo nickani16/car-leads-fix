@@ -68,6 +68,7 @@ export default function TeamInviteForm({ copy, locale }: TeamInviteFormProps) {
       >
         <option value="admin">Admin</option>
         <option value="manager">Manager</option>
+        <option value="finance">Finance</option>
         <option value="sales">Sales</option>
         <option value="staff">Staff</option>
         <option value="viewer">Viewer</option>

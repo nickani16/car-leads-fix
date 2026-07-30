@@ -310,15 +310,27 @@ export async function POST(request: Request) {
         .limit(1)
         .maybeSingle()
 
+      const invoiceLocale = stripeLocaleForCheckout(checkoutLocale, market)
       const customerId = existingSubscription?.stripe_customer_id || (await stripe.customers.create({
         email: profile.email || user.email || undefined,
         name: profile.company_name || profile.email || user.email || undefined,
-        preferred_locales: [stripeLocaleForCheckout(checkoutLocale, market)],
+        preferred_locales: [invoiceLocale],
         metadata: {
           user_id: user.id,
           business_id: body.businessId || '',
         },
       })).id
+      if (existingSubscription?.stripe_customer_id) {
+        await stripe.customers.update(customerId, {
+          email: profile.email || user.email || undefined,
+          name: profile.company_name || profile.email || user.email || undefined,
+          preferred_locales: [invoiceLocale],
+          metadata: {
+            user_id: user.id,
+            business_id: body.businessId || '',
+          },
+        })
+      }
 
       const stripeProduct = await stripe.products.create({
         name: checkoutProduct.name,

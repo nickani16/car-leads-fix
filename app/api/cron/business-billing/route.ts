@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const admin = createAdminClient()
   const now = new Date()
   const windowStart = startOfDay(addDays(now, -30)).toISOString()
-  const windowEnd = endOfDay(addDays(now, 3)).toISOString()
+  const windowEnd = endOfDay(addDays(now, 7)).toISOString()
   const { data: invoices, error } = await admin
     .from('business_invoices')
     .select('stripe_invoice_id,invoice_number,hosted_invoice_url,pdf_url,amount_minor,currency,status,due_at,subscription_id,user_id')
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     if (stripeInvoice.status === 'void') continue
 
     const daysLeft = calendarDayDiff(now, new Date(invoice.due_at))
-    if (daysLeft === 2 || daysLeft === 1) {
+    if ([7, 5, 3, 2, 1].includes(daysLeft)) {
       const sent = await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-invoice-reminder-${daysLeft}-${invoice.stripe_invoice_id}`,
         kind: 'invoice_reminder',
