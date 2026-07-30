@@ -1,16 +1,21 @@
 import { headers } from 'next/headers'
 import { createPublicMetadata } from '@/lib/public-seo'
-import PublicContactPage from '@/app/components/PublicContactPage'
+import PublicContactPage, { getPublicContactSeoCopy } from '@/app/components/PublicContactPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import { getRequestLocale } from '@/lib/request-locale'
 import { isPublicLanguage, type PublicLocale } from '@/lib/public-i18n'
 
-export const metadata = createPublicMetadata({
-  title: 'Kontakta Autorell | Säljare, företag och köpare',
-  description:
-    'Kontakta Autorell om att sälja bil, ett pågående ärende, företagslösningar, handlaråtkomst eller teknisk support.',
-  path: '/contact',
-})
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  const seo = getPublicContactSeoCopy(locale)
+  return createPublicMetadata({
+    title: seo.title,
+    description: seo.description,
+    path: '/contact',
+    locale,
+  })
+}
 
 export default async function ContactPage() {
   const headerStore = await headers()

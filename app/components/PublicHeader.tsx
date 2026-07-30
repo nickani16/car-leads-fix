@@ -906,6 +906,21 @@ export default function PublicHeader({
       icon: CreditCard,
     },
   ]
+  const contactMenuCopy: Record<PublicLocale, { label: string; description: string }> = {
+    sv: { label: 'Kontakta oss', description: 'Allmän kontakt för frågor, support och Autorell-ärenden.' },
+    de: { label: 'Kontakt', description: 'Allgemeiner Kontakt für Fragen, Support und Autorell-Anliegen.' },
+    en: { label: 'Contact us', description: 'General contact for questions, support and Autorell cases.' },
+    at: { label: 'Kontakt', description: 'Allgemeiner Kontakt für Fragen, Support und Autorell-Anliegen.' },
+    be: { label: 'Contact opnemen', description: 'Algemeen contact voor vragen, support en Autorell-zaken.' },
+    fr: { label: 'Nous contacter', description: 'Contact général pour questions, support et demandes Autorell.' },
+    es: { label: 'Contactar', description: 'Contacto general para preguntas, soporte y casos de Autorell.' },
+    it: { label: 'Contattaci', description: 'Contatto generale per domande, supporto e richieste Autorell.' },
+    pl: { label: 'Kontakt', description: 'Kontakt ogólny w sprawie pytań, wsparcia i spraw Autorell.' },
+    nl: { label: 'Contact opnemen', description: 'Algemeen contact voor vragen, support en Autorell-zaken.' },
+    fi: { label: 'Ota yhteyttä', description: 'Yleinen yhteys kysymyksiin, tukeen ja Autorell-asioihin.' },
+    da: { label: 'Kontakt os', description: 'Generel kontakt til spørgsmål, support og Autorell-sager.' },
+  }
+  const contactMenuItem = contactMenuCopy[locale] || contactMenuCopy.en
   const helpMenuLinks = [
     {
       href: localizePublicHref(locale, '/help-center'),
@@ -930,6 +945,12 @@ export default function PublicHeader({
       label: publicLabel('Report a problem', 'Rapportera problem', 'Melden'),
       description: publicLabel('Tell Autorell if something does not look right.', 'Meddela Autorell om något inte ser rätt ut.', 'Melden Sie Autorell, wenn etwas nicht stimmt.'),
       icon: MessageSquareText,
+    },
+    {
+      href: localizePublicHref(locale, '/contact'),
+      label: contactMenuItem.label,
+      description: contactMenuItem.description,
+      icon: Mail,
     },
   ]
 

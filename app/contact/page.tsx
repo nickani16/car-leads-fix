@@ -1,1 +1,1 @@
-export { metadata, default } from '../kontakt/page'
+export { generateMetadata, default } from '../kontakt/page'
