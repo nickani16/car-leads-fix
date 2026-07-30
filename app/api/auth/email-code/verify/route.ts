@@ -108,6 +108,18 @@ export async function POST(request: Request) {
     }
     if (challengeError) throw challengeError
 
+    async function consumeChallenge() {
+      const { data: consumedChallenge, error: consumeError } = await admin
+        .from('auth_email_codes')
+        .update({ consumed_at: new Date().toISOString() })
+        .eq('id', challenge!.id)
+        .is('consumed_at', null)
+        .select('id')
+        .maybeSingle()
+      if (consumeError) throw consumeError
+      return Boolean(consumedChallenge)
+    }
+
     if (
       !challenge ||
       challenge.attempts >= 6 ||
@@ -121,19 +133,6 @@ export async function POST(request: Request) {
           .eq('id', challenge.id)
       }
       return NextResponse.json({ error: copy.codeError }, { status: 401 })
-    }
-
-    const consumedAt = new Date().toISOString()
-    const { data: consumedChallenge, error: consumeError } = await admin
-      .from('auth_email_codes')
-      .update({ consumed_at: consumedAt })
-      .eq('id', challenge.id)
-      .is('consumed_at', null)
-      .select('id')
-      .maybeSingle()
-    if (consumeError) throw consumeError
-    if (!consumedChallenge) {
-      return NextResponse.json({ error: copy.usedCode }, { status: 401 })
     }
 
     const isEmailVerification = body.purpose === 'email_verification' || challenge.redirect_path === 'email_verification'
@@ -175,6 +174,10 @@ export async function POST(request: Request) {
         if (profileError) throw profileError
       }
 
+      if (!(await consumeChallenge())) {
+        return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+      }
+
       return NextResponse.json({ success: true, emailVerified: true })
     }
 
@@ -203,6 +206,10 @@ export async function POST(request: Request) {
       type: 'email',
     })
     if (error || !data.user) throw error || new Error('Session could not be created.')
+
+    if (!(await consumeChallenge())) {
+      return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+    }
 
     const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin
@@ -294,8 +301,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {
     console.error('Email code verification failed', error)
+    const locale = localeFromRequest(request)
+    const copy = getAuthApiCopy(locale)
     return NextResponse.json(
-      { error: 'The sign-in could not be completed. Request a new code.' },
+      { error: copy.codeError },
       { status: 500 },
     )
   }
