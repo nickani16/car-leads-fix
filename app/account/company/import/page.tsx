@@ -1,6 +1,8 @@
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { companyImportLimitsForPlan } from '@/lib/company-import-limits'
 import { CompanyImportClient } from './CompanyImportClient'
 
 export const generateMetadata = generateAccountMetadata('company-import')
@@ -32,15 +34,61 @@ const baseCopy = {
   created: 'Drafts created',
   openListings: 'Open listings',
   quotaNote: 'Imports follow the company listing quota. Free company accounts can import drafts within the included active listing limit.',
+  planLimitsTitle: 'Included in your plan',
+  rowsPerImport: 'rows per import',
+  imagesPerListing: 'images per listing',
+  recurringFeedTitle: 'Recurring feed and API import',
+  recurringFeedText: 'Automatic feed/API imports are available on Professional and Enterprise. CSV import stays available here with the limits shown for your current plan.',
+  importHistory: 'Recent imports',
+  importHistoryEmpty: 'No imports have been run yet.',
+  completed: 'Completed',
+  completedWithWarnings: 'Completed with warnings',
+  failed: 'Failed',
+  running: 'Running',
+  importedImages: 'images',
+  skippedImages: 'skipped',
+}
+
+type ImportJobRow = {
+  id: string
+  status: string | null
+  file_name: string | null
+  requested_rows: number | null
+  valid_rows: number | null
+  invalid_rows: number | null
+  created_count: number | null
+  image_imported_count: number | null
+  image_skipped_count: number | null
+  created_at: string | null
+  finished_at: string | null
 }
 
 export default async function CompanyImportPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
   const copy = translatePublicObject(context.locale, baseCopy)
+  const importLimits = companyImportLimitsForPlan(context.subscription?.plan_key || 'free')
+  const importJobs = await loadImportJobs(context.profile.company_id)
 
   return (
     <CompanyPortalShell context={context} active="import" title={copy.title} description={copy.description}>
-      <CompanyImportClient locale={context.locale} copy={copy} />
+      <CompanyImportClient locale={context.locale} copy={copy} importLimits={importLimits} importJobs={importJobs} />
     </CompanyPortalShell>
   )
+}
+
+async function loadImportJobs(companyId: string | null): Promise<ImportJobRow[]> {
+  if (!companyId) return []
+  try {
+    const admin = createAdminClient()
+    const { data, error } = await admin
+      .from('marketplace_company_import_jobs')
+      .select('id,status,file_name,requested_rows,valid_rows,invalid_rows,created_count,image_imported_count,image_skipped_count,created_at,finished_at')
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+      .limit(6)
+    if (error || !data) return []
+    return data as ImportJobRow[]
+  } catch {
+    return []
+  }
 }

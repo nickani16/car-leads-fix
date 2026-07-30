@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { CompanyLocationForm } from './CompanyLocationForm'
+import { CompanyLocationActions } from './CompanyLocationActions'
 
 export const generateMetadata = generateAccountMetadata('company-locations')
 
@@ -54,6 +55,11 @@ const baseCopy = {
   contactEmail: 'Contact email',
   contactPhone: 'Contact phone',
   saveBranch: 'Save branch',
+  editBranch: 'Edit branch',
+  saveChanges: 'Save changes',
+  deactivateBranch: 'Deactivate branch',
+  deactivating: 'Deactivating',
+  cancel: 'Cancel',
   saving: 'Saving',
   saved: 'Branch saved',
 }
@@ -158,6 +164,7 @@ function LocationCard({ location, copy }: { location: LocationRow; copy: typeof 
           <Badge label={String(locationType)} icon={MapPin} />
         </div>
       </div>
+      {location.id !== 'company-profile' ? <CompanyLocationActions location={location} copy={copy} /> : null}
     </article>
   )
 }

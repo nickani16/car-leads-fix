@@ -87,6 +87,7 @@ export type CompanyImportBranch = {
 
 type CompanyImportOptions = {
   branches?: CompanyImportBranch[]
+  maxRows?: number
 }
 
 const headerAliases: Record<string, CompanyImportHeader> = {
@@ -112,6 +113,7 @@ const headerAliases: Record<string, CompanyImportHeader> = {
 export function parseCompanyListingImportCsv(csv: string, options: CompanyImportOptions = {}): CompanyImportPreview {
   const matrix = parseCsv(csv)
   const errors: CompanyImportError[] = []
+  const maxRows = Number.isFinite(options.maxRows) && options.maxRows ? Math.max(1, Math.floor(options.maxRows)) : COMPANY_IMPORT_MAX_ROWS
   if (matrix.length < 2) {
     return {
       rows: [],
@@ -134,7 +136,7 @@ export function parseCompanyListingImportCsv(csv: string, options: CompanyImport
   const rows = matrix
     .slice(1)
     .filter((cells) => cells.some((cell) => cell.trim()))
-    .slice(0, COMPANY_IMPORT_MAX_ROWS)
+    .slice(0, maxRows)
     .map((cells, index) => {
       const raw = Object.fromEntries(headers.map((header, cellIndex) => [header, cells[cellIndex] || '']))
       const row = normalizeCompanyImportRow(raw, index + 2, options.branches || [])
@@ -149,10 +151,10 @@ export function parseCompanyListingImportCsv(csv: string, options: CompanyImport
       return row
     })
 
-  if (matrix.length - 1 > COMPANY_IMPORT_MAX_ROWS) {
+  if (matrix.length - 1 > maxRows) {
     errors.push({
       field: 'file',
-      message: `Only the first ${COMPANY_IMPORT_MAX_ROWS} rows can be imported at once.`,
+      message: `Only the first ${maxRows} rows can be imported at once on this plan.`,
     })
   }
 

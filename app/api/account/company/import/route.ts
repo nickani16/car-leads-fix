@@ -15,6 +15,7 @@ import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitl
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { companyImportLimitsForPlan } from '@/lib/company-import-limits'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
   const createdListingIds: string[] = []
   let openReservationKey: string | null = null
   const uploadedForOpenListing: UploadedImportImage[] = []
+  let jobId: string | null = null
+  let imageImportedCount = 0
+  let imageSkippedCount = 0
 
   try {
     const supabase = await createClient()
@@ -53,11 +57,37 @@ export async function POST(request: Request) {
     if (file.size > COMPANY_IMPORT_MAX_FILE_SIZE) return NextResponse.json({ error: 'CSV file is too large.' }, { status: 413 })
 
     const branches = await loadCompanyBranches(access.profile.company_id)
-    const preview = parseCompanyListingImportCsv(await file.text(), { branches })
+    const preview = parseCompanyListingImportCsv(await file.text(), { branches, maxRows: access.importLimits.maxRows })
+    const admin = createAdminClient()
+    jobId = await createImportJob(admin, {
+      userId: user.id,
+      companyId: access.profile.company_id,
+      fileName: file.name,
+      planKey: access.quota.planKey,
+      limits: access.importLimits,
+      preview,
+      quota: access.quota,
+    })
     if (preview.errors.length || preview.invalidRows || !preview.validRows) {
+      await finishImportJob(admin, jobId, {
+        status: 'failed',
+        createdCount: 0,
+        imageImportedCount,
+        imageSkippedCount,
+        errors: preview.errors,
+        rowSummaries: preview.rows,
+      })
       return NextResponse.json({ error: 'Fix validation errors before importing.', ...preview }, { status: 422 })
     }
     if (preview.validRows > access.quota.remaining) {
+      await finishImportJob(admin, jobId, {
+        status: 'failed',
+        createdCount: 0,
+        imageImportedCount,
+        imageSkippedCount,
+        errors: [{ field: 'quota', message: 'Not enough listing quota for this import period.' }],
+        rowSummaries: preview.rows,
+      })
       return NextResponse.json({
         error: 'Not enough listing quota for this import period.',
         quota: access.quota,
@@ -65,7 +95,6 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    const admin = createAdminClient()
     for (const row of preview.rows) {
       const reservation = await reserveBusinessListingQuota(user.id)
       if (!reservation.allowed) {
@@ -77,7 +106,10 @@ export async function POST(request: Request) {
       }
       openReservationKey = reservation.reservationKey
       uploadedForOpenListing.length = 0
-      uploadedForOpenListing.push(...await importRemoteImages(admin, row, user.id))
+      const importedImages = await importRemoteImages(admin, row, user.id, access.importLimits.maxImagesPerListing)
+      uploadedForOpenListing.push(...importedImages)
+      imageImportedCount += importedImages.length
+      imageSkippedCount += Math.max(0, row.data.imageUrls.length - importedImages.length)
 
       const { data: listing, error } = await admin
         .from('marketplace_listings')
@@ -147,6 +179,14 @@ export async function POST(request: Request) {
     }
 
     revalidateTag('marketplace-listings', 'max')
+    await finishImportJob(admin, jobId, {
+      status: imageSkippedCount ? 'completed_with_warnings' : 'completed',
+      createdCount: createdListingIds.length,
+      imageImportedCount,
+      imageSkippedCount,
+      errors: [],
+      rowSummaries: preview.rows,
+    })
     return NextResponse.json({
       success: true,
       created: createdListingIds.length,
@@ -157,6 +197,14 @@ export async function POST(request: Request) {
       await releaseBusinessListingQuotaReservation(openReservationKey).catch(() => undefined)
     }
     await cleanupImportedImages(createAdminClient(), uploadedForOpenListing).catch(() => undefined)
+    await finishImportJob(createAdminClient(), jobId, {
+      status: 'failed',
+      createdCount: createdListingIds.length,
+      imageImportedCount,
+      imageSkippedCount,
+      errors: [{ field: 'import', message: error instanceof Error ? error.message : 'Could not import listings.' }],
+      rowSummaries: [],
+    }).catch(() => undefined)
     console.error('Company import failed', error)
     return NextResponse.json({
       error: 'Could not import listings.',
@@ -208,9 +256,9 @@ function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerNam
   }
 }
 
-async function importRemoteImages(admin: SupabaseClient, row: CompanyImportPreviewRow, userId: string) {
+async function importRemoteImages(admin: SupabaseClient, row: CompanyImportPreviewRow, userId: string, maxImages: number) {
   const uploaded: UploadedImportImage[] = []
-  for (const [index, url] of row.data.imageUrls.slice(0, 3).entries()) {
+  for (const [index, url] of row.data.imageUrls.slice(0, Math.max(0, maxImages)).entries()) {
     try {
       const file = await fetchRemoteImageFile(url, row, index)
       uploaded.push(await uploadImportedImage(admin, file, userId, row.rowNumber, index, url))
@@ -223,6 +271,79 @@ async function importRemoteImages(admin: SupabaseClient, row: CompanyImportPrevi
     }
   }
   return uploaded
+}
+
+async function createImportJob(
+  admin: SupabaseClient,
+  input: {
+    userId: string
+    companyId: string | null | undefined
+    fileName: string
+    planKey: string
+    limits: { maxRows: number; maxImagesPerListing: number }
+    preview: ReturnType<typeof parseCompanyListingImportCsv>
+    quota: { limit: number; used: number; remaining: number; planKey: string }
+  },
+) {
+  if (!input.companyId) return null
+  try {
+    const { data, error } = await admin
+      .from('marketplace_company_import_jobs')
+      .insert({
+        company_id: input.companyId,
+        user_id: input.userId,
+        source: 'csv',
+        status: 'running',
+        file_name: input.fileName,
+        plan_key: input.planKey,
+        max_rows: input.limits.maxRows,
+        max_images_per_row: input.limits.maxImagesPerListing,
+        requested_rows: input.preview.rows.length,
+        valid_rows: input.preview.validRows,
+        invalid_rows: input.preview.invalidRows,
+        quota_snapshot: input.quota,
+        errors: input.preview.errors,
+      })
+      .select('id')
+      .single()
+    if (error || !data) return null
+    return String(data.id)
+  } catch {
+    return null
+  }
+}
+
+async function finishImportJob(
+  admin: SupabaseClient,
+  jobId: string | null,
+  input: {
+    status: 'completed' | 'completed_with_warnings' | 'failed'
+    createdCount: number
+    imageImportedCount: number
+    imageSkippedCount: number
+    errors: unknown[]
+    rowSummaries: CompanyImportPreviewRow[]
+  },
+) {
+  if (!jobId) return
+  await admin
+    .from('marketplace_company_import_jobs')
+    .update({
+      status: input.status,
+      created_count: input.createdCount,
+      image_imported_count: input.imageImportedCount,
+      image_skipped_count: input.imageSkippedCount,
+      errors: input.errors,
+      row_summaries: input.rowSummaries.map((row) => ({
+        row_number: row.rowNumber,
+        valid: row.valid,
+        reference_number: row.data.referenceNumber,
+        title: row.data.title,
+        errors: row.errors,
+      })),
+      finished_at: new Date().toISOString(),
+    })
+    .eq('id', jobId)
 }
 
 async function fetchRemoteImageFile(url: string, row: CompanyImportPreviewRow, index: number) {
@@ -319,10 +440,12 @@ async function getImportAccess(userId: string) {
   if (!entitlement.allowed) {
     return { allowed: false as const, status: 403, error: entitlement.code, code: entitlement.code }
   }
+  const importLimits = companyImportLimitsForPlan(entitlement.planKey)
   return {
     allowed: true as const,
     profile,
     entitlement,
+    importLimits,
     quota: {
       planKey: entitlement.planKey,
       limit: entitlement.activeListingLimit,

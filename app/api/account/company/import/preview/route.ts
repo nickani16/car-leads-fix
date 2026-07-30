@@ -3,6 +3,7 @@ import { COMPANY_IMPORT_MAX_FILE_SIZE, parseCompanyListingImportCsv } from '@/li
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { companyImportLimitsForPlan } from '@/lib/company-import-limits'
 
 export async function POST(request: Request) {
   try {
@@ -19,10 +20,11 @@ export async function POST(request: Request) {
     if (file.size > COMPANY_IMPORT_MAX_FILE_SIZE) return NextResponse.json({ error: 'CSV file is too large.' }, { status: 413 })
 
     const branches = await loadCompanyBranches(access.profile.company_id)
-    const preview = parseCompanyListingImportCsv(await file.text(), { branches })
+    const preview = parseCompanyListingImportCsv(await file.text(), { branches, maxRows: access.importLimits.maxRows })
     return NextResponse.json({
       ...preview,
       quota: access.quota,
+      importLimits: access.importLimits,
     })
   } catch (error) {
     console.error('Company import preview failed', error)
@@ -47,10 +49,12 @@ async function getImportAccess(userId: string) {
   if (!entitlement.allowed) {
     return { allowed: false as const, status: 403, error: entitlement.code, code: entitlement.code }
   }
+  const importLimits = companyImportLimitsForPlan(entitlement.planKey)
   return {
     allowed: true as const,
     profile,
     entitlement,
+    importLimits,
     quota: {
       planKey: entitlement.planKey,
       limit: entitlement.activeListingLimit,

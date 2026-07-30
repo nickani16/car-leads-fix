@@ -60,6 +60,13 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
+    if (insert.is_primary) {
+      await admin
+        .from('marketplace_company_locations')
+        .update({ is_primary: false, updated_at: new Date().toISOString() })
+        .eq('company_id', access.companyId)
+        .eq('is_primary', true)
+    }
     const { data, error } = await admin
       .from('marketplace_company_locations')
       .insert(insert)
@@ -71,6 +78,85 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Company locations POST failed', error)
     return NextResponse.json({ error: 'Could not save company location.' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const access = await getCompanyAccess()
+    if (!access.allowed) return NextResponse.json({ error: access.error }, { status: access.status })
+
+    const body = await request.json().catch(() => ({})) as Record<string, unknown>
+    const id = clean(body.id, 80)
+    const name = clean(body.name)
+    const type = clean(body.locationType) || 'branch'
+    const countryCode = clean(body.countryCode, 2).toUpperCase() || access.countryCode || 'SE'
+    const city = clean(body.city)
+    if (!id) return NextResponse.json({ error: 'Location id is required.' }, { status: 400 })
+    if (!name) return NextResponse.json({ error: 'Location name is required.' }, { status: 400 })
+    if (!city) return NextResponse.json({ error: 'City is required.' }, { status: 400 })
+    if (!locationTypes.has(type)) return NextResponse.json({ error: 'Location type is not supported.' }, { status: 400 })
+
+    const admin = createAdminClient()
+    if (body.isPrimary === true) {
+      await admin
+        .from('marketplace_company_locations')
+        .update({ is_primary: false, updated_at: new Date().toISOString() })
+        .eq('company_id', access.companyId)
+        .eq('is_primary', true)
+        .neq('id', id)
+    }
+    const { data, error } = await admin
+      .from('marketplace_company_locations')
+      .update({
+        name,
+        slug: slugify(name),
+        location_type: type,
+        country_code: countryCode,
+        region: clean(body.region) || null,
+        municipality: clean(body.municipality) || null,
+        city,
+        postal_code: clean(body.postalCode) || null,
+        address_line_1: clean(body.addressLine1) || null,
+        contact_email: clean(body.contactEmail) || null,
+        contact_phone: clean(body.contactPhone) || null,
+        is_primary: body.isPrimary === true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('company_id', access.companyId)
+      .select('id,name,location_type,country_code,region,municipality,city,postal_code,address_line_1,contact_email,contact_phone,is_primary,is_active')
+      .single()
+
+    if (error) return tableError(error)
+    return NextResponse.json({ location: data })
+  } catch (error) {
+    console.error('Company locations PATCH failed', error)
+    return NextResponse.json({ error: 'Could not update company location.' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const access = await getCompanyAccess()
+    if (!access.allowed) return NextResponse.json({ error: access.error }, { status: access.status })
+
+    const { searchParams } = new URL(request.url)
+    const id = clean(searchParams.get('id'), 80)
+    if (!id) return NextResponse.json({ error: 'Location id is required.' }, { status: 400 })
+
+    const admin = createAdminClient()
+    const { error } = await admin
+      .from('marketplace_company_locations')
+      .update({ is_active: false, is_primary: false, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('company_id', access.companyId)
+
+    if (error) return tableError(error)
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Company locations DELETE failed', error)
+    return NextResponse.json({ error: 'Could not deactivate company location.' }, { status: 500 })
   }
 }
 
@@ -98,8 +184,8 @@ async function getCompanyAccess() {
   }
 }
 
-function clean(value: unknown) {
-  return String(value || '').trim().slice(0, 180)
+function clean(value: unknown, maxLength = 180) {
+  return String(value || '').trim().slice(0, maxLength)
 }
 
 function slugify(value: string) {
