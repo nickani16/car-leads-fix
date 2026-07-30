@@ -98,40 +98,46 @@ export default function PublicContactPage({
         </div>
       </section>
 
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-12 sm:px-8 sm:py-16">
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-6">
-            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-7">
+      <section className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-10 sm:px-8 sm:py-14">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
+          <div className="overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_18px_48px_rgba(16,24,40,.08)]">
+            <ContactForm locale={locale} />
+          </div>
+
+          <aside className="space-y-5 lg:sticky lg:top-24">
+            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#0866ff]">
                 {source.routesTitle}
               </p>
               <p className="mt-3 text-sm leading-6 text-[#667085]">{source.routesText}</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <div className="mt-5 grid gap-2">
                 {source.routes.map(({ title, text, icon: Icon }) => (
-                  <article key={title} className="rounded-[18px] border border-[#e1e7f0] bg-[#fbfcff] p-4">
-                    <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef5ff] text-[#0866ff]">
-                      <Icon className="h-5 w-5" />
+                  <article key={title} className="flex gap-3 rounded-[16px] border border-[#e6edf6] bg-[#fbfcff] p-3.5">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <h2 className="mt-4 text-base font-medium tracking-[-0.02em] text-[#101828]">{title}</h2>
-                    <p className="mt-2 text-sm leading-6 text-[#667085]">{text}</p>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-[#101828]">{title}</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#667085]">{text}</span>
+                    </span>
                   </article>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-[#dbe7f6] bg-[#f4f8ff] p-6 sm:p-7">
-              <div className="flex items-start gap-4">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-white text-[#0866ff] shadow-[0_10px_26px_rgba(16,24,40,.05)]">
+            <div className="rounded-[24px] border border-[#dbe7f6] bg-[#f4f8ff] p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-white text-[#0866ff] shadow-[0_10px_26px_rgba(16,24,40,.05)]">
                   <MessageSquareText className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="text-xl font-medium tracking-[-0.03em] text-[#101828]">{source.checklistTitle}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[#667085]">{source.checklistText}</p>
+                  <h2 className="text-lg font-medium tracking-[-0.03em] text-[#101828]">{source.checklistTitle}</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#667085]">{source.checklistText}</p>
                 </div>
               </div>
-              <ul className="mt-5 grid gap-3 text-sm leading-6 text-[#475467]">
+              <ul className="mt-4 grid gap-2 text-sm leading-6 text-[#475467]">
                 {source.checklist.map((item) => (
-                  <li key={item} className="flex gap-3 rounded-[16px] bg-white/80 p-3">
+                  <li key={item} className="flex gap-3 rounded-[14px] bg-white/80 p-3">
                     <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0866ff]" />
                     <span>{item}</span>
                   </li>
@@ -139,11 +145,11 @@ export default function PublicContactPage({
               </ul>
             </div>
 
-            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-7">
-              <h2 className="text-xl font-medium tracking-[-0.03em] text-[#101828]">{source.faqTitle}</h2>
-              <div className="mt-5 grid gap-3">
+            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-6">
+              <h2 className="text-lg font-medium tracking-[-0.03em] text-[#101828]">{source.faqTitle}</h2>
+              <div className="mt-4 grid gap-2">
                 {source.faq.map((item) => (
-                  <details key={item.q} className="group rounded-[18px] border border-[#dfe7f2] bg-[#fbfcff] p-4 open:bg-white">
+                  <details key={item.q} className="group rounded-[16px] border border-[#dfe7f2] bg-[#fbfcff] p-3.5 open:bg-white">
                     <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-medium text-[#101828]">
                       <span>{item.q}</span>
                       <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff] transition group-open:rotate-45">+</span>
@@ -154,22 +160,18 @@ export default function PublicContactPage({
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-[#101828] bg-[#101828] p-6 text-white shadow-[0_18px_50px_rgba(16,24,40,.12)] sm:p-7">
-              <Sparkles className="h-5 w-5 text-[#8fc7ff]" />
-              <h2 className="mt-4 text-xl font-medium tracking-[-0.03em]">{source.accountCtaTitle}</h2>
-              <p className="mt-2 text-sm leading-6 text-white/72">{source.accountCtaText}</p>
+            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-6">
+              <Sparkles className="h-5 w-5 text-[#0866ff]" />
+              <h2 className="mt-4 text-lg font-medium tracking-[-0.03em] text-[#101828]">{source.accountCtaTitle}</h2>
+              <p className="mt-2 text-sm leading-6 text-[#667085]">{source.accountCtaText}</p>
               <Link
                 href={accountSupportHref}
-                className="mt-5 inline-flex min-h-12 items-center rounded-full bg-white px-5 text-sm font-medium text-[#101828] transition hover:-translate-y-0.5 hover:bg-[#eef5ff]"
+                className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#101828] px-5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#1d2939]"
               >
                 {source.accountCta}
               </Link>
             </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[24px] border border-[#e1e5ec] bg-white shadow-[0_18px_48px_rgba(16,24,40,.08)]">
-            <ContactForm locale={locale} />
-          </div>
+          </aside>
         </div>
       </section>
     </>

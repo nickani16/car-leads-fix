@@ -307,7 +307,7 @@ export default function ContactForm({
 
   if (sent) {
     return (
-      <div className="flex min-h-[620px] flex-col items-center justify-center bg-white p-8 text-center sm:p-12">
+      <div className="flex min-h-[420px] flex-col items-center justify-center bg-white p-8 text-center sm:p-10">
         <span className="grid h-16 w-16 place-items-center rounded-full bg-[#e8f8ef] text-[#168754]">
           <CheckCircle2 className="h-7 w-7" />
         </span>
@@ -331,7 +331,7 @@ export default function ContactForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-full min-h-[760px] flex-col bg-white p-6 sm:p-8 lg:p-10"
+      className="flex h-full flex-col bg-white p-6 sm:p-8 lg:p-9"
     >
       <input type="hidden" name="locale" value={locale} />
       <label className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
@@ -371,7 +371,7 @@ export default function ContactForm({
           required
           rows={7}
           placeholder={t.placeholder}
-          className="contact-control min-h-[170px] resize-y placeholder:font-normal placeholder:text-[#98a2b3]"
+          className="contact-control min-h-[150px] resize-y placeholder:font-normal placeholder:text-[#98a2b3]"
         />
       </label>
 
@@ -390,7 +390,7 @@ export default function ContactForm({
         <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</p>
       )}
 
-      <div className="mt-auto pt-8">
+      <div className="pt-7">
         <div className="flex flex-col gap-5 border-t border-[#dce6ea] pt-7 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-sm text-xs leading-5 text-[#77848a]">
             {t.footerNote}
