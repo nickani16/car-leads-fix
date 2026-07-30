@@ -2190,7 +2190,7 @@ export default function VehicleSearchExperience({
             <button
               type="button"
               onClick={() => {
-                setFiltersOpen(true)
+                setFiltersOpen((open) => !open)
                 setDesktopFilterMenu(null)
               }}
               className={`inline-flex h-8 items-center justify-center rounded-full border text-[12px] font-medium leading-none transition-all duration-200 ease-out sm:text-[13px] ${
@@ -3064,7 +3064,7 @@ export default function VehicleSearchExperience({
               mobileOverlay={mobileMapOpen}
               onCloseMobileMap={() => setMobileMapOpen(false)}
               onOpenFilters={() => {
-                setFiltersOpen(true)
+                setFiltersOpen((open) => !open)
               }}
               onSaveSearch={saveCurrentSearch}
               onBeforeListingNavigate={rememberSearchBeforeListingNavigation}
