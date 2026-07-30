@@ -183,6 +183,8 @@ label {
 
 .contact-control::placeholder {
   color: #98a6ad;
+  font-weight: 400;
+  opacity: 1;
 }
 
 .autorell-contact-modal-open .autorell-listing-gallery-control {

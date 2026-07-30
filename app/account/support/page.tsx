@@ -95,11 +95,11 @@ export default async function PrivateSupportPage() {
         <section className="mt-5 overflow-hidden rounded-[28px] border border-[#dfe7f2] bg-white shadow-[0_20px_60px_rgba(16,24,40,.06)]">
           <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
             <div className="p-6 sm:p-8 lg:p-10">
-              <div className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#cfe0ff] bg-[#f3f7ff] px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#0866ff]">
+              <div className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#cfe0ff] bg-[#f3f7ff] px-4 text-xs font-medium uppercase tracking-[0.16em] text-[#0866ff]">
                 <LifeBuoy className="h-4 w-4" />
                 {copy.eyebrow}
               </div>
-              <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-[-0.055em] text-[#101828] sm:text-5xl">
+              <h1 className="mt-5 max-w-3xl text-4xl font-medium tracking-[-0.055em] text-[#101828] sm:text-5xl">
                 {copy.title}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-[#667085]">
@@ -111,7 +111,7 @@ export default async function PrivateSupportPage() {
               </div>
             </div>
             <div className="border-t border-[#e4eaf3] bg-[#f9fbff] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
-              <p className="text-sm font-bold text-[#101828]">{copy.quickTitle}</p>
+              <p className="text-sm font-medium text-[#101828]">{copy.quickTitle}</p>
               <p className="mt-2 text-sm leading-6 text-[#667085]">{copy.quickText}</p>
               <div className="mt-5 grid gap-3">
                 {topics.slice(0, 3).map((topic) => (
@@ -124,7 +124,7 @@ export default async function PrivateSupportPage() {
                       <topic.icon className="h-5 w-5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-bold text-[#101828]">{topic.title}</span>
+                      <span className="block text-sm font-medium text-[#101828]">{topic.title}</span>
                       <span className="mt-1 block text-xs leading-5 text-[#667085]">{topic.text}</span>
                     </span>
                   </Link>
@@ -144,7 +144,7 @@ export default async function PrivateSupportPage() {
               <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#eef5ff] text-[#0866ff] transition group-hover:bg-[#0866ff] group-hover:text-white">
                 <topic.icon className="h-5 w-5" />
               </span>
-              <h2 className="mt-4 text-lg font-semibold tracking-[-0.025em] text-[#101828]">{topic.title}</h2>
+              <h2 className="mt-4 text-lg font-medium tracking-[-0.025em] text-[#101828]">{topic.title}</h2>
               <p className="mt-2 text-sm leading-6 text-[#667085]">{topic.text}</p>
             </Link>
           ))}
@@ -153,13 +153,13 @@ export default async function PrivateSupportPage() {
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-6">
             <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-7">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0866ff]">{copy.faqEyebrow}</p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-[#101828]">{copy.faqTitle}</h2>
+              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#0866ff]">{copy.faqEyebrow}</p>
+              <h2 className="mt-3 text-2xl font-medium tracking-[-0.04em] text-[#101828]">{copy.faqTitle}</h2>
               <p className="mt-3 text-sm leading-6 text-[#667085]">{copy.faqText}</p>
               <div className="mt-5 grid gap-3">
                 {copy.faq.map((item) => (
                   <details key={item.q} className="group rounded-[18px] border border-[#dfe7f2] bg-[#fbfcff] p-4 open:bg-white">
-                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-bold text-[#101828]">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-medium text-[#101828]">
                       <span>{item.q}</span>
                       <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff] transition group-open:rotate-45">+</span>
                     </summary>
@@ -175,7 +175,7 @@ export default async function PrivateSupportPage() {
                   <Sparkles className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="text-xl font-semibold tracking-[-0.03em]">{copy.guidanceTitle}</h2>
+                  <h2 className="text-xl font-medium tracking-[-0.03em]">{copy.guidanceTitle}</h2>
                   <p className="mt-2 text-sm leading-6 text-white/72">{copy.guidanceText}</p>
                 </div>
               </div>
@@ -200,11 +200,11 @@ export default async function PrivateSupportPage() {
             />
 
             <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-7">
-              <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#101828]">{copy.statusTitle}</h2>
+              <h2 className="text-xl font-medium tracking-[-0.03em] text-[#101828]">{copy.statusTitle}</h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 {copy.statusItems.map((item) => (
                   <div key={item.label} className="rounded-[18px] border border-[#dfe7f2] bg-[#fbfcff] p-4">
-                    <p className="text-sm font-bold text-[#101828]">{item.label}</p>
+                    <p className="text-sm font-medium text-[#101828]">{item.label}</p>
                     <p className="mt-2 text-xs leading-5 text-[#667085]">{item.text}</p>
                   </div>
                 ))}
@@ -225,8 +225,8 @@ function SignalCard({ icon: Icon, label, value }: { icon: LucideIcon; label: str
           <Icon className="h-5 w-5" />
         </span>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{label}</p>
-          <p className="mt-1 text-sm font-semibold text-[#101828]">{value}</p>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#667085]">{label}</p>
+          <p className="mt-1 text-sm font-medium text-[#101828]">{value}</p>
         </div>
       </div>
     </div>

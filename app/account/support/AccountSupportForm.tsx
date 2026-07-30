@@ -106,7 +106,7 @@ export function AccountSupportForm({
         <span className="grid h-16 w-16 place-items-center rounded-full bg-[#e8f8ef] text-[#168754]">
           <CheckCircle2 className="h-8 w-8" />
         </span>
-        <h2 className="mt-6 text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
+        <h2 className="mt-6 text-2xl font-medium tracking-[-0.035em] text-[#101828]">
           {copy.successTitle}
         </h2>
         <p className="mt-3 max-w-md text-sm leading-6 text-[#667085]">
@@ -115,7 +115,7 @@ export function AccountSupportForm({
         <button
           type="button"
           onClick={() => setSent(false)}
-          className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full border border-[#cfd8e6] px-6 text-sm font-bold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+          className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full border border-[#cfd8e6] px-6 text-sm font-medium text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
         >
           {copy.sendAnother}
         </button>
@@ -135,10 +135,10 @@ export function AccountSupportForm({
       </label>
 
       <div className="border-b border-[#e4eaf3] pb-6">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#0866ff]">
           {copy.eyebrow}
         </p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-[#101828] sm:text-3xl">
+        <h2 className="mt-3 text-2xl font-medium tracking-[-0.04em] text-[#101828] sm:text-3xl">
           {copy.title}
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085]">
@@ -164,13 +164,13 @@ export function AccountSupportForm({
       />
 
       <label className="mt-4 block">
-        <span className="mb-2 block text-sm font-semibold text-[#344054]">{copy.message}</span>
+        <span className="mb-2 block text-sm font-medium text-[#344054]">{copy.message}</span>
         <textarea
           name="message"
           required
           rows={7}
           placeholder={copy.messagePlaceholder}
-          className="contact-control min-h-[170px] resize-y"
+          className="contact-control min-h-[170px] resize-y placeholder:font-normal placeholder:text-[#98a2b3]"
         />
       </label>
 
@@ -178,7 +178,7 @@ export function AccountSupportForm({
         <input type="checkbox" name="privacy" required className="mt-1 h-4 w-4 shrink-0 accent-[#0866ff]" />
         <span>
           {copy.privacyStart}{' '}
-          <Link href={privacyHref} target="_blank" className="font-semibold text-[#0866ff] underline">
+          <Link href={privacyHref} target="_blank" className="font-medium text-[#0866ff] underline">
             {copy.privacyLink}
           </Link>{' '}
           {copy.privacyEnd}
@@ -186,7 +186,7 @@ export function AccountSupportForm({
       </label>
 
       {error && (
-        <p className="mt-5 rounded-[14px] bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+        <p className="mt-5 rounded-[14px] bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {error}
         </p>
       )}
@@ -198,7 +198,7 @@ export function AccountSupportForm({
         <button
           type="submit"
           disabled={sending}
-          className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_16px_35px_rgba(8,102,255,.22)] transition hover:bg-[#0053d8] disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+          className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#0866ff] px-6 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#0053d8] disabled:cursor-wait disabled:opacity-70 sm:w-auto"
         >
           {sending ? (
             <>
@@ -238,7 +238,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-2 block text-sm font-semibold text-[#344054]">{label}</span>
+      <span className="mb-2 block text-sm font-medium text-[#344054]">{label}</span>
       <input
         name={name}
         type={type}
@@ -246,7 +246,7 @@ function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
-        className="contact-control"
+        className="contact-control placeholder:font-normal placeholder:text-[#98a2b3]"
       />
     </label>
   )
@@ -267,7 +267,7 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#344054]">{label}</span>
+      <span className="mb-2 block text-sm font-medium text-[#344054]">{label}</span>
       <select name={name} required={required} className="contact-control">
         <option value="">{placeholder}</option>
         {options.map((option) => (
