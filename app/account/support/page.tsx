@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, CreditCard, FileImage, FileText, MessageCircle } from 'lucide-react'
+import { CreditCard, FileImage, FileText, MessageCircle } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import ContactForm from '@/app/components/ContactForm'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -36,13 +37,10 @@ export default async function PrivateSupportPage() {
   return (
     <main className="min-h-screen bg-[#f7f9fc] px-5 py-8 sm:px-8 lg:py-12">
       <div className="mx-auto max-w-[1180px]">
-        <Link
-          href={localizePublicHref(locale, '/account')}
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#475467] transition hover:text-[#0866ff]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {copy.back}
-        </Link>
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: 'support' }]}
+        />
 
         <section className="mt-6 rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">

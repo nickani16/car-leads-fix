@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -54,6 +55,15 @@ export async function renderListingCreatedPage({
 
   return (
     <main className="min-h-screen bg-[#f6f8fb] px-4 py-12 sm:px-6 lg:py-20">
+      <AccountBreadcrumbs
+        locale={locale}
+        items={[
+          { key: 'account', href: '/account' },
+          { key: 'listings', href: '/account/listings' },
+          { key: 'createListing' },
+        ]}
+        className="mx-auto mb-5 max-w-[760px]"
+      />
       <section className="mx-auto max-w-[760px] overflow-hidden rounded-[28px] border border-[#dbe4f0] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]">
         <div className="border-b border-[#e6ebf2] bg-[#f8fbff] p-6 sm:p-8">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#eaf2ff] text-[#0866ff]">

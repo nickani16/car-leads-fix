@@ -1,12 +1,12 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import ProfileForm from '@/app/konto/ProfileForm'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { hasVerifiedEmailCode } from '@/lib/email-verification'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -84,13 +84,7 @@ export default async function PrivateProfilePage() {
   return (
     <main className="min-h-screen bg-[#f7f9fc] px-5 py-8 sm:px-8 lg:py-12">
       <div className="mx-auto max-w-[1180px]">
-        <Link
-          href={localizePublicHref(locale, '/account')}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#475467] transition hover:text-[#0866ff]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {copy.back}
-        </Link>
+        <AccountBreadcrumbs locale={locale} items={[{ key: 'account', href: '/account' }, { key: 'profile' }]} />
 
         <section className="mt-6 rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

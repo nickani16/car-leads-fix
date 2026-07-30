@@ -635,8 +635,8 @@ function AccountSidebar({
     .toUpperCase()
 
   return (
-    <aside className="lg:sticky lg:top-24 lg:self-start">
-      <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-4 shadow-[0_16px_46px_rgba(16,24,40,.045)]">
+    <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-hidden">
+      <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-4 shadow-[0_16px_46px_rgba(16,24,40,.045)] lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
         <div className="flex items-center gap-3 rounded-[18px] bg-[#f8fbff] p-3">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#0866ff] text-sm font-semibold text-white">
             {initials || 'AR'}
@@ -652,7 +652,7 @@ function AccountSidebar({
 
         <nav
           aria-label={copy.accountNavigation}
-          className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1"
+          className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-h-0 lg:grid-cols-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1"
         >
           {navigation.map((item) => (
             <Link

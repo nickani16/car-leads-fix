@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
@@ -76,13 +75,14 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   return (
     <main className="mx-auto max-w-[980px] px-5 py-8 sm:px-8 lg:py-12">
-      <Link
-        href={localizePublicHref(locale, '/account/listings')}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {copy.back}
-      </Link>
+      <AccountBreadcrumbs
+        locale={locale}
+        items={[
+          { key: 'account', href: '/account' },
+          { key: 'listings', href: '/account/listings' },
+          { key: 'editListing' },
+        ]}
+      />
       <section className="mt-6 overflow-hidden rounded-[26px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="border-b border-[#edf1f6] bg-[#f7faff] p-6 sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">

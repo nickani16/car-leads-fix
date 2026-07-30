@@ -15,6 +15,7 @@ import {
   localizePublicHref,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import CountryFlag from '@/app/components/CountryFlag'
 import MessageComposer from './MessageComposer'
 import { generateAccountMetadata } from '@/lib/account-seo'
@@ -355,6 +356,11 @@ export default async function MessagesPage({
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-[var(--autorell-page-max)] overflow-x-hidden px-4 py-6 sm:px-8 lg:py-12">
+      <AccountBreadcrumbs
+        locale={locale}
+        items={[{ key: 'account', href: '/account' }, { key: 'messages' }]}
+        className="mb-5"
+      />
       <section className="mb-7 overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="flex flex-col gap-5 bg-[#eef6ff] p-7 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
           <div>

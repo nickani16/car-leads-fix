@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import {
   AlertTriangle,
   CalendarClock,
@@ -141,6 +142,11 @@ export default async function AccountListingsPage({
   return (
     <main className="min-h-screen bg-[#f7f9fc]">
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-6 sm:px-8 lg:py-9">
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: 'listings' }]}
+          className="mb-5"
+        />
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{copy.eyebrow}</p>

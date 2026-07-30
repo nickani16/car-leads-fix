@@ -5,6 +5,7 @@ import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 
 export const generateMetadata = generateAccountMetadata('saved-listings')
 
@@ -23,6 +24,11 @@ export default async function AccountSavedListingsPage() {
     <main className="min-h-screen bg-[#f7f8fb] text-[#101828]">
       <section className="border-b border-[#e4e7ec] bg-white">
         <div className="mx-auto max-w-[1380px] px-5 py-10 sm:px-8 lg:px-12">
+          <AccountBreadcrumbs
+            locale={locale}
+            items={[{ key: 'account', href: '/account' }, { key: 'savedListings' }]}
+            className="mb-5"
+          />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
             {copy.eyebrow}
           </span>

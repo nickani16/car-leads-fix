@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { FilePlus2, ShieldCheck } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -77,7 +78,12 @@ export async function renderNewListingPage({
   return (
     <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
       <div className="mx-auto max-w-[1360px]">
-      <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: 'createListing' }]}
+          className="mb-5"
+        />
+        <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="border-b border-[#dfe6f1] bg-[#f4f8ff] p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-white text-[#0866ff] shadow-sm">
@@ -108,7 +114,7 @@ export async function renderNewListingPage({
             />
           </div>
         </div>
-      </section>
+        </section>
       </div>
     </main>
   )

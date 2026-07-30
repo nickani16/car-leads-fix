@@ -23,6 +23,7 @@ import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountBreadcrumbs'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -91,6 +92,19 @@ const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideI
   { key: 'support', href: '/account/company/support', icon: HelpCircle },
 ]
 
+const companyBreadcrumbKey: Record<CompanyPortalPageKey, AccountCrumbKey> = {
+  overview: 'companyAccount',
+  listings: 'companyListings',
+  create: 'companyListingCreate',
+  import: 'companyImport',
+  analytics: 'companyAnalytics',
+  team: 'companyTeam',
+  subscription: 'companySubscription',
+  profile: 'companyProfile',
+  settings: 'settings',
+  support: 'support',
+}
+
 export async function getCompanyPortalContext(localeOverride?: PublicLocale): Promise<CompanyPortalContext> {
   const locale = localeOverride || await getRequestLocale()
   const supabase = await createClient()
@@ -154,17 +168,25 @@ export function CompanyPortalShell({
 }) {
   const copy = translatePublicObject(context.locale, baseCopy)
   const plan = String(context.subscription?.plan_key || 'free').toLowerCase()
+  const currentCrumb = companyBreadcrumbKey[active]
+  const breadcrumbItems =
+    active === 'overview'
+      ? [{ key: 'companyAccount' as const }]
+      : [
+          { key: 'companyAccount' as const, href: '/account/company' },
+          { key: currentCrumb },
+        ]
 
   return (
     <main className="min-h-screen bg-[#f6f8fb]">
       <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:py-9">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-[18px] border border-[#d9e2ef] bg-white p-4 shadow-[0_18px_50px_rgba(16,24,40,.055)]">
+        <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-hidden">
+          <div className="rounded-[18px] border border-[#d9e2ef] bg-white p-4 shadow-[0_18px_50px_rgba(16,24,40,.055)] lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
             <p className="px-2 text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">{copy.portal}</p>
             <h2 className="mt-2 px-2 text-lg font-semibold tracking-[-.025em] text-[#101828]">
               {context.profile.company_name || 'Autorell'}
             </h2>
-            <nav className="mt-4 grid gap-1">
+            <nav className="mt-4 grid gap-1 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
               {navigation.map((item) => {
                 const Icon = item.icon
                 const locked = Boolean(item.requiredPlan && !planAllows(plan, item.requiredPlan))
@@ -193,6 +215,7 @@ export function CompanyPortalShell({
 
         <section className="min-w-0">
           <header className="rounded-[18px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+            <AccountBreadcrumbs locale={context.locale} items={breadcrumbItems} className="mb-5" />
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0866ff]">{copy.portal}</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-.045em] text-[#101828] sm:text-4xl">{title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-[#667085]">{description}</p>
