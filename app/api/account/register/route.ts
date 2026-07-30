@@ -1,8 +1,8 @@
 import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
+import { queueCompanyApplicationReview } from '@/lib/admin/company-application-review'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { sendAdminNotificationEmail } from '@/lib/email/admin-notifications'
 import { euCountryCodes } from '@/lib/eu-countries'
 import {
   accountConfirmationKeys,
@@ -296,18 +296,6 @@ export async function POST(request: Request) {
           .single()
         if (companyError || !company) throw companyError
         companyId = company.id
-        try {
-          await sendAdminNotificationEmail({
-            admin,
-            notificationType: 'company_application',
-            title: 'Ny företagsansökan',
-            body: `${companyName} (${countryCode}) väntar på granskning.`,
-            actionUrl: `/admin/companies/verification?company=${company.id}`,
-            origin: new URL(request.url).origin,
-          })
-        } catch (notificationError) {
-          console.error('Company application admin email failed', notificationError)
-        }
       }
     }
 
@@ -359,6 +347,24 @@ export async function POST(request: Request) {
         user_id: user.id,
         role: 'contact_person',
       })
+      try {
+        await queueCompanyApplicationReview({
+          admin,
+          companyId,
+          submittedBy: user.id,
+          companyName,
+          countryCode,
+          origin: new URL(request.url).origin,
+          riskFlags: [
+            ...(domainMatch ? [] : ['company_domain_mismatch']),
+            ...(vatCheck.status === 'failed' ? ['vat_failed'] : []),
+            ...(vatCheck.status === 'unavailable' ? ['vat_unavailable'] : []),
+            ...phoneFlags,
+          ],
+        })
+      } catch (notificationError) {
+        console.error('Company application review queue failed', notificationError)
+      }
     }
 
     await admin.from('marketplace_identity_checks').insert({

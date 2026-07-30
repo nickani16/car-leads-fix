@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server'
 import { requireAdminRoute, writeAdminAuditLog } from '@/lib/admin-route-auth'
+import { sendBusinessApprovalEmail } from '@/lib/email/admin-notifications'
 
 const statuses = new Set(['under_review', 'more_information_required', 'approved', 'rejected'])
+const companyStatusByRequestStatus: Record<string, string> = {
+  under_review: 'under_review',
+  more_information_required: 'pending_review',
+  approved: 'verified',
+  rejected: 'rejected',
+}
+const profileStatusByRequestStatus: Record<string, string> = {
+  under_review: 'needs_review',
+  more_information_required: 'needs_review',
+  approved: 'verified',
+  rejected: 'rejected',
+}
+const onboardingStatusByRequestStatus: Record<string, string> = {
+  under_review: 'under_review',
+  more_information_required: 'under_review',
+  approved: 'subscription_pending',
+  rejected: 'suspended',
+}
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireAdminRoute('companies.verify')
@@ -30,6 +49,64 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
   const { error } = await auth.adminClient.from('business_verification_requests').update(patch).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  const now = patch.updated_at
+  const { data: company } = await auth.adminClient
+    .from('marketplace_companies')
+    .select('id,name,contact_email,country_code,created_by')
+    .eq('id', before.company_id)
+    .maybeSingle()
+  const { data: profile } = await auth.adminClient
+    .from('marketplace_profiles')
+    .select('user_id,email,locale,country_code,company_name,legal_name')
+    .eq('company_id', before.company_id)
+    .maybeSingle()
+
+  await auth.adminClient
+    .from('marketplace_companies')
+    .update({
+      verification_status: companyStatusByRequestStatus[status],
+      verification_note: reason || null,
+      verified_at: status === 'approved' ? now : null,
+      verified_by: status === 'approved' ? auth.user.id : null,
+      updated_at: now,
+    })
+    .eq('id', before.company_id)
+
+  if (profile?.user_id) {
+    await auth.adminClient
+      .from('marketplace_profiles')
+      .update({
+        business_verification_status: profileStatusByRequestStatus[status],
+        business_onboarding_status: onboardingStatusByRequestStatus[status],
+        company_verification_note: reason || null,
+        verification_updated_at: now,
+        updated_at: now,
+      })
+      .eq('user_id', profile.user_id)
+  }
+
+  if (status === 'approved') {
+    void sendBusinessApprovalEmail({
+      email: profile?.email || company?.contact_email || null,
+      locale: profile?.locale || profile?.country_code || company?.country_code || 'en',
+      companyName: profile?.company_name || profile?.legal_name || company?.name || 'Autorell business account',
+    }).catch((emailError) => {
+      console.error('[business-approval-email] failed from verification queue', { requestId: id, error: emailError })
+    })
+  }
+
+  await auth.adminClient
+    .from('admin_notifications')
+    .update({
+      status: decided ? 'closed' : 'assigned',
+      closed_at: decided ? now : null,
+      assigned_to: auth.user.id,
+      updated_at: now,
+    })
+    .eq('notification_type', 'company_application')
+    .or(`resource_id.eq.${id},resource_id.eq.${before.company_id},created_by_event.eq.company_application:${before.company_id}`)
+
   await auth.adminClient.from('business_verification_events').insert({
     request_id: id,
     actor_user_id: auth.user.id,
