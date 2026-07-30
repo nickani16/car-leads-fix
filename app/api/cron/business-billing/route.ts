@@ -109,13 +109,6 @@ export async function GET(request: Request) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', subscription.id)
-      await admin
-        .from('marketplace_profiles')
-        .update({
-          business_onboarding_status: 'suspended',
-          verification_updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', invoice.user_id)
       const sent = await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-account-blocked-${invoice.stripe_invoice_id}`,
         kind: 'account_blocked',

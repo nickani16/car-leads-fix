@@ -54,11 +54,5 @@ export async function PATCH(request: Request) {
       .update({ business_onboarding_status: 'active', verification_updated_at: new Date().toISOString() })
       .eq('user_id', data.user_id)
   }
-  if (data?.user_id && body.action === 'restrict_unpaid') {
-    await auth.adminClient
-      .from('marketplace_profiles')
-      .update({ business_onboarding_status: 'suspended', verification_updated_at: new Date().toISOString() })
-      .eq('user_id', data.user_id)
-  }
   return NextResponse.json({ subscription: data })
 }
