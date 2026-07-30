@@ -44,7 +44,7 @@ const baseCopy = {
   invoice30: 'Invoice 30 days',
   sendingInvoice: 'Sending invoice...',
   cancelPlan: 'Cancel plan',
-  freeActivated: 'Free is activated. You can now use your 5 listing slots.',
+  freeActivated: 'Free is activated. You can now use your 10 listing slots.',
   invoiceCreated: 'The invoice has been created and sent to',
   companyEmail: 'the company email address',
   paymentTerms: 'Payment terms: 30 days.',

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { AlertTriangle, BarChart3, CreditCard, FileText, Plus, Users } from 'lucide-react'
+import { AlertTriangle, BarChart3, Building2, CreditCard, FileText, Plus, ShieldCheck, TrendingUp, Users } from 'lucide-react'
 import {
   CompanyPortalShell,
   formatCompanyDate,
@@ -20,9 +20,16 @@ const baseCopy = {
   sold: 'Sold',
   views: 'Views',
   favourites: 'Favourites',
+  enquiries: 'Enquiries',
+  utilisation: 'Utilisation',
   currentPlan: 'Current plan',
   nextBilling: 'Next billing',
   teamSeats: 'Team seats',
+  verification: 'Verification',
+  verified: 'Verified',
+  pending: 'Pending review',
+  businessReadyTitle: 'Ready for dealer outreach',
+  businessReadyText: 'Your company account can list inventory, measure reach and build a public footprint before upgrading to a larger plan.',
   actionNeeded: 'Action needed',
   noWarnings: 'No urgent actions right now.',
   createListing: 'Create listing',
@@ -39,6 +46,8 @@ export default async function CompanyOverviewPage({ localeOverride }: { localeOv
   const summary = context.listingSummary
   const limit = context.subscription?.active_listing_limit || 0
   const plan = context.subscription?.plan_key || 'Free'
+  const utilisation = limit ? Math.round((summary.counts.active / limit) * 100) : 0
+  const verified = ['verified', 'vat_validated'].includes(String(context.profile.business_verification_status || ''))
   const warnings = [
     summary.failedPayments > 0 ? `${summary.failedPayments} payment issue${summary.failedPayments === 1 ? '' : 's'}` : '',
     summary.missingImages > 0 ? `${summary.missingImages} listing${summary.missingImages === 1 ? '' : 's'} missing images` : '',
@@ -56,6 +65,7 @@ export default async function CompanyOverviewPage({ localeOverride }: { localeOv
         <Metric label={copy.sold} value={summary.counts.sold} icon={FileText} />
         <Metric label={copy.views} value={summary.totalViews} icon={BarChart3} />
         <Metric label={copy.favourites} value={summary.totalFavorites} icon={BarChart3} />
+        <Metric label={copy.utilisation} value={`${utilisation}%`} icon={TrendingUp} />
         <Metric label={copy.teamSeats} value={teamSeatText(String(plan).toLowerCase())} icon={Users} />
       </div>
 
@@ -79,8 +89,30 @@ export default async function CompanyOverviewPage({ localeOverride }: { localeOv
           <h2 className="text-lg font-semibold tracking-[-.025em] text-[#101828]">{copy.currentPlan}</h2>
           <p className="mt-2 text-2xl font-semibold tracking-[-.04em] text-[#101828]">{capitalize(String(plan))}</p>
           <p className="mt-1 text-sm text-[#667085]">{copy.nextBilling}: {formatCompanyDate(context.subscription?.next_billing_at || context.subscription?.current_period_end, context.locale)}</p>
+          <div className="mt-4 rounded-[12px] border border-[#e4ebf5] bg-[#f8fbff] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#667085]">{copy.verification}</p>
+            <p className="mt-1 flex items-center gap-2 text-sm font-bold text-[#101828]">
+              <ShieldCheck className={`h-4 w-4 ${verified ? 'text-[#079455]' : 'text-[#0866ff]'}`} />
+              {verified ? copy.verified : copy.pending}
+            </p>
+          </div>
         </section>
       </div>
+
+      <section className="mt-6 rounded-[16px] border border-[#b9cff7] bg-[#f7fbff] p-6 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+        <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
+          <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-white text-[#0866ff]">
+            <Building2 className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="text-xl font-semibold tracking-[-.025em] text-[#101828]">{copy.businessReadyTitle}</h2>
+            <p className="mt-1 text-sm leading-6 text-[#5f6b7a]">{copy.businessReadyText}</p>
+          </div>
+          <Link href={localizePublicHref(context.locale, '/account/company/analytics')} className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">
+            {copy.viewAnalytics}
+          </Link>
+        </div>
+      </section>
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <Shortcut href="/account/company/listings/create" label={copy.createListing} icon={Plus} locale={context.locale} primary />

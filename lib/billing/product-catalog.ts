@@ -178,7 +178,7 @@ const products: BillingProduct[] = [
     dkk: 9900,
     pln: 5900,
   }),
-  subscriptionProduct('free', 5, {
+  subscriptionProduct('free', 10, {
     sek: 0,
     eur: 0,
     dkk: 0,

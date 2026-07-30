@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       market,
       currency: 'sek',
       plan_key: 'free',
-      active_listing_limit: 5,
+      active_listing_limit: 10,
       status: 'active',
       payment_status: 'not_required',
       manually_activated: false,
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       userId: user.id,
       subscriptionId: subscription.id,
       planKey: 'free',
-      activeListingLimit: 5,
+      activeListingLimit: 10,
       market,
     })
     return NextResponse.json({ activated: true, subscription })

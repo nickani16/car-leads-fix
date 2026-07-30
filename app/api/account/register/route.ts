@@ -302,7 +302,7 @@ export async function POST(request: Request) {
             notificationType: 'company_application',
             title: 'Ny företagsansökan',
             body: `${companyName} (${countryCode}) väntar på granskning.`,
-            actionUrl: `/admin/companies?company=${company.id}`,
+            actionUrl: `/admin/companies/verification?company=${company.id}`,
             origin: new URL(request.url).origin,
           })
         } catch (notificationError) {

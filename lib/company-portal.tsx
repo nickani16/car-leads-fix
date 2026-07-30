@@ -84,7 +84,7 @@ const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideI
   { key: 'listings', href: '/account/company/listings', icon: FileText },
   { key: 'create', href: '/account/company/listings/create', icon: Plus },
   { key: 'import', href: '/account/company/import', icon: Upload, requiredPlan: 'Growth' },
-  { key: 'analytics', href: '/account/company/analytics', icon: BarChart3, requiredPlan: 'Growth' },
+  { key: 'analytics', href: '/account/company/analytics', icon: BarChart3 },
   { key: 'team', href: '/account/company/team', icon: Users, requiredPlan: 'Growth' },
   { key: 'subscription', href: '/account/company/subscription', icon: CreditCard },
   { key: 'profile', href: '/account/company/profile', icon: Building2 },
