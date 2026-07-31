@@ -58,7 +58,7 @@ import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
-import { currencyForLocale } from '@/lib/market-locale'
+import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
@@ -5392,6 +5392,7 @@ function listingInsuranceOfferLabel(
   offers: ListingInsuranceOffer[] | null | undefined,
   countryCode?: string | null,
 ) {
+  if (!shouldShowLocalFinancing(locale, countryCode)) return null
   const bestOffer = lowestMonthlyInsuranceOffer(offers)
   if (!bestOffer) return null
   const monthly = formatMonthlyInsurancePrice(
@@ -5450,6 +5451,12 @@ function formatMonthlyInsurancePrice(
   if (normalizedCurrency === 'EUR') return `${formattedAmount} €`
   if (normalizedCurrency === 'PLN') return `${formattedAmount} zł`
   return `${formattedAmount} ${normalizedCurrency || 'EUR'}`
+}
+
+function shouldShowLocalFinancing(locale: PublicLocale, listingCountryCode?: string | null) {
+  const marketCountryCode = countryForLocale(locale).toUpperCase()
+  const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
+  return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
 }
 
 function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {

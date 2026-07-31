@@ -40,6 +40,7 @@ import ListingViewTracker from '@/app/components/ListingViewTracker'
 import ShareListingButton from '@/app/components/ShareListingButton'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
+import { countryForLocale } from '@/lib/market-locale'
 import { buildListingPath, buildListingSlug, extractListingIdFromSlug } from '@/lib/listing-url'
 import {
   getMarketplaceCategory,
@@ -267,7 +268,9 @@ export default async function ListingDetailPage({
     locale,
     targetCurrency: displayCurrency,
   })
-  const insuranceOffers = normalizeListingInsuranceOffers(listing.insurance_offers)
+  const insuranceOffers = shouldShowLocalFinancing(locale, listing.country_code)
+    ? normalizeListingInsuranceOffers(listing.insurance_offers)
+    : []
   const currentPrice = Number(listing.price)
   const originalPrice = listing.original_price ? Number(listing.original_price) : null
   const hasPriceDrop =
@@ -1023,6 +1026,12 @@ function normalizeListingInsuranceOffers(value: ListingInsuranceOffer[] | null |
     .slice(0, 6)
 }
 
+function shouldShowLocalFinancing(locale: PublicLocale, listingCountryCode?: string | null) {
+  const marketCountryCode = countryForLocale(locale).toUpperCase()
+  const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
+  return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
+}
+
 function InsuranceOffersPanel({
   offers,
   locale,
@@ -1071,7 +1080,10 @@ function InsuranceOffersPanel({
                     </p>
                   ) : null}
                 </div>
-                <span className="shrink-0 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[11px] font-semibold text-[#027a48]">
+                <span className="shrink-0 rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-semibold text-[#0866ff]">
+                  {financingProviderLabel(locale)}
+                </span>
+                <span className="hidden">
                   {localizedLabel(locale, 'Företag', 'Dealer', 'Händler')}
                 </span>
               </div>
@@ -1213,6 +1225,31 @@ function financingOfferCopy(locale: PublicLocale) {
         downPayment: 'Down payment',
         terms: 'Terms',
       }
+  }
+}
+
+function financingProviderLabel(locale: PublicLocale) {
+  switch (locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale) {
+    case 'sv':
+      return 'Kreditgivare'
+    case 'de':
+      return 'Kreditgeber'
+    case 'fr':
+      return 'Prêteur'
+    case 'es':
+      return 'Prestamista'
+    case 'it':
+      return 'Finanziatore'
+    case 'pl':
+      return 'Kredytodawca'
+    case 'nl':
+      return 'Kredietgever'
+    case 'da':
+      return 'Kreditgiver'
+    case 'fi':
+      return 'Rahoittaja'
+    default:
+      return 'Lender'
   }
 }
 

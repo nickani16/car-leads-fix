@@ -729,6 +729,7 @@ function homeListingOfferBadge(locale: PublicLocale, offerType?: string | null) 
 }
 
 function homeInsuranceOfferLabel(locale: PublicLocale, value: unknown, countryCode?: string | null) {
+  if (!shouldShowHomeLocalFinancing(locale, countryCode)) return null
   if (!Array.isArray(value)) return null
   const best = value
     .map((offer) => {
@@ -757,6 +758,12 @@ function homeInsuranceOfferLabel(locale: PublicLocale, value: unknown, countryCo
   if (effectiveLocale === 'da') return `Finansiering fra ${monthly}/md.`
   if (effectiveLocale === 'fi') return `Rahoitus alkaen ${monthly}/kk`
   return `Loan from ${monthly}/mo`
+}
+
+function shouldShowHomeLocalFinancing(locale: PublicLocale, listingCountryCode?: string | null) {
+  const marketCountryCode = countryForLocale(locale).toUpperCase()
+  const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
+  return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
 }
 
 function formatHomeInsuranceMonthlyPrice(amount: number, currency: string, locale: PublicLocale) {
