@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import PublicFooter from './PublicFooter'
@@ -101,6 +101,7 @@ type HomeListingCardItem = {
   meta: string
   countryCode: string
   offerType: string | null
+  insuranceOfferLabel: string | null
   sellerTrust: 'verified' | 'unverified'
   isFeatured: boolean
   isTopPlacement: boolean
@@ -497,6 +498,12 @@ function HomeListingCard({
           </h3>
         </Link>
         <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
+        {item.insuranceOfferLabel ? (
+          <span className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2 py-1 text-[11px] font-semibold leading-4 text-[#027a48] ring-1 ring-[#abefc6]">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{item.insuranceOfferLabel}</span>
+          </span>
+        ) : null}
         <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
       </div>
     </article>
@@ -618,6 +625,7 @@ type HomeListingSource = {
   boost_started_at?: string | null
   boost_expires_at?: string | null
   offer_type?: string | null
+  insurance_offers?: unknown
 }
 
 async function mapHomeListingCard(
@@ -657,6 +665,7 @@ async function mapHomeListingCard(
     meta: vehicleMeta,
     countryCode: listing.country_code,
     offerType: listing.offer_type || 'sale',
+    insuranceOfferLabel: homeInsuranceOfferLabel(locale, listing.insurance_offers, listing.country_code),
     sellerTrust,
     isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
     isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
@@ -717,6 +726,61 @@ function homeListingOfferBadge(locale: PublicLocale, offerType?: string | null) 
     label: saleLabels[effectiveLocale] || translatePublic(locale, 'For sale'),
     className: 'bg-[#eef5ff] text-[#0757da] ring-[#c7dbff]',
   }
+}
+
+function homeInsuranceOfferLabel(locale: PublicLocale, value: unknown, countryCode?: string | null) {
+  if (!Array.isArray(value)) return null
+  const best = value
+    .map((offer) => {
+      if (!offer || typeof offer !== 'object' || Array.isArray(offer)) return null
+      const record = offer as Record<string, unknown>
+      const monthlyCost = Number(record.monthlyCost)
+      if (!Number.isFinite(monthlyCost) || monthlyCost <= 0) return null
+      return {
+        monthlyCost,
+        currency: typeof record.currency === 'string' && record.currency ? record.currency : displayCurrencyForMarket(countryCode),
+      }
+    })
+    .filter((offer): offer is { monthlyCost: number; currency: string } => offer !== null)
+    .sort((left, right) => left.monthlyCost - right.monthlyCost)[0]
+  if (!best) return null
+
+  const monthly = formatHomeInsuranceMonthlyPrice(best.monthlyCost, best.currency, locale)
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  if (effectiveLocale === 'sv') return `Försäkring från ${monthly}/mån`
+  if (effectiveLocale === 'de') return `Versicherung ab ${monthly}/Mon.`
+  if (effectiveLocale === 'fr') return `Assurance dès ${monthly}/mois`
+  if (effectiveLocale === 'es') return `Seguro desde ${monthly}/mes`
+  if (effectiveLocale === 'it') return `Assicurazione da ${monthly}/mese`
+  if (effectiveLocale === 'pl') return `Ubezpieczenie od ${monthly}/mies.`
+  if (effectiveLocale === 'nl') return `Verzekering vanaf ${monthly}/mnd`
+  if (effectiveLocale === 'da') return `Forsikring fra ${monthly}/md.`
+  if (effectiveLocale === 'fi') return `Vakuutus alkaen ${monthly}/kk`
+  return `Insurance from ${monthly}/mo`
+}
+
+function formatHomeInsuranceMonthlyPrice(amount: number, currency: string, locale: PublicLocale) {
+  const normalizedCurrency = currency.toUpperCase()
+  const formattedAmount = amount.toLocaleString(homeNumberLocale(locale), { maximumFractionDigits: 0 })
+  if (normalizedCurrency === 'SEK' && locale === 'sv') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'DKK' && locale === 'da') return `${formattedAmount} kr.`
+  if (normalizedCurrency === 'NOK') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'EUR') return `${formattedAmount} €`
+  if (normalizedCurrency === 'PLN') return `${formattedAmount} zł`
+  return `${formattedAmount} ${normalizedCurrency}`
+}
+
+function homeNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de' || locale === 'at') return 'de-DE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl' || locale === 'be') return 'nl-NL'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  return 'en-GB'
 }
 
 function isActiveWindow(status?: string | null, startedAt?: string | null, expiresAt?: string | null) {

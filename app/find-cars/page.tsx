@@ -99,6 +99,9 @@ export default async function FindCarsPage({
         leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
           ? listing.lease_data as Record<string, unknown>
           : null,
+        insuranceOffers: Array.isArray(listing.insurance_offers)
+          ? listing.insurance_offers as VehicleSearchListing['insuranceOffers']
+          : null,
       }
     }),
   )

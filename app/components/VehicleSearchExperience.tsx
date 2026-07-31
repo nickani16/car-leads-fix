@@ -19,6 +19,7 @@ import {
   MapPin,
   Search,
   Scale,
+  ShieldCheck,
   SlidersHorizontal,
   Star,
   X,
@@ -68,6 +69,12 @@ type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
   dedupeKey: string
+}
+
+type ListingInsuranceOffer = {
+  provider: string | null
+  monthlyCost: number | string | null
+  currency: string | null
 }
 
 let selectedSearchSuggestionSequence = 0
@@ -198,6 +205,7 @@ export type VehicleSearchListing = {
   equipment: string | null
   offerType?: 'sale' | 'lease' | 'sale_and_lease' | null
   leaseData?: Record<string, unknown> | null
+  insuranceOffers?: ListingInsuranceOffer[] | null
 }
 
 type MarketplaceSearchApiResponse = {
@@ -4169,6 +4177,7 @@ function VehicleResultCard({
   const visibleMeta = layout === 'split' ? meta.slice(0, 2) : meta
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
+  const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
@@ -4235,6 +4244,12 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
               {listing.priceLabel}
             </p>
+            {insuranceLabel ? (
+              <span className={`${layout === 'split' ? 'text-[11px] leading-4 sm:text-[12px]' : 'text-[12px] leading-4'} inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2 py-1 font-semibold text-[#027a48] ring-1 ring-[#abefc6]`}>
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{insuranceLabel}</span>
+              </span>
+            ) : null}
             <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
             <p className="hidden">
               {listing.sellerIsTrader
@@ -4667,6 +4682,7 @@ function MapListingPreview({
   ].filter(Boolean)
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
+  const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
@@ -4721,6 +4737,12 @@ function MapListingPreview({
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <p className="text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
+            {insuranceLabel ? (
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[12px] font-semibold leading-4 text-[#027a48] ring-1 ring-[#abefc6]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{insuranceLabel}</span>
+              </span>
+            ) : null}
           </div>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
           <div className="mt-4 flex items-center justify-between gap-3">
@@ -5049,6 +5071,7 @@ function mapApiListingToVehicleSearchListing(
     leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
       ? listing.lease_data as Record<string, unknown>
       : null,
+    insuranceOffers: normalizeVehicleInsuranceOffers(listing.insurance_offers),
   }
 }
 
@@ -5283,6 +5306,71 @@ function listingOfferBadge(locale: PublicLocale, listing: VehicleSearchListing) 
   }
 }
 
+function listingInsuranceOfferLabel(
+  locale: PublicLocale,
+  offers: ListingInsuranceOffer[] | null | undefined,
+  countryCode?: string | null,
+) {
+  const bestOffer = lowestMonthlyInsuranceOffer(offers)
+  if (!bestOffer) return null
+  const monthly = formatMonthlyInsurancePrice(
+    bestOffer.monthlyCost,
+    bestOffer.currency || currencyForCountry(countryCode),
+    locale,
+  )
+  if (!monthly) return null
+
+  switch (locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale) {
+    case 'sv':
+      return `Försäkring från ${monthly}/mån`
+    case 'de':
+      return `Versicherung ab ${monthly}/Mon.`
+    case 'fr':
+      return `Assurance dès ${monthly}/mois`
+    case 'es':
+      return `Seguro desde ${monthly}/mes`
+    case 'it':
+      return `Assicurazione da ${monthly}/mese`
+    case 'pl':
+      return `Ubezpieczenie od ${monthly}/mies.`
+    case 'nl':
+      return `Verzekering vanaf ${monthly}/mnd`
+    case 'da':
+      return `Forsikring fra ${monthly}/md.`
+    case 'fi':
+      return `Vakuutus alkaen ${monthly}/kk`
+    default:
+      return `Insurance from ${monthly}/mo`
+  }
+}
+
+function lowestMonthlyInsuranceOffer(offers: ListingInsuranceOffer[] | null | undefined) {
+  if (!offers?.length) return null
+  return offers
+    .map((offer) => ({ ...offer, monthlyCost: numberOrNull(offer.monthlyCost) }))
+    .filter((offer): offer is ListingInsuranceOffer & { monthlyCost: number } => Boolean(offer.monthlyCost && offer.monthlyCost > 0))
+    .sort((left, right) => left.monthlyCost - right.monthlyCost)[0] || null
+}
+
+function formatMonthlyInsurancePrice(
+  amount: number | string | null | undefined,
+  currency: string | null | undefined,
+  locale: PublicLocale,
+) {
+  const parsedAmount = numberOrNull(amount)
+  if (!parsedAmount || parsedAmount <= 0) return null
+  const normalizedCurrency = (currency || '').toUpperCase()
+  const formattedAmount = parsedAmount.toLocaleString(countNumberLocale(locale), {
+    maximumFractionDigits: 0,
+  })
+  if (normalizedCurrency === 'SEK' && locale === 'sv') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'DKK' && locale === 'da') return `${formattedAmount} kr.`
+  if (normalizedCurrency === 'NOK') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'EUR') return `${formattedAmount} €`
+  if (normalizedCurrency === 'PLN') return `${formattedAmount} zł`
+  return `${formattedAmount} ${normalizedCurrency || 'EUR'}`
+}
+
 function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {
   if (locale === 'sv') {
     const singular: Record<string, string> = {
@@ -5370,6 +5458,23 @@ function numberOrNull(value: unknown) {
 
 function stringOrNull(value: unknown) {
   return typeof value === 'string' && value ? value : null
+}
+
+function normalizeVehicleInsuranceOffers(value: unknown): ListingInsuranceOffer[] | null {
+  if (!Array.isArray(value)) return null
+  const offers: ListingInsuranceOffer[] = []
+  for (const offer of value) {
+    if (!offer || typeof offer !== 'object' || Array.isArray(offer)) continue
+    const record = offer as Record<string, unknown>
+    const monthlyCost = numberOrNull(record.monthlyCost)
+    if (!monthlyCost || monthlyCost <= 0) continue
+    offers.push({
+      provider: stringOrNull(record.provider),
+      monthlyCost,
+      currency: stringOrNull(record.currency),
+    })
+  }
+  return offers.length ? offers : null
 }
 
 function parseOptionalNumber(value: string | number | null | undefined) {
