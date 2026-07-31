@@ -688,10 +688,16 @@ export default function PublicHeader({
   }, [profileMenuOpen, searchMenuOpen, sellMenuOpen, businessMenuOpen, helpMenuOpen])
 
   useEffect(() => {
-    const auth = new URLSearchParams(window.location.search).get('auth')
+    const params = new URLSearchParams(window.location.search)
+    const auth = params.get('auth')
     if (!auth) return
-    if (auth === 'login') openAuthModal('login')
-    if (auth === 'register' || auth === 'registrera') openAuthModal('register')
+    const next = params.get('next')
+    const destination =
+      next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
+        ? next
+        : undefined
+    if (auth === 'login') openAuthModal('login', destination)
+    if (auth === 'register' || auth === 'registrera') openAuthModal('register', destination)
     if (auth === 'forgot-password') openAuthModal('forgot')
     if (auth === 'reset-password') openAuthModal('reset')
   }, [pathname])

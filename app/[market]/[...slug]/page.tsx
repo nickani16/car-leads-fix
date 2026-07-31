@@ -126,7 +126,14 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'login') {
-    redirect(`/${marketCode}?auth=login`)
+    const query = await searchParams
+    const rawNext = Array.isArray(query.next) ? query.next[0] : query.next
+    const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/api/')
+      ? rawNext
+      : ''
+    const loginParams = new URLSearchParams({ auth: 'login' })
+    if (next) loginParams.set('next', next)
+    redirect(`/${marketCode}?${loginParams.toString()}`)
   }
 
   if (slugPath === 'register' || slugPath === 'registrera') {
