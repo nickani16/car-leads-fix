@@ -595,6 +595,15 @@ export default async function ListingDetailPage({
               showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
             />
 
+            {listing.seller_type === 'business' && insuranceOffers.length ? (
+              <InsuranceOffersPanel
+                offers={insuranceOffers}
+                locale={locale}
+                fallbackCurrency={listing.currency}
+                surface="card"
+              />
+            ) : null}
+
             <section id="listing-contact-card" className="grid gap-3 lg:hidden">
               <div className="grid gap-2.5 rounded-[14px] border border-[#dfe6f2] bg-white p-4">
                 {isListingOwner ? (
@@ -1014,14 +1023,16 @@ function InsuranceOffersPanel({
   offers,
   locale,
   fallbackCurrency,
+  surface = 'embedded',
 }: {
   offers: ReturnType<typeof normalizeListingInsuranceOffers>
   locale: PublicLocale
   fallbackCurrency: string
+  surface?: 'embedded' | 'card'
 }) {
   const copy = financingOfferCopy(locale)
   return (
-    <section className="mt-4 border-t border-[#edf1f6] pt-4">
+    <section className={surface === 'card' ? 'rounded-[14px] border border-[#dfe6f2] bg-white p-4' : 'mt-4 border-t border-[#edf1f6] pt-4'}>
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#d7e5ff]">
           <ShieldCheck className="h-5 w-5" />

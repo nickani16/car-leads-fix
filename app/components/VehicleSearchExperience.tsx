@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Check,
   Columns2,
@@ -4170,7 +4171,7 @@ function VehicleResultCard({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
-  const visibleMeta = layout === 'split' ? meta.slice(0, 2) : meta
+  const visibleMeta = meta
   const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
   const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
@@ -4349,6 +4350,8 @@ function VehicleSearchMap({
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
   const [fullscreen, setFullscreen] = useState(false)
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
+  const [selectedListingGroup, setSelectedListingGroup] = useState<VehicleSearchListing[]>([])
+  const [selectedListingIndex, setSelectedListingIndex] = useState(0)
   const mapListings = useMemo(
     () =>
       listings.slice(0, 150).map((listing, index) => ({
@@ -4429,7 +4432,12 @@ function VehicleSearchMap({
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
         const markerElement = createAutorellMapMarker(listing, selectedListing?.id === listing.id)
         markerElement.addEventListener('click', () => {
-          setSelectedListing(listing)
+          const nearbyListings = getNearbyMapListings(map, mapListings, coordinates)
+          const nextGroup = nearbyListings.length ? nearbyListings.map((item) => item.listing) : [listing]
+          const nextIndex = Math.max(0, nextGroup.findIndex((item) => item.id === listing.id))
+          setSelectedListingGroup(nextGroup)
+          setSelectedListingIndex(nextIndex)
+          setSelectedListing(nextGroup[nextIndex] || listing)
         })
         return new maplibregl.Marker({ element: markerElement })
           .setLngLat(coordinates)
@@ -4635,8 +4643,36 @@ function VehicleSearchMap({
       {selectedListing ? (
         <MapListingPreview
           listing={selectedListing}
+          previewCount={selectedListingGroup.length || 1}
+          previewIndex={selectedListingIndex}
+          onPrevious={
+            selectedListingGroup.length > 1
+              ? () => {
+                  setSelectedListingIndex((current) => {
+                    const next = (current - 1 + selectedListingGroup.length) % selectedListingGroup.length
+                    setSelectedListing(selectedListingGroup[next] || null)
+                    return next
+                  })
+                }
+              : undefined
+          }
+          onNext={
+            selectedListingGroup.length > 1
+              ? () => {
+                  setSelectedListingIndex((current) => {
+                    const next = (current + 1) % selectedListingGroup.length
+                    setSelectedListing(selectedListingGroup[next] || null)
+                    return next
+                  })
+                }
+              : undefined
+          }
           locale={locale}
-          onClose={() => setSelectedListing(null)}
+          onClose={() => {
+            setSelectedListing(null)
+            setSelectedListingGroup([])
+            setSelectedListingIndex(0)
+          }}
           onBeforeNavigate={onBeforeListingNavigate}
           mobileOverlay={mobileOverlay}
         />
@@ -4647,12 +4683,20 @@ function VehicleSearchMap({
 
 function MapListingPreview({
   listing,
+  previewCount = 1,
+  previewIndex = 0,
+  onPrevious,
+  onNext,
   locale,
   onClose,
   onBeforeNavigate,
   mobileOverlay,
 }: {
   listing: VehicleSearchListing
+  previewCount?: number
+  previewIndex?: number
+  onPrevious?: () => void
+  onNext?: () => void
   locale: PublicLocale
   onClose: () => void
   onBeforeNavigate: () => void
@@ -4683,9 +4727,32 @@ function MapListingPreview({
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
       <div className="flex items-center justify-between gap-3 border-b border-[#edf1f6] px-3 py-2">
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
-          {offerBadge.label}
-        </span>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+            {offerBadge.label}
+          </span>
+          {previewCount > 1 ? (
+            <div className="inline-flex items-center gap-1 rounded-full border border-[#dfe6f2] bg-[#f8fbff] px-1 py-0.5 text-xs font-semibold text-[#475467]">
+              <button
+                type="button"
+                onClick={onPrevious}
+                aria-label={uiText(locale, 'Previous listing', 'FÃ¶regÃ¥ende annons', 'Vorherige Anzeige')}
+                className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="min-w-9 text-center">{previewIndex + 1}/{previewCount}</span>
+              <button
+                type="button"
+                onClick={onNext}
+                aria-label={uiText(locale, 'Next listing', 'NÃ¤sta annons', 'NÃ¤chste Anzeige')}
+                className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={onClose}
@@ -4847,6 +4914,24 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
   }
 
   return tiles
+}
+
+function getNearbyMapListings(
+  map: MapLibreMap,
+  mapListings: Array<{ listing: VehicleSearchListing; coordinates: [number, number] }>,
+  coordinates: [number, number],
+) {
+  const origin = map.project(coordinates)
+  return mapListings
+    .map((item) => {
+      const point = map.project(item.coordinates)
+      return {
+        ...item,
+        distance: Math.hypot(point.x - origin.x, point.y - origin.y),
+      }
+    })
+    .filter((item) => item.distance <= 54)
+    .sort((left, right) => left.distance - right.distance)
 }
 
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
