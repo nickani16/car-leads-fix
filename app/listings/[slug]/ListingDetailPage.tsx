@@ -782,8 +782,8 @@ export default async function ListingDetailPage({
             </div>
             </div>
 
-              <section className="hidden scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:self-start">
-            <div id="listing-contact-card-desktop" className="grid gap-3 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
+              <section className="hidden scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-3 lg:block lg:max-h-[calc(100dvh-1.5rem)] lg:self-start xl:top-4 xl:max-h-[calc(100dvh-2rem)]">
+            <div id="listing-contact-card-desktop" className="grid gap-3 lg:max-h-[calc(100dvh-1.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin] xl:max-h-[calc(100dvh-2rem)]">
               <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
