@@ -42,6 +42,14 @@ const marketPathPrefixes = new Set([
   'lt',
 ])
 
+type EmailCodeChallenge = {
+  id: string
+  code_hash: string
+  attempts: number
+  expires_at: string
+  redirect_path: string | null
+}
+
 function onboardingDestination(requested: string) {
   const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
   const accountType = requested.includes('account=business') ? '&account=business' : ''
@@ -92,33 +100,38 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
-    let { data: challenge, error: challengeError } = await admin
+    const hashedEmail = emailHash(email)
+    let { data: challenges, error: challengeError } = await admin
       .from('auth_email_codes')
       .select('id,code_hash,attempts,expires_at,redirect_path')
-      .eq('email_hash', emailHash(email))
+      .eq('email_hash', hashedEmail)
       .is('consumed_at', null)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(5)
     if (challengeError?.code === 'PGRST204' || challengeError?.code === '42703') {
       const fallback = await admin
         .from('auth_email_codes')
         .select('id,code_hash,attempts,expires_at')
-        .eq('email_hash', emailHash(email))
+        .eq('email_hash', hashedEmail)
         .is('consumed_at', null)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      challenge = fallback.data ? { ...fallback.data, redirect_path: null } : null
+        .limit(5)
+      challenges = (fallback.data || []).map((item) => ({ ...item, redirect_path: null }))
       challengeError = fallback.error
     }
     if (challengeError) throw challengeError
 
-    async function consumeChallenge() {
+    const availableChallenges = ((challenges || []) as EmailCodeChallenge[]).filter((item) => {
+      return item.attempts < 6 && new Date(item.expires_at).getTime() >= Date.now()
+    })
+    const challenge = availableChallenges.find((item) => matchesCode(item.code_hash, email, code)) || null
+    const latestChallenge = ((challenges || []) as EmailCodeChallenge[])[0] || null
+
+    async function consumeChallenge(challengeId: string) {
       const { data: consumedChallenge, error: consumeError } = await admin
         .from('auth_email_codes')
         .update({ consumed_at: new Date().toISOString() })
-        .eq('id', challenge!.id)
+        .eq('id', challengeId)
         .is('consumed_at', null)
         .select('id')
         .maybeSingle()
@@ -126,17 +139,21 @@ export async function POST(request: Request) {
       return Boolean(consumedChallenge)
     }
 
-    if (
-      !challenge ||
-      challenge.attempts >= 6 ||
-      new Date(challenge.expires_at).getTime() < Date.now() ||
-      !matchesCode(challenge.code_hash, email, code)
-    ) {
-      if (challenge) {
+    async function consumeOtherChallenges() {
+      await admin
+        .from('auth_email_codes')
+        .update({ consumed_at: new Date().toISOString() })
+        .eq('email_hash', hashedEmail)
+        .is('consumed_at', null)
+        .neq('id', challenge!.id)
+    }
+
+    if (!challenge) {
+      if (latestChallenge) {
         await admin
           .from('auth_email_codes')
-          .update({ attempts: Math.min(challenge.attempts + 1, 10) })
-          .eq('id', challenge.id)
+          .update({ attempts: Math.min(latestChallenge.attempts + 1, 10) })
+          .eq('id', latestChallenge.id)
       }
       return NextResponse.json({ error: copy.codeError }, { status: 401 })
     }
@@ -180,9 +197,10 @@ export async function POST(request: Request) {
         if (profileError) throw profileError
       }
 
-      if (!(await consumeChallenge())) {
+      if (!(await consumeChallenge(challenge.id))) {
         return NextResponse.json({ error: copy.usedCode }, { status: 401 })
       }
+      await consumeOtherChallenges()
 
       return NextResponse.json({ success: true, emailVerified: true })
     }
@@ -213,9 +231,10 @@ export async function POST(request: Request) {
     })
     if (error || !data.user) throw error || new Error('Session could not be created.')
 
-    if (!(await consumeChallenge())) {
+    if (!(await consumeChallenge(challenge.id))) {
       return NextResponse.json({ error: copy.usedCode }, { status: 401 })
     }
+    await consumeOtherChallenges()
 
     const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin
