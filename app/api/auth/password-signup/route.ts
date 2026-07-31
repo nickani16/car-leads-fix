@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   acceptCompanyTeamInvitationForUser,
+  acceptLatestCompanyTeamInvitationForUser,
   CompanyTeamInvitationError,
   tokenFromCompanyTeamAcceptPath,
 } from '@/lib/company-team-acceptance'
@@ -83,21 +84,35 @@ export async function POST(request: Request) {
       token_hash: link.data.properties.hashed_token,
       type: 'signup',
     })
-    if (error || !data.session) throw error || new Error('Session could not be created.')
+    if (error || !data.session?.user) throw error || new Error('Session could not be created.')
+    const sessionUser = data.session.user
 
     const destination = safeNext(body.next, locale)
     const invitationToken = tokenFromCompanyTeamAcceptPath(destination)
-    if (invitationToken && data.user) {
+    if (invitationToken) {
       const accepted = await acceptCompanyTeamInvitationForUser(admin, {
         token: invitationToken,
-        userId: data.user.id,
-        userEmail: data.user.email,
+        userId: sessionUser.id,
+        userEmail: sessionUser.email,
         destinationHint: destination,
       })
       return NextResponse.json({
         success: true,
         sessionReady: true,
         destination: accepted.destination,
+      })
+    }
+
+    const acceptedLatestInvitation = await acceptLatestCompanyTeamInvitationForUser(admin, {
+      userId: sessionUser.id,
+      userEmail: sessionUser.email,
+      destinationHint: destination,
+    })
+    if (acceptedLatestInvitation) {
+      return NextResponse.json({
+        success: true,
+        sessionReady: true,
+        destination: acceptedLatestInvitation.destination,
       })
     }
 

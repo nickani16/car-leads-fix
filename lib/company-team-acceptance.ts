@@ -54,27 +54,25 @@ export function localizedCompanyAccountDestination(requested: string | null | un
   return `${prefix}/account/company`
 }
 
-export async function acceptCompanyTeamInvitationForUser(
+type CompanyTeamInvitationRecord = {
+  id: string
+  company_id: string
+  email: string
+  role: string
+  status: string
+  expires_at: string
+  invited_by: string
+}
+
+async function completeCompanyTeamInvitation(
   admin: SupabaseClient,
+  invitation: CompanyTeamInvitationRecord,
   input: {
-    token: string
     userId: string
     userEmail: string | null | undefined
     destinationHint?: string | null
   },
 ) {
-  const token = String(input.token || '').trim()
-  if (token.length < 24) {
-    throw new CompanyTeamInvitationError('The invitation is invalid.', 400)
-  }
-
-  const tokenHash = hashTeamInvitationToken(token)
-  const { data: invitation } = await admin
-    .from('marketplace_company_invitations')
-    .select('id,company_id,email,role,status,expires_at,invited_by')
-    .eq('token_hash', tokenHash)
-    .maybeSingle()
-
   if (!invitation || invitation.status !== 'pending') {
     throw new CompanyTeamInvitationError('The invitation is no longer active.', 404)
   }
@@ -193,4 +191,58 @@ export async function acceptCompanyTeamInvitationForUser(
   return {
     destination: localizedCompanyAccountDestination(input.destinationHint),
   }
+}
+
+export async function acceptCompanyTeamInvitationForUser(
+  admin: SupabaseClient,
+  input: {
+    token: string
+    userId: string
+    userEmail: string | null | undefined
+    destinationHint?: string | null
+  },
+) {
+  const token = String(input.token || '').trim()
+  if (token.length < 24) {
+    throw new CompanyTeamInvitationError('The invitation is invalid.', 400)
+  }
+
+  const tokenHash = hashTeamInvitationToken(token)
+  const { data: invitation } = await admin
+    .from('marketplace_company_invitations')
+    .select('id,company_id,email,role,status,expires_at,invited_by')
+    .eq('token_hash', tokenHash)
+    .maybeSingle()
+
+  if (!invitation) {
+    throw new CompanyTeamInvitationError('The invitation is no longer active.', 404)
+  }
+
+  return completeCompanyTeamInvitation(admin, invitation, input)
+}
+
+export async function acceptLatestCompanyTeamInvitationForUser(
+  admin: SupabaseClient,
+  input: {
+    userId: string
+    userEmail: string | null | undefined
+    destinationHint?: string | null
+  },
+) {
+  const email = String(input.userEmail || '').trim().toLowerCase()
+  if (!email) return null
+
+  const { data: invitation } = await admin
+    .from('marketplace_company_invitations')
+    .select('id,company_id,email,role,status,expires_at,invited_by')
+    .ilike('email', email)
+    .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!invitation) return null
+
+  return completeCompanyTeamInvitation(admin, invitation, input)
 }

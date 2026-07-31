@@ -13,6 +13,7 @@ import { localeFromRequest } from '@/lib/auth-locale'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import {
   acceptCompanyTeamInvitationForUser,
+  acceptLatestCompanyTeamInvitationForUser,
   CompanyTeamInvitationError,
   tokenFromCompanyTeamAcceptPath,
 } from '@/lib/company-team-acceptance'
@@ -294,6 +295,21 @@ export async function POST(request: Request) {
         destination: accepted.destination,
         newAccount: false,
       })
+    }
+
+    if (!profile) {
+      const acceptedLatestInvitation = await acceptLatestCompanyTeamInvitationForUser(admin, {
+        userId: data.user.id,
+        userEmail: data.user.email,
+        destinationHint: requested,
+      })
+      if (acceptedLatestInvitation) {
+        return NextResponse.json({
+          success: true,
+          destination: acceptedLatestInvitation.destination,
+          newAccount: true,
+        })
+      }
     }
 
     const { data: companyInvitation } = !profile
