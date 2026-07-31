@@ -595,6 +595,129 @@ export default async function ListingDetailPage({
               showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
             />
 
+            <section id="listing-contact-card" className="grid gap-3 lg:hidden">
+              <div className="grid gap-2.5 rounded-[14px] border border-[#dfe6f2] bg-white p-4">
+                {isListingOwner ? (
+                  <Link
+                    href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
+                    className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#c9d7ec] bg-white px-3 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
+                  >
+                    {localizedLabel(locale, 'Redigera annons', 'Edit listing', 'Anzeige bearbeiten')}
+                  </Link>
+                ) : null}
+                {isSold ? (
+                  <Link
+                    href={localizePublicHref(locale, `/marketplace/${listing.category}`)}
+                    className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828]"
+                  >
+                    {localizedLabel(locale, 'Visa liknande annonser', 'View similar listings', 'Ã„hnliche Anzeigen ansehen')}
+                  </Link>
+                ) : (
+                  <>
+                    <RevealPhoneButton listingId={listing.id} locale={locale} />
+                    <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
+                    <ListingContactFormButton
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      locale={locale}
+                      defaultCurrency={displayCurrency}
+                    />
+                  </>
+                )}
+                <div className="flex justify-start pt-0.5">
+                  <ShareListingButton
+                    title={listing.title}
+                    url={publicUrl}
+                    label={copy.shareListing}
+                    copiedLabel={copy.shareCopied}
+                    variant="plain"
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4">
+                {listing.seller_type === 'private' ? (
+                  <PrivateSellerProfileCard
+                    name={sellerDisplayLabel}
+                    locale={locale}
+                    verification={sellerVerification}
+                    ratingAverage={sellerDetails.ratingAverage}
+                    ratingCount={sellerDetails.ratingCount}
+                    memberSinceYear={sellerDetails.memberSinceYear || yearFromDate(listing.created_at)}
+                  />
+                ) : (
+                  <div className="grid gap-4">
+                    {sellerDetails.logoUrl ? (
+                      <div className="inline-flex w-fit max-w-full px-0 py-0">
+                        <Image
+                          src={sellerDetails.logoUrl}
+                          alt={sellerLabel}
+                          width={190}
+                          height={64}
+                          className="max-h-14 w-auto max-w-[210px] object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
+                        <ShieldCheck className="h-6 w-6" />
+                      </span>
+                    )}
+                    <div>
+                      <p className="text-lg font-semibold tracking-[-0.02em]">
+                        {sellerDisplayLabel}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
+                        <span>{sellerTypeLabel}</span>
+                        <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
+                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                          {countryName || listing.country_code}
+                        </span>
+                      </div>
+                      <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${sellerBadgeClass(sellerVerification.tone)}`}>
+                        {sellerVerification.label}
+                      </span>
+                      {sellerDetails.ratingAverage && sellerDetails.ratingCount ? (
+                        <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#475467]">
+                          <span className="text-[#0866ff]">â˜…</span>
+                          {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
+                        </p>
+                      ) : (
+                        <p className="mt-3 text-sm font-semibold text-[#475467]">{copy.noReviewsYet}</p>
+                      )}
+                      <div className="mt-4 grid gap-3 text-sm font-medium text-[#475467]">
+                        {sellerDetails.address ? (
+                          <p className="inline-flex min-w-0 items-start gap-2">
+                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0866ff]" />
+                            <span>{sellerDetails.address}</span>
+                          </p>
+                        ) : null}
+                        {sellerDetails.websiteUrl ? (
+                          <a
+                            href={sellerDetails.websiteUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
+                          >
+                            {localizedLabel(locale, 'Till handlarens webbsida', 'Dealer website', 'Zur HÃ¤ndlerwebsite')}
+                            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                          </a>
+                        ) : null}
+                        {sellerDetails.companyPageHref ? (
+                          <Link
+                            href={sellerDetails.companyPageHref}
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
+                          >
+                            {localizedLabel(locale, 'Visa fÃ¶retagssida', 'View company page', 'Unternehmensseite ansehen')}
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
             {publicSellerDescription ? (
               <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
                 <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
@@ -646,8 +769,8 @@ export default async function ListingDetailPage({
             </div>
             </div>
 
-              <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start">
-            <div id="listing-contact-card" className="grid gap-3 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
+              <section className="hidden scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:self-start">
+            <div id="listing-contact-card-desktop" className="grid gap-3 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
               <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}

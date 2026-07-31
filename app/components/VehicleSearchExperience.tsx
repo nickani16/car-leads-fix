@@ -4241,8 +4241,8 @@ function VehicleResultCard({
               {listing.priceLabel}
             </p>
             {insuranceLabel ? (
-              <span className={`${layout === 'split' ? 'text-[11px] leading-4 sm:text-[12px]' : 'text-[12px] leading-4'} inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2 py-1 font-semibold text-[#027a48] ring-1 ring-[#abefc6]`}>
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span className={`${layout === 'split' ? 'text-[11px] leading-4 sm:text-[12px]' : 'text-[12px] leading-4'} inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 font-medium text-[#344054]`}>
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
                 <span className="truncate">{insuranceLabel}</span>
               </span>
             ) : null}
@@ -4734,8 +4734,8 @@ function MapListingPreview({
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <p className="text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
             {insuranceLabel ? (
-              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[12px] font-semibold leading-4 text-[#027a48] ring-1 ring-[#abefc6]">
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2.5 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
                 <span className="truncate">{insuranceLabel}</span>
               </span>
             ) : null}

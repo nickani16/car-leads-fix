@@ -499,8 +499,8 @@ function HomeListingCard({
         </Link>
         <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
         {item.insuranceOfferLabel ? (
-          <span className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#ecfdf3] px-2 py-1 text-[11px] font-semibold leading-4 text-[#027a48] ring-1 ring-[#abefc6]">
-            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+          <span className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 text-[11px] font-medium leading-4 text-[#344054]">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
             <span className="truncate">{item.insuranceOfferLabel}</span>
           </span>
         ) : null}
