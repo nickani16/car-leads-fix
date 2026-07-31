@@ -63,7 +63,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
-type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'category' | 'bodyType' | 'market' | 'model' | null
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
@@ -2144,13 +2144,26 @@ export default function VehicleSearchExperience({
     )
     const modeLabel = marketplaceModeLabel(locale, mode)
     const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
-    const bodyTypeFilterDefinition = categoryFilterProfile(activeCategoryKey).find((filter) => filter.key === 'bodyType')
+    const activeCategoryProfile = categoryFilterProfile(activeCategoryKey)
+    const primaryFilterKeys = new Set(categoryPrimaryFilterKeys(activeCategoryKey))
+    const bodyTypeFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'bodyType')
+    const mileageFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'mileage')
+    const operatingHoursFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'operatingHours')
+    const showBodyTypeMenu = Boolean(bodyTypeFilterDefinition && primaryFilterKeys.has('bodyType'))
+    const showMileageMenu = Boolean(mileageFilterDefinition && primaryFilterKeys.has('mileage'))
+    const showOperatingHoursMenu = Boolean(operatingHoursFilterDefinition && primaryFilterKeys.has('operatingHours'))
     const bodyTypeFilterLabel = bodyTypeFilterDefinition
       ? filterLabel(bodyTypeFilterDefinition, locale)
       : translatePublic(locale, 'Body type')
     const bodyTypeLabel = bodyType
       ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
       : bodyTypeFilterLabel
+    const mileageFilterLabel = mileageFilterDefinition
+      ? filterLabel(mileageFilterDefinition, locale)
+      : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')
+    const operatingHoursFilterLabel = operatingHoursFilterDefinition
+      ? filterLabel(operatingHoursFilterDefinition, locale)
+      : uiText(locale, 'Operating hours', 'Drifttimmar', 'Betriebsstunden')
     const marketLabel = selectedMarketCodes.length > 1
       ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
       : selectedMarketCodes.length === 1
@@ -2291,13 +2304,14 @@ export default function VehicleSearchExperience({
             ))}
           </div>
 
+          {showMileageMenu ? (
           <div className="relative order-70 shrink-0">
-            {desktopMenuButton('mileage', minMileage || maxMileage ? `${uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand'), Boolean(minMileage || maxMileage))}
+            {desktopMenuButton('mileage', minMileage || maxMileage ? `${mileageFilterLabel}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : mileageFilterLabel, Boolean(minMileage || maxMileage))}
             {renderDesktopFilterPopover('mileage', (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
-                  title={uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')}
+                  title={mileageFilterLabel}
                   minValue={minMileage}
                   maxValue={maxMileage}
                   onMinChange={setMinMileage}
@@ -2313,6 +2327,32 @@ export default function VehicleSearchExperience({
               </div>
             ))}
           </div>
+          ) : null}
+
+          {showOperatingHoursMenu ? (
+          <div className="relative order-70 shrink-0">
+            {desktopMenuButton('operatingHours', minOperatingHours || maxOperatingHours ? `${operatingHoursFilterLabel}: ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}` : operatingHoursFilterLabel, Boolean(minOperatingHours || maxOperatingHours))}
+            {renderDesktopFilterPopover('operatingHours', (
+              <div className="space-y-4">
+                <RangeFilter
+                  locale={locale}
+                  title={operatingHoursFilterLabel}
+                  minValue={minOperatingHours}
+                  maxValue={maxOperatingHours}
+                  onMinChange={setMinOperatingHours}
+                  onMaxChange={setMaxOperatingHours}
+                  minLimit={0}
+                  maxLimit={20000}
+                  unit="h"
+                  step={250}
+                />
+                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+          ) : null}
 
           <div className="relative order-20 shrink-0">
             {desktopMenuButton('category', categoryLabel, false)}
@@ -2342,6 +2382,7 @@ export default function VehicleSearchExperience({
             ), 'w-[310px]')}
           </div>
 
+          {showBodyTypeMenu ? (
           <div className="relative order-30 shrink-0">
             {desktopMenuButton('bodyType', bodyTypeLabel, Boolean(bodyType))}
             {renderDesktopFilterPopover('bodyType', (
@@ -2384,6 +2425,7 @@ export default function VehicleSearchExperience({
               </div>
             ), 'w-[310px]')}
           </div>
+          ) : null}
 
           <div className="relative order-80 shrink-0">
             {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 1)}

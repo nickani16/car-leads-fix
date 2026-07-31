@@ -88,6 +88,11 @@ function isMissingGeoListingColumnError(error: { code?: string; message?: string
   return /geo_place_code|location_source/i.test(error.message || '')
 }
 
+function isMissingInsuranceListingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error || error.code !== 'PGRST204') return false
+  return /insurance_offers/i.test(error.message || '')
+}
+
 function normalizeListingPackageId(packageId: string) {
   return packageId in listingPackageDetails ? packageId : 'free_7d'
 }
@@ -244,6 +249,65 @@ async function uploadImage(
 function optionalNumber(value: string) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : undefined
+}
+
+type ListingInsuranceOffer = {
+  provider: string
+  monthlyCost?: number
+  currency?: string
+  interestRate?: number
+  deductible?: number
+  coverage?: string
+  termsUrl?: string
+  note?: string
+}
+
+function cleanShortText(value: unknown, max = 160) {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, max)
+}
+
+function cleanOptionalUrl(value: unknown) {
+  const raw = cleanShortText(value, 300)
+  if (!raw) return undefined
+  try {
+    const url = new URL(raw)
+    return url.protocol === 'https:' ? url.toString() : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function parseInsuranceOffers(form: FormData, fallbackCurrency: string) {
+  const raw = text(form, 'insuranceOffers')
+  if (!raw) return []
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return null
+  }
+  if (!Array.isArray(parsed)) return null
+  const offers = parsed
+    .slice(0, 6)
+    .map((item): ListingInsuranceOffer | null => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const provider = cleanShortText(record.provider, 80)
+      if (!provider) return null
+      const requestedCurrency = cleanShortText(record.currency, 3).toUpperCase()
+      return {
+        provider,
+        monthlyCost: optionalNumber(String(record.monthlyCost || '')),
+        currency: isSupportedCurrency(requestedCurrency) ? requestedCurrency : fallbackCurrency,
+        interestRate: optionalNumber(String(record.interestRate || '')),
+        deductible: optionalNumber(String(record.deductible || '')),
+        coverage: cleanShortText(record.coverage, 140) || undefined,
+        termsUrl: cleanOptionalUrl(record.termsUrl),
+        note: cleanShortText(record.note, 220) || undefined,
+      }
+    })
+    .filter((offer): offer is ListingInsuranceOffer => Boolean(offer))
+  return offers
 }
 
 function checkbox(form: FormData, key: string) {
@@ -537,6 +601,13 @@ export async function POST(request: Request) {
     const currency = isSupportedCurrency(requestedCurrency)
       ? requestedCurrency
       : currencyForCountry(listingCountryCode)
+    const insuranceOffers = parseInsuranceOffers(form, currency)
+    if (insuranceOffers === null) {
+      return listingFormError('Försäkringserbjudandet har ogiltigt format.', 0, 'insuranceOffers')
+    }
+    if (profile.account_type !== 'business' && insuranceOffers.length) {
+      return listingFormError('Försäkringserbjudanden kan bara läggas till av företagskonton.', 0, 'insuranceOffers', 403)
+    }
     const modelYearInput = text(form, 'modelYear')
     const modelYear = modelYearInput === '1950+' ? 1950 : Number(modelYearInput)
     const mileage = ['cars', 'vans', 'motorcycles', 'motorhomes', 'trucks'].includes(category)
@@ -816,6 +887,7 @@ export async function POST(request: Request) {
         currency,
         offer_type: offerType,
         lease_data: leaseData,
+        insurance_offers: insuranceOffers,
         structured_data: structuredData,
         search_document: searchDocument,
         images,
@@ -856,7 +928,10 @@ export async function POST(request: Request) {
       .select('id,status,review_status,reference_number,listing_number')
       .single()
 
-    if (isMissingGeoListingColumnError(error)) {
+    if (isMissingGeoListingColumnError(error) || isMissingInsuranceListingColumnError(error)) {
+      if (isMissingInsuranceListingColumnError(error)) {
+        delete (listingInsert as Record<string, unknown>).insurance_offers
+      }
       delete (listingInsert as Record<string, unknown>).location_source
       delete (listingInsert as Record<string, unknown>).geo_place_code
       const retry = await admin

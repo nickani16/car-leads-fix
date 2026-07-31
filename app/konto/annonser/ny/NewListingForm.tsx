@@ -105,6 +105,17 @@ type ListingCreationError = {
   step?: StepId
   field?: string
 }
+type ListingInsuranceOfferDraft = {
+  id: string
+  provider: string
+  monthlyCost: string
+  currency: string
+  interestRate: string
+  deductible: string
+  coverage: string
+  termsUrl: string
+  note: string
+}
 
 const steps = [
   'Kategori & grundinfo',
@@ -132,6 +143,51 @@ const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
 )
+
+function createInsuranceOfferDraft(currency: SupportedCurrency): ListingInsuranceOfferDraft {
+  return {
+    id: crypto.randomUUID(),
+    provider: '',
+    monthlyCost: '',
+    currency,
+    interestRate: '',
+    deductible: '',
+    coverage: '',
+    termsUrl: '',
+    note: '',
+  }
+}
+
+function normalizeInsuranceOfferDrafts(
+  offers: ListingInsuranceOfferDraft[],
+  currency: SupportedCurrency,
+) {
+  if (!Array.isArray(offers)) return []
+  return offers.slice(0, 6).map((offer) => ({
+    ...createInsuranceOfferDraft(currency),
+    ...offer,
+    id: offer.id || crypto.randomUUID(),
+    currency: offer.currency || currency,
+  }))
+}
+
+function serializeInsuranceOffers(
+  offers: ListingInsuranceOfferDraft[],
+  fallbackCurrency: SupportedCurrency,
+) {
+  return offers
+    .map((offer) => ({
+      provider: offer.provider.trim(),
+      monthlyCost: offer.monthlyCost.trim(),
+      currency: offer.currency || fallbackCurrency,
+      interestRate: offer.interestRate.trim(),
+      deductible: offer.deductible.trim(),
+      coverage: offer.coverage.trim(),
+      termsUrl: offer.termsUrl.trim(),
+      note: offer.note.trim(),
+    }))
+    .filter((offer) => offer.provider)
+}
 
 export default function NewListingForm({
   accountType,
@@ -163,6 +219,7 @@ export default function NewListingForm({
   })
   const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
+  const [insuranceOffers, setInsuranceOffers] = useState<ListingInsuranceOfferDraft[]>([])
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [images, setImages] = useState<UploadImage[]>([])
   const [mainImageId, setMainImageId] = useState('')
@@ -214,7 +271,7 @@ export default function NewListingForm({
       try {
         const saved = window.localStorage.getItem(draftKey)
         if (saved) {
-          const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[] }
+          const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[]; insuranceOffers?: ListingInsuranceOfferDraft[] }
           if (draft.values) setValues((current) => ({
             ...current,
             ...draft.values,
@@ -222,6 +279,7 @@ export default function NewListingForm({
           }))
           if (draft.category) setCategory(normalizeMarketplaceCategory(draft.category))
           if (draft.equipment) setEquipment(draft.equipment)
+          if (draft.insuranceOffers) setInsuranceOffers(normalizeInsuranceOfferDrafts(draft.insuranceOffers, defaultCurrency))
           if (typeof draft.step === 'number') setStep(Math.min(4, Math.max(0, draft.step)) as StepId)
           setDraftNotice(true)
         }
@@ -255,8 +313,8 @@ export default function NewListingForm({
 
   useEffect(() => {
     if (!draftRestored.current) return
-    window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, savedAt: new Date().toISOString() }))
-  }, [category, draftKey, equipment, step, values])
+    window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, insuranceOffers, savedAt: new Date().toISOString() }))
+  }, [category, draftKey, equipment, insuranceOffers, step, values])
 
   useEffect(() => {
     if (leasingAllowedForCategory) return
@@ -599,6 +657,9 @@ export default function NewListingForm({
       values.colorChoice === 'other' ? 'Annan färg' : values.colorChoice || '',
     )
     form.set('equipmentKeys', JSON.stringify(equipment))
+    if (accountType === 'business') {
+      form.set('insuranceOffers', JSON.stringify(serializeInsuranceOffers(insuranceOffers, (values.currency || defaultCurrency) as SupportedCurrency)))
+    }
     if (values.listingTerms === 'on') form.set('listingTerms', 'on')
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
     orderedImages.forEach((image) => form.append('images', image.file, image.name))
@@ -809,6 +870,16 @@ export default function NewListingForm({
             ) : null}
             {leasingAllowedForCategory && isLeaseOffer(normalizeOfferType(values.offerType)) ? (
               <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
+            ) : null}
+            {accountType === 'business' ? (
+              <div className="md:col-span-2">
+                <InsuranceOfferFields
+                  locale={locale}
+                  offers={insuranceOffers}
+                  currency={(values.currency || defaultCurrency) as SupportedCurrency}
+                  onChange={setInsuranceOffers}
+                />
+              </div>
             ) : null}
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
             {accountType === 'business' && companyLocations.length ? (
@@ -2117,17 +2188,17 @@ function LeaseOfferFields({
           Företagsleasing
         </label>
         {[
-          ['leaseInsuranceIncluded', 'FÃ¶rsÃ¤kring ingÃ¥r'],
-          ['leaseMaintenanceIncluded', 'UnderhÃ¥ll ingÃ¥r'],
-          ['leaseRepairsIncluded', 'Reparationer ingÃ¥r'],
-          ...(!isMachine ? [['leaseTyresIncluded', 'DÃ¤ck ingÃ¥r']] : []),
+          ['leaseInsuranceIncluded', 'Försäkring ingår'],
+          ['leaseMaintenanceIncluded', 'Underhåll ingår'],
+          ['leaseRepairsIncluded', 'Reparationer ingår'],
+          ...(!isMachine ? [['leaseTyresIncluded', 'Däck ingår']] : []),
           ['leaseDeliveryIncluded', 'Leverans ingÃ¥r'],
           ...(!isMachine ? [['leasePrivate', 'Privatleasing']] : []),
           ['leaseOperational', 'Operationell leasing'],
           ['leaseFinancial', 'Finansiell leasing'],
-          ['leaseBuyoutAvailable', 'MÃ¶jlighet att kÃ¶pa ut'],
-          ['leaseTransportIncluded', 'Transport ingÃ¥r'],
-          ['leaseOperatorIncluded', 'FÃ¶rare eller operatÃ¶r ingÃ¥r'],
+          ['leaseBuyoutAvailable', 'Möjlighet att köpa ut'],
+          ['leaseTransportIncluded', 'Transport ingår'],
+          ['leaseOperatorIncluded', 'Förare eller operatör ingår'],
         ].map(([name, label]) => (
           <label key={name} className="flex items-center gap-3 text-sm font-medium">
             <input type="checkbox" checked={values[name] === 'on'} onChange={(event) => onChange(name, event.target.checked ? 'on' : '')} className="h-4 w-4 accent-[#0866ff]" />
@@ -2135,6 +2206,103 @@ function LeaseOfferFields({
           </label>
         ))}
       </div>
+    </section>
+  )
+}
+
+function InsuranceOfferFields({
+  locale,
+  offers,
+  currency,
+  onChange,
+}: {
+  locale: PublicLocale
+  offers: ListingInsuranceOfferDraft[]
+  currency: SupportedCurrency
+  onChange: (offers: ListingInsuranceOfferDraft[]) => void
+}) {
+  const t = (sv: string, en: string, de: string) => localizeFormText(locale, sv, en, de)
+
+  function updateOffer(id: string, key: keyof ListingInsuranceOfferDraft, value: string) {
+    onChange(offers.map((offer) => (
+      offer.id === id ? { ...offer, [key]: value } : offer
+    )))
+  }
+
+  return (
+    <section className="min-w-0 rounded-[20px] border border-[#d7e5ff] bg-[#f8fbff] p-4 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#0866ff] ring-1 ring-[#d7e5ff]">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="text-base font-semibold text-[#101828]">
+              {t('F\u00f6rs\u00e4kringserbjudanden', 'Insurance offers', 'Versicherungsangebote')}
+            </h3>
+            <p className="mt-1 text-sm leading-5 text-[#667085]">
+              {t(
+                'L\u00e4gg till frivilliga f\u00f6rs\u00e4kringserbjudanden som visas p\u00e5 f\u00f6retagsannonsen.',
+                'Add optional insurance offers shown on the business listing.',
+                'F\u00fcgen Sie optionale Versicherungsangebote hinzu, die in der Firmenanzeige angezeigt werden.',
+              )}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => offers.length < 6 && onChange([...offers, createInsuranceOfferDraft(currency)])}
+          disabled={offers.length >= 6}
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[12px] border border-[#0866ff] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#eef5ff] disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:text-[#98a2b3]"
+        >
+          {t('L\u00e4gg till erbjudande', 'Add offer', 'Angebot hinzuf\u00fcgen')}
+        </button>
+      </div>
+      <p className="mt-4 rounded-[12px] border border-[#e4eaf3] bg-white px-3 py-2 text-xs font-medium leading-5 text-[#667085]">
+        {t(
+          'F\u00f6retagss\u00e4ljaren ansvarar f\u00f6r bolag, priser, r\u00e4ntor och villkor. Autorell visar bara informationen i annonsen.',
+          'The company seller is responsible for providers, prices, interest rates and terms. Autorell only displays the information on the listing.',
+          'Der gewerbliche Verk\u00e4ufer ist f\u00fcr Anbieter, Preise, Zinss\u00e4tze und Bedingungen verantwortlich. Autorell zeigt die Angaben nur in der Anzeige an.',
+        )}
+      </p>
+      {offers.length ? (
+        <div className="mt-4 grid gap-3">
+          {offers.map((offer, index) => (
+            <div key={offer.id} className="rounded-[18px] border border-[#d7deed] bg-white p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <strong className="text-sm font-semibold text-[#101828]">
+                  {t('Erbjudande', 'Offer', 'Angebot')} {index + 1}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => onChange(offers.filter((item) => item.id !== offer.id))}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-[#f2f4f7] text-[#667085] transition hover:bg-red-50 hover:text-red-600"
+                  aria-label={t('Ta bort', 'Remove', 'Entfernen')}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field name={`insuranceProvider-${offer.id}`} label={t('F\u00f6rs\u00e4kringsbolag', 'Insurance company', 'Versicherer')} value={offer.provider} onValueChange={(_, value) => updateOffer(offer.id, 'provider', value)} />
+                <PriceField name={`insuranceMonthly-${offer.id}`} label={t('M\u00e5nadskostnad', 'Monthly cost', 'Monatliche Kosten')} currency={offer.currency || currency} value={offer.monthlyCost} onValueChange={(_, value) => updateOffer(offer.id, 'monthlyCost', value)} />
+                <Field name={`insuranceInterest-${offer.id}`} label={t('R\u00e4nta (%)', 'Interest rate (%)', 'Zinssatz (%)')} type="number" step="0.01" value={offer.interestRate} onValueChange={(_, value) => updateOffer(offer.id, 'interestRate', value)} />
+                <Field name={`insuranceDeductible-${offer.id}`} label={t('Sj\u00e4lvrisk', 'Deductible', 'Selbstbeteiligung')} type="number" value={offer.deductible} onValueChange={(_, value) => updateOffer(offer.id, 'deductible', value)} />
+                <Field name={`insuranceCoverage-${offer.id}`} label={t('Omfattning', 'Coverage', 'Deckung')} value={offer.coverage} onValueChange={(_, value) => updateOffer(offer.id, 'coverage', value)} />
+                <Field name={`insuranceTerms-${offer.id}`} label={t('Villkorsl\u00e4nk', 'Terms link', 'Link zu Bedingungen')} type="url" value={offer.termsUrl} onValueChange={(_, value) => updateOffer(offer.id, 'termsUrl', value)} />
+                <label className="block min-w-0 sm:col-span-2">
+                  <span className="mb-2 block text-sm font-semibold">{t('Kort notering', 'Short note', 'Kurzer Hinweis')}</span>
+                  <textarea
+                    value={offer.note}
+                    onChange={(event) => updateOffer(offer.id, 'note', event.target.value)}
+                    placeholder={t('Exempel: helf\u00f6rs\u00e4kring, assistans eller hur l\u00e4nge erbjudandet g\u00e4ller.', 'Example: full coverage, roadside assistance or offer validity.', 'Beispiel: Vollkasko, Pannenhilfe oder G\u00fcltigkeit des Angebots.')}
+                    className="min-h-24 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 py-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                  />
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   )
 }

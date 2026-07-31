@@ -243,7 +243,7 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
   const admin = createAdminClient()
   const listingQuery = admin
     .from('marketplace_listings')
-    .select(`${marketplacePublicSelect},metadata`)
+    .select(`${marketplacePublicSelect},insurance_offers,metadata`)
     .eq('id', id)
     .in('status', ['published', 'sold'])
     .maybeSingle()
@@ -262,11 +262,11 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
   if (error) {
     const fallback = await admin
       .from('marketplace_listings')
-      .select(marketplacePublicSelect)
+      .select(`${marketplacePublicSelect},metadata`)
       .eq('id', id)
       .in('status', ['published', 'sold'])
       .maybeSingle()
-    data = fallback.data ? { ...fallback.data, metadata: null } : null
+    data = fallback.data ? { ...fallback.data, insurance_offers: null, metadata: fallback.data.metadata || null } : null
   }
 
   if (!data) return null

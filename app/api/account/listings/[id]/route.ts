@@ -39,6 +39,35 @@ function numberOrNull(value: unknown) {
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
 }
 
+function optionalDecimal(value: unknown) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : undefined
+}
+
+function normalizeInsuranceOffers(value: unknown, fallbackCurrency: string) {
+  if (!Array.isArray(value)) return []
+  return value
+    .slice(0, 6)
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const provider = clean(record.provider).slice(0, 80)
+      if (!provider) return null
+      const termsUrl = clean(record.termsUrl).slice(0, 300)
+      return {
+        provider,
+        monthlyCost: optionalDecimal(record.monthlyCost),
+        currency: clean(record.currency).toUpperCase().slice(0, 3) || fallbackCurrency,
+        interestRate: optionalDecimal(record.interestRate),
+        deductible: optionalDecimal(record.deductible),
+        coverage: clean(record.coverage).slice(0, 140) || undefined,
+        termsUrl: termsUrl.startsWith('https://') ? termsUrl : undefined,
+        note: clean(record.note).slice(0, 220) || undefined,
+      }
+    })
+    .filter(Boolean)
+}
+
 function cleanTechnicalInput(value: unknown) {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -128,6 +157,7 @@ export async function PATCH(
     phoneVisibility?: string
     mileage?: number | string
     operatingHours?: number | string
+    insuranceOffers?: unknown[]
     technicalData?: Record<string, unknown>
     identifiers?: Partial<Record<keyof ListingIdentifierInput, string | number | null>>
   }
@@ -290,6 +320,10 @@ export async function PATCH(
         : body.phoneVisibility === 'public'
           ? 'public'
           : 'registered_only'
+    const shouldUpdateInsuranceOffers = Array.isArray(body.insuranceOffers)
+    const insuranceOffers = listing.seller_type === 'business' && shouldUpdateInsuranceOffers
+      ? normalizeInsuranceOffers(body.insuranceOffers || [], String(listing.currency || 'EUR'))
+      : []
     if (!make || !model || !Number.isInteger(modelYear) || modelYear < 1950 || modelYear > 2027) {
       return NextResponse.json(
         { error: 'Märke, modell och årsmodell krävs.' },
@@ -344,6 +378,9 @@ export async function PATCH(
       condition: technicalInput.condition ? clean(technicalInput.condition) : null,
       known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
       service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
+    }
+    if (listing.seller_type === 'business' && shouldUpdateInsuranceOffers) {
+      patch.insurance_offers = insuranceOffers
     }
     const structuredData = {
       ...(listing.structured_data && typeof listing.structured_data === 'object' ? listing.structured_data : {}),

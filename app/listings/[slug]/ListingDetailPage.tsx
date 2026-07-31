@@ -94,6 +94,7 @@ type ListingRow = {
   structured_data: Record<string, string | number | string[] | null> | null
   offer_type: 'sale' | 'lease' | 'sale_and_lease' | string | null
   country_code: string
+  insurance_offers?: ListingInsuranceOffer[] | null
   country: string | null
   city: string
   municipality: string | null
@@ -128,6 +129,17 @@ type ListingSpec = {
   label: string
   labelNode?: ReactNode
   value: string | number
+}
+
+type ListingInsuranceOffer = {
+  provider?: string | null
+  monthlyCost?: number | string | null
+  currency?: string | null
+  interestRate?: number | string | null
+  deductible?: number | string | null
+  coverage?: string | null
+  termsUrl?: string | null
+  note?: string | null
 }
 
 type ListingTechnicalDetails = {
@@ -253,6 +265,7 @@ export default async function ListingDetailPage({
     locale,
     targetCurrency: displayCurrency,
   })
+  const insuranceOffers = normalizeListingInsuranceOffers(listing.insurance_offers)
   const currentPrice = Number(listing.price)
   const originalPrice = listing.original_price ? Number(listing.original_price) : null
   const hasPriceDrop =
@@ -664,6 +677,14 @@ export default async function ListingDetailPage({
                 </p>
               </div>
 
+              {listing.seller_type === 'business' && insuranceOffers.length ? (
+                <InsuranceOffersPanel
+                  offers={insuranceOffers}
+                  locale={locale}
+                  fallbackCurrency={listing.currency}
+                />
+              ) : null}
+
               <div className="grid gap-2.5 border-b border-[#edf1f6] p-4 sm:p-5">
                 {isListingOwner ? (
                   <Link
@@ -850,6 +871,123 @@ async function fetchListingFromSlug(slug: string) {
   const data = await getMarketplaceListingForPublicDetail(id)
 
   return (data || null) as ListingRow | null
+}
+
+function normalizeListingInsuranceOffers(value: ListingInsuranceOffer[] | null | undefined) {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((offer) => ({
+      provider: textOrNull(offer.provider),
+      monthlyCost: numberOrNull(offer.monthlyCost),
+      currency: textOrNull(offer.currency),
+      interestRate: numberOrNull(offer.interestRate),
+      deductible: numberOrNull(offer.deductible),
+      coverage: textOrNull(offer.coverage),
+      termsUrl: textOrNull(offer.termsUrl),
+      note: textOrNull(offer.note),
+    }))
+    .filter((offer) => Boolean(offer.provider))
+    .slice(0, 6)
+}
+
+function InsuranceOffersPanel({
+  offers,
+  locale,
+  fallbackCurrency,
+}: {
+  offers: ReturnType<typeof normalizeListingInsuranceOffers>
+  locale: PublicLocale
+  fallbackCurrency: string
+}) {
+  return (
+    <section className="border-b border-[#edf1f6] bg-[#fbfdff] p-4 sm:p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#d7e5ff]">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <h3 className="text-base font-semibold tracking-[-0.02em] text-[#101828]">
+            {localizedLabel(locale, 'Försäkringserbjudanden', 'Insurance offers', 'Versicherungsangebote')}
+          </h3>
+          <p className="mt-1 text-xs font-medium leading-5 text-[#667085]">
+            {localizedLabel(
+              locale,
+              'Erbjudanden från säljaren. Kontrollera alltid slutliga villkor med försäkringsbolaget.',
+              'Offers from the seller. Always confirm final terms with the insurer.',
+              'Angebote des Verkäufers. Prüfen Sie die endgültigen Bedingungen immer beim Versicherer.',
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3">
+        {offers.map((offer, index) => {
+          const currency = offer.currency || fallbackCurrency
+          const monthly = offer.monthlyCost
+            ? new Intl.NumberFormat(detailNumberLocale(locale), {
+                style: 'currency',
+                currency,
+                maximumFractionDigits: 0,
+              }).format(offer.monthlyCost)
+            : null
+          return (
+            <article key={`${offer.provider}-${index}`} className="rounded-[14px] border border-[#dfe6f2] bg-white p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold text-[#101828]">{offer.provider}</p>
+                  {monthly ? (
+                    <p className="mt-1 text-lg font-semibold tracking-[-0.025em] text-[#0866ff]">
+                      {localizedLabel(locale, 'Från', 'From', 'Ab')} {monthly}/{localizedLabel(locale, 'mån', 'mo', 'Mon.')}
+                    </p>
+                  ) : null}
+                </div>
+                <span className="shrink-0 rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[11px] font-semibold text-[#027a48]">
+                  {localizedLabel(locale, 'Företag', 'Dealer', 'Händler')}
+                </span>
+              </div>
+              <dl className="mt-3 grid gap-2 text-xs font-medium text-[#475467]">
+                {offer.interestRate !== null ? (
+                  <div className="flex justify-between gap-3">
+                    <dt>{localizedLabel(locale, 'Ränta', 'Interest', 'Zins')}</dt>
+                    <dd className="font-semibold text-[#101828]">{offer.interestRate.toLocaleString(detailNumberLocale(locale), { maximumFractionDigits: 2 })}%</dd>
+                  </div>
+                ) : null}
+                {offer.deductible !== null ? (
+                  <div className="flex justify-between gap-3">
+                    <dt>{localizedLabel(locale, 'Självrisk', 'Deductible', 'Selbstbeteiligung')}</dt>
+                    <dd className="font-semibold text-[#101828]">
+                      {new Intl.NumberFormat(detailNumberLocale(locale), {
+                        style: 'currency',
+                        currency,
+                        maximumFractionDigits: 0,
+                      }).format(offer.deductible)}
+                    </dd>
+                  </div>
+                ) : null}
+                {offer.coverage ? (
+                  <div>
+                    <dt>{localizedLabel(locale, 'Omfattning', 'Coverage', 'Deckung')}</dt>
+                    <dd className="mt-1 font-semibold text-[#101828]">{offer.coverage}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              {offer.note ? <p className="mt-3 text-xs font-medium leading-5 text-[#667085]">{offer.note}</p> : null}
+              {offer.termsUrl ? (
+                <a
+                  href={offer.termsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0866ff] hover:text-[#0758dc]"
+                >
+                  {localizedLabel(locale, 'Visa villkor', 'View terms', 'Bedingungen anzeigen')}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : null}
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
 }
 
 function PriceInsightPanel({
@@ -1819,6 +1957,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function textOrNull(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function numberOrNull(value: unknown) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null
 }
 
 function formatTechnicalValue(value: unknown, suffix: string) {
