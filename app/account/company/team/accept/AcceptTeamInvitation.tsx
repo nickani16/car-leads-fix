@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 
@@ -24,8 +24,10 @@ export default function AcceptTeamInvitation({
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const attemptedRef = useRef(false)
 
   async function accept() {
+    if (loading || !token) return
     setLoading(true)
     setError('')
     setMessage('')
@@ -52,6 +54,13 @@ export default function AcceptTeamInvitation({
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (attemptedRef.current || !token) return
+    attemptedRef.current = true
+    void accept()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
   return (
     <div>

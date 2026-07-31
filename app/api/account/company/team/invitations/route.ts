@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: 'You need to sign in.' }, { status: 401 })
 
     const limit = checkRateLimit({
       key: `company-team-invite:${getClientIp(request)}:${user.id}`,
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     })
     if (limit.limited) {
       return NextResponse.json(
-        { error: 'För många inbjudningar på kort tid. Försök igen senare.' },
+        { error: 'Too many invitations in a short time. Try again later.' },
         { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
       )
     }
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     const email = normalizeEmail(body.email)
     const role = normalizeTeamRole(body.role) || 'staff'
     if (!validEmail(email)) {
-      return NextResponse.json({ error: 'Ange en giltig e-postadress.' }, { status: 400 })
+      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
     }
     if (email === user.email?.toLowerCase()) {
-      return NextResponse.json({ error: 'Du är redan kopplad till företaget.' }, { status: 400 })
+      return NextResponse.json({ error: 'You are already connected to the company.' }, { status: 400 })
     }
 
     const admin = createAdminClient()
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (!profile || profile.account_type !== 'business' || !profile.company_id) {
-      return NextResponse.json({ error: 'Endast företagskonton kan bjuda in teammedlemmar.' }, { status: 403 })
+      return NextResponse.json({ error: 'Only business accounts can invite team members.' }, { status: 403 })
     }
 
     const { data: subscription } = await admin
@@ -66,18 +66,18 @@ export async function POST(request: Request) {
 
     const planKey = String(subscription?.plan_key || 'free').toLowerCase()
     if (!['growth', 'professional', 'enterprise'].includes(planKey)) {
-      return NextResponse.json({ error: 'Teamkonton ingår från Growth.' }, { status: 403 })
+      return NextResponse.json({ error: 'Team accounts are included from Growth.' }, { status: 403 })
     }
     if (!['active', 'trialing'].includes(String(subscription?.status || ''))) {
-      return NextResponse.json({ error: 'Planen måste vara aktiv innan team kan bjudas in.' }, { status: 403 })
+      return NextResponse.json({ error: 'The plan must be active before team members can be invited.' }, { status: 403 })
     }
 
     const team = await getCompanyTeamOverview(admin, String(profile.company_id), planKey)
     if (team.remainingSeats <= 0) {
-      return NextResponse.json({ error: 'Teamgränsen för planen är uppnådd.' }, { status: 409 })
+      return NextResponse.json({ error: 'The team limit for the plan has been reached.' }, { status: 409 })
     }
     if (team.members.some((member) => member.email.toLowerCase() === email) || team.invitations.some((invite) => invite.email.toLowerCase() === email)) {
-      return NextResponse.json({ error: 'Den e-postadressen är redan medlem eller har en aktiv inbjudan.' }, { status: 409 })
+      return NextResponse.json({ error: 'That email address is already a member or has an active invitation.' }, { status: 409 })
     }
 
     const { data: existingProfile } = await admin
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       .ilike('email', email)
       .maybeSingle()
     if (existingProfile?.company_id === profile.company_id) {
-      return NextResponse.json({ error: 'Den användaren är redan kopplad till företaget.' }, { status: 409 })
+      return NextResponse.json({ error: 'That user is already connected to the company.' }, { status: 409 })
     }
 
     const { token, tokenHash } = createTeamInvitationToken()
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     if (error || !invitation) {
       const duplicate = error?.code === '23505' || error?.message?.toLowerCase().includes('duplicate')
       return NextResponse.json(
-        { error: duplicate ? 'Det finns redan en aktiv inbjudan till den e-postadressen.' : 'Inbjudan kunde inte skapas.' },
+        { error: duplicate ? 'That email address is already a member or has an active invitation.' : 'Invitation could not be sent.' },
         { status: duplicate ? 409 : 500 },
       )
     }
@@ -126,6 +126,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, invitationId: invitation.id, expiresAt })
   } catch (error) {
     console.error('[company-team-invite] failed', error)
-    return NextResponse.json({ error: 'Inbjudan kunde inte skickas.' }, { status: 500 })
+    return NextResponse.json({ error: 'Invitation could not be sent.' }, { status: 500 })
   }
 }
