@@ -4,6 +4,7 @@ import { getAuthApiCopy } from '@/lib/auth-copy'
 import { isStrongPassword } from '@/lib/password-policy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function safeNext(value: unknown, locale: ReturnType<typeof localeFromRequest>) {
   const next = String(value || localizedAuthPath(locale, '/register?onboarding=1'))
@@ -54,26 +55,34 @@ export async function POST(request: Request) {
     const redirectTo = new URL('/auth/callback', origin)
     redirectTo.searchParams.set('next', safeNext(body.next, locale))
 
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.signUp({
+    const admin = createAdminClient()
+    const link = await admin.auth.admin.generateLink({
+      type: 'signup',
       email,
       password,
       options: {
-        emailRedirectTo: redirectTo.toString(),
+        redirectTo: redirectTo.toString(),
         data: { preferred_locale: locale },
       },
     })
 
-    if (error) {
+    if (link.error || !link.data.properties?.hashed_token) {
       return NextResponse.json(
         { error: copy.signupError },
         { status: 400 },
       )
     }
 
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: link.data.properties.hashed_token,
+      type: 'signup',
+    })
+    if (error || !data.session) throw error || new Error('Session could not be created.')
+
     return NextResponse.json({
       success: true,
-      sessionReady: Boolean(data.session),
+      sessionReady: true,
       destination: safeNext(body.next, locale),
     })
   } catch (error) {

@@ -114,6 +114,9 @@ export default function AuthModal({
   }
 
   function registerDestination() {
+    if (postLoginDestination?.includes('/company/team/accept')) {
+      return postLoginDestination
+    }
     return localizePublicHref(
       locale,
       postLoginDestination?.includes('account=business')

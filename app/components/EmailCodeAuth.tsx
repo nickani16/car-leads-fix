@@ -49,6 +49,16 @@ export default function EmailCodeAuth({
   const [registerAccountType, setRegisterAccountType] = useState<'private' | 'business'>('private')
   const inputs = useRef<Array<HTMLInputElement | null>>([])
 
+  function registerDestination(requestedNext?: string | null) {
+    if (requestedNext?.includes('/company/team/accept')) return requestedNext
+    return localizePublicHref(
+      locale,
+      registerAccountType === 'business'
+        ? '/register?onboarding=1&account=business'
+        : '/register?onboarding=1',
+    )
+  }
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const remembered = window.localStorage.getItem(REMEMBERED_LOGIN_KEY)
@@ -106,12 +116,7 @@ export default function EmailCodeAuth({
     try {
       const params = new URLSearchParams(window.location.search)
       const requestedNext = params.get('next')
-      const registerDestination = localizePublicHref(
-        locale,
-        registerAccountType === 'business'
-          ? '/register?onboarding=1&account=business'
-          : '/register?onboarding=1',
-      )
+      const destinationForRegister = registerDestination(requestedNext)
       const response = await fetch('/api/auth/email-code/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +125,7 @@ export default function EmailCodeAuth({
           code,
           next:
             mode === 'register'
-              ? registerDestination
+              ? destinationForRegister
               : requestedNext || localizePublicHref(locale, '/account'),
         }),
       })
@@ -136,7 +141,7 @@ export default function EmailCodeAuth({
       router.replace(
         result.destination ||
           (mode === 'register'
-            ? registerDestination
+            ? destinationForRegister
             : localizePublicHref(locale, '/account')),
       )
       router.refresh()
@@ -155,12 +160,7 @@ export default function EmailCodeAuth({
     try {
       const params = new URLSearchParams(window.location.search)
       const requestedNext = params.get('next')
-      const registerDestination = localizePublicHref(
-        locale,
-        registerAccountType === 'business'
-          ? '/register?onboarding=1&account=business'
-          : '/register?onboarding=1',
-      )
+      const registerDestinationForSubmit = registerDestination(requestedNext)
       if (mode === 'register') {
         if (!isStrongPassword(password)) {
           setError(PASSWORD_REQUIREMENTS)
@@ -178,7 +178,7 @@ export default function EmailCodeAuth({
             password,
             confirmPassword,
             locale,
-            next: registerDestination,
+            next: registerDestinationForSubmit,
           }),
         })
         const result = (await response.json()) as {
@@ -193,7 +193,7 @@ export default function EmailCodeAuth({
         }
         if (remember) window.localStorage.setItem(REMEMBERED_LOGIN_KEY, email.trim())
         if (result.sessionReady) {
-          router.replace(result.destination || registerDestination)
+          router.replace(result.destination || registerDestinationForSubmit)
           router.refresh()
           return
         }
