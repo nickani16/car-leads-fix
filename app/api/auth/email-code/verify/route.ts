@@ -11,6 +11,11 @@ import {
 import { getAuthApiCopy } from '@/lib/auth-copy'
 import { localeFromRequest } from '@/lib/auth-locale'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import {
+  acceptCompanyTeamInvitationForUser,
+  CompanyTeamInvitationError,
+  tokenFromCompanyTeamAcceptPath,
+} from '@/lib/company-team-acceptance'
 
 const marketPathPrefixes = new Set([
   'se',
@@ -276,6 +281,21 @@ export async function POST(request: Request) {
     }
 
     const requested = safeAuthDestination(body.next)
+    const invitationToken = tokenFromCompanyTeamAcceptPath(requested)
+    if (invitationToken) {
+      const accepted = await acceptCompanyTeamInvitationForUser(admin, {
+        token: invitationToken,
+        userId: data.user.id,
+        userEmail: data.user.email,
+        destinationHint: requested,
+      })
+      return NextResponse.json({
+        success: true,
+        destination: accepted.destination,
+        newAccount: false,
+      })
+    }
+
     const { data: companyInvitation } = !profile
       ? await admin
           .from('marketplace_company_invitations')
@@ -300,6 +320,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {
+    if (error instanceof CompanyTeamInvitationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('Email code verification failed', error)
     const locale = localeFromRequest(request)
     const copy = getAuthApiCopy(locale)

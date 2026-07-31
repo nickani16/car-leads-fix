@@ -5,6 +5,11 @@ import { isStrongPassword } from '@/lib/password-policy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  acceptCompanyTeamInvitationForUser,
+  CompanyTeamInvitationError,
+  tokenFromCompanyTeamAcceptPath,
+} from '@/lib/company-team-acceptance'
 
 function safeNext(value: unknown, locale: ReturnType<typeof localeFromRequest>) {
   const next = String(value || localizedAuthPath(locale, '/register?onboarding=1'))
@@ -80,12 +85,31 @@ export async function POST(request: Request) {
     })
     if (error || !data.session) throw error || new Error('Session could not be created.')
 
+    const destination = safeNext(body.next, locale)
+    const invitationToken = tokenFromCompanyTeamAcceptPath(destination)
+    if (invitationToken && data.user) {
+      const accepted = await acceptCompanyTeamInvitationForUser(admin, {
+        token: invitationToken,
+        userId: data.user.id,
+        userEmail: data.user.email,
+        destinationHint: destination,
+      })
+      return NextResponse.json({
+        success: true,
+        sessionReady: true,
+        destination: accepted.destination,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       sessionReady: true,
-      destination: safeNext(body.next, locale),
+      destination,
     })
   } catch (error) {
+    if (error instanceof CompanyTeamInvitationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('Password signup failed', error)
     return NextResponse.json(
       { error: 'The account could not be created right now.' },
