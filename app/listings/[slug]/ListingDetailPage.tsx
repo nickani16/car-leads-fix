@@ -549,6 +549,30 @@ export default async function ListingDetailPage({
                       {formatDate(publishedDate, locale)}
                     </span>
                   </p>
+                  <div className="mt-4 rounded-[12px] border border-[#dfe6f2] bg-[#f8fbff] px-4 py-3 lg:hidden">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#667085]">
+                      {copy.priceLabel}
+                    </p>
+                    {hasPriceDrop ? (
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {originalPrice !== null ? (
+                          <span className="text-sm font-medium text-[#667085] line-through">
+                            {`${originalPrice.toLocaleString(detailNumberLocale(locale), { maximumFractionDigits: 0 })} ${listing.currency}`}
+                          </span>
+                        ) : null}
+                        <span className="rounded-full bg-[#ecfdf3] px-2.5 py-1 text-xs font-semibold text-[#027a48]">
+                          {copy.priceReduced} {priceDropPercent}%
+                        </span>
+                      </div>
+                    ) : null}
+                    <p className="mt-1 text-3xl font-semibold leading-tight tracking-[-0.035em] text-[#101828]">
+                      {price.original}
+                    </p>
+                    {price.approximate ? (
+                      <p className="mt-1 text-xs font-medium leading-4 text-[#667085]">{price.approximate}</p>
+                    ) : null}
+                    <p className="mt-1.5 text-xs font-medium leading-4 text-[#667085]">{copy.vatInfo}</p>
+                  </div>
                 </div>
               </div>
               {headlineFacts.length ? (
