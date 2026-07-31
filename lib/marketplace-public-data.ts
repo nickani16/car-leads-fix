@@ -260,13 +260,41 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
   ])
 
   if (error) {
+    console.error('[marketplace-public-detail] primary listing select failed', { id, error })
     const fallback = await admin
       .from('marketplace_listings')
       .select(`${marketplacePublicSelect},metadata`)
       .eq('id', id)
       .in('status', ['published', 'sold'])
       .maybeSingle()
-    data = fallback.data ? { ...fallback.data, insurance_offers: null, metadata: fallback.data.metadata || null } : null
+    if (fallback.error) {
+      console.error('[marketplace-public-detail] fallback listing select failed', { id, error: fallback.error })
+      const minimal = await admin
+        .from('marketplace_listings')
+        .select('*')
+        .eq('id', id)
+        .in('status', ['published', 'sold'])
+        .maybeSingle()
+      if (minimal.error) {
+        console.error('[marketplace-public-detail] minimal listing select failed', { id, error: minimal.error })
+      }
+      data = minimal.data ? { ...minimal.data, insurance_offers: null, metadata: minimal.data.metadata || null } : null
+    } else {
+      data = fallback.data ? { ...fallback.data, insurance_offers: null, metadata: fallback.data.metadata || null } : null
+    }
+  }
+
+  if (!data) {
+    const minimal = await admin
+      .from('marketplace_listings')
+      .select('*')
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle()
+    if (minimal.error) {
+      console.error('[marketplace-public-detail] empty primary result and minimal retry failed', { id, error: minimal.error })
+    }
+    data = minimal.data ? { ...minimal.data, insurance_offers: null, metadata: minimal.data.metadata || null } : null
   }
 
   if (!data) return null
