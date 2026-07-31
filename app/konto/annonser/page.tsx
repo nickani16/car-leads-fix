@@ -62,10 +62,12 @@ export default async function AccountListingsPage({
   searchParams,
   localeOverride,
   marketOverride,
+  companyMode = false,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
   localeOverride?: PublicLocale
   marketOverride?: string
+  companyMode?: boolean
 }) {
   const query = await searchParams
   const renderedAt = new Date().getTime()
@@ -88,6 +90,7 @@ export default async function AccountListingsPage({
     .eq('user_id', user.id)
     .maybeSingle()
   const accountType = profile?.account_type || 'private'
+  if (companyMode && accountType !== 'business') redirect(localizePublicHref(locale, '/account/listings'))
   let listingOwnerUserIds = [user.id]
   if (accountType === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)
@@ -144,9 +147,12 @@ export default async function AccountListingsPage({
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-6 sm:px-8 lg:py-9">
         <AccountBreadcrumbs
           locale={locale}
-          items={[{ key: 'account', href: '/account' }, { key: 'listings' }]}
+          items={[{ key: 'account', href: '/account' }, { key: companyMode ? 'companyListings' : 'listings' }]}
           className="mb-5"
         />
+        {companyMode ? (
+          <CompanyListingsHero summary={summary} totalCount={result.totalCount} locale={locale} />
+        ) : (
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{copy.eyebrow}</p>
@@ -157,12 +163,13 @@ export default async function AccountListingsPage({
             <Plus className="h-4 w-4" />{copy.create}
           </Link>
         </header>
+        )}
 
         {query.payment === 'cancelled' ? <StatusNotice tone="warning" title={copy.paymentCancelledTitle} text={copy.paymentCancelledText} /> : null}
         {query.payment === 'processing' ? <StatusNotice tone="info" title={copy.paymentProcessingTitle} text={copy.paymentProcessingText} /> : null}
         {query.published === '1' ? <StatusNotice tone="info" title={copy.listingCreatedTitle} text={copy.listingCreatedText} /> : null}
 
-        <CompactSummary summary={summary} locale={locale} />
+        {companyMode ? null : <CompactSummary summary={summary} locale={locale} />}
         <AttentionSection summary={summary} locale={locale} />
 
         <ListingsFilters
@@ -182,8 +189,21 @@ export default async function AccountListingsPage({
 
         {accountType === 'business' && result.items.some((listing) => canBulkManage(listing.status)) ? <BulkListingActions pageItemCount={result.items.filter((listing) => canBulkManage(listing.status)).length} locale={locale} /> : null}
 
-        <section id="listing-results" role="tabpanel" aria-labelledby={`listing-tab-${filters.status}`} className="mt-4 grid gap-3">
+        <section id="listing-results" role="tabpanel" aria-labelledby={`listing-tab-${filters.status}`} className={accountType === 'business' ? 'mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'mt-4 grid gap-3'}>
           {result.items.length ? result.items.map((listing) => (
+            accountType === 'business' ? (
+            <BusinessListingCard
+              key={listing.id}
+              listing={listing}
+              locale={locale}
+              accountType={accountType}
+              billingMarket={billingMarket}
+              packages={packageOptions(listing, locale, priceMap, billingMarket)}
+              marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
+              autoOpen={query.choosePackage === '1' && query.listing === listing.id}
+              renderedAt={renderedAt}
+            />
+            ) : (
             <ListingCard
               key={listing.id}
               listing={listing}
@@ -195,6 +215,7 @@ export default async function AccountListingsPage({
               autoOpen={query.choosePackage === '1' && query.listing === listing.id}
               renderedAt={renderedAt}
             />
+            )
           )) : <EmptyState filters={filters} locale={locale} />}
         </section>
 
@@ -259,6 +280,173 @@ function ListingCard({ listing, locale, accountType, billingMarket, packages, ma
 
         <div className="flex flex-col items-stretch gap-3 border-t border-[#eef2f7] bg-[#fbfcff] p-4 sm:flex-row sm:items-center sm:justify-between xl:flex-col xl:items-stretch xl:justify-center xl:border-l xl:border-t-0 xl:rounded-r-[19px]">
           {!['deleted', 'removed'].includes(listing.status) ? <Link href={localizePublicHref(locale as PublicLocale, `/account/listings/${listing.id}/edit`)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[11px] border border-[#cbd7e8] bg-white px-3 text-sm font-semibold text-[#0866ff] outline-none transition hover:bg-[#f2f6ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><Pencil className="h-4 w-4" />{copy.edit}</Link> : null}
+          <ListingStatusActions
+            listingId={listing.id}
+            status={listing.status}
+            packageId={listing.package_id}
+            market={billingMarket}
+            packages={packages}
+            marketingOptions={marketing}
+            lastRefreshedAt={listing.last_refreshed_at}
+            refreshLocked={Boolean(listing.last_refreshed_at && new Date(listing.last_refreshed_at).getTime() + 24 * 60 * 60 * 1000 > renderedAt)}
+            boostStartedAt={listing.boost_started_at}
+            boostExpiresAt={listing.boost_expires_at}
+            featuredStartedAt={listing.featured_started_at}
+            featuredExpiresAt={listing.featured_expires_at}
+            reviewMessage={reviewMessage}
+            autoOpen={autoOpen}
+            locale={locale}
+          />
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function CompanyListingsHero({
+  summary,
+  totalCount,
+  locale,
+}: {
+  summary: AccountListingSummary
+  totalCount: number
+  locale: PublicLocale
+}) {
+  const copy = listingPageCopy(locale)
+  const activeRate = totalCount ? Math.round((summary.counts.active / totalCount) * 100) : 0
+  const items = [
+    { label: copy.active, value: summary.counts.active, icon: CheckCircle2, tone: 'text-[#027a48]', bg: 'bg-[#ecfdf3]' },
+    { label: copy.payment, value: summary.counts.payment, icon: ReceiptText, tone: 'text-[#c2410c]', bg: 'bg-[#fff7ed]' },
+    { label: copy.totalViews, value: summary.totalViews, icon: Eye, tone: 'text-[#0866ff]', bg: 'bg-[#eef5ff]' },
+    { label: copy.totalFavorites, value: summary.totalFavorites, icon: Heart, tone: 'text-[#7c3aed]', bg: 'bg-[#f5f3ff]' },
+  ]
+  return (
+    <header className="overflow-hidden rounded-[28px] border border-[#d9e5f6] bg-white shadow-[0_18px_60px_rgba(16,24,40,.06)]">
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{translateText(locale, 'Company inventory', 'Företagslager')}</p>
+          <div className="mt-3 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-[-.045em] text-[#101828] sm:text-4xl">
+                {translateText(locale, 'Listings that are ready to manage', 'Annonser som är redo att styras')}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085]">
+                {translateText(locale, 'A denser company inventory view with faster scanning, bulk actions, listing status and marketing controls in one place.', 'En tätare företagsvy för snabbare överblick, bulkåtgärder, annonsstatus och marknadsföring på samma plats.')}
+              </p>
+            </div>
+            <Link href={localizePublicHref(locale, '/account/company/listings/create')} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30">
+              <Plus className="h-4 w-4" />{copy.create}
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {items.map((item) => (
+              <div key={item.label} className="rounded-[18px] border border-[#e2e8f3] bg-[#fbfdff] p-4">
+                <span className={`grid h-10 w-10 place-items-center rounded-[12px] ${item.bg} ${item.tone}`}>
+                  <item.icon className="h-4 w-4" />
+                </span>
+                <strong className="mt-3 block text-2xl font-semibold tracking-[-.04em] text-[#101828]">{item.value.toLocaleString(locale)}</strong>
+                <span className="mt-1 block truncate text-xs font-medium text-[#667085]">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-[#e4eaf3] bg-[#f6f9fe] p-5 sm:p-7 lg:border-l lg:border-t-0">
+          <div className="rounded-[22px] border border-[#d9e5f6] bg-white p-5">
+            <p className="text-sm font-semibold text-[#101828]">{translateText(locale, 'Inventory health', 'Lagerstatus')}</p>
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#edf2f7]">
+              <div className="h-full rounded-full bg-[#0866ff]" style={{ width: `${Math.max(4, activeRate)}%` }} />
+            </div>
+            <p className="mt-3 text-sm font-medium text-[#475467]">
+              {activeRate}% {translateText(locale, 'active out of all listings', 'aktiva av alla annonser')}
+            </p>
+            <div className="mt-5 grid gap-2 text-sm">
+              <Link href={`${localizePublicHref(locale, '/account/company/listings')}?status=review`} className="flex items-center justify-between rounded-[12px] bg-[#f8fbff] px-3 py-2 font-medium text-[#475467] hover:text-[#0866ff]">
+                <span>{copy.review}</span><strong>{summary.counts.review.toLocaleString(locale)}</strong>
+              </Link>
+              <Link href={`${localizePublicHref(locale, '/account/company/listings')}?status=expired`} className="flex items-center justify-between rounded-[12px] bg-[#f8fbff] px-3 py-2 font-medium text-[#475467] hover:text-[#0866ff]">
+                <span>{translateText(locale, 'Expired', 'Utgångna')}</span><strong>{summary.counts.expired.toLocaleString(locale)}</strong>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function BusinessListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, renderedAt }: {
+  listing: ManagedListing
+  locale: PublicLocale
+  accountType: string
+  billingMarket: BillingMarket
+  packages: PackageOption[]
+  marketing: MarketingOption[]
+  autoOpen: boolean
+  renderedAt: number
+}) {
+  const lifecycle = listingLifecycle(listing.status, listing.review_status)
+  const copy = listingPageCopy(locale)
+  const image = listing.images[0]
+  const canBulk = accountType === 'business' && canBulkManage(listing.status)
+  const reviewMessage = reviewReason(listing, locale)
+  const activeBoost = listing.boost_status === 'active' && isFuture(listing.boost_expires_at)
+  const activeFeatured = listing.featured_status === 'active' && isFuture(listing.featured_expires_at)
+
+  return (
+    <article className="flex min-w-0 flex-col overflow-visible rounded-[22px] border border-[#dfe6f1] bg-white shadow-[0_12px_36px_rgba(16,24,40,.055)]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-[21px] bg-[#eef2f7]">
+        {image ? (
+          <Image src={image} alt={listing.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" quality={78} className="object-cover" />
+        ) : (
+          <div className="grid h-full place-items-center text-center text-sm text-[#667085]">
+            <span><FileImage className="mx-auto mb-2 h-6 w-6" />{copy.noImage}</span>
+          </div>
+        )}
+        {canBulk ? (
+          <label className="absolute left-3 top-3 grid h-10 w-10 place-items-center rounded-[12px] bg-white/95 shadow-[0_10px_28px_rgba(16,24,40,.18)]">
+            <span className="sr-only">{copy.selectListing} {listing.title}</span>
+            <input form="bulk-listing-form" type="checkbox" name="listingId" value={listing.id} className="h-4 w-4 rounded accent-[#0866ff]" />
+          </label>
+        ) : null}
+        <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
+          <LifecycleBadge label={localizedLifecycleLabel(lifecycle.group, listing.status, locale)} tone={lifecycle.tone} />
+          {activeBoost ? <PromotionBadge label={copy.topPlacement} /> : null}
+          {activeFeatured ? <PromotionBadge label={copy.featured} /> : null}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <div className="min-w-0">
+          <h2 className="line-clamp-2 min-h-[3.25rem] text-lg font-semibold leading-[1.35] tracking-[-.025em] text-[#101828]">{listing.title}</h2>
+          <p className="mt-2 text-xl font-semibold tracking-[-.035em] text-[#101828]">
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.price)}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[#667085]">
+            <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">{categoryLabel(listing.category, locale)}</span>
+            <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">{listing.country_code.toUpperCase()}</span>
+            {listing.listing_number ? <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">#{listing.listing_number}</span> : null}
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-[12px] bg-[#f8fbff] p-3">
+              <span className="block text-[#667085]">{copy.views}</span>
+              <strong className="mt-1 block text-base font-semibold text-[#101828]">{listing.view_count.toLocaleString(locale)}</strong>
+            </div>
+            <div className="rounded-[12px] bg-[#f8fbff] p-3">
+              <span className="block text-[#667085]">{copy.favorites}</span>
+              <strong className="mt-1 block text-base font-semibold text-[#101828]">{listing.favorite_count.toLocaleString(locale)}</strong>
+            </div>
+          </div>
+          <p className="mt-3 text-xs font-medium text-[#667085]">
+            {copy.expires} {listing.expires_at ? formatDate(listing.expires_at, locale) : formatDate(listing.created_at, locale)}
+          </p>
+        </div>
+
+        <div className="mt-auto grid gap-2 pt-4">
+          {!['deleted', 'removed'].includes(listing.status) ? (
+            <Link href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] border border-[#cbd7e8] bg-white px-3 text-sm font-semibold text-[#0866ff] outline-none transition hover:bg-[#f2f6ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20">
+              <Pencil className="h-4 w-4" />{copy.edit}
+            </Link>
+          ) : null}
           <ListingStatusActions
             listingId={listing.id}
             status={listing.status}
