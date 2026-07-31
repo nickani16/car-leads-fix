@@ -647,8 +647,8 @@ export default async function ListingDetailPage({
             </div>
 
               <section className="scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start">
-            <div id="listing-contact-card" className="overflow-hidden rounded-[14px] border border-[#dfe6f2] bg-white sm:rounded-[18px] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
-              <div className="border-b border-[#edf1f6] p-4 sm:p-5">
+            <div id="listing-contact-card" className="grid gap-3 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin]">
+              <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
                 </p>
@@ -672,7 +672,6 @@ export default async function ListingDetailPage({
                 <p className="mt-1.5 text-xs font-medium leading-4 text-[#667085]">
                   {copy.vatInfo}
                 </p>
-              </div>
 
               {listing.seller_type === 'business' && insuranceOffers.length ? (
                 <InsuranceOffersPanel
@@ -681,8 +680,9 @@ export default async function ListingDetailPage({
                   fallbackCurrency={listing.currency}
                 />
               ) : null}
+              </div>
 
-              <div className="grid gap-2.5 border-b border-[#edf1f6] p-4 sm:p-5">
+              <div className="grid gap-2.5 rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
@@ -721,7 +721,7 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5">
+              <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -897,7 +897,7 @@ function InsuranceOffersPanel({
   fallbackCurrency: string
 }) {
   return (
-    <section className="border-b border-[#edf1f6] bg-[#fbfdff] p-4 sm:p-5">
+    <section className="mt-4 border-t border-[#edf1f6] pt-4">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#d7e5ff]">
           <ShieldCheck className="h-5 w-5" />
@@ -927,7 +927,7 @@ function InsuranceOffersPanel({
               }).format(offer.monthlyCost)
             : null
           return (
-            <article key={`${offer.provider}-${index}`} className="rounded-[14px] border border-[#dfe6f2] bg-white p-3">
+            <article key={`${offer.provider}-${index}`} className="rounded-[14px] border border-[#dfe6f2] bg-[#fbfdff] p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="break-words text-sm font-semibold text-[#101828]">{offer.provider}</p>
