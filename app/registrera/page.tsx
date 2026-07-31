@@ -51,7 +51,7 @@ export default async function RegisterPage({
       <section className="border-b border-[#e4eaf3] bg-white">
         <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-12">
           <div className="lg:sticky lg:top-28">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0866ff]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0866ff]">
               {copy.eyebrow}
             </p>
             <h1 className="mt-4 max-w-xl text-4xl leading-[1.02] tracking-[-0.055em] sm:text-6xl">

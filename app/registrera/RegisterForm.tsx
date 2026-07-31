@@ -156,7 +156,7 @@ export default function RegisterForm({
       className="min-w-0 overflow-hidden rounded-[24px] border border-[#dce3f0] bg-white shadow-[0_28px_90px_rgba(16,24,40,.10)]"
     >
       <div className="border-b border-[#e5e9f0] bg-[#f8faff] p-5 sm:p-7">
-        <p className="text-xs font-bold uppercase tracking-[.17em] text-[#0866ff]">
+        <p className="text-xs font-semibold uppercase tracking-[.17em] text-[#0866ff]">
           {copy.chooseAccountType}
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -253,7 +253,7 @@ export default function RegisterForm({
 
         <FormSection icon={MailCheck} title={copy.contact}>
           <div className="rounded-[14px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 sm:col-span-2">
-            <span className="block text-xs font-bold uppercase tracking-[.14em] text-[#0866ff]">
+            <span className="block text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">
               {copy.verifiedEmail}
             </span>
             <strong className="mt-1 block break-all text-sm">{email}</strong>
@@ -318,14 +318,14 @@ export default function RegisterForm({
 
         <button
           disabled={loading}
-          className="flex min-h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-bold text-white transition hover:bg-[#0057e6] disabled:opacity-60"
+          className="flex min-h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white transition hover:bg-[#0057e6] disabled:opacity-60"
         >
           <CheckCircle2 className="h-5 w-5" />
           {loading ? copy.loading : copy.createAccount}
         </button>
         <p className="text-center text-sm text-[#667085]">
           {copy.haveAccount}{' '}
-          <Link href={localizePublicHref(locale, '/')} className="font-bold text-[#0866ff]">
+          <Link href={localizePublicHref(locale, '/')} className="font-semibold text-[#0866ff]">
             {copy.signIn}
           </Link>
         </p>
@@ -422,7 +422,7 @@ function PhoneField({
       <div className="grid min-h-13 grid-cols-[132px_1fr] overflow-hidden rounded-[14px] border border-[#d7deed] bg-white transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
         <span className="relative flex min-w-0 items-center gap-2 border-r border-[#d7deed] bg-[#f8faff] px-3">
           <FlagIcon code={countryCode} size="sm" />
-          <span className="text-sm font-bold text-[#101828]">{activeDialCode}</span>
+          <span className="text-sm font-semibold text-[#101828]">{activeDialCode}</span>
           <ChevronDown className="ml-auto h-4 w-4 text-[#667085]" />
           <select
             aria-label={label}
@@ -470,21 +470,21 @@ function LegalConfirmationLabel({
       {parts.map((part, index) => {
         if (part === 'Användarvillkoren' || part === 'Terms of Use' || part === 'Nutzungsbedingungen') {
           return (
-            <Link key={`${part}-${index}`} href={termsHref} className="font-bold text-[#0866ff]">
+            <Link key={`${part}-${index}`} href={termsHref} className="font-semibold text-[#0866ff]">
               {part}
             </Link>
           )
         }
         if (part === 'Köpvillkoren' || part === 'Purchase Terms' || part === 'Kaufbedingungen') {
           return (
-            <Link key={`${part}-${index}`} href={purchaseTermsHref} className="font-bold text-[#0866ff]">
+            <Link key={`${part}-${index}`} href={purchaseTermsHref} className="font-semibold text-[#0866ff]">
               {part}
             </Link>
           )
         }
         if (part === 'Integritetspolicyn' || part === 'Privacy Policy' || part === 'Datenschutzrichtlinie') {
           return (
-            <Link key={`${part}-${index}`} href={privacyHref} className="font-bold text-[#0866ff]">
+            <Link key={`${part}-${index}`} href={privacyHref} className="font-semibold text-[#0866ff]">
               {part}
             </Link>
           )
