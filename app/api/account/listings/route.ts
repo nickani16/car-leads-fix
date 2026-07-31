@@ -603,10 +603,10 @@ export async function POST(request: Request) {
       : currencyForCountry(listingCountryCode)
     const insuranceOffers = parseInsuranceOffers(form, currency)
     if (insuranceOffers === null) {
-      return listingFormError('Försäkringserbjudandet har ogiltigt format.', 0, 'insuranceOffers')
+      return listingFormError('Finansieringserbjudandet har ogiltigt format.', 0, 'insuranceOffers')
     }
     if (profile.account_type !== 'business' && insuranceOffers.length) {
-      return listingFormError('Försäkringserbjudanden kan bara läggas till av företagskonton.', 0, 'insuranceOffers', 403)
+      return listingFormError('Finansieringserbjudanden kan bara läggas till av företagskonton.', 0, 'insuranceOffers', 403)
     }
     const modelYearInput = text(form, 'modelYear')
     const modelYear = modelYearInput === '1950+' ? 1950 : Number(modelYearInput)

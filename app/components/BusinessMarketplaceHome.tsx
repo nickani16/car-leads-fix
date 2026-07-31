@@ -747,16 +747,16 @@ function homeInsuranceOfferLabel(locale: PublicLocale, value: unknown, countryCo
 
   const monthly = formatHomeInsuranceMonthlyPrice(best.monthlyCost, best.currency, locale)
   const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
-  if (effectiveLocale === 'sv') return `Försäkring från ${monthly}/mån`
-  if (effectiveLocale === 'de') return `Versicherung ab ${monthly}/Mon.`
-  if (effectiveLocale === 'fr') return `Assurance dès ${monthly}/mois`
-  if (effectiveLocale === 'es') return `Seguro desde ${monthly}/mes`
-  if (effectiveLocale === 'it') return `Assicurazione da ${monthly}/mese`
-  if (effectiveLocale === 'pl') return `Ubezpieczenie od ${monthly}/mies.`
-  if (effectiveLocale === 'nl') return `Verzekering vanaf ${monthly}/mnd`
-  if (effectiveLocale === 'da') return `Forsikring fra ${monthly}/md.`
-  if (effectiveLocale === 'fi') return `Vakuutus alkaen ${monthly}/kk`
-  return `Insurance from ${monthly}/mo`
+  if (effectiveLocale === 'sv') return `Lån från ${monthly}/mån`
+  if (effectiveLocale === 'de') return `Finanzierung ab ${monthly}/Mon.`
+  if (effectiveLocale === 'fr') return `Financement dès ${monthly}/mois`
+  if (effectiveLocale === 'es') return `Financiación desde ${monthly}/mes`
+  if (effectiveLocale === 'it') return `Finanziamento da ${monthly}/mese`
+  if (effectiveLocale === 'pl') return `Finansowanie od ${monthly}/mies.`
+  if (effectiveLocale === 'nl') return `Financiering vanaf ${monthly}/mnd`
+  if (effectiveLocale === 'da') return `Finansiering fra ${monthly}/md.`
+  if (effectiveLocale === 'fi') return `Rahoitus alkaen ${monthly}/kk`
+  return `Loan from ${monthly}/mo`
 }
 
 function formatHomeInsuranceMonthlyPrice(amount: number, currency: string, locale: PublicLocale) {

@@ -896,6 +896,7 @@ function InsuranceOffersPanel({
   locale: PublicLocale
   fallbackCurrency: string
 }) {
+  const copy = financingOfferCopy(locale)
   return (
     <section className="mt-4 border-t border-[#edf1f6] pt-4">
       <div className="flex items-start gap-3">
@@ -904,15 +905,10 @@ function InsuranceOffersPanel({
         </span>
         <div>
           <h3 className="text-base font-semibold tracking-[-0.02em] text-[#101828]">
-            {localizedLabel(locale, 'Försäkringserbjudanden', 'Insurance offers', 'Versicherungsangebote')}
+            {copy.title}
           </h3>
           <p className="mt-1 text-xs font-medium leading-5 text-[#667085]">
-            {localizedLabel(
-              locale,
-              'Erbjudanden från säljaren. Kontrollera alltid slutliga villkor med försäkringsbolaget.',
-              'Offers from the seller. Always confirm final terms with the insurer.',
-              'Angebote des Verkäufers. Prüfen Sie die endgültigen Bedingungen immer beim Versicherer.',
-            )}
+            {copy.description}
           </p>
         </div>
       </div>
@@ -933,7 +929,7 @@ function InsuranceOffersPanel({
                   <p className="break-words text-sm font-semibold text-[#101828]">{offer.provider}</p>
                   {monthly ? (
                     <p className="mt-1 text-lg font-semibold tracking-[-0.025em] text-[#0866ff]">
-                      {localizedLabel(locale, 'Från', 'From', 'Ab')} {monthly}/{localizedLabel(locale, 'mån', 'mo', 'Mon.')}
+                      {copy.from} {monthly}/{copy.month}
                     </p>
                   ) : null}
                 </div>
@@ -950,7 +946,7 @@ function InsuranceOffersPanel({
                 ) : null}
                 {offer.deductible !== null ? (
                   <div className="flex justify-between gap-3">
-                    <dt>{localizedLabel(locale, 'Självrisk', 'Deductible', 'Selbstbeteiligung')}</dt>
+                    <dt>{copy.downPayment}</dt>
                     <dd className="font-semibold text-[#101828]">
                       {new Intl.NumberFormat(detailNumberLocale(locale), {
                         style: 'currency',
@@ -962,7 +958,7 @@ function InsuranceOffersPanel({
                 ) : null}
                 {offer.coverage ? (
                   <div>
-                    <dt>{localizedLabel(locale, 'Omfattning', 'Coverage', 'Deckung')}</dt>
+                    <dt>{copy.terms}</dt>
                     <dd className="mt-1 font-semibold text-[#101828]">{offer.coverage}</dd>
                   </div>
                 ) : null}
@@ -985,6 +981,101 @@ function InsuranceOffersPanel({
       </div>
     </section>
   )
+}
+
+function financingOfferCopy(locale: PublicLocale) {
+  switch (locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale) {
+    case 'sv':
+      return {
+        title: 'Finansieringserbjudanden',
+        description: 'Låneerbjudanden från säljaren. Kontrollera alltid slutliga villkor med banken eller kreditgivaren.',
+        from: 'Från',
+        month: 'mån',
+        downPayment: 'Kontantinsats',
+        terms: 'Villkor',
+      }
+    case 'de':
+      return {
+        title: 'Finanzierungsangebote',
+        description: 'Finanzierungsangebote des Verkäufers. Prüfen Sie die endgültigen Bedingungen immer bei der Bank oder dem Kreditgeber.',
+        from: 'Ab',
+        month: 'Mon.',
+        downPayment: 'Anzahlung',
+        terms: 'Konditionen',
+      }
+    case 'fr':
+      return {
+        title: 'Offres de financement',
+        description: 'Offres de prêt du vendeur. Vérifiez toujours les conditions finales auprès de la banque ou du prêteur.',
+        from: 'Dès',
+        month: 'mois',
+        downPayment: 'Apport',
+        terms: 'Conditions',
+      }
+    case 'es':
+      return {
+        title: 'Ofertas de financiación',
+        description: 'Ofertas de préstamo del vendedor. Confirma siempre las condiciones finales con el banco o prestamista.',
+        from: 'Desde',
+        month: 'mes',
+        downPayment: 'Entrada',
+        terms: 'Condiciones',
+      }
+    case 'it':
+      return {
+        title: 'Offerte di finanziamento',
+        description: 'Offerte di prestito del venditore. Verifica sempre le condizioni finali con la banca o il finanziatore.',
+        from: 'Da',
+        month: 'mese',
+        downPayment: 'Anticipo',
+        terms: 'Condizioni',
+      }
+    case 'pl':
+      return {
+        title: 'Oferty finansowania',
+        description: 'Oferty kredytu od sprzedawcy. Zawsze sprawdź ostateczne warunki w banku lub u kredytodawcy.',
+        from: 'Od',
+        month: 'mies.',
+        downPayment: 'Wpłata własna',
+        terms: 'Warunki',
+      }
+    case 'nl':
+      return {
+        title: 'Financieringsaanbiedingen',
+        description: 'Leningaanbiedingen van de verkoper. Controleer altijd de definitieve voorwaarden bij de bank of kredietverstrekker.',
+        from: 'Vanaf',
+        month: 'mnd',
+        downPayment: 'Aanbetaling',
+        terms: 'Voorwaarden',
+      }
+    case 'da':
+      return {
+        title: 'Finansieringstilbud',
+        description: 'Lånetilbud fra sælgeren. Kontrollér altid de endelige vilkår hos banken eller långiveren.',
+        from: 'Fra',
+        month: 'md.',
+        downPayment: 'Udbetaling',
+        terms: 'Vilkår',
+      }
+    case 'fi':
+      return {
+        title: 'Rahoitustarjoukset',
+        description: 'Myyjän lainatarjoukset. Tarkista lopulliset ehdot aina pankilta tai rahoittajalta.',
+        from: 'Alkaen',
+        month: 'kk',
+        downPayment: 'Käsiraha',
+        terms: 'Ehdot',
+      }
+    default:
+      return {
+        title: 'Finance offers',
+        description: 'Loan offers from the seller. Always confirm final terms with the bank or lender.',
+        from: 'From',
+        month: 'mo',
+        downPayment: 'Down payment',
+        terms: 'Terms',
+      }
+  }
 }
 
 function PriceInsightPanel({

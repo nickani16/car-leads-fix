@@ -4158,11 +4158,7 @@ function VehicleResultCard({
   }, locale)
   const location = Array.from(new Set([listing.city, listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean)))
     .join(', ')
-  const categoryLabel = categoryText(
-    categories.find((item) => item.key === listing.category) || categories[0],
-    locale,
-  )
-  const subtitle = [categoryLabel, location].filter(Boolean).join(' · ')
+  const subtitle = location
   const equipmentChips = listingEquipmentChips(listing.equipment)
   const sellerTypeLabel = listing.sellerIsTrader
     ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
@@ -5322,25 +5318,25 @@ function listingInsuranceOfferLabel(
 
   switch (locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale) {
     case 'sv':
-      return `Försäkring från ${monthly}/mån`
+      return `Lån från ${monthly}/mån`
     case 'de':
-      return `Versicherung ab ${monthly}/Mon.`
+      return `Finanzierung ab ${monthly}/Mon.`
     case 'fr':
-      return `Assurance dès ${monthly}/mois`
+      return `Financement dès ${monthly}/mois`
     case 'es':
-      return `Seguro desde ${monthly}/mes`
+      return `Financiación desde ${monthly}/mes`
     case 'it':
-      return `Assicurazione da ${monthly}/mese`
+      return `Finanziamento da ${monthly}/mese`
     case 'pl':
-      return `Ubezpieczenie od ${monthly}/mies.`
+      return `Finansowanie od ${monthly}/mies.`
     case 'nl':
-      return `Verzekering vanaf ${monthly}/mnd`
+      return `Financiering vanaf ${monthly}/mnd`
     case 'da':
-      return `Forsikring fra ${monthly}/md.`
+      return `Finansiering fra ${monthly}/md.`
     case 'fi':
-      return `Vakuutus alkaen ${monthly}/kk`
+      return `Rahoitus alkaen ${monthly}/kk`
     default:
-      return `Insurance from ${monthly}/mo`
+      return `Loan from ${monthly}/mo`
   }
 }
 

@@ -2238,13 +2238,13 @@ function InsuranceOfferFields({
           </span>
           <div>
             <h3 className="text-base font-semibold text-[#101828]">
-              {t('F\u00f6rs\u00e4kringserbjudanden', 'Insurance offers', 'Versicherungsangebote')}
+              {t('Finansieringserbjudanden', 'Finance offers', 'Finanzierungsangebote')}
             </h3>
             <p className="mt-1 text-sm leading-5 text-[#667085]">
               {t(
-                'L\u00e4gg till frivilliga f\u00f6rs\u00e4kringserbjudanden som visas p\u00e5 f\u00f6retagsannonsen.',
-                'Add optional insurance offers shown on the business listing.',
-                'F\u00fcgen Sie optionale Versicherungsangebote hinzu, die in der Firmenanzeige angezeigt werden.',
+                'L\u00e4gg till frivilliga l\u00e5ne- och finansieringserbjudanden som visas p\u00e5 f\u00f6retagsannonsen.',
+                'Add optional loan and finance offers shown on the business listing.',
+                'F\u00fcgen Sie optionale Kredit- und Finanzierungsangebote hinzu, die in der Firmenanzeige angezeigt werden.',
               )}
             </p>
           </div>
@@ -2283,18 +2283,18 @@ function InsuranceOfferFields({
                 </button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field name={`insuranceProvider-${offer.id}`} label={t('F\u00f6rs\u00e4kringsbolag', 'Insurance company', 'Versicherer')} value={offer.provider} onValueChange={(_, value) => updateOffer(offer.id, 'provider', value)} />
+                <Field name={`insuranceProvider-${offer.id}`} label={t('Bank eller kreditgivare', 'Bank or lender', 'Bank oder Kreditgeber')} value={offer.provider} onValueChange={(_, value) => updateOffer(offer.id, 'provider', value)} />
                 <PriceField name={`insuranceMonthly-${offer.id}`} label={t('M\u00e5nadskostnad', 'Monthly cost', 'Monatliche Kosten')} currency={offer.currency || currency} value={offer.monthlyCost} onValueChange={(_, value) => updateOffer(offer.id, 'monthlyCost', value)} />
                 <Field name={`insuranceInterest-${offer.id}`} label={t('R\u00e4nta (%)', 'Interest rate (%)', 'Zinssatz (%)')} type="number" step="0.01" value={offer.interestRate} onValueChange={(_, value) => updateOffer(offer.id, 'interestRate', value)} />
-                <Field name={`insuranceDeductible-${offer.id}`} label={t('Sj\u00e4lvrisk', 'Deductible', 'Selbstbeteiligung')} type="number" value={offer.deductible} onValueChange={(_, value) => updateOffer(offer.id, 'deductible', value)} />
-                <Field name={`insuranceCoverage-${offer.id}`} label={t('Omfattning', 'Coverage', 'Deckung')} value={offer.coverage} onValueChange={(_, value) => updateOffer(offer.id, 'coverage', value)} />
+                <Field name={`insuranceDeductible-${offer.id}`} label={t('Kontantinsats', 'Down payment', 'Anzahlung')} type="number" value={offer.deductible} onValueChange={(_, value) => updateOffer(offer.id, 'deductible', value)} />
+                <Field name={`insuranceCoverage-${offer.id}`} label={t('Villkor', 'Terms', 'Konditionen')} value={offer.coverage} onValueChange={(_, value) => updateOffer(offer.id, 'coverage', value)} />
                 <Field name={`insuranceTerms-${offer.id}`} label={t('Villkorsl\u00e4nk', 'Terms link', 'Link zu Bedingungen')} type="url" value={offer.termsUrl} onValueChange={(_, value) => updateOffer(offer.id, 'termsUrl', value)} />
                 <label className="block min-w-0 sm:col-span-2">
                   <span className="mb-2 block text-sm font-semibold">{t('Kort notering', 'Short note', 'Kurzer Hinweis')}</span>
                   <textarea
                     value={offer.note}
                     onChange={(event) => updateOffer(offer.id, 'note', event.target.value)}
-                    placeholder={t('Exempel: helf\u00f6rs\u00e4kring, assistans eller hur l\u00e4nge erbjudandet g\u00e4ller.', 'Example: full coverage, roadside assistance or offer validity.', 'Beispiel: Vollkasko, Pannenhilfe oder G\u00fcltigkeit des Angebots.')}
+                    placeholder={t('Exempel: krav p\u00e5 kontantinsats, kreditpr\u00f6vning eller hur l\u00e4nge erbjudandet g\u00e4ller.', 'Example: down payment requirements, credit approval or offer validity.', 'Beispiel: Anzahlung, Bonit\u00e4tspr\u00fcfung oder G\u00fcltigkeit des Angebots.')}
                     className="min-h-24 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 py-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
                   />
                 </label>
