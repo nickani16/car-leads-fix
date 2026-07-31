@@ -6,6 +6,7 @@ import { getCompanyTeamOverview } from '@/lib/business-team'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import TeamInviteForm from './TeamInviteForm'
 import TeamBillingRecipientToggle from './TeamBillingRecipientToggle'
+import TeamMemberActions from './TeamMemberActions'
 
 export const generateMetadata = generateAccountMetadata('company-team')
 
@@ -30,6 +31,10 @@ const baseCopy = {
   billingRecipientOn: 'On',
   billingRecipientOff: 'Off',
   billingRecipientError: 'Invoice recipient could not be saved.',
+  removeMember: 'Remove access',
+  removingMember: 'Removing...',
+  removeMemberConfirm: 'Remove this person from the company account? They will lose access to the company portal, branches and shared listings.',
+  removeMemberError: 'The team member could not be removed.',
   flowTitle: 'How invitations work',
   flowSteps: [
     'Send the invitation to the exact email address the person will use to sign in.',
@@ -69,6 +74,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'På',
     billingRecipientOff: 'Av',
     billingRecipientError: 'Fakturamottagaren kunde inte sparas.',
+    removeMember: 'Ta bort åtkomst',
+    removingMember: 'Tar bort...',
+    removeMemberConfirm: 'Ta bort personen från företagskontot? Personen förlorar åtkomst till företagsportalen, filialer och delade annonser.',
+    removeMemberError: 'Teammedlemmen kunde inte tas bort.',
     flowTitle: 'Så fungerar inbjudan',
     flowSteps: [
       'Skicka inbjudan till exakt den e-postadress personen ska använda vid inloggning.',
@@ -96,6 +105,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Til',
     billingRecipientOff: 'Fra',
     billingRecipientError: 'Fakturamodtageren kunne ikke gemmes.',
+    removeMember: 'Fjern adgang',
+    removingMember: 'Fjerner...',
+    removeMemberConfirm: 'Fjern personen fra virksomhedskontoen? Personen mister adgang til virksomhedsportal, filialer og delte annoncer.',
+    removeMemberError: 'Teammedlemmet kunne ikke fjernes.',
     flowTitle: 'Sådan fungerer invitationen',
     flowSteps: [
       'Send invitationen til præcis den e-mailadresse personen skal bruge til login.',
@@ -123,6 +136,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Päällä',
     billingRecipientOff: 'Pois',
     billingRecipientError: 'Laskun vastaanottajaa ei voitu tallentaa.',
+    removeMember: 'Poista pääsy',
+    removingMember: 'Poistetaan...',
+    removeMemberConfirm: 'Poistetaanko henkilö yritystililtä? Hän menettää pääsyn yritysportaaliin, toimipisteisiin ja jaettuihin ilmoituksiin.',
+    removeMemberError: 'Tiimin jäsentä ei voitu poistaa.',
     flowTitle: 'Näin kutsu toimii',
     flowSteps: [
       'Lähetä kutsu täsmälleen siihen sähköpostiin, jolla henkilö kirjautuu sisään.',
@@ -150,6 +167,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Ein',
     billingRecipientOff: 'Aus',
     billingRecipientError: 'Rechnungsempfänger konnte nicht gespeichert werden.',
+    removeMember: 'Zugriff entfernen',
+    removingMember: 'Wird entfernt...',
+    removeMemberConfirm: 'Diese Person aus dem Unternehmenskonto entfernen? Sie verliert Zugriff auf Unternehmensportal, Standorte und geteilte Anzeigen.',
+    removeMemberError: 'Das Teammitglied konnte nicht entfernt werden.',
     flowTitle: 'So funktioniert die Einladung',
     flowSteps: [
       'Senden Sie die Einladung an genau die E-Mail-Adresse, mit der sich die Person anmeldet.',
@@ -177,6 +198,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Oui',
     billingRecipientOff: 'Non',
     billingRecipientError: 'Le destinataire des factures n’a pas pu être enregistré.',
+    removeMember: 'Retirer l’accès',
+    removingMember: 'Suppression...',
+    removeMemberConfirm: 'Retirer cette personne du compte entreprise ? Elle perdra l’accès au portail, aux sites et aux annonces partagées.',
+    removeMemberError: 'Le membre de l’équipe n’a pas pu être retiré.',
     flowTitle: 'Fonctionnement de l’invitation',
     flowSteps: [
       'Envoyez l’invitation à l’adresse e-mail exacte que la personne utilisera pour se connecter.',
@@ -204,6 +229,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Sí',
     billingRecipientOff: 'No',
     billingRecipientError: 'No se pudo guardar el destinatario de facturas.',
+    removeMember: 'Quitar acceso',
+    removingMember: 'Quitando...',
+    removeMemberConfirm: '¿Quitar a esta persona de la cuenta de empresa? Perderá acceso al portal, ubicaciones y anuncios compartidos.',
+    removeMemberError: 'No se pudo quitar el miembro del equipo.',
     flowTitle: 'Cómo funciona la invitación',
     flowSteps: [
       'Envía la invitación exactamente al correo que la persona usará para iniciar sesión.',
@@ -231,6 +260,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Attivo',
     billingRecipientOff: 'Disattivo',
     billingRecipientError: 'Il destinatario delle fatture non è stato salvato.',
+    removeMember: 'Rimuovi accesso',
+    removingMember: 'Rimozione...',
+    removeMemberConfirm: 'Rimuovere questa persona dall’account aziendale? Perderà accesso al portale, alle sedi e agli annunci condivisi.',
+    removeMemberError: 'Impossibile rimuovere il membro del team.',
     flowTitle: 'Come funziona l’invito',
     flowSteps: [
       'Invia l’invito all’indirizzo e-mail esatto che la persona userà per accedere.',
@@ -258,6 +291,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Aan',
     billingRecipientOff: 'Uit',
     billingRecipientError: 'Factuurontvanger kon niet worden opgeslagen.',
+    removeMember: 'Toegang verwijderen',
+    removingMember: 'Verwijderen...',
+    removeMemberConfirm: 'Deze persoon uit het bedrijfsaccount verwijderen? De persoon verliest toegang tot het bedrijfsportaal, locaties en gedeelde advertenties.',
+    removeMemberError: 'Het teamlid kon niet worden verwijderd.',
     flowTitle: 'Zo werkt de uitnodiging',
     flowSteps: [
       'Stuur de uitnodiging naar exact het e-mailadres waarmee de persoon inlogt.',
@@ -285,6 +322,10 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
     billingRecipientOn: 'Wł.',
     billingRecipientOff: 'Wył.',
     billingRecipientError: 'Nie udało się zapisać odbiorcy faktur.',
+    removeMember: 'Usuń dostęp',
+    removingMember: 'Usuwanie...',
+    removeMemberConfirm: 'Usunąć tę osobę z konta firmowego? Straci dostęp do portalu firmy, lokalizacji i wspólnych ogłoszeń.',
+    removeMemberError: 'Nie udało się usunąć członka zespołu.',
     flowTitle: 'Jak działa zaproszenie',
     flowSteps: [
       'Wyślij zaproszenie na dokładnie ten adres e-mail, którego osoba użyje do logowania.',
@@ -352,6 +393,9 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
                       locale={context.locale}
                       copy={copy}
                     />
+                  ) : null}
+                  {member.userId !== context.userId ? (
+                    <TeamMemberActions userId={member.userId} locale={context.locale} copy={copy} />
                   ) : null}
                 </div>
               ))}

@@ -9,7 +9,7 @@ export const generateMetadata = generateAccountMetadata('company-team-accept')
 const baseCopy = {
   eyebrow: 'Company invitation',
   title: 'Accept team invitation',
-  description: 'We check the invitation automatically. Use the same email address that received the invitation.',
+  description: 'We check the invitation automatically. Use the same email address that received the invitation. You can continue with a one-time code or create a password for your account.',
   accept: 'Accept invitation',
   accepting: 'Checking invitation...',
   success: 'Invitation accepted. Opening the company portal.',
@@ -21,7 +21,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   sv: {
     eyebrow: 'Företagsinbjudan',
     title: 'Acceptera teaminbjudan',
-    description: 'Vi kontrollerar inbjudan automatiskt. Använd samma e-postadress som fick inbjudan.',
+    description: 'Vi kontrollerar inbjudan automatiskt. Använd samma e-postadress som fick inbjudan. Du kan fortsätta med engångskod eller skapa ett lösenord för kontot.',
     accept: 'Acceptera inbjudan',
     accepting: 'Kontrollerar inbjudan...',
     success: 'Inbjudan accepterad. Företagsportalen öppnas.',
@@ -31,7 +31,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   da: {
     eyebrow: 'Virksomhedsinvitation',
     title: 'Accepter teaminvitation',
-    description: 'Vi kontrollerer invitationen automatisk. Brug den samme e-mailadresse som modtog invitationen.',
+    description: 'Vi kontrollerer invitationen automatisk. Brug den samme e-mailadresse som modtog invitationen. Du kan fortsætte med engangskode eller oprette en adgangskode.',
     accept: 'Accepter invitation',
     accepting: 'Kontrollerer invitation...',
     success: 'Invitation accepteret. Virksomhedsportalen åbnes.',
@@ -41,7 +41,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   fi: {
     eyebrow: 'Yrityskutsu',
     title: 'Hyväksy tiimikutsu',
-    description: 'Tarkistamme kutsun automaattisesti. Käytä samaa sähköpostiosoitetta, johon kutsu lähetettiin.',
+    description: 'Tarkistamme kutsun automaattisesti. Käytä samaa sähköpostiosoitetta, johon kutsu lähetettiin. Voit jatkaa kertakoodilla tai luoda tilille salasanan.',
     accept: 'Hyväksy kutsu',
     accepting: 'Tarkistetaan kutsua...',
     success: 'Kutsu hyväksytty. Yritysportaali avataan.',
@@ -51,7 +51,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   de: {
     eyebrow: 'Unternehmenseinladung',
     title: 'Teameinladung annehmen',
-    description: 'Wir prüfen die Einladung automatisch. Verwenden Sie dieselbe E-Mail-Adresse, an die die Einladung gesendet wurde.',
+    description: 'Wir prüfen die Einladung automatisch. Verwenden Sie dieselbe E-Mail-Adresse, an die die Einladung gesendet wurde. Sie können mit einem Einmalcode fortfahren oder ein Passwort erstellen.',
     accept: 'Einladung annehmen',
     accepting: 'Einladung wird geprüft...',
     success: 'Einladung angenommen. Das Unternehmensportal wird geöffnet.',
@@ -61,7 +61,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   fr: {
     eyebrow: 'Invitation entreprise',
     title: 'Accepter l’invitation équipe',
-    description: 'Nous vérifions l’invitation automatiquement. Utilisez la même adresse e-mail que celle qui a reçu l’invitation.',
+    description: 'Nous vérifions l’invitation automatiquement. Utilisez la même adresse e-mail que celle qui a reçu l’invitation. Vous pouvez continuer avec un code à usage unique ou créer un mot de passe.',
     accept: 'Accepter l’invitation',
     accepting: 'Vérification de l’invitation...',
     success: 'Invitation acceptée. Ouverture du portail entreprise.',
@@ -71,7 +71,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   es: {
     eyebrow: 'Invitación de empresa',
     title: 'Aceptar invitación de equipo',
-    description: 'Comprobamos la invitación automáticamente. Usa el mismo correo que recibió la invitación.',
+    description: 'Comprobamos la invitación automáticamente. Usa el mismo correo que recibió la invitación. Puedes continuar con un código de un solo uso o crear una contraseña.',
     accept: 'Aceptar invitación',
     accepting: 'Comprobando invitación...',
     success: 'Invitación aceptada. Abriendo el portal de empresa.',
@@ -81,7 +81,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   it: {
     eyebrow: 'Invito aziendale',
     title: 'Accetta invito al team',
-    description: 'Controlliamo l’invito automaticamente. Usa la stessa e-mail che ha ricevuto l’invito.',
+    description: 'Controlliamo l’invito automaticamente. Usa la stessa e-mail che ha ricevuto l’invito. Puoi continuare con un codice monouso o creare una password.',
     accept: 'Accetta invito',
     accepting: 'Controllo invito...',
     success: 'Invito accettato. Apertura del portale aziendale.',
@@ -91,7 +91,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   nl: {
     eyebrow: 'Bedrijfsuitnodiging',
     title: 'Teamuitnodiging accepteren',
-    description: 'We controleren de uitnodiging automatisch. Gebruik hetzelfde e-mailadres dat de uitnodiging ontving.',
+    description: 'We controleren de uitnodiging automatisch. Gebruik hetzelfde e-mailadres dat de uitnodiging ontving. Je kunt doorgaan met een eenmalige code of een wachtwoord maken.',
     accept: 'Uitnodiging accepteren',
     accepting: 'Uitnodiging controleren...',
     success: 'Uitnodiging geaccepteerd. Het bedrijfsportaal wordt geopend.',
@@ -101,7 +101,7 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   pl: {
     eyebrow: 'Zaproszenie firmowe',
     title: 'Akceptuj zaproszenie do zespołu',
-    description: 'Automatycznie sprawdzamy zaproszenie. Użyj tego samego adresu e-mail, na który wysłano zaproszenie.',
+    description: 'Automatycznie sprawdzamy zaproszenie. Użyj tego samego adresu e-mail, na który wysłano zaproszenie. Możesz kontynuować kodem jednorazowym albo utworzyć hasło.',
     accept: 'Akceptuj zaproszenie',
     accepting: 'Sprawdzanie zaproszenia...',
     success: 'Zaproszenie zaakceptowane. Otwieramy portal firmy.',
