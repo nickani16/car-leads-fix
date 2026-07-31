@@ -1029,9 +1029,14 @@ export async function proxy(request: NextRequest) {
 
       if (methodCanRedirect && ['login', 'forgot-password', 'reset-password'].includes(segments[1] || '')) {
         const url = request.nextUrl.clone()
+        const rawNext = url.searchParams.get('next')
+        const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/api/')
+          ? rawNext
+          : ''
         url.pathname = `/${pathMarket}`
         url.search = ''
         url.searchParams.set('auth', segments[1] === 'login' ? 'login' : segments[1])
+        if (next) url.searchParams.set('next', next)
         return withMarketCookie(
           withLanguageCookie(
             NextResponse.redirect(url, 307),
