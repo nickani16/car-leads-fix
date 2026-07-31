@@ -587,15 +587,6 @@ export default async function ListingDetailPage({
               </div>
             </section>
 
-            <VehicleProfileSection
-              listing={listing}
-              locale={locale}
-              marketInsight={marketInsight}
-              listingHistory={listingHistory}
-              specsCount={specs.length}
-              equipmentCount={equipmentKeys.length || fallbackEquipment.length}
-            />
-
             <ListingEquipmentSection
               title={localizedLabel(locale, 'Utrustning', 'Equipment', 'Ausstattung')}
               groups={equipmentGroups}
@@ -643,6 +634,15 @@ export default async function ListingDetailPage({
                 mapQuery={mapCoordinates?.query}
               />
             </div>
+
+            <VehicleProfileSection
+              listing={listing}
+              locale={locale}
+              marketInsight={marketInsight}
+              listingHistory={listingHistory}
+              specsCount={specs.length}
+              equipmentCount={equipmentKeys.length || fallbackEquipment.length}
+            />
             </div>
             </div>
 
@@ -672,7 +672,7 @@ export default async function ListingDetailPage({
                 {price.approximate ? (
                   <p className="mt-1.5 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
-                <p className="mt-2 rounded-[10px] bg-[#f3f7ff] px-3 py-2 text-[11px] font-medium leading-4 text-[#475467]">
+                <p className="mt-1.5 text-xs font-medium leading-4 text-[#667085]">
                   {copy.vatInfo}
                 </p>
               </div>
@@ -2082,7 +2082,7 @@ const listingDetailCopy = {
     country: 'Land',
     priceLabel: 'Pris',
     priceReduced: 'Sänkt',
-    vatInfo: 'Moms visas enligt säljarens uppgifter och landets regler.',
+    vatInfo: 'inkl. moms',
     mapLabel: 'Karta',
     shareListing: 'Dela annons',
     shareAction: 'Dela',
@@ -2118,7 +2118,7 @@ const listingDetailCopy = {
     country: 'Country',
     priceLabel: 'Price',
     priceReduced: 'Reduced',
-    vatInfo: "VAT is shown according to the seller's information and local rules.",
+    vatInfo: 'incl. VAT',
     mapLabel: 'Map',
     shareListing: 'Share listing',
     shareAction: 'Share',
@@ -2154,7 +2154,7 @@ const listingDetailCopy = {
     country: 'Land',
     priceLabel: 'Preis',
     priceReduced: 'Reduziert',
-    vatInfo: 'MwSt. wird gemäß Verkäuferangaben und lokalen Regeln angezeigt.',
+    vatInfo: 'inkl. MwSt.',
     mapLabel: 'Karte',
     shareListing: 'Anzeige teilen',
     shareAction: 'Teilen',
@@ -2194,11 +2194,27 @@ const localizedReportDisclaimer: Record<PublicLocale, string> = {
   da: 'Mistænker du, at noget i annoncen ikke stemmer, eller at der mangler oplysninger? Hjælp os med at holde Autorell trygt og opdateret ved at anmelde annoncen. Vi gennemgår alle indkomne rapporter.',
 }
 
+const localizedVatInfo: Record<PublicLocale, string> = {
+  sv: 'inkl. moms',
+  de: 'inkl. MwSt.',
+  en: 'incl. VAT',
+  at: 'inkl. MwSt.',
+  be: 'incl. btw',
+  fr: 'TVA incluse',
+  es: 'IVA incluido',
+  it: 'IVA inclusa',
+  pl: 'z VAT',
+  nl: 'incl. btw',
+  fi: 'sis. ALV',
+  da: 'inkl. moms',
+}
+
 function getListingDetailCopy(locale: PublicLocale) {
   if (locale === 'sv' || locale === 'de' || locale === 'at' || locale === 'en') {
     return {
       ...listingDetailCopy[locale === 'at' ? 'de' : locale],
       euDisclaimer: localizedReportDisclaimer[locale],
+      vatInfo: localizedVatInfo[locale],
     }
   }
 
@@ -2206,6 +2222,7 @@ function getListingDetailCopy(locale: PublicLocale) {
     ...translatePublicObject(locale, listingDetailCopy.en),
     euDisclaimer: localizedReportDisclaimer[locale],
     mapLabel: localizedMapLabels[locale],
+    vatInfo: localizedVatInfo[locale],
   }
 }
 
