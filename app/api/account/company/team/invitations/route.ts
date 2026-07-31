@@ -72,12 +72,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'The plan must be active before team members can be invited.' }, { status: 403 })
     }
 
+    const now = new Date().toISOString()
+    await admin
+      .from('marketplace_company_invitations')
+      .update({ status: 'expired', updated_at: now })
+      .eq('company_id', profile.company_id)
+      .eq('status', 'pending')
+      .lt('expires_at', now)
+
+    const { data: pendingInvitations } = await admin
+      .from('marketplace_company_invitations')
+      .select('id')
+      .eq('company_id', profile.company_id)
+      .ilike('email', email)
+      .eq('status', 'pending')
+      .gt('expires_at', now)
+      .order('created_at', { ascending: false })
+
+    const activeInvitation = pendingInvitations?.[0] || null
+    const duplicateInvitationIds = (pendingInvitations || []).slice(1).map((invite) => String(invite.id)).filter(Boolean)
+    if (duplicateInvitationIds.length) {
+      await admin
+        .from('marketplace_company_invitations')
+        .update({ status: 'expired', updated_at: now })
+        .in('id', duplicateInvitationIds)
+    }
+
     const team = await getCompanyTeamOverview(admin, String(profile.company_id), planKey)
-    if (team.remainingSeats <= 0) {
+    if (!activeInvitation && team.remainingSeats <= 0) {
       return NextResponse.json({ error: 'The team limit for the plan has been reached.' }, { status: 409 })
     }
-    if (team.members.some((member) => member.email.toLowerCase() === email) || team.invitations.some((invite) => invite.email.toLowerCase() === email)) {
-      return NextResponse.json({ error: 'That email address is already a member or has an active invitation.' }, { status: 409 })
+    if (team.members.some((member) => member.email.toLowerCase() === email)) {
+      return NextResponse.json({ error: 'That user is already connected to the company.' }, { status: 409 })
     }
 
     const { data: existingProfile } = await admin
@@ -91,16 +117,29 @@ export async function POST(request: Request) {
 
     const { token, tokenHash } = createTeamInvitationToken()
     const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: invitation, error } = await admin
-      .from('marketplace_company_invitations')
-      .insert({
+    const invitationPayload = {
         company_id: profile.company_id,
         email,
         role,
         token_hash: tokenHash,
         invited_by: user.id,
         expires_at: expiresAt,
-      })
+        email_status: 'pending',
+        email_error: null,
+        provider_message_id: null,
+        updated_at: now,
+      }
+
+    const invitationQuery = activeInvitation
+      ? admin
+          .from('marketplace_company_invitations')
+          .update(invitationPayload)
+          .eq('id', activeInvitation.id)
+      : admin
+          .from('marketplace_company_invitations')
+          .insert(invitationPayload)
+
+    const { data: invitation, error } = await invitationQuery
       .select('id')
       .single()
 

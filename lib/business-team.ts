@@ -67,6 +67,7 @@ export async function getCompanyTeamOverview(
   companyId: string,
   planKey: string | null | undefined,
 ): Promise<CompanyTeamOverview> {
+  const now = new Date().toISOString()
   const [{ data: members }, { data: invitations }] = await Promise.all([
     admin
       .from('marketplace_company_members')
@@ -78,6 +79,7 @@ export async function getCompanyTeamOverview(
       .select('id,email,role,status,email_status,expires_at,created_at')
       .eq('company_id', companyId)
       .eq('status', 'pending')
+      .gt('expires_at', now)
       .order('created_at', { ascending: false }),
   ])
 
@@ -108,7 +110,14 @@ export async function getCompanyTeamOverview(
     }
   })
 
-  const normalizedInvitations = (invitations || []).map((invitation) => ({
+  const invitationsByEmail = new Map<string, NonNullable<typeof invitations>[number]>()
+  for (const invitation of invitations || []) {
+    const email = String(invitation.email || '').trim().toLowerCase()
+    if (!email || invitationsByEmail.has(email)) continue
+    invitationsByEmail.set(email, invitation)
+  }
+
+  const normalizedInvitations = Array.from(invitationsByEmail.values()).map((invitation) => ({
     id: String(invitation.id),
     email: String(invitation.email),
     role: String(invitation.role || 'staff'),

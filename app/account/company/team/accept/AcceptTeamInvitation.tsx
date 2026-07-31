@@ -42,7 +42,7 @@ export default function AcceptTeamInvitation({
         setError(response.status === 401 ? copy.signInFirst : localizedAccountError(locale, result, copy.failed))
         if (response.status === 401) {
           const next = `${window.location.pathname}${window.location.search}`
-          window.setTimeout(() => router.push(localizePublicHref(locale, `/login?next=${encodeURIComponent(next)}`)), 500)
+          window.setTimeout(() => router.push(localizePublicHref(locale, `/register?next=${encodeURIComponent(next)}`)), 500)
         }
         return
       }

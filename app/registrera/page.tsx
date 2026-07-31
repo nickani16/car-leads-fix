@@ -28,7 +28,14 @@ export default async function RegisterPage({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect(localizePublicHref(locale, '/?auth=register'))
+  if (!user) {
+    const params = new URLSearchParams({ auth: 'register' })
+    const nextParam = Array.isArray(query.next) ? query.next[0] : query.next
+    const next = safeReturnPath(nextParam)
+    if (next) params.set('next', next)
+    if (initialAccountType === 'business') params.set('account', 'business')
+    redirect(localizePublicHref(locale, `/?${params.toString()}`))
+  }
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')
@@ -73,6 +80,12 @@ export default async function RegisterPage({
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function safeReturnPath(value: unknown) {
+  const next = String(value || '').trim()
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/api/')) return ''
+  return next
 }
 
 function getRegisterPageCopy(locale: PublicLocale) {
