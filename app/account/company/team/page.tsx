@@ -21,6 +21,8 @@ const baseCopy = {
   pendingTitle: 'Pending invitations',
   seats: 'Seats',
   used: 'used',
+  connectedSeats: 'connected',
+  pendingSeats: 'pending',
   emailPlaceholder: 'name@company.com',
   role: 'Role',
   sendInvite: 'Send invitation',
@@ -52,6 +54,12 @@ const baseCopy = {
     sales: 'Sales',
     staff: 'Staff',
     viewer: 'Viewer',
+  },
+  invitationStatusLabels: {
+    pending: 'pending',
+    sent: 'sent',
+    failed: 'failed',
+    skipped: 'not sent',
   },
 }
 
@@ -340,15 +348,129 @@ const localizedCopy: Partial<Record<ReturnType<typeof translationLocale>, Partia
   },
 }
 
-function roleLabel(copy: TeamPageCopy, role: string) {
-  return (copy.roleLabels as Record<string, string>)[role] || role
+const localizedTeamActionCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<Pick<TeamPageCopy,
+  | 'removeInvitation'
+  | 'removingInvitation'
+  | 'removeInvitationConfirm'
+  | 'removeInvitationError'
+  | 'connectedSeats'
+  | 'pendingSeats'
+>>>> = {
+  sv: {
+    removeInvitation: 'Ta bort inbjudan',
+    removingInvitation: 'Tar bort...',
+    removeInvitationConfirm: 'Ta bort inbjudan? E-postadressen reserverar inte längre en teamplats.',
+    removeInvitationError: 'Inbjudan kunde inte tas bort.',
+    connectedSeats: 'anslutna',
+    pendingSeats: 'väntande',
+  },
+  da: {
+    removeInvitation: 'Fjern invitation',
+    removingInvitation: 'Fjerner...',
+    removeInvitationConfirm: 'Fjern invitationen? E-mailadressen reserverer ikke længere en teamplads.',
+    removeInvitationError: 'Invitationen kunne ikke fjernes.',
+    connectedSeats: 'tilknyttet',
+    pendingSeats: 'afventende',
+  },
+  fi: {
+    removeInvitation: 'Poista kutsu',
+    removingInvitation: 'Poistetaan...',
+    removeInvitationConfirm: 'Poistetaanko kutsu? Sähköpostiosoite ei enää varaa tiimipaikkaa.',
+    removeInvitationError: 'Kutsua ei voitu poistaa.',
+    connectedSeats: 'liitetty',
+    pendingSeats: 'odottaa',
+  },
+  de: {
+    removeInvitation: 'Einladung entfernen',
+    removingInvitation: 'Wird entfernt...',
+    removeInvitationConfirm: 'Einladung entfernen? Die E-Mail-Adresse reserviert dann keinen Teamplatz mehr.',
+    removeInvitationError: 'Die Einladung konnte nicht entfernt werden.',
+    connectedSeats: 'verbunden',
+    pendingSeats: 'ausstehend',
+  },
+  fr: {
+    removeInvitation: 'Supprimer l’invitation',
+    removingInvitation: 'Suppression...',
+    removeInvitationConfirm: 'Supprimer cette invitation ? Cette adresse e-mail ne réservera plus de place dans l’équipe.',
+    removeInvitationError: 'L’invitation n’a pas pu être supprimée.',
+    connectedSeats: 'connectés',
+    pendingSeats: 'en attente',
+  },
+  es: {
+    removeInvitation: 'Eliminar invitación',
+    removingInvitation: 'Eliminando...',
+    removeInvitationConfirm: '¿Eliminar esta invitación? El correo ya no reservará una plaza del equipo.',
+    removeInvitationError: 'No se pudo eliminar la invitación.',
+    connectedSeats: 'conectados',
+    pendingSeats: 'pendientes',
+  },
+  it: {
+    removeInvitation: 'Rimuovi invito',
+    removingInvitation: 'Rimozione...',
+    removeInvitationConfirm: 'Rimuovere questo invito? L’indirizzo e-mail non riserverà più un posto nel team.',
+    removeInvitationError: 'Non è stato possibile rimuovere l’invito.',
+    connectedSeats: 'collegati',
+    pendingSeats: 'in attesa',
+  },
+  nl: {
+    removeInvitation: 'Uitnodiging verwijderen',
+    removingInvitation: 'Verwijderen...',
+    removeInvitationConfirm: 'Uitnodiging verwijderen? Dit e-mailadres reserveert dan geen teamplaats meer.',
+    removeInvitationError: 'De uitnodiging kon niet worden verwijderd.',
+    connectedSeats: 'verbonden',
+    pendingSeats: 'in afwachting',
+  },
+  pl: {
+    removeInvitation: 'Usuń zaproszenie',
+    removingInvitation: 'Usuwanie...',
+    removeInvitationConfirm: 'Usunąć zaproszenie? Ten adres e-mail nie będzie już rezerwował miejsca w zespole.',
+    removeInvitationError: 'Nie udało się usunąć zaproszenia.',
+    connectedSeats: 'połączone',
+    pendingSeats: 'oczekujące',
+  },
+}
+
+const localizedRoleLabels: Partial<Record<ReturnType<typeof translationLocale>, Record<string, string>>> = {
+  en: { owner: 'Account owner', contact_person: 'Account owner' },
+  sv: { owner: 'Kontoägare', contact_person: 'Kontoägare' },
+  da: { owner: 'Kontoejer', contact_person: 'Kontoejer' },
+  fi: { owner: 'Tilin omistaja', contact_person: 'Tilin omistaja' },
+  de: { owner: 'Kontoinhaber', contact_person: 'Kontoinhaber' },
+  fr: { owner: 'Propriétaire du compte', contact_person: 'Propriétaire du compte' },
+  es: { owner: 'Titular de la cuenta', contact_person: 'Titular de la cuenta' },
+  it: { owner: 'Titolare account', contact_person: 'Titolare account' },
+  nl: { owner: 'Accounteigenaar', contact_person: 'Accounteigenaar' },
+  pl: { owner: 'Właściciel konta', contact_person: 'Właściciel konta' },
+}
+
+const localizedInvitationStatusLabels: Partial<Record<ReturnType<typeof translationLocale>, Record<string, string>>> = {
+  en: { pending: 'pending', sent: 'sent', failed: 'failed', skipped: 'not sent' },
+  sv: { pending: 'väntar', sent: 'skickad', failed: 'misslyckades', skipped: 'ej skickad' },
+  da: { pending: 'afventer', sent: 'sendt', failed: 'mislykkedes', skipped: 'ikke sendt' },
+  fi: { pending: 'odottaa', sent: 'lähetetty', failed: 'epäonnistui', skipped: 'ei lähetetty' },
+  de: { pending: 'ausstehend', sent: 'gesendet', failed: 'fehlgeschlagen', skipped: 'nicht gesendet' },
+  fr: { pending: 'en attente', sent: 'envoyée', failed: 'échec', skipped: 'non envoyée' },
+  es: { pending: 'pendiente', sent: 'enviada', failed: 'fallida', skipped: 'no enviada' },
+  it: { pending: 'in attesa', sent: 'inviato', failed: 'non riuscito', skipped: 'non inviato' },
+  nl: { pending: 'in afwachting', sent: 'verzonden', failed: 'mislukt', skipped: 'niet verzonden' },
+  pl: { pending: 'oczekuje', sent: 'wysłano', failed: 'niepowodzenie', skipped: 'nie wysłano' },
+}
+
+function roleLabel(copy: TeamPageCopy, locale: ReturnType<typeof translationLocale>, role: string) {
+  return localizedRoleLabels[locale]?.[role] || (copy.roleLabels as Record<string, string>)[role] || role
+}
+
+function invitationStatusLabel(locale: ReturnType<typeof translationLocale>, status: string) {
+  return localizedInvitationStatusLabels[locale]?.[status] || (baseCopy.invitationStatusLabels as Record<string, string>)[status] || status
 }
 
 export default async function CompanyTeamPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
+  const locale = translationLocale(context.locale)
   const copy = {
     ...baseCopy,
-    ...(localizedCopy[translationLocale(context.locale)] || {}),
+    ...(localizedCopy[locale] || {}),
+    ...(localizedTeamActionCopy[locale] || {}),
   }
   const plan = String(context.subscription?.plan_key || 'free')
   if (!planAllows(plan, 'growth')) {
@@ -374,7 +496,10 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
             </div>
             {team ? (
               <div className="rounded-[12px] border border-[#d9e2ef] bg-[#f8fbff] px-4 py-3 text-sm font-semibold text-[#344054]">
-                {copy.seats}: {team.usedSeats}/{team.seatLimit} {copy.used}
+                <p>{copy.seats}: {team.usedSeats}/{team.seatLimit} {copy.used}</p>
+                <p className="mt-1 text-xs font-medium text-[#667085]">
+                  {team.members.length} {copy.connectedSeats} · {team.invitations.length} {copy.pendingSeats}
+                </p>
               </div>
             ) : null}
           </div>
@@ -388,7 +513,7 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
               {team.members.map((member) => (
                 <div key={member.userId} className="rounded-[12px] border border-[#e5ebf3] px-4 py-3">
                   <p className="text-sm font-bold text-[#101828]">{member.name}</p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{roleLabel(copy, member.role)}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{roleLabel(copy, locale, member.role)}</p>
                   {member.email ? <p className="mt-1 truncate text-sm text-[#667085]">{member.email}</p> : null}
                   {member.email ? (
                     <TeamBillingRecipientToggle
@@ -417,6 +542,9 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
             {team.invitations.map((invitation) => (
               <div key={invitation.id} className="rounded-[12px] border border-[#e5ebf3] px-4 py-3">
                 <p className="truncate text-sm font-bold text-[#101828]">{invitation.email}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
+                  {roleLabel(copy, locale, invitation.role)} · {invitationStatusLabel(locale, invitation.emailStatus)}
+                </p>
                 <TeamMemberActions
                   target="invitation"
                   invitationId={invitation.id}
@@ -424,7 +552,6 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
                   locale={context.locale}
                   copy={copy}
                 />
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{roleLabel(copy, invitation.role)} · {invitation.emailStatus}</p>
               </div>
             ))}
           </div>
