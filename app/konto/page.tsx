@@ -29,6 +29,7 @@ import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { getAdminContext } from '@/lib/admin/context'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -493,10 +494,15 @@ async function redirectBusinessAccountFromLegacyAccount(
   profile: ProfileRow,
   locale: PublicLocale,
 ) {
+  const scope = await resolveBusinessAccountScope(userId, admin)
+  if (scope.companyId && scope.subscriptionUserId !== userId) {
+    redirect(localizePublicHref(locale, '/account/company'))
+  }
+
   const { data: subscription } = await admin
     .from('business_subscriptions')
     .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
-    .eq('user_id', userId)
+    .eq('user_id', scope.subscriptionUserId)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
