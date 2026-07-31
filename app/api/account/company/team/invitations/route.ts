@@ -8,6 +8,7 @@ import {
   normalizeTeamRole,
   sendCompanyTeamInvitationEmail,
 } from '@/lib/business-team'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 function normalizeEmail(value: unknown) {
   return String(value || '').trim().toLowerCase()
@@ -56,10 +57,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only business accounts can invite team members.' }, { status: 403 })
     }
 
+    const scope = await resolveBusinessAccountScope(user.id, admin)
     const { data: subscription } = await admin
       .from('business_subscriptions')
       .select('plan_key,status')
-      .eq('user_id', user.id)
+      .eq('user_id', scope.subscriptionUserId)
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -166,5 +168,78 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[company-team-invite] failed', error)
     return NextResponse.json({ error: 'Invitation could not be sent.' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'You need to sign in.' }, { status: 401 })
+
+    const limit = checkRateLimit({
+      key: `company-team-invite-delete:${getClientIp(request)}:${user.id}`,
+      limit: 30,
+      windowMs: 10 * 60 * 1000,
+    })
+    if (limit.limited) {
+      return NextResponse.json(
+        { error: 'Too many team changes in a short time. Try again later.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
+      )
+    }
+
+    const body = (await request.json()) as Record<string, unknown>
+    const invitationId = String(body.invitationId || '').trim()
+    const email = normalizeEmail(body.email)
+
+    const admin = createAdminClient()
+    const { data: profile } = await admin
+      .from('marketplace_profiles')
+      .select('account_type,company_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile || profile.account_type !== 'business' || !profile.company_id) {
+      return NextResponse.json({ error: 'Only business accounts can manage invitations.' }, { status: 403 })
+    }
+
+    const { data: company } = await admin
+      .from('marketplace_companies')
+      .select('id,created_by')
+      .eq('id', profile.company_id)
+      .maybeSingle()
+    if (!company) return NextResponse.json({ error: 'The company could not be found.' }, { status: 404 })
+
+    const { data: currentMember } = await admin
+      .from('marketplace_company_members')
+      .select('role')
+      .eq('company_id', profile.company_id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    const currentRole = String(currentMember?.role || '').toLowerCase()
+    const canManage = String(company.created_by || '') === user.id || ['owner', 'admin', 'manager'].includes(currentRole)
+    if (!canManage) {
+      return NextResponse.json({ error: 'You do not have permission to remove invitations.' }, { status: 403 })
+    }
+
+    let query = admin
+      .from('marketplace_company_invitations')
+      .update({ status: 'revoked', updated_at: new Date().toISOString() })
+      .eq('company_id', profile.company_id)
+      .eq('status', 'pending')
+
+    if (invitationId) query = query.eq('id', invitationId)
+    else if (email) query = query.ilike('email', email)
+    else return NextResponse.json({ error: 'Choose an invitation.' }, { status: 400 })
+
+    const { data: revoked, error } = await query.select('id').limit(1).maybeSingle()
+    if (error) throw error
+    if (!revoked) return NextResponse.json({ error: 'The invitation was not found.' }, { status: 404 })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('[company-team-invite] remove failed', error)
+    return NextResponse.json({ error: 'The invitation could not be removed.' }, { status: 500 })
   }
 }

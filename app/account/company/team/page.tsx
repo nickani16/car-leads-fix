@@ -35,6 +35,10 @@ const baseCopy = {
   removingMember: 'Removing...',
   removeMemberConfirm: 'Remove this person from the company account? They will lose access to the company portal, branches and shared listings.',
   removeMemberError: 'The team member could not be removed.',
+  removeInvitation: 'Remove invitation',
+  removingInvitation: 'Removing...',
+  removeInvitationConfirm: 'Remove this invitation? The email address will no longer reserve a team seat.',
+  removeInvitationError: 'The invitation could not be removed.',
   flowTitle: 'How invitations work',
   flowSteps: [
     'Send the invitation to the exact email address the person will use to sign in.',
@@ -395,7 +399,7 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
                     />
                   ) : null}
                   {member.userId !== context.userId ? (
-                    <TeamMemberActions userId={member.userId} locale={context.locale} copy={copy} />
+                    <TeamMemberActions userId={member.userId} email={member.email} locale={context.locale} copy={copy} />
                   ) : null}
                 </div>
               ))}
@@ -413,6 +417,13 @@ export default async function CompanyTeamPage({ localeOverride }: { localeOverri
             {team.invitations.map((invitation) => (
               <div key={invitation.id} className="rounded-[12px] border border-[#e5ebf3] px-4 py-3">
                 <p className="truncate text-sm font-bold text-[#101828]">{invitation.email}</p>
+                <TeamMemberActions
+                  target="invitation"
+                  invitationId={invitation.id}
+                  email={invitation.email}
+                  locale={context.locale}
+                  copy={copy}
+                />
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">{roleLabel(copy, invitation.role)} · {invitation.emailStatus}</p>
               </div>
             ))}

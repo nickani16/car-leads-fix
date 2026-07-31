@@ -23,7 +23,8 @@ export async function DELETE(request: Request) {
 
     const body = (await request.json()) as Record<string, unknown>
     const targetUserId = String(body.userId || '').trim()
-    if (!targetUserId) {
+    const targetEmail = String(body.email || '').trim().toLowerCase()
+    if (!targetUserId && !targetEmail) {
       return NextResponse.json({ error: 'Choose a team member.' }, { status: 400 })
     }
     if (targetUserId === user.id) {
@@ -48,10 +49,6 @@ export async function DELETE(request: Request) {
       .maybeSingle()
 
     if (!company) return NextResponse.json({ error: 'The company could not be found.' }, { status: 404 })
-    if (String(company.created_by || '') === targetUserId) {
-      return NextResponse.json({ error: 'The company owner cannot be removed from the team.' }, { status: 400 })
-    }
-
     const { data: currentMember } = await admin
       .from('marketplace_company_members')
       .select('role')
@@ -65,11 +62,31 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'You do not have permission to remove team members.' }, { status: 403 })
     }
 
+    const { data: targetProfile } = targetUserId
+      ? { data: null }
+      : await admin
+          .from('marketplace_profiles')
+          .select('user_id,email')
+          .eq('company_id', profile.company_id)
+          .ilike('email', targetEmail)
+          .maybeSingle()
+
+    const resolvedTargetUserId = targetUserId || String(targetProfile?.user_id || '')
+    if (!resolvedTargetUserId) {
+      return NextResponse.json({ error: 'The team member was not found.' }, { status: 404 })
+    }
+    if (resolvedTargetUserId === user.id) {
+      return NextResponse.json({ error: 'You cannot remove your own access here.' }, { status: 400 })
+    }
+    if (String(company.created_by || '') === resolvedTargetUserId) {
+      return NextResponse.json({ error: 'The company owner cannot be removed from the team.' }, { status: 400 })
+    }
+
     const { data: targetMember } = await admin
       .from('marketplace_company_members')
       .select('user_id')
       .eq('company_id', profile.company_id)
-      .eq('user_id', targetUserId)
+      .eq('user_id', resolvedTargetUserId)
       .maybeSingle()
 
     if (!targetMember) {
@@ -80,7 +97,7 @@ export async function DELETE(request: Request) {
       .from('marketplace_company_members')
       .delete()
       .eq('company_id', profile.company_id)
-      .eq('user_id', targetUserId)
+      .eq('user_id', resolvedTargetUserId)
     if (deleteError) throw deleteError
 
     const { error: profileError } = await admin
@@ -95,7 +112,7 @@ export async function DELETE(request: Request) {
         business_onboarding_status: null,
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', targetUserId)
+      .eq('user_id', resolvedTargetUserId)
       .eq('company_id', profile.company_id)
     if (profileError) throw profileError
 
