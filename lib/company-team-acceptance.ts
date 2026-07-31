@@ -125,6 +125,7 @@ async function completeCompanyTeamInvitation(
   }
 
   const now = new Date().toISOString()
+  const teamMemberRegistrationNumber = `TEAM-${invitation.company_id.slice(0, 8)}-${input.userId.slice(0, 8)}`
   const { error: memberError } = await admin
     .from('marketplace_company_members')
     .upsert({
@@ -145,8 +146,8 @@ async function completeCompanyTeamInvitation(
     phone: company.phone || '+0000000000',
     company_id: company.id,
     company_name: company.name,
-    registration_number: company.registration_number || company.vat_number || 'TEAM-MEMBER',
-    vat_number: company.vat_number,
+    registration_number: teamMemberRegistrationNumber,
+    vat_number: null,
     country_code: company.country_code,
     website_url: company.website_url,
     address_line_1: company.address_line_1,
