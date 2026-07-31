@@ -650,7 +650,7 @@ export default async function ListingDetailPage({
                     href={localizePublicHref(locale, `/marketplace/${listing.category}`)}
                     className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#d0d5dd] bg-white px-3 text-sm font-semibold text-[#101828]"
                   >
-                    {localizedLabel(locale, 'Visa liknande annonser', 'View similar listings', 'Ã„hnliche Anzeigen ansehen')}
+                    {localizedLabel(locale, 'Visa liknande annonser', 'View similar listings', 'Ähnliche Anzeigen ansehen')}
                   </Link>
                 ) : (
                   <>
@@ -718,7 +718,7 @@ export default async function ListingDetailPage({
                       </span>
                       {sellerDetails.ratingAverage && sellerDetails.ratingCount ? (
                         <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#475467]">
-                          <span className="text-[#0866ff]">â˜…</span>
+                          <span className="text-[#0866ff]">★</span>
                           {sellerDetails.ratingAverage.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, { maximumFractionDigits: 1 })} ({sellerDetails.ratingCount})
                         </p>
                       ) : (
@@ -738,7 +738,7 @@ export default async function ListingDetailPage({
                             rel="noreferrer"
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#c9d7ec] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#f5f9ff]"
                           >
-                            {localizedLabel(locale, 'Till handlarens webbsida', 'Dealer website', 'Zur HÃ¤ndlerwebsite')}
+                            {localizedLabel(locale, 'Till handlarens webbsida', 'Dealer website', 'Zur Händlerwebsite')}
                             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                           </a>
                         ) : null}
@@ -747,7 +747,7 @@ export default async function ListingDetailPage({
                             href={sellerDetails.companyPageHref}
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
                           >
-                            {localizedLabel(locale, 'Visa fÃ¶retagssida', 'View company page', 'Unternehmensseite ansehen')}
+                            {localizedLabel(locale, 'Visa företagssida', 'View company page', 'Unternehmensseite ansehen')}
                             <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                           </Link>
                         ) : null}
