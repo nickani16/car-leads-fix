@@ -4430,7 +4430,7 @@ function VehicleSearchMap({
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
-        const markerElement = createAutorellMapMarker(listing, selectedListing?.id === listing.id)
+        const markerElement = createAutorellMapMarker(listing, false)
         markerElement.addEventListener('click', () => {
           const nearbyListings = getNearbyMapListings(map, mapListings, coordinates)
           const nextGroup = nearbyListings.length ? nearbyListings.map((item) => item.listing) : [listing]
@@ -4459,7 +4459,7 @@ function VehicleSearchMap({
     return () => {
       cancelled = true
     }
-  }, [country, geoBounds, mapListings, mapReady, selectedListing?.id])
+  }, [country, geoBounds, mapListings, mapReady])
 
   return (
     <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>

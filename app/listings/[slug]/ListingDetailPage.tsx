@@ -149,6 +149,8 @@ type ListingTechnicalDetails = {
   technicalData: Record<string, string | number | string[] | null>
 }
 
+const SHOW_LISTING_MARKET_SIGNALS = false
+
 type SellerVerification = {
   label: string
   tone: 'verified' | 'pending' | 'unverified'
@@ -562,11 +564,13 @@ export default async function ListingDetailPage({
                   })}
                 </div>
               ) : null}
-              <PriceInsightPanel
-                insight={marketInsight}
-                locale={locale}
-                currentPriceDisplay={price.original}
-              />
+              {SHOW_LISTING_MARKET_SIGNALS ? (
+                <PriceInsightPanel
+                  insight={marketInsight}
+                  locale={locale}
+                  currentPriceDisplay={price.original}
+                />
+              ) : null}
             </section>
 
             <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
@@ -1378,7 +1382,9 @@ function VehicleProfileSection({
         </p>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {profileItems.map((item) => (
+        {profileItems
+          .filter((item) => SHOW_LISTING_MARKET_SIGNALS || item.label !== copy.profileMarket)
+          .map((item) => (
           <div key={item.label} className="rounded-[10px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-3">
             <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#667085]">{item.label}</p>
             <p className="mt-1 text-sm font-semibold leading-5 text-[#101828]">{item.value}</p>
