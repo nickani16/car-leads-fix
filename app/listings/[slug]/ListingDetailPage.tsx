@@ -666,9 +666,6 @@ export default async function ListingDetailPage({
                 <div className="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-[34px]">
                   {price.original}
                 </div>
-                <span className={`mt-3 inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 ${offerBadge.className}`}>
-                  {offerBadge.label}
-                </span>
                 {price.approximate ? (
                   <p className="mt-1.5 text-sm font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
@@ -737,7 +734,7 @@ export default async function ListingDetailPage({
                 ) : (
                   <div className="grid gap-4">
                     {sellerDetails.logoUrl ? (
-                      <div className="inline-flex w-fit max-w-full rounded-[14px] border border-[#dfe6f2] bg-white px-4 py-3">
+                      <div className="inline-flex w-fit max-w-full px-0 py-0">
                         <Image
                           src={sellerDetails.logoUrl}
                           alt={sellerLabel}
