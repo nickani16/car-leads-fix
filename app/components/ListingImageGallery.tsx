@@ -248,7 +248,7 @@ export default function ListingImageGallery({
               type="button"
               onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 right-3 z-10 inline-flex min-h-9 items-center rounded-[10px] bg-white/94 px-3 text-[14px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
+              className="absolute bottom-3 right-3 z-10 inline-flex min-h-9 items-center rounded-[10px] bg-white/94 px-3 text-[14px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:hidden"
               aria-label="Open photos"
             >
               {active + 1}/{displayImageCount}
@@ -257,7 +257,7 @@ export default function ListingImageGallery({
               type="button"
               onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 right-3 z-10 hidden min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:inline-flex"
+              className="absolute bottom-3 right-3 z-10 hidden min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:inline-flex"
               aria-label="Open photos"
             >
               {active + 1}/{displayImageCount}
@@ -269,7 +269,7 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/94 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] ring-1 ring-[#d9e1ec] backdrop-blur transition hover:bg-white sm:hidden"
+            className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/94 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:hidden"
             aria-label="Open fullscreen gallery"
           >
             <Maximize2 className="h-[17px] w-[17px]" strokeWidth={1.9} />
@@ -311,7 +311,7 @@ export default function ListingImageGallery({
           <div className="pointer-events-none fixed inset-x-0 top-0 z-[190] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
             <div className="mx-auto flex max-w-[1120px] items-start justify-between gap-3">
               <div
-                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-[9px] bg-white/96 px-4 text-[16px] font-[500] text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur"
+                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-white/96 px-4 text-[16px] font-[500] text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur"
                 style={{ fontWeight: 500 }}
               >
                 <ImageIcon className="h-[19px] w-[19px]" strokeWidth={2.1} />
@@ -323,13 +323,13 @@ export default function ListingImageGallery({
                   label={fullscreenCopy.save}
                   savedLabel={fullscreenCopy.saved}
                   variant="icon"
-                  className="h-11 w-11 rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] hover:text-[#101828]"
+                  className="h-11 w-11 rounded-full bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] hover:text-[#101828]"
                   iconClassName="h-[23px] w-[23px]"
                 />
                 <button
                   type="button"
                   onClick={() => setFullscreen(false)}
-                  className="grid h-11 w-11 place-items-center rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white"
+                  className="grid h-11 w-11 place-items-center rounded-full bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white"
                   aria-label={fullscreenCopy.close}
                 >
                   <X className="h-6 w-6" strokeWidth={2.2} />
