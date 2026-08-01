@@ -32,6 +32,14 @@ const baseCopy = {
   businessReadyText: 'Your company account can list inventory, measure reach and build a public footprint before upgrading to a larger plan.',
   actionNeeded: 'Action needed',
   noWarnings: 'No urgent actions right now.',
+  paymentIssueSingular: 'payment issue',
+  paymentIssuePlural: 'payment issues',
+  listingSingular: 'listing',
+  listingPlural: 'listings',
+  missingImagesSuffix: 'missing images',
+  expiringSoonSuffix: 'expiring soon',
+  needsReviewSuffix: 'need review or action',
+  subscriptionPaymentNeedsAttention: 'Subscription payment needs attention',
   createListing: 'Create listing',
   importListings: 'Import listings',
   manageTeam: 'Manage team',
@@ -49,10 +57,11 @@ export default async function CompanyOverviewPage({ localeOverride }: { localeOv
   const utilisation = limit ? Math.round((summary.counts.active / limit) * 100) : 0
   const verified = ['verified', 'vat_validated'].includes(String(context.profile.business_verification_status || ''))
   const warnings = [
-    summary.failedPayments > 0 ? `${summary.failedPayments} payment issue${summary.failedPayments === 1 ? '' : 's'}` : '',
-    summary.missingImages > 0 ? `${summary.missingImages} listing${summary.missingImages === 1 ? '' : 's'} missing images` : '',
-    summary.expiringSoon > 0 ? `${summary.expiringSoon} listing${summary.expiringSoon === 1 ? '' : 's'} expiring soon` : '',
-    context.subscription?.payment_status === 'failed' || ['past_due', 'unpaid'].includes(String(context.subscription?.status || '')) ? 'Subscription payment needs attention' : '',
+    summary.failedPayments > 0 ? `${summary.failedPayments} ${summary.failedPayments === 1 ? copy.paymentIssueSingular : copy.paymentIssuePlural}` : '',
+    summary.missingImages > 0 ? `${summary.missingImages} ${summary.missingImages === 1 ? copy.listingSingular : copy.listingPlural} ${copy.missingImagesSuffix}` : '',
+    summary.expiringSoon > 0 ? `${summary.expiringSoon} ${summary.expiringSoon === 1 ? copy.listingSingular : copy.listingPlural} ${copy.expiringSoonSuffix}` : '',
+    summary.flagged > 0 ? `${summary.flagged} ${summary.flagged === 1 ? copy.listingSingular : copy.listingPlural} ${copy.needsReviewSuffix}` : '',
+    context.subscription?.payment_status === 'failed' || ['past_due', 'unpaid'].includes(String(context.subscription?.status || '')) ? copy.subscriptionPaymentNeedsAttention : '',
   ].filter(Boolean)
 
   return (
