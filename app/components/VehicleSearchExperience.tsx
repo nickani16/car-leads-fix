@@ -3955,8 +3955,12 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   ]
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
+    <footer className="relative overflow-hidden border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-24 -right-20 h-52 w-52 rounded-full border-[24px] border-[#0866ff]/10 bg-[#0866ff]/[0.025] sm:-bottom-28 sm:-right-24 sm:h-72 sm:w-72 sm:border-[34px]"
+      />
+      <div className="relative z-10 grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold">{column.title}</p>
@@ -3970,7 +3974,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </div>
         ))}
       </div>
-      <div className="mt-8 grid gap-7 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+      <div className="relative z-10 mt-8 grid gap-7 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
           <div className="inline-flex w-[112px] flex-col items-center">
             <BrandLogo compact underline={false} />
@@ -3986,7 +3990,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           <MarketplaceSocialLinks />
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
+      <div className="relative z-10 mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
         <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
           <Link href={termsHref} className="hover:text-[#0866ff]">
