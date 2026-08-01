@@ -558,7 +558,7 @@ function CountryOptionButton({
         selected ? 'bg-[#f0f6ff] ring-1 ring-[#acd0ff]' : 'bg-white'
       }`}
     >
-      <CountryFlag code={code || 'eu'} className="h-5 w-7 shrink-0 rounded-[5px] shadow-sm ring-1 ring-black/5" />
+      <CountryFlag code={code || 'eu'} className="h-5 w-7 shrink-0 rounded-[5px] shadow-sm" />
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#101828]">
         {label}
       </span>

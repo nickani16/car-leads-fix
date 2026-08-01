@@ -4275,7 +4275,7 @@ function VehicleResultCard({
                 {sellerTypeLabel}
               </span>
               <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
                 <span className="truncate">{countryLabel}</span>
               </span>
             </div>
@@ -4287,7 +4287,7 @@ function VehicleResultCard({
             ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="hidden">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
@@ -4800,7 +4800,7 @@ function MapListingPreview({
             <Link href={href} onClick={onBeforeNavigate} className="min-w-0">
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
               <p className="mt-1 flex min-w-0 items-center gap-2 text-sm font-medium text-[#667085]">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                 <span className="truncate">{location}</span>
               </p>
             </Link>

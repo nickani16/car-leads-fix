@@ -709,7 +709,7 @@ export default async function ListingDetailPage({
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
                         <span>{sellerTypeLabel}</span>
                         <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
-                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                           {countryName || listing.country_code}
                         </span>
                       </div>
@@ -918,7 +918,7 @@ export default async function ListingDetailPage({
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-medium text-[#667085]">
                         <span>{sellerTypeLabel}</span>
                         <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[#dfe6f2] bg-[#f8faff] px-2.5 py-1 text-xs font-semibold text-[#344054]">
-                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
+                          <CountryFlag code={listing.country_code || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                           {countryName || listing.country_code}
                         </span>
                       </div>
