@@ -285,12 +285,16 @@ export function HomeSellerAudienceSection({
       <div className={homeContentContainerClass}>
         <div className="overflow-hidden rounded-[22px] border border-[#cfe0f5] bg-white shadow-[0_22px_70px_rgba(16,24,40,.07)]">
           <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
-            <div className="relative border-b border-[#e2eaf5] bg-[#f5f9ff] px-6 py-8 sm:px-10 sm:py-10 lg:border-b-0 lg:border-r">
+            <div className="relative overflow-hidden border-b border-[#e2eaf5] bg-[#f5f9ff] px-6 py-8 sm:px-10 sm:py-10 lg:border-b-0 lg:border-r">
               <div className="absolute inset-x-0 top-0 h-1 bg-[#0866ff]" />
-              <p className="text-[12px] font-semibold uppercase tracking-[.22em] text-[#0866ff]">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full border-[26px] border-[#0866ff]/10 bg-[#0866ff]/[0.025] sm:-bottom-28 sm:-left-24 sm:h-72 sm:w-72 sm:border-[34px]"
+              />
+              <p className="relative z-10 text-[12px] font-semibold uppercase tracking-[.22em] text-[#0866ff]">
                 Autorell Europe
               </p>
-              <h2 className="mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">
+              <h2 className="relative z-10 mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">
                 {copy.sellerCtaTitle}
               </h2>
             </div>
