@@ -91,6 +91,63 @@ const homeCopy = {
   },
 } as const
 
+const localizedSellerFlowCopy = {
+  at: {
+    sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
+    sellerFlowCreated: 'Fahrzeuganzeige erstellt',
+    sellerFlowViews: 'Fahrzeugaufrufe',
+    sellerFlowSold: 'Fahrzeuganzeige verkauft',
+  },
+  be: {
+    sellerCtaTitle: 'Bereik duizenden potentiële kopers met uw voertuigadvertentie.',
+    sellerFlowCreated: 'Voertuigadvertentie aangemaakt',
+    sellerFlowViews: 'voertuigweergaven',
+    sellerFlowSold: 'Voertuigadvertentie verkocht',
+  },
+  fr: {
+    sellerCtaTitle: 'Touchez des milliers d’acheteurs potentiels avec votre annonce de véhicule.',
+    sellerFlowCreated: 'Annonce de véhicule créée',
+    sellerFlowViews: 'vues de l’annonce',
+    sellerFlowSold: 'Annonce de véhicule vendue',
+  },
+  es: {
+    sellerCtaTitle: 'Llega a miles de compradores potenciales con tu anuncio de vehículo.',
+    sellerFlowCreated: 'Anuncio de vehículo creado',
+    sellerFlowViews: 'visualizaciones del anuncio',
+    sellerFlowSold: 'Anuncio de vehículo vendido',
+  },
+  it: {
+    sellerCtaTitle: 'Raggiungi migliaia di potenziali acquirenti con il tuo annuncio di veicolo.',
+    sellerFlowCreated: 'Annuncio del veicolo creato',
+    sellerFlowViews: 'visualizzazioni dell’annuncio',
+    sellerFlowSold: 'Annuncio del veicolo venduto',
+  },
+  pl: {
+    sellerCtaTitle: 'Dotrzyj do tysięcy potencjalnych kupujących dzięki ogłoszeniu pojazdu.',
+    sellerFlowCreated: 'Ogłoszenie pojazdu utworzone',
+    sellerFlowViews: 'wyświetleń ogłoszenia',
+    sellerFlowSold: 'Ogłoszenie pojazdu sprzedane',
+  },
+  nl: {
+    sellerCtaTitle: 'Bereik duizenden potentiële kopers met uw voertuigadvertentie.',
+    sellerFlowCreated: 'Voertuigadvertentie aangemaakt',
+    sellerFlowViews: 'voertuigweergaven',
+    sellerFlowSold: 'Voertuigadvertentie verkocht',
+  },
+  fi: {
+    sellerCtaTitle: 'Tavoita tuhansia potentiaalisia ostajia ajoneuvoilmoituksellasi.',
+    sellerFlowCreated: 'Ajoneuvoilmoitus luotu',
+    sellerFlowViews: 'ajoneuvon katselua',
+    sellerFlowSold: 'Ajoneuvoilmoitus myyty',
+  },
+  da: {
+    sellerCtaTitle: 'Nå tusindvis af potentielle købere med din køretøjsannonce.',
+    sellerFlowCreated: 'Køretøjsannonce oprettet',
+    sellerFlowViews: 'visninger af køretøjet',
+    sellerFlowSold: 'Køretøjsannonce solgt',
+  },
+} as const
+
 export function getHomeCopy(locale: PublicLocale) {
   return locale === 'sv'
     ? homeCopy.sv
@@ -98,7 +155,10 @@ export function getHomeCopy(locale: PublicLocale) {
       ? homeCopy.de
       : locale === 'en'
         ? homeCopy.en
-        : translatePublicObject(locale, homeCopy.en)
+        : {
+            ...translatePublicObject(locale, homeCopy.en),
+            ...(localizedSellerFlowCopy[locale as keyof typeof localizedSellerFlowCopy] || {}),
+          }
 }
 
 type HomeListingCardItem = {
