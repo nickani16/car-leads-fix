@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
+import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -35,7 +36,9 @@ const homeCopy = {
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
-    sellerCtaTitle: 'Nå över 360 miljoner människor med din fordonsannons.',
+    sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
+    sellerViewsCaption: 'Annonsvisningar',
+    sellerViewsLabel: 'visningar',
     privateTitle: 'Sälj som privatperson',
     privateText:
       'Skapa en gratis annons på några minuter. Betala bara när du vill annonsera längre eller få extra synlighet.',
@@ -52,7 +55,9 @@ const homeCopy = {
     newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
-    sellerCtaTitle: 'Reach over 360 million people with your vehicle listing.',
+    sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
+    sellerViewsCaption: 'Listing views',
+    sellerViewsLabel: 'views',
     privateTitle: 'Sell as a private seller',
     privateText:
       'Create a free listing in minutes. Pay only when you want a longer listing period or extra visibility.',
@@ -69,7 +74,9 @@ const homeCopy = {
     newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
-    sellerCtaTitle: 'Erreichen Sie über 360 Millionen Menschen mit Ihrer Fahrzeuganzeige.',
+    sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
+    sellerViewsCaption: 'Anzeigenaufrufe',
+    sellerViewsLabel: 'Aufrufe',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
       'Erstellen Sie in wenigen Minuten eine kostenlose Anzeige. Zahlen Sie nur für längere Laufzeit oder zusätzliche Sichtbarkeit.',
@@ -297,6 +304,7 @@ export function HomeSellerAudienceSection({
               <h2 className="relative z-10 mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">
                 {copy.sellerCtaTitle}
               </h2>
+              <HomeAnimatedViewsBadge caption={copy.sellerViewsCaption} label={copy.sellerViewsLabel} />
             </div>
 
             <div className="grid divide-y divide-[#e6edf7] md:grid-cols-2 md:divide-x md:divide-y-0">
