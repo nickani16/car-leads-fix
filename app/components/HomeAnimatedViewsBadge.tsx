@@ -1,33 +1,44 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Eye } from 'lucide-react'
+import { BadgeCheck, CheckCircle2, Eye } from 'lucide-react'
 
 type HomeAnimatedViewsBadgeProps = {
-  caption: string
-  label: string
-  context: string
+  createdLabel: string
+  viewsLabel: string
+  soldLabel: string
 }
 
-export default function HomeAnimatedViewsBadge({ caption, label, context }: HomeAnimatedViewsBadgeProps) {
+type FlowStep = 'created' | 'views' | 'sold'
+
+export default function HomeAnimatedViewsBadge({
+  createdLabel,
+  viewsLabel,
+  soldLabel,
+}: HomeAnimatedViewsBadgeProps) {
+  const [step, setStep] = useState<FlowStep>('created')
   const [value, setValue] = useState(1)
 
   useEffect(() => {
     let animationFrame = 0
     let timeout = 0
-    let index = 0
-    const sequence = [18, 64, 118, 206, 341, 489, 657, 926, 801, 613, 402, 174]
 
-    const animateToNext = (from: number) => {
-      const target = sequence[index % sequence.length]
-      index += 1
+    const showCreated = () => {
+      setStep('created')
+      setValue(1)
+      timeout = window.setTimeout(showViews, 1250)
+    }
+
+    const showViews = () => {
+      setStep('views')
       const startedAt = performance.now()
-      const duration = 3100
+      const duration = 2800
+      const target = 900
 
       const tick = (now: number) => {
         const progress = Math.min((now - startedAt) / duration, 1)
         const eased = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2
-        const nextValue = Math.round(from + (target - from) * eased)
+        const nextValue = Math.round(1 + (target - 1) * eased)
         setValue(nextValue)
 
         if (progress < 1) {
@@ -35,13 +46,18 @@ export default function HomeAnimatedViewsBadge({ caption, label, context }: Home
           return
         }
 
-        timeout = window.setTimeout(() => animateToNext(target), 840)
+        timeout = window.setTimeout(showSold, 450)
       }
 
       animationFrame = window.requestAnimationFrame(tick)
     }
 
-    timeout = window.setTimeout(() => animateToNext(18), 340)
+    const showSold = () => {
+      setStep('sold')
+      timeout = window.setTimeout(showCreated, 1500)
+    }
+
+    timeout = window.setTimeout(showCreated, 240)
 
     return () => {
       window.cancelAnimationFrame(animationFrame)
@@ -50,16 +66,21 @@ export default function HomeAnimatedViewsBadge({ caption, label, context }: Home
   }, [])
 
   const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
+  const Icon = step === 'created' ? CheckCircle2 : step === 'sold' ? BadgeCheck : Eye
+  const text =
+    step === 'created'
+      ? createdLabel
+      : step === 'sold'
+        ? soldLabel
+        : `${formatted} ${viewsLabel}`
 
   return (
     <div
-      className="relative z-10 flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium uppercase leading-5 tracking-[.16em] text-[#0866ff]"
-      aria-label={`${caption}: ${formatted} ${label} ${context}`}
+      className="relative z-10 inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase leading-5 tracking-[.16em] text-[#0866ff]"
+      aria-live="polite"
     >
-      <Eye className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
-      <span className="tabular-nums">{formatted}</span>
-      <span>{label}</span>
-      <span>{context}</span>
+      <Icon className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
+      <span className="min-w-0 truncate tabular-nums">{text}</span>
     </div>
   )
 }
