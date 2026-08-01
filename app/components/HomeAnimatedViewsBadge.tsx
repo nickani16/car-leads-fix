@@ -15,13 +15,13 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
     let animationFrame = 0
     let timeout = 0
     let index = 0
-    const sequence = [1, 96, 184, 327, 612, 926, 774, 485, 206, 63]
+    const sequence = [1, 82, 148, 226, 354, 517, 689, 926, 744, 566, 319, 126]
 
     const animateToNext = (from: number) => {
       const target = sequence[index % sequence.length]
       index += 1
       const startedAt = performance.now()
-      const duration = 1200
+      const duration = 2600
 
       const tick = (now: number) => {
         const progress = Math.min((now - startedAt) / duration, 1)
@@ -34,13 +34,13 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
           return
         }
 
-        timeout = window.setTimeout(() => animateToNext(target), 260)
+        timeout = window.setTimeout(() => animateToNext(target), 720)
       }
 
       animationFrame = window.requestAnimationFrame(tick)
     }
 
-    timeout = window.setTimeout(() => animateToNext(1), 180)
+    timeout = window.setTimeout(() => animateToNext(1), 260)
 
     return () => {
       window.cancelAnimationFrame(animationFrame)
@@ -51,18 +51,18 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
   const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
 
   return (
-    <div className="relative z-10 inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#c9dcff] bg-white/90 px-3 py-2 text-[#101828] shadow-[0_12px_26px_rgba(8,102,255,.09)] backdrop-blur">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#0866ff] text-white">
-        <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
+    <div className="relative z-10 inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase tracking-[.2em] text-[#0866ff]">
+      <span className="grid h-5 w-5 shrink-0 place-items-center text-[#0866ff]">
+        <Eye className="h-[16px] w-[16px] stroke-[2]" aria-hidden="true" />
       </span>
-      <span className="min-w-0">
-        <span className="block text-[10px] font-medium uppercase tracking-[.16em] text-[#0866ff]">
+      <span className="min-w-0 truncate">
+        <span>
           {caption}
         </span>
-        <span className="mt-0.5 flex min-w-0 items-center text-[18px] font-semibold leading-none tracking-[-0.01em] sm:text-[20px]">
+        <span className="ml-2 inline-flex min-w-0 items-center tracking-[.14em]">
           <span className="tabular-nums">{formatted}</span>
-          <span className="ml-1.5 truncate">{label}</span>
-          <span className="ml-1.5 h-5 w-[2px] animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
+          <span className="ml-1 truncate">{label}</span>
+          <span className="ml-1.5 h-3.5 w-px animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
         </span>
       </span>
     </div>
