@@ -4247,7 +4247,11 @@ function VehicleResultCard({
                 <span className="truncate">{insuranceLabel}</span>
               </span>
             ) : null}
-            <MetaSeparatorList items={visibleMeta} className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`} />
+            <MetaSeparatorList
+              items={visibleMeta}
+              compact={layout === 'split'}
+              className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`}
+            />
             <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName
@@ -4833,11 +4837,42 @@ function MapListingPreview({
 function MetaSeparatorList({
   items,
   className = '',
+  compact = false,
 }: {
   items: Array<string | number | null | undefined>
   className?: string
+  compact?: boolean
 }) {
   const visibleItems = items.filter((item): item is string | number => item !== null && item !== undefined && item !== '')
+
+  if (compact) {
+    return (
+      <div className={`min-w-0 ${className}`}>
+        <div className="grid min-w-0 grid-cols-2 gap-1 sm:hidden">
+          {visibleItems.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className="min-w-0 truncate rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[11px] font-medium leading-4 text-[#475467]"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+        <p className="hidden min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap sm:flex">
+          {visibleItems.map((item, index) => (
+            <span key={`${item}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
+              {index > 0 ? (
+                <span aria-hidden="true" className="shrink-0 px-0.5 font-semibold text-[#98a2b3]">
+                  |
+                </span>
+              ) : null}
+              <span className="min-w-0 truncate">{item}</span>
+            </span>
+          ))}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <p className={`flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap ${className}`}>
