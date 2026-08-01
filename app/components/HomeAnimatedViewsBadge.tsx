@@ -12,41 +12,57 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
   const [value, setValue] = useState(1)
 
   useEffect(() => {
-    let frame = 0
     let animationFrame = 0
-    const totalFrames = 64
-    const target = 926
+    let timeout = 0
+    let index = 0
+    const sequence = [1, 96, 184, 327, 612, 926, 774, 485, 206, 63]
 
-    const tick = () => {
-      frame += 1
-      const progress = Math.min(frame / totalFrames, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setValue(Math.round(1 + (target - 1) * eased))
+    const animateToNext = (from: number) => {
+      const target = sequence[index % sequence.length]
+      index += 1
+      const startedAt = performance.now()
+      const duration = 1200
 
-      if (frame < totalFrames) {
-        animationFrame = window.requestAnimationFrame(tick)
+      const tick = (now: number) => {
+        const progress = Math.min((now - startedAt) / duration, 1)
+        const eased = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2
+        const nextValue = Math.round(from + (target - from) * eased)
+        setValue(nextValue)
+
+        if (progress < 1) {
+          animationFrame = window.requestAnimationFrame(tick)
+          return
+        }
+
+        timeout = window.setTimeout(() => animateToNext(target), 260)
       }
+
+      animationFrame = window.requestAnimationFrame(tick)
     }
 
-    animationFrame = window.requestAnimationFrame(tick)
-    return () => window.cancelAnimationFrame(animationFrame)
+    timeout = window.setTimeout(() => animateToNext(1), 180)
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(timeout)
+    }
   }, [])
 
   const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
 
   return (
-    <div className="relative z-10 mt-7 inline-flex max-w-full items-center gap-3 rounded-full border border-[#c9dcff] bg-white/90 px-3.5 py-3 text-[#101828] shadow-[0_14px_34px_rgba(8,102,255,.11)] backdrop-blur">
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0866ff] text-white">
-        <Eye className="h-5 w-5" aria-hidden="true" />
+    <div className="relative z-10 inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#c9dcff] bg-white/90 px-3 py-2 text-[#101828] shadow-[0_12px_26px_rgba(8,102,255,.09)] backdrop-blur">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#0866ff] text-white">
+        <Eye className="h-[18px] w-[18px]" aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block text-[10px] font-medium uppercase tracking-[.18em] text-[#0866ff]">
+        <span className="block text-[10px] font-medium uppercase tracking-[.16em] text-[#0866ff]">
           {caption}
         </span>
-        <span className="mt-0.5 flex min-w-0 items-center text-[22px] font-semibold leading-none tracking-[-0.02em] sm:text-[25px]">
+        <span className="mt-0.5 flex min-w-0 items-center text-[18px] font-semibold leading-none tracking-[-0.01em] sm:text-[20px]">
           <span className="tabular-nums">{formatted}</span>
           <span className="ml-1.5 truncate">{label}</span>
-          <span className="ml-1.5 h-6 w-[2px] animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
+          <span className="ml-1.5 h-5 w-[2px] animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
         </span>
       </span>
     </div>
