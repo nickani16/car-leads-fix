@@ -315,11 +315,7 @@ export default function PublicFooter({
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
-      <div className="relative mx-auto max-w-[390px] overflow-hidden bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-24 -right-20 h-56 w-56 rounded-full border-[26px] border-[#0866ff]/10 bg-[#0866ff]/[0.025] sm:-bottom-28 sm:-right-24 sm:h-72 sm:w-72 sm:border-[34px]"
-        />
+      <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-4 lg:gap-x-12">
           {t.columns.map((column) => (
             <FooterColumn
