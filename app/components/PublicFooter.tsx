@@ -605,7 +605,7 @@ function SocialLinks() {
   ] as const
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-3">
       {links.map(([label, href, path]) => (
         <a
           key={label}
@@ -613,12 +613,12 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-8 w-8 place-items-center text-[#101828] transition hover:-translate-y-0.5 hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="grid h-11 w-11 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-[22px] w-[22px] fill-current"
+            className="h-5 w-5 fill-current"
           >
             <path d={path} />
           </svg>
