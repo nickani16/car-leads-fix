@@ -39,6 +39,7 @@ const homeCopy = {
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
     sellerViewsCaption: 'Aktivt intresse',
     sellerViewsLabel: 'visningar',
+    sellerViewsContext: 'just nu',
     privateTitle: 'Sälj som privatperson',
     privateText:
       'Skapa en gratis annons på några minuter. Betala bara när du vill annonsera längre eller få extra synlighet.',
@@ -58,6 +59,7 @@ const homeCopy = {
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
     sellerViewsCaption: 'Active interest',
     sellerViewsLabel: 'views',
+    sellerViewsContext: 'right now',
     privateTitle: 'Sell as a private seller',
     privateText:
       'Create a free listing in minutes. Pay only when you want a longer listing period or extra visibility.',
@@ -77,6 +79,7 @@ const homeCopy = {
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
     sellerViewsCaption: 'Aktives Interesse',
     sellerViewsLabel: 'Aufrufe',
+    sellerViewsContext: 'gerade',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
       'Erstellen Sie in wenigen Minuten eine kostenlose Anzeige. Zahlen Sie nur für längere Laufzeit oder zusätzliche Sichtbarkeit.',
@@ -298,7 +301,11 @@ export function HomeSellerAudienceSection({
                 aria-hidden="true"
                 className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full border-[26px] border-[#0866ff]/10 bg-[#0866ff]/[0.025] sm:-bottom-28 sm:-left-24 sm:h-72 sm:w-72 sm:border-[34px]"
               />
-              <HomeAnimatedViewsBadge caption={copy.sellerViewsCaption} label={copy.sellerViewsLabel} />
+              <HomeAnimatedViewsBadge
+                caption={copy.sellerViewsCaption}
+                label={copy.sellerViewsLabel}
+                context={copy.sellerViewsContext}
+              />
               <h2 className="relative z-10 mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">
                 {copy.sellerCtaTitle}
               </h2>
