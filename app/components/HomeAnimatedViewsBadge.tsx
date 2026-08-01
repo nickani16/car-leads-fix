@@ -157,7 +157,7 @@ export default function HomeAnimatedViewsBadge({
       className="relative z-10 inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase leading-5 tracking-[.1em] text-[#0866ff] sm:tracking-[.14em]"
       aria-live="polite"
     >
-      <span className="flex h-5 shrink-0 translate-y-[2px] items-center" aria-hidden="true">
+      <span className="flex h-5 shrink-0 translate-y-px items-center" aria-hidden="true">
         <Icon className="h-4 w-4 stroke-[2]" />
       </span>
       <span className="min-w-0 break-words leading-5">
