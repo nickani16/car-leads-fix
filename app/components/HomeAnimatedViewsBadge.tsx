@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, CheckCircle2, Eye } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CircleDollarSign, Eye, FileCheck2 } from 'lucide-react'
 
 type HomeAnimatedViewsBadgeProps = {
   createdLabel: string
@@ -11,26 +11,53 @@ type HomeAnimatedViewsBadgeProps = {
 
 type FlowStep = 'created' | 'views' | 'sold'
 
-const TYPE_SPEED_MS = 46
-const ERASE_SPEED_MS = 18
+const TYPE_SPEED_MS = 72
+const ERASE_SPEED_MS = 28
 
 export default function HomeAnimatedViewsBadge({
   createdLabel,
   viewsLabel,
   soldLabel,
 }: HomeAnimatedViewsBadgeProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const [isInView, setIsInView] = useState(false)
   const [step, setStep] = useState<FlowStep>('created')
   const [value, setValue] = useState(1)
   const [typedText, setTypedText] = useState('')
 
   useEffect(() => {
+    const element = rootRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting)
+      },
+      {
+        rootMargin: '0px 0px -12% 0px',
+        threshold: 0.28,
+      },
+    )
+
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isInView) return
+
     let animationFrame = 0
-    let timeout = 0
     let cancelled = false
+    const timeouts = new Set<number>()
 
     const wait = (duration: number) =>
       new Promise<void>((resolve) => {
-        timeout = window.setTimeout(resolve, duration)
+        const timeout = window.setTimeout(() => {
+          timeouts.delete(timeout)
+          resolve()
+        }, duration)
+        timeouts.add(timeout)
       })
 
     const typeText = async (text: string) => {
@@ -53,7 +80,7 @@ export default function HomeAnimatedViewsBadge({
     const countViews = () =>
       new Promise<void>((resolve) => {
         const startedAt = performance.now()
-        const duration = 2600
+        const duration = 4200
         const target = 900
 
         const tick = (now: number) => {
@@ -80,19 +107,19 @@ export default function HomeAnimatedViewsBadge({
         setStep('created')
         setValue(1)
         await typeText(createdLabel)
-        await wait(900)
+        await wait(1250)
         await eraseText(createdLabel)
 
         setStep('views')
         setValue(1)
         await typeText(viewsLabel)
         await countViews()
-        await wait(900)
+        await wait(1250)
         await eraseText(viewsLabel)
 
         setStep('sold')
         await typeText(soldLabel)
-        await wait(1100)
+        await wait(1500)
         await eraseText(soldLabel)
       }
     }
@@ -102,15 +129,17 @@ export default function HomeAnimatedViewsBadge({
     return () => {
       cancelled = true
       window.cancelAnimationFrame(animationFrame)
-      window.clearTimeout(timeout)
+      timeouts.forEach((timeout) => window.clearTimeout(timeout))
+      timeouts.clear()
     }
-  }, [createdLabel, soldLabel, viewsLabel])
+  }, [createdLabel, isInView, soldLabel, viewsLabel])
 
-  const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
-  const Icon = step === 'created' ? CheckCircle2 : step === 'sold' ? BadgeCheck : Eye
+  const formatted = useMemo(() => new Intl.NumberFormat(undefined).format(value), [value])
+  const Icon = step === 'created' ? FileCheck2 : step === 'sold' ? CircleDollarSign : Eye
 
   return (
     <div
+      ref={rootRef}
       className="relative z-10 inline-flex max-w-full items-start gap-2 text-[12px] font-medium uppercase leading-5 tracking-[.1em] text-[#0866ff] sm:tracking-[.14em]"
       aria-live="polite"
     >
