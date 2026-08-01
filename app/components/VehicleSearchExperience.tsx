@@ -979,7 +979,7 @@ export default function VehicleSearchExperience({
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
-  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -1032,6 +1032,12 @@ export default function VehicleSearchExperience({
   const [searchError, setSearchError] = useState(false)
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      setResultsLayout('split')
+    }
+  }, [])
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,

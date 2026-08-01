@@ -472,6 +472,9 @@ function HomeListingCard({
             title={item.title}
             href={item.href}
             sizes="(max-width: 640px) 76vw, (max-width: 1024px) 50vw, 25vw"
+            showControlsOnMobile
+            showDotsOnMobile={false}
+            enableTouchSwipe={false}
             previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
             nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
           />

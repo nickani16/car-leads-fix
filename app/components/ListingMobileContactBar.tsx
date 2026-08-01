@@ -86,9 +86,21 @@ export default function ListingMobileContactBar({
     return `${prefix}/account/messages${conversationId ? `?conversation=${conversationId}` : ''}`
   }
 
+  function openAuth(destination?: string) {
+    window.dispatchEvent(
+      new CustomEvent('autorell:open-auth', {
+        detail: { mode: 'login', destination },
+      }),
+    )
+  }
+
   async function revealPhone() {
     if (phone) {
       window.location.href = `tel:${phone.replace(/[^\d+]/g, '')}`
+      return
+    }
+    if (phoneError === 'login') {
+      openAuth(window.location.pathname + window.location.search)
       return
     }
     setLoadingPhone(true)
@@ -98,7 +110,9 @@ export default function ListingMobileContactBar({
     setLoadingPhone(false)
 
     if (!response.ok || !data?.phone) {
-      setPhoneError(response.status === 401 || data?.code === 'login_required' ? 'login' : 'unavailable')
+      const requiresLogin = response.status === 401 || data?.code === 'login_required'
+      setPhoneError(requiresLogin ? 'login' : 'unavailable')
+      if (requiresLogin) openAuth(window.location.pathname + window.location.search)
       return
     }
 
@@ -115,11 +129,7 @@ export default function ListingMobileContactBar({
     })
     const result = (await response.json().catch(() => null)) as { id?: string } | null
     if (response.status === 401) {
-      window.dispatchEvent(
-        new CustomEvent('autorell:open-auth', {
-          detail: { mode: 'login', destination: accountMessagesHref() },
-        }),
-      )
+      openAuth(accountMessagesHref())
       setMessageLoading(false)
       return
     }
