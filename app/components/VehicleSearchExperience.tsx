@@ -2808,7 +2808,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid sm:grid-cols-2' : ''}>
+                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}>
                   {filteredListings.map((listing) => (
                     <VehicleResultCard
                       key={listing.id}
