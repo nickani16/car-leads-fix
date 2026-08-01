@@ -52,26 +52,14 @@ export default function HomeAnimatedViewsBadge({ caption, label, context }: Home
   const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
 
   return (
-    <div className="relative z-10 max-w-[320px]">
-      <div className="inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase tracking-[.2em] text-[#0866ff]">
-        <span className="relative grid h-6 w-6 shrink-0 place-items-center">
-          <span className="absolute inset-0 rounded-full bg-[#0866ff]/10" aria-hidden="true" />
-          <span className="absolute inset-0 rounded-full bg-[#0866ff]/10 [animation:pulse_2.9s_ease-in-out_infinite]" aria-hidden="true" />
-          <span className="relative grid h-5 w-5 place-items-center rounded-full bg-white text-[#0866ff] shadow-[0_4px_12px_rgba(8,102,255,.14)]">
-            <Eye className="h-[14px] w-[14px] stroke-[2]" aria-hidden="true" />
-          </span>
-          <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-[#12b76a] shadow-[0_0_0_3px_rgba(18,183,106,.14)]" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 truncate">{caption}</span>
-      </div>
-      <div className="mt-2 flex max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[15px] font-medium leading-[1.25] tracking-normal text-[#475467]">
-        <span className="text-[18px] font-semibold tabular-nums tracking-[-0.01em] text-[#0866ff] transition-colors duration-300">
-          {formatted}
-        </span>
-        <span>{label}</span>
-        <span className="text-[#667085]">{context}</span>
-        <span className="h-4 w-px animate-pulse rounded-full bg-[#0866ff]/70" aria-hidden="true" />
-      </div>
+    <div
+      className="relative z-10 flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium uppercase leading-5 tracking-[.16em] text-[#0866ff]"
+      aria-label={`${caption}: ${formatted} ${label} ${context}`}
+    >
+      <Eye className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
+      <span className="tabular-nums">{formatted}</span>
+      <span>{label}</span>
+      <span>{context}</span>
     </div>
   )
 }
