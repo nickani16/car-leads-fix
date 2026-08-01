@@ -377,6 +377,8 @@ function getMarketplaceSeoCopy(
     it: allVehicles ? 'Veicoli' : label,
     pl: allVehicles ? 'Pojazdy' : label,
     nl: allVehicles ? 'Voertuigen' : label,
+    at: allVehicles ? 'Fahrzeuge' : label,
+    be: allVehicles ? 'Voertuigen' : label,
     da: allVehicles ? 'Køretøjer' : label,
     fi: allVehicles ? 'Ajoneuvot' : label,
   } as Partial<Record<PublicLocale, string>>
@@ -435,6 +437,14 @@ function getGeoMarketplaceSeoCopy(
       title: `${subject} te koop in ${place} | Autorell`,
       description: `Zoek ${lowerSubject} te koop in ${place}. Vergelijk advertenties van particuliere en zakelijke verkopers op Autorell.`,
     },
+    at: {
+      title: `${subject} kaufen in ${place} | Autorell`,
+      description: `${subject} in ${place} suchen und vergleichen. Finden Sie Angebote von privaten und gewerblichen Verk\u00e4ufern auf Autorell.`,
+    },
+    be: {
+      title: `${subject} te koop in ${place} | Autorell`,
+      description: `Zoek ${lowerSubject} te koop in ${place}. Vergelijk advertenties van particuliere en zakelijke verkopers op Autorell.`,
+    },
     da: {
       title: `${subject} til salg i ${place} | Autorell`,
       description: `S\u00f8g ${lowerSubject} til salg i ${place}. Sammenlign annoncer fra private og virksomheder p\u00e5 Autorell.`,
@@ -464,6 +474,8 @@ function getLocalizedVehicleName(locale: PublicLocale) {
     it: 'Veicoli',
     pl: 'Pojazdy',
     nl: 'Voertuigen',
+    at: 'Fahrzeuge',
+    be: 'Voertuigen',
     da: 'K\u00f8ret\u00f8jer',
     fi: 'Ajoneuvot',
     en: 'Vehicles',
@@ -520,6 +532,18 @@ function getMarketplaceSeoTemplates(
       description: `Szukaj ${lowerLabel} na sprzedaż. Porównuj nowe i używane ogłoszenia prywatne i firmowe w Autorell.`,
     },
     nl: {
+      baseTitle: `${name} te koop | Nieuw en gebruikt | Autorell`,
+      newTitle: `Nieuwe ${lowerName} te koop | Autorell`,
+      usedTitle: `Gebruikte ${lowerName} te koop | Autorell`,
+      description: `Zoek ${lowerLabel} te koop. Vergelijk nieuwe en gebruikte advertenties van particuliere en zakelijke verkopers.`,
+    },
+    at: {
+      baseTitle: `${name} kaufen | Neu und gebraucht | Autorell`,
+      newTitle: `Neue ${lowerName} kaufen | Autorell`,
+      usedTitle: `Gebrauchte ${lowerName} kaufen | Autorell`,
+      description: `${name} suchen und vergleichen. Finden Sie neue und gebrauchte Angebote von privaten und gewerblichen Verk\u00e4ufern.`,
+    },
+    be: {
       baseTitle: `${name} te koop | Nieuw en gebruikt | Autorell`,
       newTitle: `Nieuwe ${lowerName} te koop | Autorell`,
       usedTitle: `Gebruikte ${lowerName} te koop | Autorell`,
