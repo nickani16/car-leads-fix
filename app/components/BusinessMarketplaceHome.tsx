@@ -39,6 +39,7 @@ const homeCopy = {
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
     sellerFlowCreated: 'Fordonsannons skapad',
     sellerFlowViews: 'fordonsvisningar',
+    sellerFlowContact: 'Köpare tar kontakt',
     sellerFlowSold: 'Fordonsannons såld',
     privateTitle: 'Sälj som privatperson',
     privateText:
@@ -59,6 +60,7 @@ const homeCopy = {
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
     sellerFlowCreated: 'Vehicle listing created',
     sellerFlowViews: 'vehicle views',
+    sellerFlowContact: 'Buyer makes contact',
     sellerFlowSold: 'Vehicle listing sold',
     privateTitle: 'Sell as a private seller',
     privateText:
@@ -79,6 +81,7 @@ const homeCopy = {
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
     sellerFlowCreated: 'Fahrzeuganzeige erstellt',
     sellerFlowViews: 'Fahrzeugaufrufe',
+    sellerFlowContact: 'Käufer nimmt Kontakt auf',
     sellerFlowSold: 'Fahrzeuganzeige verkauft',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
@@ -96,54 +99,63 @@ const localizedSellerFlowCopy = {
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
     sellerFlowCreated: 'Fahrzeuganzeige erstellt',
     sellerFlowViews: 'Fahrzeugaufrufe',
+    sellerFlowContact: 'Käufer nimmt Kontakt auf',
     sellerFlowSold: 'Fahrzeuganzeige verkauft',
   },
   be: {
     sellerCtaTitle: 'Bereik duizenden potentiële kopers met uw voertuigadvertentie.',
     sellerFlowCreated: 'Voertuigadvertentie aangemaakt',
     sellerFlowViews: 'voertuigweergaven',
+    sellerFlowContact: 'Koper neemt contact op',
     sellerFlowSold: 'Voertuigadvertentie verkocht',
   },
   fr: {
     sellerCtaTitle: 'Touchez des milliers d’acheteurs potentiels avec votre annonce de véhicule.',
     sellerFlowCreated: 'Annonce de véhicule créée',
     sellerFlowViews: 'vues de l’annonce',
+    sellerFlowContact: 'Acheteur prend contact',
     sellerFlowSold: 'Annonce de véhicule vendue',
   },
   es: {
     sellerCtaTitle: 'Llega a miles de compradores potenciales con tu anuncio de vehículo.',
     sellerFlowCreated: 'Anuncio de vehículo creado',
     sellerFlowViews: 'visualizaciones del anuncio',
+    sellerFlowContact: 'Comprador contacta',
     sellerFlowSold: 'Anuncio de vehículo vendido',
   },
   it: {
     sellerCtaTitle: 'Raggiungi migliaia di potenziali acquirenti con il tuo annuncio di veicolo.',
     sellerFlowCreated: 'Annuncio del veicolo creato',
     sellerFlowViews: 'visualizzazioni dell’annuncio',
+    sellerFlowContact: 'Acquirente contatta',
     sellerFlowSold: 'Annuncio del veicolo venduto',
   },
   pl: {
     sellerCtaTitle: 'Dotrzyj do tysięcy potencjalnych kupujących dzięki ogłoszeniu pojazdu.',
     sellerFlowCreated: 'Ogłoszenie pojazdu utworzone',
     sellerFlowViews: 'wyświetleń ogłoszenia',
+    sellerFlowContact: 'Kupujący nawiązuje kontakt',
     sellerFlowSold: 'Ogłoszenie pojazdu sprzedane',
   },
   nl: {
     sellerCtaTitle: 'Bereik duizenden potentiële kopers met uw voertuigadvertentie.',
     sellerFlowCreated: 'Voertuigadvertentie aangemaakt',
     sellerFlowViews: 'voertuigweergaven',
+    sellerFlowContact: 'Koper neemt contact op',
     sellerFlowSold: 'Voertuigadvertentie verkocht',
   },
   fi: {
     sellerCtaTitle: 'Tavoita tuhansia potentiaalisia ostajia ajoneuvoilmoituksellasi.',
     sellerFlowCreated: 'Ajoneuvoilmoitus luotu',
     sellerFlowViews: 'ajoneuvon katselua',
+    sellerFlowContact: 'Ostaja ottaa yhteyttä',
     sellerFlowSold: 'Ajoneuvoilmoitus myyty',
   },
   da: {
     sellerCtaTitle: 'Nå tusindvis af potentielle købere med din køretøjsannonce.',
     sellerFlowCreated: 'Køretøjsannonce oprettet',
     sellerFlowViews: 'visninger af køretøjet',
+    sellerFlowContact: 'Køber tager kontakt',
     sellerFlowSold: 'Køretøjsannonce solgt',
   },
 } as const
@@ -364,6 +376,7 @@ export function HomeSellerAudienceSection({
               <HomeAnimatedViewsBadge
                 createdLabel={copy.sellerFlowCreated}
                 viewsLabel={copy.sellerFlowViews}
+                contactLabel={copy.sellerFlowContact}
                 soldLabel={copy.sellerFlowSold}
               />
               <h2 className="relative z-10 mt-4 max-w-[620px] text-[30px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#101828] sm:text-[44px] lg:text-[48px]">

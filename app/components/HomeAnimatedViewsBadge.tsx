@@ -1,15 +1,16 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CircleDollarSign, Eye, FileCheck2 } from 'lucide-react'
+import { CircleDollarSign, Eye, FileCheck2, MessageCircle } from 'lucide-react'
 
 type HomeAnimatedViewsBadgeProps = {
   createdLabel: string
   viewsLabel: string
+  contactLabel: string
   soldLabel: string
 }
 
-type FlowStep = 'created' | 'views' | 'sold'
+type FlowStep = 'created' | 'views' | 'contact' | 'sold'
 
 const TYPE_SPEED_MS = 72
 const ERASE_SPEED_MS = 28
@@ -17,6 +18,7 @@ const ERASE_SPEED_MS = 28
 export default function HomeAnimatedViewsBadge({
   createdLabel,
   viewsLabel,
+  contactLabel,
   soldLabel,
 }: HomeAnimatedViewsBadgeProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -117,6 +119,11 @@ export default function HomeAnimatedViewsBadge({
         await wait(1250)
         await eraseText(viewsLabel)
 
+        setStep('contact')
+        await typeText(contactLabel)
+        await wait(1350)
+        await eraseText(contactLabel)
+
         setStep('sold')
         await typeText(soldLabel)
         await wait(1500)
@@ -132,19 +139,26 @@ export default function HomeAnimatedViewsBadge({
       timeouts.forEach((timeout) => window.clearTimeout(timeout))
       timeouts.clear()
     }
-  }, [createdLabel, isInView, soldLabel, viewsLabel])
+  }, [contactLabel, createdLabel, isInView, soldLabel, viewsLabel])
 
   const formatted = useMemo(() => new Intl.NumberFormat(undefined).format(value), [value])
-  const Icon = step === 'created' ? FileCheck2 : step === 'sold' ? CircleDollarSign : Eye
+  const Icon =
+    step === 'created'
+      ? FileCheck2
+      : step === 'contact'
+        ? MessageCircle
+        : step === 'sold'
+          ? CircleDollarSign
+          : Eye
 
   return (
     <div
       ref={rootRef}
-      className="relative z-10 inline-flex max-w-full items-start gap-2 text-[12px] font-medium uppercase leading-5 tracking-[.1em] text-[#0866ff] sm:tracking-[.14em]"
+      className="relative z-10 inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase leading-5 tracking-[.1em] text-[#0866ff] sm:tracking-[.14em]"
       aria-live="polite"
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
-      <span className="min-w-0 break-words">
+      <Icon className="h-4 w-4 shrink-0 stroke-[2]" aria-hidden="true" />
+      <span className="min-w-0 break-words leading-5">
         {step === 'views' ? <span className="tabular-nums">{formatted} </span> : null}
         <span>{typedText}</span>
         <span className="ml-1 inline-block h-4 w-px translate-y-0.5 animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
