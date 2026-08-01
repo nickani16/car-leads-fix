@@ -2192,7 +2192,7 @@ function LeaseOfferFields({
           ['leaseMaintenanceIncluded', 'Underhåll ingår'],
           ['leaseRepairsIncluded', 'Reparationer ingår'],
           ...(!isMachine ? [['leaseTyresIncluded', 'Däck ingår']] : []),
-          ['leaseDeliveryIncluded', 'Leverans ingÃ¥r'],
+          ['leaseDeliveryIncluded', 'Leverans ingår'],
           ...(!isMachine ? [['leasePrivate', 'Privatleasing']] : []),
           ['leaseOperational', 'Operationell leasing'],
           ['leaseFinancial', 'Finansiell leasing'],

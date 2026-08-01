@@ -212,7 +212,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Business subscription requires a business account.' }, { status: 403 })
   }
   if (billingMethod === 'invoice' && product.kind !== 'subscription') {
-    return NextResponse.json({ error: 'Faktura kan bara anvÃ¤ndas fÃ¶r fÃ¶retagsabonnemang.' }, { status: 400 })
+    return NextResponse.json({ error: 'Faktura kan bara användas för företagsabonnemang.' }, { status: 400 })
   }
 
   const price = await resolveBillingPrice(product, market)

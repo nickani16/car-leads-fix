@@ -53,7 +53,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { formatMileageAsMil } from '@/lib/listing-display'
 import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locations'
-import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, repairMojibakeText, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
@@ -419,9 +419,9 @@ const categoryEnglishLabels: Record<string, string> = {
 }
 
 function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
-  if (locale === 'sv') return sv
-  if (locale === 'de') return de || en
-  return locale === 'en' ? en : translatePublic(locale, en)
+  if (locale === 'sv') return repairMojibakeText(sv)
+  if (locale === 'de') return repairMojibakeText(de || en)
+  return locale === 'en' ? repairMojibakeText(en) : translatePublic(locale, en)
 }
 
 function priceFilterValue(listing: VehicleSearchListing) {
@@ -2421,7 +2421,7 @@ export default function VehicleSearchExperience({
                     )
                   }) : (
                     <p className="px-3 py-2 text-sm text-[#667085]">
-                      {uiText(locale, 'No body types available', 'Inga karosstyper tillgÃ¤ngliga', 'Keine Karosseriearten verfÃ¼gbar')}
+                      {uiText(locale, 'No body types available', 'Inga karosstyper tillgängliga', 'Keine Karosseriearten verfügbar')}
                     </p>
                   )}
                 </div>
@@ -2434,7 +2434,7 @@ export default function VehicleSearchExperience({
                     }}
                     className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                   >
-                    {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie lÃ¶schen')}
+                    {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie löschen')}
                   </button>
                 ) : null}
               </div>
@@ -4746,7 +4746,7 @@ function MapListingPreview({
               <button
                 type="button"
                 onClick={onPrevious}
-                aria-label={uiText(locale, 'Previous listing', 'FÃ¶regÃ¥ende annons', 'Vorherige Anzeige')}
+                aria-label={uiText(locale, 'Previous listing', 'Föregående annons', 'Vorherige Anzeige')}
                 className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -4755,7 +4755,7 @@ function MapListingPreview({
               <button
                 type="button"
                 onClick={onNext}
-                aria-label={uiText(locale, 'Next listing', 'NÃ¤sta annons', 'NÃ¤chste Anzeige')}
+                aria-label={uiText(locale, 'Next listing', 'Nästa annons', 'Nächste Anzeige')}
                 className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
               >
                 <ChevronRight className="h-4 w-4" />

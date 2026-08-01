@@ -57,11 +57,24 @@ export function isPublicLanguage(value: string): value is PublicLanguage {
 }
 
 export function translatePublic(locale: PublicLocale, value: string) {
-  if (locale === 'en') return value
-  const manual = manualPublicTranslation(translationLocale(locale), value)
-  if (manual) return manual
+  const cleanValue = repairMojibakeText(value)
+  if (locale === 'en') return cleanValue
+  const manual = manualPublicTranslation(translationLocale(locale), cleanValue) || manualPublicTranslation(translationLocale(locale), value)
+  if (manual) return repairMojibakeText(manual)
   const dictionary = (translations as Record<string, Record<string, string> | undefined>)[translationLocale(locale)]
-  return dictionary?.[value] || value
+  return repairMojibakeText(dictionary?.[cleanValue] || dictionary?.[value] || cleanValue)
+}
+
+export function repairMojibakeText(value: string) {
+  let result = value
+  for (let index = 0; index < 3 && /Ã|Â|â/.test(result); index += 1) {
+    try {
+      result = decodeURIComponent(escape(result))
+    } catch {
+      break
+    }
+  }
+  return result
 }
 
 export function translatePublicObject<T>(

@@ -1,3 +1,5 @@
+import { repairMojibakeText } from './public-i18n'
+
 const translations: Record<string, string> = {
   // Swedish body types
   Kombi: 'Estate / Wagon',
@@ -210,9 +212,18 @@ const translations: Record<string, string> = {
   Unsicher: 'Not sure',
 }
 
+const repairedTranslations: Record<string, string> = Object.fromEntries(
+  Object.entries(translations).map(([key, translation]) => [
+    repairMojibakeText(key),
+    translation,
+  ]),
+)
+
 export function vehicleValueInEnglish(value?: string | null) {
   if (!value) return undefined
-  return translations[value.trim()] || value.trim()
+  const trimmed = value.trim()
+  const repaired = repairMojibakeText(trimmed)
+  return translations[trimmed] || translations[repaired] || repairedTranslations[repaired] || repaired
 }
 
 export function canonicalVehicleValue(value?: string | null) {

@@ -296,7 +296,7 @@ function subcategoryKey(value: unknown) {
   if (
     text.includes('excav') ||
     text.includes('grävmaskin') ||
-    text.includes('grÃ¤vmaskin') ||
+    text.includes('grävmaskin') ||
     text.includes('bagger') ||
     text.includes('pelle')
   ) return 'excavator'
