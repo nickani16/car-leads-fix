@@ -25,6 +25,8 @@ import { localizePublicHref, translatePublicObject, translationLocale, type Publ
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountBreadcrumbs'
+import AccountLogoutButton from '@/app/konto/AccountLogoutButton'
+import { getAccountCopy } from '@/lib/account-i18n'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -335,6 +337,7 @@ export function CompanyPortalShell({
   children: React.ReactNode
 }) {
   const copy = getCompanyPortalCopy(context.locale)
+  const accountCopy = getAccountCopy(context.locale)
   const plan = String(context.subscription?.plan_key || 'free').toLowerCase()
   const currentCrumb = companyBreadcrumbKey[active]
   const breadcrumbItems =
@@ -378,6 +381,13 @@ export function CompanyPortalShell({
                 )
               })}
             </nav>
+            <div className="mt-3 border-t border-[#e4eaf3] pt-3">
+              <AccountLogoutButton
+                homeHref={localizePublicHref(context.locale, '/')}
+                label={accountCopy.signOut}
+                className="w-full justify-start"
+              />
+            </div>
           </div>
         </aside>
 

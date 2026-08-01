@@ -6,9 +6,11 @@ import { createClient } from '@/lib/supabase/client'
 export default function AccountLogoutButton({
   homeHref = '/',
   label = 'Log out',
+  className = '',
 }: {
   homeHref?: string
   label?: string
+  className?: string
 }) {
   async function signOut() {
     await createClient().auth.signOut()
@@ -38,7 +40,7 @@ export default function AccountLogoutButton({
       type="button"
       onClick={signOut}
       aria-label={label || 'Logga ut'}
-      className="inline-flex min-h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-semibold text-[#475467] hover:bg-[#fff1f1] hover:text-[#b42318]"
+      className={`inline-flex min-h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-semibold text-[#475467] hover:bg-[#fff1f1] hover:text-[#b42318] ${className}`}
     >
       <LogOut className="h-4 w-4" />
       {label}
