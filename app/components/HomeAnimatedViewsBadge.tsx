@@ -163,7 +163,7 @@ export default function HomeAnimatedViewsBadge({
       <span className="min-w-0 break-words leading-5">
         {step === 'views' ? <span className="tabular-nums">{formatted} </span> : null}
         <span>{typedText}</span>
-        <span className="ml-1 inline-block h-4 w-px translate-y-0.5 animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
+        <span className="hero-typing-caret ml-1 inline-block h-4 w-px translate-y-0.5 rounded-full bg-[#0866ff]" aria-hidden="true" />
       </span>
     </div>
   )
