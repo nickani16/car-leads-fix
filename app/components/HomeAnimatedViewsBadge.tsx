@@ -15,13 +15,13 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
     let animationFrame = 0
     let timeout = 0
     let index = 0
-    const sequence = [1, 82, 148, 226, 354, 517, 689, 926, 744, 566, 319, 126]
+    const sequence = [18, 64, 118, 206, 341, 489, 657, 926, 801, 613, 402, 174]
 
     const animateToNext = (from: number) => {
       const target = sequence[index % sequence.length]
       index += 1
       const startedAt = performance.now()
-      const duration = 2600
+      const duration = 3100
 
       const tick = (now: number) => {
         const progress = Math.min((now - startedAt) / duration, 1)
@@ -34,13 +34,13 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
           return
         }
 
-        timeout = window.setTimeout(() => animateToNext(target), 720)
+        timeout = window.setTimeout(() => animateToNext(target), 840)
       }
 
       animationFrame = window.requestAnimationFrame(tick)
     }
 
-    timeout = window.setTimeout(() => animateToNext(1), 260)
+    timeout = window.setTimeout(() => animateToNext(18), 340)
 
     return () => {
       window.cancelAnimationFrame(animationFrame)
@@ -51,18 +51,22 @@ export default function HomeAnimatedViewsBadge({ caption, label }: HomeAnimatedV
   const formatted = useMemo(() => new Intl.NumberFormat('sv-SE').format(value), [value])
 
   return (
-    <div className="relative z-10 inline-flex max-w-full items-center gap-2 text-[12px] font-medium uppercase tracking-[.2em] text-[#0866ff]">
-      <span className="grid h-5 w-5 shrink-0 place-items-center text-[#0866ff]">
-        <Eye className="h-[16px] w-[16px] stroke-[2]" aria-hidden="true" />
+    <div className="relative z-10 inline-flex max-w-full items-center gap-2.5 text-[12px] font-medium uppercase tracking-[.2em] text-[#0866ff]">
+      <span className="relative grid h-6 w-6 shrink-0 place-items-center">
+        <span className="absolute inset-0 rounded-full bg-[#0866ff]/10" aria-hidden="true" />
+        <span className="absolute inset-0 rounded-full border border-[#0866ff]/25 opacity-70 [animation:pulse_2.8s_ease-in-out_infinite]" aria-hidden="true" />
+        <span className="relative grid h-5 w-5 place-items-center rounded-full bg-white text-[#0866ff] shadow-[0_4px_14px_rgba(8,102,255,.16)]">
+          <Eye className="h-[14px] w-[14px] stroke-[2]" aria-hidden="true" />
+        </span>
       </span>
-      <span className="min-w-0 truncate">
-        <span>
+      <span className="min-w-0 truncate leading-none">
+        <span className="align-middle">
           {caption}
         </span>
-        <span className="ml-2 inline-flex min-w-0 items-center tracking-[.14em]">
-          <span className="tabular-nums">{formatted}</span>
+        <span className="ml-2 inline-flex min-w-0 items-center rounded-full bg-[#0866ff]/[0.055] px-2 py-1 tracking-[.12em]">
+          <span className="tabular-nums transition-colors duration-300">{formatted}</span>
           <span className="ml-1 truncate">{label}</span>
-          <span className="ml-1.5 h-3.5 w-px animate-pulse rounded-full bg-[#0866ff]" aria-hidden="true" />
+          <span className="ml-1.5 h-3 w-px animate-pulse rounded-full bg-[#0866ff]/80" aria-hidden="true" />
         </span>
       </span>
     </div>

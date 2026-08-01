@@ -37,7 +37,7 @@ const homeCopy = {
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
-    sellerViewsCaption: 'Annonsvisningar',
+    sellerViewsCaption: 'Aktivt intresse',
     sellerViewsLabel: 'visningar',
     privateTitle: 'Sälj som privatperson',
     privateText:
@@ -56,7 +56,7 @@ const homeCopy = {
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
-    sellerViewsCaption: 'Listing views',
+    sellerViewsCaption: 'Active interest',
     sellerViewsLabel: 'views',
     privateTitle: 'Sell as a private seller',
     privateText:
@@ -75,7 +75,7 @@ const homeCopy = {
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
-    sellerViewsCaption: 'Anzeigenaufrufe',
+    sellerViewsCaption: 'Aktives Interesse',
     sellerViewsLabel: 'Aufrufe',
     privateTitle: 'Als Privatperson verkaufen',
     privateText:
