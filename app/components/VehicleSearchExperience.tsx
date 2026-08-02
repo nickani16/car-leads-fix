@@ -3973,7 +3973,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </div>
         ))}
       </div>
-      <div className="mt-8 grid gap-7 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+      <div className="mt-8 grid gap-5 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
           <div className="inline-flex w-[112px] flex-col items-center">
             <BrandLogo compact underline={false} />
@@ -3985,12 +3985,11 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             {marketplaceFooterDescriptions[locale]}
           </p>
         </div>
-        <div className="flex flex-col gap-5 lg:items-end">
-          <MarketplaceAppDownloadBadges href={appHref} copy={appCopy} />
-          <MarketplaceSocialLinks />
-        </div>
+        <MarketplaceSocialLinks />
       </div>
-      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
+      <div className="mt-6 flex flex-col gap-4 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-end min-[560px]:justify-between">
+        <MarketplaceAppDownloadBadges href={appHref} copy={appCopy} />
+        <div className="flex flex-col gap-3 min-[560px]:items-end">
         <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
           <Link href={termsHref} className="hover:text-[#0866ff]">
@@ -4009,6 +4008,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             {uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}
           </Link>
         </nav>
+        </div>
       </div>
     </footer>
   )
@@ -4022,9 +4022,9 @@ function MarketplaceAppDownloadBadges({
   copy: ReturnType<typeof getAppDownloadCopy>
 }) {
   return (
-    <div className="lg:text-right">
+    <div>
       <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
-      <div className="mt-2 flex flex-wrap items-center gap-2 lg:justify-end">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <Link
           href={href}
           aria-label={copy.appStoreAlt}

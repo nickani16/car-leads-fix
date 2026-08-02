@@ -1193,6 +1193,11 @@ select:-webkit-autofill {
   width: min(100%, 320px);
 }
 
+.autorell-app-copy,
+.autorell-app-status-copy {
+  max-width: 100%;
+}
+
 .autorell-app-phone {
   position: relative;
   overflow: hidden;
@@ -1332,6 +1337,14 @@ select:-webkit-autofill {
 }
 
 @media (max-width: 640px) {
+  .autorell-app-copy {
+    max-width: 280px;
+  }
+
+  .autorell-app-status-copy {
+    max-width: 205px;
+  }
+
   .autorell-app-visual {
     width: min(100%, 280px);
   }

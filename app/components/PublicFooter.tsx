@@ -333,9 +333,9 @@ export default function PublicFooter({
           ))}
         </div>
 
-        <div className="my-9 h-px bg-[#dfe5ee]" />
+        <div className="my-8 h-px bg-[#dfe5ee]" />
 
-        <div className="flex flex-col gap-7">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex max-w-[430px] flex-col gap-5">
               <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
@@ -344,49 +344,49 @@ export default function PublicFooter({
                 </Link>
               </div>
             </div>
-            <div className="flex flex-col gap-5 sm:items-end">
-              <AppDownloadBadges href={appHref} copy={appCopy} align="right" />
-              <SocialLinks />
-            </div>
+            <SocialLinks />
           </div>
           <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
             <p className="text-[13px] text-[#344054]">{t.legalNotice}</p>
           </div>
         </div>
 
-        <div className="my-7 h-px bg-[#dfe5ee]" />
+        <div className="my-6 h-px bg-[#dfe5ee]" />
 
-        <div className="flex flex-col gap-4 bg-white pb-7 text-[13px] text-[#475467]">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
-            <button
-              type="button"
-              onClick={() => setIsMarketOpen(true)}
-              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
-            >
-              <span className="inline-flex items-center gap-2">
-                <FlagIcon code={footerMarket.flagCode} size="sm" />
-                {footerMarket.label}
-              </span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <FooterSelect
-              ariaLabel="Currency"
-              defaultValue={footerMarket.currency}
-              options={[
-                ['eur', 'EUR'],
-                ['sek', 'SEK'],
-                ['dkk', 'DKK'],
-                ['pln', 'PLN'],
-                ['czk', 'CZK'],
-                ['huf', 'HUF'],
-                ['ron', 'RON'],
-                ['bgn', 'BGN'],
-                ['nok', 'NOK'],
-                ['chf', 'CHF'],
-                ['gbp', 'GBP'],
-                ['usd', 'USD'],
-              ]}
-            />
+        <div className="flex flex-col gap-5 bg-white pb-7 text-[13px] text-[#475467]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <AppDownloadBadges href={appHref} copy={appCopy} />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsMarketOpen(true)}
+                className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FlagIcon code={footerMarket.flagCode} size="sm" />
+                  {footerMarket.label}
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <FooterSelect
+                ariaLabel="Currency"
+                defaultValue={footerMarket.currency}
+                options={[
+                  ['eur', 'EUR'],
+                  ['sek', 'SEK'],
+                  ['dkk', 'DKK'],
+                  ['pln', 'PLN'],
+                  ['czk', 'CZK'],
+                  ['huf', 'HUF'],
+                  ['ron', 'RON'],
+                  ['bgn', 'BGN'],
+                  ['nok', 'NOK'],
+                  ['chf', 'CHF'],
+                  ['gbp', 'GBP'],
+                  ['usd', 'USD'],
+                ]}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
