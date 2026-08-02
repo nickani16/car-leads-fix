@@ -1189,6 +1189,148 @@ select:-webkit-autofill {
   outline-offset: -2px;
 }
 
+.autorell-app-visual {
+  width: min(100%, 320px);
+}
+
+.autorell-app-phone {
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  border: 1px solid #d9e5f5;
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.92)),
+    radial-gradient(circle at 70% 20%, rgba(8, 102, 255, 0.16), transparent 32%);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
+}
+
+.autorell-app-phone-top {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  width: 78px;
+  height: 8px;
+  border-radius: 999px;
+  background: #dce7f7;
+  transform: translateX(-50%);
+}
+
+.autorell-app-road {
+  position: absolute;
+  inset: 70px 24px 128px;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(8, 102, 255, 0.12), rgba(116, 183, 255, 0.04)),
+    repeating-linear-gradient(120deg, rgba(8, 102, 255, 0.08) 0 1px, transparent 1px 26px);
+}
+
+.autorell-app-road::before {
+  position: absolute;
+  right: -34px;
+  bottom: 32px;
+  width: 220px;
+  height: 96px;
+  border: 13px solid rgba(8, 102, 255, 0.18);
+  border-left-color: transparent;
+  border-radius: 999px;
+  content: "";
+  transform: rotate(-14deg);
+}
+
+.autorell-app-pin {
+  position: absolute;
+  right: 34px;
+  top: 26px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 999px;
+  background: white;
+  color: #0866ff;
+  box-shadow: 0 12px 28px rgba(8, 102, 255, 0.16);
+  animation: autorell-app-pin 3.6s ease-in-out infinite;
+}
+
+.autorell-app-car {
+  position: absolute;
+  left: 26px;
+  bottom: 34px;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 18px;
+  background: #0866ff;
+  color: white;
+  box-shadow: 0 18px 36px rgba(8, 102, 255, 0.24);
+  animation: autorell-app-car-drive 7s ease-in-out infinite;
+}
+
+.autorell-app-panel {
+  position: absolute;
+  right: 24px;
+  bottom: 30px;
+  left: 24px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e2eaf6;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.autorell-app-panel span {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: #dce7f7;
+}
+
+.autorell-app-panel span:nth-child(1) {
+  width: 78%;
+  background: #b8d4ff;
+}
+
+.autorell-app-panel span:nth-child(2) {
+  width: 52%;
+}
+
+.autorell-app-panel span:nth-child(3) {
+  width: 68%;
+}
+
+@keyframes autorell-app-car-drive {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  45%,
+  55% {
+    transform: translate3d(138px, -24px, 0);
+  }
+}
+
+@keyframes autorell-app-pin {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -5px, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autorell-app-car,
+  .autorell-app-pin {
+    animation: none;
+  }
+}
+
 @media (max-width: 720px) {
   .contract-document-header,
   .contract-title-block,

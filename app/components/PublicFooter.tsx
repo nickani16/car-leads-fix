@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -17,6 +18,7 @@ import {
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
+import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import BrandLogo from './BrandLogo'
 
 const footerCopy = {
@@ -307,6 +309,8 @@ export default function PublicFooter({
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
   const homeHref = localizePublicHref(locale, '/')
+  const appHref = getAppDownloadHref(locale)
+  const appCopy = getAppDownloadCopy(locale)
 
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
@@ -340,7 +344,10 @@ export default function PublicFooter({
                 </Link>
               </div>
             </div>
-            <SocialLinks />
+            <div className="flex flex-col gap-5 sm:items-end">
+              <AppDownloadBadges href={appHref} copy={appCopy} align="right" />
+              <SocialLinks />
+            </div>
           </div>
           <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
             <p className="text-[13px] text-[#344054]">{t.legalNotice}</p>
@@ -624,6 +631,38 @@ function SocialLinks() {
           </svg>
         </a>
       ))}
+    </div>
+  )
+}
+
+function AppDownloadBadges({
+  href,
+  copy,
+  align = 'left',
+}: {
+  href: string
+  copy: ReturnType<typeof getAppDownloadCopy>
+  align?: 'left' | 'right'
+}) {
+  return (
+    <div className={align === 'right' ? 'sm:text-right' : ''}>
+      <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
+      <div className={`mt-2 flex flex-wrap gap-2 ${align === 'right' ? 'sm:justify-end' : ''}`}>
+        <Link
+          href={href}
+          aria-label={copy.appStoreAlt}
+          className="relative block h-[38px] w-[114px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <Image src="/app-store.svg" alt={copy.appStoreAlt} fill sizes="114px" className="object-contain" />
+        </Link>
+        <Link
+          href={href}
+          aria-label={copy.googlePlayAlt}
+          className="relative block h-[38px] w-[128px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <Image src="/google-play.svg" alt={copy.googlePlayAlt} fill sizes="128px" className="object-contain" />
+        </Link>
+      </div>
     </div>
   )
 }

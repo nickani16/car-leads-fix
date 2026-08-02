@@ -59,6 +59,7 @@ import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
+import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
@@ -3926,6 +3927,8 @@ function FilterSelect({
 
 function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   const termsHref = localizePublicHref(locale, '/terms')
+  const appHref = getAppDownloadHref(locale)
+  const appCopy = getAppDownloadCopy(locale)
   const columns = [
     {
       title: uiText(locale, 'Services', 'Tjänster', 'Dienste'),
@@ -3983,6 +3986,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </p>
         </div>
         <div className="flex flex-col gap-5 lg:items-end">
+          <MarketplaceAppDownloadBadges href={appHref} copy={appCopy} />
           <MarketplaceSocialLinks />
         </div>
       </div>
@@ -4007,6 +4011,36 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </nav>
       </div>
     </footer>
+  )
+}
+
+function MarketplaceAppDownloadBadges({
+  href,
+  copy,
+}: {
+  href: string
+  copy: ReturnType<typeof getAppDownloadCopy>
+}) {
+  return (
+    <div className="lg:text-right">
+      <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2 lg:justify-end">
+        <Link
+          href={href}
+          aria-label={copy.appStoreAlt}
+          className="relative block h-[38px] w-[114px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <Image src="/app-store.svg" alt={copy.appStoreAlt} fill sizes="114px" className="object-contain" />
+        </Link>
+        <Link
+          href={href}
+          aria-label={copy.googlePlayAlt}
+          className="relative block h-[38px] w-[128px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <Image src="/google-play.svg" alt={copy.googlePlayAlt} fill sizes="128px" className="object-contain" />
+        </Link>
+      </div>
+    </div>
   )
 }
 
