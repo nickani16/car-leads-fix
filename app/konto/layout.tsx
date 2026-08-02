@@ -19,7 +19,10 @@ export default async function AccountLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect(localizePublicHref(locale, '/login'))
+  if (!user) {
+    const returnTo = accountReturnPath(requestHeaders.get('x-autorell-pathname'), locale)
+    redirect(`${localizePublicHref(locale, '/login')}?next=${encodeURIComponent(returnTo)}`)
+  }
 
   return (
     <div className="min-h-screen bg-white text-[#101828]">
@@ -28,4 +31,15 @@ export default async function AccountLayout({
       <PublicFooter locale={locale} />
     </div>
   )
+}
+
+function accountReturnPath(value: string | null, locale: Parameters<typeof localizePublicHref>[0]) {
+  const fallback = localizePublicHref(locale, '/account')
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/api/')) {
+    return fallback
+  }
+  if (value === '/account' || value.startsWith('/account/')) {
+    return localizePublicHref(locale, value)
+  }
+  return value
 }

@@ -7,6 +7,7 @@ const [
   localizedRouteSource,
   legacyRouteSource,
   companyPortalSource,
+  accountLayoutSource,
   dealerAccessSource,
   adminApiSource,
   adminPageSource,
@@ -19,6 +20,7 @@ const [
   readFile('app/[market]/[...slug]/page.tsx', 'utf8'),
   readFile('app/business/dashboard/inventory/page.tsx', 'utf8'),
   readFile('lib/company-portal.tsx', 'utf8'),
+  readFile('app/konto/layout.tsx', 'utf8'),
   readFile('lib/dealer-import-access.ts', 'utf8'),
   readFile('app/api/admin/business-pilots/[id]/route.ts', 'utf8'),
   readFile('app/admin/business-pilots/[id]/page.tsx', 'utf8'),
@@ -38,6 +40,8 @@ test('inventory routes use the localized company account path as canonical', () 
 })
 
 test('company login preserves the exact localized inventory destination', () => {
+  assert.match(accountLayoutSource, /requestHeaders\.get\('x-autorell-pathname'\)/)
+  assert.match(accountLayoutSource, /\?next=\$\{encodeURIComponent\(returnTo\)\}/)
   assert.match(companyPortalSource, /requestHeaders\.get\('x-autorell-pathname'\)/)
   assert.match(companyPortalSource, /\?next=\$\{encodeURIComponent\(returnTo\)\}/)
   assert.match(companyPortalSource, /pilot\?\.status === 'pilot_active'/)
