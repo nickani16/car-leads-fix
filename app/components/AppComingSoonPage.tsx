@@ -34,9 +34,9 @@ export default function AppComingSoonPage({
     <main className="min-h-screen bg-[#f7f9fc] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode || marketCodeByLocale[locale]} />
 
-      <section className="mx-auto grid max-w-[1220px] gap-6 px-5 py-8 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch lg:px-10 lg:py-16">
+      <section className="mx-auto grid max-w-[1220px] gap-5 px-5 py-6 sm:gap-6 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch lg:px-10 lg:py-16">
         <div className="overflow-hidden rounded-[24px] border border-[#d9e5f5] bg-white shadow-[0_24px_80px_rgba(15,23,42,.06)]">
-          <div className="relative min-h-[520px] bg-[#eff6ff] p-6 sm:p-10 lg:p-12">
+          <div className="relative bg-[#eff6ff] p-6 sm:min-h-[520px] sm:p-10 lg:p-12">
             <div className="absolute -left-20 top-20 h-64 w-64 rounded-full border-[42px] border-[#cfe2ff]/70" />
             <div className="absolute -right-16 bottom-10 h-56 w-56 rounded-full border-[36px] border-[#dcecff]/75" />
 
@@ -74,7 +74,7 @@ export default function AppComingSoonPage({
           </div>
         </div>
 
-        <aside className="relative overflow-hidden rounded-[24px] border border-[#d9e5f5] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,.05)] sm:p-8">
+        <aside className="relative overflow-hidden rounded-[24px] border border-[#d9e5f5] bg-white p-5 shadow-[0_24px_80px_rgba(15,23,42,.05)] sm:p-8">
           <div className="autorell-app-visual mx-auto">
             <div className="autorell-app-phone">
               <div className="autorell-app-phone-top" />
@@ -113,12 +113,8 @@ export default function AppComingSoonPage({
           <div className="mt-6">
             <p className="text-sm font-semibold text-[#101828]">{copy.footerLabel}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="relative h-[40px] w-[120px] overflow-hidden rounded-[8px] bg-[#101828]">
-                <Image src="/app-store.svg" alt={copy.appStoreAlt} fill sizes="120px" className="object-contain" />
-              </span>
-              <span className="relative h-[40px] w-[135px] overflow-hidden rounded-[8px] bg-[#101828]">
-                <Image src="/google-play.svg" alt={copy.googlePlayAlt} fill sizes="135px" className="object-contain" />
-              </span>
+              <Image src="/app-store.svg" alt={copy.appStoreAlt} width={120} height={41} className="h-[40px] w-auto" />
+              <Image src="/google-play.svg" alt={copy.googlePlayAlt} width={120} height={41} className="h-[40px] w-auto" />
             </div>
           </div>
 

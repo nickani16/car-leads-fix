@@ -1331,6 +1331,46 @@ select:-webkit-autofill {
   }
 }
 
+@media (max-width: 640px) {
+  .autorell-app-visual {
+    width: min(100%, 280px);
+  }
+
+  .autorell-app-phone {
+    min-height: 280px;
+    border-radius: 28px;
+  }
+
+  .autorell-app-road {
+    inset: 56px 20px 98px;
+    border-radius: 20px;
+  }
+
+  .autorell-app-car {
+    width: 50px;
+    height: 50px;
+  }
+
+  .autorell-app-panel {
+    right: 20px;
+    bottom: 22px;
+    left: 20px;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  @keyframes autorell-app-car-drive {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    45%,
+    55% {
+      transform: translate3d(112px, -18px, 0);
+    }
+  }
+}
+
 @media (max-width: 720px) {
   .contract-document-header,
   .contract-title-block,

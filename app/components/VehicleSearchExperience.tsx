@@ -4028,16 +4028,16 @@ function MarketplaceAppDownloadBadges({
         <Link
           href={href}
           aria-label={copy.appStoreAlt}
-          className="relative block h-[38px] w-[114px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <Image src="/app-store.svg" alt={copy.appStoreAlt} fill sizes="114px" className="object-contain" />
+          <Image src="/app-store.svg" alt={copy.appStoreAlt} width={120} height={41} className="h-[38px] w-auto" />
         </Link>
         <Link
           href={href}
           aria-label={copy.googlePlayAlt}
-          className="relative block h-[38px] w-[128px] overflow-hidden rounded-[7px] bg-[#101828] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <Image src="/google-play.svg" alt={copy.googlePlayAlt} fill sizes="128px" className="object-contain" />
+          <Image src="/google-play.svg" alt={copy.googlePlayAlt} width={120} height={41} className="h-[38px] w-auto" />
         </Link>
       </div>
     </div>
