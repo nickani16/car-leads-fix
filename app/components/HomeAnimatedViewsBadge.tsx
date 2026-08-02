@@ -82,8 +82,8 @@ export default function HomeAnimatedViewsBadge({
     const countViews = () =>
       new Promise<void>((resolve) => {
         const startedAt = performance.now()
-        const duration = 4200
-        const target = 900
+        const duration = 6200
+        const target = 153
 
         const tick = (now: number) => {
           if (cancelled) {
