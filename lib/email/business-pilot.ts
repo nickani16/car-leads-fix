@@ -84,8 +84,12 @@ function buildPilotMessage(input: PilotEmailInput, locale: EmailLocale) {
     : statusCopy.subject
   const body = input.kind === 'received' ? pageCopy.form.successBody : statusCopy.body
   const reference = input.applicationId.slice(0, 8).toUpperCase()
-  const pilotUrl = localizedAccountUrl('/business/pilot', locale)
+  const pilotUrl = localizedAccountUrl(
+    input.kind === 'pilot_active' ? '/account/company/inventory' : '/business/pilot',
+    locale,
+  )
   const common = commonEmailCopy[locale]
+  const actionLabel = input.kind === 'pilot_active' ? common.openInventory : common.open
   const note = input.note?.trim()
   const text = [
     subject,
@@ -97,13 +101,13 @@ function buildPilotMessage(input: PilotEmailInput, locale: EmailLocale) {
     `${pageCopy.form.successReference}: ${reference}`,
     ...(note ? ['', `${common.note}: ${note}`] : []),
     '',
-    `${common.open}: ${pilotUrl}`,
+    `${actionLabel}: ${pilotUrl}`,
   ].join('\n')
 
   return {
     subject,
     text,
-    html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:32px;color:#101828"><div style="font-size:24px;font-weight:700">Autorell</div><h1 style="font-size:28px;line-height:1.25;margin:28px 0 12px">${escapeEmailHtml(subject)}</h1><p style="color:#475467;line-height:1.7">${escapeEmailHtml(common.greeting)} ${escapeEmailHtml(input.companyName)},</p><p style="color:#475467;line-height:1.7">${escapeEmailHtml(body)}</p><p style="color:#344054;font-weight:700">${escapeEmailHtml(pageCopy.form.successReference)}: ${escapeEmailHtml(reference)}</p>${note ? `<div style="margin:20px 0;padding:16px;border:1px solid #d0d5dd;border-radius:8px;color:#475467"><strong>${escapeEmailHtml(common.note)}:</strong><br>${escapeEmailHtml(note).replace(/\n/g, '<br>')}</div>` : ''}<p style="margin-top:28px"><a href="${escapeEmailHtml(pilotUrl)}" style="display:inline-block;background:#0866ff;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:700">${escapeEmailHtml(common.open)}</a></p><p style="margin-top:32px;color:#667085;font-size:13px">Autorell</p></div>`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;padding:32px;color:#101828"><div style="font-size:24px;font-weight:700">Autorell</div><h1 style="font-size:28px;line-height:1.25;margin:28px 0 12px">${escapeEmailHtml(subject)}</h1><p style="color:#475467;line-height:1.7">${escapeEmailHtml(common.greeting)} ${escapeEmailHtml(input.companyName)},</p><p style="color:#475467;line-height:1.7">${escapeEmailHtml(body)}</p><p style="color:#344054;font-weight:700">${escapeEmailHtml(pageCopy.form.successReference)}: ${escapeEmailHtml(reference)}</p>${note ? `<div style="margin:20px 0;padding:16px;border:1px solid #d0d5dd;border-radius:8px;color:#475467"><strong>${escapeEmailHtml(common.note)}:</strong><br>${escapeEmailHtml(note).replace(/\n/g, '<br>')}</div>` : ''}<p style="margin-top:28px"><a href="${escapeEmailHtml(pilotUrl)}" style="display:inline-block;background:#0866ff;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:700">${escapeEmailHtml(actionLabel)}</a></p><p style="margin-top:32px;color:#667085;font-size:13px">Autorell</p></div>`,
   }
 }
 
@@ -126,17 +130,17 @@ function hashRecipient(email: string) {
   return crypto.createHash('sha256').update(email).digest('hex').slice(0, 16)
 }
 
-const commonEmailCopy: Record<EmailLocale, { greeting: string; note: string; open: string }> = {
-  en: { greeting: 'Hello', note: 'Message from Autorell', open: 'Read about the pilot programme' },
-  sv: { greeting: 'Hej', note: 'Meddelande från Autorell', open: 'Läs om pilotprogrammet' },
-  de: { greeting: 'Guten Tag', note: 'Nachricht von Autorell', open: 'Informationen zum Pilotprogramm' },
-  fr: { greeting: 'Bonjour', note: "Message d'Autorell", open: 'Découvrir le programme pilote' },
-  es: { greeting: 'Hola', note: 'Mensaje de Autorell', open: 'Leer sobre el programa piloto' },
-  it: { greeting: 'Buongiorno', note: 'Messaggio da Autorell', open: 'Scopri il programma pilota' },
-  nl: { greeting: 'Hallo', note: 'Bericht van Autorell', open: 'Lees over het pilotprogramma' },
-  fi: { greeting: 'Hei', note: 'Viesti Autorellilta', open: 'Lue pilottiohjelmasta' },
-  da: { greeting: 'Hej', note: 'Besked fra Autorell', open: 'Læs om pilotprogrammet' },
-  pl: { greeting: 'Dzień dobry', note: 'Wiadomość od Autorell', open: 'Przeczytaj o programie pilotażowym' },
+const commonEmailCopy: Record<EmailLocale, { greeting: string; note: string; open: string; openInventory: string }> = {
+  en: { greeting: 'Hello', note: 'Message from Autorell', open: 'Read about the pilot programme', openInventory: 'Open inventory connection' },
+  sv: { greeting: 'Hej', note: 'Meddelande från Autorell', open: 'Läs om pilotprogrammet', openInventory: 'Öppna lageranslutning' },
+  de: { greeting: 'Guten Tag', note: 'Nachricht von Autorell', open: 'Informationen zum Pilotprogramm', openInventory: 'Bestandsanbindung öffnen' },
+  fr: { greeting: 'Bonjour', note: "Message d'Autorell", open: 'Découvrir le programme pilote', openInventory: 'Ouvrir la connexion du stock' },
+  es: { greeting: 'Hola', note: 'Mensaje de Autorell', open: 'Leer sobre el programa piloto', openInventory: 'Abrir conexión de inventario' },
+  it: { greeting: 'Buongiorno', note: 'Messaggio da Autorell', open: 'Scopri il programma pilota', openInventory: 'Apri collegamento inventario' },
+  nl: { greeting: 'Hallo', note: 'Bericht van Autorell', open: 'Lees over het pilotprogramma', openInventory: 'Voorraadkoppeling openen' },
+  fi: { greeting: 'Hei', note: 'Viesti Autorellilta', open: 'Lue pilottiohjelmasta', openInventory: 'Avaa varastoyhteys' },
+  da: { greeting: 'Hej', note: 'Besked fra Autorell', open: 'Læs om pilotprogrammet', openInventory: 'Åbn lagerforbindelse' },
+  pl: { greeting: 'Dzień dobry', note: 'Wiadomość od Autorell', open: 'Przeczytaj o programie pilotażowym', openInventory: 'Otwórz połączenie zapasów' },
 }
 
 type BasePilotEmailKind = Exclude<BusinessPilotEmailKind, 'pilot_ending_soon' | 'commercial_request'>

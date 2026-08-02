@@ -20,11 +20,19 @@ export async function getDealerImportAccess() {
     admin.from('marketplace_companies').select('id,created_by,country_code,name').eq('id', scope.companyId).maybeSingle(),
     admin.from('marketplace_company_members').select('role').eq('company_id', scope.companyId).eq('user_id', user.id).maybeSingle(),
     admin.from('marketplace_profiles').select('company_id,country_code,locale').eq('user_id', user.id).maybeSingle(),
-    admin.from('business_pilot_programs').select('id,status,organization_id,start_date,planned_end_date,terms_accepted_at').eq('organization_id', scope.companyId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    admin.from('business_pilot_programs').select('id,status,organization_id,start_date,planned_end_date,terms_accepted_at,is_free,automatic_conversion_enabled').eq('organization_id', scope.companyId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   if (!company || profile?.company_id !== scope.companyId) {
     return { allowed: false as const, status: 403, error: 'COMPANY_ACCESS_DENIED' }
+  }
+  if (
+    pilot?.status !== 'pilot_active' ||
+    !pilot.terms_accepted_at ||
+    pilot.is_free !== true ||
+    pilot.automatic_conversion_enabled !== false
+  ) {
+    return { allowed: false as const, status: 403, error: 'ACTIVE_PILOT_REQUIRED' }
   }
 
   const enabled = await isBusinessFeatureEnabled('dealer_inventory_import', {

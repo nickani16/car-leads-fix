@@ -984,6 +984,21 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(url, 308)
       }
 
+      if (
+        methodCanRedirect &&
+        segments.slice(1).join('/') === 'business/dashboard/inventory'
+      ) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${pathMarket}/account/company/inventory`
+        return withMarketCookie(
+          withLanguageCookie(
+            NextResponse.redirect(url, 308),
+            localeContext.language,
+          ),
+          localeContext.market,
+        )
+      }
+
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-autorell-language', localeContext.language)
       requestHeaders.set('x-autorell-market', localeContext.marketHeader)
@@ -1102,6 +1117,31 @@ export async function proxy(request: NextRequest) {
     preferredMarket ||
     (isPublicLanguage(preferredLanguage || '') ? preferredLanguage! : null) ||
     countryMarket
+
+  if (
+    methodCanRedirect &&
+    (pathname === '/business/dashboard/inventory' ||
+      pathname === '/business/dashboard/inventory/')
+  ) {
+    const prefix = pathPrefixForMarket(targetMarket || 'en')
+    const url = request.nextUrl.clone()
+    url.pathname = `${prefix ? `/${prefix}` : ''}/account/company/inventory`
+    return NextResponse.redirect(url, 308)
+  }
+
+  if (
+    methodCanRedirect &&
+    targetMarket &&
+    targetMarket !== 'en' &&
+    (pathname === '/account/company/inventory' ||
+      pathname === '/account/company/inventory/')
+  ) {
+    const prefix = pathPrefixForMarket(targetMarket)
+    const url = request.nextUrl.clone()
+    url.pathname = `/${prefix}/account/company/inventory`
+    return NextResponse.redirect(url, 308)
+  }
+
   const isAccountRoute =
     pathname === '/account' ||
     pathname.startsWith('/account/') ||

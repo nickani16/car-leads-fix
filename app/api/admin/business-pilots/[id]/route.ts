@@ -11,6 +11,7 @@ const statusByAction: Record<string, string> = {
   record_contact: 'contacted',
   technical_review: 'technical_review',
   approve: 'approved',
+  activate_pilot: 'pilot_active',
   reject: 'rejected',
   start_onboarding: 'onboarding',
   pilot_active: 'pilot_active',
@@ -24,6 +25,7 @@ const statusByAction: Record<string, string> = {
 const emailKindByAction: Partial<Record<string, BusinessPilotEmailKind>> = {
   request_information: 'more_information_required',
   approve: 'approved',
+  activate_pilot: 'pilot_active',
   reject: 'rejected',
   pilot_active: 'pilot_active',
   pilot_completed: 'pilot_completed',
@@ -97,6 +99,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (action === 'commercial_customer' && body.commercialAgreementConfirmed !== true) {
     return NextResponse.json({ error: 'Ett separat kommersiellt avtal måste bekräftas uttryckligen.' }, { status: 409 })
   }
+  if ((action === 'activate_pilot' || action === 'pilot_active') && (!termsVersion || !acceptedBy)) {
+    return NextResponse.json({ error: 'Ange villkorsversion och vem hos företaget som godkände villkoren.' }, { status: 400 })
+  }
 
   const admin = auth.adminClient
   const { data: before, error: readError } = await admin
@@ -119,6 +124,68 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const organizationReadyStatuses = new Set(['approved', 'onboarding', 'pilot_active', 'pilot_paused', 'pilot_completed', 'commercial_discussion', 'commercial_customer'])
 
   try {
+    if (action === 'activate_pilot' || action === 'pilot_active') {
+      const { data: activationData, error: activationError } = await admin.rpc('activate_business_pilot_application', {
+        p_application_id: id,
+        p_actor_user_id: auth.user.id,
+        p_environment: businessPilotEnvironment(),
+        p_terms_version: termsVersion,
+        p_terms_accepted_by: acceptedBy,
+        p_reason: reason,
+        p_organization_id: organizationId || null,
+        p_start_date: startDate,
+        p_planned_end_date: plannedEndDate,
+      })
+      if (activationError) throw activationError
+
+      const activation = (activationData || {}) as Record<string, unknown>
+      linkedOrganizationId = String(activation.organization_id || '')
+      const programId = String(activation.program_id || '')
+      if (!linkedOrganizationId || !programId) throw new Error('Pilotaktiveringen returnerade ofullständiga uppgifter.')
+
+      const [{ data: after }, { data: activatedProgram }] = await Promise.all([
+        admin.from('business_pilot_applications').select('*').eq('id', id).single(),
+        admin.from('business_pilot_programs').select('*').eq('id', programId).single(),
+      ])
+      program = activatedProgram
+
+      await writeAdminAuditLog({
+        adminClient: admin,
+        actorUserId: auth.user.id,
+        actorRole: auth.primaryRole,
+        permission: 'business_pilots.manage',
+        action: 'business_pilot_activate_pilot',
+        targetType: 'business_pilot_application',
+        targetId: id,
+        reason,
+        beforeData: before,
+        afterData: { application: after, program, activation },
+        metadata: { atomic: true },
+      })
+
+      await admin.from('admin_notifications').update({
+        status: 'assigned',
+        assigned_to: auth.user.id,
+        closed_at: null,
+        updated_at: now,
+      }).eq('notification_type', 'business_pilot_application').eq('resource_id', id)
+
+      const result = await sendBusinessPilotEmail(admin, {
+        applicationId: id,
+        kind: 'pilot_active',
+        recipientEmail: before.contact_email,
+        companyName: before.company_name,
+        locale: before.locale,
+        countryCode: before.country_code,
+        note: reason,
+      })
+      if (!result.delivered && !['duplicate', 'missing_provider_key'].includes(String(result.reason))) {
+        console.error('[business-pilot] activation email failed', { id, reason: result.reason })
+      }
+
+      return NextResponse.json({ success: true, organizationId: linkedOrganizationId, programId })
+    }
+
     if (['link_organization', 'create_organization', 'create_program'].includes(action) && !organizationReadyStatuses.has(String(before.status))) {
       throw new Error('Ansökan måste godkännas innan ett företag kopplas eller ett pilotprogram skapas.')
     }
@@ -232,7 +299,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       if (action === 'pilot_active') {
         await configurePilotFeatureFlags(admin, {
           organizationId: linkedOrganizationId,
-          pilotProgramId: String(program.id),
           integrationMethod: String(program.integration_method || before.preferred_integration_method || 'unknown'),
           syncEnabled: true,
           updatedBy: auth.user.id,
@@ -241,7 +307,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       if (action === 'pilot_paused' || action === 'pilot_completed') {
         await configurePilotFeatureFlags(admin, {
           organizationId: linkedOrganizationId,
-          pilotProgramId: String(program.id),
           integrationMethod: String(program.integration_method || before.preferred_integration_method || 'unknown'),
           syncEnabled: false,
           updatedBy: auth.user.id,
@@ -351,14 +416,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
 async function configurePilotFeatureFlags(
   admin: ReturnType<typeof import('@/lib/supabase/admin').createAdminClient>,
-  input: { organizationId: string; pilotProgramId: string; integrationMethod: string; syncEnabled: boolean; updatedBy: string },
+  input: { organizationId: string; integrationMethod: string; syncEnabled: boolean; updatedBy: string },
 ) {
-  const environment = process.env.VERCEL_ENV === 'production'
-    ? 'production'
-    : process.env.VERCEL_ENV === 'preview'
-      ? 'preview'
-      : 'development'
+  const environment = businessPilotEnvironment()
   const flags = [
+    ['business_pilot_program', true],
     ['dealer_inventory_import', true],
     ['dealer_website_import', input.integrationMethod === 'website'],
     ['dealer_feed_import', false],
@@ -371,12 +433,22 @@ async function configurePilotFeatureFlags(
     environment,
     market_code: null,
     organization_id: input.organizationId,
-    pilot_program_id: input.pilotProgramId,
+    pilot_program_id: null,
     enabled,
     reason: input.syncEnabled ? 'Enabled for an active approved pilot.' : 'Automatic sync paused or pilot completed.',
     updated_by: input.updatedBy,
   })), { onConflict: 'flag_key,environment,market_code,organization_id,pilot_program_id' })
   if (error) throw error
+}
+
+function businessPilotEnvironment() {
+  return process.env.VERCEL_ENV === 'production'
+    ? 'production'
+    : process.env.VERCEL_ENV === 'preview'
+      ? 'preview'
+      : process.env.NODE_ENV === 'test'
+        ? 'test'
+        : 'development'
 }
 
 function text(value: unknown, maxLength: number, multiline = false) {

@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound, permanentRedirect, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import BusinessPage from '@/app/foretag/page'
@@ -197,7 +197,11 @@ export default async function LocalizedMarketPage({
     return <CompanyImportPage localeOverride={locale} />
   }
 
-  if (slugPath === 'account/company/inventory' || slugPath === 'business/dashboard/inventory') {
+  if (slugPath === 'business/dashboard/inventory') {
+    permanentRedirect(`/${marketCode}/account/company/inventory`)
+  }
+
+  if (slugPath === 'account/company/inventory') {
     return <CompanyInventoryPage localeOverride={locale} />
   }
 

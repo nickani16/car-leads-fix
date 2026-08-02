@@ -3,9 +3,17 @@ import { notFound } from 'next/navigation'
 import { requireAdminPermission } from '@/lib/admin-auth'
 import { AdminPageHeader, Badge, DetailCard, DetailGrid } from '../../AdminUI'
 import { formatDate, statusTone } from '../../admin-helpers'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import BusinessPilotAdminControls from './BusinessPilotAdminControls'
 
 export const dynamic = 'force-dynamic'
+
+const requiredInventoryFlags = [
+  'business_pilot_program',
+  'dealer_inventory_import',
+  'dealer_website_import',
+  'dealer_inventory_sync',
+] as const
 
 export default async function AdminBusinessPilotDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -18,11 +26,45 @@ export default async function AdminBusinessPilotDetailPage({ params }: { params:
 
   if (error || !application) notFound()
 
-  const [{ data: events }, { data: program }, { data: deliveries }] = await Promise.all([
+  const [{ data: events }, { data: program }, { data: deliveries }, { data: organization }, { data: members }, { data: flags }] = await Promise.all([
     context.adminClient.from('business_pilot_application_events').select('*').eq('application_id', id).order('created_at', { ascending: false }).limit(100),
     context.adminClient.from('business_pilot_programs').select('*').eq('application_id', id).maybeSingle(),
     context.adminClient.from('business_pilot_email_deliveries').select('id,email_type,locale,recipient_email,status,sent_at,created_at,error_message').eq('application_id', id).order('created_at', { ascending: false }).limit(40),
+    application.organization_id
+      ? context.adminClient.from('marketplace_companies').select('id,name,registration_number,verification_status,created_by').eq('id', application.organization_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    application.organization_id
+      ? context.adminClient.from('marketplace_company_members').select('user_id,role,created_at').eq('company_id', application.organization_id).order('created_at', { ascending: true })
+      : Promise.resolve({ data: [] }),
+    application.organization_id
+      ? context.adminClient.from('feature_flag_overrides').select('flag_key,enabled,pilot_program_id,environment').eq('organization_id', application.organization_id).eq('environment', businessPilotEnvironment())
+      : Promise.resolve({ data: [] }),
   ])
+
+  const memberUserIds = (members || []).map((member) => String(member.user_id))
+  const { data: memberProfiles } = memberUserIds.length
+    ? await context.adminClient.from('marketplace_profiles').select('user_id,display_name,email').in('user_id', memberUserIds)
+    : { data: [] }
+  const profilesByUserId = new Map((memberProfiles || []).map((profile) => [String(profile.user_id), profile]))
+  const flagState = new Map<string, boolean>()
+  for (const flag of (flags || []).sort((left, right) => Number(Boolean(left.pilot_program_id)) - Number(Boolean(right.pilot_program_id)))) {
+    if (!flag.pilot_program_id || flag.pilot_program_id === program?.id) {
+      flagState.set(String(flag.flag_key), Boolean(flag.enabled))
+    }
+  }
+  const hasManagingMember = (members || []).some((member) => ['owner', 'admin', 'manager'].includes(String(member.role)))
+  const hasInventoryAccess = Boolean(
+    organization &&
+    program?.status === 'pilot_active' &&
+    program?.is_free === true &&
+    program?.automatic_conversion_enabled === false &&
+    hasManagingMember &&
+    requiredInventoryFlags.every((flag) => flagState.get(flag) === true),
+  )
+  const inventoryHref = localizePublicHref(
+    String(application.locale || 'en') as PublicLocale,
+    '/account/company/inventory',
+  )
 
   const canManage = context.permissions.includes('business_pilots.manage')
 
@@ -39,6 +81,7 @@ export default async function AdminBusinessPilotDetailPage({ params }: { params:
         <Badge label={statusLabel(String(application.status))} tone={statusTone(String(application.status))} />
         <span className="font-mono text-xs text-[#667085]">{application.id}</span>
         {application.website_url ? <Link href={String(application.website_url)} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#0866ff] hover:underline">Öppna webbplats</Link> : null}
+        {application.organization_id ? <Link href={inventoryHref} target="_blank" className="inline-flex min-h-10 items-center rounded-[10px] border border-[#0866ff] bg-[#0866ff] px-4 text-sm font-bold text-white hover:bg-[#075ce6]">Öppna företagets lageranslutning</Link> : null}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
@@ -88,9 +131,43 @@ export default async function AdminBusinessPilotDetailPage({ params }: { params:
           ) : <p className="text-sm text-[#667085]">Inget pilotprogram har skapats ännu.</p>}
         </DetailCard>
 
+        <DetailCard title="Åtkomst och koppling">
+          <DetailGrid items={[
+            { label: 'Organisation', value: organization ? `${organization.name} · ${organization.id}` : 'Ej kopplad' },
+            {
+              label: 'Kopplade användare',
+              value: members?.length ? (
+                <span className="grid gap-1">
+                  {members.map((member) => {
+                    const profile = profilesByUserId.get(String(member.user_id))
+                    return <span key={member.user_id}>{profile?.display_name || profile?.email || member.user_id} · {member.role}</span>
+                  })}
+                </span>
+              ) : 'Inga användare',
+            },
+            { label: 'Pilotstatus', value: program ? statusLabel(String(program.status)) : 'Pilot saknas' },
+            {
+              label: 'Feature flags',
+              value: (
+                <span className="grid gap-1 font-mono text-xs">
+                  {requiredInventoryFlags.map((flag) => <span key={flag}>{flag}: {flagState.get(flag) === true ? 'på' : 'av'}</span>)}
+                </span>
+              ),
+            },
+            { label: 'Lagerimportåtkomst', value: hasInventoryAccess ? 'Aktiv' : 'Saknas' },
+            { label: 'Betalning krävs', value: program?.is_free === true && program?.automatic_conversion_enabled === false ? 'Nej' : 'Kontroll krävs' },
+          ]} />
+        </DetailCard>
+
         {canManage ? (
           <DetailCard title="Handläggning">
-            <BusinessPilotAdminControls applicationId={id} organizationId={application.organization_id} hasProgram={Boolean(program)} />
+            <BusinessPilotAdminControls
+              applicationId={id}
+              organizationId={application.organization_id}
+              contactName={String(application.contact_name || '')}
+              contactRole={application.contact_role ? String(application.contact_role) : null}
+              hasProgram={Boolean(program)}
+            />
           </DetailCard>
         ) : null}
       </div>
@@ -134,4 +211,14 @@ function statusLabel(status: string) {
     onboarding: 'Onboarding', pilot_active: 'Pilot aktiv', pilot_paused: 'Pilot pausad', pilot_completed: 'Pilot avslutad',
     commercial_discussion: 'Kommersiell dialog', commercial_customer: 'Separat avtal klart', closed: 'Stängd',
   } as Record<string, string>)[status] || status
+}
+
+function businessPilotEnvironment() {
+  return process.env.VERCEL_ENV === 'production'
+    ? 'production'
+    : process.env.VERCEL_ENV === 'preview'
+      ? 'preview'
+      : process.env.NODE_ENV === 'test'
+        ? 'test'
+        : 'development'
 }

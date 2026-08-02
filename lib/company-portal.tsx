@@ -1,6 +1,7 @@
 import 'server-only'
 
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import {
   BarChart3,
@@ -295,7 +296,11 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   const locale = localeOverride || await getRequestLocale()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(localizePublicHref(locale, '/login'))
+  if (!user) {
+    const requestHeaders = await headers()
+    const returnTo = companyReturnPath(requestHeaders.get('x-autorell-pathname'), locale)
+    redirect(`${localizePublicHref(locale, '/login')}?next=${encodeURIComponent(returnTo)}`)
+  }
 
   const admin = createAdminClient()
   const { data: profile } = await admin
@@ -307,7 +312,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   if (profile?.account_type !== 'business') redirect(localizePublicHref(locale, '/account'))
 
   const scope = await resolveBusinessAccountScope(user.id, admin)
-  const [{ data: subscription }, listingSummary, { data: pilot }] = await Promise.all([
+  const [{ data: subscription }, listingSummary, { data: pilot }, { data: company }, { data: member }] = await Promise.all([
     admin
       .from('business_subscriptions')
       .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
@@ -330,15 +335,38 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     profile.company_id
       ? admin
           .from('business_pilot_programs')
-          .select('id')
+          .select('id,status,is_free,automatic_conversion_enabled,terms_accepted_at')
           .eq('organization_id', profile.company_id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    profile.company_id
+      ? admin
+          .from('marketplace_companies')
+          .select('created_by')
+          .eq('id', profile.company_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    profile.company_id
+      ? admin
+          .from('marketplace_company_members')
+          .select('role')
+          .eq('company_id', profile.company_id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
-  const inventoryImportEnabled = Boolean(profile.company_id) && await isBusinessFeatureEnabled(
+  const inventoryRole = company?.created_by === user.id ? 'owner' : String(member?.role || '')
+  const inventoryPilotEligible = Boolean(
+    pilot?.status === 'pilot_active' &&
+    pilot?.is_free === true &&
+    pilot?.automatic_conversion_enabled === false &&
+    pilot?.terms_accepted_at &&
+    ['owner', 'admin', 'manager'].includes(inventoryRole),
+  )
+  const inventoryImportEnabled = Boolean(profile.company_id) && inventoryPilotEligible && await isBusinessFeatureEnabled(
     'dealer_inventory_import',
     {
       organizationId: profile.company_id,
@@ -356,6 +384,17 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     listingOwnerUserIds: scope.listingOwnerUserIds,
     inventoryImportEnabled,
   }
+}
+
+function companyReturnPath(value: string | null, locale: PublicLocale) {
+  const fallback = localizePublicHref(locale, '/account/company')
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/api/')) {
+    return fallback
+  }
+  if (value === '/account/company' || value.startsWith('/account/company/')) {
+    return localizePublicHref(locale, value)
+  }
+  return value
 }
 
 export function CompanyPortalShell({

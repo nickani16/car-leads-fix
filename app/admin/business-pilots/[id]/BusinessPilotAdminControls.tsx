@@ -23,10 +23,10 @@ const reviewActions: Action[] = [
 ]
 
 const pilotActions: Action[] = [
+  { key: 'activate_pilot', label: 'Godkänn och starta pilot', tone: 'primary', reasonRequired: true },
   { key: 'create_program', label: 'Skapa pilotprogram', reasonRequired: true },
   { key: 'record_terms', label: 'Registrera godkända villkor', reasonRequired: true },
   { key: 'start_onboarding', label: 'Starta onboarding', reasonRequired: true },
-  { key: 'pilot_active', label: 'Starta pilot', tone: 'primary', reasonRequired: true },
   { key: 'pilot_paused', label: 'Pausa pilot', reasonRequired: true },
   { key: 'pilot_completed', label: 'Avsluta pilot', reasonRequired: true },
   { key: 'commercial_discussion', label: 'Kommersiell dialog', reasonRequired: true },
@@ -37,10 +37,14 @@ const pilotActions: Action[] = [
 export default function BusinessPilotAdminControls({
   applicationId,
   organizationId: initialOrganizationId,
+  contactName,
+  contactRole,
   hasProgram,
 }: {
   applicationId: string
   organizationId?: string | null
+  contactName: string
+  contactRole?: string | null
   hasProgram: boolean
 }) {
   const router = useRouter()
@@ -49,7 +53,7 @@ export default function BusinessPilotAdminControls({
   const [startDate, setStartDate] = useState('')
   const [plannedEndDate, setPlannedEndDate] = useState('')
   const [termsVersion, setTermsVersion] = useState('pilot-2026-08')
-  const [acceptedBy, setAcceptedBy] = useState('')
+  const [acceptedBy, setAcceptedBy] = useState([contactName, contactRole].filter(Boolean).join(', '))
   const [commercialAgreementConfirmed, setCommercialAgreementConfirmed] = useState(false)
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
