@@ -2,6 +2,8 @@ import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import PricingPage from '@/app/components/PricingPage'
 import BusinessPage from '@/app/foretag/page'
+import BusinessPilotPage, { generateMetadata as generateBusinessPilotMetadata } from '@/app/business/pilot/page'
+import InventoryImportPage, { generateMetadata as generateInventoryImportMetadata } from '@/app/business/inventory-import/page'
 import ListingDetailPage, { generateListingMetadata } from '@/app/listings/[slug]/ListingDetailPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
@@ -20,6 +22,7 @@ import BusinessStatusPage from '@/app/konto/business/status/page'
 import PaymentsPage from '@/app/konto/betalningar/page'
 import CompanyOverviewPage from '@/app/account/company/page'
 import CompanyImportPage from '@/app/account/company/import/page'
+import CompanyInventoryPage from '@/app/account/company/inventory/page'
 import CompanyAnalyticsPage from '@/app/account/company/analytics/page'
 import CompanyLocationsPage from '@/app/account/company/locations/page'
 import CompanyTeamPage from '@/app/account/company/team/page'
@@ -80,6 +83,12 @@ export async function generateMetadata({
   params: Promise<{ market: string; slug: string[] }>
 }) {
   const { market, slug } = await params
+  if (slug.join('/') === 'business/pilot') {
+    return generateBusinessPilotMetadata()
+  }
+  if (slug.join('/') === 'business/inventory-import') {
+    return generateInventoryImportMetadata()
+  }
   const listingParams = localizedListingParams({ market, slug })
   if (listingParams) {
     return generateListingMetadata({ params: listingParams })
@@ -188,6 +197,10 @@ export default async function LocalizedMarketPage({
     return <CompanyImportPage localeOverride={locale} />
   }
 
+  if (slugPath === 'account/company/inventory' || slugPath === 'business/dashboard/inventory') {
+    return <CompanyInventoryPage localeOverride={locale} />
+  }
+
   if (slugPath === 'account/company/analytics') {
     return <CompanyAnalyticsPage localeOverride={locale} />
   }
@@ -262,6 +275,14 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'business') {
     return <BusinessPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
+  }
+
+  if (slugPath === 'business/pilot') {
+    return <BusinessPilotPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
+  }
+
+  if (slugPath === 'business/inventory-import') {
+    return <InventoryImportPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
   }
 
   return <BusinessMarketplaceHome locale={locale} marketCode={normalizedMarket.toUpperCase()} />

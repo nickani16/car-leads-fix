@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Autorells pilotprogram",
+    "title": "Bliv en af Autorells første partnerforhandlere",
+    "body": [
+      "Vi udvælger et begrænset antal køretøjsforhandlere, som gratis kan forbinde deres eksisterende lager med Autorell i pilotperioden.",
+      "Autorell importerer jeres lager, holder priser og lagerstatus automatisk opdateret og giver statistik over eksponering, klik og kundehenvendelser.",
+      "Når samarbejdet begynder at skabe dokumenteret kommerciel værdi, udarbejder vi sammen en separat aftale om det videre samarbejde."
+    ],
+    "benefits": [
+      "Gratis lagertilslutning",
+      "Intet integrationsgebyr",
+      "Automatisk opdatering af lageret",
+      "Ingen binding i pilotperioden",
+      "Statistik over trafik og leads",
+      "Personlig onboarding",
+      "Flere afdelinger kan tilsluttes",
+      "Separat kommerciel aftale først, når der er skabt værdi"
+    ],
+    "primaryCta": "Ansøg om pilotprogrammet",
+    "secondaryCta": "Læs om lagertilslutning",
+    "availabilityNote": "Et begrænset antal virksomheder optages i den første pilotrunde."
+  },
+  "pilotPage": {
+    "metaTitle": "Gratis lagerpilot for forhandlere | Autorell",
+    "metaDescription": "Ansøg om at forbinde jeres køretøjslager med Autorell med gratis onboarding, automatisk synkronisering og uden automatisk betalingsabonnement.",
+    "heroEyebrow": "Pilotprogram for køretøjsforhandlere",
+    "heroTitle": "Forbind jeres køretøjslager uden omkostninger",
+    "heroIntro": "Autorell søger udvalgte køretøjsforhandlere til et gratis pilotprogram. Vi forbinder jeres eksisterende lager, holder annoncerne automatisk opdateret og måler resultaterne sammen med jer.",
+    "primaryCta": "Ansøg til pilotprogrammet",
+    "secondaryCta": "Sådan fungerer lagerimporten",
+    "includedTitle": "Dette er inkluderet",
+    "includedIntro": "Den første forbindelse er praktisk, målbar og uden automatiske kommercielle forpligtelser.",
+    "included": [
+      "Gratis onboarding",
+      "Gratis teknisk tilslutning",
+      "Import af jeres eksisterende køretøjslager",
+      "Automatisk synkronisering af nye, ændrede og fjernede køretøjer",
+      "Virksomhedsprofil på Autorell",
+      "Statistik over annoncevisninger",
+      "Statistik over klik og leads",
+      "Support i pilotperioden",
+      "Ingen binding i pilotperioden"
+    ],
+    "stepsTitle": "Sådan fungerer det",
+    "steps": [
+      {
+        "title": "Send ansøgningen",
+        "text": "Virksomheden sender en kort ansøgning med oplysninger om lageret og den ønskede tilslutningsmetode."
+      },
+      {
+        "title": "Autorell gennemgår virksomheden",
+        "text": "Vi gennemgår virksomheden, lageret og den tekniske kilde, før noget tilsluttes."
+      },
+      {
+        "title": "Godkend pilotvilkårene",
+        "text": "Virksomheden godkender pilotvilkårene og bekræfter sine rettigheder til køretøjsdata og billeder."
+      },
+      {
+        "title": "Vi forbinder kilden",
+        "text": "Autorell forbinder den verificerede hjemmeside og udarbejder en importforhåndsvisning. XML-, CSV-, API- og DMS-forespørgsler håndteres i et separat teknisk onboardingforløb."
+      },
+      {
+        "title": "Lageret offentliggøres og holdes aktuelt",
+        "text": "Godkendte annoncer offentliggøres, og nye, ændrede eller solgte køretøjer synkroniseres sikkert."
+      }
+    ],
+    "afterTitle": "Efter pilotperioden",
+    "afterLead": "Pilotprogrammet overgår ikke automatisk til et betalt abonnement.",
+    "afterBody": "Hvis Autorell kan dokumentere relevant trafik, leads eller anden kommerciel værdi, kan parterne drøfte en separat kommerciel aftale.",
+    "afterNote": "Ingen betaling, faktura eller abonnement kan begynde uden en ny, udtrykkelig godkendelse fra virksomheden.",
+    "faqTitle": "Spørgsmål om pilotprogrammet",
+    "faqs": [
+      {
+        "question": "Koster pilotprogrammet noget?",
+        "answer": "Nej. Teknisk tilslutning, onboarding, lagerimport og automatisk synkronisering er gratis i den aftalte pilotperiode."
+      },
+      {
+        "question": "Skal vi offentliggøre annoncer manuelt?",
+        "answer": "Nej. Når kilden og forhåndsvisningen er godkendt, kan Autorell oprette og opdatere annoncerne fra det tilsluttede lager."
+      },
+      {
+        "question": "Hvilke typer lagre kan tilsluttes?",
+        "answer": "Personbiler, varebiler og andre understøttede køretøjskategorier kan vurderes. Det præcise omfang bekræftes under den tekniske gennemgang."
+      },
+      {
+        "question": "Hvor ofte opdateres lageret?",
+        "answer": "Hyppigheden afhænger af kilden og pilotopsætningen. Daglig synkronisering er det normale udgangspunkt, med hyppigere synkronisering, når det er aftalt og teknisk muligt."
+      },
+      {
+        "question": "Hvad sker der, når et køretøj bliver solgt?",
+        "answer": "Et solgt eller fjernet køretøj bekræftes først gennem en vellykket synkronisering og sættes derefter på pause eller markeres som solgt. En midlertidig kildefejl fjerner aldrig hele lageret."
+      },
+      {
+        "question": "Kan flere afdelinger tilsluttes?",
+        "answer": "Ja. Flere afdelinger kan tilsluttes, når de kan identificeres i kildedataene eller bliver knyttet under onboardingen."
+      },
+      {
+        "question": "Hvad sker der efter pilotperioden?",
+        "answer": "Vi gennemgår de dokumenterede resultater sammen. Et videre samarbejde kræver en separat aftale, som begge parter accepterer."
+      },
+      {
+        "question": "Bliver vi automatisk betalende kunde?",
+        "answer": "Nej. Der er ingen automatisk konvertering, betaling eller abonnement efter pilotperioden."
+      },
+      {
+        "question": "Hvem ejer annoncerne, billederne og køretøjsdataene?",
+        "answer": "Virksomheden beholder sine rettigheder til materialet og bekræfter, at det må leveres til offentliggørelse. Autorell får kun de rettigheder, der er nødvendige for at importere, lagre, vise og synkronisere det efter pilotvilkårene."
+      },
+      {
+        "question": "Kan vi afslutte pilotprojektet?",
+        "answer": "Ja. Piloten kan afsluttes uden abonnementsforpligtelse. Den praktiske fjernelse af importeret materiale håndteres kontrolleret sammen med virksomheden."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Pilotansøgning",
+    "title": "Fortæl os om jeres lager",
+    "intro": "Ansøgningen starter ingen integration og opretter intet betalingsabonnement. Autorell gennemgår den og kontakter først den angivne person.",
+    "companySection": "Virksomhed",
+    "contactSection": "Kontaktperson",
+    "inventorySection": "Lager og tilslutning",
+    "consentSection": "Samtykker",
+    "companyName": "Virksomhedsnavn",
+    "registrationNumber": "CVR-nummer eller tilsvarende virksomhedsnummer",
+    "country": "Land",
+    "website": "Hjemmeside",
+    "contactName": "Kontaktperson",
+    "contactRole": "Stilling",
+    "email": "E-mail",
+    "phone": "Telefonnummer",
+    "inventorySize": "Omtrentligt antal aktive køretøjer",
+    "locationCount": "Antal afdelinger",
+    "currentSystem": "Nuværende lagersystem",
+    "integrationMethod": "Ønsket integrationsmetode",
+    "message": "Yderligere oplysninger",
+    "selectOption": "Vælg en mulighed",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2.000" },
+      { "value": "2000_plus", "label": "Flere end 2.000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Import fra hjemmeside (tilgængelig i piloten)" },
+      { "value": "xml", "label": "XML-feed (teknisk onboarding)" },
+      { "value": "csv", "label": "CSV-fil (teknisk onboarding)" },
+      { "value": "api", "label": "API (teknisk onboarding)" },
+      { "value": "dms", "label": "DMS-system (administrativ onboarding)" },
+      { "value": "unknown", "label": "Ved ikke endnu" }
+    ],
+    "privacyConsent": "Jeg har læst og accepterer Autorells privatlivspolitik.",
+    "contactConsent": "Jeg accepterer, at Autorell må kontakte virksomheden om pilotprogrammet.",
+    "privacyLink": "Læs privatlivspolitikken",
+    "submit": "Send ansøgning",
+    "submitting": "Sender ansøgning",
+    "requiredNote": "Felter markeret med * er obligatoriske.",
+    "successTitle": "Tak for jeres ansøgning",
+    "successBody": "Autorell gennemgår virksomheden og kontakter kontaktpersonen. Ingen integration eller offentliggørelse starter, før virksomheden er godkendt og pilotvilkårene er accepteret.",
+    "successReference": "Ansøgningsreference",
+    "sendAnother": "Send en ny ansøgning",
+    "genericError": "Ansøgningen kunne ikke sendes. Kontroller felterne, og prøv igen.",
+    "rateLimitError": "Der er sendt for mange ansøgninger fra denne forbindelse. Prøv igen senere.",
+    "duplicateError": "Der er for nylig sendt en ansøgning for denne e-mailadresse. Autorell kontakter jer efter gennemgangen."
+  }
+}

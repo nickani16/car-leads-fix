@@ -1205,7 +1205,7 @@ export default function PublicHeader({
                         : label
                     return (
                       <Link
-                        key={href}
+                        key={`${label}:${href}`}
                         href={href}
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
@@ -1267,7 +1267,7 @@ export default function PublicHeader({
                 if (item.kind === 'search') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={searchMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1368,7 +1368,7 @@ export default function PublicHeader({
                 if (item.kind === 'sell') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={sellMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1429,7 +1429,7 @@ export default function PublicHeader({
                 if (item.kind === 'business') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={businessMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1485,7 +1485,7 @@ export default function PublicHeader({
                 if (item.kind === 'help') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={helpMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1514,7 +1514,7 @@ export default function PublicHeader({
                       >
                         {helpMenuLinks.map(({ href: helpHref, label: helpLabel, description, icon: Icon }) => (
                           <Link
-                            key={helpHref}
+                            key={`${helpHref}:${helpLabel}`}
                             href={helpHref}
                             onClick={(event) => {
                               setHelpMenuOpen(false)
@@ -1540,7 +1540,7 @@ export default function PublicHeader({
 
                 return (
                   <Link
-                    key={href}
+                    key={`${label}:${href}`}
                     href={href}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={(event) => handleInternalNavigation(event, href)}
@@ -1752,7 +1752,7 @@ export default function PublicHeader({
                 }
 
                 return (
-                <div key={href}>
+                <div key={`${menu || 'link'}:${label}:${href}`}>
                   {children ? (
                     <>
                       <button
@@ -2175,7 +2175,7 @@ export default function PublicHeader({
                   }
 
                   return (
-                  <div key={href}>
+                  <div key={`${menu || 'link'}:${label}:${href}`}>
                     {children ? (
                       <>
                         <button

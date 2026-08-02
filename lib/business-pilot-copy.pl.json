@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Program pilotażowy Autorell",
+    "title": "Zostań jednym z pierwszych partnerskich dealerów Autorell",
+    "body": [
+      "Wybieramy ograniczoną liczbę dealerów pojazdów, którzy w okresie pilotażowym bezpłatnie połączą swój obecny stan magazynowy z Autorell.",
+      "Autorell importuje stan magazynowy, automatycznie aktualizuje ceny i dostępność oraz udostępnia statystyki wyświetleń, kliknięć i zapytań klientów.",
+      "Gdy współpraca zacznie przynosić udokumentowaną wartość handlową, wspólnie przygotujemy oddzielną umowę dotyczącą jej kontynuacji."
+    ],
+    "benefits": [
+      "Bezpłatne połączenie stanu magazynowego",
+      "Brak opłaty integracyjnej",
+      "Automatyczna aktualizacja stanu magazynowego",
+      "Brak zobowiązań w okresie pilotażowym",
+      "Statystyki ruchu i leadów",
+      "Indywidualne wdrożenie",
+      "Możliwość połączenia wielu lokalizacji",
+      "Oddzielna umowa handlowa dopiero po utworzeniu wartości"
+    ],
+    "primaryCta": "Zgłoś się do programu pilotażowego",
+    "secondaryCta": "Dowiedz się o połączeniu magazynu",
+    "availabilityNote": "Do pierwszej rundy pilotażowej zostanie przyjęta ograniczona liczba firm."
+  },
+  "pilotPage": {
+    "metaTitle": "Bezpłatny pilotaż magazynu dla dealerów | Autorell",
+    "metaDescription": "Zgłoś połączenie stanu pojazdów z Autorell z bezpłatnym wdrożeniem, automatyczną synchronizacją i bez automatycznego płatnego abonamentu.",
+    "heroEyebrow": "Program pilotażowy dla dealerów pojazdów",
+    "heroTitle": "Połącz stan pojazdów bez opłat",
+    "heroIntro": "Autorell poszukuje wybranych dealerów pojazdów do bezpłatnego programu pilotażowego. Łączymy obecny stan magazynowy, automatycznie aktualizujemy ogłoszenia i wspólnie mierzymy wyniki.",
+    "primaryCta": "Zgłoś się do programu pilotażowego",
+    "secondaryCta": "Jak działa import magazynu",
+    "includedTitle": "Co obejmuje program",
+    "includedIntro": "Pierwsze połączenie ma być praktyczne, mierzalne i pozbawione automatycznych zobowiązań handlowych.",
+    "included": [
+      "Bezpłatne wdrożenie",
+      "Bezpłatne połączenie techniczne",
+      "Import obecnego stanu pojazdów",
+      "Automatyczna synchronizacja nowych, zmienionych i usuniętych pojazdów",
+      "Profil firmy w Autorell",
+      "Statystyki wyświetleń ogłoszeń",
+      "Statystyki kliknięć i leadów",
+      "Wsparcie w okresie pilotażowym",
+      "Brak zobowiązań w okresie pilotażowym"
+    ],
+    "stepsTitle": "Jak to działa",
+    "steps": [
+      {
+        "title": "Wyślij zgłoszenie",
+        "text": "Firma przesyła krótkie zgłoszenie z informacjami o stanie magazynowym i preferowanej metodzie połączenia."
+      },
+      {
+        "title": "Autorell weryfikuje firmę",
+        "text": "Weryfikujemy firmę, jej stan magazynowy i źródło techniczne, zanim cokolwiek zostanie połączone."
+      },
+      {
+        "title": "Zaakceptuj warunki pilotażu",
+        "text": "Firma akceptuje warunki pilotażu i potwierdza prawa do danych oraz zdjęć pojazdów."
+      },
+      {
+        "title": "Łączymy źródło",
+        "text": "Autorell łączy zweryfikowaną stronę internetową i przygotowuje podgląd importu. Zgłoszenia XML, CSV, API i DMS przechodzą oddzielny proces technicznego wdrożenia."
+      },
+      {
+        "title": "Stan zostaje opublikowany i jest aktualizowany",
+        "text": "Zatwierdzone ogłoszenia są publikowane, a nowe, zmienione lub sprzedane pojazdy są bezpiecznie synchronizowane."
+      }
+    ],
+    "afterTitle": "Po okresie pilotażowym",
+    "afterLead": "Program pilotażowy nie przechodzi automatycznie w płatny abonament.",
+    "afterBody": "Jeśli Autorell wykaże istotny ruch, leady lub inną wartość handlową, strony mogą omówić oddzielną umowę handlową.",
+    "afterNote": "Żadna płatność, faktura ani subskrypcja nie może rozpocząć się bez nowej, wyraźnej zgody firmy.",
+    "faqTitle": "Pytania o program pilotażowy",
+    "faqs": [
+      {
+        "question": "Czy program pilotażowy jest płatny?",
+        "answer": "Nie. Połączenie techniczne, wdrożenie, import magazynu i automatyczna synchronizacja są bezpłatne w uzgodnionym okresie pilotażowym."
+      },
+      {
+        "question": "Czy musimy ręcznie publikować ogłoszenia?",
+        "answer": "Nie. Po zatwierdzeniu źródła i podglądu Autorell może tworzyć i aktualizować ogłoszenia z połączonego stanu magazynowego."
+      },
+      {
+        "question": "Jakie rodzaje magazynu można połączyć?",
+        "answer": "Można ocenić samochody osobowe, dostawcze i inne obsługiwane kategorie pojazdów. Dokładny zakres jest potwierdzany podczas przeglądu technicznego."
+      },
+      {
+        "question": "Jak często aktualizowany jest stan magazynowy?",
+        "answer": "Częstotliwość zależy od źródła i konfiguracji pilotażu. Codzienna synchronizacja jest zwykłym punktem wyjścia, a częstsza jest możliwa po uzgodnieniu i gdy pozwala na to technologia."
+      },
+      {
+        "question": "Co się dzieje po sprzedaży pojazdu?",
+        "answer": "Sprzedany lub usunięty pojazd jest najpierw potwierdzany podczas udanej synchronizacji, a następnie wstrzymywany lub oznaczany jako sprzedany. Tymczasowa awaria źródła nigdy nie usuwa całego magazynu."
+      },
+      {
+        "question": "Czy można połączyć wiele lokalizacji?",
+        "answer": "Tak. Wiele lokalizacji można połączyć, jeśli są rozpoznawalne w danych źródłowych lub zostaną przypisane podczas wdrożenia."
+      },
+      {
+        "question": "Co dzieje się po okresie pilotażowym?",
+        "answer": "Wspólnie przeglądamy udokumentowane wyniki. Kontynuacja współpracy wymaga oddzielnej umowy zaakceptowanej przez obie strony."
+      },
+      {
+        "question": "Czy automatycznie stajemy się płacącym klientem?",
+        "answer": "Nie. Po pilotażu nie ma automatycznej konwersji, płatności ani subskrypcji."
+      },
+      {
+        "question": "Kto jest właścicielem ogłoszeń, zdjęć i danych pojazdów?",
+        "answer": "Firma zachowuje prawa do materiałów i potwierdza, że może przekazać je do publikacji. Autorell otrzymuje wyłącznie prawa niezbędne do importowania, przechowywania, wyświetlania i synchronizowania zgodnie z warunkami pilotażu."
+      },
+      {
+        "question": "Czy możemy zakończyć projekt pilotażowy?",
+        "answer": "Tak. Pilotaż można zakończyć bez zobowiązania abonamentowego. Praktyczne usunięcie zaimportowanych materiałów jest realizowane w kontrolowany sposób wspólnie z firmą."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Zgłoszenie do pilotażu",
+    "title": "Opowiedz nam o swoim magazynie",
+    "intro": "Zgłoszenie nie uruchamia integracji ani płatnego abonamentu. Autorell najpierw je sprawdza i kontaktuje się ze wskazaną osobą.",
+    "companySection": "Firma",
+    "contactSection": "Osoba kontaktowa",
+    "inventorySection": "Magazyn i połączenie",
+    "consentSection": "Zgody",
+    "companyName": "Nazwa firmy",
+    "registrationNumber": "Numer rejestracyjny firmy",
+    "country": "Kraj",
+    "website": "Strona internetowa",
+    "contactName": "Osoba kontaktowa",
+    "contactRole": "Stanowisko",
+    "email": "E-mail",
+    "phone": "Numer telefonu",
+    "inventorySize": "Przybliżona liczba aktywnych pojazdów",
+    "locationCount": "Liczba lokalizacji",
+    "currentSystem": "Obecny system magazynowy",
+    "integrationMethod": "Preferowana metoda integracji",
+    "message": "Dodatkowe informacje",
+    "selectOption": "Wybierz opcję",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2 000" },
+      { "value": "2000_plus", "label": "Ponad 2 000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Import ze strony internetowej (dostępny w pilotażu)" },
+      { "value": "xml", "label": "Feed XML (wdrożenie techniczne)" },
+      { "value": "csv", "label": "Plik CSV (wdrożenie techniczne)" },
+      { "value": "api", "label": "API (wdrożenie techniczne)" },
+      { "value": "dms", "label": "System DMS (wdrożenie administracyjne)" },
+      { "value": "unknown", "label": "Jeszcze nie wiemy" }
+    ],
+    "privacyConsent": "Przeczytałem(-am) i akceptuję politykę prywatności Autorell.",
+    "contactConsent": "Zgadzam się, aby Autorell skontaktował się z firmą w sprawie programu pilotażowego.",
+    "privacyLink": "Przeczytaj politykę prywatności",
+    "submit": "Wyślij zgłoszenie",
+    "submitting": "Wysyłanie zgłoszenia",
+    "requiredNote": "Pola oznaczone * są wymagane.",
+    "successTitle": "Dziękujemy za zgłoszenie",
+    "successBody": "Autorell zweryfikuje firmę i skontaktuje się ze wskazaną osobą. Integracja ani publikacja nie rozpocznie się przed zatwierdzeniem firmy i akceptacją warunków pilotażu.",
+    "successReference": "Numer zgłoszenia",
+    "sendAnother": "Wyślij kolejne zgłoszenie",
+    "genericError": "Nie udało się wysłać zgłoszenia. Sprawdź pola i spróbuj ponownie.",
+    "rateLimitError": "Z tego połączenia wysłano zbyt wiele zgłoszeń. Spróbuj ponownie później.",
+    "duplicateError": "Niedawno wysłano zgłoszenie dla tego adresu e-mail. Autorell skontaktuje się po jego sprawdzeniu."
+  }
+}

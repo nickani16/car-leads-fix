@@ -13,6 +13,7 @@ import {
   Lock,
   MapPin,
   Plus,
+  RefreshCw,
   Settings,
   Upload,
   Users,
@@ -27,6 +28,7 @@ import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scop
 import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountBreadcrumbs'
 import AccountLogoutButton from '@/app/konto/AccountLogoutButton'
 import { getAccountCopy } from '@/lib/account-i18n'
+import { isBusinessFeatureEnabled } from '@/lib/business-feature-flags'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -51,6 +53,7 @@ export type CompanyPortalContext = {
   } | null
   listingSummary: AccountListingSummary
   listingOwnerUserIds: string[]
+  inventoryImportEnabled: boolean
 }
 
 export type CompanyPortalPageKey =
@@ -58,6 +61,7 @@ export type CompanyPortalPageKey =
   | 'listings'
   | 'create'
   | 'import'
+  | 'inventory'
   | 'analytics'
   | 'locations'
   | 'team'
@@ -72,6 +76,7 @@ const baseCopy = {
   listings: 'Listings',
   create: 'Create listing',
   import: 'Import listings',
+  inventory: 'Inventory connection',
   analytics: 'Analytics',
   locations: 'Locations',
   team: 'Team',
@@ -91,6 +96,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Annonser',
     create: 'Skapa annons',
     import: 'Importera annonser',
+    inventory: 'Lageranslutning',
     analytics: 'Analys',
     locations: 'Filialer',
     team: 'Team',
@@ -108,6 +114,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Anzeigen',
     create: 'Anzeige erstellen',
     import: 'Anzeigen importieren',
+    inventory: 'Bestandsanbindung',
     analytics: 'Analysen',
     locations: 'Standorte',
     team: 'Team',
@@ -125,6 +132,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Annonces',
     create: 'Créer une annonce',
     import: 'Importer des annonces',
+    inventory: 'Connexion du stock',
     analytics: 'Analyses',
     locations: 'Sites',
     team: 'Équipe',
@@ -142,6 +150,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Anuncios',
     create: 'Crear anuncio',
     import: 'Importar anuncios',
+    inventory: 'Conexión de inventario',
     analytics: 'Analítica',
     locations: 'Ubicaciones',
     team: 'Equipo',
@@ -159,6 +168,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Annunci',
     create: 'Crea annuncio',
     import: 'Importa annunci',
+    inventory: 'Collegamento inventario',
     analytics: 'Analisi',
     locations: 'Sedi',
     team: 'Team',
@@ -176,6 +186,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Advertenties',
     create: 'Advertentie maken',
     import: 'Advertenties importeren',
+    inventory: 'Voorraadkoppeling',
     analytics: 'Analyse',
     locations: 'Locaties',
     team: 'Team',
@@ -193,6 +204,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Ilmoitukset',
     create: 'Luo ilmoitus',
     import: 'Tuo ilmoituksia',
+    inventory: 'Varastoyhteys',
     analytics: 'Analytiikka',
     locations: 'Toimipisteet',
     team: 'Tiimi',
@@ -210,6 +222,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Annoncer',
     create: 'Opret annonce',
     import: 'Importér annoncer',
+    inventory: 'Lagerforbindelse',
     analytics: 'Analyse',
     locations: 'Lokationer',
     team: 'Team',
@@ -227,6 +240,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     listings: 'Ogłoszenia',
     create: 'Utwórz ogłoszenie',
     import: 'Importuj ogłoszenia',
+    inventory: 'Połączenie zapasów',
     analytics: 'Analityka',
     locations: 'Lokalizacje',
     team: 'Zespół',
@@ -252,6 +266,7 @@ const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideI
   { key: 'listings', href: '/account/company/listings', icon: FileText },
   { key: 'create', href: '/account/company/listings/create', icon: Plus },
   { key: 'import', href: '/account/company/import', icon: Upload },
+  { key: 'inventory', href: '/account/company/inventory', icon: RefreshCw },
   { key: 'analytics', href: '/account/company/analytics', icon: BarChart3 },
   { key: 'locations', href: '/account/company/locations', icon: MapPin },
   { key: 'team', href: '/account/company/team', icon: Users, requiredPlan: 'Growth' },
@@ -266,6 +281,7 @@ const companyBreadcrumbKey: Record<CompanyPortalPageKey, AccountCrumbKey> = {
   listings: 'companyListings',
   create: 'companyListingCreate',
   import: 'companyImport',
+  inventory: 'companyInventory',
   analytics: 'companyAnalytics',
   locations: 'companyLocations',
   team: 'companyTeam',
@@ -291,7 +307,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   if (profile?.account_type !== 'business') redirect(localizePublicHref(locale, '/account'))
 
   const scope = await resolveBusinessAccountScope(user.id, admin)
-  const [{ data: subscription }, listingSummary] = await Promise.all([
+  const [{ data: subscription }, listingSummary, { data: pilot }] = await Promise.all([
     admin
       .from('business_subscriptions')
       .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
@@ -311,7 +327,25 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
       categories: [],
       countries: [],
     })),
+    profile.company_id
+      ? admin
+          .from('business_pilot_programs')
+          .select('id')
+          .eq('organization_id', profile.company_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
+
+  const inventoryImportEnabled = Boolean(profile.company_id) && await isBusinessFeatureEnabled(
+    'dealer_inventory_import',
+    {
+      organizationId: profile.company_id,
+      pilotProgramId: pilot?.id || null,
+      marketCode: profile.country_code,
+    },
+  )
 
   return {
     locale,
@@ -320,6 +354,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     subscription: subscription || null,
     listingSummary,
     listingOwnerUserIds: scope.listingOwnerUserIds,
+    inventoryImportEnabled,
   }
 }
 
@@ -358,7 +393,7 @@ export function CompanyPortalShell({
               {context.profile.company_name || 'Autorell'}
             </h2>
             <nav className="mt-4 grid gap-1 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
-              {navigation.map((item) => {
+              {navigation.filter((item) => item.key !== 'inventory' || context.inventoryImportEnabled).map((item) => {
                 const Icon = item.icon
                 const locked = Boolean(item.requiredPlan && !planAllows(plan, item.requiredPlan))
                 const label = String(copy[item.key as keyof typeof copy] || item.key)

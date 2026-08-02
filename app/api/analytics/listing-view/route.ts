@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 function cleanText(value: unknown, maxLength = 500) {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : ''
@@ -25,6 +26,11 @@ export async function POST(request: Request) {
   }
   const listingId = cleanText(body.listingId, 80)
   if (!listingId) return NextResponse.json({ error: 'Missing listing.' }, { status: 400 })
+  const userAgent = String(request.headers.get('user-agent') || '')
+  const purpose = `${request.headers.get('purpose') || ''} ${request.headers.get('sec-purpose') || ''} ${request.headers.get('next-router-prefetch') || ''}`
+  if (/bot|crawler|spider|preview|headless|lighthouse|pagespeed|monitor/i.test(userAgent) || /prefetch|prerender/i.test(purpose)) return new NextResponse(null, { status: 204 })
+  const viewLimit = checkRateLimit({ key: `listing-view:${listingId}:${getClientIp(request)}`, limit: 3, windowMs: 24 * 60 * 60 * 1000 })
+  if (viewLimit.limited) return new NextResponse(null, { status: 204 })
 
   const admin = createAdminClient()
   const { data: listing } = await admin

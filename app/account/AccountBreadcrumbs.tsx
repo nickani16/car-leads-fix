@@ -20,6 +20,7 @@ export type AccountCrumbKey =
   | 'companyListings'
   | 'companyListingCreate'
   | 'companyImport'
+  | 'companyInventory'
   | 'companyTeam'
   | 'companyAnalytics'
   | 'companyLocations'
@@ -52,6 +53,7 @@ const englishBreadcrumbs: BreadcrumbCopy = {
   companyListings: 'Inventory',
   companyListingCreate: 'New listing',
   companyImport: 'Import',
+  companyInventory: 'Inventory connection',
   companyTeam: 'Team',
   companyAnalytics: 'Analytics',
   companyLocations: 'Locations',
@@ -78,6 +80,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Lager',
     companyListingCreate: 'Ny annons',
     companyImport: 'Import',
+    companyInventory: 'Lageranslutning',
     companyTeam: 'Team',
     companyAnalytics: 'Analys',
     companyLocations: 'Filialer',
@@ -100,6 +103,8 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyProfile: 'Firmenprofil',
     companyListings: 'Bestand',
     companyListingCreate: 'Neue Anzeige',
+    companyImport: 'Import',
+    companyInventory: 'Bestandsanbindung',
     companyAnalytics: 'Analyse',
     companyLocations: 'Standorte',
     companySubscription: 'Tarife',
@@ -121,6 +126,8 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyProfile: 'Bedrijfsprofiel',
     companyListings: 'Voorraad',
     companyListingCreate: 'Nieuwe advertentie',
+    companyImport: 'Import',
+    companyInventory: 'Voorraadkoppeling',
     companyAnalytics: 'Analyse',
     companyLocations: 'Locaties',
     companySubscription: 'Abonnementen',
@@ -142,6 +149,8 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyProfile: 'Profil d’entreprise',
     companyListings: 'Stock',
     companyListingCreate: 'Nouvelle annonce',
+    companyImport: 'Import',
+    companyInventory: 'Connexion du stock',
     companyAnalytics: 'Analyse',
     companyLocations: 'Sites',
     companySubscription: 'Abonnements',
@@ -165,6 +174,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Inventario',
     companyListingCreate: 'Nuevo anuncio',
     companyImport: 'Importación',
+    companyInventory: 'Conexión de inventario',
     companyTeam: 'Equipo',
     companyAnalytics: 'Analítica',
     companyLocations: 'Ubicaciones',
@@ -189,6 +199,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Inventario',
     companyListingCreate: 'Nuovo annuncio',
     companyImport: 'Importazione',
+    companyInventory: 'Collegamento inventario',
     companyAnalytics: 'Analisi',
     companyLocations: 'Sedi',
     companySubscription: 'Piani',
@@ -211,6 +222,8 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyProfile: 'Profil firmy',
     companyListings: 'Magazyn',
     companyListingCreate: 'Nowe ogłoszenie',
+    companyImport: 'Import',
+    companyInventory: 'Połączenie zapasów',
     companyTeam: 'Zespół',
     companyAnalytics: 'Analityka',
     companyLocations: 'Lokalizacje',
@@ -235,6 +248,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyListings: 'Varasto',
     companyListingCreate: 'Uusi ilmoitus',
     companyImport: 'Tuonti',
+    companyInventory: 'Varastoyhteys',
     companyAnalytics: 'Analytiikka',
     companyLocations: 'Toimipisteet',
     companySubscription: 'Tilaukset',
@@ -257,6 +271,8 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyProfile: 'Firmaprofil',
     companyListings: 'Lager',
     companyListingCreate: 'Ny annonce',
+    companyImport: 'Import',
+    companyInventory: 'Lagerforbindelse',
     companyTeam: 'Team',
     companyAnalytics: 'Analyse',
     companyLocations: 'Lokationer',

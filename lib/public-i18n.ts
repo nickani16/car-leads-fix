@@ -180,6 +180,8 @@ export const publicPagePaths = [
   '/contact',
   '/pricing',
   '/business',
+  '/business/pilot',
+  '/business/inventory-import',
   '/saved-searches',
   '/privacy',
   '/cookies',

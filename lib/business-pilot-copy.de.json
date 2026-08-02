@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Autorell Pilotprogramm",
+    "title": "Werden Sie einer der ersten Partnerhändler von Autorell",
+    "body": [
+      "Wir wählen eine begrenzte Anzahl von Fahrzeughändlern aus, die ihren bestehenden Fahrzeugbestand während der Pilotphase kostenlos an Autorell anbinden können.",
+      "Autorell importiert Ihren Bestand, hält Preise und Bestandsstatus automatisch aktuell und liefert Statistiken zu Reichweite, Klicks und Kundenanfragen.",
+      "Sobald die Zusammenarbeit einen dokumentierten kommerziellen Wert schafft, erarbeiten wir gemeinsam eine separate Vereinbarung für die weitere Zusammenarbeit."
+    ],
+    "benefits": [
+      "Kostenlose Bestandsanbindung",
+      "Keine Integrationsgebühr",
+      "Automatische Bestandsaktualisierung",
+      "Keine Bindung während der Pilotphase",
+      "Statistiken zu Traffic und Leads",
+      "Persönliches Onboarding",
+      "Mehrere Standorte können angebunden werden",
+      "Separate kommerzielle Vereinbarung erst nach geschaffenem Mehrwert"
+    ],
+    "primaryCta": "Für das Pilotprogramm bewerben",
+    "secondaryCta": "Mehr zur Bestandsanbindung",
+    "availabilityNote": "Für die erste Pilotrunde wird nur eine begrenzte Anzahl von Unternehmen aufgenommen."
+  },
+  "pilotPage": {
+    "metaTitle": "Kostenlose Bestandspilotphase für Händler | Autorell",
+    "metaDescription": "Bewerben Sie sich für die kostenlose Anbindung Ihres Fahrzeugbestands an Autorell mit Onboarding, automatischer Synchronisierung und ohne automatisches Bezahlabo.",
+    "heroEyebrow": "Pilotprogramm für Fahrzeughändler",
+    "heroTitle": "Binden Sie Ihren Fahrzeugbestand kostenlos an",
+    "heroIntro": "Autorell sucht ausgewählte Fahrzeughändler für ein kostenloses Pilotprogramm. Wir binden Ihren bestehenden Bestand an, halten die Anzeigen automatisch aktuell und messen die Ergebnisse gemeinsam mit Ihnen.",
+    "primaryCta": "Für das Pilotprogramm bewerben",
+    "secondaryCta": "So funktioniert der Bestandsimport",
+    "includedTitle": "Das ist enthalten",
+    "includedIntro": "Die erste Anbindung ist praktisch, messbar und frei von automatischen kommerziellen Verpflichtungen.",
+    "included": [
+      "Kostenloses Onboarding",
+      "Kostenlose technische Anbindung",
+      "Import Ihres bestehenden Fahrzeugbestands",
+      "Automatische Synchronisierung neuer, geänderter und entfernter Fahrzeuge",
+      "Unternehmensprofil auf Autorell",
+      "Statistiken zu Anzeigenaufrufen",
+      "Statistiken zu Klicks und Leads",
+      "Support während der Pilotphase",
+      "Keine Bindung während der Pilotphase"
+    ],
+    "stepsTitle": "So funktioniert es",
+    "steps": [
+      {
+        "title": "Bewerbung senden",
+        "text": "Ihr Unternehmen sendet eine kurze Bewerbung mit Angaben zum Bestand und zur gewünschten Anbindungsmethode."
+      },
+      {
+        "title": "Autorell prüft das Unternehmen",
+        "text": "Wir prüfen das Unternehmen, den Bestand und die technische Quelle, bevor etwas angebunden wird."
+      },
+      {
+        "title": "Pilotbedingungen akzeptieren",
+        "text": "Das Unternehmen akzeptiert die Pilotbedingungen und bestätigt seine Rechte an Fahrzeugdaten und Bildern."
+      },
+      {
+        "title": "Wir binden die Quelle an",
+        "text": "Autorell bindet die verifizierte Website an und erstellt eine Importvorschau. Anfragen zu XML, CSV, API und DMS werden in einem separaten technischen Onboarding geprüft."
+      },
+      {
+        "title": "Der Bestand wird veröffentlicht und aktuell gehalten",
+        "text": "Freigegebene Anzeigen werden veröffentlicht und neue, geänderte oder verkaufte Fahrzeuge sicher synchronisiert."
+      }
+    ],
+    "afterTitle": "Nach der Pilotphase",
+    "afterLead": "Das Pilotprogramm geht nicht automatisch in ein kostenpflichtiges Abonnement über.",
+    "afterBody": "Wenn Autorell relevanten Traffic, Leads oder einen anderen kommerziellen Wert nachweisen kann, können die Parteien eine separate kommerzielle Vereinbarung besprechen.",
+    "afterNote": "Keine Zahlung, Rechnung oder kein Abonnement darf ohne eine neue ausdrückliche Zustimmung des Unternehmens beginnen.",
+    "faqTitle": "Fragen zum Pilotprogramm",
+    "faqs": [
+      {
+        "question": "Kostet das Pilotprogramm etwas?",
+        "answer": "Nein. Technische Anbindung, Onboarding, Bestandsimport und automatische Synchronisierung sind während der vereinbarten Pilotphase kostenlos."
+      },
+      {
+        "question": "Müssen wir Anzeigen manuell veröffentlichen?",
+        "answer": "Nein. Sobald Quelle und Vorschau freigegeben sind, kann Autorell die Anzeigen aus dem angebundenen Bestand erstellen und aktualisieren."
+      },
+      {
+        "question": "Welche Arten von Beständen können angebunden werden?",
+        "answer": "Pkw, Transporter und weitere unterstützte Fahrzeugkategorien können geprüft werden. Der genaue Umfang wird bei der technischen Prüfung bestätigt."
+      },
+      {
+        "question": "Wie oft wird der Bestand aktualisiert?",
+        "answer": "Die Häufigkeit hängt von Quelle und Pilotaufbau ab. Eine tägliche Synchronisierung ist der übliche Startpunkt, mit häufigeren Läufen, wenn vereinbart und technisch möglich."
+      },
+      {
+        "question": "Was geschieht, wenn ein Fahrzeug verkauft wird?",
+        "answer": "Ein verkauftes oder entferntes Fahrzeug wird zuerst durch eine erfolgreiche Synchronisierung bestätigt und danach pausiert oder als verkauft markiert. Ein vorübergehender Quellenausfall entfernt niemals den gesamten Bestand."
+      },
+      {
+        "question": "Können mehrere Standorte angebunden werden?",
+        "answer": "Ja. Mehrere Standorte können angebunden werden, wenn sie in den Quelldaten erkennbar sind oder beim Onboarding zugeordnet werden."
+      },
+      {
+        "question": "Was passiert nach der Pilotphase?",
+        "answer": "Wir prüfen die dokumentierten Ergebnisse gemeinsam. Eine weitere Zusammenarbeit erfordert eine separate Vereinbarung, die beide Parteien akzeptieren."
+      },
+      {
+        "question": "Werden wir automatisch zahlender Kunde?",
+        "answer": "Nein. Nach der Pilotphase gibt es keine automatische Umstellung, Zahlung oder kein Abonnement."
+      },
+      {
+        "question": "Wem gehören Anzeigen, Bilder und Fahrzeugdaten?",
+        "answer": "Das Unternehmen behält seine Rechte am Material und bestätigt, dass es zur Veröffentlichung bereitgestellt werden darf. Autorell erhält nur die Rechte, die zum Importieren, Speichern, Anzeigen und Synchronisieren gemäß den Pilotbedingungen erforderlich sind."
+      },
+      {
+        "question": "Können wir das Pilotprojekt beenden?",
+        "answer": "Ja. Die Pilotphase kann ohne Abonnementbindung beendet werden. Die kontrollierte Entfernung importierten Materials wird gemeinsam mit dem Unternehmen geregelt."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Pilotbewerbung",
+    "title": "Erzählen Sie uns von Ihrem Bestand",
+    "intro": "Die Bewerbung startet keine Integration und erstellt kein kostenpflichtiges Abonnement. Autorell prüft sie und kontaktiert zuerst die angegebene Person.",
+    "companySection": "Unternehmen",
+    "contactSection": "Kontaktperson",
+    "inventorySection": "Bestand und Anbindung",
+    "consentSection": "Einwilligungen",
+    "companyName": "Unternehmensname",
+    "registrationNumber": "Handelsregisternummer oder entsprechende Unternehmensnummer",
+    "country": "Land",
+    "website": "Website",
+    "contactName": "Kontaktperson",
+    "contactRole": "Position",
+    "email": "E-Mail",
+    "phone": "Telefonnummer",
+    "inventorySize": "Ungefähre Anzahl aktiver Fahrzeuge",
+    "locationCount": "Anzahl der Standorte",
+    "currentSystem": "Aktuelles Bestandssystem",
+    "integrationMethod": "Bevorzugte Integrationsmethode",
+    "message": "Weitere Informationen",
+    "selectOption": "Option auswählen",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2.000" },
+      { "value": "2000_plus", "label": "Mehr als 2.000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Website-Import (im Pilot verfügbar)" },
+      { "value": "xml", "label": "XML-Feed (technisches Onboarding)" },
+      { "value": "csv", "label": "CSV-Datei (technisches Onboarding)" },
+      { "value": "api", "label": "API (technisches Onboarding)" },
+      { "value": "dms", "label": "DMS-System (administratives Onboarding)" },
+      { "value": "unknown", "label": "Noch nicht sicher" }
+    ],
+    "privacyConsent": "Ich habe die Datenschutzerklärung von Autorell gelesen und akzeptiere sie.",
+    "contactConsent": "Ich stimme zu, dass Autorell das Unternehmen zum Pilotprogramm kontaktieren darf.",
+    "privacyLink": "Datenschutzerklärung lesen",
+    "submit": "Bewerbung senden",
+    "submitting": "Bewerbung wird gesendet",
+    "requiredNote": "Mit * gekennzeichnete Felder sind Pflichtfelder.",
+    "successTitle": "Vielen Dank für Ihre Bewerbung",
+    "successBody": "Autorell prüft das Unternehmen und meldet sich bei der Kontaktperson. Keine Integration oder Veröffentlichung beginnt, bevor das Unternehmen genehmigt wurde und die Pilotbedingungen akzeptiert wurden.",
+    "successReference": "Bewerbungsreferenz",
+    "sendAnother": "Weitere Bewerbung senden",
+    "genericError": "Die Bewerbung konnte nicht gesendet werden. Prüfen Sie die Felder und versuchen Sie es erneut.",
+    "rateLimitError": "Von dieser Verbindung wurden zu viele Bewerbungen gesendet. Bitte versuchen Sie es später erneut.",
+    "duplicateError": "Für diese E-Mail-Adresse wurde kürzlich eine Bewerbung eingereicht. Autorell meldet sich nach der Prüfung."
+  }
+}

@@ -16,7 +16,11 @@ import {
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import BrandLogo from '@/app/components/BrandLogo'
+import BusinessPilotPromo from '@/app/business/pilot/BusinessPilotPromo'
 import BusinessFaqClient from './BusinessFaqClient'
+import { getBusinessPilotCopy } from '@/lib/business-pilot-i18n'
+import { isBusinessFeatureEnabled } from '@/lib/business-feature-flags'
+import { getBusinessPlanCopy, type BusinessPlanCopy } from '@/lib/business-plan-i18n'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -180,14 +184,27 @@ export default async function BusinessPage({
   const registerHref = localizePublicHref(locale, '/register?account=business')
   const pricingHref = localizePublicHref(locale, '/pricing#business')
   const contactHref = localizePublicHref(locale, '/contact')
+  const pilotEnabled = await isBusinessFeatureEnabled('business_pilot_program', {
+    marketCode: String(marketCode || 'en').toLowerCase(),
+  })
+  const pilotCopy = getBusinessPilotCopy(locale).businessSection
+  const pilotHref = localizePublicHref(locale, '/business/pilot')
+  const inventoryImportHref = localizePublicHref(locale, '/business/inventory-import')
 
   return (
     <main className="overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <AppleHero copy={copy} pricingHref={pricingHref} />
       <BusinessInsights copy={copy} />
-      <NextStep copy={copy} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
-      <BusinessFaq copy={copy} />
+      <NextStep copy={copy} planCopy={getBusinessPlanCopy(locale)} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
+      {pilotEnabled ? (
+        <BusinessPilotPromo
+          copy={pilotCopy}
+          applicationHref={`${pilotHref}#application`}
+          inventoryHref={inventoryImportHref}
+        />
+      ) : null}
+      <BusinessFaq copy={copy} planCopy={getBusinessPlanCopy(locale)} />
       <PublicFooter locale={locale} />
     </main>
   )
@@ -286,75 +303,31 @@ function BusinessInsights({ copy }: { copy: BusinessCopy }) {
 
 function NextStep({
   copy,
+  planCopy,
   registerHref,
   pricingHref,
   contactHref,
 }: {
   copy: BusinessCopy
+  planCopy: BusinessPlanCopy
   registerHref: string
   pricingHref: string
   contactHref: string
 }) {
-  const plans = [
-    {
-      name: 'Starter',
-      audience: 'Small dealers',
-      price: '499 kr',
-      period: '/mån',
-      limit: '25 aktiva annonser',
-      text: 'För mindre lager som behöver dealer-profil och ett mer professionellt annonsflöde.',
-      href: registerHref,
-      cta: 'Skapa konto',
-      features: ['Dealer-profil Basic', 'Logo och kontaktväg', 'Standardförfrågningar'],
-    },
-    {
-      name: 'Growth',
-      audience: 'Growing team',
-      price: '999 kr',
-      period: '/mån',
-      limit: '100 aktiva annonser',
-      text: 'För företag där flera säljare arbetar i samma konto och publicerar löpande.',
-      href: pricingHref,
-      cta: 'Se priser',
-      recommended: true,
-      features: ['Dealer solutions Plus', '10 teamkonton', 'Roller för säljare'],
-    },
-    {
-      name: 'Professional',
-      audience: 'High volume',
-      price: '1 999 kr',
-      period: '/mån',
-      limit: '500 aktiva annonser',
-      text: 'För större lager med hög volym, fler säljare och bättre uppföljning.',
-      href: pricingHref,
-      cta: 'Jämför plan',
-      features: ['Dealer solutions Pro', '50+ teamkonton', 'Rapporter och export'],
-    },
-    {
-      name: 'Enterprise',
-      audience: 'Tailored',
-      price: 'Anpassat',
-      period: '',
-      limit: 'Anpassad kvot',
-      text: 'För importörer, kedjor och operatörer med särskilda behov för volym och process.',
-      href: contactHref,
-      cta: 'Kontakta oss',
-      features: ['Avancerad dealer-lösning', 'Utökat team', 'Enterprise-support'],
-    },
-  ]
+  const hrefByKind = { register: registerHref, pricing: pricingHref, contact: contactHref }
 
   return (
     <section className="overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto w-full max-w-[1120px]">
         <div className="flex flex-col gap-3 sm:max-w-[620px]">
           <h2 className="text-4xl font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.stepTitle}</h2>
-          <p className="max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-[620px]">Välj plan efter lager, team och hur många annonser ni vill ha aktiva samtidigt.</p>
+          <p className="max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-[620px]">{planCopy.intro}</p>
         </div>
         <div className="mt-10 flex gap-5 overflow-x-auto pb-6 pr-8 [scrollbar-width:thin]">
-          {plans.map((plan) => (
+          {planCopy.plans.map((plan) => (
             <Link
               key={plan.name}
-              href={plan.href}
+              href={hrefByKind[plan.hrefKind]}
               className={`group flex min-h-[430px] w-[300px] shrink-0 snap-start flex-col rounded-[18px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] sm:w-[320px] ${
                 plan.recommended ? 'border-[#0866ff] bg-[#f4f8ff]' : 'border-[#e1e7f0] bg-[#f5f5f7]'
               }`}
@@ -364,7 +337,7 @@ function NextStep({
                   {plan.recommended ? <Layers3 className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
                 </div>
                 {plan.recommended ? (
-                  <span className="rounded-full border border-[#0866ff] bg-white px-3 py-1 text-[11px] font-semibold text-[#0866ff]">Rekommenderad</span>
+                  <span className="rounded-full border border-[#0866ff] bg-white px-3 py-1 text-[11px] font-semibold text-[#0866ff]">{planCopy.recommended}</span>
                 ) : null}
               </div>
               <p className="mt-6 text-[11px] font-semibold uppercase tracking-[.14em] text-[#667085]">{plan.audience}</p>
@@ -397,13 +370,10 @@ function NextStep({
   )
 }
 
-function BusinessFaq({ copy }: { copy: BusinessCopy }) {
+function BusinessFaq({ copy, planCopy }: { copy: BusinessCopy; planCopy: BusinessPlanCopy }) {
   const extendedFaqs = [
     ...copy.faqs,
-    ['Vilken plan passar mindre handlare?', 'Starter passar företag som vill ha en professionell företagssida och upp till 25 aktiva annonser utan ett större teamflöde.'],
-    ['När behöver vi Growth?', 'Growth passar när flera säljare ska arbeta i samma konto, när lagret växer och när upp till 100 aktiva annonser behövs.'],
-    ['Vad är skillnaden med Professional?', 'Professional är för större lager med upp till 500 aktiva annonser, fler teamkonton, rapporter, export och prioriterad hantering.'],
-    ['Finns Enterprise för kedjor och importörer?', 'Ja. Enterprise anpassas för större aktörer med särskilda behov kring volym, import, process, support och presentation.'],
+    ...planCopy.faqs,
   ] as const
 
   return (
