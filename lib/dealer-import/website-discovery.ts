@@ -75,7 +75,7 @@ export async function verifyDealerWebsite(
         maxBytes: 2 * 1024 * 1024,
         timeoutMs: 10_000,
         maxRedirects: 2,
-        acceptedContentTypes: ['text/html', 'application/xhtml+xml'],
+        acceptedContentTypes: ['text/html', 'application/xhtml+xml', 'text/plain'],
       })
       const $ = load(result.text)
       const value = $('meta[name="autorell-site-verification"]').first().attr('content')?.trim() || ''
@@ -113,7 +113,7 @@ export async function analyzeDealerWebsite(
   let sourceAvailable = false
   let seedHtml = ''
   try {
-    const seedResult = await safeFetchText(startUrl, { allowedHosts, maxBytes: 2 * 1024 * 1024, timeoutMs: 10_000, maxRedirects: 3, acceptedContentTypes: ['text/html', 'application/xhtml+xml'] })
+    const seedResult = await safeFetchText(startUrl, { allowedHosts, maxBytes: 2 * 1024 * 1024, timeoutMs: 10_000, maxRedirects: 3, acceptedContentTypes: ['text/html', 'application/xhtml+xml', 'text/plain'] })
     sourceAvailable = seedResult.status >= 200 && seedResult.status < 300
     if (sourceAvailable) seedHtml = seedResult.text
     else failedUrls.push({ url: startUrl, code: `HTTP_${seedResult.status}` })
@@ -168,7 +168,7 @@ export async function analyzeDealerWebsite(
       return { url, failure: 'ROBOTS_DISALLOWS_VEHICLE_PAGE' }
     }
     try {
-      const page = await safeFetchText(url, { allowedHosts, maxBytes: 2 * 1024 * 1024, timeoutMs: 10_000, maxRedirects: 3, acceptedContentTypes: ['text/html', 'application/xhtml+xml'] })
+      const page = await safeFetchText(url, { allowedHosts, maxBytes: 2 * 1024 * 1024, timeoutMs: 10_000, maxRedirects: 3, acceptedContentTypes: ['text/html', 'application/xhtml+xml', 'text/plain'] })
       if (page.status < 200 || page.status >= 300) return { url, failure: `HTTP_${page.status}` }
       const vehicle = parseVehicleHtml(page.text, page.url)
       return vehicle ? { url, vehicle } : { url, failure: 'VEHICLE_DATA_NOT_FOUND' }

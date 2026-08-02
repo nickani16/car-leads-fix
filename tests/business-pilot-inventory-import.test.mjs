@@ -7,7 +7,7 @@ import ts from 'typescript'
 
 const require = createRequire(import.meta.url)
 const fixtureRoot = 'tests/fixtures/controlled-dealer'
-const [parserSource, safeFetchSource, discoverySource, workerSource, listingSyncSource, pilotSource, pilotMigration, importMigration, featureFlagSource, pilotRouteSource, pilotAdminRouteSource, importAdminRouteSource, inventoryI18nSource, planI18nSource, pilotDashboardI18nSource, inventoryClientSource, inventoryCreateRouteSource, inventorySourceRoute, pilotEmailSource, importEmailSource, companyPortalSource, inventoryPageSource] = await Promise.all([
+const [parserSource, safeFetchSource, discoverySource, workerSource, listingSyncSource, pilotSource, pilotMigration, importMigration, insightsPolicyMigration, featureFlagSource, pilotRouteSource, pilotAdminRouteSource, importAdminRouteSource, inventoryI18nSource, planI18nSource, pilotDashboardI18nSource, inventoryClientSource, inventoryCreateRouteSource, inventorySourceRoute, pilotEmailSource, importEmailSource, companyPortalSource, inventoryPageSource] = await Promise.all([
   readFile('lib/dealer-import/vehicle-parser.ts', 'utf8'),
   readFile('lib/dealer-import/safe-fetch.ts', 'utf8'),
   readFile('lib/dealer-import/website-discovery.ts', 'utf8'),
@@ -16,6 +16,7 @@ const [parserSource, safeFetchSource, discoverySource, workerSource, listingSync
   readFile('lib/business-pilot.ts', 'utf8'),
   readFile('supabase/migrations/20260802082104_business_pilot_foundation.sql', 'utf8'),
   readFile('supabase/migrations/20260802085618_dealer_inventory_import_foundation.sql', 'utf8'),
+  readFile('supabase/migrations/20260802172000_marketplace_insights_policy_hardening.sql', 'utf8'),
   readFile('lib/business-feature-flags.ts', 'utf8'),
   readFile('app/api/business/pilot-applications/route.ts', 'utf8'),
   readFile('app/api/admin/business-pilots/[id]/route.ts', 'utf8'),
@@ -173,6 +174,11 @@ test('outbound URL validation blocks local, private, reserved and credentialed t
   assert.throws(() => safeFetch.validateOutboundUrl('https://cdn.example.com/a', new Set(['example.com'])), /IMPORT_REDIRECT_HOST_BLOCKED/)
   assert.match(safeFetchSource, /current = validateOutboundUrl\(new URL\(location, current\)/)
   assert.match(safeFetchSource, /records\.some\(\(record\) => !isPublicIpAddress/)
+  assert.match(safeFetchSource, /left\.family === 4 \? -1 : 1/)
+  assert.match(safeFetchSource, /requestPinnedAddress/)
+  assert.match(safeFetchSource, /deadline - Date\.now\(\)/)
+  assert.match(safeFetchSource, /lookupOptions\.all/)
+  assert.match(safeFetchSource, /callback\(null, \[selected\]\)/)
   assert.match(safeFetchSource, /size > maxBytes/)
 })
 
@@ -191,6 +197,11 @@ test('website discovery never expands beyond the verified domain boundary', () =
   assert.equal(hosts.has('dealer.example'), true)
   assert.equal(hosts.has('stock.dealer.example'), true)
   assert.equal(hosts.has('unverified.example'), false)
+})
+
+test('website verification and parsing accept safely bounded plain-text HTML responses', () => {
+  const plainTextAllowances = discoverySource.match(/acceptedContentTypes: \[[^\]]*'text\/plain'[^\]]*\]/g) || []
+  assert.ok(plainTextAllowances.length >= 4)
 })
 
 test('pilot application validation requires consent, active market and public website', () => {
@@ -221,6 +232,8 @@ test('database policies isolate organizations and hard-lock free pilots from aut
   assert.match(importMigration, /dealer_import_items_source_organization_fk/)
   assert.match(importMigration, /marketplace_listings_import_item_organization_fk/)
   assert.match(importMigration, /claim_dealer_import_run\(p_run_id uuid\)/)
+  assert.equal((insightsPolicyMigration.match(/\(select auth\.uid\(\)\)/g) || []).length, 7)
+  assert.doesNotMatch(insightsPolicyMigration, /using \(auth\.uid\(\)/)
 })
 
 test('publication, deduplication, missing-item and image safety rules are explicit', () => {

@@ -104,12 +104,40 @@ async function requestOnce(url: URL, options: SafeFetchOptions): Promise<SafeFet
   if (!records.length || records.some((record) => !isPublicIpAddress(record.address))) {
     throw new Error('IMPORT_DNS_PRIVATE_OR_EMPTY')
   }
-  const selected = records[0]
+  const timeoutMs = options.timeoutMs ?? 10_000
+  const deadline = Date.now() + timeoutMs
+  const candidates = [...records].sort((left, right) => left.family === right.family ? 0 : left.family === 4 ? -1 : 1)
+  let lastError: Error | null = null
+
+  for (const selected of candidates) {
+    const remainingTimeout = deadline - Date.now()
+    if (remainingTimeout <= 0) break
+    try {
+      return await requestPinnedAddress(url, { ...options, timeoutMs: remainingTimeout }, selected)
+    } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error))
+      if (['IMPORT_RESPONSE_TOO_LARGE', 'IMPORT_CONTENT_TYPE_BLOCKED'].includes(normalized.message)) throw normalized
+      lastError = normalized
+    }
+  }
+
+  throw lastError || new Error('IMPORT_REQUEST_TIMEOUT')
+}
+
+async function requestPinnedAddress(
+  url: URL,
+  options: SafeFetchOptions,
+  selected: { address: string; family: number },
+): Promise<SafeFetchResult> {
   const maxBytes = options.maxBytes ?? 2 * 1024 * 1024
   const timeoutMs = options.timeoutMs ?? 10_000
   const transport = url.protocol === 'https:' ? https : http
 
-  const pinnedLookup = ((_hostname, _options, callback) => {
+  const pinnedLookup = ((_hostname, lookupOptions, callback) => {
+    if (typeof lookupOptions === 'object' && lookupOptions.all) {
+      callback(null, [selected])
+      return
+    }
     callback(null, selected.address, selected.family)
   }) as LookupFunction
 
