@@ -5,6 +5,7 @@ import ts from 'typescript'
 const root = process.cwd()
 const files = [
   'app/components/BusinessMarketplaceHome.tsx',
+  'app/components/HomeHeroVehicleSearch.tsx',
   'app/components/MarketplaceCategoryBrowser.tsx',
   'app/components/MarketplaceSearch.tsx',
   'app/components/PublicHeader.tsx',

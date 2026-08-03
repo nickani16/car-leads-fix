@@ -38,7 +38,7 @@ const homeContentContainerClass =
 
 const homeCopy = {
   sv: {
-    heroAlt: 'Europeisk fordonsmarknad för privatpersoner och företag',
+    heroAlt: 'Två personer i en bil på väg mot nästa upplevelse',
     vehicleNewsTitle: 'Fordonsnyheter',
     allNews: 'Alla nyheter',
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
@@ -69,7 +69,7 @@ const homeCopy = {
     businessCta: 'Kom igång som företag',
   },
   en: {
-    heroAlt: 'European vehicle marketplace for private and business sellers',
+    heroAlt: 'Two people sharing a moment inside a car',
     vehicleNewsTitle: 'Vehicle news',
     allNews: 'All news',
     newsScrollLabel: 'Scroll vehicle news',
@@ -100,7 +100,7 @@ const homeCopy = {
     businessCta: 'Get started as a business',
   },
   de: {
-    heroAlt: 'Europäischer Fahrzeugmarktplatz für Privatpersonen und Unternehmen',
+    heroAlt: 'Zwei Menschen teilen einen Moment im Auto',
     vehicleNewsTitle: 'Fahrzeugnews',
     allNews: 'Alle News',
     newsScrollLabel: 'Fahrzeugnews durchblättern',
@@ -300,21 +300,23 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <section className="-mt-[2px] bg-white pt-0">
-        <div className="relative min-h-[665px] overflow-visible bg-[#d9e5f1] sm:min-h-[610px] lg:min-h-[620px]">
+      <section className="-mt-[2px] bg-[#e9eef4] pt-0">
+        <div className="relative h-[232px] overflow-hidden bg-[#d9e5f1] sm:h-[320px] lg:h-[430px] xl:h-[455px]">
           <Image
-            src="/autorell-home-hero-street-cars.jpg"
+            src="/autorell-home-search-hero.jpeg"
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-[center_58%]"
+            className="object-cover object-[68%_48%] sm:object-[62%_48%] lg:object-[center_46%]"
             sizes="100vw"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-0 top-0 h-[54%] w-[34%] bg-[radial-gradient(ellipse_at_8%_18%,rgba(255,237,198,0.16)_0%,rgba(255,244,224,0.08)_38%,rgba(255,255,255,0)_72%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,25,45,0.22)_0%,rgba(8,25,45,0.05)_40%,rgba(8,25,45,0)_72%)]"
           />
-          <div className="relative z-10 flex min-h-[665px] w-[100dvw] max-w-none items-start px-4 pb-8 pt-6 sm:mx-auto sm:min-h-[610px] sm:w-full sm:max-w-[var(--autorell-page-max)] sm:px-8 lg:min-h-[620px] lg:items-center lg:px-6 lg:py-10 2xl:px-8">
+        </div>
+        <div className="relative z-20 -mt-1 pb-8 sm:-mt-8 sm:pb-11 lg:-mt-[108px] lg:pb-14">
+          <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
             <HomeHeroVehicleSearch
               locale={locale}
               localListingCount={localListingCount}
