@@ -55,7 +55,7 @@ export default function HomeVehicleLinkDirectory({ locale }: { locale: PublicLoc
       title: label(locale, 'Fler populära märken', 'More popular brands', 'Weitere beliebte Marken'),
       links: ['Cupra', 'Opel', 'Renault', 'Peugeot', 'Kia', 'Hyundai'].map((make) => ({
         label: make,
-        href: marketplaceHref(locale, { make }),
+        href: marketplaceHref(locale, { make, q: make }),
       })),
     },
     {
@@ -150,7 +150,7 @@ function modelGroup(
 
       return {
         label: `${make} ${modelLabel}`,
-        href: marketplaceHref(locale, { make, model: value }),
+        href: marketplaceHref(locale, { make, model: value, q: `${make} ${value}` }),
       }
     }),
   }

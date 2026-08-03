@@ -676,7 +676,7 @@ function getPopularVehicleBrands(locale: PublicLocale): PopularVehicleBrand[] {
     id,
     title,
     logo,
-    href: marketplaceCategoryHref(locale, 'cars', { make: title }),
+    href: marketplaceCategoryHref(locale, 'cars', { make: title, q: title }),
   }))
 }
 
