@@ -103,7 +103,6 @@ export default async function CategoryLandingPage({
   const displayCurrency = displayCurrencyForMarket(
     marketCode || defaultSearchCountryForLocale(locale),
   )
-  const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
   const requestedMarketCode = (marketCode || '').toUpperCase()
   const localCountryCode = activeMarketCountryCodes.has(requestedMarketCode)
     ? requestedMarketCode
@@ -113,7 +112,7 @@ export default async function CategoryLandingPage({
   const copy = categoryLandingCopy(locale)
   const page = pageCopy(locale, slug, localized.label, localized.singular)
   const typeCards = getTypeCards(slug)
-  const { topListings, typeCounts, totalListings } = await getLandingListings(
+  const { topListings, totalListings } = await getLandingListings(
     slug,
     locale,
     typeCards,
@@ -204,37 +203,6 @@ export default async function CategoryLandingPage({
             >
               {page.viewAll}
             </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="browse-by-type" className="bg-white py-8 sm:py-10">
-        <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-          <SectionHeader title={page.browseByType} cta={page.moreTypes} href={localizePublicHref(locale, `/marketplace/${slug}`)} />
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-            {typeCards.map((type) => (
-              <Link
-                key={type.query}
-                href={localizePublicHref(locale, `/marketplace/${slug}?filter=${encodeURIComponent(type.query)}`)}
-                className="group relative min-h-[128px] overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white p-4 shadow-sm transition-colors hover:border-[#344054]"
-              >
-                <strong className="relative z-10 block text-sm font-bold text-[#101828]">
-                  {locale === 'sv' || locale === 'de' || locale === 'en'
-                    ? type.label[language]
-                    : translatePublic(locale, type.label.en)}
-                </strong>
-                <span className="relative z-10 mt-1 block text-xs font-semibold text-[#667085]">
-                  {typeCounts[type.query] || 0} {page.listings}
-                </span>
-                <Image
-                  src={type.image}
-                  alt=""
-                  width={180}
-                  height={120}
-                  className="absolute bottom-0 right-0 h-[94px] w-[134px] object-contain"
-                />
-              </Link>
-            ))}
           </div>
         </div>
       </section>

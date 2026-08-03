@@ -36,6 +36,8 @@ const homeCopy = {
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
+    popularCategoriesTitle: 'Populära kategorier',
+    popularCategoriesCta: 'Visa alla bilar',
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
     sellerFlowCreated: 'Fordonsannons skapad',
     sellerFlowViews: 'fordonsvisningar',
@@ -57,6 +59,8 @@ const homeCopy = {
     newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
+    popularCategoriesTitle: 'Popular categories',
+    popularCategoriesCta: 'View all cars',
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
     sellerFlowCreated: 'Vehicle listing created',
     sellerFlowViews: 'vehicle views',
@@ -78,6 +82,8 @@ const homeCopy = {
     newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
+    popularCategoriesTitle: 'Beliebte Kategorien',
+    popularCategoriesCta: 'Alle Autos anzeigen',
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
     sellerFlowCreated: 'Fahrzeuganzeige erstellt',
     sellerFlowViews: 'Fahrzeugaufrufe',
@@ -230,6 +236,7 @@ export default async function BusinessMarketplaceHome({
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
     ])
   const newsCards = vehicleNews.articles.slice(0, 3)
+  const popularCarCategories = getPopularCarCategories(locale)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
       .map((listing) => listing.seller_user_id)
@@ -319,7 +326,14 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-white py-12 sm:py-16">
+      <HomePopularCarCategoriesSection
+        title={t.popularCategoriesTitle}
+        cta={t.popularCategoriesCta}
+        categories={popularCarCategories}
+        locale={locale}
+      />
+
+      <section className="bg-white py-10 sm:py-16">
         <div className={homeContentContainerClass}>
           <div className="space-y-10">
             {listingSections.map((section) => (
@@ -418,6 +432,183 @@ export function HomeSellerAudienceSection({
       </div>
     </section>
   )
+}
+
+type PopularCarCategory = {
+  id: string
+  title: string
+  href: string
+  image: string
+  background: string
+  tags: string[]
+}
+
+function HomePopularCarCategoriesSection({
+  title,
+  cta,
+  categories,
+  locale,
+}: {
+  title: string
+  cta: string
+  categories: PopularCarCategory[]
+  locale: PublicLocale
+}) {
+  return (
+    <section className="border-y border-[#dfe6f1] bg-[#eef3f8] py-9 sm:py-12">
+      <div className={homeContentContainerClass}>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.04em] text-[#101828] sm:text-[32px]">
+            {title}
+          </h2>
+          <Link
+            href={localizePublicHref(locale, '/marketplace/cars')}
+            className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
+          >
+            {cta}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+
+        <div className="mt-6 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              href={category.href}
+              className="group flex w-[78vw] max-w-[320px] flex-none snap-start flex-col overflow-hidden rounded-[8px] border border-[#d4deeb] bg-[#e3eaf2] shadow-sm transition hover:-translate-y-0.5 hover:border-[#9fb8d8] hover:shadow-md sm:w-auto sm:max-w-none"
+            >
+              <div className="relative h-[122px] overflow-hidden bg-[#dbe4ee]">
+                <Image
+                  src={category.background}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 78vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,24,40,.05)_0%,rgba(227,234,242,.52)_100%)]" />
+                <Image
+                  src={category.image}
+                  alt=""
+                  width={720}
+                  height={480}
+                  className="absolute bottom-[-40px] left-1/2 h-[118px] w-[225px] -translate-x-1/2 object-contain drop-shadow-[0_18px_16px_rgba(16,24,40,.18)] transition duration-500 group-hover:scale-[1.025] sm:h-[124px] sm:w-[236px]"
+                />
+              </div>
+              <div className="flex min-h-[150px] flex-col px-4 pb-4 pt-4">
+                <h3 className="text-[19px] font-semibold leading-tight tracking-[-0.025em] text-[#101828]">
+                  {category.title}
+                </h3>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {category.tags.map((tag) => (
+                    <span
+                      key={`${category.id}-${tag}`}
+                      className="inline-flex min-h-6 max-w-full items-center rounded-[5px] bg-[#f4f7fb] px-2 text-[12px] font-semibold leading-[1.15] text-[#101828] [overflow-wrap:anywhere]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <Link
+          href={localizePublicHref(locale, '/marketplace/cars')}
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-semibold text-white sm:hidden"
+        >
+          {cta}
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+function getPopularCarCategories(locale: PublicLocale): PopularCarCategory[] {
+  const label = (sv: string, en: string, de: string) =>
+    locale === 'sv' ? sv : locale === 'de' ? de : locale === 'en' ? en : translatePublic(locale, en)
+  const tags = (items: Array<[string, string, string]>) =>
+    items.map(([sv, en, de]) => label(sv, en, de))
+
+  return [
+    {
+      id: 'family',
+      title: label('Familjebilar', 'Family cars', 'Familienautos'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=suv'),
+      image: '/ai-car-categories/family-car-ai.webp',
+      background: '/autorell-home-hero-family-dealer.webp',
+      tags: tags([
+        ['från 2016', 'from 2016', 'ab 2016'],
+        ['upp till 150 000 km', 'up to 150,000 km', 'bis 150.000 km'],
+        ['4/5 dörrar', '4/5 doors', '4/5 Türen'],
+        ['upp till 50 000 €', 'up to €50,000', 'bis 50.000 €'],
+      ]),
+    },
+    {
+      id: 'first',
+      title: label('Första bilen', 'First car', 'Erstes Auto'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=hatchback'),
+      image: '/ai-car-categories/first-car-ai.webp',
+      background: '/autorell-home-hero-happy-woman-car.jpg',
+      tags: tags([
+        ['från 2010', 'from 2010', 'ab 2010'],
+        ['från 150 000 km', 'from 150,000 km', 'ab 150.000 km'],
+        ['servicehistorik', 'service history', 'Scheckheftgepflegt'],
+        ['upp till 7 000 €', 'up to €7,000', 'bis 7.000 €'],
+      ]),
+    },
+    {
+      id: 'premium',
+      title: label('Premium', 'Premium', 'Premium'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=sports%20car'),
+      image: '/ai-car-categories/luxury-car-ai.webp',
+      background: '/autorell-home-hero-mountain-road.jpg',
+      tags: tags([
+        ['från 2018', 'from 2018', 'ab 2018'],
+        ['från 35 000 €', 'from €35,000', 'ab 35.000 €'],
+        ['upp till 80 000 km', 'up to 80,000 km', 'bis 80.000 km'],
+        ['kamera', 'camera', 'Camera'],
+        ['+18', '+18', '+18'],
+      ]),
+    },
+    {
+      id: 'city',
+      title: label('Stadsbilar', 'City cars', 'Stadtautos'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=hatchback'),
+      image: '/ai-car-categories/city-car-ai.webp',
+      background: '/autorell-home-hero-city-parking.jpg',
+      tags: tags([
+        ['liten bil', 'compact size', 'kompakt'],
+        ['automat', 'automatic', 'Automatik'],
+        ['upp till 15 000 €', 'up to €15,000', 'bis 15.000 €'],
+      ]),
+    },
+    {
+      id: 'commuter',
+      title: label('Pendling', 'Commuter', 'Pendler'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=estate'),
+      image: '/ai-car-categories/commuter-car-ai.webp',
+      background: '/autorell-home-hero-traffic-road.jpeg',
+      tags: tags([
+        ['låg förbrukning', 'low consumption', 'niedriger Verbrauch'],
+        ['kombi', 'estate', 'Kombi'],
+        ['dragkrok', 'tow bar', 'Anhängerkupplung'],
+      ]),
+    },
+    {
+      id: 'eco',
+      title: label('El & hybrid', 'Electric & hybrid', 'Elektro & Hybrid'),
+      href: localizePublicHref(locale, '/marketplace/cars?filter=electric'),
+      image: '/ai-car-categories/eco-car-ai.webp',
+      background: '/autorell-home-hero-clean.avif',
+      tags: tags([
+        ['elbil', 'electric', 'Elektro'],
+        ['snabbladdning', 'fast charging', 'Schnellladen'],
+        ['upp till 60 000 km', 'up to 60,000 km', 'bis 60.000 km'],
+      ]),
+    },
+  ]
 }
 
 function VehicleNewsCard({
