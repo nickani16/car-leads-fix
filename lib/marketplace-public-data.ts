@@ -338,6 +338,62 @@ export const getPublishedMarketplaceListingCount = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
+export type MarketplaceBodyTypeCountRequest = {
+  id: string
+  bodyTypes: string[]
+}
+
+export const getPublishedMarketplaceBodyTypeCounts = unstable_cache(
+  async (
+    countryCode: string | null | undefined,
+    groups: MarketplaceBodyTypeCountRequest[],
+  ) => {
+    if (!groups.length) return {}
+
+    const admin = createAdminClient()
+    const normalizedCountry = (countryCode || '').toUpperCase()
+    const now = new Date().toISOString()
+    const entries = await Promise.all(
+      groups.map(async ({ id, bodyTypes }) => {
+        const uniqueBodyTypes = Array.from(
+          new Set(bodyTypes.map((value) => value.trim()).filter(Boolean)),
+        )
+        if (!uniqueBodyTypes.length) return [id, 0] as const
+
+        let query = admin
+          .from('marketplace_listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'published')
+          .eq('category', 'cars')
+          .not('published_at', 'is', null)
+          .is('sold_at', null)
+          .or(`expires_at.is.null,expires_at.gt.${now}`)
+
+        if (normalizedCountry && normalizedCountry !== 'EU') {
+          query = query.eq('country_code', normalizedCountry)
+        }
+
+        query =
+          uniqueBodyTypes.length === 1
+            ? query.eq('body_type', uniqueBodyTypes[0])
+            : query.in('body_type', uniqueBodyTypes)
+
+        const { count, error } = await query
+        if (error) {
+          console.error('[marketplace-body-type-counts] count failed', { id, error })
+          return [id, 0] as const
+        }
+
+        return [id, count ?? 0] as const
+      }),
+    )
+
+    return Object.fromEntries(entries)
+  },
+  ['published-marketplace-body-type-counts'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
 async function withCountTimeout(run: () => Promise<number | null>) {
   try {
     return await Promise.race([

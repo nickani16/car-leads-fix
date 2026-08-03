@@ -12,6 +12,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import {
   getMarketplaceSellerPublicProfiles,
+  getPublishedMarketplaceBodyTypeCounts,
   getPublishedMarketplaceListingCount,
   getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
@@ -160,6 +161,186 @@ const localizedSellerFlowCopy = {
   },
 } as const
 
+type HomeVehicleBodyTypeId =
+  | 'hatchback'
+  | 'sedan'
+  | 'suv'
+  | 'estate'
+  | 'coupe'
+  | 'cabriolet'
+  | 'pickup'
+
+const homeVehicleBodyTypeCopy: Record<PublicLocale, {
+  title: string
+  allCars: string
+  ariaLabel: string
+  browse: string
+  listing: string
+  listings: string
+}> = {
+  sv: { title: 'Karosstyper', allCars: 'Visa alla bilar', ariaLabel: 'Bl\u00e4ddra bland karosstyper', browse: 'Visa bilar', listing: 'annons', listings: 'annonser' },
+  en: { title: 'Vehicle body types', allCars: 'View all cars', ariaLabel: 'Browse vehicle body types', browse: 'View cars', listing: 'listing', listings: 'listings' },
+  de: { title: 'Fahrzeugtypen', allCars: 'Alle Autos ansehen', ariaLabel: 'Fahrzeugtypen durchsuchen', browse: 'Autos ansehen', listing: 'Anzeige', listings: 'Anzeigen' },
+  at: { title: 'Fahrzeugtypen', allCars: 'Alle Autos ansehen', ariaLabel: 'Fahrzeugtypen durchsuchen', browse: 'Autos ansehen', listing: 'Anzeige', listings: 'Anzeigen' },
+  be: { title: 'Carrosserietypes', allCars: "Alle auto's bekijken", ariaLabel: 'Carrosserietypes bekijken', browse: "Auto's bekijken", listing: 'advertentie', listings: 'advertenties' },
+  fr: { title: 'Types de carrosserie', allCars: 'Voir toutes les voitures', ariaLabel: 'Parcourir les types de carrosserie', browse: 'Voir les voitures', listing: 'annonce', listings: 'annonces' },
+  es: { title: 'Tipos de carrocer\u00eda', allCars: 'Ver todos los coches', ariaLabel: 'Explorar tipos de carrocer\u00eda', browse: 'Ver coches', listing: 'anuncio', listings: 'anuncios' },
+  it: { title: 'Tipi di carrozzeria', allCars: 'Vedi tutte le auto', ariaLabel: 'Sfoglia i tipi di carrozzeria', browse: 'Vedi auto', listing: 'annuncio', listings: 'annunci' },
+  pl: { title: 'Typy nadwozia', allCars: 'Zobacz wszystkie auta', ariaLabel: 'Przegl\u0105daj typy nadwozia', browse: 'Zobacz auta', listing: 'og\u0142oszenie', listings: 'og\u0142osze\u0144' },
+  nl: { title: 'Carrosserietypes', allCars: "Alle auto's bekijken", ariaLabel: 'Carrosserietypes bekijken', browse: "Auto's bekijken", listing: 'advertentie', listings: 'advertenties' },
+  fi: { title: 'Korimallit', allCars: 'N\u00e4yt\u00e4 kaikki autot', ariaLabel: 'Selaa korimalleja', browse: 'N\u00e4yt\u00e4 autot', listing: 'ilmoitus', listings: 'ilmoitusta' },
+  da: { title: 'Karrosserityper', allCars: 'Se alle biler', ariaLabel: 'Gennemse karrosserityper', browse: 'Se biler', listing: 'annonce', listings: 'annoncer' },
+}
+
+const homeVehicleBodyTypes: Array<{
+  id: HomeVehicleBodyTypeId
+  bodyType: string
+  image: string
+  labels: Record<PublicLocale, string>
+  matchValues: string[]
+}> = [
+  {
+    id: 'hatchback',
+    bodyType: 'Halvkombi',
+    image: '/home-vehicle-types/body-type-hatchback.png',
+    labels: {
+      sv: 'Halvkombi',
+      en: 'Hatchback',
+      de: 'Kompaktwagen',
+      at: 'Kompaktwagen',
+      be: 'Hatchback',
+      fr: 'Berline compacte',
+      es: 'Compacto',
+      it: 'Hatchback',
+      pl: 'Hatchback',
+      nl: 'Hatchback',
+      fi: 'Viistoper\u00e4',
+      da: 'Hatchback',
+    },
+    matchValues: ['Halvkombi', 'Hatchback', 'Kompaktwagen'],
+  },
+  {
+    id: 'sedan',
+    bodyType: 'Sedan',
+    image: '/home-vehicle-types/body-type-sedan.png',
+    labels: {
+      sv: 'Sedan',
+      en: 'Sedan',
+      de: 'Limousine',
+      at: 'Limousine',
+      be: 'Sedan',
+      fr: 'Berline',
+      es: 'Berlina',
+      it: 'Berlina',
+      pl: 'Sedan',
+      nl: 'Sedan',
+      fi: 'Sedan',
+      da: 'Sedan',
+    },
+    matchValues: ['Sedan', 'Limousine'],
+  },
+  {
+    id: 'suv',
+    bodyType: 'SUV',
+    image: '/home-vehicle-types/body-type-suv.png',
+    labels: {
+      sv: 'SUV',
+      en: 'SUV',
+      de: 'SUV',
+      at: 'SUV',
+      be: 'SUV',
+      fr: 'SUV',
+      es: 'SUV',
+      it: 'SUV',
+      pl: 'SUV',
+      nl: 'SUV',
+      fi: 'SUV',
+      da: 'SUV',
+    },
+    matchValues: ['SUV', 'Gel\u00e4ndewagen', 'Crossover'],
+  },
+  {
+    id: 'estate',
+    bodyType: 'Kombi',
+    image: '/home-vehicle-types/body-type-estate.png',
+    labels: {
+      sv: 'Kombi',
+      en: 'Estate / Wagon',
+      de: 'Kombi',
+      at: 'Kombi',
+      be: 'Break',
+      fr: 'Break',
+      es: 'Familiar',
+      it: 'Station wagon',
+      pl: 'Kombi',
+      nl: 'Stationwagen',
+      fi: 'Farmari',
+      da: 'Stationcar',
+    },
+    matchValues: ['Kombi', 'Estate / Wagon', 'Estate', 'Wagon', 'Station wagon', 'Stationwagen', 'Break', 'Familiar', 'Farmari', 'Stationcar'],
+  },
+  {
+    id: 'coupe',
+    bodyType: 'Coup\u00e9',
+    image: '/home-vehicle-types/body-type-coupe.png',
+    labels: {
+      sv: 'Coup\u00e9',
+      en: 'Coupe',
+      de: 'Coup\u00e9',
+      at: 'Coup\u00e9',
+      be: 'Coup\u00e9',
+      fr: 'Coup\u00e9',
+      es: 'Coup\u00e9',
+      it: 'Coup\u00e9',
+      pl: 'Coup\u00e9',
+      nl: 'Coup\u00e9',
+      fi: 'Coupe',
+      da: 'Coup\u00e9',
+    },
+    matchValues: ['Coup\u00e9', 'Coupe'],
+  },
+  {
+    id: 'cabriolet',
+    bodyType: 'Cabriolet',
+    image: '/home-vehicle-types/body-type-cabriolet.png',
+    labels: {
+      sv: 'Cabriolet',
+      en: 'Convertible',
+      de: 'Cabriolet',
+      at: 'Cabriolet',
+      be: 'Cabriolet',
+      fr: 'Cabriolet',
+      es: 'Descapotable',
+      it: 'Cabriolet',
+      pl: 'Kabriolet',
+      nl: 'Cabriolet',
+      fi: 'Avoauto',
+      da: 'Cabriolet',
+    },
+    matchValues: ['Cabriolet', 'Convertible', 'Descapotable', 'Kabriolet', 'Avoauto'],
+  },
+  {
+    id: 'pickup',
+    bodyType: 'Pickup',
+    image: '/home-vehicle-types/body-type-pickup.png',
+    labels: {
+      sv: 'Pickup',
+      en: 'Pickup',
+      de: 'Pickup',
+      at: 'Pickup',
+      be: 'Pickup',
+      fr: 'Pick-up',
+      es: 'Pickup',
+      it: 'Pickup',
+      pl: 'Pickup',
+      nl: 'Pickup',
+      fi: 'Pickup',
+      da: 'Pickup',
+    },
+    matchValues: ['Pickup', 'Pick-up'],
+  },
+]
+
 export function getHomeCopy(locale: PublicLocale) {
   return locale === 'sv'
     ? homeCopy.sv
@@ -218,6 +399,7 @@ export default async function BusinessMarketplaceHome({
     europeLatestListings,
     localListingCount,
     europeListingCount,
+    carBodyTypeCounts,
     vehicleNews,
   ] =
     await Promise.all([
@@ -227,9 +409,19 @@ export default async function BusinessMarketplaceHome({
       getPublishedMarketplaceHomeListings('EU', 'latest', 8),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
+      getPublishedMarketplaceBodyTypeCounts(
+        localMarketCode,
+        homeVehicleBodyTypes.map((item) => ({
+          id: item.id,
+          bodyTypes: item.matchValues,
+        })),
+      ),
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
     ])
   const newsCards = vehicleNews.articles.slice(0, 3)
+  const bodyTypeCounts = new Map<HomeVehicleBodyTypeId, number>(
+    homeVehicleBodyTypes.map((item) => [item.id, carBodyTypeCounts[item.id] || 0]),
+  )
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
       .map((listing) => listing.seller_user_id)
@@ -316,6 +508,11 @@ export default async function BusinessMarketplaceHome({
               />
             ))}
           </HomeVehicleNewsScroller>
+
+          <HomeVehicleBodyTypesSection
+            locale={locale}
+            bodyTypeCounts={bodyTypeCounts}
+          />
         </div>
       </section>
 
@@ -467,11 +664,93 @@ function VehicleNewsCard({
   )
 }
 
+function HomeVehicleBodyTypesSection({
+  locale,
+  bodyTypeCounts,
+}: {
+  locale: PublicLocale
+  bodyTypeCounts: Map<HomeVehicleBodyTypeId, number>
+}) {
+  const copy = homeVehicleBodyTypeCopy[locale] || homeVehicleBodyTypeCopy.en
+
+  return (
+    <section className="mt-10 sm:mt-14">
+      <div className="flex items-end justify-between gap-5">
+        <h2 className="text-[24px] font-semibold leading-tight tracking-normal sm:text-[32px]">
+          {copy.title}
+        </h2>
+        <Link
+          href={localizePublicHref(locale, '/marketplace/cars')}
+          className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
+        >
+          {copy.allCars}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <nav
+        aria-label={copy.ariaLabel}
+        className="-mx-5 mt-5 overflow-x-auto px-5 pb-2 [scrollbar-width:thin] min-[430px]:-mx-0 min-[430px]:px-0 sm:mt-7"
+      >
+        <div className="grid w-max grid-flow-col auto-cols-[156px] gap-3 sm:w-full sm:grid-flow-row sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-7">
+          {homeVehicleBodyTypes.map((item) => {
+            const label = item.labels[locale] || item.labels.en
+            const count = bodyTypeCounts.get(item.id) || 0
+            const countLabel = count ? formatHomeBodyTypeCount(locale, count) : copy.browse
+
+            return (
+              <Link
+                key={item.id}
+                href={homeBodyTypeHref(locale, item.bodyType)}
+                aria-label={`${label}, ${countLabel}`}
+                className="group flex h-[154px] min-w-0 flex-col justify-between overflow-hidden rounded-[10px] border border-[#d8e0ec] bg-[#edf2f8] px-3 pb-3 pt-3 text-[#101828] shadow-sm outline-none transition hover:-translate-y-0.5 hover:border-[#bfd4ff] hover:bg-[#e8f0fa] hover:shadow-[0_14px_30px_rgba(16,24,40,.08)] focus-visible:ring-3 focus-visible:ring-[#0866ff]/18 sm:h-[160px]"
+              >
+                <span className="relative block h-[88px] w-full">
+                  <Image
+                    src={item.image}
+                    alt=""
+                    width={260}
+                    height={180}
+                    sizes="(max-width: 640px) 156px, (max-width: 1280px) 25vw, 170px"
+                    className="h-full w-full object-contain object-center transition duration-300 group-hover:scale-[1.035]"
+                  />
+                </span>
+                <span className="block">
+                  <strong className="block truncate text-[14px] font-semibold leading-5">
+                    {label}
+                  </strong>
+                  <span className="mt-0.5 block truncate text-[12px] font-medium leading-4 text-[#475467]">
+                    {countLabel}
+                  </span>
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+    </section>
+  )
+}
+
 function readMoreLabel(locale: PublicLocale) {
   if (locale === 'sv') return 'Läs mer'
   if (locale === 'de') return 'Mehr lesen'
   if (locale === 'en') return 'Read more'
   return translatePublic(locale, 'Read more')
+}
+
+function homeBodyTypeHref(locale: PublicLocale, bodyType: string) {
+  const params = new URLSearchParams({
+    categories: 'cars',
+    bodyType,
+  })
+
+  return localizePublicHref(locale, `/marketplace/cars?${params.toString()}`)
+}
+
+function formatHomeBodyTypeCount(locale: PublicLocale, count: number) {
+  const copy = homeVehicleBodyTypeCopy[locale] || homeVehicleBodyTypeCopy.en
+  return `${count.toLocaleString(homeNumberLocale(locale))} ${count === 1 ? copy.listing : copy.listings}`
 }
 
 function NoPhotoFrame({
