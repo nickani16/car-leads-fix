@@ -108,6 +108,7 @@ export default function HomeVehicleCategoryRails({
               <Link
                 key={category.id}
                 href={category.href}
+                prefetch={false}
                 data-rail-card
                 className={`group flex h-[150px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] transition sm:h-[158px] sm:w-[176px] ${
                   category.highlighted
@@ -160,6 +161,7 @@ export default function HomeVehicleCategoryRails({
             <Link
               key={category.id}
               href={category.href}
+              prefetch={false}
               data-rail-card
               className="group w-[280px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[320px] lg:w-[336px]"
             >
@@ -205,6 +207,7 @@ export default function HomeVehicleCategoryRails({
             <Link
               key={category.id}
               href={category.href}
+              prefetch={false}
               data-rail-card
               className="group flex h-[162px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dce4ed] sm:h-[174px] sm:w-[176px]"
             >
@@ -237,6 +240,7 @@ export default function HomeVehicleCategoryRails({
             <Link
               key={brand.id}
               href={brand.href}
+              prefetch={false}
               className="group flex min-h-[108px] min-w-0 flex-col items-center justify-center bg-white px-2 py-4 text-center transition last:col-span-2 hover:bg-[#f3f7fc] sm:min-h-[112px]"
             >
               <span className="flex h-12 w-full items-center justify-center">
@@ -278,6 +282,7 @@ function CategoryPanel({
         {action ? (
           <Link
             href={action.href}
+            prefetch={false}
             className="group inline-flex flex-none items-center gap-1.5 text-[13px] font-semibold text-[#0866ff] transition hover:text-[#075bd8] sm:text-[14px]"
           >
             {action.label}

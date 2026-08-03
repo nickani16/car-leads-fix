@@ -115,6 +115,7 @@ export default function HomeVehicleLinkDirectory({ locale }: { locale: PublicLoc
                 <li key={`${group.title}-${item.label}`}>
                   <Link
                     href={item.href}
+                    prefetch={false}
                     className="group inline-flex max-w-full items-start gap-1 text-[13px] leading-[1.35] text-[#344054] transition hover:text-[#0866ff] sm:text-[15px]"
                   >
                     <ChevronRight
