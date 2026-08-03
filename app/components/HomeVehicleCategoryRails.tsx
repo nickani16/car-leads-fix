@@ -78,8 +78,8 @@ export default function HomeVehicleCategoryRails({
   nextLabel,
 }: HomeVehicleCategoryRailsProps) {
   return (
-    <div className="space-y-3">
-      <CategoryPanel title={selectedTitle} compact>
+    <div className="space-y-4 sm:space-y-5">
+      <CategoryPanel title={selectedTitle}>
         <CategoryScroller
           scrollLabel={selectedScrollLabel}
           previousLabel={previousLabel}
@@ -93,37 +93,37 @@ export default function HomeVehicleCategoryRails({
                 key={category.id}
                 href={category.href}
                 data-rail-card
-                className={`group flex h-[136px] w-[154px] flex-none snap-start flex-col overflow-hidden rounded-[8px] transition ${
+                className={`group flex h-[150px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] transition sm:h-[158px] sm:w-[176px] ${
                   category.highlighted
                     ? 'bg-[#b8d3ff] hover:bg-[#adcbfc]'
                     : 'bg-[#e4e9f0] hover:bg-[#dce4ed]'
                 }`}
               >
-                <div className="flex h-[84px] items-center justify-center px-2 pt-2">
+                <div className="flex h-[88px] items-center justify-center px-2 pt-2 sm:h-[94px]">
                   <Image
                     src={category.image}
                     alt=""
                     width={720}
                     height={420}
-                    sizes="154px"
+                    sizes="(max-width: 640px) 164px, 176px"
                     className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
                   />
                 </div>
-                <div className="flex min-h-0 flex-1 items-center gap-2 px-3 pb-2.5">
+                <div className="flex min-h-0 flex-1 items-center gap-2.5 px-3 pb-3">
                   <span
-                    className={`grid h-8 w-8 flex-none place-items-center rounded-[6px] ${
+                    className={`grid h-10 w-10 flex-none place-items-center rounded-[8px] ${
                       category.highlighted
                         ? 'bg-[#5269b0] text-white'
                         : 'bg-[#d4dbe4] text-[#667085]'
                     }`}
                   >
-                    <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                    <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[12px] font-semibold leading-[1.15] text-[#101828]">
+                    <span className="block text-[15px] font-semibold leading-[1.15] text-[#101828] sm:text-[16px]">
                       {category.title}
                     </span>
-                    <span className="mt-0.5 block text-[9px] font-medium leading-[1.2] text-[#475467]">
+                    <span className="mt-1 block text-[12px] font-medium leading-[1.2] text-[#475467]">
                       {category.subtitle}
                     </span>
                   </span>
@@ -145,26 +145,26 @@ export default function HomeVehicleCategoryRails({
               key={category.id}
               href={category.href}
               data-rail-card
-              className="group w-[264px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[296px] lg:w-[306px]"
+              className="group w-[280px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[320px] lg:w-[336px]"
             >
-              <div className="relative h-[136px] overflow-hidden bg-[#dce3eb] sm:h-[148px]">
+              <div className="relative h-[187px] overflow-hidden bg-[#dce3eb] sm:h-[196px]">
                 <Image
                   src={category.image}
                   alt=""
                   fill
-                  sizes="(max-width: 640px) 264px, (max-width: 1024px) 296px, 306px"
+                  sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 336px"
                   className="object-cover transition duration-300 group-hover:scale-[1.02]"
                 />
               </div>
-              <div className="min-h-[112px] px-3 pb-3 pt-3">
-                <h3 className="text-[16px] font-semibold leading-tight text-[#101828] sm:text-[17px]">
+              <div className="min-h-[104px] px-3.5 pb-3.5 pt-3">
+                <h3 className="text-[19px] font-semibold leading-tight text-[#101828] sm:text-[20px]">
                   {category.title}
                 </h3>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {category.tags.map((tag) => (
                     <span
                       key={`${category.id}-${tag}`}
-                      className="inline-flex min-h-5 max-w-full items-center rounded-[4px] bg-[#f5f7fa] px-1.5 text-[11px] font-medium leading-[1.15] text-[#101828] [overflow-wrap:anywhere]"
+                      className="inline-flex min-h-[22px] max-w-full items-center rounded-[4px] bg-[#d5dbe3] px-2 text-[12px] font-medium leading-[1.15] text-[#101828] [overflow-wrap:anywhere]"
                     >
                       {tag}
                     </span>
@@ -176,7 +176,7 @@ export default function HomeVehicleCategoryRails({
         </CategoryScroller>
       </CategoryPanel>
 
-      <CategoryPanel title={vehicleTypesTitle} compact>
+      <CategoryPanel title={vehicleTypesTitle}>
         <CategoryScroller
           scrollLabel={vehicleTypesScrollLabel}
           previousLabel={previousLabel}
@@ -187,23 +187,23 @@ export default function HomeVehicleCategoryRails({
               key={category.id}
               href={category.href}
               data-rail-card
-              className="group flex h-[146px] w-[154px] flex-none snap-start flex-col overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dce4ed]"
+              className="group flex h-[162px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dce4ed] sm:h-[174px] sm:w-[176px]"
             >
-              <div className="flex h-[96px] items-center justify-center px-2 pt-2">
+              <div className="flex h-[108px] items-center justify-center px-2 pt-2 sm:h-[116px]">
                 <Image
                   src={category.image}
                   alt=""
                   width={720}
                   height={420}
-                  sizes="154px"
+                  sizes="(max-width: 640px) 164px, 176px"
                   className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
                 />
               </div>
               <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-2 pb-2 text-center">
-                <h3 className="text-[12px] font-semibold leading-[1.2] text-[#101828]">
+                <h3 className="text-[15px] font-semibold leading-[1.2] text-[#101828] sm:text-[16px]">
                   {category.title}
                 </h3>
-                <p className="mt-1 text-[9px] font-medium leading-[1.2] text-[#475467]">
+                <p className="mt-1.5 text-[11px] font-medium leading-[1.2] text-[#475467] sm:text-[12px]">
                   {category.subtitle}
                 </p>
               </div>
@@ -217,21 +217,17 @@ export default function HomeVehicleCategoryRails({
 
 function CategoryPanel({
   title,
-  compact = false,
   children,
 }: {
   title: string
-  compact?: boolean
   children: ReactNode
 }) {
   return (
-    <section className="overflow-hidden rounded-[12px] border border-[#cfd8e4] bg-white px-4 py-5 sm:px-5 sm:py-6">
-      <h2
-        className={`${compact ? 'text-[20px] sm:text-[22px]' : 'text-[22px] sm:text-[26px]'} font-semibold leading-tight text-[#101828]`}
-      >
+    <section className="overflow-hidden border-y border-[#cfd8e4] bg-white px-4 py-7 sm:rounded-[8px] sm:border sm:px-6 sm:py-7">
+      <h2 className="text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">
         {title}
       </h2>
-      <div className="mt-4 sm:mt-5">{children}</div>
+      <div className="mt-5 sm:mt-6">{children}</div>
     </section>
   )
 }
@@ -299,7 +295,7 @@ function CategoryScroller({
         ref={scrollerRef}
         role="region"
         aria-label={scrollLabel}
-        className="flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-smooth pb-1 pr-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 pr-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
@@ -310,7 +306,7 @@ function CategoryScroller({
           onClick={() => scrollCategories(-1)}
           aria-label={previousAriaLabel}
           title={previousAriaLabel}
-          className="absolute left-1 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-[#d8dee8] bg-white text-[#344054] shadow-[0_4px_12px_rgba(16,24,40,.16)] transition hover:border-[#b8c5d6] active:scale-95"
+          className="absolute left-1 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-[#d8dee8] bg-white text-[#344054] shadow-[0_4px_12px_rgba(16,24,40,.16)] transition hover:border-[#b8c5d6] active:scale-95"
         >
           <ChevronLeft className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
         </button>
@@ -322,7 +318,7 @@ function CategoryScroller({
           onClick={() => scrollCategories(1)}
           aria-label={nextAriaLabel}
           title={nextAriaLabel}
-          className="absolute right-1 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-[#d8dee8] bg-white text-[#344054] shadow-[0_4px_12px_rgba(16,24,40,.16)] transition hover:border-[#b8c5d6] active:scale-95"
+          className="absolute right-1 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-[#d8dee8] bg-white text-[#344054] shadow-[0_4px_12px_rgba(16,24,40,.16)] transition hover:border-[#b8c5d6] active:scale-95"
         >
           <ChevronRight className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
         </button>

@@ -301,6 +301,12 @@ export default async function BusinessMarketplaceHome({
     localMarketCode === 'EU'
       ? localListingSections
       : [...localListingSections, ...europeListingSections]
+  const latestLocalListingSection = localListingSections.find(
+    (section) => section.id === 'local-latest',
+  )
+  const remainingListingSections = listingSections.filter(
+    (section) => section.id !== 'local-latest',
+  )
 
   return (
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
@@ -330,8 +336,19 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-6 sm:py-10">
-        <div className={homeContentContainerClass}>
+      {latestLocalListingSection ? (
+        <section className="bg-white py-10 sm:py-14">
+          <div className={homeContentContainerClass}>
+            <HomeListingSection
+              section={latestLocalListingSection}
+              locale={locale}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
+        <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
           <HomeVehicleCategoryRails
             selectedTitle={t.selectedCategoriesTitle}
             selectedScrollLabel={t.selectedCategoriesScrollLabel}
@@ -351,7 +368,7 @@ export default async function BusinessMarketplaceHome({
       <section className="bg-white py-10 sm:py-16">
         <div className={homeContentContainerClass}>
           <div className="space-y-10">
-            {listingSections.map((section) => (
+            {remainingListingSections.map((section) => (
               <HomeListingSection key={section.id} section={section} locale={locale} />
             ))}
           </div>
