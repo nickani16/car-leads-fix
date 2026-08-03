@@ -3,9 +3,11 @@ import Link from 'next/link'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
-import HomePopularCarCategoriesScroller, {
+import HomeVehicleCategoryRails, {
   type PopularCarCategory,
-} from './HomePopularCarCategoriesScroller'
+  type SelectedVehicleCategory,
+  type VehicleBodyCategory,
+} from './HomeVehicleCategoryRails'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -39,8 +41,14 @@ const homeCopy = {
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
     newsCategory: 'Fordonsmarknad',
     newsReadTime: '2 min läsning',
+    selectedCategoriesTitle: 'Utvalda kategorier',
+    selectedCategoriesScrollLabel: 'Bläddra bland utvalda fordonskategorier',
     popularCategoriesTitle: 'Populära kategorier',
     popularCategoriesScrollLabel: 'Bläddra bland populära bilkategorier',
+    vehicleTypesTitle: 'Fordonstyper',
+    vehicleTypesScrollLabel: 'Bläddra bland fordonstyper',
+    carouselPreviousLabel: 'Föregående',
+    carouselNextLabel: 'Nästa',
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
     sellerFlowCreated: 'Fordonsannons skapad',
     sellerFlowViews: 'fordonsvisningar',
@@ -62,8 +70,14 @@ const homeCopy = {
     newsScrollLabel: 'Scroll vehicle news',
     newsCategory: 'Vehicle market',
     newsReadTime: '2 min read',
+    selectedCategoriesTitle: 'Selected categories',
+    selectedCategoriesScrollLabel: 'Scroll selected vehicle categories',
     popularCategoriesTitle: 'Popular categories',
     popularCategoriesScrollLabel: 'Scroll popular car categories',
+    vehicleTypesTitle: 'Vehicle types',
+    vehicleTypesScrollLabel: 'Scroll vehicle types',
+    carouselPreviousLabel: 'Previous',
+    carouselNextLabel: 'Next',
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
     sellerFlowCreated: 'Vehicle listing created',
     sellerFlowViews: 'vehicle views',
@@ -85,8 +99,14 @@ const homeCopy = {
     newsScrollLabel: 'Fahrzeugnews durchblättern',
     newsCategory: 'Fahrzeugmarkt',
     newsReadTime: '2 Min. Lesezeit',
+    selectedCategoriesTitle: 'Ausgewählte Kategorien',
+    selectedCategoriesScrollLabel: 'Ausgewählte Fahrzeugkategorien durchblättern',
     popularCategoriesTitle: 'Beliebte Kategorien',
     popularCategoriesScrollLabel: 'Beliebte Autokategorien durchblättern',
+    vehicleTypesTitle: 'Fahrzeugtypen',
+    vehicleTypesScrollLabel: 'Fahrzeugtypen durchblättern',
+    carouselPreviousLabel: 'Zurück',
+    carouselNextLabel: 'Weiter',
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
     sellerFlowCreated: 'Fahrzeuganzeige erstellt',
     sellerFlowViews: 'Fahrzeugaufrufe',
@@ -239,7 +259,9 @@ export default async function BusinessMarketplaceHome({
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
     ])
   const newsCards = vehicleNews.articles.slice(0, 3)
+  const selectedVehicleCategories = getSelectedVehicleCategories(locale)
   const popularCarCategories = getPopularCarCategories(locale)
+  const vehicleBodyCategories = getVehicleBodyCategories(locale)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
       .map((listing) => listing.seller_user_id)
@@ -331,10 +353,18 @@ export default async function BusinessMarketplaceHome({
 
       <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-6 sm:py-10">
         <div className={homeContentContainerClass}>
-          <HomePopularCarCategoriesScroller
-            title={t.popularCategoriesTitle}
-            scrollLabel={t.popularCategoriesScrollLabel}
-            categories={popularCarCategories}
+          <HomeVehicleCategoryRails
+            selectedTitle={t.selectedCategoriesTitle}
+            selectedScrollLabel={t.selectedCategoriesScrollLabel}
+            selectedCategories={selectedVehicleCategories}
+            popularTitle={t.popularCategoriesTitle}
+            popularScrollLabel={t.popularCategoriesScrollLabel}
+            popularCategories={popularCarCategories}
+            vehicleTypesTitle={t.vehicleTypesTitle}
+            vehicleTypesScrollLabel={t.vehicleTypesScrollLabel}
+            vehicleTypes={vehicleBodyCategories}
+            previousLabel={t.carouselPreviousLabel}
+            nextLabel={t.carouselNextLabel}
           />
         </div>
       </section>
@@ -440,65 +470,254 @@ export function HomeSellerAudienceSection({
   )
 }
 
+function localizedVehicleCategoryLabel(
+  locale: PublicLocale,
+  sv: string,
+  en: string,
+  de: string,
+) {
+  return locale === 'sv'
+    ? sv
+    : locale === 'de'
+      ? de
+      : locale === 'en'
+        ? en
+        : translatePublic(locale, en)
+}
+
+function marketplaceCategoryHref(
+  locale: PublicLocale,
+  category: 'cars' | 'vans' | 'electric-bikes',
+  filters: Record<string, string> = {},
+) {
+  const params = new URLSearchParams({ categories: category, ...filters })
+  return localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`)
+}
+
+function getSelectedVehicleCategories(locale: PublicLocale): SelectedVehicleCategory[] {
+  const label = (sv: string, en: string, de: string) =>
+    localizedVehicleCategoryLabel(locale, sv, en, de)
+
+  return [
+    {
+      id: 'electric',
+      title: label('Elbilar', 'Electric cars', 'Elektroautos'),
+      subtitle: label('Miljömedvetet', 'Lower-emission driving', 'Umweltbewusst'),
+      href: marketplaceCategoryHref(locale, 'cars', { fuel: 'El' }),
+      image: '/vehicle-category-rails/electric-hatchback-v1.webp',
+      icon: 'electric',
+      highlighted: true,
+    },
+    {
+      id: 'leasing',
+      title: label('Leasing', 'Leasing', 'Leasing'),
+      subtitle: label('Flexibelt bilägande', 'Flexible ownership', 'Flexibel fahren'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        mode: 'leasing',
+        leasingPossible: 'true',
+      }),
+      image: '/vehicle-category-rails/estate-v1.webp',
+      icon: 'leasing',
+    },
+    {
+      id: 'newer',
+      title: label('Nyare bilar', 'Newer cars', 'Neuere Autos'),
+      subtitle: label('Fräscha & moderna', 'Fresh & modern', 'Frisch & modern'),
+      href: marketplaceCategoryHref(locale, 'cars', { minYear: '2022', sort: 'published' }),
+      image: '/vehicle-category-rails/sedan-v1.webp',
+      icon: 'newer',
+    },
+    {
+      id: 'ebikes',
+      title: label('Elcyklar', 'E-bikes', 'E-Bikes'),
+      subtitle: label('Mer rörelse', 'More mobility', 'Mehr Bewegung'),
+      href: marketplaceCategoryHref(locale, 'electric-bikes'),
+      image: '/vehicle-category-rails/ebike-v1.webp',
+      icon: 'ebike',
+      highlighted: true,
+    },
+    {
+      id: 'vans',
+      title: label('Transportbilar', 'Vans', 'Transporter'),
+      subtitle: label('För jobb & vardag', 'Work-ready', 'Für Arbeit & Alltag'),
+      href: marketplaceCategoryHref(locale, 'vans'),
+      image: '/vehicle-category-rails/cargo-van-v1.webp',
+      icon: 'utility',
+    },
+    {
+      id: 'sports',
+      title: label('Sportbilar', 'Sports cars', 'Sportwagen'),
+      subtitle: label('Prestanda & körglädje', 'Performance & fun', 'Leistung & Fahrspaß'),
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Coupé' }),
+      image: '/vehicle-category-rails/coupe-v1.webp',
+      icon: 'sport',
+    },
+    {
+      id: 'family',
+      title: label('Familjebilar', 'Family cars', 'Familienautos'),
+      subtitle: label('Plats för vardagen', 'Room for everyday life', 'Platz für den Alltag'),
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'SUV' }),
+      image: '/vehicle-category-rails/suv-v1.webp',
+      icon: 'newer',
+    },
+    {
+      id: 'pickups',
+      title: label('Pickuper', 'Pickups', 'Pickups'),
+      subtitle: label('Redo för uppdrag', 'Ready for the job', 'Einsatzbereit'),
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Pickup' }),
+      image: '/vehicle-category-rails/pickup-v1.webp',
+      icon: 'utility',
+    },
+  ]
+}
+
+function getVehicleBodyCategories(locale: PublicLocale): VehicleBodyCategory[] {
+  const label = (sv: string, en: string, de: string) =>
+    localizedVehicleCategoryLabel(locale, sv, en, de)
+  const subtitle = label('Visa bilar', 'View cars', 'Autos anzeigen')
+
+  return [
+    {
+      id: 'estate',
+      title: label('Kombi', 'Estate', 'Kombi'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Kombi' }),
+      image: '/vehicle-category-rails/estate-v1.webp',
+    },
+    {
+      id: 'sedan',
+      title: label('Sedan', 'Sedan', 'Limousine'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Sedan' }),
+      image: '/vehicle-category-rails/sedan-v1.webp',
+    },
+    {
+      id: 'convertible',
+      title: label('Cabriolet', 'Convertible', 'Cabrio/Roadster'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Cabriolet' }),
+      image: '/vehicle-category-rails/convertible-v1.webp',
+    },
+    {
+      id: 'suv',
+      title: label('SUV', 'SUV', 'SUV/Geländewagen'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'SUV' }),
+      image: '/vehicle-category-rails/suv-v1.webp',
+    },
+    {
+      id: 'coupe',
+      title: label('Coupé', 'Coupe', 'Coupé'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Coupé' }),
+      image: '/vehicle-category-rails/coupe-v1.webp',
+    },
+    {
+      id: 'pickup',
+      title: label('Pickup', 'Pickup', 'Pickup'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Pickup' }),
+      image: '/vehicle-category-rails/pickup-v1.webp',
+    },
+    {
+      id: 'hatchback',
+      title: label('Halvkombi', 'Hatchback', 'Schrägheck'),
+      subtitle,
+      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Halvkombi' }),
+      image: '/vehicle-category-rails/electric-hatchback-v1.webp',
+    },
+    {
+      id: 'van',
+      title: label('Transportbil', 'Van', 'Transporter'),
+      subtitle: label('Visa fordon', 'View vehicles', 'Fahrzeuge anzeigen'),
+      href: marketplaceCategoryHref(locale, 'vans'),
+      image: '/vehicle-category-rails/cargo-van-v1.webp',
+    },
+  ]
+}
+
 function getPopularCarCategories(locale: PublicLocale): PopularCarCategory[] {
   const label = (sv: string, en: string, de: string) =>
-    locale === 'sv' ? sv : locale === 'de' ? de : locale === 'en' ? en : translatePublic(locale, en)
+    localizedVehicleCategoryLabel(locale, sv, en, de)
   const tags = (items: Array<[string, string, string]>) =>
     items.map(([sv, en, de]) => label(sv, en, de))
+  const swedishMarket = locale === 'sv'
 
   return [
     {
       id: 'family',
       title: label('Familjebilar', 'Family cars', 'Familienautos'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=suv'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        bodyType: 'SUV',
+        minYear: '2016',
+        maxMileage: '150000',
+        maxPrice: swedishMarket ? '500000' : '50000',
+      }),
       image: '/popular-car-categories/family-cars-v2.webp',
       tags: tags([
         ['från 2016', 'from 2016', 'ab 2016'],
-        ['upp till 150 000 km', 'up to 150,000 km', 'bis 150.000 km'],
+        ['upp till 15 000 mil', 'up to 150,000 km', 'bis 150.000 km'],
         ['4/5 dörrar', '4/5 doors', '4/5 Türen'],
-        ['upp till 50 000 €', 'up to €50,000', 'bis 50.000 €'],
+        ['upp till 500 000 kr', 'up to €50,000', 'bis 50.000 €'],
       ]),
     },
     {
       id: 'first',
       title: label('Första bilen', 'First car', 'Erstes Auto'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=hatchback'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        bodyType: 'Halvkombi',
+        minYear: '2010',
+        minMileage: '150000',
+        maxPrice: swedishMarket ? '80000' : '7000',
+      }),
       image: '/popular-car-categories/first-car-v2.webp',
       tags: tags([
         ['från 2010', 'from 2010', 'ab 2010'],
-        ['från 150 000 km', 'from 150,000 km', 'ab 150.000 km'],
+        ['från 15 000 mil', 'from 150,000 km', 'ab 150.000 km'],
         ['servicehistorik', 'service history', 'Scheckheftgepflegt'],
-        ['upp till 7 000 €', 'up to €7,000', 'bis 7.000 €'],
+        ['upp till 80 000 kr', 'up to €7,000', 'bis 7.000 €'],
       ]),
     },
     {
       id: 'premium',
       title: label('Premium', 'Premium', 'Premium'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=sports%20car'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        bodyType: 'Coupé',
+        minYear: '2018',
+        minPrice: swedishMarket ? '400000' : '35000',
+        maxMileage: '80000',
+      }),
       image: '/popular-car-categories/premium-cars-v2.webp',
       tags: tags([
         ['från 2018', 'from 2018', 'ab 2018'],
-        ['från 35 000 €', 'from €35,000', 'ab 35.000 €'],
-        ['upp till 80 000 km', 'up to 80,000 km', 'bis 80.000 km'],
-        ['kamera', 'camera', 'Camera'],
+        ['från 400 000 kr', 'from €35,000', 'ab 35.000 €'],
+        ['upp till 8 000 mil', 'up to 80,000 km', 'bis 80.000 km'],
+        ['kamera', 'camera', 'Kamera'],
         ['+18', '+18', '+18'],
       ]),
     },
     {
       id: 'city',
       title: label('Stadsbilar', 'City cars', 'Stadtautos'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=hatchback'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        bodyType: 'Halvkombi',
+        gearbox: 'Automat',
+        maxPrice: swedishMarket ? '175000' : '15000',
+      }),
       image: '/popular-car-categories/city-cars-v2.webp',
       tags: tags([
         ['liten bil', 'compact size', 'kompakt'],
         ['automat', 'automatic', 'Automatik'],
-        ['upp till 15 000 €', 'up to €15,000', 'bis 15.000 €'],
+        ['upp till 175 000 kr', 'up to €15,000', 'bis 15.000 €'],
       ]),
     },
     {
       id: 'commuter',
       title: label('Pendling', 'Commuter', 'Pendler'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=estate'),
+      href: marketplaceCategoryHref(locale, 'cars', {
+        bodyType: 'Kombi',
+        equipment: 'dragkrok',
+      }),
       image: '/popular-car-categories/commuter-cars-v2.webp',
       tags: tags([
         ['låg förbrukning', 'low consumption', 'niedriger Verbrauch'],
@@ -509,12 +728,12 @@ function getPopularCarCategories(locale: PublicLocale): PopularCarCategory[] {
     {
       id: 'eco',
       title: label('El & hybrid', 'Electric & hybrid', 'Elektro & Hybrid'),
-      href: localizePublicHref(locale, '/marketplace/cars?filter=electric'),
+      href: marketplaceCategoryHref(locale, 'cars', { fuel: 'El', maxMileage: '60000' }),
       image: '/popular-car-categories/electric-hybrid-v2.webp',
       tags: tags([
         ['elbil', 'electric', 'Elektro'],
         ['snabbladdning', 'fast charging', 'Schnellladen'],
-        ['upp till 60 000 km', 'up to 60,000 km', 'bis 60.000 km'],
+        ['upp till 6 000 mil', 'up to 60,000 km', 'bis 60.000 km'],
       ]),
     },
   ]
