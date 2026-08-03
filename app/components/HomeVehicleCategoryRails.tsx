@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
+  ArrowRight,
   Bike,
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,13 @@ export type VehicleBodyCategory = {
   image: string
 }
 
+export type PopularVehicleBrand = {
+  id: string
+  title: string
+  href: string
+  logo: string
+}
+
 type HomeVehicleCategoryRailsProps = {
   selectedTitle: string
   selectedScrollLabel: string
@@ -51,6 +59,10 @@ type HomeVehicleCategoryRailsProps = {
   vehicleTypesTitle: string
   vehicleTypesScrollLabel: string
   vehicleTypes: VehicleBodyCategory[]
+  vehicleTypesAllLabel: string
+  vehicleTypesAllHref: string
+  popularBrandsTitle: string
+  popularBrands: PopularVehicleBrand[]
   previousLabel: string
   nextLabel: string
 }
@@ -74,6 +86,10 @@ export default function HomeVehicleCategoryRails({
   vehicleTypesTitle,
   vehicleTypesScrollLabel,
   vehicleTypes,
+  vehicleTypesAllLabel,
+  vehicleTypesAllHref,
+  popularBrandsTitle,
+  popularBrands,
   previousLabel,
   nextLabel,
 }: HomeVehicleCategoryRailsProps) {
@@ -176,7 +192,10 @@ export default function HomeVehicleCategoryRails({
         </CategoryScroller>
       </CategoryPanel>
 
-      <CategoryPanel title={vehicleTypesTitle}>
+      <CategoryPanel
+        title={vehicleTypesTitle}
+        action={{ label: vehicleTypesAllLabel, href: vehicleTypesAllHref }}
+      >
         <CategoryScroller
           scrollLabel={vehicleTypesScrollLabel}
           previousLabel={previousLabel}
@@ -211,22 +230,65 @@ export default function HomeVehicleCategoryRails({
           ))}
         </CategoryScroller>
       </CategoryPanel>
+
+      <CategoryPanel title={popularBrandsTitle}>
+        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-[8px] border border-[#d4dbe5] bg-[#d4dbe5] sm:grid-cols-4 lg:grid-cols-6">
+          {popularBrands.map((brand) => (
+            <Link
+              key={brand.id}
+              href={brand.href}
+              className="group flex min-h-[108px] min-w-0 flex-col items-center justify-center bg-white px-2 py-4 text-center transition last:col-span-2 hover:bg-[#f3f7fc] sm:min-h-[112px]"
+            >
+              <span className="flex h-12 w-full items-center justify-center">
+                <Image
+                  src={brand.logo}
+                  alt=""
+                  width={80}
+                  height={52}
+                  sizes="80px"
+                  className="max-h-11 w-auto max-w-[72px] object-contain transition duration-300 group-hover:scale-[1.06]"
+                />
+              </span>
+              <span className="mt-2 block max-w-full text-[13px] font-semibold leading-[1.2] text-[#101828] sm:text-[14px]">
+                {brand.title}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </CategoryPanel>
     </div>
   )
 }
 
 function CategoryPanel({
   title,
+  action,
   children,
 }: {
   title: string
+  action?: { label: string; href: string }
   children: ReactNode
 }) {
   return (
     <section className="overflow-hidden border-y border-[#cfd8e4] bg-white px-4 py-7 sm:rounded-[8px] sm:border sm:px-6 sm:py-7">
-      <h2 className="text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">
-        {title}
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h2 className="text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">
+          {title}
+        </h2>
+        {action ? (
+          <Link
+            href={action.href}
+            className="group inline-flex flex-none items-center gap-1.5 text-[13px] font-semibold text-[#0866ff] transition hover:text-[#075bd8] sm:text-[14px]"
+          >
+            {action.label}
+            <ArrowRight
+              className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          </Link>
+        ) : null}
+      </div>
       <div className="mt-5 sm:mt-6">{children}</div>
     </section>
   )

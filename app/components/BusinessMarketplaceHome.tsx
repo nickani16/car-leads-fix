@@ -5,10 +5,13 @@ import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeVehicleCategoryRails, {
   type PopularCarCategory,
+  type PopularVehicleBrand,
   type SelectedVehicleCategory,
   type VehicleBodyCategory,
 } from './HomeVehicleCategoryRails'
+import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
+import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
@@ -47,6 +50,8 @@ const homeCopy = {
     popularCategoriesScrollLabel: 'Bläddra bland populära bilkategorier',
     vehicleTypesTitle: 'Fordonstyper',
     vehicleTypesScrollLabel: 'Bläddra bland fordonstyper',
+    vehicleTypesAll: 'Se alla fordonstyper',
+    popularBrandsTitle: 'Populära bilmärken',
     carouselPreviousLabel: 'Föregående',
     carouselNextLabel: 'Nästa',
     sellerCtaTitle: 'Nå tusentals potentiella köpare med din fordonsannons.',
@@ -76,6 +81,8 @@ const homeCopy = {
     popularCategoriesScrollLabel: 'Scroll popular car categories',
     vehicleTypesTitle: 'Vehicle types',
     vehicleTypesScrollLabel: 'Scroll vehicle types',
+    vehicleTypesAll: 'View all vehicle types',
+    popularBrandsTitle: 'Popular car brands',
     carouselPreviousLabel: 'Previous',
     carouselNextLabel: 'Next',
     sellerCtaTitle: 'Reach thousands of potential buyers with your vehicle listing.',
@@ -105,6 +112,8 @@ const homeCopy = {
     popularCategoriesScrollLabel: 'Beliebte Autokategorien durchblättern',
     vehicleTypesTitle: 'Fahrzeugtypen',
     vehicleTypesScrollLabel: 'Fahrzeugtypen durchblättern',
+    vehicleTypesAll: 'Alle Fahrzeugtypen',
+    popularBrandsTitle: 'Beliebte Automarken',
     carouselPreviousLabel: 'Zurück',
     carouselNextLabel: 'Weiter',
     sellerCtaTitle: 'Erreichen Sie tausende potenzielle Käufer mit Ihrer Fahrzeuganzeige.',
@@ -243,8 +252,6 @@ export default async function BusinessMarketplaceHome({
   const [
     localTopListings,
     localLatestListings,
-    europeTopListings,
-    europeLatestListings,
     localListingCount,
     europeListingCount,
     vehicleNews,
@@ -252,8 +259,6 @@ export default async function BusinessMarketplaceHome({
     await Promise.all([
       getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
       getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
-      getPublishedMarketplaceHomeListings('EU', 'top', 8),
-      getPublishedMarketplaceHomeListings('EU', 'latest', 8),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
@@ -262,8 +267,9 @@ export default async function BusinessMarketplaceHome({
   const selectedVehicleCategories = getSelectedVehicleCategories(locale)
   const popularCarCategories = getPopularCarCategories(locale)
   const vehicleBodyCategories = getVehicleBodyCategories(locale)
+  const popularVehicleBrands = getPopularVehicleBrands(locale)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
-    [...localTopListings, ...localLatestListings, ...europeTopListings, ...europeLatestListings]
+    [...localTopListings, ...localLatestListings]
       .map((listing) => listing.seller_user_id)
       .filter((id): id is string => typeof id === 'string' && Boolean(id)),
   )
@@ -273,38 +279,20 @@ export default async function BusinessMarketplaceHome({
     {
       id: 'local-top',
       title: homeListingSectionTitle(locale, 'top', localMarketLabel),
-      emptyText: homeEmptyListingText(locale, 'country'),
+      emptyText: homeEmptyListingText(locale),
       items: await Promise.all(localTopListings.map(toHomeCard)),
     },
     {
       id: 'local-latest',
       title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
-      emptyText: homeEmptyListingText(locale, 'country'),
+      emptyText: homeEmptyListingText(locale),
       items: await Promise.all(localLatestListings.map(toHomeCard)),
     },
   ]
-  const europeListingSections: HomeListingSectionData[] = [
-    {
-      id: 'europe-top',
-      title: homeListingSectionTitle(locale, 'top', homeEuropeLabel(locale)),
-      emptyText: homeEmptyListingText(locale, 'europe'),
-      items: await Promise.all(europeTopListings.map(toHomeCard)),
-    },
-    {
-      id: 'europe-latest',
-      title: homeListingSectionTitle(locale, 'latest', homeEuropeLabel(locale)),
-      emptyText: homeEmptyListingText(locale, 'europe'),
-      items: await Promise.all(europeLatestListings.map(toHomeCard)),
-    },
-  ]
-  const listingSections =
-    localMarketCode === 'EU'
-      ? localListingSections
-      : [...localListingSections, ...europeListingSections]
   const latestLocalListingSection = localListingSections.find(
     (section) => section.id === 'local-latest',
   )
-  const remainingListingSections = listingSections.filter(
+  const remainingListingSections = localListingSections.filter(
     (section) => section.id !== 'local-latest',
   )
 
@@ -359,6 +347,10 @@ export default async function BusinessMarketplaceHome({
             vehicleTypesTitle={t.vehicleTypesTitle}
             vehicleTypesScrollLabel={t.vehicleTypesScrollLabel}
             vehicleTypes={vehicleBodyCategories}
+            vehicleTypesAllLabel={t.vehicleTypesAll}
+            vehicleTypesAllHref={marketplaceCategoryHref(locale, 'cars')}
+            popularBrandsTitle={t.popularBrandsTitle}
+            popularBrands={popularVehicleBrands}
             previousLabel={t.carouselPreviousLabel}
             nextLabel={t.carouselNextLabel}
           />
@@ -395,6 +387,18 @@ export default async function BusinessMarketplaceHome({
               />
             ))}
           </HomeVehicleNewsScroller>
+        </div>
+      </section>
+
+      <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
+        <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
+          <NewsletterSignup locale={locale} category="home" variant="home" />
+        </div>
+      </section>
+
+      <section className="bg-[#e9eef4] pb-5 pt-0 sm:pb-12">
+        <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
+          <HomeVehicleLinkDirectory locale={locale} />
         </div>
       </section>
 
@@ -651,6 +655,29 @@ function getVehicleBodyCategories(locale: PublicLocale): VehicleBodyCategory[] {
       image: '/vehicle-category-rails/cargo-van-v1.webp',
     },
   ]
+}
+
+function getPopularVehicleBrands(locale: PublicLocale): PopularVehicleBrand[] {
+  const brands = [
+    ['audi', 'Audi', '/vehicle-brand-logos/audi.png'],
+    ['bmw', 'BMW', '/vehicle-brand-logos/bmw.png'],
+    ['cupra', 'Cupra', '/vehicle-brand-logos/cupra.webp'],
+    ['ford', 'Ford', '/vehicle-brand-logos/ford.png'],
+    ['mercedes-benz', 'Mercedes-Benz', '/vehicle-brand-logos/mercedes-benz.png'],
+    ['opel', 'Opel', '/vehicle-brand-logos/opel.png'],
+    ['renault', 'Renault', '/vehicle-brand-logos/renault.png'],
+    ['tesla', 'Tesla', '/vehicle-brand-logos/tesla.png'],
+    ['toyota', 'Toyota', '/vehicle-brand-logos/toyota.png'],
+    ['volvo', 'Volvo', '/vehicle-brand-logos/volvo.png'],
+    ['volkswagen', 'Volkswagen', '/vehicle-brand-logos/volkswagen.png'],
+  ] as const
+
+  return brands.map(([id, title, logo]) => ({
+    id,
+    title,
+    logo,
+    href: marketplaceCategoryHref(locale, 'cars', { make: title }),
+  }))
 }
 
 function getPopularCarCategories(locale: PublicLocale): PopularCarCategory[] {
@@ -938,43 +965,6 @@ function HomeListingCard({
   )
 }
 
-function getVehicleNewsCards(locale: PublicLocale) {
-  const href = localizePublicHref(locale, '/vehicle-news')
-  if (locale === 'de') {
-    return [
-      { title: 'So finden Käufer das richtige Fahrzeug über Ländergrenzen hinweg', href },
-      { title: 'Checkliste für sichere Fahrzeuggeschäfte in Europa', href },
-      { title: 'Was Preis, Standort und Historie in einer Anzeige bedeuten', href },
-    ]
-  }
-  if (locale === 'en') {
-    return [
-      { title: 'How buyers compare vehicles across European markets', href },
-      { title: 'A practical checklist for safer vehicle deals', href },
-      { title: 'What price, location and vehicle history reveal in a listing', href },
-    ]
-  }
-  if (locale !== 'sv') {
-    return [
-      { title: translatePublic(locale, 'How buyers compare vehicles across European markets'), href },
-      { title: translatePublic(locale, 'A practical checklist for safer vehicle deals'), href },
-      { title: translatePublic(locale, 'What price, location and vehicle history reveal in a listing'), href },
-    ]
-  }
-  return [
-    { title: 'Så jämför köpare fordon mellan europeiska marknader', href },
-    { title: 'Checklista för en tryggare fordonsaffär online', href },
-    { title: 'Det här betyder pris, plats och historik i en annons', href },
-  ]
-}
-
-function homeEuropeLabel(locale: PublicLocale) {
-  if (locale === 'sv') return 'Europa'
-  if (locale === 'de') return 'Europa'
-  if (locale === 'en') return 'Europe'
-  return translatePublic(locale, 'Europe')
-}
-
 function homeListingSectionTitle(
   locale: PublicLocale,
   kind: 'top' | 'latest',
@@ -1007,20 +997,11 @@ function topListingLabel(locale: PublicLocale) {
   return translatePublic(locale, 'Sponsored')
 }
 
-function homeEmptyListingText(locale: PublicLocale, scope: 'country' | 'europe') {
-  const english =
-    scope === 'country'
-      ? 'Listings will appear here when vehicles are published in this market.'
-      : 'European listings will appear here when matching vehicles are published.'
-  if (locale === 'sv') {
-    return scope === 'country'
-      ? 'Annonser visas här när fordon publiceras på den här marknaden.'
-      : 'Europeiska annonser visas här när matchande fordon publiceras.'
-  }
+function homeEmptyListingText(locale: PublicLocale) {
+  const english = 'Listings will appear here when vehicles are published in this market.'
+  if (locale === 'sv') return 'Annonser visas här när fordon publiceras på den här marknaden.'
   if (locale === 'de') {
-    return scope === 'country'
-      ? 'Anzeigen erscheinen hier, wenn Fahrzeuge in diesem Markt veröffentlicht werden.'
-      : 'Europäische Anzeigen erscheinen hier, wenn passende Fahrzeuge veröffentlicht werden.'
+    return 'Anzeigen erscheinen hier, wenn Fahrzeuge in diesem Markt veröffentlicht werden.'
   }
   if (locale === 'en') return english
   return translatePublic(locale, english)
