@@ -145,14 +145,14 @@ export default function HomeVehicleCategoryRails({
               key={category.id}
               href={category.href}
               data-rail-card
-              className="group w-[252px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[282px] lg:w-[292px]"
+              className="group w-[264px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[296px] lg:w-[306px]"
             >
-              <div className="relative h-[126px] overflow-hidden bg-[#dce3eb] sm:h-[138px]">
+              <div className="relative h-[136px] overflow-hidden bg-[#dce3eb] sm:h-[148px]">
                 <Image
                   src={category.image}
                   alt=""
                   fill
-                  sizes="(max-width: 640px) 252px, (max-width: 1024px) 282px, 292px"
+                  sizes="(max-width: 640px) 264px, (max-width: 1024px) 296px, 306px"
                   className="object-cover transition duration-300 group-hover:scale-[1.02]"
                 />
               </div>

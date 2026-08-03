@@ -330,27 +330,6 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="bg-[#fbfcfe] py-9 sm:py-16">
-        <div className={homeContentContainerClass}>
-          <HomeVehicleNewsScroller
-            title={t.vehicleNewsTitle}
-            allNewsHref={localizePublicHref(locale, '/vehicle-news')}
-            allNewsLabel={t.allNews}
-            scrollLabel={t.newsScrollLabel}
-          >
-            {newsCards.map((item) => (
-              <VehicleNewsCard
-                key={item.id}
-                item={item}
-                category={t.newsCategory}
-                readTime={t.newsReadTime}
-                locale={locale}
-              />
-            ))}
-          </HomeVehicleNewsScroller>
-        </div>
-      </section>
-
       <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-6 sm:py-10">
         <div className={homeContentContainerClass}>
           <HomeVehicleCategoryRails
@@ -380,6 +359,27 @@ export default async function BusinessMarketplaceHome({
       </section>
 
       <HomeSellerAudienceSection copy={t} locale={locale} />
+
+      <section className="bg-[#fbfcfe] py-9 sm:py-16">
+        <div className={homeContentContainerClass}>
+          <HomeVehicleNewsScroller
+            title={t.vehicleNewsTitle}
+            allNewsHref={localizePublicHref(locale, '/vehicle-news')}
+            allNewsLabel={t.allNews}
+            scrollLabel={t.newsScrollLabel}
+          >
+            {newsCards.map((item) => (
+              <VehicleNewsCard
+                key={item.id}
+                item={item}
+                category={t.newsCategory}
+                readTime={t.newsReadTime}
+                locale={locale}
+              />
+            ))}
+          </HomeVehicleNewsScroller>
+        </div>
+      </section>
 
       <PublicFooter locale={locale} />
     </main>
