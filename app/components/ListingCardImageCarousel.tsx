@@ -139,11 +139,11 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className={`absolute left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_8px_22px_rgba(16,24,40,.18)] backdrop-blur transition hover:bg-white hover:text-[#0866ff] md:left-0 md:h-10 md:w-8 md:bg-transparent md:text-white md:shadow-none md:backdrop-blur-0 ${
+            className={`absolute left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-white hover:text-[#0866ff] md:left-0 md:h-10 md:w-8 ${
               showControlsOnMobile ? 'grid' : 'hidden'
             } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
-            <ChevronLeft className="h-5 w-5 md:h-7 md:w-7 md:drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
+            <ChevronLeft className="h-5 w-5 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)] md:h-7 md:w-7" strokeWidth={2.5} />
           </button>
           <button
             type="button"
@@ -153,11 +153,11 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className={`absolute right-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_8px_22px_rgba(16,24,40,.18)] backdrop-blur transition hover:bg-white hover:text-[#0866ff] md:right-0 md:h-10 md:w-8 md:bg-transparent md:text-white md:shadow-none md:backdrop-blur-0 ${
+            className={`absolute right-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-white hover:text-[#0866ff] md:right-0 md:h-10 md:w-8 ${
               showControlsOnMobile ? 'grid' : 'hidden'
             } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
-            <ChevronRight className="h-5 w-5 md:h-7 md:w-7 md:drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
+            <ChevronRight className="h-5 w-5 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)] md:h-7 md:w-7" strokeWidth={2.5} />
           </button>
         </>
       ) : null}
