@@ -14,6 +14,10 @@ const homeSource = readFileSync(
   new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url),
   'utf8',
 )
+const categoryRailsSource = readFileSync(
+  new URL('../app/components/HomeVehicleCategoryRails.tsx', import.meta.url),
+  'utf8',
+)
 const headingSliderSource = readFileSync(
   new URL('../app/components/HomeMarketHeadingSlider.tsx', import.meta.url),
   'utf8',
@@ -80,6 +84,15 @@ test('homepage search keeps compact rounded filter controls', () => {
   assert.match(homeSearchSource, /min-h-8 rounded-\[14px\]/)
   assert.match(homeSearchSource, /min-h-11 self-end items-center justify-center gap-2 rounded-full/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
+test('homepage popular brands keep an even logo grid', () => {
+  assert.match(homeSource, /\['skoda', 'Skoda', '\/vehicle-brand-logos\/skoda\.svg'\]/)
+  assert.equal(
+    existsSync(new URL('../public/vehicle-brand-logos/skoda.svg', import.meta.url)),
+    true,
+  )
+  assert.doesNotMatch(categoryRailsSource, /last:col-span-2/)
 })
 
 test('homepage search overrides broken generated Finnish reset copy', () => {

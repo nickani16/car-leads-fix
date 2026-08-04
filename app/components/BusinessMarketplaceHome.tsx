@@ -807,6 +807,7 @@ function getPopularVehicleBrands(locale: PublicLocale): PopularVehicleBrand[] {
     ['mercedes-benz', 'Mercedes-Benz', '/vehicle-brand-logos/mercedes-benz.png'],
     ['opel', 'Opel', '/vehicle-brand-logos/opel.png'],
     ['renault', 'Renault', '/vehicle-brand-logos/renault.png'],
+    ['skoda', 'Skoda', '/vehicle-brand-logos/skoda.svg'],
     ['tesla', 'Tesla', '/vehicle-brand-logos/tesla.png'],
     ['toyota', 'Toyota', '/vehicle-brand-logos/toyota.png'],
     ['volvo', 'Volvo', '/vehicle-brand-logos/volvo.png'],

@@ -241,7 +241,7 @@ export default function HomeVehicleCategoryRails({
               key={brand.id}
               href={brand.href}
               prefetch={false}
-              className="group flex min-h-[108px] min-w-0 flex-col items-center justify-center bg-white px-2 py-4 text-center transition last:col-span-2 hover:bg-[#f3f7fc] sm:min-h-[112px]"
+              className="group flex min-h-[108px] min-w-0 flex-col items-center justify-center bg-white px-2 py-4 text-center transition hover:bg-[#f3f7fc] sm:min-h-[112px]"
             >
               <span className="flex h-12 w-full items-center justify-center">
                 <Image
