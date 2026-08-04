@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
+import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
 import HomeVehicleCategoryRails, {
   type PopularCarCategory,
   type PopularVehicleBrand,
@@ -218,6 +219,21 @@ const localizedHeroHeadingCopy: Record<PublicLocale, string> = {
   da: 'Europas største køretøjsmarked',
 }
 
+const localizedLocalHeroHeadingCopy: Record<PublicLocale, string> = {
+  sv: 'Sveriges största fordonsmarknad',
+  en: "Europe's largest vehicle marketplace",
+  de: 'Deutschlands größter Fahrzeugmarkt',
+  at: 'Österreichs größter Fahrzeugmarkt',
+  be: 'Belgiës grootste voertuigmarkt',
+  fr: 'Le plus grand marché de véhicules de France',
+  es: 'El mayor mercado de vehículos de España',
+  it: 'Il più grande mercato di veicoli in Italia',
+  pl: 'Największy rynek pojazdów w Polsce',
+  nl: 'De grootste voertuigmarkt van Nederland',
+  fi: 'Suomen suurin ajoneuvomarkkina',
+  da: 'Danmarks største køretøjsmarked',
+}
+
 export function getHomeCopy(locale: PublicLocale) {
   const base = locale === 'sv'
     ? homeCopy.sv
@@ -233,6 +249,7 @@ export function getHomeCopy(locale: PublicLocale) {
   return {
     ...base,
     heroHeading: localizedHeroHeadingCopy[locale],
+    localHeroHeading: localizedLocalHeroHeadingCopy[locale],
   }
 }
 
@@ -347,9 +364,9 @@ export default async function BusinessMarketplaceHome({
           />
           <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[55%] items-center justify-center px-3 pb-8 text-center sm:w-[60%] sm:pb-10 lg:w-[52%] lg:items-start lg:justify-start lg:px-0 lg:pb-0 lg:pt-14 lg:text-left">
             <div className="max-w-[215px] sm:max-w-[430px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
-              <h2 className="text-[22px] font-semibold leading-[1.08] tracking-normal text-white min-[390px]:text-[23px] sm:text-[40px] lg:text-[48px] xl:text-[54px]">
-                {t.heroHeading}
-              </h2>
+              <HomeMarketHeadingSlider
+                headings={[t.localHeroHeading, t.heroHeading]}
+              />
             </div>
           </div>
         </div>

@@ -14,6 +14,11 @@ const homeSource = readFileSync(
   new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url),
   'utf8',
 )
+const headingSliderSource = readFileSync(
+  new URL('../app/components/HomeMarketHeadingSlider.tsx', import.meta.url),
+  'utf8',
+)
+const globalCssSource = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const translations = JSON.parse(
   readFileSync(new URL('../lib/generated-public-translations.json', import.meta.url), 'utf8'),
@@ -81,9 +86,13 @@ test('homepage search uses the supplied hero image and translated public copy', 
   assert.match(homeSource, /items-center justify-center/)
   assert.match(homeSource, /w-\[55%\]/)
   assert.match(homeSource, /max-w-\[215px\]/)
-  assert.match(homeSource, /text-\[22px\]/)
+  assert.match(headingSliderSource, /text-\[20px\]/)
   assert.doesNotMatch(homeSource, /w-\[68%\]/)
   assert.match(homeSource, /heroHeading: 'Europas största fordonsmarknad'/)
+  assert.match(homeSource, /<HomeMarketHeadingSlider/)
+  assert.match(homeSource, /headings=\{\[t\.localHeroHeading, t\.heroHeading\]\}/)
+  assert.match(headingSliderSource, /prefers-reduced-motion: reduce/)
+  assert.match(globalCssSource, /@keyframes home-market-heading-slide/)
   assert.match(homeSource, /unoptimized/)
   assert.doesNotMatch(homeSource, /\/autorell-home-search-hero\.webp/)
   assert.doesNotMatch(homeSource, /\/autorell-home-hero-street-cars\.jpg/)
@@ -105,7 +114,9 @@ test('homepage search uses the supplied hero image and translated public copy', 
 
 test('homepage hero heading is explicitly localized for every public locale', () => {
   assert.match(homeSource, /const localizedHeroHeadingCopy: Record<PublicLocale, string>/)
+  assert.match(homeSource, /const localizedLocalHeroHeadingCopy: Record<PublicLocale, string>/)
   assert.match(homeSource, /heroHeading: localizedHeroHeadingCopy\[locale\]/)
+  assert.match(homeSource, /localHeroHeading: localizedLocalHeroHeadingCopy\[locale\]/)
 
   const expectedHeadings = [
     "sv: 'Europas största fordonsmarknad'",
@@ -124,6 +135,25 @@ test('homepage hero heading is explicitly localized for every public locale', ()
 
   for (const heading of expectedHeadings) {
     assert.ok(homeSource.includes(heading), `Missing localized hero heading: ${heading}`)
+  }
+
+  const expectedLocalHeadings = [
+    "sv: 'Sveriges största fordonsmarknad'",
+    `en: "Europe's largest vehicle marketplace"`,
+    "de: 'Deutschlands größter Fahrzeugmarkt'",
+    "at: 'Österreichs größter Fahrzeugmarkt'",
+    "be: 'Belgiës grootste voertuigmarkt'",
+    "fr: 'Le plus grand marché de véhicules de France'",
+    "es: 'El mayor mercado de vehículos de España'",
+    "it: 'Il più grande mercato di veicoli in Italia'",
+    "pl: 'Największy rynek pojazdów w Polsce'",
+    "nl: 'De grootste voertuigmarkt van Nederland'",
+    "fi: 'Suomen suurin ajoneuvomarkkina'",
+    "da: 'Danmarks største køretøjsmarked'",
+  ]
+
+  for (const heading of expectedLocalHeadings) {
+    assert.ok(homeSource.includes(heading), `Missing localized local hero heading: ${heading}`)
   }
 })
 
