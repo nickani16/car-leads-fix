@@ -325,9 +325,9 @@ export default async function BusinessMarketplaceHome({
             className="hidden object-cover object-center lg:block"
             sizes="100vw"
           />
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[68%] items-center justify-center px-4 pb-8 text-center sm:w-[66%] sm:pb-10 lg:w-[52%] lg:items-start lg:justify-start lg:px-0 lg:pb-0 lg:pt-14 lg:text-left">
-            <div className="max-w-[290px] sm:max-w-[500px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
-              <h2 className="text-[28px] font-semibold leading-[1.05] tracking-normal text-white sm:text-[46px] lg:text-[48px] xl:text-[54px]">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[55%] items-center justify-center px-3 pb-8 text-center sm:w-[60%] sm:pb-10 lg:w-[52%] lg:items-start lg:justify-start lg:px-0 lg:pb-0 lg:pt-14 lg:text-left">
+            <div className="max-w-[215px] sm:max-w-[430px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
+              <h2 className="text-[22px] font-semibold leading-[1.08] tracking-normal text-white min-[390px]:text-[23px] sm:text-[40px] lg:text-[48px] xl:text-[54px]">
                 {t.heroHeading}
               </h2>
             </div>
