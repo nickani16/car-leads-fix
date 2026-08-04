@@ -63,6 +63,15 @@ test('homepage search panels and placeholder retain their accessibility behavior
   assert.doesNotMatch(homeSearchSource, /Volvo V70 diesel/)
 })
 
+test('homepage search keeps compact rounded filter controls', () => {
+  assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
+  assert.match(homeSearchSource, /min-h-9 w-full appearance-none rounded-\[14px\]/)
+  assert.match(homeSearchSource, /grid min-h-9 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
+  assert.match(homeSearchSource, /min-h-8 rounded-\[14px\]/)
+  assert.match(homeSearchSource, /min-h-11 self-end items-center justify-center gap-2 rounded-full/)
+  assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
 test('homepage search uses the supplied hero image and translated public copy', () => {
   assert.match(homeSource, /\/autorell-home-desktop-market-hero\.png/)
   assert.match(homeSource, /\/autorell-home-mobile-market-hero\.png/)
