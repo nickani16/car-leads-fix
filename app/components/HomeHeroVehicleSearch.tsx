@@ -995,7 +995,7 @@ export default function HomeHeroVehicleSearch({
                         : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                     }`}
                   >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                    <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
                     <span className="max-w-full truncate">{categoryLabel(slug, locale)}</span>
                     {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
                   </button>
@@ -1014,7 +1014,7 @@ export default function HomeHeroVehicleSearch({
                     : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                 }`}
               >
-                <MoreCategoryIcon className="h-5 w-5" aria-hidden="true" />
+                <MoreCategoryIcon className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
                 <span className="max-w-full truncate">
                   {selectedExtraCategory ? categoryLabel(selectedExtraCategory.slug, locale) : t.moreCategories}
                 </span>
@@ -1058,7 +1058,7 @@ export default function HomeHeroVehicleSearch({
                           : 'border-[#d8e0ea] text-[#344054] hover:border-[#0866ff]'
                       }`}
                     >
-                      <Icon className="h-6 w-6" aria-hidden="true" />
+                      <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden="true" />
                       <span>{categoryLabel(slug, locale)}</span>
                     </button>
                   )
