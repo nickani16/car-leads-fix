@@ -177,8 +177,10 @@ test('public listing images use safe framing and modern formats by viewport', ()
   assert.doesNotMatch(listingFormSource, /object-contain/)
 })
 
-test('listing card carousel arrows stay clean until hover', () => {
-  assert.match(listingCardCarouselSource, /rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-white hover:text-\[#0866ff\]/)
+test('listing card carousel arrows stay white without hover backgrounds', () => {
+  assert.match(listingCardCarouselSource, /rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white/)
+  assert.match(listingCardCarouselSource, /active:bg-transparent active:text-white/)
+  assert.doesNotMatch(listingCardCarouselSource, /hover:bg-white hover:text-\[#0866ff\]/)
   assert.match(listingCardCarouselSource, /drop-shadow-\[0_1px_3px_rgba\(16,24,40,\.55\)\]/)
   assert.doesNotMatch(listingCardCarouselSource, /bg-white\/92 text-\[#101828\] shadow-\[0_8px_22px_rgba\(16,24,40,\.18\)\] backdrop-blur/)
 })

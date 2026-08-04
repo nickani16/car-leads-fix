@@ -139,7 +139,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className={`absolute left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-white hover:text-[#0866ff] md:left-0 md:h-10 md:w-8 ${
+            className={`absolute left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white active:bg-transparent active:text-white focus-visible:bg-transparent focus-visible:text-white md:left-0 md:h-10 md:w-8 ${
               showControlsOnMobile ? 'grid' : 'hidden'
             } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
@@ -153,7 +153,7 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className={`absolute right-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-white hover:text-[#0866ff] md:right-0 md:h-10 md:w-8 ${
+            className={`absolute right-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white active:bg-transparent active:text-white focus-visible:bg-transparent focus-visible:text-white md:right-0 md:h-10 md:w-8 ${
               showControlsOnMobile ? 'grid' : 'hidden'
             } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
