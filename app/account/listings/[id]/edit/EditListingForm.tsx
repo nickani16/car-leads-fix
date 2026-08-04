@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ImagePlus, LoaderCircle, Search, X } from 'lucide-react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
@@ -21,6 +21,7 @@ import {
 } from '@/lib/marketplace-security'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 
 type EditableListing = {
   id: string
@@ -70,6 +71,7 @@ export default function EditListingForm({
   const router = useRouter()
   const copy = getEditListingFormCopy(locale)
   const [make, setMake] = useState(listing.make)
+  const [makeSuggestionsOpen, setMakeSuggestionsOpen] = useState(false)
   const [model, setModel] = useState(listing.model)
   const [variant, setVariant] = useState(listing.variant)
   const [modelYear, setModelYear] = useState(listing.modelYear ? String(listing.modelYear) : '')
@@ -99,6 +101,11 @@ export default function EditListingForm({
     machineType: listing.identifiers.machineType || '',
     agricultureObjectType: listing.identifiers.agricultureObjectType || 'tractor',
   })
+  const makeSuggestions = useMemo(
+    () => matchingBrandSuggestions(listing.category, make),
+    [listing.category, make],
+  )
+  const visibleMakeSuggestions = makeSuggestions.filter((suggestion) => suggestion !== make).slice(0, 8)
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -185,14 +192,38 @@ export default function EditListingForm({
       <section className="rounded-[18px] border border-[#dfe6f1] p-4">
         <h2 className="text-lg font-semibold tracking-[-.03em]">Fordonsuppgifter</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block">
+          <label className="relative block">
             <span className="mb-2 block text-sm font-semibold">Märke eller tillverkare</span>
             <input
               value={make}
-              onChange={(event) => setMake(event.target.value)}
+              autoComplete="off"
+              onFocus={() => setMakeSuggestionsOpen(true)}
+              onBlur={() => window.setTimeout(() => setMakeSuggestionsOpen(false), 120)}
+              onChange={(event) => {
+                setMakeSuggestionsOpen(true)
+                setMake(event.target.value)
+              }}
               className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
               required
             />
+            {makeSuggestionsOpen && visibleMakeSuggestions.length ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)]">
+                {visibleMakeSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setMake(suggestion)
+                      setMakeSuggestionsOpen(false)
+                    }}
+                    className="flex min-h-10 w-full items-center px-4 text-left text-sm font-medium text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </label>
           <label className="block">
             <span className="mb-2 block text-sm font-semibold">Modell</span>

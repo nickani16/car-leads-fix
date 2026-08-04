@@ -53,6 +53,7 @@ import {
   listingRequirementsByCategory,
   sellerListingConfirmationKeys,
 } from '@/lib/marketplace-security'
+import { matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 import {
   normalizePostalCode,
   validatePostalCode,
@@ -256,6 +257,10 @@ export default function NewListingForm({
   const allowedOfferTypeValues = leasingAllowedForCategory
     ? offerTypeValues
     : offerTypeValues.filter((item) => item.value !== 'lease')
+  const makeSuggestions = useMemo(
+    () => matchingBrandSuggestions(category, values.make || ''),
+    [category, values.make],
+  )
   const progress = Math.round(((step + 1) / steps.length) * 100)
   const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'].includes(listingCountryCode)
   const orderedImages = useMemo(() => {
@@ -828,7 +833,7 @@ export default function NewListingForm({
                 ))}
               </div>
             </div>
-            <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} required />
+            <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} suggestions={makeSuggestions} required />
             <Field name="model" label={copy.model} value={values.model || ''} onValueChange={setValue} required />
             <Field name="variant" label={copy.variant} value={values.variant || ''} onValueChange={setValue} />
             <SelectNative name="modelYear" label={copy.modelYear} value={values.modelYear || ''} onValueChange={setValue} required>
@@ -2074,10 +2079,14 @@ function Field(
     name: string
     value: string
     locale?: PublicLocale
+    suggestions?: readonly string[]
     onValueChange: (name: string, value: string) => void
   },
 ) {
-  const { label, helper, name, value, locale, onValueChange, ...rest } = props
+  const { label, helper, name, value, locale, suggestions = [], onValueChange, ...rest } = props
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+  const visibleSuggestions = suggestions.filter((suggestion) => suggestion !== value).slice(0, 8)
+  const showSuggestions = suggestionsOpen && visibleSuggestions.length > 0
   const inputStyle: React.CSSProperties = {
     ...rest.style,
     ...(rest.type === 'date'
@@ -2090,16 +2099,46 @@ function Field(
       : {}),
   }
   return (
-    <label className="block min-w-0 max-w-full">
+    <label className="relative block min-w-0 max-w-full">
       <span className="mb-2 block text-sm font-semibold">{leaseLabel(locale || currentDocumentLocale(), label)}</span>
       <input
         {...rest}
         name={name}
         value={value}
         style={inputStyle}
-        onChange={(event) => onValueChange(String(name), event.target.value)}
+        autoComplete={suggestions.length ? 'off' : rest.autoComplete}
+        onFocus={(event) => {
+          rest.onFocus?.(event)
+          setSuggestionsOpen(true)
+        }}
+        onBlur={(event) => {
+          rest.onBlur?.(event)
+          window.setTimeout(() => setSuggestionsOpen(false), 120)
+        }}
+        onChange={(event) => {
+          setSuggestionsOpen(true)
+          onValueChange(String(name), event.target.value)
+        }}
         className="block box-border h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
+      {showSuggestions ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)]">
+          {visibleSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onValueChange(String(name), suggestion)
+                setSuggestionsOpen(false)
+              }}
+              className="flex min-h-10 w-full items-center px-4 text-left text-sm font-medium text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+            >
+              <span>{suggestion}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
   )
