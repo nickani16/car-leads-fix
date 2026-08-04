@@ -43,13 +43,8 @@ export default function HomeMarketHeadingSlider({
       aria-label={accessibleHeading}
     >
       {lead ? <span>{lead}</span> : null}
-      <span className="home-market-heading-term inline-grid overflow-hidden align-bottom">
-        {items.map((term) => (
-          <span key={`measure-${term}`} aria-hidden="true" className="invisible col-start-1 row-start-1">
-            {term}
-          </span>
-        ))}
-        <span key={activeTerm} className="home-market-heading-slide col-start-1 row-start-1 inline-block">
+      <span className="home-market-heading-term inline-block overflow-hidden align-bottom">
+        <span key={activeTerm} className="home-market-heading-slide inline-block">
           {activeTerm}
         </span>
       </span>
