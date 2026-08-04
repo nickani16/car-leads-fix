@@ -90,8 +90,13 @@ test('homepage search uses the supplied hero image and translated public copy', 
   assert.doesNotMatch(homeSource, /w-\[68%\]/)
   assert.match(homeSource, /heroHeading: 'Europas största fordonsmarknad'/)
   assert.match(homeSource, /<HomeMarketHeadingSlider/)
-  assert.match(homeSource, /headings=\{\[t\.localHeroHeading, t\.heroHeading\]\}/)
+  assert.match(homeSource, /lead=\{t\.heroHeadingSlider\.lead\}/)
+  assert.match(homeSource, /t\.heroHeadingSlider\.localTerm/)
+  assert.match(homeSource, /t\.heroHeadingSlider\.europeTerm/)
+  assert.match(homeSource, /tail=\{t\.heroHeadingSlider\.tail\}/)
   assert.match(headingSliderSource, /prefers-reduced-motion: reduce/)
+  assert.match(headingSliderSource, /home-market-heading-term/)
+  assert.match(headingSliderSource, /measure-\$\{term\}/)
   assert.match(globalCssSource, /@keyframes home-market-heading-slide/)
   assert.match(homeSource, /unoptimized/)
   assert.doesNotMatch(homeSource, /\/autorell-home-search-hero\.webp/)
@@ -115,8 +120,10 @@ test('homepage search uses the supplied hero image and translated public copy', 
 test('homepage hero heading is explicitly localized for every public locale', () => {
   assert.match(homeSource, /const localizedHeroHeadingCopy: Record<PublicLocale, string>/)
   assert.match(homeSource, /const localizedLocalHeroHeadingCopy: Record<PublicLocale, string>/)
+  assert.match(homeSource, /const localizedHeroHeadingSliderCopy: Record</)
   assert.match(homeSource, /heroHeading: localizedHeroHeadingCopy\[locale\]/)
   assert.match(homeSource, /localHeroHeading: localizedLocalHeroHeadingCopy\[locale\]/)
+  assert.match(homeSource, /heroHeadingSlider: localizedHeroHeadingSliderCopy\[locale\]/)
 
   const expectedHeadings = [
     "sv: 'Europas största fordonsmarknad'",
@@ -154,6 +161,23 @@ test('homepage hero heading is explicitly localized for every public locale', ()
 
   for (const heading of expectedLocalHeadings) {
     assert.ok(homeSource.includes(heading), `Missing localized local hero heading: ${heading}`)
+  }
+
+  for (const term of [
+    "localTerm: 'Sveriges'",
+    "europeTerm: 'Europas'",
+    "localTerm: 'Deutschlands'",
+    "localTerm: 'Österreichs'",
+    "localTerm: 'Belgiës'",
+    "localTerm: 'de France'",
+    "localTerm: 'España'",
+    "localTerm: 'in Italia'",
+    "localTerm: 'w Polsce'",
+    "localTerm: 'Nederland'",
+    "localTerm: 'Suomen'",
+    "localTerm: 'Danmarks'",
+  ]) {
+    assert.ok(homeSource.includes(term), `Missing localized rotating term: ${term}`)
   }
 })
 

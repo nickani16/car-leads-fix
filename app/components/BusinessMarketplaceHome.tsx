@@ -234,6 +234,84 @@ const localizedLocalHeroHeadingCopy: Record<PublicLocale, string> = {
   da: 'Danmarks største køretøjsmarked',
 }
 
+const localizedHeroHeadingSliderCopy: Record<
+  PublicLocale,
+  { lead: string; localTerm: string; europeTerm: string; tail: string }
+> = {
+  sv: {
+    lead: '',
+    localTerm: 'Sveriges',
+    europeTerm: 'Europas',
+    tail: ' största fordonsmarknad',
+  },
+  en: {
+    lead: '',
+    localTerm: "Europe's",
+    europeTerm: "Europe's",
+    tail: ' largest vehicle marketplace',
+  },
+  de: {
+    lead: '',
+    localTerm: 'Deutschlands',
+    europeTerm: 'Europas',
+    tail: ' größter Fahrzeugmarkt',
+  },
+  at: {
+    lead: '',
+    localTerm: 'Österreichs',
+    europeTerm: 'Europas',
+    tail: ' größter Fahrzeugmarkt',
+  },
+  be: {
+    lead: '',
+    localTerm: 'Belgiës',
+    europeTerm: "Europa's",
+    tail: ' grootste voertuigmarkt',
+  },
+  fr: {
+    lead: 'Le plus grand marché de véhicules ',
+    localTerm: 'de France',
+    europeTerm: "d'Europe",
+    tail: '',
+  },
+  es: {
+    lead: 'El mayor mercado de vehículos de ',
+    localTerm: 'España',
+    europeTerm: 'Europa',
+    tail: '',
+  },
+  it: {
+    lead: 'Il più grande mercato di veicoli ',
+    localTerm: 'in Italia',
+    europeTerm: "d'Europa",
+    tail: '',
+  },
+  pl: {
+    lead: 'Największy rynek pojazdów ',
+    localTerm: 'w Polsce',
+    europeTerm: 'w Europie',
+    tail: '',
+  },
+  nl: {
+    lead: 'De grootste voertuigmarkt van ',
+    localTerm: 'Nederland',
+    europeTerm: 'Europa',
+    tail: '',
+  },
+  fi: {
+    lead: '',
+    localTerm: 'Suomen',
+    europeTerm: 'Euroopan',
+    tail: ' suurin ajoneuvomarkkina',
+  },
+  da: {
+    lead: '',
+    localTerm: 'Danmarks',
+    europeTerm: 'Europas',
+    tail: ' største køretøjsmarked',
+  },
+}
+
 export function getHomeCopy(locale: PublicLocale) {
   const base = locale === 'sv'
     ? homeCopy.sv
@@ -250,6 +328,7 @@ export function getHomeCopy(locale: PublicLocale) {
     ...base,
     heroHeading: localizedHeroHeadingCopy[locale],
     localHeroHeading: localizedLocalHeroHeadingCopy[locale],
+    heroHeadingSlider: localizedHeroHeadingSliderCopy[locale],
   }
 }
 
@@ -365,7 +444,12 @@ export default async function BusinessMarketplaceHome({
           <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[55%] items-center justify-center px-3 pb-8 text-center sm:w-[60%] sm:pb-10 lg:w-[52%] lg:items-start lg:justify-start lg:px-0 lg:pb-0 lg:pt-14 lg:text-left">
             <div className="max-w-[215px] sm:max-w-[430px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
               <HomeMarketHeadingSlider
-                headings={[t.localHeroHeading, t.heroHeading]}
+                lead={t.heroHeadingSlider.lead}
+                terms={[
+                  t.heroHeadingSlider.localTerm,
+                  t.heroHeadingSlider.europeTerm,
+                ]}
+                tail={t.heroHeadingSlider.tail}
               />
             </div>
           </div>

@@ -3,19 +3,23 @@
 import { useEffect, useMemo, useState } from 'react'
 
 type HomeMarketHeadingSliderProps = {
-  headings: string[]
+  lead?: string
+  terms: string[]
+  tail?: string
   className?: string
 }
 
 const SLIDE_INTERVAL_MS = 2600
 
 export default function HomeMarketHeadingSlider({
-  headings,
+  lead = '',
+  terms,
+  tail = '',
   className = '',
 }: HomeMarketHeadingSliderProps) {
   const items = useMemo(
-    () => Array.from(new Set(headings.map((heading) => heading.trim()).filter(Boolean))),
-    [headings],
+    () => Array.from(new Set(terms.map((term) => term.trim()).filter(Boolean))),
+    [terms],
   )
   const [index, setIndex] = useState(0)
 
@@ -30,16 +34,26 @@ export default function HomeMarketHeadingSlider({
     return () => window.clearInterval(interval)
   }, [items.length])
 
-  const activeHeading = items[index] || headings[0] || ''
+  const activeTerm = items[index] || terms[0] || ''
+  const accessibleHeading = `${lead}${activeTerm}${tail}`.trim()
 
   return (
     <h2
-      className={`home-market-heading min-h-[2.18em] overflow-hidden text-[20px] font-semibold leading-[1.09] tracking-normal text-white min-[390px]:text-[21px] sm:text-[38px] lg:text-[48px] xl:text-[54px] ${className}`}
-      aria-label={activeHeading}
+      className={`home-market-heading min-h-[2.18em] text-[20px] font-semibold leading-[1.09] tracking-normal text-white min-[390px]:text-[21px] sm:text-[38px] lg:text-[48px] xl:text-[54px] ${className}`}
+      aria-label={accessibleHeading}
     >
-      <span key={activeHeading} className="home-market-heading-slide block">
-        {activeHeading}
+      {lead ? <span>{lead}</span> : null}
+      <span className="home-market-heading-term inline-grid overflow-hidden align-bottom">
+        {items.map((term) => (
+          <span key={`measure-${term}`} aria-hidden="true" className="invisible col-start-1 row-start-1">
+            {term}
+          </span>
+        ))}
+        <span key={activeTerm} className="home-market-heading-slide col-start-1 row-start-1 inline-block">
+          {activeTerm}
+        </span>
       </span>
+      {tail ? <span>{tail}</span> : null}
     </h2>
   )
 }
