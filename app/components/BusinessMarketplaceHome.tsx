@@ -306,14 +306,14 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-[#e9eef4] pt-0">
-        <div className="relative h-[318px] overflow-hidden bg-[#0866ff] sm:h-[340px] lg:h-[330px]">
+        <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
           <Image
             src="/autorell-home-mobile-market-hero.png"
             alt={t.heroAlt}
             fill
             priority
             unoptimized
-            className="object-cover object-left lg:hidden"
+            className="object-fill lg:hidden"
             sizes="100vw"
           />
           <Image
@@ -325,9 +325,9 @@ export default async function BusinessMarketplaceHome({
             className="hidden object-cover object-center lg:block"
             sizes="100vw"
           />
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[72%] items-start pt-11 sm:w-[66%] sm:pt-12 lg:w-[52%] lg:pt-14">
-            <div className="ml-5 max-w-[310px] pr-5 sm:ml-8 sm:max-w-[500px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
-              <h2 className="text-[32px] font-semibold leading-[1.05] tracking-normal text-white sm:text-[46px] lg:text-[48px] xl:text-[54px]">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[68%] items-center justify-center px-4 pb-8 text-center sm:w-[66%] sm:pb-10 lg:w-[52%] lg:items-start lg:justify-start lg:px-0 lg:pb-0 lg:pt-14 lg:text-left">
+            <div className="max-w-[290px] sm:max-w-[500px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
+              <h2 className="text-[28px] font-semibold leading-[1.05] tracking-normal text-white sm:text-[46px] lg:text-[48px] xl:text-[54px]">
                 {t.heroHeading}
               </h2>
             </div>

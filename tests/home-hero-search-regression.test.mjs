@@ -66,6 +66,9 @@ test('homepage search panels and placeholder retain their accessibility behavior
 test('homepage search uses the supplied hero image and translated public copy', () => {
   assert.match(homeSource, /\/autorell-home-desktop-market-hero\.png/)
   assert.match(homeSource, /\/autorell-home-mobile-market-hero\.png/)
+  assert.match(homeSource, /aspect-\[750\/400\]/)
+  assert.match(homeSource, /object-fill lg:hidden/)
+  assert.match(homeSource, /items-center justify-center/)
   assert.match(homeSource, /heroHeading: 'Europas största fordonsmarknad'/)
   assert.match(homeSource, /unoptimized/)
   assert.doesNotMatch(homeSource, /\/autorell-home-search-hero\.webp/)
