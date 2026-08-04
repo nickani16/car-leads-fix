@@ -1276,6 +1276,7 @@ const activeMarketUiTranslations = {
     'Search filters': 'Hakusuodattimet',
     'Save search': 'Tallenna haku',
     'Search': 'Hae',
+    Reset: 'Tyhjennä',
     'For sale': 'Myytävänä',
     'Sorting': 'Lajittelu',
     'Published': 'Julkaistu',

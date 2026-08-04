@@ -23,6 +23,10 @@ const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8'
 const translations = JSON.parse(
   readFileSync(new URL('../lib/generated-public-translations.json', import.meta.url), 'utf8'),
 )
+const manualTranslationsSource = readFileSync(
+  new URL('../lib/manual-public-translations.ts', import.meta.url),
+  'utf8',
+)
 
 test('homepage search keeps category-specific filters and the real count API', () => {
   for (const category of [
@@ -76,6 +80,12 @@ test('homepage search keeps compact rounded filter controls', () => {
   assert.match(homeSearchSource, /min-h-8 rounded-\[14px\]/)
   assert.match(homeSearchSource, /min-h-11 self-end items-center justify-center gap-2 rounded-full/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
+test('homepage search overrides broken generated Finnish reset copy', () => {
+  assert.match(manualTranslationsSource, /fi:\s*\{[\s\S]*Reset: 'Tyhjennä'/)
+  assert.match(translations.fi?.Reset || '', /ZXQ/)
+  assert.doesNotMatch(manualTranslationsSource, /Reset: 'Korjaus/)
 })
 
 test('homepage search uses the supplied hero image and translated public copy', () => {
