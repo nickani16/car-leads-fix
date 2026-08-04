@@ -2623,14 +2623,14 @@ export default function VehicleSearchExperience({
 
                 <div
                     aria-hidden={!filtersOpen}
-                    className={`fixed inset-x-0 bottom-0 z-[180] h-[min(88vh,820px)] overflow-hidden rounded-t-[18px] bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out sm:border-t sm:border-[#d9e6ff] lg:absolute lg:inset-0 lg:z-50 lg:h-auto lg:rounded-none lg:border-t-0 lg:shadow-none ${
+                    className={`fixed inset-0 z-[180] h-screen max-h-screen overflow-hidden rounded-none bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out [height:100dvh] [max-height:100dvh] min-[1120px]:absolute min-[1120px]:inset-0 min-[1120px]:z-50 min-[1120px]:h-auto min-[1120px]:max-h-none min-[1120px]:rounded-none min-[1120px]:border-t-0 min-[1120px]:shadow-none ${
                       filtersOpen
                         ? 'translate-y-0 opacity-100'
-                        : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
+                        : 'pointer-events-none translate-y-full opacity-0 min-[1120px]:translate-y-6'
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-14 sm:px-6 sm:py-4 sm:pr-16 relative">
+                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
                         <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
@@ -2653,7 +2653,7 @@ export default function VehicleSearchExperience({
                         <button
                           type="button"
                           onClick={() => setFiltersOpen(false)}
-                          className="mr-0.5 grid h-9 w-9 shrink-0 translate-y-1 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          className="mr-0 grid h-9 w-9 shrink-0 translate-y-1 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
                           aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
                         >
                           <X className="h-5 w-5" />

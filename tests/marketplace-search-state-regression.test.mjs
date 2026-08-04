@@ -350,6 +350,14 @@ test('marketplace range and select filters localize short UI labels', () => {
   assert.match(manualPublicTranslationsSource, /fi: \{[\s\S]*Mileage: 'Kilometrit'/)
 })
 
+test('marketplace mobile filter panel always opens fullscreen', () => {
+  assert.match(vehicleSearchExperienceSource, /fixed inset-0 z-\[180\] h-screen max-h-screen/)
+  assert.match(vehicleSearchExperienceSource, /\[height:100dvh\] \[max-height:100dvh\]/)
+  assert.match(vehicleSearchExperienceSource, /min-\[1120px\]:absolute min-\[1120px\]:inset-0/)
+  assert.match(vehicleSearchExperienceSource, /px-4 py-3 pr-3 sm:px-6 sm:py-4 sm:pr-16/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /h-\[min\(88vh,820px\)\]/)
+})
+
 test('marketplace cards and listing detail show stable rounded offer status', () => {
   assert.match(vehicleSearchExperienceSource, /px-2 py-0\.5 text-\[11px\][\s\S]*\{offerBadge\.label\}[\s\S]*line-clamp-1 font-semibold/)
   assert.match(vehicleSearchExperienceSource, /truncate rounded-full bg-\[#f2f4f7\]/)
