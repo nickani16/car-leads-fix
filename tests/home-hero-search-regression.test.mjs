@@ -55,13 +55,19 @@ test('homepage search panels and placeholder retain their accessibility behavior
   assert.match(placeholderSource, /deleting \? DELETE_DELAY_MS : TYPE_DELAY_MS/)
   assert.match(placeholderSource, /setDeleting\(true\)/)
   assert.match(placeholderSource, /setDeleting\(false\)/)
+  assert.match(homeSearchSource, /categoryExamples/)
+  assert.match(homeSearchSource, /t\.categoryExamples[\s\S]*\[category\]/)
+  assert.match(homeSearchSource, /category,\s*\n\s*active: searchFocused/)
+  assert.doesNotMatch(homeSearchSource, /<HomeSearchAnimatedPlaceholder examples=\{t\.examples\}/)
+  assert.doesNotMatch(homeSearchSource, /Sparkles/)
+  assert.doesNotMatch(homeSearchSource, /Volvo V70 diesel/)
 })
 
 test('homepage search uses the supplied hero image and translated public copy', () => {
-  assert.match(homeSource, /\/autorell-home-search-hero\.jpeg/)
+  assert.match(homeSource, /\/autorell-home-search-hero\.webp/)
   assert.doesNotMatch(homeSource, /\/autorell-home-hero-street-cars\.jpg/)
   assert.equal(
-    existsSync(new URL('../public/autorell-home-search-hero.jpeg', import.meta.url)),
+    existsSync(new URL('../public/autorell-home-search-hero.webp', import.meta.url)),
     true,
   )
 

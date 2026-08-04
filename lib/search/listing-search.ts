@@ -2,6 +2,7 @@ import 'server-only'
 
 import {
   marketplaceCategories,
+  marketplaceCategoryAliases,
   marketplaceLanguage,
   normalizeMarketplaceCategory,
   type MarketplaceCategorySlug,
@@ -41,6 +42,7 @@ export type PublicSearchInput = {
   limit?: number
   provider?: ListingSearchProvider
   market?: string | null
+  category?: MarketplaceCategorySlug | string | null
 }
 
 type PublicSearchCacheEntry = {
@@ -191,12 +193,13 @@ export async function searchPublicEntries(input: PublicSearchInput) {
   const provider = input.provider || 'supabase'
   const explicitMarket = normalizeMarket(input.market)
   const market = resolveSearchMarket(locale, explicitMarket, query)
-  const cacheKey = `${PUBLIC_SEARCH_CACHE_VERSION}:${provider}:${locale}:${market || 'EU'}:${query.toLocaleLowerCase('en-US')}:${limit}`
+  const category = normalizePublicSearchCategory(input.category)
+  const cacheKey = `${PUBLIC_SEARCH_CACHE_VERSION}:${provider}:${locale}:${market || 'EU'}:${category || 'all'}:${query.toLocaleLowerCase('en-US')}:${limit}`
   const cached = publicSearchCache.get(cacheKey)
 
   if (cached && cached.expiresAt > Date.now()) return cached.results
 
-  const results = await searchWithSupabase({ locale, language, query, limit, market })
+  const results = await searchWithSupabase({ locale, language, query, limit, market, category })
   if (publicSearchCache.size >= PUBLIC_SEARCH_CACHE_MAX_ENTRIES) {
     const firstKey = publicSearchCache.keys().next().value
     if (firstKey) publicSearchCache.delete(firstKey)
@@ -227,6 +230,14 @@ function normalizeMarket(value?: string | null) {
   return /^[A-Z]{2}$/.test(normalized) ? normalized : ''
 }
 
+function normalizePublicSearchCategory(value?: string | null): MarketplaceCategorySlug | '' {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  const normalized = marketplaceCategoryAliases[raw] || raw
+  if (!marketplaceCategories.some((item) => item.slug === normalized)) return ''
+  return normalizeMarketplaceCategory(normalized)
+}
+
 function resolveSearchMarket(locale: PublicLocale, explicitMarket: string, query: string) {
   if (detectsEurope(query)) return 'EU'
   if (explicitMarket) return explicitMarket
@@ -239,22 +250,24 @@ async function searchWithSupabase({
   query,
   limit,
   market,
+  category,
 }: {
   locale: PublicLocale
   language: 'sv' | 'en' | 'de'
   query: string
   limit: number
   market: string
+  category: MarketplaceCategorySlug | ''
 }) {
   if (query.length < 2) return []
 
-  const listingEntries = await searchPublishedListingEntries({ locale, query, limit, market })
+  const listingEntries = await searchPublishedListingEntries({ locale, query, limit, market, category })
   if (listingEntries.length > 0) {
-    const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market })
+    const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market, category })
     return rankEntries(dedupeEntries([...listingEntries, ...structuredEntries]), query).slice(0, limit)
   }
 
-  const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market })
+  const structuredEntries = buildStructuredVehicleEntries({ locale, language, query, market, category })
   if (structuredEntries.length > 0) {
     return structuredEntries.slice(0, limit)
   }
@@ -268,11 +281,13 @@ async function searchPublishedListingEntries({
   query,
   limit,
   market,
+  category,
 }: {
   locale: PublicLocale
   query: string
   limit: number
   market: string
+  category: MarketplaceCategorySlug | ''
 }) {
   const normalizedQuery = normalizeForMatch(query)
   const terms = normalizedQuery.split(' ').filter(Boolean)
@@ -292,6 +307,7 @@ async function searchPublishedListingEntries({
     .limit(Math.max(limit * 4, 20))
 
   if (market && market !== 'EU') request = request.eq('country_code', market)
+  if (category) request = request.eq('category', category)
 
   const orFilters: string[] = []
   for (const term of textTerms.slice(0, 4)) {
@@ -583,16 +599,22 @@ function buildStructuredVehicleEntries({
   language,
   query,
   market,
+  category,
 }: {
   locale: PublicLocale
   language: 'sv' | 'en' | 'de'
   query: string
   market: string
+  category: MarketplaceCategorySlug | ''
 }) {
   const normalizedQuery = normalizeForMatch(query)
   const terms = normalizedQuery.split(' ').filter(Boolean)
+  const queryCategory = detectCategory(normalizedQuery)
+  const scopedCategory = queryCategory
+    ? (!category || queryCategory === category ? queryCategory : undefined)
+    : category || undefined
   const detected: DetectedVehicleQuery = {
-    category: detectCategory(normalizedQuery),
+    category: scopedCategory,
     usesAllEurope: detectsEurope(query),
   }
 
@@ -607,10 +629,10 @@ function buildStructuredVehicleEntries({
   const entries: PublicSearchEntry[] = []
 
   if (detected.category && detected.location) {
-    entries.push(createCombinedEntry({ locale, language, detected, kind: 'category-location', market }))
+    entries.push(createCombinedEntry({ locale, language, detected, market }))
   }
 
-  if (detected.category && !detected.location) {
+  if (queryCategory && detected.category && !detected.location) {
     entries.push(createCategoryEntry({ locale, language, category: detected.category, market: detected.usesAllEurope ? 'EU' : market }))
   }
 
@@ -694,13 +716,11 @@ function createCombinedEntry({
   locale,
   language,
   detected,
-  kind,
   market,
 }: {
   locale: PublicLocale
   language: 'sv' | 'en' | 'de'
   detected: DetectedVehicleQuery
-  kind: 'category-location'
   market: string
 }) {
   const params = new URLSearchParams()

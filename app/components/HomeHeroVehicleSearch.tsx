@@ -21,7 +21,6 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
-  Sparkles,
   Tractor,
   X,
 } from 'lucide-react'
@@ -284,14 +283,17 @@ const copyByLocale = {
       technical_totalWeightKg: 'Totalvikt upp till',
       technical_batteryCapacityWh: 'Batterikapacitet från',
     },
-    examples: [
-      'Volvo V70 diesel',
-      'Honda Civic i Stockholm',
-      'Elektrisk transportbil',
-      'Lastbil med kran',
-      'Grävmaskin under 500 000 kr',
-      'Motorcykel med ABS',
-    ],
+    categoryExamples: {
+      cars: ['Volvo XC60 hybrid', 'BMW 320d kombi', 'Elbil med dragkrok'],
+      vans: ['Skåpbil automat', 'Volkswagen Transporter diesel', 'Elektrisk transportbil'],
+      trucks: ['Lastbil med kran', 'Dragbil Euro 6', 'Tippbil med lift'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touringmotorcykel', 'Moped klass 1'],
+      construction: ['Grävmaskin under 500 000 kr', 'Hjullastare diesel', 'Minigrävare med skopa'],
+      motorhomes: ['Husbil automat', 'Plåtis med solcell', 'Familjehusbil'],
+      caravans: ['Husvagn vinterutrustad', 'Familjevagn med förtält', 'Liten husvagn'],
+      agriculture: ['Traktor med frontlastare', 'Skördetröska', 'Lantbruksvagn'],
+      'electric-bikes': ['Elcykel city', 'Lastcykel el', 'Elcykel med lång räckvidd'],
+    },
   },
   en: {
     title: 'Find the right vehicle. One simpler search.',
@@ -336,14 +338,17 @@ const copyByLocale = {
       technical_totalWeightKg: 'Total weight up to',
       technical_batteryCapacityWh: 'Battery capacity from',
     },
-    examples: [
-      'Volvo V70 diesel',
-      'Honda Civic in Stockholm',
-      'Electric delivery van',
-      'Truck with a crane',
-      'Excavator under 50,000 euros',
-      'Motorcycle with ABS',
-    ],
+    categoryExamples: {
+      cars: ['Volvo XC60 hybrid', 'BMW 320d estate', 'Electric car with tow bar'],
+      vans: ['Automatic panel van', 'Volkswagen Transporter diesel', 'Electric delivery van'],
+      trucks: ['Truck with a crane', 'Euro 6 tractor unit', 'Tipper truck with lift'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touring motorcycle', 'Class 1 moped'],
+      construction: ['Excavator under 50,000 euros', 'Diesel wheel loader', 'Mini excavator with bucket'],
+      motorhomes: ['Automatic motorhome', 'Camper van with solar panel', 'Family motorhome'],
+      caravans: ['Winter-ready caravan', 'Family caravan with awning', 'Small caravan'],
+      agriculture: ['Tractor with front loader', 'Combine harvester', 'Farm trailer'],
+      'electric-bikes': ['City e-bike', 'Electric cargo bike', 'Long-range e-bike'],
+    },
   },
   de: {
     title: 'Das richtige Fahrzeug. Einfacher gesucht.',
@@ -388,14 +393,17 @@ const copyByLocale = {
       technical_totalWeightKg: 'Gesamtgewicht bis',
       technical_batteryCapacityWh: 'Batteriekapazität ab',
     },
-    examples: [
-      'Volvo V70 Diesel',
-      'Honda Civic in Berlin',
-      'Elektrischer Transporter',
-      'Lkw mit Kran',
-      'Bagger unter 50.000 Euro',
-      'Motorrad mit ABS',
-    ],
+    categoryExamples: {
+      cars: ['Volvo XC60 Hybrid', 'BMW 320d Kombi', 'Elektroauto mit Anhängerkupplung'],
+      vans: ['Kastenwagen Automatik', 'Volkswagen Transporter Diesel', 'Elektrischer Transporter'],
+      trucks: ['Lkw mit Kran', 'Euro-6-Sattelzugmaschine', 'Kipper mit Ladebordwand'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touring-Motorrad', 'Moped Klasse 1'],
+      construction: ['Bagger unter 50.000 Euro', 'Radlader Diesel', 'Minibagger mit Schaufel'],
+      motorhomes: ['Wohnmobil Automatik', 'Campervan mit Solarpanel', 'Familien-Wohnmobil'],
+      caravans: ['Winterfester Wohnwagen', 'Familienwohnwagen mit Vorzelt', 'Kleiner Wohnwagen'],
+      agriculture: ['Traktor mit Frontlader', 'Mähdrescher', 'Landwirtschaftsanhänger'],
+      'electric-bikes': ['City-E-Bike', 'Elektrisches Lastenrad', 'E-Bike mit großer Reichweite'],
+    },
   },
 } as const
 
@@ -658,6 +666,9 @@ export default function HomeHeroVehicleSearch({
   const extraCategories = visibleCategories.filter(({ slug }) => !primaryCategorySlugs.has(slug))
   const selectedExtraCategory = extraCategories.find((item) => item.slug === category)
   const MoreCategoryIcon = selectedExtraCategory?.icon || LayoutGrid
+  const categoryExamples =
+    (t.categoryExamples as Record<MarketplaceCategorySlug, readonly string[]>)[category] ||
+    copyByLocale.en.categoryExamples[category]
 
   const countParams = useMemo(
     () =>
@@ -781,6 +792,7 @@ export default function HomeHeroVehicleSearch({
     query,
     locale,
     marketCode: market === 'EU' ? undefined : market,
+    category,
     active: searchFocused,
   })
 
@@ -894,13 +906,13 @@ export default function HomeHeroVehicleSearch({
 
   return (
     <form onSubmit={submit} role="search" className="mx-auto w-full">
-      <section className="mx-auto max-w-[900px] border border-[#cfd8e4] bg-white px-4 py-5 sm:rounded-[8px] sm:px-7 sm:py-6 lg:px-10">
+      <section className="mx-auto max-w-[900px] border border-[#cfd8e4] bg-white px-4 py-4 sm:rounded-[8px] sm:px-7 sm:py-5 lg:px-10">
         <h1 className="text-center text-[22px] font-semibold leading-tight text-[#101828] sm:text-[26px] lg:text-[28px]">
           {t.title}
         </h1>
-        <div className="relative mt-4">
-          <div className="relative flex min-h-[58px] items-center gap-2 rounded-[8px] border border-[#98a2b3] bg-white px-3 pr-[62px] transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10 sm:px-4 sm:pr-[66px]">
-            <Sparkles className="h-5 w-5 shrink-0 text-[#667085]" aria-hidden="true" />
+        <div className="relative mt-3">
+          <div className="relative flex min-h-[52px] items-center gap-2 rounded-[6px] border border-[#98a2b3] bg-white px-3 pl-10 pr-[56px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:pr-[60px]">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
             {selectedSuggestions.map((suggestion) => (
               <span
                 key={suggestion.chipId}
@@ -929,21 +941,21 @@ export default function HomeHeroVehicleSearch({
               onBlur={() => window.setTimeout(() => setSearchFocused(false), 140)}
               aria-label={t.searchLabel}
               autoComplete="off"
-              className="h-10 min-w-[80px] flex-1 bg-transparent text-[15px] font-normal text-[#101828] outline-none sm:text-[16px]"
+              className="h-9 min-w-[80px] flex-1 bg-transparent text-[15px] font-normal text-[#101828] outline-none sm:text-[16px]"
             />
-            {!query && !selectedSuggestions.length ? (
+            {!searchFocused && !query && !selectedSuggestions.length ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute left-11 right-[64px] truncate text-[14px] font-normal text-[#7b8493] sm:left-12 sm:right-[70px] sm:text-[15px]"
+                className="pointer-events-none absolute left-10 right-[58px] truncate text-[14px] font-normal text-[#7b8493] sm:right-[64px] sm:text-[15px]"
               >
-              <HomeSearchAnimatedPlaceholder examples={t.examples} paused={searchFocused} />
+                <HomeSearchAnimatedPlaceholder examples={categoryExamples} />
               </span>
             ) : null}
             <button
               type="submit"
               title={t.searchButton}
               aria-label={t.searchButton}
-              className="absolute right-2 grid h-11 w-11 place-items-center rounded-[7px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25"
+              className="absolute right-2 grid h-10 w-10 place-items-center rounded-[6px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
             >
               <ArrowRight className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
@@ -977,13 +989,13 @@ export default function HomeHeroVehicleSearch({
                     role="tab"
                     aria-selected={selected}
                     onClick={() => selectCategory(slug)}
-                    className={`relative flex min-h-[70px] flex-col items-center justify-center gap-1 px-2 py-2 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] ${
+                    className={`relative flex min-h-[54px] flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] lg:min-h-[58px] ${
                       selected
                         ? 'bg-[#f5f9ff] text-[#0866ff]'
                         : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                     }`}
                   >
-                    <Icon className="h-6 w-6" aria-hidden="true" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                     <span className="max-w-full truncate">{categoryLabel(slug, locale)}</span>
                     {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
                   </button>
@@ -996,13 +1008,13 @@ export default function HomeHeroVehicleSearch({
                 aria-expanded={categoryMenuOpen}
                 aria-controls="home-search-category-menu"
                 onClick={() => setCategoryMenuOpen((current) => !current)}
-                className={`relative flex min-h-[70px] flex-col items-center justify-center gap-1 px-2 py-2 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] ${
+                className={`relative flex min-h-[54px] flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] lg:min-h-[58px] ${
                   selectedExtraCategory
                     ? 'bg-[#f5f9ff] text-[#0866ff]'
                     : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                 }`}
               >
-                <MoreCategoryIcon className="h-6 w-6" aria-hidden="true" />
+                <MoreCategoryIcon className="h-5 w-5" aria-hidden="true" />
                 <span className="max-w-full truncate">
                   {selectedExtraCategory ? categoryLabel(selectedExtraCategory.slug, locale) : t.moreCategories}
                 </span>
@@ -1056,8 +1068,8 @@ export default function HomeHeroVehicleSearch({
           ) : null}
         </div>
 
-        <div className="px-3 py-4 sm:px-5 sm:py-5 lg:px-6">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4 lg:gap-x-4">
+        <div className="px-3 py-3 sm:px-5 sm:py-4 lg:px-6">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3 lg:grid-cols-4 lg:gap-x-4">
             {categoryLayout.top.map((key) => (
               <HomeFilterControl
                 key={key}
@@ -1074,7 +1086,7 @@ export default function HomeHeroVehicleSearch({
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4 lg:gap-x-4">
+          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 lg:grid-cols-4 lg:gap-x-4">
             {categoryLayout.bottom.map((slot) => {
               if (slot === 'mode') {
                 return (
@@ -1125,12 +1137,12 @@ export default function HomeHeroVehicleSearch({
             />
           </div>
 
-          <div className="mt-5 flex items-center justify-end gap-5">
+          <div className="mt-3 flex items-center justify-end gap-4">
             <button
               ref={moreFiltersTriggerRef}
               type="button"
               onClick={resetSearch}
-              className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              className="inline-flex min-h-9 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               {t.reset}
@@ -1140,7 +1152,7 @@ export default function HomeHeroVehicleSearch({
               onClick={() => setMoreFiltersOpen(true)}
               aria-expanded={moreFiltersOpen}
               aria-controls="home-search-more-filters"
-              className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              className="inline-flex min-h-9 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               {t.moreFilters}
@@ -1225,7 +1237,7 @@ export default function HomeHeroVehicleSearch({
             <button
               type="button"
               onClick={() => setMoreFiltersOpen(false)}
-              className="mt-6 min-h-12 w-full rounded-[7px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25"
+              className="mt-5 min-h-11 w-full rounded-[6px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
             >
               {t.applyFilters}
             </button>
@@ -1292,14 +1304,14 @@ function HomeSelectControl({
 }) {
   return (
     <label htmlFor={id} className="min-w-0 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px]">
-      <span className="flex min-h-8 items-end pb-1">{label}</span>
+      <span className="flex min-h-7 items-end pb-1">{label}</span>
       <span className="relative block">
         <select
           id={id}
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-11 w-full appearance-none rounded-[7px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[14px]"
+          className="min-h-10 w-full appearance-none rounded-[6px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[14px]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1332,10 +1344,10 @@ function PurchaseTypeControl({
 }) {
   return (
     <fieldset className="min-w-0">
-      <legend className="flex min-h-8 items-end pb-1 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px]">
+      <legend className="flex min-h-7 items-end pb-1 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px]">
         {label}
       </legend>
-      <div className="grid min-h-11 grid-cols-2 overflow-hidden rounded-[7px] border border-[#98a2b3] bg-white">
+      <div className="grid min-h-10 grid-cols-2 overflow-hidden rounded-[6px] border border-[#98a2b3] bg-white">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1345,7 +1357,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`min-h-11 px-2 text-[13px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[14px] ${
+            className={`min-h-10 px-2 text-[13px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[14px] ${
               value === option
                 ? 'bg-[#0866ff] text-white'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1372,7 +1384,7 @@ function LocationControl({
 }) {
   return (
     <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px] lg:col-span-1">
-      <span className="flex min-h-8 items-end pb-1">{label}</span>
+      <span className="flex min-h-7 items-end pb-1">{label}</span>
       <span className="relative block">
         <input
           id="home-search-location"
@@ -1380,7 +1392,7 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="min-h-11 w-full rounded-[7px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10 sm:text-[14px]"
+          className="min-h-10 w-full rounded-[6px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[14px]"
         />
         <MapPin
           className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
@@ -1410,7 +1422,7 @@ function SearchSubmitButton({
   return (
     <button
       type="submit"
-      className={`${className} min-h-11 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-4 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25 sm:text-[14px]`}
+      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-[6px] bg-[#0866ff] px-4 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:text-[14px]`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-label={loadingLabel} />

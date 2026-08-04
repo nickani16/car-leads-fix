@@ -301,13 +301,13 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-[#e9eef4] pt-0">
-        <div className="relative h-[232px] overflow-hidden bg-[#d9e5f1] sm:h-[320px] lg:h-[430px] xl:h-[455px]">
+        <div className="relative h-[220px] overflow-hidden bg-[#d9e5f1] sm:h-[305px] lg:h-[410px] xl:h-[430px]">
           <Image
-            src="/autorell-home-search-hero.jpeg"
+            src="/autorell-home-search-hero.webp"
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-[68%_48%] sm:object-[62%_48%] lg:object-[center_46%]"
+            className="object-cover object-[50%_46%] sm:object-[50%_46%] lg:object-[center_45%]"
             sizes="100vw"
           />
           <div
