@@ -101,3 +101,27 @@ test('homepage search uses the supplied hero image and translated public copy', 
     assert.ok(translations[locale]?.['Two people sharing a moment inside a car'])
   }
 })
+
+test('homepage hero heading is explicitly localized for every public locale', () => {
+  assert.match(homeSource, /const localizedHeroHeadingCopy: Record<PublicLocale, string>/)
+  assert.match(homeSource, /heroHeading: localizedHeroHeadingCopy\[locale\]/)
+
+  const expectedHeadings = [
+    "sv: 'Europas största fordonsmarknad'",
+    `en: "Europe's largest vehicle marketplace"`,
+    "de: 'Europas größter Fahrzeugmarkt'",
+    "at: 'Europas größter Fahrzeugmarkt'",
+    `be: "Europa's grootste voertuigmarkt"`,
+    `fr: "Le plus grand marché de véhicules d'Europe"`,
+    "es: 'El mayor mercado de vehículos de Europa'",
+    `it: "Il più grande mercato di veicoli d'Europa"`,
+    "pl: 'Największy rynek pojazdów w Europie'",
+    `nl: "Europa's grootste voertuigmarkt"`,
+    "fi: 'Euroopan suurin ajoneuvomarkkina'",
+    "da: 'Europas største køretøjsmarked'",
+  ]
+
+  for (const heading of expectedHeadings) {
+    assert.ok(homeSource.includes(heading), `Missing localized hero heading: ${heading}`)
+  }
+})

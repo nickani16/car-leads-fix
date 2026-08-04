@@ -203,8 +203,23 @@ const localizedSellerFlowCopy = {
   },
 } as const
 
+const localizedHeroHeadingCopy: Record<PublicLocale, string> = {
+  sv: 'Europas största fordonsmarknad',
+  en: "Europe's largest vehicle marketplace",
+  de: 'Europas größter Fahrzeugmarkt',
+  at: 'Europas größter Fahrzeugmarkt',
+  be: "Europa's grootste voertuigmarkt",
+  fr: "Le plus grand marché de véhicules d'Europe",
+  es: 'El mayor mercado de vehículos de Europa',
+  it: "Il più grande mercato di veicoli d'Europa",
+  pl: 'Największy rynek pojazdów w Europie',
+  nl: "Europa's grootste voertuigmarkt",
+  fi: 'Euroopan suurin ajoneuvomarkkina',
+  da: 'Europas største køretøjsmarked',
+}
+
 export function getHomeCopy(locale: PublicLocale) {
-  return locale === 'sv'
+  const base = locale === 'sv'
     ? homeCopy.sv
     : locale === 'de'
       ? homeCopy.de
@@ -214,6 +229,11 @@ export function getHomeCopy(locale: PublicLocale) {
             ...translatePublicObject(locale, homeCopy.en),
             ...(localizedSellerFlowCopy[locale as keyof typeof localizedSellerFlowCopy] || {}),
           }
+
+  return {
+    ...base,
+    heroHeading: localizedHeroHeadingCopy[locale],
+  }
 }
 
 type HomeListingCardItem = {
