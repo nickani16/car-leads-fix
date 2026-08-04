@@ -14,6 +14,7 @@ const homeSource = readFileSync(
   new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url),
   'utf8',
 )
+const proxySource = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const translations = JSON.parse(
   readFileSync(new URL('../lib/generated-public-translations.json', import.meta.url), 'utf8'),
 )
@@ -124,4 +125,11 @@ test('homepage hero heading is explicitly localized for every public locale', ()
   for (const heading of expectedHeadings) {
     assert.ok(homeSource.includes(heading), `Missing localized hero heading: ${heading}`)
   }
+})
+
+test('explicit public locale paths are not geo-redirected back to another language', () => {
+  assert.doesNotMatch(proxySource, /const geoRedirectMarket = shouldGeoRedirectLocalizedPath/)
+  assert.doesNotMatch(proxySource, /return buildGeoMarketRedirect\(/)
+  assert.match(proxySource, /requestHeaders\.set\('x-autorell-language', localeContext\.language\)/)
+  assert.match(proxySource, /requestHeaders\.set\('x-autorell-market', localeContext\.marketHeader\)/)
 })

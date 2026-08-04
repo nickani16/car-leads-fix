@@ -727,6 +727,8 @@ function marketSegmentForCategory(
   return preferred?.[0] || null
 }
 
+// Kept for marketplace SEO fallback routing; explicit locale paths must not call it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function shouldGeoRedirectLocalizedPath(
   request: NextRequest,
   currentMarket: string,
@@ -746,6 +748,8 @@ function shouldGeoRedirectLocalizedPath(
   return countryMarket
 }
 
+// Kept for marketplace SEO fallback routing; explicit locale paths must not call it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildGeoMarketRedirect(
   request: NextRequest,
   pathMarket: string,
@@ -901,21 +905,6 @@ export async function proxy(request: NextRequest) {
     hostname === MARKET_HOSTS.en &&
     (pathname === '/en' || pathname.startsWith('/en/'))
   ) {
-    const segments = pathname.split('/').filter(Boolean)
-    const geoRedirectMarket = shouldGeoRedirectLocalizedPath(
-      request,
-      'en',
-      selectedMarket,
-    )
-    if (geoRedirectMarket) {
-      return buildGeoMarketRedirect(
-        request,
-        'en',
-        geoRedirectMarket,
-        segments,
-      )
-    }
-
     const url = request.nextUrl.clone()
     url.pathname = pathname === '/en' ? '/' : pathname.slice(3)
     return NextResponse.redirect(url, 308)
@@ -946,22 +935,6 @@ export async function proxy(request: NextRequest) {
       : null
 
     if (localeContext) {
-      const geoRedirectMarket = methodCanRedirect
-        ? shouldGeoRedirectLocalizedPath(
-            request,
-            localeContext.market,
-            selectedMarket,
-          )
-        : null
-      if (geoRedirectMarket) {
-        return buildGeoMarketRedirect(
-          request,
-          pathMarket,
-          geoRedirectMarket,
-          segments,
-        )
-      }
-
       const retiredLocalizedCategoryTarget = segments[1]
         ? RETIRED_CATEGORY_ROUTES.get(`/${segments[1]}`)
         : null
