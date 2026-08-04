@@ -903,12 +903,22 @@ export default function HomeHeroVehicleSearch({
           new Intl.NumberFormat(publicNumberLocale(locale), { maximumFractionDigits: 0 }).format(listingCount),
         )
       : t.showVehicles
+  const titleParts = t.title.split('. ')
+  const titleLead = titleParts.length > 1 ? `${titleParts[0]}.` : t.title
+  const titleRest = titleParts.length > 1 ? titleParts.slice(1).join('. ') : ''
 
   return (
     <form onSubmit={submit} role="search" className="mx-auto w-full min-w-0 overflow-x-hidden">
-      <section className="mx-auto w-screen max-w-none rounded-[18px] border border-[#cfd8e4] bg-white px-4 py-4 sm:w-full sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
+      <section className="mx-auto w-full max-w-none rounded-[18px] border border-[#cfd8e4] bg-white px-4 py-4 sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
         <h1 className="mx-auto max-w-[330px] text-center text-[22px] font-semibold leading-tight text-[#101828] sm:max-w-none sm:text-[26px] lg:text-[28px]">
-          {t.title}
+          {titleRest ? (
+            <>
+              <span className="block sm:inline">{titleLead}</span>
+              <span className="block sm:ml-1 sm:inline">{titleRest}</span>
+            </>
+          ) : (
+            t.title
+          )}
         </h1>
         <div className="relative mt-3">
           <div className="relative flex min-h-[52px] items-center gap-2 rounded-[13px] border border-[#98a2b3] bg-white px-3 pl-10 pr-[56px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:pr-[60px]">
@@ -972,7 +982,7 @@ export default function HomeHeroVehicleSearch({
         </div>
       </section>
 
-      <section className="relative mx-auto mt-3 w-screen max-w-none overflow-hidden rounded-[16px] border border-[#cfd8e4] bg-white sm:w-full sm:max-w-[1120px] sm:rounded-[14px]">
+      <section className="relative mx-auto mt-3 w-full max-w-none overflow-hidden rounded-[16px] border border-[#cfd8e4] bg-white sm:max-w-[1120px] sm:rounded-[14px]">
         <div ref={categoryMenuRef} className="relative border-b border-[#d8e0ea]">
           <div
             role="tablist"
