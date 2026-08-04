@@ -39,6 +39,8 @@ const homeContentContainerClass =
 const homeCopy = {
   sv: {
     heroAlt: 'Två personer i en bil på väg mot nästa upplevelse',
+    desktopHeroAlt: 'Person som söker bil online på Autorell',
+    heroHeading: 'Europas största bilmarknad',
     vehicleNewsTitle: 'Fordonsnyheter',
     allNews: 'Alla nyheter',
     newsScrollLabel: 'Bläddra bland fordonsnyheter',
@@ -70,6 +72,8 @@ const homeCopy = {
   },
   en: {
     heroAlt: 'Two people sharing a moment inside a car',
+    desktopHeroAlt: 'Person searching for a car online on Autorell',
+    heroHeading: "Europe's largest car market",
     vehicleNewsTitle: 'Vehicle news',
     allNews: 'All news',
     newsScrollLabel: 'Scroll vehicle news',
@@ -101,6 +105,8 @@ const homeCopy = {
   },
   de: {
     heroAlt: 'Zwei Menschen teilen einen Moment im Auto',
+    desktopHeroAlt: 'Person sucht online nach einem Auto auf Autorell',
+    heroHeading: 'Europas größter Automarkt',
     vehicleNewsTitle: 'Fahrzeugnews',
     allNews: 'Alle News',
     newsScrollLabel: 'Fahrzeugnews durchblättern',
@@ -301,18 +307,33 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-[#e9eef4] pt-0">
-        <div className="relative h-[220px] overflow-hidden bg-[#d9e5f1] sm:h-[305px] lg:h-[410px] xl:h-[430px]">
+        <div className="relative h-[220px] overflow-hidden bg-[#0866ff] sm:h-[305px] lg:h-[330px]">
           <Image
             src="/autorell-home-search-hero.webp"
             alt={t.heroAlt}
             fill
             priority
-            className="object-cover object-[50%_46%] sm:object-[50%_46%] lg:object-[center_45%]"
+            className="object-cover object-[50%_46%] sm:object-[50%_46%] lg:hidden"
             sizes="100vw"
           />
+          <Image
+            src="/autorell-home-desktop-market-hero.png"
+            alt={t.desktopHeroAlt}
+            fill
+            priority
+            className="hidden object-cover object-center lg:block"
+            sizes="100vw"
+          />
+          <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[52%] items-center lg:flex">
+            <div className="ml-[max(48px,calc((100vw-1120px)/2))] max-w-[560px] pr-12">
+              <h2 className="text-[48px] font-semibold leading-[1.04] tracking-normal text-white xl:text-[56px]">
+                {t.heroHeading}
+              </h2>
+            </div>
+          </div>
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,25,45,0.22)_0%,rgba(8,25,45,0.05)_40%,rgba(8,25,45,0)_72%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,25,45,0.22)_0%,rgba(8,25,45,0.05)_40%,rgba(8,25,45,0)_72%)] lg:hidden"
           />
         </div>
         <div className="relative z-20 -mt-1 pb-8 sm:-mt-8 sm:pb-11 lg:-mt-[108px] lg:pb-14">
