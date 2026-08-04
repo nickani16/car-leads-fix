@@ -911,12 +911,12 @@ export default function HomeHeroVehicleSearch({
           {t.title}
         </h1>
         <div className="relative mt-3">
-          <div className="relative flex min-h-[52px] items-center gap-2 rounded-[6px] border border-[#98a2b3] bg-white px-3 pl-10 pr-[56px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:pr-[60px]">
+          <div className="relative flex min-h-[52px] items-center gap-2 rounded-[13px] border border-[#98a2b3] bg-white px-3 pl-10 pr-[56px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:pr-[60px]">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
             {selectedSuggestions.map((suggestion) => (
               <span
                 key={suggestion.chipId}
-                className="inline-flex min-w-0 max-w-[180px] items-center gap-1 rounded-[6px] bg-[#eef5ff] px-2 py-1 text-[12px] font-medium text-[#101828]"
+                className="inline-flex min-w-0 max-w-[180px] items-center gap-1 rounded-[10px] bg-[#eef5ff] px-2 py-1 text-[12px] font-medium text-[#101828]"
               >
                 <span className="truncate">{suggestion.title}</span>
                 <button
@@ -955,7 +955,7 @@ export default function HomeHeroVehicleSearch({
               type="submit"
               title={t.searchButton}
               aria-label={t.searchButton}
-              className="absolute right-2 grid h-10 w-10 place-items-center rounded-[6px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
+              className="absolute right-2 grid h-10 w-10 place-items-center rounded-[10px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
             >
               <ArrowRight className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
@@ -1237,7 +1237,7 @@ export default function HomeHeroVehicleSearch({
             <button
               type="button"
               onClick={() => setMoreFiltersOpen(false)}
-              className="mt-5 min-h-11 w-full rounded-[6px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
+              className="mt-5 min-h-11 w-full rounded-[12px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
             >
               {t.applyFilters}
             </button>
@@ -1303,7 +1303,7 @@ function HomeSelectControl({
   onChange: (value: string) => void
 }) {
   return (
-    <label htmlFor={id} className="min-w-0 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px]">
+    <label htmlFor={id} className="min-w-0 text-[11px] font-semibold leading-4 text-[#344054] sm:text-[12px]">
       <span className="flex min-h-7 items-end pb-1">{label}</span>
       <span className="relative block">
         <select
@@ -1311,7 +1311,7 @@ function HomeSelectControl({
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-10 w-full appearance-none rounded-[6px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[14px]"
+          className="min-h-10 w-full appearance-none rounded-[12px] border border-[#98a2b3] bg-white px-3 pr-9 text-[12px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[13px]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1344,10 +1344,10 @@ function PurchaseTypeControl({
 }) {
   return (
     <fieldset className="min-w-0">
-      <legend className="flex min-h-7 items-end pb-1 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px]">
+      <legend className="flex min-h-7 items-end pb-1 text-[11px] font-semibold leading-4 text-[#344054] sm:text-[12px]">
         {label}
       </legend>
-      <div className="grid min-h-10 grid-cols-2 overflow-hidden rounded-[6px] border border-[#98a2b3] bg-white">
+      <div className="grid min-h-10 grid-cols-2 overflow-hidden rounded-[12px] border border-[#98a2b3] bg-white">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1357,7 +1357,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`min-h-10 px-2 text-[13px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[14px] ${
+            className={`min-h-10 px-2 text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] ${
               value === option
                 ? 'bg-[#0866ff] text-white'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1383,7 +1383,7 @@ function LocationControl({
   onChange: (value: string) => void
 }) {
   return (
-    <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[12px] font-semibold leading-4 text-[#344054] sm:text-[13px] lg:col-span-1">
+    <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[11px] font-semibold leading-4 text-[#344054] sm:text-[12px] lg:col-span-1">
       <span className="flex min-h-7 items-end pb-1">{label}</span>
       <span className="relative block">
         <input
@@ -1392,7 +1392,7 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="min-h-10 w-full rounded-[6px] border border-[#98a2b3] bg-white px-3 pr-9 text-[13px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[14px]"
+          className="min-h-10 w-full rounded-[12px] border border-[#98a2b3] bg-white px-3 pr-9 text-[12px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[13px]"
         />
         <MapPin
           className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
@@ -1422,7 +1422,7 @@ function SearchSubmitButton({
   return (
     <button
       type="submit"
-      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-[6px] bg-[#0866ff] px-4 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:text-[14px]`}
+      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:text-[14px]`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-label={loadingLabel} />
