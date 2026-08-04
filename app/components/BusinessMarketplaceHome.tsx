@@ -35,6 +35,8 @@ import { formatMileageAsMil } from '@/lib/listing-display'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
+const homeSearchContainerClass =
+  'mx-0 w-full max-w-none px-0 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8'
 
 const homeCopy = {
   sv: {
@@ -332,7 +334,7 @@ export default async function BusinessMarketplaceHome({
           </div>
         </div>
         <div className="relative z-20 -mt-16 pb-8 sm:-mt-16 sm:pb-11 lg:-mt-[76px] lg:pb-14">
-          <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
+          <div className={homeSearchContainerClass}>
             <HomeHeroVehicleSearch
               locale={locale}
               localListingCount={localListingCount}
