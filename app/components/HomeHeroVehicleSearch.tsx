@@ -905,9 +905,9 @@ export default function HomeHeroVehicleSearch({
       : t.showVehicles
 
   return (
-    <form onSubmit={submit} role="search" className="mx-auto w-full">
-      <section className="mx-auto max-w-[900px] rounded-[18px] border border-[#cfd8e4] bg-white px-4 py-4 sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
-        <h1 className="text-center text-[22px] font-semibold leading-tight text-[#101828] sm:text-[26px] lg:text-[28px]">
+    <form onSubmit={submit} role="search" className="mx-auto w-full min-w-0 overflow-x-hidden">
+      <section className="mx-auto w-screen max-w-none rounded-[18px] border border-[#cfd8e4] bg-white px-4 py-4 sm:w-full sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
+        <h1 className="mx-auto max-w-[330px] text-center text-[22px] font-semibold leading-tight text-[#101828] sm:max-w-none sm:text-[26px] lg:text-[28px]">
           {t.title}
         </h1>
         <div className="relative mt-3">
@@ -972,7 +972,7 @@ export default function HomeHeroVehicleSearch({
         </div>
       </section>
 
-      <section className="relative mx-auto mt-3 max-w-[1120px] overflow-hidden rounded-[16px] border border-[#cfd8e4] bg-white sm:rounded-[14px]">
+      <section className="relative mx-auto mt-3 w-screen max-w-none overflow-hidden rounded-[16px] border border-[#cfd8e4] bg-white sm:w-full sm:max-w-[1120px] sm:rounded-[14px]">
         <div ref={categoryMenuRef} className="relative border-b border-[#d8e0ea]">
           <div
             role="tablist"
