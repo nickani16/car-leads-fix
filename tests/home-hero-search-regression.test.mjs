@@ -65,12 +65,17 @@ test('homepage search panels and placeholder retain their accessibility behavior
 
 test('homepage search uses the supplied hero image and translated public copy', () => {
   assert.match(homeSource, /\/autorell-home-desktop-market-hero\.png/)
+  assert.match(homeSource, /\/autorell-home-mobile-market-hero\.png/)
   assert.match(homeSource, /heroHeading: 'Europas största fordonsmarknad'/)
   assert.match(homeSource, /unoptimized/)
   assert.doesNotMatch(homeSource, /\/autorell-home-search-hero\.webp/)
   assert.doesNotMatch(homeSource, /\/autorell-home-hero-street-cars\.jpg/)
   assert.equal(
     existsSync(new URL('../public/autorell-home-desktop-market-hero.png', import.meta.url)),
+    true,
+  )
+  assert.equal(
+    existsSync(new URL('../public/autorell-home-mobile-market-hero.png', import.meta.url)),
     true,
   )
 

@@ -304,25 +304,34 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="-mt-[2px] bg-[#e9eef4] pt-0">
-        <div className="relative h-[230px] overflow-hidden bg-[#0866ff] sm:h-[305px] lg:h-[330px]">
+        <div className="relative h-[318px] overflow-hidden bg-[#0866ff] sm:h-[340px] lg:h-[330px]">
+          <Image
+            src="/autorell-home-mobile-market-hero.png"
+            alt={t.heroAlt}
+            fill
+            priority
+            unoptimized
+            className="object-cover object-left lg:hidden"
+            sizes="100vw"
+          />
           <Image
             src="/autorell-home-desktop-market-hero.png"
             alt={t.heroAlt}
             fill
             priority
             unoptimized
-            className="object-cover object-left lg:object-center"
+            className="hidden object-cover object-center lg:block"
             sizes="100vw"
           />
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[76%] items-start pt-8 sm:w-[66%] sm:pt-10 lg:w-[52%] lg:pt-14">
-            <div className="ml-5 max-w-[330px] pr-6 sm:ml-8 sm:max-w-[500px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
-              <h2 className="text-[34px] font-semibold leading-[1.04] tracking-normal text-white sm:text-[46px] lg:text-[48px] xl:text-[54px]">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex w-[72%] items-start pt-11 sm:w-[66%] sm:pt-12 lg:w-[52%] lg:pt-14">
+            <div className="ml-5 max-w-[310px] pr-5 sm:ml-8 sm:max-w-[500px] lg:ml-[max(48px,calc((100vw-1120px)/2))] lg:max-w-[570px] lg:pr-12">
+              <h2 className="text-[32px] font-semibold leading-[1.05] tracking-normal text-white sm:text-[46px] lg:text-[48px] xl:text-[54px]">
                 {t.heroHeading}
               </h2>
             </div>
           </div>
         </div>
-        <div className="relative z-20 -mt-1 pb-8 sm:-mt-8 sm:pb-11 lg:-mt-[76px] lg:pb-14">
+        <div className="relative z-20 -mt-16 pb-8 sm:-mt-16 sm:pb-11 lg:-mt-[76px] lg:pb-14">
           <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
             <HomeHeroVehicleSearch
               locale={locale}
