@@ -656,10 +656,7 @@ export default async function SellToDealerPage({
           <div className="grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_390px]">
             <div className="relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[calc(100vw-80px)] sm:max-w-[440px]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0866ff] shadow-sm">
-                  <Image src="/favicon-48.png" alt="" width={19} height={19} className="h-5 w-5 rounded-[5px]" />
-                </span>
-                <h1 className="mt-5 max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">
+                <h1 className="max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">
                   {copy.heroTitle}
                 </h1>
                 <p className="mt-3 max-w-[440px] text-sm leading-6 text-[#475467]">{copy.heroText}</p>
@@ -813,16 +810,16 @@ function DealerPrivateListingSection({ copy, locale }: { copy: SellToDealerExtra
 
 function DealerQuestionsSection({ copy }: { copy: SellToDealerExtraCopy }) {
   return (
-    <section className="mt-10 grid gap-6 lg:grid-cols-[0.34fr_0.66fr]">
+    <section className="mt-10 grid gap-6 lg:grid-cols-[0.32fr_0.68fr]">
       <h2 className="text-3xl font-semibold tracking-[-.045em]">{copy.questionsTitle}</h2>
-      <div className="divide-y divide-[#dbe3ef] border-y border-[#dbe3ef] bg-white">
+      <div className="space-y-3">
         {copy.questions.map((item) => (
-          <details key={item.question} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-1 py-5 text-sm font-semibold text-[#101828] [&::-webkit-details-marker]:hidden">
+          <details key={item.question} className="group rounded-[18px] border border-[#d7e2ef] bg-[#f8fbff] px-5 shadow-[0_10px_26px_rgba(16,24,40,.035)] transition-colors open:bg-[#f3f7fc]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-semibold text-[#101828] [&::-webkit-details-marker]:hidden">
               <span>{item.question}</span>
               <ChevronDown className="h-4 w-4 shrink-0 text-[#667085] transition-transform group-open:rotate-180" aria-hidden="true" />
             </summary>
-            <p className="pb-5 pr-8 text-sm leading-6 text-[#667085]">{item.answer}</p>
+            <p className="border-t border-[#dbe3ef] pb-5 pr-8 pt-4 text-sm leading-6 text-[#526174]">{item.answer}</p>
           </details>
         ))}
       </div>
@@ -868,6 +865,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Vilka handlare kan se min förfrågan?', answer: 'Anslutna företagskonton med Growth, Professional eller Enterprise kan hantera handlarförfrågningar.' },
       { question: 'Kan jag även skapa en vanlig annons?', answer: 'Ja. Du kan skapa en annons och sälja själv om du vill hantera kontakten direkt med köpare.' },
       { question: 'Kostar det att skicka en förfrågan?', answer: 'Nej, det kostar inget att skicka underlaget till anslutna handlare.' },
+      { question: 'Vad händer efter att jag skickat in uppgifterna?', answer: 'Din förfrågan sparas och blir tillgänglig för behöriga handlare. De kan granska fordonet, kontakta dig och lämna bud om det passar deras lager.' },
+      { question: 'Kan jag ändra uppgifterna senare?', answer: 'Om något blivit fel kan du skicka in en ny förfrågan med korrekta uppgifter eller uppdatera informationen när en handlare kontaktar dig.' },
     ],
   },
   en: {
@@ -895,6 +894,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Which dealers can see my request?', answer: 'Connected company accounts on Growth, Professional or Enterprise can handle dealer requests.' },
       { question: 'Can I also create a normal listing?', answer: 'Yes. You can create an ad and sell it yourself if you want to manage buyers directly.' },
       { question: 'Does it cost anything to send a request?', answer: 'No, sending your details to connected dealers is free.' },
+      { question: 'What happens after I submit my details?', answer: 'Your request is saved and made available to eligible dealers. They can review the vehicle, contact you and make an offer if it matches their buying needs.' },
+      { question: 'Can I change the details later?', answer: 'If something is wrong, you can send a new request with corrected details or clarify the information when a dealer contacts you.' },
     ],
   },
   de: {
@@ -922,6 +923,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Welche Händler sehen meine Anfrage?', answer: 'Verbundene Unternehmenskonten mit Growth, Professional oder Enterprise können Händleranfragen bearbeiten.' },
       { question: 'Kann ich auch eine normale Anzeige erstellen?', answer: 'Ja. Sie können eine Anzeige erstellen und direkt mit Käufern verkaufen.' },
       { question: 'Kostet das Senden der Anfrage etwas?', answer: 'Nein, das Senden der Unterlagen an angeschlossene Händler ist kostenlos.' },
+      { question: 'Was passiert nach dem Absenden?', answer: 'Ihre Anfrage wird gespeichert und berechtigten Händlern angezeigt. Diese können das Fahrzeug prüfen, Sie kontaktieren und bei Interesse ein Angebot abgeben.' },
+      { question: 'Kann ich Angaben später ändern?', answer: 'Wenn etwas falsch ist, können Sie eine neue Anfrage mit korrigierten Daten senden oder Details klären, wenn ein Händler Sie kontaktiert.' },
     ],
   },
   fr: {
@@ -949,6 +952,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Quels professionnels voient ma demande ?', answer: 'Les comptes entreprises Growth, Professional ou Enterprise connectés peuvent traiter les demandes.' },
       { question: 'Puis-je aussi créer une annonce classique ?', answer: 'Oui. Vous pouvez publier une annonce et gérer directement les acheteurs.' },
       { question: 'L’envoi d’une demande est-il payant ?', answer: 'Non, l’envoi aux professionnels connectés est gratuit.' },
+      { question: 'Que se passe-t-il après l’envoi ?', answer: 'Votre demande est enregistrée et visible par les professionnels autorisés. Ils peuvent examiner le véhicule, vous contacter et faire une offre si le profil correspond.' },
+      { question: 'Puis-je modifier les informations ensuite ?', answer: 'Si une information est incorrecte, vous pouvez envoyer une nouvelle demande corrigée ou la préciser lorsqu’un professionnel vous contacte.' },
     ],
   },
   es: {
@@ -976,6 +981,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: '¿Qué concesionarios ven mi solicitud?', answer: 'Cuentas de empresa Growth, Professional o Enterprise conectadas pueden gestionar solicitudes.' },
       { question: '¿Puedo crear también un anuncio normal?', answer: 'Sí. Puedes publicar un anuncio y vender directamente a compradores.' },
       { question: '¿Cuesta enviar una solicitud?', answer: 'No, enviar los datos a concesionarios conectados es gratis.' },
+      { question: '¿Qué pasa después de enviar los datos?', answer: 'La solicitud se guarda y queda disponible para concesionarios autorizados. Pueden revisar el vehículo, contactarte y hacer una oferta si encaja con sus compras.' },
+      { question: '¿Puedo cambiar los datos después?', answer: 'Si algo está mal, puedes enviar una nueva solicitud corregida o aclarar la información cuando un concesionario te contacte.' },
     ],
   },
   it: {
@@ -1003,6 +1010,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Quali concessionari vedono la richiesta?', answer: 'Gli account aziendali Growth, Professional o Enterprise connessi possono gestire le richieste.' },
       { question: 'Posso creare anche un annuncio normale?', answer: 'Sì. Puoi pubblicare un annuncio e vendere direttamente.' },
       { question: 'Inviare una richiesta costa?', answer: 'No, l’invio ai concessionari connessi è gratuito.' },
+      { question: 'Cosa succede dopo l’invio?', answer: 'La richiesta viene salvata e resa disponibile ai concessionari autorizzati. Possono valutare il veicolo, contattarti e inviare un’offerta se è interessante.' },
+      { question: 'Posso modificare i dati in seguito?', answer: 'Se qualcosa è errato, puoi inviare una nuova richiesta corretta o chiarire le informazioni quando un concessionario ti contatta.' },
     ],
   },
   nl: {
@@ -1030,6 +1039,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Welke dealers zien mijn aanvraag?', answer: 'Aangesloten bedrijfsaccounts met Growth, Professional of Enterprise kunnen aanvragen beheren.' },
       { question: 'Kan ik ook een gewone advertentie maken?', answer: 'Ja. Je kunt een advertentie plaatsen en zelf met kopers verkopen.' },
       { question: 'Kost een aanvraag iets?', answer: 'Nee, je gegevens naar aangesloten dealers sturen is gratis.' },
+      { question: 'Wat gebeurt er nadat ik mijn gegevens verstuur?', answer: 'Je aanvraag wordt opgeslagen en beschikbaar gemaakt voor bevoegde dealers. Zij kunnen het voertuig beoordelen, contact opnemen en een bod doen als het past.' },
+      { question: 'Kan ik de gegevens later wijzigen?', answer: 'Als iets niet klopt, kun je een nieuwe aanvraag met gecorrigeerde gegevens sturen of de informatie toelichten wanneer een dealer contact opneemt.' },
     ],
   },
   fi: {
@@ -1057,6 +1068,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Mitkä jälleenmyyjät näkevät pyyntöni?', answer: 'Growth-, Professional- tai Enterprise-yritystilit voivat käsitellä pyyntöjä.' },
       { question: 'Voinko myös luoda tavallisen ilmoituksen?', answer: 'Kyllä. Voit julkaista ilmoituksen ja myydä suoraan ostajille.' },
       { question: 'Maksaako pyynnön lähettäminen?', answer: 'Ei, tietojen lähettäminen jälleenmyyjille on maksutonta.' },
+      { question: 'Mitä tapahtuu lähettämisen jälkeen?', answer: 'Pyyntö tallennetaan ja näytetään oikeutetuille jälleenmyyjille. He voivat arvioida ajoneuvon, ottaa yhteyttä ja tehdä tarjouksen.' },
+      { question: 'Voinko muuttaa tietoja myöhemmin?', answer: 'Jos jokin tieto on väärin, voit lähettää uuden korjatun pyynnön tai tarkentaa tietoja jälleenmyyjän ottaessa yhteyttä.' },
     ],
   },
   da: {
@@ -1084,6 +1097,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Hvilke forhandlere kan se min forespørgsel?', answer: 'Tilknyttede firmakonti med Growth, Professional eller Enterprise kan håndtere forespørgsler.' },
       { question: 'Kan jeg også oprette en almindelig annonce?', answer: 'Ja. Du kan oprette en annonce og sælge direkte til købere.' },
       { question: 'Koster det at sende en forespørgsel?', answer: 'Nej, det er gratis at sende oplysningerne til tilknyttede forhandlere.' },
+      { question: 'Hvad sker der efter indsendelse?', answer: 'Din forespørgsel gemmes og vises for berettigede forhandlere. De kan gennemgå køretøjet, kontakte dig og afgive bud, hvis det passer.' },
+      { question: 'Kan jeg ændre oplysninger senere?', answer: 'Hvis noget er forkert, kan du sende en ny forespørgsel med rettede oplysninger eller præcisere dem, når en forhandler kontakter dig.' },
     ],
   },
   pl: {
@@ -1111,6 +1126,8 @@ const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealer
       { question: 'Którzy dealerzy widzą zapytanie?', answer: 'Połączone konta firmowe Growth, Professional lub Enterprise mogą obsługiwać zapytania.' },
       { question: 'Czy mogę też utworzyć zwykłe ogłoszenie?', answer: 'Tak. Możesz opublikować ogłoszenie i sprzedawać bezpośrednio kupującym.' },
       { question: 'Czy wysłanie zapytania kosztuje?', answer: 'Nie, wysłanie danych do połączonych dealerów jest bezpłatne.' },
+      { question: 'Co dzieje się po wysłaniu danych?', answer: 'Zapytanie jest zapisywane i udostępniane uprawnionym dealerom. Mogą ocenić pojazd, skontaktować się i złożyć ofertę, jeśli pojazd pasuje.' },
+      { question: 'Czy mogę później zmienić dane?', answer: 'Jeśli coś jest błędne, możesz wysłać nowe poprawione zapytanie albo doprecyzować informacje, gdy dealer się skontaktuje.' },
     ],
   },
 }
