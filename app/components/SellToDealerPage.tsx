@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { BadgeCheck, CheckCircle2, Clock3, Gauge, ShieldCheck, Sparkles, Tag } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import SellToDealerLeadForm, { type SellToDealerFormCopy } from '@/app/components/SellToDealerLeadForm'
 import { cleanSeoText } from '@/lib/market-seo'
 import {
   isPublicLanguage,
@@ -13,20 +14,11 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 
-type SellToDealerCopy = {
+type SellToDealerCopy = SellToDealerFormCopy & {
   metaTitle: string
   metaDescription: string
   heroTitle: string
   heroText: string
-  formTitle: string
-  formText: string
-  vinLabel: string
-  vinPlaceholder: string
-  makeLabel: string
-  makePlaceholder: string
-  continue: string
-  noVin: string
-  noVinLink: string
   alternativeText: string
   alternativeCta: string
   howTitle: string
@@ -48,9 +40,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Ange VIN',
     makeLabel: 'Märke eller modell',
     makePlaceholder: 'Till exempel Volvo XC60',
+    modelLabel: 'Modell',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Årsmodell',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Berätta om bilen',
+    detailsPlaceholder: 'Skador, servicehistorik, mätarställning, däck, nycklar, utrustning och annat som en bilhandlare bör veta innan bud.',
     continue: 'Fortsätt',
     noVin: 'Vet du inte ditt VIN?',
     noVinLink: 'Ange märke manuellt',
+    vinError: 'VIN ska vara 17 tecken och får inte innehålla I, O eller Q.',
+    manualHelp: 'Fyll i märke, modell och årsmodell om du saknar VIN.',
+    requiredError: 'Minst ett giltigt VIN eller märke, modell och årsmodell behövs.',
+    readyTitle: 'Underlaget är redo',
+    readyText: 'Nästa steg är att koppla detta till handlarlead-flödet så Growth-företag kan hantera förfrågan.',
     alternativeText: 'Vill du sälja på annat sätt? Skapa en annons och sälj själv.',
     alternativeCta: 'Skapa annons',
     howTitle: 'Så fungerar det',
@@ -80,9 +83,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Enter VIN',
     makeLabel: 'Make or model',
     makePlaceholder: 'For example Volvo XC60',
+    modelLabel: 'Model',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Model year',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Tell us about the car',
+    detailsPlaceholder: 'Damage, service history, mileage, tyres, keys, equipment and anything else a dealer should know before making an offer.',
     continue: 'Continue',
     noVin: 'Do not know your VIN?',
     noVinLink: 'Enter make manually',
+    vinError: 'VIN must be 17 characters and cannot contain I, O or Q.',
+    manualHelp: 'Enter make, model and model year if you do not have the VIN.',
+    requiredError: 'A valid VIN or make, model and model year is required.',
+    readyTitle: 'Vehicle details are ready',
+    readyText: 'The next step is connecting this to the dealer lead flow so Growth companies can handle the request.',
     alternativeText: 'Looking for another way to sell your vehicle? Create an ad and sell it yourself.',
     alternativeCta: 'Create your ad',
     howTitle: 'How it works',
@@ -112,9 +126,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'VIN eingeben',
     makeLabel: 'Marke oder Modell',
     makePlaceholder: 'Zum Beispiel Volvo XC60',
+    modelLabel: 'Modell',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Modelljahr',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Beschreiben Sie das Fahrzeug',
+    detailsPlaceholder: 'Schäden, Servicehistorie, Kilometerstand, Reifen, Schlüssel, Ausstattung und alles, was ein Händler vor einem Angebot wissen sollte.',
     continue: 'Weiter',
     noVin: 'Sie kennen die VIN nicht?',
     noVinLink: 'Marke manuell eingeben',
+    vinError: 'Die VIN muss 17 Zeichen lang sein und darf I, O oder Q nicht enthalten.',
+    manualHelp: 'Geben Sie Marke, Modell und Modelljahr ein, wenn keine VIN vorhanden ist.',
+    requiredError: 'Eine gültige VIN oder Marke, Modell und Modelljahr sind erforderlich.',
+    readyTitle: 'Fahrzeugdaten sind bereit',
+    readyText: 'Der nächste Schritt ist die Anbindung an den Händler-Lead-Fluss für Growth-Unternehmen.',
     alternativeText: 'Sie möchten anders verkaufen? Erstellen Sie eine Anzeige und verkaufen Sie selbst.',
     alternativeCta: 'Anzeige erstellen',
     howTitle: 'So funktioniert es',
@@ -144,9 +169,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Saisir le VIN',
     makeLabel: 'Marque ou modèle',
     makePlaceholder: 'Par exemple Volvo XC60',
+    modelLabel: 'Modèle',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Année modèle',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Décrivez la voiture',
+    detailsPlaceholder: 'Dommages, historique d’entretien, kilométrage, pneus, clés, équipements et tout ce qu’un professionnel doit savoir avant de faire une offre.',
     continue: 'Continuer',
     noVin: 'Vous ne connaissez pas le VIN ?',
     noVinLink: 'Saisir la marque manuellement',
+    vinError: 'Le VIN doit contenir 17 caractères et ne peut pas contenir I, O ou Q.',
+    manualHelp: 'Saisissez la marque, le modèle et l’année modèle si vous n’avez pas le VIN.',
+    requiredError: 'Un VIN valide ou la marque, le modèle et l’année modèle sont nécessaires.',
+    readyTitle: 'Les informations sont prêtes',
+    readyText: 'L’étape suivante consiste à connecter cela au flux de leads professionnels pour les entreprises Growth.',
     alternativeText: 'Vous souhaitez vendre autrement ? Créez une annonce et vendez vous-même.',
     alternativeCta: 'Créer une annonce',
     howTitle: 'Comment ça marche',
@@ -176,9 +212,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Introduce el VIN',
     makeLabel: 'Marca o modelo',
     makePlaceholder: 'Por ejemplo Volvo XC60',
+    modelLabel: 'Modelo',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Año del modelo',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Cuéntanos sobre el coche',
+    detailsPlaceholder: 'Daños, historial de servicio, kilometraje, neumáticos, llaves, equipamiento y cualquier cosa que un concesionario deba saber antes de ofertar.',
     continue: 'Continuar',
     noVin: '¿No conoces tu VIN?',
     noVinLink: 'Introduce la marca manualmente',
+    vinError: 'El VIN debe tener 17 caracteres y no puede contener I, O ni Q.',
+    manualHelp: 'Introduce marca, modelo y año del modelo si no tienes el VIN.',
+    requiredError: 'Se necesita un VIN válido o marca, modelo y año del modelo.',
+    readyTitle: 'Los datos están listos',
+    readyText: 'El siguiente paso es conectarlo al flujo de leads para concesionarios con plan Growth.',
     alternativeText: '¿Quieres vender de otra forma? Crea un anuncio y véndelo tú mismo.',
     alternativeCta: 'Crear anuncio',
     howTitle: 'Cómo funciona',
@@ -208,9 +255,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Inserisci VIN',
     makeLabel: 'Marca o modello',
     makePlaceholder: 'Per esempio Volvo XC60',
+    modelLabel: 'Modello',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Anno modello',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Descrivi l’auto',
+    detailsPlaceholder: 'Danni, cronologia tagliandi, chilometraggio, pneumatici, chiavi, dotazioni e tutto ciò che un concessionario deve sapere prima di fare un’offerta.',
     continue: 'Continua',
     noVin: 'Non conosci il VIN?',
     noVinLink: 'Inserisci la marca manualmente',
+    vinError: 'Il VIN deve avere 17 caratteri e non può contenere I, O o Q.',
+    manualHelp: 'Inserisci marca, modello e anno modello se non hai il VIN.',
+    requiredError: 'Serve un VIN valido oppure marca, modello e anno modello.',
+    readyTitle: 'I dati sono pronti',
+    readyText: 'Il passaggio successivo è collegarlo al flusso lead per concessionari con piano Growth.',
     alternativeText: 'Vuoi vendere in altro modo? Crea un annuncio e vendi da solo.',
     alternativeCta: 'Crea annuncio',
     howTitle: 'Come funziona',
@@ -240,9 +298,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Voer VIN in',
     makeLabel: 'Merk of model',
     makePlaceholder: 'Bijvoorbeeld Volvo XC60',
+    modelLabel: 'Model',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Modeljaar',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Vertel over de auto',
+    detailsPlaceholder: 'Schade, onderhoudshistorie, kilometerstand, banden, sleutels, uitrusting en alles wat een dealer moet weten vóór een bod.',
     continue: 'Doorgaan',
     noVin: 'Ken je het VIN niet?',
     noVinLink: 'Merk handmatig invoeren',
+    vinError: 'VIN moet 17 tekens hebben en mag geen I, O of Q bevatten.',
+    manualHelp: 'Vul merk, model en modeljaar in als je geen VIN hebt.',
+    requiredError: 'Een geldig VIN of merk, model en modeljaar is vereist.',
+    readyTitle: 'Voertuiggegevens zijn klaar',
+    readyText: 'De volgende stap is dit koppelen aan de dealerlead-flow voor Growth-bedrijven.',
     alternativeText: 'Wil je anders verkopen? Maak een advertentie en verkoop zelf.',
     alternativeCta: 'Advertentie maken',
     howTitle: 'Zo werkt het',
@@ -272,9 +341,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Syötä VIN',
     makeLabel: 'Merkki tai malli',
     makePlaceholder: 'Esimerkiksi Volvo XC60',
+    modelLabel: 'Malli',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Vuosimalli',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Kerro autosta',
+    detailsPlaceholder: 'Vauriot, huoltohistoria, ajokilometrit, renkaat, avaimet, varusteet ja muu, mitä liikkeen pitää tietää ennen tarjousta.',
     continue: 'Jatka',
     noVin: 'Etkö tiedä VIN-numeroa?',
     noVinLink: 'Syötä merkki käsin',
+    vinError: 'VIN on 17 merkkiä eikä se saa sisältää kirjaimia I, O tai Q.',
+    manualHelp: 'Syötä merkki, malli ja vuosimalli, jos VIN puuttuu.',
+    requiredError: 'Tarvitaan kelvollinen VIN tai merkki, malli ja vuosimalli.',
+    readyTitle: 'Ajoneuvotiedot ovat valmiit',
+    readyText: 'Seuraava vaihe on liittää tämä Growth-yritysten liidivirtaan.',
     alternativeText: 'Haluatko myydä toisella tavalla? Luo ilmoitus ja myy itse.',
     alternativeCta: 'Luo ilmoitus',
     howTitle: 'Näin se toimii',
@@ -304,9 +384,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Indtast VIN',
     makeLabel: 'Mærke eller model',
     makePlaceholder: 'For eksempel Volvo XC60',
+    modelLabel: 'Model',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Modelår',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Fortæl om bilen',
+    detailsPlaceholder: 'Skader, servicehistorik, kilometertal, dæk, nøgler, udstyr og andet som en forhandler bør vide før et bud.',
     continue: 'Fortsæt',
     noVin: 'Kender du ikke dit VIN?',
     noVinLink: 'Indtast mærke manuelt',
+    vinError: 'VIN skal være 17 tegn og må ikke indeholde I, O eller Q.',
+    manualHelp: 'Indtast mærke, model og modelår, hvis du ikke har VIN.',
+    requiredError: 'Et gyldigt VIN eller mærke, model og modelår er påkrævet.',
+    readyTitle: 'Køretøjsoplysninger er klar',
+    readyText: 'Næste trin er at koble dette til forhandlerlead-flowet for Growth-virksomheder.',
     alternativeText: 'Vil du sælge på en anden måde? Opret en annonce og sælg selv.',
     alternativeCta: 'Opret annonce',
     howTitle: 'Sådan fungerer det',
@@ -336,9 +427,20 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinPlaceholder: 'Wpisz VIN',
     makeLabel: 'Marka lub model',
     makePlaceholder: 'Na przykład Volvo XC60',
+    modelLabel: 'Model',
+    modelPlaceholder: 'XC60',
+    yearLabel: 'Rok modelowy',
+    yearPlaceholder: '2021',
+    detailsLabel: 'Opisz samochód',
+    detailsPlaceholder: 'Uszkodzenia, historia serwisowa, przebieg, opony, kluczyki, wyposażenie i wszystko, co dealer powinien wiedzieć przed ofertą.',
     continue: 'Kontynuuj',
     noVin: 'Nie znasz VIN?',
     noVinLink: 'Wpisz markę ręcznie',
+    vinError: 'VIN musi mieć 17 znaków i nie może zawierać I, O ani Q.',
+    manualHelp: 'Wpisz markę, model i rok modelowy, jeśli nie masz VIN.',
+    requiredError: 'Wymagany jest poprawny VIN albo marka, model i rok modelowy.',
+    readyTitle: 'Dane pojazdu są gotowe',
+    readyText: 'Następny krok to podłączenie tego do przepływu leadów dealerów dla firm Growth.',
     alternativeText: 'Chcesz sprzedać inaczej? Utwórz ogłoszenie i sprzedaj samodzielnie.',
     alternativeCta: 'Utwórz ogłoszenie',
     howTitle: 'Jak to działa',
@@ -403,7 +505,7 @@ export default async function SellToDealerPage({
               </div>
               <div className="relative mt-8 min-h-[160px] sm:min-h-[210px]">
                 <Image
-                  src="/autorell-sell-options-wagon.png"
+                  src="/autorell-sell-to-dealer-red-cars.png"
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 650px, 92vw"
@@ -417,43 +519,7 @@ export default async function SellToDealerPage({
             </div>
 
             <div className="flex items-center p-5 sm:p-7">
-              <form className="w-full rounded-[4px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)]">
-                <h2 className="text-xl font-semibold tracking-[-.035em]">{copy.formTitle}</h2>
-                <p className="mt-2 text-xs leading-5 text-[#667085]">{copy.formText}</p>
-                <label className="mt-5 block text-xs font-bold text-[#344054]" htmlFor="dealer-vin">
-                  {copy.vinLabel}*
-                </label>
-                <input
-                  id="dealer-vin"
-                  name="vin"
-                  className="mt-1 h-11 w-full rounded-[4px] border border-[#b9c3d1] px-3 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
-                  placeholder={copy.vinPlaceholder}
-                  autoComplete="off"
-                  maxLength={17}
-                />
-                <label className="mt-4 block text-xs font-bold text-[#344054]" htmlFor="dealer-make">
-                  {copy.makeLabel}*
-                </label>
-                <input
-                  id="dealer-make"
-                  name="make"
-                  className="mt-1 h-11 w-full rounded-[4px] border border-[#b9c3d1] px-3 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
-                  placeholder={copy.makePlaceholder}
-                  autoComplete="off"
-                />
-                <button
-                  type="button"
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#075bea]"
-                >
-                  {copy.continue}
-                </button>
-                <p className="mt-3 text-center text-xs text-[#667085]">
-                  {copy.noVin}{' '}
-                  <a className="font-bold text-[#0866ff] underline-offset-4 hover:underline" href="#dealer-make">
-                    {copy.noVinLink}
-                  </a>
-                </p>
-              </form>
+              <SellToDealerLeadForm copy={copy} />
             </div>
           </div>
         </div>
