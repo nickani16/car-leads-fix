@@ -393,24 +393,28 @@ type StepProps = {
 }
 
 function Field({ label, value, placeholder, onChange, inputMode, maxLength, type = 'text', required = false }: { label: string; value: string; placeholder: string; onChange: (value: string) => void; inputMode?: 'numeric'; maxLength?: number; type?: 'text' | 'email' | 'tel'; required?: boolean }) {
-  const textColor = value ? '#101828' : '#7a8699'
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <input className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: textColor, WebkitTextFillColor: textColor, fontWeight: 400 }} type={type} value={value} placeholder={placeholder} inputMode={inputMode} maxLength={maxLength} required={required} aria-required={required} onChange={(event) => onChange(event.target.value)} />
+      <span className="relative mt-1 block">
+        {!value ? <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-sm font-normal text-[#7a8699]">{placeholder}</span> : null}
+        <input className="dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:text-transparent focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ WebkitTextFillColor: '#101828', fontWeight: 400 }} type={type} value={value} placeholder="" inputMode={inputMode} maxLength={maxLength} required={required} aria-required={required} onChange={(event) => onChange(event.target.value)} />
+      </span>
     </label>
   )
 }
 
 function Select({ label, value, options, onChange, placeholder = 'Välj' }: { label: string; value: string; options: string[]; onChange: (value: string) => void; placeholder?: string }) {
-  const textColor = value ? '#101828' : '#7a8699'
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <select className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: textColor, WebkitTextFillColor: textColor, fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
+      <span className="relative mt-1 block">
+      {!value ? <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-sm font-normal text-[#7a8699]">{placeholder}</span> : null}
+      <select className={`dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-transparent'}`} style={{ WebkitTextFillColor: value ? '#101828' : 'transparent', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
+      </span>
     </label>
   )
 }
