@@ -804,14 +804,14 @@ function HomeSellOptionsSection({
   const privateHref = localizePublicHref(locale, '/account/listings/new')
 
   return (
-    <section className="bg-[#f4f4f5] py-10 sm:py-16">
+    <section className="bg-[#f4f4f5] py-9 sm:py-12">
       <div className={homeContentContainerClass}>
-        <div className="grid items-center gap-6 lg:grid-cols-[0.95fr_1.85fr] xl:gap-8">
-          <div className="relative min-h-[300px] overflow-hidden rounded-[10px] bg-[#f4f4f5] px-1 pb-3 pt-1 sm:min-h-[360px] lg:rounded-none">
-            <h2 className="relative z-10 max-w-[520px] text-[34px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#20242d] sm:text-[45px] lg:text-[48px]">
+        <div className="grid items-center gap-5 lg:grid-cols-[0.95fr_1.75fr] xl:gap-6">
+          <div className="relative min-h-[280px] overflow-hidden rounded-[10px] bg-[#f4f4f5] px-1 pb-2 pt-1 sm:min-h-[330px] lg:rounded-none">
+            <h2 className="relative z-10 max-w-[500px] text-[32px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#20242d] sm:text-[40px] lg:text-[44px]">
               {copy.title}
             </h2>
-            <div className="relative mt-4 h-[230px] sm:mt-5 sm:h-[280px]">
+            <div className="relative mt-4 h-[210px] sm:mt-4 sm:h-[255px]">
               <Image
                 src="/autorell-sell-options-wagon.png"
                 alt=""
@@ -840,7 +840,7 @@ function HomeSellOptionsSection({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-2">
             <SellOptionCard
               title={copy.dealerTitle}
               benefits={copy.dealerBenefits}
@@ -903,18 +903,18 @@ function SellOptionCard({
   badge?: string
 }) {
   return (
-    <article className={`relative flex min-h-[350px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-9 ${variant === 'primary' ? 'border-t-[6px] border-t-[#0866ff]' : ''}`}>
+    <article className={`relative flex min-h-[292px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-5 py-6 shadow-sm sm:min-h-[312px] sm:px-7 sm:py-7 ${variant === 'primary' ? 'border-t-[5px] border-t-[#0866ff]' : ''}`}>
       {badge ? (
-        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#24272d] px-6 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(16,24,40,.18)]">
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#24272d] px-5 py-1.5 text-[12px] font-bold text-white shadow-[0_10px_24px_rgba(16,24,40,.18)]">
           {badge}
         </span>
       ) : null}
-      <h3 className="text-[23px] font-semibold leading-tight tracking-[-0.02em] text-[#20242d]">
+      <h3 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#20242d] sm:text-[21px]">
         {title}
       </h3>
-      <ul className="mt-7 space-y-4">
+      <ul className="mt-5 space-y-3">
         {benefits.map((benefit) => (
-          <li key={benefit} className="flex items-start gap-3 text-[18px] leading-6 text-[#242b36]">
+          <li key={benefit} className="flex items-start gap-3 text-[15px] leading-5 text-[#242b36] sm:text-[16px]">
             <span className="mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full bg-[#087a18] text-white">
               <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
             </span>
@@ -924,7 +924,7 @@ function SellOptionCard({
       </ul>
       <Link
         href={href}
-        className={`mt-10 inline-flex min-h-[56px] w-full items-center justify-center rounded-full px-5 text-center text-[19px] font-bold transition sm:mt-auto ${
+        className={`mt-7 inline-flex min-h-[48px] w-full items-center justify-center rounded-full px-5 text-center text-[16px] font-bold transition sm:mt-auto ${
           variant === 'primary'
             ? 'bg-[#1479e6] text-white hover:bg-[#0866ff]'
             : 'border-2 border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
