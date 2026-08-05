@@ -8,6 +8,9 @@ type DealerOfferPayload = {
   model?: string
   modelYear?: string
   details?: string
+  contactName?: string
+  contactEmail?: string
+  contactPhone?: string
 }
 
 export async function POST(request: Request) {
@@ -30,12 +33,23 @@ export async function POST(request: Request) {
   const model = clean(payload.model, 80)
   const modelYear = clean(payload.modelYear, 4)
   const details = clean(payload.details, 2200)
+  const contactName = clean(payload.contactName, 160)
+  const contactEmail = clean(payload.contactEmail, 180).toLowerCase()
+  const contactPhone = clean(payload.contactPhone, 60)
   const hasVin = /^[A-HJ-NPR-Z0-9]{17}$/.test(vin)
   const hasManualVehicle = make.length >= 2 && model.length >= 1 && /^\d{4}$/.test(modelYear)
+  const hasDetails = details.length >= 10
+  const hasContact = contactName.length >= 2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail) && contactPhone.length >= 6
 
   if (!hasVin && !hasManualVehicle) {
     return NextResponse.json(
       { error: 'Ange ett giltigt VIN eller märke, modell och årsmodell.' },
+      { status: 400 },
+    )
+  }
+  if (!hasDetails || !hasContact) {
+    return NextResponse.json(
+      { error: 'Ange kontaktuppgifter och information om fordonet.' },
       { status: 400 },
     )
   }
@@ -49,6 +63,9 @@ export async function POST(request: Request) {
     model: model || null,
     model_year: modelYear ? Number(modelYear) : null,
     details: details || null,
+    contact_name: contactName,
+    contact_email: contactEmail,
+    contact_phone: contactPhone,
     status: 'new',
     source_path: safeReferer(request),
   })

@@ -28,7 +28,135 @@ type SellToDealerCopy = SellToDealerFormCopy & {
   dealerPlanNote: string
 }
 
-const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy> = {
+type DealerContactCopy = Pick<
+  SellToDealerFormCopy,
+  | 'contactTitle'
+  | 'contactNameLabel'
+  | 'contactNamePlaceholder'
+  | 'contactEmailLabel'
+  | 'contactEmailPlaceholder'
+  | 'contactPhoneLabel'
+  | 'contactPhonePlaceholder'
+  | 'contactHelp'
+  | 'detailsHelp'
+>
+
+type SellToDealerBaseCopy = Omit<SellToDealerCopy, keyof DealerContactCopy>
+
+const contactCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, DealerContactCopy> = {
+  sv: {
+    contactTitle: 'Dina kontaktuppgifter',
+    contactNameLabel: 'Namn',
+    contactNamePlaceholder: 'För- och efternamn',
+    contactEmailLabel: 'E-post',
+    contactEmailPlaceholder: 'namn@example.com',
+    contactPhoneLabel: 'Telefonnummer',
+    contactPhonePlaceholder: '070 123 45 67',
+    contactHelp: 'Fyll i namn, e-post och telefonnummer så handlaren kan kontakta dig.',
+    detailsHelp: 'Berätta kort om skick, service, mätarställning eller annat som påverkar budet.',
+  },
+  en: {
+    contactTitle: 'Your contact details',
+    contactNameLabel: 'Name',
+    contactNamePlaceholder: 'First and last name',
+    contactEmailLabel: 'Email',
+    contactEmailPlaceholder: 'name@example.com',
+    contactPhoneLabel: 'Phone number',
+    contactPhonePlaceholder: '+46 70 123 45 67',
+    contactHelp: 'Enter name, email and phone number so the dealer can contact you.',
+    detailsHelp: 'Tell us briefly about condition, service history, mileage or anything that affects the offer.',
+  },
+  de: {
+    contactTitle: 'Ihre Kontaktdaten',
+    contactNameLabel: 'Name',
+    contactNamePlaceholder: 'Vor- und Nachname',
+    contactEmailLabel: 'E-Mail',
+    contactEmailPlaceholder: 'name@example.com',
+    contactPhoneLabel: 'Telefonnummer',
+    contactPhonePlaceholder: '+49 170 1234567',
+    contactHelp: 'Geben Sie Name, E-Mail und Telefonnummer ein, damit der Händler Sie kontaktieren kann.',
+    detailsHelp: 'Beschreiben Sie kurz Zustand, Servicehistorie, Kilometerstand oder andere angebotsrelevante Punkte.',
+  },
+  fr: {
+    contactTitle: 'Vos coordonnées',
+    contactNameLabel: 'Nom',
+    contactNamePlaceholder: 'Prénom et nom',
+    contactEmailLabel: 'E-mail',
+    contactEmailPlaceholder: 'nom@example.com',
+    contactPhoneLabel: 'Téléphone',
+    contactPhonePlaceholder: '+33 6 12 34 56 78',
+    contactHelp: 'Indiquez nom, e-mail et téléphone afin que le professionnel puisse vous contacter.',
+    detailsHelp: 'Décrivez brièvement l’état, l’entretien, le kilométrage ou tout élément qui influence l’offre.',
+  },
+  es: {
+    contactTitle: 'Tus datos de contacto',
+    contactNameLabel: 'Nombre',
+    contactNamePlaceholder: 'Nombre y apellidos',
+    contactEmailLabel: 'Correo electrónico',
+    contactEmailPlaceholder: 'nombre@example.com',
+    contactPhoneLabel: 'Teléfono',
+    contactPhonePlaceholder: '+34 600 123 456',
+    contactHelp: 'Introduce nombre, correo y teléfono para que el concesionario pueda contactarte.',
+    detailsHelp: 'Describe brevemente estado, historial de servicio, kilometraje u otros datos que afecten la oferta.',
+  },
+  it: {
+    contactTitle: 'I tuoi contatti',
+    contactNameLabel: 'Nome',
+    contactNamePlaceholder: 'Nome e cognome',
+    contactEmailLabel: 'E-mail',
+    contactEmailPlaceholder: 'nome@example.com',
+    contactPhoneLabel: 'Telefono',
+    contactPhonePlaceholder: '+39 312 345 6789',
+    contactHelp: 'Inserisci nome, e-mail e telefono così il concessionario può contattarti.',
+    detailsHelp: 'Descrivi brevemente condizioni, tagliandi, chilometraggio o altro che può influire sull’offerta.',
+  },
+  nl: {
+    contactTitle: 'Je contactgegevens',
+    contactNameLabel: 'Naam',
+    contactNamePlaceholder: 'Voor- en achternaam',
+    contactEmailLabel: 'E-mail',
+    contactEmailPlaceholder: 'naam@example.com',
+    contactPhoneLabel: 'Telefoonnummer',
+    contactPhonePlaceholder: '+31 6 12345678',
+    contactHelp: 'Vul naam, e-mail en telefoonnummer in zodat de dealer contact kan opnemen.',
+    detailsHelp: 'Vertel kort over staat, onderhoud, kilometerstand of andere informatie die het bod beïnvloedt.',
+  },
+  fi: {
+    contactTitle: 'Yhteystietosi',
+    contactNameLabel: 'Nimi',
+    contactNamePlaceholder: 'Etu- ja sukunimi',
+    contactEmailLabel: 'Sähköposti',
+    contactEmailPlaceholder: 'nimi@example.com',
+    contactPhoneLabel: 'Puhelinnumero',
+    contactPhonePlaceholder: '+358 40 123 4567',
+    contactHelp: 'Täytä nimi, sähköposti ja puhelinnumero, jotta liike voi ottaa yhteyttä.',
+    detailsHelp: 'Kerro lyhyesti kunnosta, huolloista, ajokilometreistä tai muusta tarjoukseen vaikuttavasta.',
+  },
+  da: {
+    contactTitle: 'Dine kontaktoplysninger',
+    contactNameLabel: 'Navn',
+    contactNamePlaceholder: 'For- og efternavn',
+    contactEmailLabel: 'E-mail',
+    contactEmailPlaceholder: 'navn@example.com',
+    contactPhoneLabel: 'Telefonnummer',
+    contactPhonePlaceholder: '+45 12 34 56 78',
+    contactHelp: 'Udfyld navn, e-mail og telefonnummer, så forhandleren kan kontakte dig.',
+    detailsHelp: 'Fortæl kort om stand, service, kilometertal eller andet, der påvirker buddet.',
+  },
+  pl: {
+    contactTitle: 'Dane kontaktowe',
+    contactNameLabel: 'Imię i nazwisko',
+    contactNamePlaceholder: 'Imię i nazwisko',
+    contactEmailLabel: 'E-mail',
+    contactEmailPlaceholder: 'imie@example.com',
+    contactPhoneLabel: 'Telefon',
+    contactPhonePlaceholder: '+48 600 123 456',
+    contactHelp: 'Wpisz imię i nazwisko, e-mail oraz telefon, aby dealer mógł się skontaktować.',
+    detailsHelp: 'Opisz krótko stan, serwis, przebieg lub inne informacje wpływające na ofertę.',
+  },
+}
+
+const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerBaseCopy> = {
   sv: {
     metaTitle: 'Sälj till handlare | Autorell',
     metaDescription: 'Skicka VIN och fordonsuppgifter och låt anslutna handlare på Autorell lämna bud.',
@@ -511,7 +639,7 @@ export default async function SellToDealerPage({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
-        <div className="overflow-hidden rounded-[18px] border border-[#d9e2ef] bg-[#eaf7f6] shadow-[0_18px_55px_rgba(16,24,40,.08)]">
+        <div className="overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)]">
           <div className="grid min-h-[360px] lg:grid-cols-[minmax(0,1fr)_390px]">
             <div className="relative flex min-h-[320px] flex-col justify-between overflow-hidden px-6 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[440px]">
@@ -613,7 +741,8 @@ function OfferBubble({ value, locale, className }: { value: string; locale: Publ
 
 function getSellToDealerCopy(locale: PublicLocale) {
   const normalized = translationLocale(locale)
-  return copyByLocale[normalized as keyof typeof copyByLocale] || copyByLocale.en
+  const key = (normalized in copyByLocale ? normalized : 'en') as keyof typeof copyByLocale
+  return { ...copyByLocale[key], ...contactCopyByLocale[key] }
 }
 
 function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): PublicLocale {

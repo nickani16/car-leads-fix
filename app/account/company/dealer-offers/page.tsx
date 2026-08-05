@@ -16,9 +16,10 @@ const baseCopy = {
   lockedText: 'Dealer offer requests are available from Growth and above. Upgrade to receive VIN-based seller requests directly in the company portal.',
   planBadge: 'Growth and above',
   introTitle: 'Incoming vehicle requests',
-  introText: 'When sellers submit VIN and free-text make or model, the details will appear here for dealership follow-up.',
+  introText: 'When sellers submit VIN, contact details and vehicle context, the request appears here for dealership follow-up.',
   vin: 'VIN',
   vehicle: 'Vehicle',
+  contact: 'Contact',
   status: 'Status',
   received: 'Received',
   noRequestsTitle: 'No dealer requests yet',
@@ -41,6 +42,9 @@ type DealerVehicleLead = {
   model: string | null
   model_year: number | null
   details: string | null
+  contact_name: string | null
+  contact_email: string | null
+  contact_phone: string | null
   status: string
   created_at: string
 }
@@ -84,20 +88,26 @@ export default async function CompanyDealerOffersPage({ localeOverride }: { loca
 
           {leads.length ? (
             <section className="overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white shadow-[0_18px_50px_rgba(16,24,40,.045)]">
-              <div className="grid min-w-[820px] grid-cols-[1fr_1.1fr_.8fr_.8fr] border-b border-[#e4eaf3] bg-[#f8fbff] px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-[#667085]">
+              <div className="grid min-w-[980px] grid-cols-[1fr_1.05fr_1.05fr_.7fr_.75fr] border-b border-[#e4eaf3] bg-[#f8fbff] px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-[#667085]">
                 <span>{copy.vin}</span>
                 <span>{copy.vehicle}</span>
+                <span>{copy.contact}</span>
                 <span>{copy.status}</span>
                 <span>{copy.received}</span>
               </div>
               <div className="overflow-x-auto">
-                <div className="min-w-[820px]">
+                <div className="min-w-[980px]">
                   {leads.map((lead) => (
-                    <div key={lead.id} className="grid grid-cols-[1fr_1.1fr_.8fr_.8fr] items-center border-b border-[#edf1f6] px-5 py-4 text-sm last:border-b-0">
+                    <div key={lead.id} className="grid grid-cols-[1fr_1.05fr_1.05fr_.7fr_.75fr] items-center border-b border-[#edf1f6] px-5 py-4 text-sm last:border-b-0">
                       <span className="font-mono font-semibold text-[#101828]">{lead.vin || lead.reference}</span>
                       <span>
                         <strong className="block text-[#101828]">{vehicleLabel(lead)}</strong>
                         {lead.details ? <span className="mt-1 line-clamp-1 block text-xs text-[#667085]">{lead.details}</span> : null}
+                      </span>
+                      <span className="text-xs leading-5 text-[#475467]">
+                        <strong className="block text-sm text-[#101828]">{lead.contact_name || '-'}</strong>
+                        {lead.contact_email ? <span className="block">{lead.contact_email}</span> : null}
+                        {lead.contact_phone ? <span className="block">{lead.contact_phone}</span> : null}
                       </span>
                       <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
                         <Clock3 className="h-3.5 w-3.5" />
@@ -138,7 +148,7 @@ async function getDealerVehicleLeads(): Promise<DealerVehicleLead[]> {
   try {
     const { data, error } = await createAdminClient()
       .from('dealer_vehicle_leads')
-      .select('id,reference,vin,make,model,model_year,details,status,created_at')
+      .select('id,reference,vin,make,model,model_year,details,contact_name,contact_email,contact_phone,status,created_at')
       .order('created_at', { ascending: false })
       .limit(50)
 

@@ -1440,6 +1440,12 @@ select:-webkit-autofill {
   }
 }
 
+.dealer-lead-input::placeholder {
+  color: #7a8699 !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
 @media print {
   @page {
     size: A4;

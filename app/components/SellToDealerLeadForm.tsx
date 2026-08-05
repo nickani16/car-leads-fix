@@ -5,6 +5,13 @@ import { useMemo, useState } from 'react'
 export type SellToDealerFormCopy = {
   formTitle: string
   formText: string
+  contactTitle: string
+  contactNameLabel: string
+  contactNamePlaceholder: string
+  contactEmailLabel: string
+  contactEmailPlaceholder: string
+  contactPhoneLabel: string
+  contactPhonePlaceholder: string
   vinLabel: string
   vinPlaceholder: string
   makeLabel: string
@@ -20,6 +27,8 @@ export type SellToDealerFormCopy = {
   noVinLink: string
   vinError: string
   manualHelp: string
+  contactHelp: string
+  detailsHelp: string
   requiredError: string
   submitError: string
   successTitle: string
@@ -33,6 +42,9 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   const [model, setModel] = useState('')
   const [year, setYear] = useState('')
   const [details, setDetails] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
   const [manualMode, setManualMode] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -41,13 +53,18 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   const vinStarted = normalizedVin.length > 0
   const vinValid = !vinStarted || isValidVin(normalizedVin)
   const manualReady = make.trim().length >= 2 && model.trim().length >= 1 && /^\d{4}$/.test(year.trim())
-  const canContinue = (vinStarted && vinValid) || manualReady
+  const vehicleReady = (vinStarted && vinValid) || manualReady
+  const detailsReady = details.trim().length >= 10
+  const contactReady = contactName.trim().length >= 2 && isValidEmail(contactEmail) && contactPhone.trim().length >= 6
+  const canContinue = vehicleReady && detailsReady && contactReady
 
   const helper = useMemo(() => {
     if (vinStarted && !vinValid) return copy.vinError
     if (manualMode && !manualReady) return copy.manualHelp
+    if (vehicleReady && !detailsReady) return copy.detailsHelp
+    if (vehicleReady && detailsReady && !contactReady) return copy.contactHelp
     return ''
-  }, [copy.manualHelp, copy.vinError, manualMode, manualReady, vinStarted, vinValid])
+  }, [contactReady, copy.contactHelp, copy.detailsHelp, copy.manualHelp, copy.vinError, detailsReady, manualMode, manualReady, vehicleReady, vinStarted, vinValid])
 
   return (
     <form
@@ -69,6 +86,9 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
             model: model.trim(),
             modelYear: year.trim(),
             details: details.trim(),
+            contactName: contactName.trim(),
+            contactEmail: contactEmail.trim(),
+            contactPhone: contactPhone.trim(),
           }),
         })
           .then(async (response) => {
@@ -88,7 +108,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
       <input
         id="dealer-vin"
         name="vin"
-        className="mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={copy.vinPlaceholder}
         autoComplete="off"
         maxLength={17}
@@ -145,7 +165,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
       <textarea
         id="dealer-details"
         name="details"
-        className="mt-1 min-h-24 w-full resize-y rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        className="dealer-lead-input mt-1 min-h-24 w-full resize-y rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={copy.detailsPlaceholder}
         value={details}
         onChange={(event) => {
@@ -154,6 +174,47 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
           setSubmitError('')
         }}
       />
+
+      <div className="mt-4 rounded-[14px] border border-[#d9e2ef] bg-[#f8fbff] p-3">
+        <h3 className="text-xs font-bold text-[#344054]">{copy.contactTitle}</h3>
+        <div className="mt-3 grid gap-3">
+          <Field
+            id="dealer-contact-name"
+            label={copy.contactNameLabel}
+            placeholder={copy.contactNamePlaceholder}
+            value={contactName}
+            onChange={(value) => {
+              setContactName(value)
+              setSubmitted(false)
+              setSubmitError('')
+            }}
+          />
+          <Field
+            id="dealer-contact-email"
+            label={copy.contactEmailLabel}
+            placeholder={copy.contactEmailPlaceholder}
+            value={contactEmail}
+            type="email"
+            onChange={(value) => {
+              setContactEmail(value)
+              setSubmitted(false)
+              setSubmitError('')
+            }}
+          />
+          <Field
+            id="dealer-contact-phone"
+            label={copy.contactPhoneLabel}
+            placeholder={copy.contactPhonePlaceholder}
+            value={contactPhone}
+            type="tel"
+            onChange={(value) => {
+              setContactPhone(value)
+              setSubmitted(false)
+              setSubmitError('')
+            }}
+          />
+        </div>
+      </div>
 
       {helper ? <p className="mt-3 text-xs font-semibold text-[#b54708]">{helper}</p> : null}
       {submitError ? <p className="mt-3 text-xs font-semibold text-[#b42318]">{submitError}</p> : null}
@@ -185,7 +246,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
           {copy.noVinLink}
         </button>
       </p>
-      {!canContinue && manualMode ? <p className="mt-2 text-center text-xs text-[#667085]">{copy.requiredError}</p> : null}
+      {!vehicleReady && manualMode ? <p className="mt-2 text-center text-xs text-[#667085]">{copy.requiredError}</p> : null}
     </form>
   )
 }
@@ -197,6 +258,7 @@ function Field({
   value,
   onChange,
   inputMode,
+  type = 'text',
 }: {
   id: string
   label: string
@@ -204,13 +266,15 @@ function Field({
   value: string
   onChange: (value: string) => void
   inputMode?: 'numeric'
+  type?: 'text' | 'email' | 'tel'
 }) {
   return (
     <label className="block text-xs font-bold text-[#344054]" htmlFor={id}>
       {label}
       <input
         id={id}
-        className="mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        type={type}
+        className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={placeholder}
         value={value}
         inputMode={inputMode}
@@ -222,4 +286,8 @@ function Field({
 
 function isValidVin(value: string) {
   return /^[A-HJ-NPR-Z0-9]{17}$/.test(value)
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
