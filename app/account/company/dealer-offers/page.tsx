@@ -8,6 +8,7 @@ import {
   planAllows,
 } from '@/lib/company-portal'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const baseCopy = {
   title: 'Dealer offers',
@@ -21,7 +22,7 @@ const baseCopy = {
   status: 'Status',
   received: 'Received',
   noRequestsTitle: 'No dealer requests yet',
-  noRequestsText: 'New VIN requests from the sell-to-dealer page will be shown here once lead capture is connected.',
+  noRequestsText: 'No VIN requests match your company account yet. New seller requests appear here as soon as they are submitted.',
   viewPublicPage: 'View public page',
   workflowTitle: 'Recommended follow-up',
   workflow: [
@@ -32,10 +33,23 @@ const baseCopy = {
   sampleStatus: 'New request',
 }
 
+type DealerVehicleLead = {
+  id: string
+  reference: string
+  vin: string | null
+  make: string | null
+  model: string | null
+  model_year: number | null
+  details: string | null
+  status: string
+  created_at: string
+}
+
 export default async function CompanyDealerOffersPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
   const copy = translatePublicObject(context.locale, baseCopy)
   const plan = String(context.subscription?.plan_key || 'free')
+  const leads = planAllows(plan, 'Growth') ? await getDealerVehicleLeads() : []
 
   return (
     <CompanyPortalShell
@@ -68,33 +82,40 @@ export default async function CompanyDealerOffersPage({ localeOverride }: { loca
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white shadow-[0_18px_50px_rgba(16,24,40,.045)]">
-            <div className="grid min-w-[760px] grid-cols-[1fr_1.1fr_.8fr_.8fr] border-b border-[#e4eaf3] bg-[#f8fbff] px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-[#667085]">
-              <span>{copy.vin}</span>
-              <span>{copy.vehicle}</span>
-              <span>{copy.status}</span>
-              <span>{copy.received}</span>
-            </div>
-            <div className="overflow-x-auto">
-              <div className="min-w-[760px]">
-                <div className="grid grid-cols-[1fr_1.1fr_.8fr_.8fr] items-center border-b border-[#edf1f6] px-5 py-4 text-sm">
-                  <span className="font-mono font-semibold text-[#101828]">YV1UZK5V2R1000000</span>
-                  <span className="font-semibold text-[#101828]">Volvo XC60 hybrid</span>
-                  <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    {copy.sampleStatus}
-                  </span>
-                  <span className="text-[#667085]">-</span>
+          {leads.length ? (
+            <section className="overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+              <div className="grid min-w-[820px] grid-cols-[1fr_1.1fr_.8fr_.8fr] border-b border-[#e4eaf3] bg-[#f8fbff] px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-[#667085]">
+                <span>{copy.vin}</span>
+                <span>{copy.vehicle}</span>
+                <span>{copy.status}</span>
+                <span>{copy.received}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[820px]">
+                  {leads.map((lead) => (
+                    <div key={lead.id} className="grid grid-cols-[1fr_1.1fr_.8fr_.8fr] items-center border-b border-[#edf1f6] px-5 py-4 text-sm last:border-b-0">
+                      <span className="font-mono font-semibold text-[#101828]">{lead.vin || lead.reference}</span>
+                      <span>
+                        <strong className="block text-[#101828]">{vehicleLabel(lead)}</strong>
+                        {lead.details ? <span className="mt-1 line-clamp-1 block text-xs text-[#667085]">{lead.details}</span> : null}
+                      </span>
+                      <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {lead.status === 'new' ? copy.sampleStatus : lead.status}
+                      </span>
+                      <span className="text-[#667085]">{formatDate(lead.created_at, context.locale)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
-
-          <EmptyPanel
-            icon={FileText}
-            title={copy.noRequestsTitle}
-            text={copy.noRequestsText}
-          />
+            </section>
+          ) : (
+            <EmptyPanel
+              icon={FileText}
+              title={copy.noRequestsTitle}
+              text={copy.noRequestsText}
+            />
+          )}
 
           <section className="rounded-[16px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
             <h2 className="text-xl font-semibold tracking-[-.025em] text-[#101828]">{copy.workflowTitle}</h2>
@@ -111,4 +132,31 @@ export default async function CompanyDealerOffersPage({ localeOverride }: { loca
       )}
     </CompanyPortalShell>
   )
+}
+
+async function getDealerVehicleLeads(): Promise<DealerVehicleLead[]> {
+  try {
+    const { data, error } = await createAdminClient()
+      .from('dealer_vehicle_leads')
+      .select('id,reference,vin,make,model,model_year,details,status,created_at')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (error) {
+      console.error('dealer_vehicle_leads select failed', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('dealer_vehicle_leads select failed', error)
+    return []
+  }
+}
+
+function vehicleLabel(lead: DealerVehicleLead) {
+  return [lead.make, lead.model, lead.model_year].filter(Boolean).join(' ') || lead.vin || lead.reference
+}
+
+function formatDate(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === 'sv' ? 'sv-SE' : locale, { dateStyle: 'medium' }).format(new Date(value))
 }

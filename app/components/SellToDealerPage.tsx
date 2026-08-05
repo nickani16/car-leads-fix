@@ -52,8 +52,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN ska vara 17 tecken och får inte innehålla I, O eller Q.',
     manualHelp: 'Fyll i märke, modell och årsmodell om du saknar VIN.',
     requiredError: 'Minst ett giltigt VIN eller märke, modell och årsmodell behövs.',
-    readyTitle: 'Underlaget är redo',
-    readyText: 'Nästa steg är att koppla detta till handlarlead-flödet så Growth-företag kan hantera förfrågan.',
+    submitError: 'Förfrågan kunde inte skickas just nu. Försök igen.',
+    successTitle: 'Förfrågan är skickad',
+    successText: 'Handlare med Growth, Professional eller Enterprise kan nu hantera ditt fordonsunderlag.',
+    sending: 'Skickar...',
     alternativeText: 'Vill du sälja på annat sätt? Skapa en annons och sälj själv.',
     alternativeCta: 'Skapa annons',
     howTitle: 'Så fungerar det',
@@ -95,8 +97,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN must be 17 characters and cannot contain I, O or Q.',
     manualHelp: 'Enter make, model and model year if you do not have the VIN.',
     requiredError: 'A valid VIN or make, model and model year is required.',
-    readyTitle: 'Vehicle details are ready',
-    readyText: 'The next step is connecting this to the dealer lead flow so Growth companies can handle the request.',
+    submitError: 'The request could not be sent right now. Please try again.',
+    successTitle: 'Request sent',
+    successText: 'Dealers on Growth, Professional or Enterprise can now handle your vehicle details.',
+    sending: 'Sending...',
     alternativeText: 'Looking for another way to sell your vehicle? Create an ad and sell it yourself.',
     alternativeCta: 'Create your ad',
     howTitle: 'How it works',
@@ -138,8 +142,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'Die VIN muss 17 Zeichen lang sein und darf I, O oder Q nicht enthalten.',
     manualHelp: 'Geben Sie Marke, Modell und Modelljahr ein, wenn keine VIN vorhanden ist.',
     requiredError: 'Eine gültige VIN oder Marke, Modell und Modelljahr sind erforderlich.',
-    readyTitle: 'Fahrzeugdaten sind bereit',
-    readyText: 'Der nächste Schritt ist die Anbindung an den Händler-Lead-Fluss für Growth-Unternehmen.',
+    submitError: 'Die Anfrage konnte gerade nicht gesendet werden. Bitte versuchen Sie es erneut.',
+    successTitle: 'Anfrage gesendet',
+    successText: 'Händler mit Growth, Professional oder Enterprise können Ihre Fahrzeugdaten jetzt bearbeiten.',
+    sending: 'Wird gesendet...',
     alternativeText: 'Sie möchten anders verkaufen? Erstellen Sie eine Anzeige und verkaufen Sie selbst.',
     alternativeCta: 'Anzeige erstellen',
     howTitle: 'So funktioniert es',
@@ -181,8 +187,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'Le VIN doit contenir 17 caractères et ne peut pas contenir I, O ou Q.',
     manualHelp: 'Saisissez la marque, le modèle et l’année modèle si vous n’avez pas le VIN.',
     requiredError: 'Un VIN valide ou la marque, le modèle et l’année modèle sont nécessaires.',
-    readyTitle: 'Les informations sont prêtes',
-    readyText: 'L’étape suivante consiste à connecter cela au flux de leads professionnels pour les entreprises Growth.',
+    submitError: 'La demande ne peut pas être envoyée pour le moment. Veuillez réessayer.',
+    successTitle: 'Demande envoyée',
+    successText: 'Les professionnels avec Growth, Professional ou Enterprise peuvent maintenant traiter vos informations véhicule.',
+    sending: 'Envoi...',
     alternativeText: 'Vous souhaitez vendre autrement ? Créez une annonce et vendez vous-même.',
     alternativeCta: 'Créer une annonce',
     howTitle: 'Comment ça marche',
@@ -224,8 +232,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'El VIN debe tener 17 caracteres y no puede contener I, O ni Q.',
     manualHelp: 'Introduce marca, modelo y año del modelo si no tienes el VIN.',
     requiredError: 'Se necesita un VIN válido o marca, modelo y año del modelo.',
-    readyTitle: 'Los datos están listos',
-    readyText: 'El siguiente paso es conectarlo al flujo de leads para concesionarios con plan Growth.',
+    submitError: 'La solicitud no se pudo enviar ahora. Inténtalo de nuevo.',
+    successTitle: 'Solicitud enviada',
+    successText: 'Los concesionarios con Growth, Professional o Enterprise ya pueden gestionar los datos del vehículo.',
+    sending: 'Enviando...',
     alternativeText: '¿Quieres vender de otra forma? Crea un anuncio y véndelo tú mismo.',
     alternativeCta: 'Crear anuncio',
     howTitle: 'Cómo funciona',
@@ -267,8 +277,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'Il VIN deve avere 17 caratteri e non può contenere I, O o Q.',
     manualHelp: 'Inserisci marca, modello e anno modello se non hai il VIN.',
     requiredError: 'Serve un VIN valido oppure marca, modello e anno modello.',
-    readyTitle: 'I dati sono pronti',
-    readyText: 'Il passaggio successivo è collegarlo al flusso lead per concessionari con piano Growth.',
+    submitError: 'La richiesta non può essere inviata ora. Riprova.',
+    successTitle: 'Richiesta inviata',
+    successText: 'I concessionari con Growth, Professional o Enterprise possono ora gestire i dati del veicolo.',
+    sending: 'Invio...',
     alternativeText: 'Vuoi vendere in altro modo? Crea un annuncio e vendi da solo.',
     alternativeCta: 'Crea annuncio',
     howTitle: 'Come funziona',
@@ -310,8 +322,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN moet 17 tekens hebben en mag geen I, O of Q bevatten.',
     manualHelp: 'Vul merk, model en modeljaar in als je geen VIN hebt.',
     requiredError: 'Een geldig VIN of merk, model en modeljaar is vereist.',
-    readyTitle: 'Voertuiggegevens zijn klaar',
-    readyText: 'De volgende stap is dit koppelen aan de dealerlead-flow voor Growth-bedrijven.',
+    submitError: 'De aanvraag kan nu niet worden verzonden. Probeer het opnieuw.',
+    successTitle: 'Aanvraag verzonden',
+    successText: 'Dealers met Growth, Professional of Enterprise kunnen je voertuiggegevens nu behandelen.',
+    sending: 'Verzenden...',
     alternativeText: 'Wil je anders verkopen? Maak een advertentie en verkoop zelf.',
     alternativeCta: 'Advertentie maken',
     howTitle: 'Zo werkt het',
@@ -353,8 +367,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN on 17 merkkiä eikä se saa sisältää kirjaimia I, O tai Q.',
     manualHelp: 'Syötä merkki, malli ja vuosimalli, jos VIN puuttuu.',
     requiredError: 'Tarvitaan kelvollinen VIN tai merkki, malli ja vuosimalli.',
-    readyTitle: 'Ajoneuvotiedot ovat valmiit',
-    readyText: 'Seuraava vaihe on liittää tämä Growth-yritysten liidivirtaan.',
+    submitError: 'Pyyntöä ei voitu lähettää juuri nyt. Yritä uudelleen.',
+    successTitle: 'Pyyntö lähetetty',
+    successText: 'Growth-, Professional- tai Enterprise-paketin liikkeet voivat nyt käsitellä ajoneuvotietosi.',
+    sending: 'Lähetetään...',
     alternativeText: 'Haluatko myydä toisella tavalla? Luo ilmoitus ja myy itse.',
     alternativeCta: 'Luo ilmoitus',
     howTitle: 'Näin se toimii',
@@ -396,8 +412,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN skal være 17 tegn og må ikke indeholde I, O eller Q.',
     manualHelp: 'Indtast mærke, model og modelår, hvis du ikke har VIN.',
     requiredError: 'Et gyldigt VIN eller mærke, model og modelår er påkrævet.',
-    readyTitle: 'Køretøjsoplysninger er klar',
-    readyText: 'Næste trin er at koble dette til forhandlerlead-flowet for Growth-virksomheder.',
+    submitError: 'Forespørgslen kunne ikke sendes lige nu. Prøv igen.',
+    successTitle: 'Forespørgsel sendt',
+    successText: 'Forhandlere med Growth, Professional eller Enterprise kan nu håndtere dine køretøjsoplysninger.',
+    sending: 'Sender...',
     alternativeText: 'Vil du sælge på en anden måde? Opret en annonce og sælg selv.',
     alternativeCta: 'Opret annonce',
     howTitle: 'Sådan fungerer det',
@@ -439,8 +457,10 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerCopy>
     vinError: 'VIN musi mieć 17 znaków i nie może zawierać I, O ani Q.',
     manualHelp: 'Wpisz markę, model i rok modelowy, jeśli nie masz VIN.',
     requiredError: 'Wymagany jest poprawny VIN albo marka, model i rok modelowy.',
-    readyTitle: 'Dane pojazdu są gotowe',
-    readyText: 'Następny krok to podłączenie tego do przepływu leadów dealerów dla firm Growth.',
+    submitError: 'Nie można teraz wysłać zapytania. Spróbuj ponownie.',
+    successTitle: 'Zapytanie wysłane',
+    successText: 'Dealerzy z planem Growth, Professional lub Enterprise mogą teraz obsłużyć dane pojazdu.',
+    sending: 'Wysyłanie...',
     alternativeText: 'Chcesz sprzedać inaczej? Utwórz ogłoszenie i sprzedaj samodzielnie.',
     alternativeCta: 'Utwórz ogłoszenie',
     howTitle: 'Jak to działa',
@@ -491,7 +511,7 @@ export default async function SellToDealerPage({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
-        <div className="overflow-hidden rounded-[4px] border border-[#d9e2ef] bg-[#eaf7f6] shadow-[0_18px_55px_rgba(16,24,40,.08)]">
+        <div className="overflow-hidden rounded-[18px] border border-[#d9e2ef] bg-[#eaf7f6] shadow-[0_18px_55px_rgba(16,24,40,.08)]">
           <div className="grid min-h-[360px] lg:grid-cols-[minmax(0,1fr)_390px]">
             <div className="relative flex min-h-[320px] flex-col justify-between overflow-hidden px-6 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[440px]">
@@ -524,7 +544,7 @@ export default async function SellToDealerPage({
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 rounded-[4px] border border-[#98a2b3] bg-white px-5 py-4 text-sm font-semibold text-[#101828] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-4 rounded-[16px] border border-[#98a2b3] bg-white px-5 py-4 text-sm font-semibold text-[#101828] sm:flex-row sm:items-center sm:justify-between">
           <span className="inline-flex items-center gap-2">
             <BadgeCheck className="h-4 w-4 shrink-0 text-[#0866ff]" />
             {copy.alternativeText}
@@ -542,7 +562,7 @@ export default async function SellToDealerPage({
         <h2 className="text-3xl font-semibold tracking-[-.045em]">{copy.howTitle}</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           {copy.howSteps.map((step, index) => (
-            <article key={step.title} className="relative rounded-[4px] border border-[#d9e2ef] bg-white p-5">
+            <article key={step.title} className="relative rounded-[16px] border border-[#d9e2ef] bg-white p-5">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#98a2b3] text-xs font-bold">
                 {index + 1}
               </span>
@@ -553,10 +573,10 @@ export default async function SellToDealerPage({
         </div>
 
         <h2 className="mt-12 text-3xl font-semibold tracking-[-.045em]">{copy.benefitsTitle}</h2>
-        <p className="mt-3 max-w-2xl rounded-[4px] bg-[#eef5ff] px-4 py-3 text-sm font-semibold text-[#18478f]">
+        <p className="mt-3 max-w-2xl rounded-[14px] bg-[#eef5ff] px-4 py-3 text-sm font-semibold text-[#18478f]">
           {copy.dealerPlanNote}
         </p>
-        <div className="mt-6 grid overflow-hidden rounded-[4px] border border-[#d9e2ef] bg-white sm:grid-cols-2">
+        <div className="mt-6 grid overflow-hidden rounded-[16px] border border-[#d9e2ef] bg-white sm:grid-cols-2">
           {copy.benefits.map((benefit, index) => {
             const Icon = [Tag, Clock3, ShieldCheck, Gauge][index] || CheckCircle2
             return (

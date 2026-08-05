@@ -21,8 +21,10 @@ export type SellToDealerFormCopy = {
   vinError: string
   manualHelp: string
   requiredError: string
-  readyTitle: string
-  readyText: string
+  submitError: string
+  successTitle: string
+  successText: string
+  sending: string
 }
 
 export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormCopy }) {
@@ -33,6 +35,8 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   const [details, setDetails] = useState('')
   const [manualMode, setManualMode] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const normalizedVin = vin.trim().toUpperCase()
   const vinStarted = normalizedVin.length > 0
   const vinValid = !vinStarted || isValidVin(normalizedVin)
@@ -47,14 +51,32 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
 
   return (
     <form
-      className="w-full rounded-[4px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)]"
+      className="w-full rounded-[16px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)]"
       onSubmit={(event) => {
         event.preventDefault()
         if (!canContinue) {
           setManualMode(true)
           return
         }
-        setSubmitted(true)
+        setSubmitting(true)
+        setSubmitError('')
+        fetch('/api/dealer-offer-requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vin: normalizedVin,
+            make: make.trim(),
+            model: model.trim(),
+            modelYear: year.trim(),
+            details: details.trim(),
+          }),
+        })
+          .then(async (response) => {
+            if (!response.ok) throw new Error((await response.json().catch(() => null))?.error || copy.submitError)
+            setSubmitted(true)
+          })
+          .catch(() => setSubmitError(copy.submitError))
+          .finally(() => setSubmitting(false))
       }}
     >
       <h2 className="text-xl font-semibold tracking-[-.035em]">{copy.formTitle}</h2>
@@ -66,7 +88,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
       <input
         id="dealer-vin"
         name="vin"
-        className="mt-1 h-11 w-full rounded-[4px] border border-[#b9c3d1] px-3 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        className="mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={copy.vinPlaceholder}
         autoComplete="off"
         maxLength={17}
@@ -74,6 +96,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
         onChange={(event) => {
           setVin(event.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, ''))
           setSubmitted(false)
+          setSubmitError('')
         }}
       />
 
@@ -84,21 +107,33 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
             label={copy.makeLabel}
             placeholder={copy.makePlaceholder}
             value={make}
-            onChange={setMake}
+            onChange={(value) => {
+              setMake(value)
+              setSubmitted(false)
+              setSubmitError('')
+            }}
           />
           <Field
             id="dealer-model"
             label={copy.modelLabel}
             placeholder={copy.modelPlaceholder}
             value={model}
-            onChange={setModel}
+            onChange={(value) => {
+              setModel(value)
+              setSubmitted(false)
+              setSubmitError('')
+            }}
           />
           <Field
             id="dealer-year"
             label={copy.yearLabel}
             placeholder={copy.yearPlaceholder}
             value={year}
-            onChange={(value) => setYear(value.replace(/\D/g, '').slice(0, 4))}
+            onChange={(value) => {
+              setYear(value.replace(/\D/g, '').slice(0, 4))
+              setSubmitted(false)
+              setSubmitError('')
+            }}
             inputMode="numeric"
           />
         </div>
@@ -110,35 +145,42 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
       <textarea
         id="dealer-details"
         name="details"
-        className="mt-1 min-h-24 w-full resize-y rounded-[4px] border border-[#b9c3d1] px-3 py-2 text-sm leading-6 text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        className="mt-1 min-h-24 w-full resize-y rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={copy.detailsPlaceholder}
         value={details}
         onChange={(event) => {
           setDetails(event.target.value)
           setSubmitted(false)
+          setSubmitError('')
         }}
       />
 
       {helper ? <p className="mt-3 text-xs font-semibold text-[#b54708]">{helper}</p> : null}
+      {submitError ? <p className="mt-3 text-xs font-semibold text-[#b42318]">{submitError}</p> : null}
       {submitted ? (
-        <div className="mt-4 rounded-[4px] border border-[#abefc6] bg-[#ecfdf3] px-3 py-3 text-xs leading-5 text-[#067647]">
-          <strong className="block">{copy.readyTitle}</strong>
-          <span>{copy.readyText}</span>
+        <div className="mt-4 rounded-[12px] border border-[#abefc6] bg-[#ecfdf3] px-3 py-3 text-xs leading-5 text-[#067647]">
+          <strong className="block">{copy.successTitle}</strong>
+          <span>{copy.successText}</span>
         </div>
       ) : null}
 
       <button
         type="submit"
+        disabled={submitting}
         className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#075bea] disabled:cursor-not-allowed disabled:bg-[#98a2b3]"
       >
-        {copy.continue}
+        {submitting ? copy.sending : copy.continue}
       </button>
       <p className="mt-3 text-center text-xs text-[#667085]">
         {copy.noVin}{' '}
         <button
           type="button"
           className="font-bold text-[#0866ff] underline-offset-4 hover:underline"
-          onClick={() => setManualMode(true)}
+          onClick={() => {
+            setManualMode(true)
+            setSubmitted(false)
+            setSubmitError('')
+          }}
         >
           {copy.noVinLink}
         </button>
@@ -168,7 +210,7 @@ function Field({
       {label}
       <input
         id={id}
-        className="mt-1 h-11 w-full rounded-[4px] border border-[#b9c3d1] px-3 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
+        className="mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12"
         placeholder={placeholder}
         value={value}
         inputMode={inputMode}
