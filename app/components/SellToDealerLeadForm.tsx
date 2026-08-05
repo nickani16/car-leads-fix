@@ -238,7 +238,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
 
   if (submittedReference) {
     return (
-      <div className="w-full rounded-[18px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)]">
+      <div className="min-w-0 w-full max-w-[calc(100vw-72px)] rounded-[18px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)] sm:max-w-none">
         <h2 className="text-2xl font-semibold tracking-[-.04em]">Din bilförfrågan är skickad</h2>
         <p className="mt-3 text-sm leading-6 text-[#475467]">
           Referensnummer: <strong className="text-[#101828]">{submittedReference}</strong>
@@ -251,13 +251,13 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   }
 
   return (
-    <div className="w-full rounded-[18px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)]">
-      <h2 className="text-xl font-semibold tracking-[-.035em]">{copy.formTitle}</h2>
+    <div className="min-w-0 w-full max-w-[calc(100vw-72px)] rounded-[18px] bg-white p-4 shadow-[0_18px_50px_rgba(16,24,40,.14)] sm:max-w-none sm:p-5">
+      <h2 className="max-w-full text-lg font-semibold leading-tight tracking-[-.025em] [overflow-wrap:anywhere] sm:text-xl sm:tracking-[-.035em]">{copy.formTitle}</h2>
       <p className="mt-2 text-xs leading-5 text-[#667085]">{copy.formText}</p>
 
-      <div className="mt-5 grid grid-cols-4 overflow-hidden rounded-full bg-[#eef3fb] p-1 text-[11px] font-bold text-[#667085]">
+      <div className="mt-5 grid min-w-0 grid-cols-4 overflow-hidden rounded-full bg-[#eef3fb] p-1 text-[10px] font-bold text-[#667085] sm:text-[11px]">
         {steps.map((label, index) => (
-          <span key={label} className={`rounded-full px-2 py-2 text-center ${index === step ? 'bg-[#0866ff] text-white shadow-sm' : ''}`}>
+          <span key={label} className={`min-w-0 rounded-full px-1.5 py-2 text-center leading-tight ${index === step ? 'bg-[#0866ff] text-white shadow-sm' : ''}`}>
             {index + 1}. {label}
           </span>
         ))}

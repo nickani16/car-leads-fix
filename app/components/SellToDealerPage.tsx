@@ -635,18 +635,18 @@ export default async function SellToDealerPage({
   const copy = getSellToDealerCopy(locale)
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] text-[#101828]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f4f7fb] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
-        <div className="overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)]">
-          <div className="grid min-h-[360px] lg:grid-cols-[minmax(0,1fr)_390px]">
-            <div className="relative flex min-h-[320px] flex-col justify-between overflow-hidden px-6 py-7 sm:px-9 sm:py-10">
-              <div className="relative z-10 max-w-[440px]">
+        <div className="w-full max-w-[calc(100vw-40px)] overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)] sm:max-w-none">
+          <div className="grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_390px]">
+            <div className="relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
+              <div className="relative z-10 max-w-[calc(100vw-80px)] sm:max-w-[440px]">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0866ff] shadow-sm">
                   <Sparkles className="h-4 w-4" />
                 </span>
-                <h1 className="mt-5 max-w-[520px] text-[34px] font-semibold leading-[1.02] tracking-[-.055em] sm:text-5xl">
+                <h1 className="mt-5 max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">
                   {copy.heroTitle}
                 </h1>
                 <p className="mt-3 max-w-[440px] text-sm leading-6 text-[#475467]">{copy.heroText}</p>
@@ -666,7 +666,7 @@ export default async function SellToDealerPage({
               </div>
             </div>
 
-            <div className="flex items-center p-5 sm:p-7">
+            <div className="flex min-w-0 items-center p-4 sm:p-7">
               <SellToDealerLeadForm copy={copy} />
             </div>
           </div>
