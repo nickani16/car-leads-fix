@@ -21,7 +21,7 @@ import {
 } from '@/lib/marketplace-security'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
-import { matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
+import { brandCorrectionSuggestion, matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 
 type EditableListing = {
   id: string
@@ -103,6 +103,10 @@ export default function EditListingForm({
   })
   const makeSuggestions = useMemo(
     () => matchingBrandSuggestions(listing.category, make),
+    [listing.category, make],
+  )
+  const makeCorrectionSuggestion = useMemo(
+    () => brandCorrectionSuggestion(listing.category, make),
     [listing.category, make],
   )
   const visibleMakeSuggestions = makeSuggestions.filter((suggestion) => suggestion !== make)
@@ -206,8 +210,22 @@ export default function EditListingForm({
               className="h-13 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
               required
             />
-            {makeSuggestionsOpen && visibleMakeSuggestions.length ? (
+            {makeSuggestionsOpen && (visibleMakeSuggestions.length || makeCorrectionSuggestion) ? (
               <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[252px] overflow-y-auto rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)] [scrollbar-width:thin]">
+                {makeCorrectionSuggestion && makeCorrectionSuggestion !== make ? (
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setMake(makeCorrectionSuggestion)
+                      setMakeSuggestionsOpen(false)
+                    }}
+                    className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-[#edf1f6] bg-[#f7fbff] px-4 text-left text-sm font-semibold text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+                  >
+                    <span>{brandCorrectionLabel(locale, makeCorrectionSuggestion)}</span>
+                    <span className="text-xs font-semibold text-[#0866ff]">{makeCorrectionSuggestion}</span>
+                  </button>
+                ) : null}
                 {visibleMakeSuggestions.map((suggestion) => (
                   <button
                     key={suggestion}
@@ -613,6 +631,25 @@ function getEditListingFormCopy(locale: PublicLocale) {
     }
   }
   return translatePublicObject(locale, en)
+}
+
+function brandCorrectionLabel(locale: PublicLocale, suggestion: string) {
+  const labels: Record<PublicLocale, string> = {
+    sv: `Menade du ${suggestion}?`,
+    en: `Did you mean ${suggestion}?`,
+    de: `Meinten Sie ${suggestion}?`,
+    at: `Meinten Sie ${suggestion}?`,
+    be: `Bedoelde u ${suggestion}?`,
+    fr: `Vouliez-vous dire ${suggestion} ?`,
+    es: `¿Querías decir ${suggestion}?`,
+    it: `Intendevi ${suggestion}?`,
+    pl: `Czy chodziło o ${suggestion}?`,
+    nl: `Bedoelde u ${suggestion}?`,
+    fi: `Tarkoititko ${suggestion}?`,
+    da: `Mente du ${suggestion}?`,
+  }
+
+  return labels[locale] || labels.en
 }
 
 function isSwedishMileageCountry(country: string) {

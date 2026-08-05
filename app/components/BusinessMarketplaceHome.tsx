@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Check, DollarSign, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
@@ -813,7 +813,7 @@ function HomeSellOptionsSection({
             </h2>
             <div className="relative mt-4 h-[230px] sm:mt-5 sm:h-[280px]">
               <Image
-                src="/autorell-sell-options-suv.png"
+                src="/autorell-sell-options-wagon.png"
                 alt=""
                 fill
                 sizes="(max-width: 1024px) 90vw, 520px"
@@ -823,16 +823,19 @@ function HomeSellOptionsSection({
                 className="left-0 top-[18%]"
                 label={copy.offerLabel}
                 value={offerLabels[0]?.label || ''}
+                currency={currency}
               />
               <OfferBubble
                 className="left-2 top-[66%] sm:left-0"
                 label={copy.offerLabel}
                 value={offerLabels[1]?.label || ''}
+                currency={currency}
               />
               <OfferBubble
                 className="right-0 top-[46%]"
                 label={copy.offerLabel}
                 value={offerLabels[2]?.label || ''}
+                currency={currency}
               />
             </div>
           </div>
@@ -863,16 +866,18 @@ function HomeSellOptionsSection({
 function OfferBubble({
   label,
   value,
+  currency,
   className,
 }: {
   label: string
   value: string
+  currency: string
   className: string
 }) {
   return (
     <div className={`absolute z-10 flex items-center gap-2 rounded-full border border-[#c7ccd5] bg-white/95 py-1.5 pl-1.5 pr-3 shadow-[0_10px_24px_rgba(16,24,40,.12)] ${className}`}>
-      <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0866ff] text-white">
-        <DollarSign className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0866ff] text-[11px] font-bold text-white">
+        {currencyBubbleMark(currency)}
       </span>
       <span className="leading-none">
         <span className="block text-[11px] font-semibold text-[#303744]">{label}</span>
@@ -898,7 +903,7 @@ function SellOptionCard({
   badge?: string
 }) {
   return (
-    <article className={`relative flex min-h-[330px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-9 ${variant === 'primary' ? 'border-t-[6px] border-t-[#0866ff]' : ''}`}>
+    <article className={`relative flex min-h-[350px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-9 ${variant === 'primary' ? 'border-t-[6px] border-t-[#0866ff]' : ''}`}>
       {badge ? (
         <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#24272d] px-6 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(16,24,40,.18)]">
           {badge}
@@ -919,10 +924,10 @@ function SellOptionCard({
       </ul>
       <Link
         href={href}
-        className={`mt-8 inline-flex min-h-[58px] w-full items-center justify-center rounded-full px-5 text-center text-[20px] font-bold transition sm:mt-auto ${
+        className={`mt-10 inline-flex min-h-[56px] w-full items-center justify-center rounded-full px-5 text-center text-[19px] font-bold transition sm:mt-auto ${
           variant === 'primary'
             ? 'bg-[#1479e6] text-white hover:bg-[#0866ff]'
-            : 'border-[3px] border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
+            : 'border-2 border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
         }`}
       >
         {cta}
@@ -942,6 +947,10 @@ function sellOptionOfferAmounts(currency: string) {
 }
 
 function formatSellOptionPrice(value: number, currency: string, locale: PublicLocale) {
+  if (currency === 'SEK') return `${formatSellOptionNumber(value, locale)} SEK`
+  if (currency === 'DKK') return `${formatSellOptionNumber(value, locale)} DKK`
+  if (currency === 'PLN') return `${formatSellOptionNumber(value, locale)} PLN`
+
   const localeMap: Record<PublicLocale, string> = {
     sv: 'sv-SE',
     en: 'en-GB',
@@ -962,6 +971,35 @@ function formatSellOptionPrice(value: number, currency: string, locale: PublicLo
     currency,
     maximumFractionDigits: 0,
   }).format(value)
+}
+
+function formatSellOptionNumber(value: number, locale: PublicLocale) {
+  const localeMap: Record<PublicLocale, string> = {
+    sv: 'sv-SE',
+    en: 'en-GB',
+    de: 'de-DE',
+    at: 'de-AT',
+    be: 'nl-BE',
+    fr: 'fr-FR',
+    es: 'es-ES',
+    it: 'it-IT',
+    pl: 'pl-PL',
+    nl: 'nl-NL',
+    fi: 'fi-FI',
+    da: 'da-DK',
+  }
+
+  return new Intl.NumberFormat(localeMap[locale] || 'en-GB', {
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function currencyBubbleMark(currency: string) {
+  if (currency === 'SEK') return 'SEK'
+  if (currency === 'DKK') return 'DKK'
+  if (currency === 'PLN') return 'PLN'
+  if (currency === 'EUR') return '€'
+  return currency
 }
 
 function localizedVehicleCategoryLabel(

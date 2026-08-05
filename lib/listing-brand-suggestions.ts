@@ -263,11 +263,11 @@ export function brandSuggestionsForCategory(category: MarketplaceCategorySlug) {
 export function matchingBrandSuggestions(
   category: MarketplaceCategorySlug,
   input: string,
-  limit = 8,
+  limit?: number,
 ) {
   const query = normalizeBrandSearch(input)
   const options = brandSuggestionsForCategory(category)
-  if (!query) return options.slice(0, limit)
+  if (!query) return limit ? options.slice(0, limit) : [...options]
 
   const aliasMatch = brandAliases[query]
   const scored = options
@@ -278,6 +278,7 @@ export function matchingBrandSuggestions(
         normalizedBrand.startsWith(query) ? 1 :
         normalizedBrand.includes(query) ? 2 :
         aliasMatch === brand ? 3 :
+        damerauLevenshtein(normalizedBrand, query) <= fuzzyThreshold(query) ? 4 :
         99
       return { brand, index, score }
     })
@@ -289,7 +290,38 @@ export function matchingBrandSuggestions(
     scored.unshift(aliasMatch)
   }
 
-  return scored.slice(0, limit)
+  return limit ? scored.slice(0, limit) : scored
+}
+
+export function brandCorrectionSuggestion(
+  category: MarketplaceCategorySlug,
+  input: string,
+) {
+  const query = normalizeBrandSearch(input)
+  if (query.length < 3) return null
+  const options = brandSuggestionsForCategory(category)
+  const aliasMatch = brandAliases[query]
+  if (aliasMatch && options.some((brand) => brand === aliasMatch)) return aliasMatch
+  const hasDirectMatch = options.some((brand) => {
+    const normalizedBrand = normalizeBrandSearch(brand)
+    return normalizedBrand === query || normalizedBrand.startsWith(query)
+  })
+  if (hasDirectMatch) return null
+
+  let bestBrand: string | null = null
+  let bestDistance = Number.POSITIVE_INFINITY
+  let bestIndex = Number.POSITIVE_INFINITY
+  options.forEach((brand, index) => {
+    const distance = damerauLevenshtein(normalizeBrandSearch(brand), query)
+    if (distance > fuzzyThreshold(query)) return
+    if (distance < bestDistance || (distance === bestDistance && index < bestIndex)) {
+      bestBrand = brand
+      bestDistance = distance
+      bestIndex = index
+    }
+  })
+
+  return bestBrand
 }
 
 function normalizeBrandSearch(value: string) {
@@ -298,4 +330,42 @@ function normalizeBrandSearch(value: string) {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
+}
+
+function fuzzyThreshold(query: string) {
+  return query.length <= 4 ? 2 : 3
+}
+
+function damerauLevenshtein(left: string, right: string) {
+  const rows = left.length + 1
+  const columns = right.length + 1
+  const distances = Array.from({ length: rows }, () => Array<number>(columns).fill(0))
+
+  for (let row = 0; row < rows; row += 1) distances[row][0] = row
+  for (let column = 0; column < columns; column += 1) distances[0][column] = column
+
+  for (let row = 1; row < rows; row += 1) {
+    for (let column = 1; column < columns; column += 1) {
+      const cost = left[row - 1] === right[column - 1] ? 0 : 1
+      distances[row][column] = Math.min(
+        distances[row - 1][column] + 1,
+        distances[row][column - 1] + 1,
+        distances[row - 1][column - 1] + cost,
+      )
+
+      if (
+        row > 1 &&
+        column > 1 &&
+        left[row - 1] === right[column - 2] &&
+        left[row - 2] === right[column - 1]
+      ) {
+        distances[row][column] = Math.min(
+          distances[row][column],
+          distances[row - 2][column - 2] + 1,
+        )
+      }
+    }
+  }
+
+  return distances[left.length][right.length]
 }

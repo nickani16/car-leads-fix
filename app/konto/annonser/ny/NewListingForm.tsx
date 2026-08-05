@@ -53,7 +53,7 @@ import {
   listingRequirementsByCategory,
   sellerListingConfirmationKeys,
 } from '@/lib/marketplace-security'
-import { matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
+import { brandCorrectionSuggestion, matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 import {
   normalizePostalCode,
   validatePostalCode,
@@ -259,6 +259,10 @@ export default function NewListingForm({
     : offerTypeValues.filter((item) => item.value !== 'lease')
   const makeSuggestions = useMemo(
     () => matchingBrandSuggestions(category, values.make || ''),
+    [category, values.make],
+  )
+  const makeCorrectionSuggestion = useMemo(
+    () => brandCorrectionSuggestion(category, values.make || ''),
     [category, values.make],
   )
   const progress = Math.round(((step + 1) / steps.length) * 100)
@@ -833,7 +837,16 @@ export default function NewListingForm({
                 ))}
               </div>
             </div>
-            <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} suggestions={makeSuggestions} required />
+            <Field
+              name="make"
+              label={copy.make}
+              value={values.make || ''}
+              locale={locale}
+              onValueChange={setValue}
+              suggestions={makeSuggestions}
+              correctionSuggestion={makeCorrectionSuggestion}
+              required
+            />
             <Field name="model" label={copy.model} value={values.model || ''} onValueChange={setValue} required />
             <Field name="variant" label={copy.variant} value={values.variant || ''} onValueChange={setValue} />
             <SelectNative name="modelYear" label={copy.modelYear} value={values.modelYear || ''} onValueChange={setValue} required>
@@ -2080,13 +2093,15 @@ function Field(
     value: string
     locale?: PublicLocale
     suggestions?: readonly string[]
+    correctionSuggestion?: string | null
     onValueChange: (name: string, value: string) => void
   },
 ) {
-  const { label, helper, name, value, locale, suggestions = [], onValueChange, ...rest } = props
+  const { label, helper, name, value, locale, suggestions = [], correctionSuggestion, onValueChange, ...rest } = props
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const visibleSuggestions = suggestions.filter((suggestion) => suggestion !== value)
   const showSuggestions = suggestionsOpen && visibleSuggestions.length > 0
+  const showCorrection = suggestionsOpen && correctionSuggestion && correctionSuggestion !== value
   const inputStyle: React.CSSProperties = {
     ...rest.style,
     ...(rest.type === 'date'
@@ -2121,8 +2136,22 @@ function Field(
         }}
         className="block box-border h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
-      {showSuggestions ? (
+      {showSuggestions || showCorrection ? (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[252px] overflow-y-auto rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)] [scrollbar-width:thin]">
+          {showCorrection ? (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onValueChange(String(name), correctionSuggestion)
+                setSuggestionsOpen(false)
+              }}
+              className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-[#edf1f6] bg-[#f7fbff] px-4 text-left text-sm font-semibold text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+            >
+              <span>{brandCorrectionLabel(locale || currentDocumentLocale(), correctionSuggestion)}</span>
+              <span className="text-xs font-semibold text-[#0866ff]">{correctionSuggestion}</span>
+            </button>
+          ) : null}
           {visibleSuggestions.map((suggestion) => (
             <button
               key={suggestion}
@@ -2142,6 +2171,25 @@ function Field(
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
   )
+}
+
+function brandCorrectionLabel(locale: PublicLocale, suggestion: string) {
+  const labels: Record<PublicLocale, string> = {
+    sv: `Menade du ${suggestion}?`,
+    en: `Did you mean ${suggestion}?`,
+    de: `Meinten Sie ${suggestion}?`,
+    at: `Meinten Sie ${suggestion}?`,
+    be: `Bedoelde u ${suggestion}?`,
+    fr: `Vouliez-vous dire ${suggestion} ?`,
+    es: `¿Querías decir ${suggestion}?`,
+    it: `Intendevi ${suggestion}?`,
+    pl: `Czy chodziło o ${suggestion}?`,
+    nl: `Bedoelde u ${suggestion}?`,
+    fi: `Tarkoititko ${suggestion}?`,
+    da: `Mente du ${suggestion}?`,
+  }
+
+  return labels[locale] || labels.en
 }
 
 function LeaseOfferFields({
