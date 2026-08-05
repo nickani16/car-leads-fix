@@ -2085,7 +2085,7 @@ function Field(
 ) {
   const { label, helper, name, value, locale, suggestions = [], onValueChange, ...rest } = props
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
-  const visibleSuggestions = suggestions.filter((suggestion) => suggestion !== value).slice(0, 8)
+  const visibleSuggestions = suggestions.filter((suggestion) => suggestion !== value)
   const showSuggestions = suggestionsOpen && visibleSuggestions.length > 0
   const inputStyle: React.CSSProperties = {
     ...rest.style,
@@ -2122,7 +2122,7 @@ function Field(
         className="block box-border h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {showSuggestions ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[252px] overflow-y-auto rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)] [scrollbar-width:thin]">
           {visibleSuggestions.map((suggestion) => (
             <button
               key={suggestion}

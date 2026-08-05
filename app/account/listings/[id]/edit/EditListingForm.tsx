@@ -105,7 +105,7 @@ export default function EditListingForm({
     () => matchingBrandSuggestions(listing.category, make),
     [listing.category, make],
   )
-  const visibleMakeSuggestions = makeSuggestions.filter((suggestion) => suggestion !== make).slice(0, 8)
+  const visibleMakeSuggestions = makeSuggestions.filter((suggestion) => suggestion !== make)
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -207,7 +207,7 @@ export default function EditListingForm({
               required
             />
             {makeSuggestionsOpen && visibleMakeSuggestions.length ? (
-              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)]">
+              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[252px] overflow-y-auto rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)] [scrollbar-width:thin]">
                 {visibleMakeSuggestions.map((suggestion) => (
                   <button
                     key={suggestion}
