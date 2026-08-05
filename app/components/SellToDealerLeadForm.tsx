@@ -341,7 +341,7 @@ function ConditionStep({ form, update, images, setImages }: StepProps & { images
       </div>
       <label className="mt-3 block text-xs font-bold text-[#344054]">
         Övrigt som bilhandlaren bör känna till
-        <textarea className="dealer-lead-input mt-1 min-h-20 w-full rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal text-[#101828]" placeholder="Till exempel import, extrautrustning eller kommande service" value={form.otherNotes} onChange={(event) => update('otherNotes', event.target.value)} />
+        <textarea className="dealer-lead-input mt-1 min-h-20 w-full rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal text-[#101828] outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" placeholder="Till exempel import, extrautrustning eller kommande service" value={form.otherNotes} onChange={(event) => update('otherNotes', event.target.value)} />
       </label>
       <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {imageFields.map(([key, label]) => (
@@ -395,7 +395,7 @@ function Field({ label, value, placeholder, onChange, inputMode, maxLength, type
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <input className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" type={type} value={value} placeholder={placeholder} inputMode={inputMode} maxLength={maxLength} onChange={(event) => onChange(event.target.value)} />
+      <input className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: value ? '#101828' : '#7a8699', fontWeight: 400 }} type={type} value={value} placeholder={placeholder} inputMode={inputMode} maxLength={maxLength} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
 }
@@ -404,7 +404,7 @@ function Select({ label, value, options, onChange, placeholder = 'Välj' }: { la
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <select className={`dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-[#7a8699]'}`} value={value} onChange={(event) => onChange(event.target.value)}>
+      <select className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: value ? '#101828' : '#7a8699', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
