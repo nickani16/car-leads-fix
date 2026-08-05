@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
-import { BadgeCheck, CheckCircle2, Clock3, Gauge, ShieldCheck, Sparkles, Tag } from 'lucide-react'
+import { BadgeCheck, CheckCircle2, ChevronDown, Clock3, Gauge, ShieldCheck, Tag } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import SellToDealerLeadForm, { type SellToDealerFormCopy } from '@/app/components/SellToDealerLeadForm'
@@ -42,6 +42,18 @@ type DealerContactCopy = Pick<
 >
 
 type SellToDealerBaseCopy = Omit<SellToDealerCopy, keyof DealerContactCopy>
+
+type SellToDealerExtraCopy = {
+  listingEyebrow: string
+  listingTitle: string
+  listingCta: string
+  listingHowTitle: string
+  listingHowSteps: Array<{ title: string; text: string }>
+  listingBenefitsTitle: string
+  listingBenefits: Array<{ title: string; text: string }>
+  questionsTitle: string
+  questions: Array<{ question: string; answer: string }>
+}
 
 const contactCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, DealerContactCopy> = {
   sv: {
@@ -633,6 +645,7 @@ export default async function SellToDealerPage({
   const locale = localeOverride || getRequestedLocale(headerStore)
   const marketCode = marketCodeOverride || headerStore.get('x-autorell-market') || undefined
   const copy = getSellToDealerCopy(locale)
+  const extraCopy = getSellToDealerExtraCopy(locale)
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f4f7fb] text-[#101828]">
@@ -644,7 +657,7 @@ export default async function SellToDealerPage({
             <div className="relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[calc(100vw-80px)] sm:max-w-[440px]">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0866ff] shadow-sm">
-                  <Sparkles className="h-4 w-4" />
+                  <Image src="/favicon-48.png" alt="" width={19} height={19} className="h-5 w-5 rounded-[5px]" />
                 </span>
                 <h1 className="mt-5 max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">
                   {copy.heroTitle}
@@ -672,7 +685,7 @@ export default async function SellToDealerPage({
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 rounded-[16px] border border-[#98a2b3] bg-white px-5 py-4 text-sm font-semibold text-[#101828] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-4 rounded-[20px] border border-[#d7e2ef] bg-white px-5 py-4 text-sm font-semibold text-[#101828] shadow-[0_10px_28px_rgba(16,24,40,.04)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <span className="inline-flex items-center gap-2">
             <BadgeCheck className="h-4 w-4 shrink-0 text-[#0866ff]" />
             {copy.alternativeText}
@@ -720,10 +733,100 @@ export default async function SellToDealerPage({
             )
           })}
         </div>
+
+        <DealerPrivateListingSection copy={extraCopy} locale={locale} />
+        <DealerQuestionsSection copy={extraCopy} />
       </section>
 
       <PublicFooter locale={locale} />
     </main>
+  )
+}
+
+function DealerPrivateListingSection({ copy, locale }: { copy: SellToDealerExtraCopy; locale: PublicLocale }) {
+  return (
+    <section className="mt-12 overflow-hidden rounded-[18px] border border-[#d7e2ef] bg-white shadow-[0_18px_55px_rgba(16,24,40,.06)]">
+      <div className="grid min-h-[250px] lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="relative z-10 flex min-h-[230px] flex-col justify-center px-6 py-8 sm:px-9">
+          <Image src="/favicon-48.png" alt="" width={22} height={22} className="mb-5 h-5 w-5 rounded-[5px]" />
+          <p className="text-[12px] font-bold uppercase tracking-[.04em] text-[#0866ff]">{copy.listingEyebrow}</p>
+          <h2 className="mt-3 max-w-[360px] text-[28px] font-semibold leading-[1.08] tracking-[-.04em] text-[#101828] sm:text-[34px]">
+            {copy.listingTitle}
+          </h2>
+          <Link
+            href={localizePublicHref(locale, '/account/listings/new')}
+            className="mt-6 inline-flex min-h-10 w-fit items-center justify-center rounded-full bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#075bd8]"
+          >
+            {copy.listingCta}
+          </Link>
+        </div>
+        <div className="relative min-h-[230px] overflow-hidden bg-[#eef5ff]">
+          <div className="absolute inset-y-0 -left-16 z-10 hidden w-32 skew-x-[-18deg] bg-white lg:block" aria-hidden="true" />
+          <Image
+            src="/autorell-private-listing-laptop.jpg"
+            alt=""
+            fill
+            sizes="(max-width: 1024px) 100vw, 620px"
+            className="object-cover object-center"
+          />
+        </div>
+      </div>
+
+      <div className="grid border-t border-[#e3eaf3] lg:grid-cols-2">
+        <div className="p-6 sm:p-8 lg:border-r lg:border-[#e3eaf3]">
+          <h3 className="text-[18px] font-semibold text-[#101828]">{copy.listingHowTitle}</h3>
+          <ol className="mt-5 space-y-5">
+            {copy.listingHowSteps.map((step, index) => (
+              <li key={step.title} className="grid grid-cols-[28px_minmax(0,1fr)] gap-3">
+                <span className="grid h-7 w-7 place-items-center rounded-full border border-[#98a2b3] text-xs font-bold text-[#101828]">
+                  {index + 1}
+                </span>
+                <span>
+                  <strong className="block text-sm">{step.title}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-[#667085]">{step.text}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div className="border-t border-[#e3eaf3] p-6 sm:p-8 lg:border-t-0">
+          <h3 className="text-[18px] font-semibold text-[#101828]">{copy.listingBenefitsTitle}</h3>
+          <ul className="mt-5 space-y-4">
+            {copy.listingBenefits.map((benefit) => (
+              <li key={benefit.title} className="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
+                <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-[#087a18] text-white">
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                <span>
+                  <strong className="block text-sm">{benefit.title}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-[#667085]">{benefit.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function DealerQuestionsSection({ copy }: { copy: SellToDealerExtraCopy }) {
+  return (
+    <section className="mt-10 grid gap-6 lg:grid-cols-[0.34fr_0.66fr]">
+      <h2 className="text-3xl font-semibold tracking-[-.045em]">{copy.questionsTitle}</h2>
+      <div className="divide-y divide-[#dbe3ef] border-y border-[#dbe3ef] bg-white">
+        {copy.questions.map((item) => (
+          <details key={item.question} className="group">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-1 py-5 text-sm font-semibold text-[#101828] [&::-webkit-details-marker]:hidden">
+              <span>{item.question}</span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-[#667085] transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <p className="pb-5 pr-8 text-sm leading-6 text-[#667085]">{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -737,6 +840,285 @@ function OfferBubble({ value, locale, className }: { value: string; locale: Publ
       </span>
     </div>
   )
+}
+
+const extraCopyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerExtraCopy> = {
+  sv: {
+    listingEyebrow: 'Vill du sälja på annat sätt?',
+    listingTitle: 'Skapa en annons och sälj själv.',
+    listingCta: 'Skapa annons',
+    listingHowTitle: 'Så fungerar en vanlig annons',
+    listingHowSteps: [
+      { title: 'Berätta om bilen', text: 'Lägg in mätarställning, utrustning, skick och bilder.' },
+      { title: 'Publicera annonsen', text: 'Din annons visas på marknadsplatsen så köpare kan kontakta dig.' },
+      { title: 'Hantera kontakten', text: 'Svara på frågor och boka visning eller provkörning.' },
+      { title: 'Slutför affären', text: 'Kom överens om betalning, kontrakt och överlämning.' },
+    ],
+    listingBenefitsTitle: 'Fördelar med att annonsera på Autorell',
+    listingBenefits: [
+      { title: 'Gratis att publicera', text: 'Skapa en annons och välj själv om du vill köpa mer synlighet.' },
+      { title: 'Publicera snabbt', text: 'Lägg till uppgifter och bilder på några minuter.' },
+      { title: 'Sälj till ditt pris', text: 'Du styr priset och dialogen med köparen.' },
+      { title: 'Nå fler köpare', text: 'Autorell hjälper dig att synas för rätt fordonsköpare.' },
+    ],
+    questionsTitle: 'Frågor?',
+    questions: [
+      { question: 'Vad behöver jag ange för att få handlarbud?', answer: 'VIN/chassinummer och kontaktuppgifter krävs. Ju tydligare uppgifter om skick, service och bilder du lämnar, desto enklare blir det för handlare att bedöma fordonet.' },
+      { question: 'Måste jag sälja om jag får ett bud?', answer: 'Nej. Du väljer själv om du vill gå vidare med en handlare.' },
+      { question: 'Vilka handlare kan se min förfrågan?', answer: 'Anslutna företagskonton med Growth, Professional eller Enterprise kan hantera handlarförfrågningar.' },
+      { question: 'Kan jag även skapa en vanlig annons?', answer: 'Ja. Du kan skapa en annons och sälja själv om du vill hantera kontakten direkt med köpare.' },
+      { question: 'Kostar det att skicka en förfrågan?', answer: 'Nej, det kostar inget att skicka underlaget till anslutna handlare.' },
+    ],
+  },
+  en: {
+    listingEyebrow: 'Looking for another way to sell?',
+    listingTitle: 'Create a listing and sell it yourself.',
+    listingCta: 'Create your ad',
+    listingHowTitle: 'How a listing works',
+    listingHowSteps: [
+      { title: 'Tell us about the car', text: 'Add mileage, features, condition and photos.' },
+      { title: 'Publish your listing', text: 'Your ad appears on the marketplace so buyers can contact you.' },
+      { title: 'Manage leads', text: 'Answer questions and arrange viewings or test drives.' },
+      { title: 'Complete the sale', text: 'Agree payment, contract and handover with the buyer.' },
+    ],
+    listingBenefitsTitle: 'Advantages of listing on Autorell',
+    listingBenefits: [
+      { title: 'Free to publish', text: 'Create a listing and decide if you want extra visibility.' },
+      { title: 'List in minutes', text: 'Add vehicle details and photos quickly.' },
+      { title: 'Set your own price', text: 'You control the price and conversation with the buyer.' },
+      { title: 'Reach more buyers', text: 'Autorell helps you reach relevant vehicle buyers.' },
+    ],
+    questionsTitle: 'Questions?',
+    questions: [
+      { question: 'What do I need to enter to get dealer offers?', answer: 'VIN and contact details are required. Clear condition, service and photo information helps dealers assess the vehicle.' },
+      { question: 'Do I have to sell if I receive an offer?', answer: 'No. You decide if you want to continue with a dealer.' },
+      { question: 'Which dealers can see my request?', answer: 'Connected company accounts on Growth, Professional or Enterprise can handle dealer requests.' },
+      { question: 'Can I also create a normal listing?', answer: 'Yes. You can create an ad and sell it yourself if you want to manage buyers directly.' },
+      { question: 'Does it cost anything to send a request?', answer: 'No, sending your details to connected dealers is free.' },
+    ],
+  },
+  de: {
+    listingEyebrow: 'Eine andere Verkaufsart?',
+    listingTitle: 'Anzeige erstellen und selbst verkaufen.',
+    listingCta: 'Anzeige erstellen',
+    listingHowTitle: 'So funktioniert eine Anzeige',
+    listingHowSteps: [
+      { title: 'Fahrzeug beschreiben', text: 'Kilometerstand, Ausstattung, Zustand und Fotos hinzufügen.' },
+      { title: 'Anzeige veröffentlichen', text: 'Ihre Anzeige erscheint im Marktplatz und Käufer können Kontakt aufnehmen.' },
+      { title: 'Anfragen verwalten', text: 'Fragen beantworten und Besichtigung oder Probefahrt abstimmen.' },
+      { title: 'Verkauf abschließen', text: 'Zahlung, Vertrag und Übergabe mit dem Käufer vereinbaren.' },
+    ],
+    listingBenefitsTitle: 'Vorteile einer Anzeige auf Autorell',
+    listingBenefits: [
+      { title: 'Kostenlos veröffentlichen', text: 'Erstellen Sie eine Anzeige und wählen Sie optional mehr Sichtbarkeit.' },
+      { title: 'In Minuten online', text: 'Fahrzeugdaten und Fotos schnell hinzufügen.' },
+      { title: 'Eigener Preis', text: 'Sie steuern Preis und Dialog mit dem Käufer.' },
+      { title: 'Mehr Käufer erreichen', text: 'Autorell hilft, relevante Fahrzeugkäufer zu erreichen.' },
+    ],
+    questionsTitle: 'Fragen?',
+    questions: [
+      { question: 'Welche Daten brauche ich für Händlerangebote?', answer: 'VIN und Kontaktdaten sind erforderlich. Klare Angaben zu Zustand, Service und Fotos helfen Händlern bei der Bewertung.' },
+      { question: 'Muss ich verkaufen, wenn ich ein Angebot erhalte?', answer: 'Nein. Sie entscheiden selbst, ob Sie mit einem Händler weitermachen.' },
+      { question: 'Welche Händler sehen meine Anfrage?', answer: 'Verbundene Unternehmenskonten mit Growth, Professional oder Enterprise können Händleranfragen bearbeiten.' },
+      { question: 'Kann ich auch eine normale Anzeige erstellen?', answer: 'Ja. Sie können eine Anzeige erstellen und direkt mit Käufern verkaufen.' },
+      { question: 'Kostet das Senden der Anfrage etwas?', answer: 'Nein, das Senden der Unterlagen an angeschlossene Händler ist kostenlos.' },
+    ],
+  },
+  fr: {
+    listingEyebrow: 'Une autre façon de vendre ?',
+    listingTitle: 'Créez une annonce et vendez vous-même.',
+    listingCta: 'Créer une annonce',
+    listingHowTitle: 'Comment fonctionne une annonce',
+    listingHowSteps: [
+      { title: 'Décrivez le véhicule', text: 'Ajoutez kilométrage, équipement, état et photos.' },
+      { title: 'Publiez l’annonce', text: 'Votre annonce apparaît sur la marketplace afin que les acheteurs vous contactent.' },
+      { title: 'Gérez les contacts', text: 'Répondez aux questions et organisez visites ou essais.' },
+      { title: 'Finalisez la vente', text: 'Convenez du paiement, du contrat et de la remise du véhicule.' },
+    ],
+    listingBenefitsTitle: 'Avantages de publier sur Autorell',
+    listingBenefits: [
+      { title: 'Publication gratuite', text: 'Créez une annonce et choisissez si vous souhaitez plus de visibilité.' },
+      { title: 'En ligne en quelques minutes', text: 'Ajoutez rapidement les détails et photos.' },
+      { title: 'Votre prix', text: 'Vous gérez le prix et la discussion avec l’acheteur.' },
+      { title: 'Plus d’acheteurs', text: 'Autorell vous aide à toucher les bons acheteurs.' },
+    ],
+    questionsTitle: 'Questions ?',
+    questions: [
+      { question: 'Que faut-il saisir pour recevoir des offres ?', answer: 'Le VIN et les coordonnées sont requis. Des informations claires sur l’état, l’entretien et les photos aident les professionnels.' },
+      { question: 'Dois-je vendre si je reçois une offre ?', answer: 'Non. Vous choisissez librement de continuer ou non avec un professionnel.' },
+      { question: 'Quels professionnels voient ma demande ?', answer: 'Les comptes entreprises Growth, Professional ou Enterprise connectés peuvent traiter les demandes.' },
+      { question: 'Puis-je aussi créer une annonce classique ?', answer: 'Oui. Vous pouvez publier une annonce et gérer directement les acheteurs.' },
+      { question: 'L’envoi d’une demande est-il payant ?', answer: 'Non, l’envoi aux professionnels connectés est gratuit.' },
+    ],
+  },
+  es: {
+    listingEyebrow: '¿Otra forma de vender?',
+    listingTitle: 'Crea un anuncio y vende tú mismo.',
+    listingCta: 'Crear anuncio',
+    listingHowTitle: 'Cómo funciona un anuncio',
+    listingHowSteps: [
+      { title: 'Describe el vehículo', text: 'Añade kilometraje, equipamiento, estado y fotos.' },
+      { title: 'Publica el anuncio', text: 'Tu anuncio aparece en el mercado para que los compradores contacten.' },
+      { title: 'Gestiona contactos', text: 'Responde preguntas y acuerda visitas o pruebas.' },
+      { title: 'Cierra la venta', text: 'Acuerda pago, contrato y entrega con el comprador.' },
+    ],
+    listingBenefitsTitle: 'Ventajas de anunciar en Autorell',
+    listingBenefits: [
+      { title: 'Publicación gratis', text: 'Crea un anuncio y decide si quieres más visibilidad.' },
+      { title: 'En minutos', text: 'Añade datos y fotos rápidamente.' },
+      { title: 'Tu propio precio', text: 'Controlas el precio y la conversación.' },
+      { title: 'Más compradores', text: 'Autorell ayuda a llegar a compradores relevantes.' },
+    ],
+    questionsTitle: '¿Preguntas?',
+    questions: [
+      { question: '¿Qué necesito para recibir ofertas?', answer: 'Se requiere VIN y datos de contacto. La información clara sobre estado, servicio y fotos ayuda al concesionario.' },
+      { question: '¿Tengo que vender si recibo una oferta?', answer: 'No. Tú decides si quieres continuar con un concesionario.' },
+      { question: '¿Qué concesionarios ven mi solicitud?', answer: 'Cuentas de empresa Growth, Professional o Enterprise conectadas pueden gestionar solicitudes.' },
+      { question: '¿Puedo crear también un anuncio normal?', answer: 'Sí. Puedes publicar un anuncio y vender directamente a compradores.' },
+      { question: '¿Cuesta enviar una solicitud?', answer: 'No, enviar los datos a concesionarios conectados es gratis.' },
+    ],
+  },
+  it: {
+    listingEyebrow: 'Un altro modo per vendere?',
+    listingTitle: 'Crea un annuncio e vendi da solo.',
+    listingCta: 'Crea annuncio',
+    listingHowTitle: 'Come funziona un annuncio',
+    listingHowSteps: [
+      { title: 'Descrivi il veicolo', text: 'Aggiungi chilometraggio, dotazioni, condizioni e foto.' },
+      { title: 'Pubblica l’annuncio', text: 'L’annuncio appare sul marketplace e gli acquirenti possono contattarti.' },
+      { title: 'Gestisci i contatti', text: 'Rispondi alle domande e organizza visite o prove.' },
+      { title: 'Concludi la vendita', text: 'Concorda pagamento, contratto e consegna.' },
+    ],
+    listingBenefitsTitle: 'Vantaggi di pubblicare su Autorell',
+    listingBenefits: [
+      { title: 'Pubblicazione gratuita', text: 'Crea un annuncio e scegli se aumentare la visibilità.' },
+      { title: 'Online in pochi minuti', text: 'Aggiungi dettagli e foto rapidamente.' },
+      { title: 'Il tuo prezzo', text: 'Gestisci prezzo e dialogo con l’acquirente.' },
+      { title: 'Più acquirenti', text: 'Autorell ti aiuta a raggiungere acquirenti pertinenti.' },
+    ],
+    questionsTitle: 'Domande?',
+    questions: [
+      { question: 'Cosa serve per ricevere offerte?', answer: 'Sono richiesti VIN e contatti. Stato, manutenzione e foto aiutano i concessionari a valutare.' },
+      { question: 'Devo vendere se ricevo un’offerta?', answer: 'No. Decidi tu se procedere con un concessionario.' },
+      { question: 'Quali concessionari vedono la richiesta?', answer: 'Gli account aziendali Growth, Professional o Enterprise connessi possono gestire le richieste.' },
+      { question: 'Posso creare anche un annuncio normale?', answer: 'Sì. Puoi pubblicare un annuncio e vendere direttamente.' },
+      { question: 'Inviare una richiesta costa?', answer: 'No, l’invio ai concessionari connessi è gratuito.' },
+    ],
+  },
+  nl: {
+    listingEyebrow: 'Op een andere manier verkopen?',
+    listingTitle: 'Maak een advertentie en verkoop zelf.',
+    listingCta: 'Advertentie maken',
+    listingHowTitle: 'Hoe een advertentie werkt',
+    listingHowSteps: [
+      { title: 'Beschrijf de auto', text: 'Voeg kilometerstand, uitrusting, staat en foto’s toe.' },
+      { title: 'Publiceer je advertentie', text: 'Je advertentie verschijnt op de marktplaats zodat kopers contact opnemen.' },
+      { title: 'Beheer reacties', text: 'Beantwoord vragen en plan bezichtigingen of proefritten.' },
+      { title: 'Rond de verkoop af', text: 'Spreek betaling, contract en overdracht af.' },
+    ],
+    listingBenefitsTitle: 'Voordelen van adverteren op Autorell',
+    listingBenefits: [
+      { title: 'Gratis publiceren', text: 'Maak een advertentie en kies zelf voor extra zichtbaarheid.' },
+      { title: 'Binnen minuten online', text: 'Voeg gegevens en foto’s snel toe.' },
+      { title: 'Je eigen prijs', text: 'Jij bepaalt prijs en gesprek met de koper.' },
+      { title: 'Meer kopers bereiken', text: 'Autorell helpt relevante voertuigkopers te bereiken.' },
+    ],
+    questionsTitle: 'Vragen?',
+    questions: [
+      { question: 'Wat moet ik invullen voor dealerbiedingen?', answer: 'VIN en contactgegevens zijn vereist. Duidelijke info over staat, onderhoud en foto’s helpt dealers beoordelen.' },
+      { question: 'Moet ik verkopen als ik een bod krijg?', answer: 'Nee. Je kiest zelf of je verdergaat met een dealer.' },
+      { question: 'Welke dealers zien mijn aanvraag?', answer: 'Aangesloten bedrijfsaccounts met Growth, Professional of Enterprise kunnen aanvragen beheren.' },
+      { question: 'Kan ik ook een gewone advertentie maken?', answer: 'Ja. Je kunt een advertentie plaatsen en zelf met kopers verkopen.' },
+      { question: 'Kost een aanvraag iets?', answer: 'Nee, je gegevens naar aangesloten dealers sturen is gratis.' },
+    ],
+  },
+  fi: {
+    listingEyebrow: 'Haluatko myydä toisella tavalla?',
+    listingTitle: 'Luo ilmoitus ja myy itse.',
+    listingCta: 'Luo ilmoitus',
+    listingHowTitle: 'Näin ilmoitus toimii',
+    listingHowSteps: [
+      { title: 'Kerro autosta', text: 'Lisää ajokilometrit, varusteet, kunto ja kuvat.' },
+      { title: 'Julkaise ilmoitus', text: 'Ilmoitus näkyy markkinapaikalla ja ostajat voivat ottaa yhteyttä.' },
+      { title: 'Hallitse yhteydenottoja', text: 'Vastaa kysymyksiin ja sovi näytöt tai koeajot.' },
+      { title: 'Viimeistele kauppa', text: 'Sovi maksu, sopimus ja luovutus ostajan kanssa.' },
+    ],
+    listingBenefitsTitle: 'Autorell-ilmoituksen edut',
+    listingBenefits: [
+      { title: 'Julkaisu maksutta', text: 'Luo ilmoitus ja valitse itse lisänäkyvyys.' },
+      { title: 'Julkaise minuuteissa', text: 'Lisää tiedot ja kuvat nopeasti.' },
+      { title: 'Oma hintasi', text: 'Sinä hallitset hintaa ja keskustelua ostajan kanssa.' },
+      { title: 'Tavoita enemmän ostajia', text: 'Autorell auttaa tavoittamaan oikeat ajoneuvo-ostajat.' },
+    ],
+    questionsTitle: 'Kysymyksiä?',
+    questions: [
+      { question: 'Mitä tarvitsen saadakseni jälleenmyyjätarjouksia?', answer: 'VIN ja yhteystiedot vaaditaan. Selkeät kunto-, huolto- ja kuvatiedot auttavat arvioinnissa.' },
+      { question: 'Onko minun pakko myydä, jos saan tarjouksen?', answer: 'Ei. Päätät itse jatkatko jälleenmyyjän kanssa.' },
+      { question: 'Mitkä jälleenmyyjät näkevät pyyntöni?', answer: 'Growth-, Professional- tai Enterprise-yritystilit voivat käsitellä pyyntöjä.' },
+      { question: 'Voinko myös luoda tavallisen ilmoituksen?', answer: 'Kyllä. Voit julkaista ilmoituksen ja myydä suoraan ostajille.' },
+      { question: 'Maksaako pyynnön lähettäminen?', answer: 'Ei, tietojen lähettäminen jälleenmyyjille on maksutonta.' },
+    ],
+  },
+  da: {
+    listingEyebrow: 'Vil du sælge på en anden måde?',
+    listingTitle: 'Opret en annonce og sælg selv.',
+    listingCta: 'Opret annonce',
+    listingHowTitle: 'Sådan fungerer en annonce',
+    listingHowSteps: [
+      { title: 'Fortæl om bilen', text: 'Tilføj kilometertal, udstyr, stand og billeder.' },
+      { title: 'Publicer annoncen', text: 'Annoncen vises på markedspladsen, så købere kan kontakte dig.' },
+      { title: 'Håndter kontakter', text: 'Svar på spørgsmål og aftal fremvisning eller prøvetur.' },
+      { title: 'Afslut salget', text: 'Aftal betaling, kontrakt og overdragelse.' },
+    ],
+    listingBenefitsTitle: 'Fordele ved at annoncere på Autorell',
+    listingBenefits: [
+      { title: 'Gratis publicering', text: 'Opret en annonce og vælg selv ekstra synlighed.' },
+      { title: 'Online på få minutter', text: 'Tilføj oplysninger og billeder hurtigt.' },
+      { title: 'Din egen pris', text: 'Du styrer pris og dialog med køberen.' },
+      { title: 'Nå flere købere', text: 'Autorell hjælper dig med at nå relevante købere.' },
+    ],
+    questionsTitle: 'Spørgsmål?',
+    questions: [
+      { question: 'Hvad skal jeg udfylde for at få forhandlerbud?', answer: 'VIN og kontaktoplysninger kræves. Tydelige oplysninger om stand, service og billeder hjælper forhandlerne.' },
+      { question: 'Skal jeg sælge, hvis jeg får et bud?', answer: 'Nej. Du vælger selv, om du vil gå videre med en forhandler.' },
+      { question: 'Hvilke forhandlere kan se min forespørgsel?', answer: 'Tilknyttede firmakonti med Growth, Professional eller Enterprise kan håndtere forespørgsler.' },
+      { question: 'Kan jeg også oprette en almindelig annonce?', answer: 'Ja. Du kan oprette en annonce og sælge direkte til købere.' },
+      { question: 'Koster det at sende en forespørgsel?', answer: 'Nej, det er gratis at sende oplysningerne til tilknyttede forhandlere.' },
+    ],
+  },
+  pl: {
+    listingEyebrow: 'Chcesz sprzedać inaczej?',
+    listingTitle: 'Utwórz ogłoszenie i sprzedaj samodzielnie.',
+    listingCta: 'Utwórz ogłoszenie',
+    listingHowTitle: 'Jak działa ogłoszenie',
+    listingHowSteps: [
+      { title: 'Opisz auto', text: 'Dodaj przebieg, wyposażenie, stan i zdjęcia.' },
+      { title: 'Opublikuj ogłoszenie', text: 'Ogłoszenie pojawi się na rynku, a kupujący mogą się kontaktować.' },
+      { title: 'Zarządzaj kontaktami', text: 'Odpowiadaj na pytania i umawiaj oględziny lub jazdy próbne.' },
+      { title: 'Zakończ sprzedaż', text: 'Uzgodnij płatność, umowę i przekazanie pojazdu.' },
+    ],
+    listingBenefitsTitle: 'Zalety ogłoszenia na Autorell',
+    listingBenefits: [
+      { title: 'Publikacja gratis', text: 'Utwórz ogłoszenie i zdecyduj, czy chcesz większą widoczność.' },
+      { title: 'W kilka minut', text: 'Szybko dodaj dane i zdjęcia.' },
+      { title: 'Twoja cena', text: 'Ty kontrolujesz cenę i rozmowę z kupującym.' },
+      { title: 'Więcej kupujących', text: 'Autorell pomaga dotrzeć do właściwych kupujących.' },
+    ],
+    questionsTitle: 'Pytania?',
+    questions: [
+      { question: 'Co muszę podać, aby otrzymać oferty?', answer: 'Wymagany jest VIN i dane kontaktowe. Jasne informacje o stanie, serwisie i zdjęcia pomagają dealerom.' },
+      { question: 'Czy muszę sprzedać, jeśli dostanę ofertę?', answer: 'Nie. Sam decydujesz, czy chcesz kontynuować z dealerem.' },
+      { question: 'Którzy dealerzy widzą zapytanie?', answer: 'Połączone konta firmowe Growth, Professional lub Enterprise mogą obsługiwać zapytania.' },
+      { question: 'Czy mogę też utworzyć zwykłe ogłoszenie?', answer: 'Tak. Możesz opublikować ogłoszenie i sprzedawać bezpośrednio kupującym.' },
+      { question: 'Czy wysłanie zapytania kosztuje?', answer: 'Nie, wysłanie danych do połączonych dealerów jest bezpłatne.' },
+    ],
+  },
+}
+
+function getSellToDealerExtraCopy(locale: PublicLocale) {
+  const normalized = translationLocale(locale)
+  const key = (normalized in extraCopyByLocale ? normalized : 'en') as keyof typeof extraCopyByLocale
+  return extraCopyByLocale[key]
 }
 
 function getSellToDealerCopy(locale: PublicLocale) {
