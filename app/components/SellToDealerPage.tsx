@@ -653,7 +653,7 @@ export default async function SellToDealerPage({
 
       <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
         <div className="w-full max-w-[calc(100vw-40px)] overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)] sm:max-w-none">
-          <div className="grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_390px]">
+          <div className="grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(440px,520px)]">
             <div className="relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[calc(100vw-80px)] sm:max-w-[440px]">
                 <h1 className="max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">

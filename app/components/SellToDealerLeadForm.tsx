@@ -236,9 +236,11 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   }
 
   return (
-    <>
-    {step > 0 ? <div className="fixed inset-0 z-[70] bg-[#f4f7fb]" /> : null}
-    <div className={`min-w-0 w-full bg-white shadow-[0_18px_50px_rgba(16,24,40,.14)] ${step === 0 ? 'max-w-[calc(100vw-72px)] rounded-[18px] p-4 sm:max-w-none sm:p-5' : 'fixed inset-x-0 bottom-0 top-[72px] z-[80] overflow-y-auto rounded-t-[24px] border border-[#d9e2ef] p-5 sm:bottom-auto sm:left-1/2 sm:top-[90px] sm:max-h-[calc(100vh-118px)] sm:w-[min(1120px,calc(100vw-48px))] sm:-translate-x-1/2 sm:rounded-[22px] sm:p-7'}`}>
+    <div className={`min-w-0 w-full bg-white shadow-[0_18px_50px_rgba(16,24,40,.14)] ${
+      step === 0
+        ? 'max-w-[calc(100vw-72px)] rounded-[18px] p-4 sm:max-w-none sm:p-5'
+        : 'rounded-[18px] border border-[#d9e2ef] p-4 sm:p-5'
+    }`}>
       <h2 className="max-w-full text-lg font-semibold leading-tight tracking-[-.025em] [overflow-wrap:anywhere] sm:text-xl sm:tracking-[-.035em]">{copy.formTitle}</h2>
       <p className="mt-2 text-xs leading-5 text-[#667085]">{copy.formText}</p>
 
@@ -252,7 +254,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
 
       {error ? <p className="mt-4 rounded-[12px] bg-[#fff4ed] px-3 py-2 text-xs font-semibold text-[#b42318]">{error}</p> : null}
 
-      <div className="mt-5 flex gap-3">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         {step > 0 ? (
           <button type="button" className="min-h-11 flex-1 rounded-full border border-[#b9c3d1] px-4 text-sm font-bold text-[#344054]" onClick={() => setStep((current) => current - 1)}>
             Tillbaka
@@ -269,7 +271,6 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
         )}
       </div>
     </div>
-    </>
   )
 }
 
@@ -289,7 +290,7 @@ function VehicleIdentityStep({ form, update, selectedMake }: StepProps & { selec
   return (
     <section>
       <h3 className="text-xl font-semibold tracking-[-.025em]">Vilken bil vill du sälja?</h3>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 xl:grid-cols-3">
         <Field label="Märke" value={form.make} placeholder="Till exempel Volvo" onChange={(value) => update('make', value)} />
         <Field label="Modell" value={form.model} placeholder={selectedMake ? `Till exempel ${selectedMake} modell` : 'Till exempel XC60'} onChange={(value) => update('model', value)} />
         <Select label="Årsmodell" value={form.modelYear} onChange={(value) => update('modelYear', value)} options={years} placeholder="Välj årsmodell" />
@@ -409,8 +410,7 @@ function Select({ label, value, options, onChange, placeholder = 'Välj' }: { la
     <label className="block text-xs font-bold text-[#344054]">
       {label}
       <span className="relative mt-1 block">
-      {!value ? <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-sm font-normal text-[#7a8699]">{placeholder}</span> : null}
-      <select className={`dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-transparent'}`} style={{ WebkitTextFillColor: value ? '#101828' : 'transparent', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
+      <select className={`dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-[#7a8699]'}`} style={{ WebkitTextFillColor: value ? '#101828' : '#7a8699', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
