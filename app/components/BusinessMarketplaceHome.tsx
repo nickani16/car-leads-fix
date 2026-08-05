@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, DollarSign, ShieldCheck } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
@@ -312,6 +312,154 @@ const localizedHeroHeadingSliderCopy: Record<
   },
 }
 
+const localizedSellOptionsCopy: Record<
+  PublicLocale,
+  {
+    title: string
+    offerLabel: string
+    fastestOption: string
+    dealerTitle: string
+    dealerBenefits: string[]
+    dealerCta: string
+    privateTitle: string
+    privateBenefits: string[]
+    privateCta: string
+  }
+> = {
+  sv: {
+    title: 'Funderar du på att sälja ditt fordon?',
+    offerLabel: 'Bud',
+    fastestOption: 'Snabbaste valet',
+    dealerTitle: 'Sälj till en handlare',
+    dealerBenefits: ['Sälj redan i dag', 'Få flera bud', 'Trygg inbytesprocess', 'Smidig överlämning'],
+    dealerCta: 'Få bud nu',
+    privateTitle: 'Sälj privat',
+    privateBenefits: ['Gratis att annonsera', 'Nå rätt köpare i Europa', 'Publicera på några minuter', 'Sälj till ditt pris'],
+    privateCta: 'Lägg upp annons',
+  },
+  en: {
+    title: 'Looking to sell your vehicle?',
+    offerLabel: 'Offer',
+    fastestOption: 'Fastest option',
+    dealerTitle: 'Sell to a dealership',
+    dealerBenefits: ['Sell as early as today', 'Get multiple offers', 'Secure trade-in process', 'Convenient handover'],
+    dealerCta: 'Get your offer now',
+    privateTitle: 'Sell privately',
+    privateBenefits: ['Free to list', 'Reach the right buyers in Europe', 'List it in minutes', 'Sell at your price'],
+    privateCta: 'List your ad',
+  },
+  de: {
+    title: 'Möchten Sie Ihr Fahrzeug verkaufen?',
+    offerLabel: 'Angebot',
+    fastestOption: 'Schnellste Option',
+    dealerTitle: 'An einen Händler verkaufen',
+    dealerBenefits: ['Schon heute verkaufen', 'Mehrere Angebote erhalten', 'Sicherer Inzahlungnahme-Prozess', 'Bequeme Übergabe'],
+    dealerCta: 'Jetzt Angebot erhalten',
+    privateTitle: 'Privat verkaufen',
+    privateBenefits: ['Kostenlos inserieren', 'Passende Käufer in Europa erreichen', 'In Minuten online', 'Zum eigenen Preis verkaufen'],
+    privateCta: 'Anzeige aufgeben',
+  },
+  at: {
+    title: 'Möchten Sie Ihr Fahrzeug verkaufen?',
+    offerLabel: 'Angebot',
+    fastestOption: 'Schnellste Option',
+    dealerTitle: 'An einen Händler verkaufen',
+    dealerBenefits: ['Schon heute verkaufen', 'Mehrere Angebote erhalten', 'Sicherer Eintauschprozess', 'Bequeme Übergabe'],
+    dealerCta: 'Jetzt Angebot erhalten',
+    privateTitle: 'Privat verkaufen',
+    privateBenefits: ['Kostenlos inserieren', 'Passende Käufer in Europa erreichen', 'In Minuten online', 'Zum eigenen Preis verkaufen'],
+    privateCta: 'Anzeige aufgeben',
+  },
+  be: {
+    title: 'Wilt u uw voertuig verkopen?',
+    offerLabel: 'Bod',
+    fastestOption: 'Snelste optie',
+    dealerTitle: 'Verkoop aan een dealer',
+    dealerBenefits: ['Vandaag nog verkopen', 'Meerdere biedingen ontvangen', 'Veilig inruilproces', 'Gemakkelijke overdracht'],
+    dealerCta: 'Ontvang nu een bod',
+    privateTitle: 'Particulier verkopen',
+    privateBenefits: ['Gratis plaatsen', 'Bereik de juiste kopers in Europa', 'Binnen enkele minuten online', 'Verkoop tegen uw prijs'],
+    privateCta: 'Advertentie plaatsen',
+  },
+  fr: {
+    title: 'Vous souhaitez vendre votre véhicule ?',
+    offerLabel: 'Offre',
+    fastestOption: 'Option la plus rapide',
+    dealerTitle: 'Vendre à un professionnel',
+    dealerBenefits: ['Vendez dès aujourd’hui', 'Recevez plusieurs offres', 'Processus de reprise sécurisé', 'Remise simple du véhicule'],
+    dealerCta: 'Obtenir une offre',
+    privateTitle: 'Vendre entre particuliers',
+    privateBenefits: ['Annonce gratuite', 'Touchez les bons acheteurs en Europe', 'Annonce en ligne en quelques minutes', 'Vendez à votre prix'],
+    privateCta: 'Publier une annonce',
+  },
+  es: {
+    title: '¿Quieres vender tu vehículo?',
+    offerLabel: 'Oferta',
+    fastestOption: 'Opción más rápida',
+    dealerTitle: 'Vende a un concesionario',
+    dealerBenefits: ['Vende incluso hoy', 'Recibe varias ofertas', 'Proceso de entrega seguro', 'Entrega cómoda'],
+    dealerCta: 'Recibe tu oferta',
+    privateTitle: 'Vende de forma privada',
+    privateBenefits: ['Publicar es gratis', 'Llega a compradores en Europa', 'Anuncio listo en minutos', 'Vende al precio que quieras'],
+    privateCta: 'Publicar anuncio',
+  },
+  it: {
+    title: 'Vuoi vendere il tuo veicolo?',
+    offerLabel: 'Offerta',
+    fastestOption: 'Opzione più rapida',
+    dealerTitle: 'Vendi a un concessionario',
+    dealerBenefits: ['Vendi già oggi', 'Ricevi più offerte', 'Processo di permuta sicuro', 'Consegna comoda'],
+    dealerCta: 'Ricevi un’offerta',
+    privateTitle: 'Vendi privatamente',
+    privateBenefits: ['Inserzione gratuita', 'Raggiungi acquirenti in Europa', 'Pubblica in pochi minuti', 'Vendi al tuo prezzo'],
+    privateCta: 'Pubblica annuncio',
+  },
+  pl: {
+    title: 'Chcesz sprzedać swój pojazd?',
+    offerLabel: 'Oferta',
+    fastestOption: 'Najszybsza opcja',
+    dealerTitle: 'Sprzedaj dealerowi',
+    dealerBenefits: ['Sprzedaj nawet dziś', 'Otrzymaj kilka ofert', 'Bezpieczny proces odkupu', 'Wygodne przekazanie'],
+    dealerCta: 'Odbierz ofertę',
+    privateTitle: 'Sprzedaj prywatnie',
+    privateBenefits: ['Dodanie ogłoszenia za darmo', 'Dotrzyj do kupujących w Europie', 'Wystaw w kilka minut', 'Sprzedaj w swojej cenie'],
+    privateCta: 'Dodaj ogłoszenie',
+  },
+  nl: {
+    title: 'Wilt u uw voertuig verkopen?',
+    offerLabel: 'Bod',
+    fastestOption: 'Snelste optie',
+    dealerTitle: 'Verkoop aan een dealer',
+    dealerBenefits: ['Vandaag nog verkopen', 'Meerdere biedingen ontvangen', 'Veilig inruilproces', 'Gemakkelijke overdracht'],
+    dealerCta: 'Ontvang nu een bod',
+    privateTitle: 'Particulier verkopen',
+    privateBenefits: ['Gratis plaatsen', 'Bereik de juiste kopers in Europa', 'Binnen enkele minuten online', 'Verkoop tegen uw prijs'],
+    privateCta: 'Advertentie plaatsen',
+  },
+  fi: {
+    title: 'Haluatko myydä ajoneuvosi?',
+    offerLabel: 'Tarjous',
+    fastestOption: 'Nopein vaihtoehto',
+    dealerTitle: 'Myy liikkeelle',
+    dealerBenefits: ['Myy jo tänään', 'Saat useita tarjouksia', 'Turvallinen vaihtoprosessi', 'Vaivaton luovutus'],
+    dealerCta: 'Pyydä tarjous nyt',
+    privateTitle: 'Myy yksityisesti',
+    privateBenefits: ['Ilmainen ilmoitus', 'Tavoita oikeat ostajat Euroopassa', 'Julkaise minuuteissa', 'Myy omalla hinnallasi'],
+    privateCta: 'Jätä ilmoitus',
+  },
+  da: {
+    title: 'Vil du sælge dit køretøj?',
+    offerLabel: 'Bud',
+    fastestOption: 'Hurtigste valg',
+    dealerTitle: 'Sælg til en forhandler',
+    dealerBenefits: ['Sælg allerede i dag', 'Få flere bud', 'Tryg bytteproces', 'Nem overdragelse'],
+    dealerCta: 'Få dit bud nu',
+    privateTitle: 'Sælg privat',
+    privateBenefits: ['Gratis at annoncere', 'Nå de rette købere i Europa', 'Opret på få minutter', 'Sælg til din pris'],
+    privateCta: 'Opret annonce',
+  },
+}
+
 export function getHomeCopy(locale: PublicLocale) {
   const base = locale === 'sv'
     ? homeCopy.sv
@@ -510,6 +658,12 @@ export default async function BusinessMarketplaceHome({
 
       <HomeSellerAudienceSection copy={t} locale={locale} />
 
+      <HomeSellOptionsSection
+        copy={localizedSellOptionsCopy[locale]}
+        currency={displayCurrency}
+        locale={locale}
+      />
+
       <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
           <HomeVehicleNewsScroller
@@ -630,6 +784,184 @@ export function HomeSellerAudienceSection({
       </div>
     </section>
   )
+}
+
+function HomeSellOptionsSection({
+  copy,
+  currency,
+  locale,
+}: {
+  copy: (typeof localizedSellOptionsCopy)[PublicLocale]
+  currency: string
+  locale: PublicLocale
+}) {
+  const offerAmounts = sellOptionOfferAmounts(currency)
+  const offerLabels = offerAmounts.map((amount) => ({
+    amount,
+    label: formatSellOptionPrice(amount, currency, locale),
+  }))
+  const dealerHref = localizePublicHref(locale, '/sell-car')
+  const privateHref = localizePublicHref(locale, '/account/listings/new')
+
+  return (
+    <section className="bg-[#f4f4f5] py-10 sm:py-16">
+      <div className={homeContentContainerClass}>
+        <div className="grid items-center gap-6 lg:grid-cols-[0.95fr_1.85fr] xl:gap-8">
+          <div className="relative min-h-[300px] overflow-hidden rounded-[10px] bg-[#f4f4f5] px-1 pb-3 pt-1 sm:min-h-[360px] lg:rounded-none">
+            <h2 className="relative z-10 max-w-[520px] text-[34px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#20242d] sm:text-[45px] lg:text-[48px]">
+              {copy.title}
+            </h2>
+            <div className="relative mt-4 h-[230px] sm:mt-5 sm:h-[280px]">
+              <Image
+                src="/autorell-sell-options-suv.png"
+                alt=""
+                fill
+                sizes="(max-width: 1024px) 90vw, 520px"
+                className="object-contain object-bottom"
+              />
+              <OfferBubble
+                className="left-0 top-[18%]"
+                label={copy.offerLabel}
+                value={offerLabels[0]?.label || ''}
+              />
+              <OfferBubble
+                className="left-2 top-[66%] sm:left-0"
+                label={copy.offerLabel}
+                value={offerLabels[1]?.label || ''}
+              />
+              <OfferBubble
+                className="right-0 top-[46%]"
+                label={copy.offerLabel}
+                value={offerLabels[2]?.label || ''}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+            <SellOptionCard
+              title={copy.dealerTitle}
+              benefits={copy.dealerBenefits}
+              cta={copy.dealerCta}
+              href={dealerHref}
+              variant="primary"
+              badge={copy.fastestOption}
+            />
+            <SellOptionCard
+              title={copy.privateTitle}
+              benefits={copy.privateBenefits}
+              cta={copy.privateCta}
+              href={privateHref}
+              variant="secondary"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function OfferBubble({
+  label,
+  value,
+  className,
+}: {
+  label: string
+  value: string
+  className: string
+}) {
+  return (
+    <div className={`absolute z-10 flex items-center gap-2 rounded-full border border-[#c7ccd5] bg-white/95 py-1.5 pl-1.5 pr-3 shadow-[0_10px_24px_rgba(16,24,40,.12)] ${className}`}>
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0866ff] text-white">
+        <DollarSign className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+      </span>
+      <span className="leading-none">
+        <span className="block text-[11px] font-semibold text-[#303744]">{label}</span>
+        <span className="mt-0.5 block text-[12px] font-bold text-[#101828]">{value}</span>
+      </span>
+    </div>
+  )
+}
+
+function SellOptionCard({
+  title,
+  benefits,
+  cta,
+  href,
+  variant,
+  badge,
+}: {
+  title: string
+  benefits: string[]
+  cta: string
+  href: string
+  variant: 'primary' | 'secondary'
+  badge?: string
+}) {
+  return (
+    <article className={`relative flex min-h-[330px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-9 ${variant === 'primary' ? 'border-t-[6px] border-t-[#0866ff]' : ''}`}>
+      {badge ? (
+        <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#24272d] px-6 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(16,24,40,.18)]">
+          {badge}
+        </span>
+      ) : null}
+      <h3 className="text-[23px] font-semibold leading-tight tracking-[-0.02em] text-[#20242d]">
+        {title}
+      </h3>
+      <ul className="mt-7 space-y-4">
+        {benefits.map((benefit) => (
+          <li key={benefit} className="flex items-start gap-3 text-[18px] leading-6 text-[#242b36]">
+            <span className="mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full bg-[#087a18] text-white">
+              <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+            </span>
+            <span>{benefit}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={href}
+        className={`mt-8 inline-flex min-h-[58px] w-full items-center justify-center rounded-full px-5 text-center text-[20px] font-bold transition sm:mt-auto ${
+          variant === 'primary'
+            ? 'bg-[#1479e6] text-white hover:bg-[#0866ff]'
+            : 'border-[3px] border-[#0866ff] bg-white text-[#0866ff] hover:bg-[#eef5ff]'
+        }`}
+      >
+        {cta}
+      </Link>
+    </article>
+  )
+}
+
+function sellOptionOfferAmounts(currency: string) {
+  const amounts: Record<string, [number, number, number]> = {
+    SEK: [295000, 319900, 321500],
+    DKK: [189500, 205000, 206500],
+    PLN: [109900, 119500, 120900],
+    EUR: [25900, 27900, 28500],
+  }
+  return amounts[currency] || amounts.EUR
+}
+
+function formatSellOptionPrice(value: number, currency: string, locale: PublicLocale) {
+  const localeMap: Record<PublicLocale, string> = {
+    sv: 'sv-SE',
+    en: 'en-GB',
+    de: 'de-DE',
+    at: 'de-AT',
+    be: 'nl-BE',
+    fr: 'fr-FR',
+    es: 'es-ES',
+    it: 'it-IT',
+    pl: 'pl-PL',
+    nl: 'nl-NL',
+    fi: 'fi-FI',
+    da: 'da-DK',
+  }
+
+  return new Intl.NumberFormat(localeMap[locale] || 'en-GB', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value)
 }
 
 function localizedVehicleCategoryLabel(
