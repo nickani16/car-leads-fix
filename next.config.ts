@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
     '/api/account/company/inventory-sources/*': sharpRuntimeFiles,
     '/api/admin/inventory-imports/*': sharpRuntimeFiles,
     '/api/cron/dealer-inventory-import': sharpRuntimeFiles,
+    '/api/dealer-offer-requests': sharpRuntimeFiles,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
