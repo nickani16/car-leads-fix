@@ -122,22 +122,6 @@ const initialState: FormState = {
   privacyAccepted: false,
 }
 
-const carMakes = [
-  'Audi',
-  'BMW',
-  'Cupra',
-  'Ford',
-  'Mercedes-Benz',
-  'Opel',
-  'Renault',
-  'Skoda',
-  'Tesla',
-  'Toyota',
-  'Volvo',
-  'Volkswagen',
-  'Annat märke',
-]
-
 const years = Array.from({ length: 2027 - 1950 + 1 }, (_, index) => String(2027 - index))
 
 const imageFields = [
@@ -150,8 +134,6 @@ const imageFields = [
   ['damage', 'Eventuella skador'],
 ] as const
 
-const steps = ['Bil', 'Uppgifter', 'Skick', 'Kontakt']
-
 export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormCopy }) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<FormState>(initialState)
@@ -160,7 +142,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   const [submitting, setSubmitting] = useState(false)
   const [submittedReference, setSubmittedReference] = useState('')
 
-  const selectedMake = form.make === 'Annat märke' ? form.otherMake.trim() : form.make.trim()
+  const selectedMake = form.make.trim()
   const imageCount = useMemo(() => Object.values(images).filter(Boolean).length, [images])
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -172,20 +154,22 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
     if (targetStep === 0) {
       const vin = normalizeVin(form.vin)
       if (vin && !isValidVin(vin)) return 'VIN ska vara exakt 17 tecken och får inte innehålla I, O eller Q.'
-      if (!selectedMake) return 'Välj märke eller ange annat märke.'
+    }
+    if (targetStep === 1) {
+      if (!selectedMake) return 'Ange märke.'
       if (!form.model.trim()) return 'Ange modell.'
       if (!form.modelYear) return 'Välj årsmodell.'
     }
-    if (targetStep === 1) {
+    if (targetStep === 2) {
       if (!positiveInteger(form.mileageKm)) return 'Ange mätarställning i kilometer.'
       if (!form.fuelType || !form.transmission || !form.bodyType || !form.color) return 'Fyll i drivmedel, växellåda, karosstyp och färg.'
       if (!form.keyCount || !form.serviceBook || !form.summerTires || !form.winterTires || !form.inspected || !form.drivable || !form.financeStatus) return 'Fyll i alla obligatoriska uppgifter om bilen.'
     }
-    if (targetStep === 2) {
+    if (targetStep === 3) {
       if (!form.visibleDamage || !form.cosmeticDamage || !form.accidentHistory || !form.warningLights || !form.technicalProblems || !form.engineTransmissionProblems || !form.rust || !form.servicedBySchedule || !form.smokeFree || !form.interiorDamage) return 'Fyll i bilens skick och historik.'
       if (form.visibleDamage === 'Ja' && form.damageDescription.trim().length < 3) return 'Beskriv skadorna.'
     }
-    if (targetStep === 3) {
+    if (targetStep === 4) {
       if (!form.firstName.trim() || !form.lastName.trim()) return 'Fyll i förnamn och efternamn.'
       if (!isValidEmail(form.email)) return 'Ange en giltig e-postadress.'
       if (form.phone.trim().length < 6) return 'Ange telefonnummer.'
@@ -201,11 +185,11 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
       setError(message)
       return
     }
-    setStep((current) => Math.min(current + 1, 3))
+    setStep((current) => Math.min(current + 1, 4))
   }
 
   async function submit() {
-    const message = validate(3)
+    const message = validate(4)
     if (message) {
       setError(message)
       return
@@ -218,7 +202,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
     }
     body.set('vin', normalizeVin(form.vin))
     body.set('make', selectedMake)
-    body.set('makeSource', form.make === 'Annat märke' ? 'other' : 'preset')
+    body.set('makeSource', 'manual')
     for (const [key] of imageFields) {
       const file = images[key]
       if (file) body.append(`image_${key}`, file)
@@ -251,23 +235,18 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   }
 
   return (
-    <div className="min-w-0 w-full max-w-[calc(100vw-72px)] rounded-[18px] bg-white p-4 shadow-[0_18px_50px_rgba(16,24,40,.14)] sm:max-w-none sm:p-5">
+    <>
+    {step > 0 ? <div className="fixed inset-0 z-[70] bg-[#f4f7fb]" /> : null}
+    <div className={`min-w-0 w-full bg-white shadow-[0_18px_50px_rgba(16,24,40,.14)] ${step === 0 ? 'max-w-[calc(100vw-72px)] rounded-[18px] p-4 sm:max-w-none sm:p-5' : 'fixed inset-x-0 bottom-0 top-[72px] z-[80] overflow-y-auto rounded-t-[24px] border border-[#d9e2ef] p-5 sm:bottom-auto sm:left-1/2 sm:top-[90px] sm:max-h-[calc(100vh-118px)] sm:w-[min(1120px,calc(100vw-48px))] sm:-translate-x-1/2 sm:rounded-[22px] sm:p-7'}`}>
       <h2 className="max-w-full text-lg font-semibold leading-tight tracking-[-.025em] [overflow-wrap:anywhere] sm:text-xl sm:tracking-[-.035em]">{copy.formTitle}</h2>
       <p className="mt-2 text-xs leading-5 text-[#667085]">{copy.formText}</p>
 
-      <div className="mt-5 grid min-w-0 grid-cols-4 overflow-hidden rounded-full bg-[#eef3fb] p-1 text-[10px] font-bold text-[#667085] sm:text-[11px]">
-        {steps.map((label, index) => (
-          <span key={label} className={`min-w-0 rounded-full px-1.5 py-2 text-center leading-tight ${index === step ? 'bg-[#0866ff] text-white shadow-sm' : ''}`}>
-            {index + 1}. {label}
-          </span>
-        ))}
-      </div>
-
       <div className="mt-5">
-        {step === 0 ? <VehicleStep form={form} update={update} selectedMake={selectedMake} /> : null}
-        {step === 1 ? <DetailsStep form={form} update={update} /> : null}
-        {step === 2 ? <ConditionStep form={form} update={update} images={images} setImages={setImages} /> : null}
-        {step === 3 ? <ContactStep form={form} update={update} selectedMake={selectedMake} imageCount={imageCount} /> : null}
+        {step === 0 ? <VinStep form={form} update={update} /> : null}
+        {step === 1 ? <VehicleIdentityStep form={form} update={update} selectedMake={selectedMake} /> : null}
+        {step === 2 ? <DetailsStep form={form} update={update} /> : null}
+        {step === 3 ? <ConditionStep form={form} update={update} images={images} setImages={setImages} /> : null}
+        {step === 4 ? <ContactStep form={form} update={update} selectedMake={selectedMake} imageCount={imageCount} /> : null}
       </div>
 
       {error ? <p className="mt-4 rounded-[12px] bg-[#fff4ed] px-3 py-2 text-xs font-semibold text-[#b42318]">{error}</p> : null}
@@ -278,9 +257,9 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
             Tillbaka
           </button>
         ) : null}
-        {step < 3 ? (
+        {step < 4 ? (
           <button type="button" className="min-h-11 flex-1 rounded-full bg-[#0866ff] px-4 text-sm font-bold text-white" onClick={next}>
-            {step === 0 ? 'Nästa: Bilens uppgifter' : step === 1 ? 'Nästa: Skick och historik' : 'Nästa: Kontaktuppgifter'}
+            {step === 0 ? 'Nästa: Märke och modell' : step === 1 ? 'Nästa: Bilens uppgifter' : step === 2 ? 'Nästa: Skick och historik' : 'Nästa: Kontaktuppgifter'}
           </button>
         ) : (
           <button type="button" disabled={submitting} className="min-h-11 flex-1 rounded-full bg-[#0866ff] px-4 text-sm font-bold text-white disabled:bg-[#98a2b3]" onClick={submit}>
@@ -289,17 +268,28 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
         )}
       </div>
     </div>
+    </>
   )
 }
 
-function VehicleStep({ form, update, selectedMake }: StepProps & { selectedMake: string }) {
+function VinStep({ form, update }: StepProps) {
   return (
     <section>
-      <h3 className="text-lg font-semibold tracking-[-.025em]">Vilken bil vill du sälja?</h3>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <h3 className="text-lg font-semibold tracking-[-.025em]">VIN/chassinummer</h3>
+      <p className="mt-2 text-xs leading-5 text-[#667085]">Skriv VIN om du har det. Du kan gå vidare och ange märke manuellt i nästa steg.</p>
+      <div className="mt-4">
         <Field label="VIN/chassinummer" value={form.vin} placeholder="17 tecken, frivilligt" onChange={(value) => update('vin', normalizeVin(value))} maxLength={17} />
-        <Select label="Märke" value={form.make} onChange={(value) => update('make', value)} options={carMakes} placeholder="Välj märke" />
-        {form.make === 'Annat märke' ? <Field label="Annat märke" value={form.otherMake} placeholder="Skriv märke" onChange={(value) => update('otherMake', value)} /> : null}
+      </div>
+    </section>
+  )
+}
+
+function VehicleIdentityStep({ form, update, selectedMake }: StepProps & { selectedMake: string }) {
+  return (
+    <section>
+      <h3 className="text-xl font-semibold tracking-[-.025em]">Vilken bil vill du sälja?</h3>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <Field label="Märke" value={form.make} placeholder="Till exempel Volvo" onChange={(value) => update('make', value)} />
         <Field label="Modell" value={form.model} placeholder={selectedMake ? `Till exempel ${selectedMake} modell` : 'Till exempel XC60'} onChange={(value) => update('model', value)} />
         <Select label="Årsmodell" value={form.modelYear} onChange={(value) => update('modelYear', value)} options={years} placeholder="Välj årsmodell" />
       </div>
@@ -311,7 +301,7 @@ function DetailsStep({ form, update }: StepProps) {
   return (
     <section>
       <h3 className="text-lg font-semibold tracking-[-.025em]">Berätta om bilen</h3>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <Field label="Mätarställning i kilometer" value={form.mileageKm} placeholder="Till exempel 125000" onChange={(value) => update('mileageKm', digits(value))} inputMode="numeric" />
         <Select label="Drivmedel" value={form.fuelType} onChange={(value) => update('fuelType', value)} options={['Bensin', 'Diesel', 'El', 'Hybrid', 'Laddhybrid', 'Etanol', 'Gas']} />
         <Select label="Växellåda" value={form.transmission} onChange={(value) => update('transmission', value)} options={['Automat', 'Manuell']} />
@@ -336,7 +326,7 @@ function ConditionStep({ form, update, images, setImages }: StepProps & { images
   return (
     <section>
       <h3 className="text-lg font-semibold tracking-[-.025em]">Bilens skick</h3>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <Select label="Finns synliga skador?" value={form.visibleDamage} onChange={(value) => update('visibleDamage', value)} options={['Ja', 'Nej']} />
         <Field label="Beskriv skadorna" value={form.damageDescription} placeholder="Kort beskrivning" onChange={(value) => update('damageDescription', value)} />
         <Select label="Finns repor, bucklor eller lackskador?" value={form.cosmeticDamage} onChange={(value) => update('cosmeticDamage', value)} options={['Ja', 'Nej']} />
@@ -353,7 +343,7 @@ function ConditionStep({ form, update, images, setImages }: StepProps & { images
         Övrigt som bilhandlaren bör känna till
         <textarea className="dealer-lead-input mt-1 min-h-20 w-full rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal text-[#101828]" placeholder="Till exempel import, extrautrustning eller kommande service" value={form.otherNotes} onChange={(event) => update('otherNotes', event.target.value)} />
       </label>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {imageFields.map(([key, label]) => (
           <label key={key} className="rounded-[14px] border border-dashed border-[#b9c3d1] bg-[#f8fbff] p-3 text-xs font-bold text-[#344054]">
             {label}
@@ -369,7 +359,7 @@ function ContactStep({ form, update, selectedMake, imageCount }: StepProps & { s
   return (
     <section>
       <h3 className="text-lg font-semibold tracking-[-.025em]">Dina kontaktuppgifter</h3>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <Field label="Förnamn" value={form.firstName} placeholder="Förnamn" onChange={(value) => update('firstName', value)} />
         <Field label="Efternamn" value={form.lastName} placeholder="Efternamn" onChange={(value) => update('lastName', value)} />
         <Field label="E-post" value={form.email} placeholder="namn@example.com" onChange={(value) => update('email', value)} type="email" />
