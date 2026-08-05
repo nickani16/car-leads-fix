@@ -167,8 +167,10 @@ export default function NewsletterSignup({
       if (!response.ok) throw new Error('Newsletter request failed')
       formElement.reset()
       setStatus('success')
+      return true
     } catch {
       setStatus('error')
+      return false
     }
   }
 
@@ -247,25 +249,46 @@ function NewsletterForm({
   copy: typeof newsletterCopy[NewsletterLanguage]
   locale: PublicLocale
   status: 'idle' | 'loading' | 'success' | 'error'
-  submit: (event: FormEvent<HTMLFormElement>) => Promise<void>
+  submit: (event: FormEvent<HTMLFormElement>) => Promise<boolean>
   compact?: boolean
 }) {
+  const [emailValue, setEmailValue] = useState('')
+
   return (
-    <form onSubmit={submit} className={compact ? 'mt-6' : ''}>
+    <form
+      onSubmit={async (event) => {
+        const succeeded = await submit(event)
+        if (succeeded) setEmailValue('')
+      }}
+      className={compact ? 'mt-6' : ''}
+    >
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <div className={compact ? 'grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(160px,210px)]' : 'flex flex-col gap-3 sm:flex-row'}>
         <label className={compact ? 'relative flex min-h-12 items-center' : 'relative flex min-h-14 flex-1 items-center'}>
           <Mail className={`pointer-events-none absolute ${compact ? 'left-4 h-4 w-4' : 'left-4 h-5 w-5'} text-[#718096]`} />
           <span className="sr-only">{copy.placeholder}</span>
+          {!emailValue ? (
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute top-1/2 -translate-y-1/2 truncate font-normal text-[#7a8699] ${
+                compact ? 'left-11 right-4 text-sm' : 'left-12 right-4 text-sm'
+              }`}
+            >
+              {copy.placeholder}
+            </span>
+          ) : null}
           <input
             required
             type="email"
             name="email"
             autoComplete="email"
-            placeholder={copy.placeholder}
+            aria-label={copy.placeholder}
+            placeholder=""
+            value={emailValue}
+            onChange={(event) => setEmailValue(event.target.value)}
             className={compact
-              ? 'h-12 w-full rounded-[8px] border border-[#b8c4d4] bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'
-              : 'h-14 w-full rounded-[14px] border border-[#d7e0ec] bg-white pl-12 pr-4 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'}
+              ? 'h-12 w-full rounded-[8px] border border-[#b8c4d4] bg-white pl-11 pr-4 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'
+              : 'h-14 w-full rounded-[14px] border border-[#d7e0ec] bg-white pl-12 pr-4 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'}
           />
         </label>
         <button
