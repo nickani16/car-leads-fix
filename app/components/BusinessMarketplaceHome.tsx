@@ -656,8 +656,6 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <HomeSellerAudienceSection copy={t} locale={locale} />
-
       <HomeSellOptionsSection
         copy={localizedSellOptionsCopy[locale]}
         currency={displayCurrency}
