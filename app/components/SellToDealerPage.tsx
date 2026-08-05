@@ -652,9 +652,9 @@ export default async function SellToDealerPage({
       <PublicHeader locale={locale} marketCode={marketCode} />
 
       <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
-        <div className="w-full max-w-[calc(100vw-40px)] overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)] sm:max-w-none">
-          <div className="grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(440px,520px)]">
-            <div className="relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
+        <div className="sell-to-dealer-hero w-full max-w-[calc(100vw-40px)] overflow-hidden rounded-[18px] border border-[#cfe0ff] bg-[#eef5ff] shadow-[0_18px_55px_rgba(16,24,40,.08)] sm:max-w-none">
+          <div className="sell-to-dealer-hero-grid grid min-h-[360px] min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(440px,520px)]">
+            <div className="sell-to-dealer-hero-art relative flex min-h-[320px] min-w-0 flex-col justify-between overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
               <div className="relative z-10 max-w-[calc(100vw-80px)] sm:max-w-[440px]">
                 <h1 className="max-w-full text-[30px] font-semibold leading-[1.04] tracking-[-.045em] [overflow-wrap:anywhere] sm:max-w-[520px] sm:text-5xl sm:tracking-[-.055em]">
                   {copy.heroTitle}
@@ -676,10 +676,36 @@ export default async function SellToDealerPage({
               </div>
             </div>
 
-            <div className="flex min-w-0 items-center p-4 sm:p-7">
+            <div className="sell-to-dealer-form-wrap flex min-w-0 items-center p-4 sm:p-7">
               <SellToDealerLeadForm copy={copy} />
             </div>
           </div>
+          <style>{`
+            .sell-to-dealer-hero:has(.dealer-lead-form[data-step="1"], .dealer-lead-form[data-step="2"], .dealer-lead-form[data-step="3"], .dealer-lead-form[data-step="4"], .dealer-lead-form[data-step="submitted"]) .sell-to-dealer-hero-grid {
+              grid-template-columns: minmax(0, 1fr);
+              min-height: 0;
+            }
+
+            .sell-to-dealer-hero:has(.dealer-lead-form[data-step="1"], .dealer-lead-form[data-step="2"], .dealer-lead-form[data-step="3"], .dealer-lead-form[data-step="4"], .dealer-lead-form[data-step="submitted"]) .sell-to-dealer-hero-art {
+              display: none;
+            }
+
+            .sell-to-dealer-hero:has(.dealer-lead-form[data-step="1"], .dealer-lead-form[data-step="2"], .dealer-lead-form[data-step="3"], .dealer-lead-form[data-step="4"], .dealer-lead-form[data-step="submitted"]) .sell-to-dealer-form-wrap {
+              align-items: stretch;
+              padding: clamp(20px, 3.6vw, 44px);
+            }
+
+            .sell-to-dealer-hero:has(.dealer-lead-form[data-step="1"], .dealer-lead-form[data-step="2"], .dealer-lead-form[data-step="3"], .dealer-lead-form[data-step="4"], .dealer-lead-form[data-step="submitted"]) .dealer-lead-form {
+              max-width: none;
+              box-shadow: none;
+            }
+
+            @media (min-width: 1024px) {
+              .sell-to-dealer-hero:has(.dealer-lead-form[data-step="1"], .dealer-lead-form[data-step="2"], .dealer-lead-form[data-step="3"], .dealer-lead-form[data-step="4"], .dealer-lead-form[data-step="submitted"]) .dealer-lead-form {
+                padding: 32px;
+              }
+            }
+          `}</style>
         </div>
 
         <div className="mt-10 flex flex-col gap-4 rounded-[20px] border border-[#d7e2ef] bg-white px-5 py-4 text-sm font-semibold text-[#101828] shadow-[0_10px_28px_rgba(16,24,40,.04)] sm:flex-row sm:items-center sm:justify-between sm:px-6">

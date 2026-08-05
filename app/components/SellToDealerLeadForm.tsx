@@ -223,7 +223,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
 
   if (submittedReference) {
     return (
-      <div className="min-w-0 w-full max-w-[calc(100vw-72px)] rounded-[18px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)] sm:max-w-none">
+      <div data-step="submitted" className="dealer-lead-form min-w-0 w-full max-w-[calc(100vw-72px)] rounded-[18px] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.14)] sm:max-w-none">
         <h2 className="text-2xl font-semibold tracking-[-.04em]">Din bilförfrågan är skickad</h2>
         <p className="mt-3 text-sm leading-6 text-[#475467]">
           Referensnummer: <strong className="text-[#101828]">{submittedReference}</strong>
@@ -236,7 +236,7 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   }
 
   return (
-    <div className={`min-w-0 w-full bg-white shadow-[0_18px_50px_rgba(16,24,40,.14)] ${
+    <div data-step={step} className={`dealer-lead-form min-w-0 w-full bg-white shadow-[0_18px_50px_rgba(16,24,40,.14)] ${
       step === 0
         ? 'max-w-[calc(100vw-72px)] rounded-[18px] p-4 sm:max-w-none sm:p-5'
         : 'rounded-[18px] border border-[#d9e2ef] p-4 sm:p-5'
