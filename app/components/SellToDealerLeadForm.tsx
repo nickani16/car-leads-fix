@@ -153,7 +153,8 @@ export default function SellToDealerLeadForm({ copy }: { copy: SellToDealerFormC
   function validate(targetStep = step) {
     if (targetStep === 0) {
       const vin = normalizeVin(form.vin)
-      if (vin && !isValidVin(vin)) return 'VIN ska vara exakt 17 tecken och får inte innehålla I, O eller Q.'
+      if (!vin) return 'Ange VIN/chassinummer.'
+      if (!isValidVin(vin)) return 'VIN ska vara exakt 17 tecken och får inte innehålla I, O eller Q.'
     }
     if (targetStep === 1) {
       if (!selectedMake) return 'Ange märke.'
@@ -276,9 +277,9 @@ function VinStep({ form, update }: StepProps) {
   return (
     <section>
       <h3 className="text-lg font-semibold tracking-[-.025em]">VIN/chassinummer</h3>
-      <p className="mt-2 text-xs leading-5 text-[#667085]">Skriv VIN om du har det. Du kan gå vidare och ange märke manuellt i nästa steg.</p>
+      <p className="mt-2 text-xs leading-5 text-[#667085]">Skriv VIN/chassinummer för att gå vidare till nästa steg.</p>
       <div className="mt-4">
-        <Field label="VIN/chassinummer" value={form.vin} placeholder="17 tecken, frivilligt" onChange={(value) => update('vin', normalizeVin(value))} maxLength={17} />
+        <Field label="VIN/chassinummer" value={form.vin} placeholder="Ange 17 tecken" onChange={(value) => update('vin', normalizeVin(value))} maxLength={17} required />
       </div>
     </section>
   )
@@ -391,20 +392,22 @@ type StepProps = {
   update: <K extends keyof FormState>(key: K, value: FormState[K]) => void
 }
 
-function Field({ label, value, placeholder, onChange, inputMode, maxLength, type = 'text' }: { label: string; value: string; placeholder: string; onChange: (value: string) => void; inputMode?: 'numeric'; maxLength?: number; type?: 'text' | 'email' | 'tel' }) {
+function Field({ label, value, placeholder, onChange, inputMode, maxLength, type = 'text', required = false }: { label: string; value: string; placeholder: string; onChange: (value: string) => void; inputMode?: 'numeric'; maxLength?: number; type?: 'text' | 'email' | 'tel'; required?: boolean }) {
+  const textColor = value ? '#101828' : '#7a8699'
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <input className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: value ? '#101828' : '#7a8699', fontWeight: 400 }} type={type} value={value} placeholder={placeholder} inputMode={inputMode} maxLength={maxLength} onChange={(event) => onChange(event.target.value)} />
+      <input className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] px-3 text-sm font-normal outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: textColor, WebkitTextFillColor: textColor, fontWeight: 400 }} type={type} value={value} placeholder={placeholder} inputMode={inputMode} maxLength={maxLength} required={required} aria-required={required} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
 }
 
 function Select({ label, value, options, onChange, placeholder = 'Välj' }: { label: string; value: string; options: string[]; onChange: (value: string) => void; placeholder?: string }) {
+  const textColor = value ? '#101828' : '#7a8699'
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
-      <select className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: value ? '#101828' : '#7a8699', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
+      <select className="dealer-lead-input mt-1 h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" style={{ color: textColor, WebkitTextFillColor: textColor, fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
