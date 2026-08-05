@@ -677,7 +677,7 @@ export default async function SellToDealerPage({
             </div>
 
             <div className="sell-to-dealer-form-wrap flex min-w-0 items-center p-4 sm:p-7">
-              <SellToDealerLeadForm copy={copy} />
+              <SellToDealerLeadForm copy={copy} locale={locale} />
             </div>
           </div>
           <style>{`
