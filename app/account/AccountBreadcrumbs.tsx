@@ -23,6 +23,7 @@ export type AccountCrumbKey =
   | 'companyInventory'
   | 'companyTeam'
   | 'companyAnalytics'
+  | 'companyDealerOffers'
   | 'companyLocations'
   | 'companySubscription'
 
@@ -56,6 +57,7 @@ const englishBreadcrumbs: BreadcrumbCopy = {
   companyInventory: 'Inventory connection',
   companyTeam: 'Team',
   companyAnalytics: 'Analytics',
+  companyDealerOffers: 'Dealer offers',
   companyLocations: 'Locations',
   companySubscription: 'Plans',
 }
@@ -83,6 +85,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyInventory: 'Lageranslutning',
     companyTeam: 'Team',
     companyAnalytics: 'Analys',
+    companyDealerOffers: 'Handlarbud',
     companyLocations: 'Filialer',
     companySubscription: 'Abonnemang',
   },
@@ -106,6 +109,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Import',
     companyInventory: 'Bestandsanbindung',
     companyAnalytics: 'Analyse',
+    companyDealerOffers: 'Händlerangebote',
     companyLocations: 'Standorte',
     companySubscription: 'Tarife',
   },
@@ -129,6 +133,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Import',
     companyInventory: 'Voorraadkoppeling',
     companyAnalytics: 'Analyse',
+    companyDealerOffers: 'Dealerbiedingen',
     companyLocations: 'Locaties',
     companySubscription: 'Abonnementen',
   },
@@ -152,6 +157,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Import',
     companyInventory: 'Connexion du stock',
     companyAnalytics: 'Analyse',
+    companyDealerOffers: 'Offres pro',
     companyLocations: 'Sites',
     companySubscription: 'Abonnements',
   },
@@ -177,6 +183,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyInventory: 'Conexión de inventario',
     companyTeam: 'Equipo',
     companyAnalytics: 'Analítica',
+    companyDealerOffers: 'Ofertas de concesionarios',
     companyLocations: 'Ubicaciones',
     companySubscription: 'Planes',
   },
@@ -201,6 +208,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Importazione',
     companyInventory: 'Collegamento inventario',
     companyAnalytics: 'Analisi',
+    companyDealerOffers: 'Offerte concessionari',
     companyLocations: 'Sedi',
     companySubscription: 'Piani',
   },
@@ -226,6 +234,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyInventory: 'Połączenie zapasów',
     companyTeam: 'Zespół',
     companyAnalytics: 'Analityka',
+    companyDealerOffers: 'Oferty dealerów',
     companyLocations: 'Lokalizacje',
     companySubscription: 'Plany',
   },
@@ -250,6 +259,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyImport: 'Tuonti',
     companyInventory: 'Varastoyhteys',
     companyAnalytics: 'Analytiikka',
+    companyDealerOffers: 'Liikkeiden tarjoukset',
     companyLocations: 'Toimipisteet',
     companySubscription: 'Tilaukset',
   },
@@ -275,6 +285,7 @@ const localizedBreadcrumbs: Partial<Record<BreadcrumbLocale, Partial<BreadcrumbC
     companyInventory: 'Lagerforbindelse',
     companyTeam: 'Team',
     companyAnalytics: 'Analyse',
+    companyDealerOffers: 'Forhandlerbud',
     companyLocations: 'Lokationer',
     companySubscription: 'Abonnementer',
   },

@@ -1,0 +1,36 @@
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import SellToDealerPage, { generateSellToDealerMetadata } from '@/app/components/SellToDealerPage'
+import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
+import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
+import type { PublicLocale } from '@/lib/public-i18n'
+
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return generateSellToDealerMetadata()
+}
+
+export default async function LocalizedSellToDealerPage({ params }: { params: Promise<{ market: string }> }) {
+  const { market } = await params
+  const locale = resolveMarketLocale(market)
+  if (!locale) notFound()
+
+  return (
+    <SellToDealerPage
+      localeOverride={locale}
+      marketCodeOverride={normalizeBillingMarket(market).toUpperCase()}
+    />
+  )
+}
+
+function resolveMarketLocale(code: string): PublicLocale | null {
+  if (code === 'se') return 'sv'
+  if (code === 'de') return 'de'
+  if (code === 'dk') return 'da'
+  const market = getEuBuyerMarket(code)
+  if (!market) return null
+  if (market.code === 'at') return 'at'
+  if (market.code === 'be') return 'be'
+  return market.language as PublicLocale
+}

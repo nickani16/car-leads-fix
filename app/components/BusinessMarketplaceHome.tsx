@@ -800,7 +800,7 @@ function HomeSellOptionsSection({
     amount,
     label: formatSellOptionPrice(amount, currency, locale),
   }))
-  const dealerHref = localizePublicHref(locale, '/sell-car')
+  const dealerHref = localizePublicHref(locale, '/sell-to-dealer')
   const privateHref = localizePublicHref(locale, '/account/listings/new')
 
   return (

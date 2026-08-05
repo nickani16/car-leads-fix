@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import {
   BarChart3,
   Building2,
+  CarFront,
   CreditCard,
   FileSpreadsheet,
   FileText,
@@ -63,6 +64,7 @@ export type CompanyPortalPageKey =
   | 'import'
   | 'inventory'
   | 'analytics'
+  | 'dealerOffers'
   | 'locations'
   | 'team'
   | 'subscription'
@@ -78,6 +80,7 @@ const baseCopy = {
   import: 'Import listings',
   inventory: 'Inventory connection',
   analytics: 'Analytics',
+  dealerOffers: 'Dealer offers',
   locations: 'Locations',
   team: 'Team',
   subscription: 'Subscription and billing',
@@ -98,6 +101,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importera annonser',
     inventory: 'Lageranslutning',
     analytics: 'Analys',
+    dealerOffers: 'Handlarbud',
     locations: 'Filialer',
     team: 'Team',
     subscription: 'Prenumeration och betalning',
@@ -116,6 +120,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Anzeigen importieren',
     inventory: 'Bestandsanbindung',
     analytics: 'Analysen',
+    dealerOffers: 'Händlerangebote',
     locations: 'Standorte',
     team: 'Team',
     subscription: 'Abo und Abrechnung',
@@ -134,6 +139,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importer des annonces',
     inventory: 'Connexion du stock',
     analytics: 'Analyses',
+    dealerOffers: 'Offres pro',
     locations: 'Sites',
     team: 'Équipe',
     subscription: 'Abonnement et facturation',
@@ -152,6 +158,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importar anuncios',
     inventory: 'Conexión de inventario',
     analytics: 'Analítica',
+    dealerOffers: 'Ofertas de concesionarios',
     locations: 'Ubicaciones',
     team: 'Equipo',
     subscription: 'Suscripción y facturación',
@@ -170,6 +177,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importa annunci',
     inventory: 'Collegamento inventario',
     analytics: 'Analisi',
+    dealerOffers: 'Offerte concessionari',
     locations: 'Sedi',
     team: 'Team',
     subscription: 'Abbonamento e fatturazione',
@@ -188,6 +196,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Advertenties importeren',
     inventory: 'Voorraadkoppeling',
     analytics: 'Analyse',
+    dealerOffers: 'Dealerbiedingen',
     locations: 'Locaties',
     team: 'Team',
     subscription: 'Abonnement en facturatie',
@@ -206,6 +215,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Tuo ilmoituksia',
     inventory: 'Varastoyhteys',
     analytics: 'Analytiikka',
+    dealerOffers: 'Liikkeiden tarjoukset',
     locations: 'Toimipisteet',
     team: 'Tiimi',
     subscription: 'Tilaus ja laskutus',
@@ -224,6 +234,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importér annoncer',
     inventory: 'Lagerforbindelse',
     analytics: 'Analyse',
+    dealerOffers: 'Forhandlerbud',
     locations: 'Lokationer',
     team: 'Team',
     subscription: 'Abonnement og fakturering',
@@ -242,6 +253,7 @@ const localeCopy: Partial<Record<ReturnType<typeof translationLocale>, Partial<t
     import: 'Importuj ogłoszenia',
     inventory: 'Połączenie zapasów',
     analytics: 'Analityka',
+    dealerOffers: 'Oferty dealerów',
     locations: 'Lokalizacje',
     team: 'Zespół',
     subscription: 'Subskrypcja i płatności',
@@ -268,6 +280,7 @@ const navigation: Array<{ key: CompanyPortalPageKey; href: string; icon: LucideI
   { key: 'import', href: '/account/company/import', icon: Upload },
   { key: 'inventory', href: '/account/company/inventory', icon: RefreshCw },
   { key: 'analytics', href: '/account/company/analytics', icon: BarChart3 },
+  { key: 'dealerOffers', href: '/account/company/dealer-offers', icon: CarFront, requiredPlan: 'Growth' },
   { key: 'locations', href: '/account/company/locations', icon: MapPin },
   { key: 'team', href: '/account/company/team', icon: Users, requiredPlan: 'Growth' },
   { key: 'subscription', href: '/account/company/subscription', icon: CreditCard },
@@ -283,6 +296,7 @@ const companyBreadcrumbKey: Record<CompanyPortalPageKey, AccountCrumbKey> = {
   import: 'companyImport',
   inventory: 'companyInventory',
   analytics: 'companyAnalytics',
+  dealerOffers: 'companyDealerOffers',
   locations: 'companyLocations',
   team: 'companyTeam',
   subscription: 'companySubscription',
