@@ -2863,12 +2863,13 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
-                <MarketplaceViewToggle
-                  locale={locale}
-                  value={marketplaceView}
-                  onChange={updateMarketplaceView}
-                  className="hidden min-[1024px]:inline-flex min-[1120px]:hidden"
-                />
+                <div className="hidden shrink-0 min-[1024px]:block min-[1120px]:hidden">
+                  <MarketplaceViewToggle
+                    locale={locale}
+                    value={marketplaceView}
+                    onChange={updateMarketplaceView}
+                  />
+                </div>
                 <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select

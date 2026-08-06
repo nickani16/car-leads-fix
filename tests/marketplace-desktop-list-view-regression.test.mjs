@@ -103,5 +103,6 @@ test('new list-view copy is translated for every active translation locale', () 
 
 test('desktop list UI stays behind the desktop breakpoint', () => {
   assert.match(vehicleSearchSource, /hidden flex-1 bg-\[#f7f9fc\] min-\[1024px\]:block/)
-  assert.match(vehicleSearchSource, /className="hidden min-\[1024px\]:inline-flex min-\[1120px\]:hidden"/)
+  assert.match(vehicleSearchSource, /className="hidden shrink-0 min-\[1024px\]:block min-\[1120px\]:hidden">\s*<MarketplaceViewToggle/)
+  assert.doesNotMatch(vehicleSearchSource, /className="hidden min-\[1024px\]:inline-flex/)
 })
