@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ImagePlus, LoaderCircle, Search, X } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, ImagePlus, LoaderCircle, Search, Star, X } from 'lucide-react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import {
   fieldsForCategoryAndSubcategory,
@@ -115,6 +115,8 @@ export default function EditListingForm({
   const [saving, setSaving] = useState(false)
   const [listingImages, setListingImages] = useState(listing.images)
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [savingImageOrder, setSavingImageOrder] = useState(false)
+  const [successNoticeOpen, setSuccessNoticeOpen] = useState(false)
   const showMileage = mileageCategories.has(listing.category)
   const showOperatingHours = listing.category === 'agriculture' || listing.category === 'construction'
 
@@ -139,6 +141,42 @@ export default function EditListingForm({
     setUploadingImages(false)
     if (!response.ok || !result.images) return setError(localizedAccountError(locale, result, copy.imagesUploadError))
     setListingImages(result.images)
+    setSuccessNoticeOpen(true)
+    router.refresh()
+  }
+
+  function reorderImage(fromIndex: number, toIndex: number) {
+    if (toIndex < 0 || toIndex >= listingImages.length || fromIndex === toIndex) return
+    setListingImages((current) => {
+      const next = [...current]
+      const [image] = next.splice(fromIndex, 1)
+      if (!image) return current
+      next.splice(toIndex, 0, image)
+      return next
+    })
+  }
+
+  function makeMainImage(index: number) {
+    reorderImage(index, 0)
+  }
+
+  async function saveImageOrder() {
+    if (!listingImages.length || savingImageOrder) return
+    setSavingImageOrder(true)
+    setError('')
+    const response = await fetch(`/api/account/listings/${listing.id}/images`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images: listingImages }),
+    })
+    const result = (await response.json().catch(() => ({}))) as { error?: string; images?: string[] }
+    setSavingImageOrder(false)
+    if (!response.ok || !result.images) {
+      setError(localizedAccountError(locale, result, copy.imagesOrderError))
+      return
+    }
+    setListingImages(result.images)
+    setSuccessNoticeOpen(true)
     router.refresh()
   }
 
@@ -176,7 +214,8 @@ export default function EditListingForm({
       setSaving(false)
       return
     }
-    router.push(backHref)
+    setSaving(false)
+    setSuccessNoticeOpen(true)
     router.refresh()
   }
 
@@ -184,14 +223,58 @@ export default function EditListingForm({
     <form onSubmit={submit} className="space-y-7 p-6 sm:p-8">
       <section aria-labelledby="listing-images-title" className="rounded-[18px] border border-[#dfe6f1] bg-[#f8faff] p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 id="listing-images-title" className="text-lg font-semibold text-[#101828]">Bilder</h2><p className="mt-1 text-sm text-[#667085]">Lägg till JPG, PNG, WebP eller AVIF. Max 20 bilder och 25 MB per original.</p></div>
+          <div><h2 id="listing-images-title" className="text-lg font-semibold text-[#101828]">{copy.imagesTitle}</h2><p className="mt-1 text-sm text-[#667085]">{copy.imagesHelp}</p></div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={saveImageOrder}
+            disabled={savingImageOrder || listingImages.length < 2}
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[#0866ff] bg-white px-4 text-sm font-semibold text-[#0866ff] outline-none transition hover:bg-[#eef5ff] disabled:cursor-not-allowed disabled:border-[#cbd7e8] disabled:text-[#98a2b3]"
+          >
+            {savingImageOrder ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {savingImageOrder ? copy.savingImageOrder : copy.saveImageOrder}
+          </button>
           <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white outline-none focus-within:ring-4 focus-within:ring-[#0866ff]/25">
             {uploadingImages ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-            {uploadingImages ? 'Laddar upp…' : 'Lägg till bilder'}
+            {uploadingImages ? copy.uploadingImages : copy.addImages}
             <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple disabled={uploadingImages || listingImages.length >= 20} onChange={addImages} className="sr-only" />
           </label>
+          </div>
         </div>
-        {listingImages.length ? <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">{listingImages.slice(0, 20).map((src, index) => <div key={`${src}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-[#e8edf5]"><Image src={src} alt={`Annonsbild ${index + 1}`} fill sizes="160px" unoptimized className="object-cover" /></div>)}</div> : <p className="mt-4 rounded-[12px] border border-dashed border-[#b9c6d8] bg-white p-5 text-center text-sm text-[#667085]">Annonsen saknar bilder. Lägg till minst en bild.</p>}
+        {listingImages.length ? (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+            {listingImages.slice(0, 20).map((src, index) => (
+              <div key={`${src}-${index}`} className="group relative overflow-hidden rounded-[14px] border border-[#d7deed] bg-white p-2 shadow-sm">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-[#e8edf5]">
+                  <Image src={src} alt={`${copy.imageAlt} ${index + 1}`} fill sizes="180px" unoptimized className="object-cover" />
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span className={`inline-flex min-h-7 items-center rounded-full px-2.5 text-xs font-semibold ${index === 0 ? 'bg-[#0866ff] text-white' : 'bg-[#eef2f7] text-[#475467]'}`}>
+                    {index === 0 ? copy.mainImage : `${copy.imageNumber} ${index + 1}`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => reorderImage(index, index - 1)} disabled={index === 0} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveLeft}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => reorderImage(index, index + 1)} disabled={index === listingImages.length - 1} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveRight}>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                {index !== 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => makeMainImage(index)}
+                    className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-[10px] border border-[#cbd7e8] bg-white px-3 text-xs font-semibold text-[#0866ff] transition hover:bg-[#eef5ff]"
+                  >
+                    <Star className="h-3.5 w-3.5" />
+                    {copy.makeMainImage}
+                  </button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : <p className="mt-4 rounded-[12px] border border-dashed border-[#b9c6d8] bg-white p-5 text-center text-sm text-[#667085]">{copy.noImages}</p>}
       </section>
       <section className="rounded-[18px] border border-[#dfe6f1] p-4">
         <h2 className="text-lg font-semibold tracking-[-.03em]">Fordonsuppgifter</h2>
@@ -435,8 +518,49 @@ export default function EditListingForm({
         className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.24)] disabled:opacity-60 sm:w-auto"
       >
         <Check className="h-5 w-5" />
-        {saving ? 'Sparar...' : 'Spara ändringar'}
+        {saving ? copy.saving : copy.saveChanges}
       </button>
+      {successNoticeOpen ? (
+        <div className="fixed inset-0 z-[160] grid place-items-center bg-[#101828]/45 px-4 py-8 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="edit-listing-success-title">
+          <div className="w-full max-w-[460px] rounded-[24px] bg-white p-6 shadow-[0_24px_70px_rgba(16,24,40,.24)]">
+            <div className="flex items-start justify-between gap-4">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+                <Check className="h-5 w-5" />
+              </span>
+              <button
+                type="button"
+                onClick={() => setSuccessNoticeOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full border border-[#d7deed] text-[#475467] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                aria-label={copy.close}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <h2 id="edit-listing-success-title" className="mt-4 text-xl font-semibold tracking-[-0.03em] text-[#101828]">
+              {copy.savedTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#667085]">
+              {copy.savedDelayText}
+            </p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setSuccessNoticeOpen(false)}
+                className="inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#cbd7e8] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:bg-[#f8faff]"
+              >
+                {copy.close}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(backHref)}
+                className="inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
+              >
+                {copy.backToListings}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </form>
   )
 }
@@ -621,16 +745,250 @@ function TechnicalField({
 
 function getEditListingFormCopy(locale: PublicLocale) {
   const en = {
+    imagesTitle: 'Images',
+    imagesHelp: 'Add JPG, PNG, WebP or AVIF. You can change the order and choose the main image.',
+    addImages: 'Add images',
+    uploadingImages: 'Uploading...',
+    saveImageOrder: 'Save image order',
+    savingImageOrder: 'Saving order...',
+    imagesOrderError: 'The image order could not be saved.',
+    mainImage: 'Main image',
+    makeMainImage: 'Make main image',
+    imageNumber: 'Image',
+    imageAlt: 'Listing image',
+    moveLeft: 'Move image left',
+    moveRight: 'Move image right',
+    noImages: 'The listing has no images. Add at least one image.',
+    saveChanges: 'Save changes',
+    saving: 'Saving...',
+    savedTitle: 'Changes saved',
+    savedDelayText: 'Your changes have been saved. It can take 5-10 minutes before they are visible on the live listing.',
+    close: 'Close',
+    backToListings: 'Back to listings',
     imagesUploadError: 'The images could not be uploaded.',
     saveError: 'The listing could not be saved.',
   }
-  if (locale === 'sv') {
-    return {
+  const localized: Partial<Record<PublicLocale, typeof en>> = {
+    sv: {
+      imagesTitle: 'Bilder',
+      imagesHelp: 'Lägg till JPG, PNG, WebP eller AVIF. Du kan ändra ordningen och välja huvudbild.',
+      addImages: 'Lägg till bilder',
+      uploadingImages: 'Laddar upp...',
+      saveImageOrder: 'Spara bildordning',
+      savingImageOrder: 'Sparar ordning...',
+      imagesOrderError: 'Bildordningen kunde inte sparas.',
+      mainImage: 'Huvudbild',
+      makeMainImage: 'Gör till huvudbild',
+      imageNumber: 'Bild',
+      imageAlt: 'Annonsbild',
+      moveLeft: 'Flytta bild åt vänster',
+      moveRight: 'Flytta bild åt höger',
+      noImages: 'Annonsen saknar bilder. Lägg till minst en bild.',
+      saveChanges: 'Spara ändringar',
+      saving: 'Sparar...',
+      savedTitle: 'Ändringarna är sparade',
+      savedDelayText: 'Dina ändringar är sparade. Det kan ta 5-10 minuter innan de syns på live-annonsen.',
+      close: 'Stäng',
+      backToListings: 'Tillbaka till annonser',
       imagesUploadError: 'Bilderna kunde inte laddas upp.',
       saveError: 'Annonsen kunde inte sparas.',
-    }
+    },
+    de: {
+      imagesTitle: 'Bilder',
+      imagesHelp: 'JPG, PNG, WebP oder AVIF hinzufügen. Sie können die Reihenfolge ändern und das Hauptbild wählen.',
+      addImages: 'Bilder hinzufügen',
+      uploadingImages: 'Wird hochgeladen...',
+      saveImageOrder: 'Bildreihenfolge speichern',
+      savingImageOrder: 'Reihenfolge wird gespeichert...',
+      imagesOrderError: 'Die Bildreihenfolge konnte nicht gespeichert werden.',
+      mainImage: 'Hauptbild',
+      makeMainImage: 'Als Hauptbild festlegen',
+      imageNumber: 'Bild',
+      imageAlt: 'Anzeigenbild',
+      moveLeft: 'Bild nach links verschieben',
+      moveRight: 'Bild nach rechts verschieben',
+      noImages: 'Die Anzeige hat keine Bilder. Fügen Sie mindestens ein Bild hinzu.',
+      saveChanges: 'Änderungen speichern',
+      saving: 'Speichern...',
+      savedTitle: 'Änderungen gespeichert',
+      savedDelayText: 'Ihre Änderungen wurden gespeichert. Es kann 5-10 Minuten dauern, bis sie in der Live-Anzeige sichtbar sind.',
+      close: 'Schließen',
+      backToListings: 'Zurück zu Anzeigen',
+      imagesUploadError: 'Die Bilder konnten nicht hochgeladen werden.',
+      saveError: 'Die Anzeige konnte nicht gespeichert werden.',
+    },
+    fr: {
+      imagesTitle: 'Images',
+      imagesHelp: 'Ajoutez JPG, PNG, WebP ou AVIF. Vous pouvez modifier l’ordre et choisir l’image principale.',
+      addImages: 'Ajouter des images',
+      uploadingImages: 'Téléversement...',
+      saveImageOrder: 'Enregistrer l’ordre',
+      savingImageOrder: 'Enregistrement...',
+      imagesOrderError: 'L’ordre des images n’a pas pu être enregistré.',
+      mainImage: 'Image principale',
+      makeMainImage: 'Définir comme principale',
+      imageNumber: 'Image',
+      imageAlt: 'Image de l’annonce',
+      moveLeft: 'Déplacer l’image à gauche',
+      moveRight: 'Déplacer l’image à droite',
+      noImages: 'L’annonce ne contient aucune image. Ajoutez au moins une image.',
+      saveChanges: 'Enregistrer',
+      saving: 'Enregistrement...',
+      savedTitle: 'Modifications enregistrées',
+      savedDelayText: 'Vos modifications ont été enregistrées. Elles peuvent prendre 5 à 10 minutes avant d’apparaître sur l’annonce en ligne.',
+      close: 'Fermer',
+      backToListings: 'Retour aux annonces',
+      imagesUploadError: 'Les images n’ont pas pu être téléversées.',
+      saveError: 'L’annonce n’a pas pu être enregistrée.',
+    },
+    es: {
+      imagesTitle: 'Imágenes',
+      imagesHelp: 'Añade JPG, PNG, WebP o AVIF. Puedes cambiar el orden y elegir la imagen principal.',
+      addImages: 'Añadir imágenes',
+      uploadingImages: 'Subiendo...',
+      saveImageOrder: 'Guardar orden',
+      savingImageOrder: 'Guardando orden...',
+      imagesOrderError: 'No se pudo guardar el orden de las imágenes.',
+      mainImage: 'Imagen principal',
+      makeMainImage: 'Usar como principal',
+      imageNumber: 'Imagen',
+      imageAlt: 'Imagen del anuncio',
+      moveLeft: 'Mover imagen a la izquierda',
+      moveRight: 'Mover imagen a la derecha',
+      noImages: 'El anuncio no tiene imágenes. Añade al menos una imagen.',
+      saveChanges: 'Guardar cambios',
+      saving: 'Guardando...',
+      savedTitle: 'Cambios guardados',
+      savedDelayText: 'Tus cambios se han guardado. Pueden tardar entre 5 y 10 minutos en verse en el anuncio publicado.',
+      close: 'Cerrar',
+      backToListings: 'Volver a anuncios',
+      imagesUploadError: 'No se pudieron subir las imágenes.',
+      saveError: 'No se pudo guardar el anuncio.',
+    },
+    it: {
+      imagesTitle: 'Immagini',
+      imagesHelp: 'Aggiungi JPG, PNG, WebP o AVIF. Puoi cambiare ordine e scegliere l’immagine principale.',
+      addImages: 'Aggiungi immagini',
+      uploadingImages: 'Caricamento...',
+      saveImageOrder: 'Salva ordine',
+      savingImageOrder: 'Salvataggio ordine...',
+      imagesOrderError: 'Impossibile salvare l’ordine delle immagini.',
+      mainImage: 'Immagine principale',
+      makeMainImage: 'Rendi principale',
+      imageNumber: 'Immagine',
+      imageAlt: 'Immagine annuncio',
+      moveLeft: 'Sposta immagine a sinistra',
+      moveRight: 'Sposta immagine a destra',
+      noImages: 'L’annuncio non ha immagini. Aggiungi almeno un’immagine.',
+      saveChanges: 'Salva modifiche',
+      saving: 'Salvataggio...',
+      savedTitle: 'Modifiche salvate',
+      savedDelayText: 'Le modifiche sono state salvate. Possono volerci 5-10 minuti prima che siano visibili nell’annuncio online.',
+      close: 'Chiudi',
+      backToListings: 'Torna agli annunci',
+      imagesUploadError: 'Impossibile caricare le immagini.',
+      saveError: 'Impossibile salvare l’annuncio.',
+    },
+    nl: {
+      imagesTitle: 'Afbeeldingen',
+      imagesHelp: 'Voeg JPG, PNG, WebP of AVIF toe. U kunt de volgorde aanpassen en de hoofdfoto kiezen.',
+      addImages: 'Afbeeldingen toevoegen',
+      uploadingImages: 'Uploaden...',
+      saveImageOrder: 'Volgorde opslaan',
+      savingImageOrder: 'Volgorde opslaan...',
+      imagesOrderError: 'De afbeeldingsvolgorde kon niet worden opgeslagen.',
+      mainImage: 'Hoofdfoto',
+      makeMainImage: 'Maak hoofdfoto',
+      imageNumber: 'Afbeelding',
+      imageAlt: 'Advertentieafbeelding',
+      moveLeft: 'Afbeelding naar links',
+      moveRight: 'Afbeelding naar rechts',
+      noImages: 'De advertentie heeft geen afbeeldingen. Voeg minstens één afbeelding toe.',
+      saveChanges: 'Wijzigingen opslaan',
+      saving: 'Opslaan...',
+      savedTitle: 'Wijzigingen opgeslagen',
+      savedDelayText: 'Uw wijzigingen zijn opgeslagen. Het kan 5-10 minuten duren voordat ze zichtbaar zijn op de live advertentie.',
+      close: 'Sluiten',
+      backToListings: 'Terug naar advertenties',
+      imagesUploadError: 'De afbeeldingen konden niet worden geüpload.',
+      saveError: 'De advertentie kon niet worden opgeslagen.',
+    },
+    pl: {
+      imagesTitle: 'Zdjęcia',
+      imagesHelp: 'Dodaj JPG, PNG, WebP lub AVIF. Możesz zmienić kolejność i wybrać zdjęcie główne.',
+      addImages: 'Dodaj zdjęcia',
+      uploadingImages: 'Przesyłanie...',
+      saveImageOrder: 'Zapisz kolejność',
+      savingImageOrder: 'Zapisywanie kolejności...',
+      imagesOrderError: 'Nie udało się zapisać kolejności zdjęć.',
+      mainImage: 'Zdjęcie główne',
+      makeMainImage: 'Ustaw jako główne',
+      imageNumber: 'Zdjęcie',
+      imageAlt: 'Zdjęcie ogłoszenia',
+      moveLeft: 'Przesuń zdjęcie w lewo',
+      moveRight: 'Przesuń zdjęcie w prawo',
+      noImages: 'Ogłoszenie nie ma zdjęć. Dodaj co najmniej jedno zdjęcie.',
+      saveChanges: 'Zapisz zmiany',
+      saving: 'Zapisywanie...',
+      savedTitle: 'Zmiany zapisane',
+      savedDelayText: 'Zmiany zostały zapisane. Może minąć 5-10 minut, zanim będą widoczne w ogłoszeniu na żywo.',
+      close: 'Zamknij',
+      backToListings: 'Wróć do ogłoszeń',
+      imagesUploadError: 'Nie udało się przesłać zdjęć.',
+      saveError: 'Nie udało się zapisać ogłoszenia.',
+    },
+    fi: {
+      imagesTitle: 'Kuvat',
+      imagesHelp: 'Lisää JPG-, PNG-, WebP- tai AVIF-kuvia. Voit muuttaa järjestystä ja valita pääkuvan.',
+      addImages: 'Lisää kuvia',
+      uploadingImages: 'Ladataan...',
+      saveImageOrder: 'Tallenna kuvajärjestys',
+      savingImageOrder: 'Tallennetaan järjestystä...',
+      imagesOrderError: 'Kuvajärjestystä ei voitu tallentaa.',
+      mainImage: 'Pääkuva',
+      makeMainImage: 'Aseta pääkuvaksi',
+      imageNumber: 'Kuva',
+      imageAlt: 'Ilmoituksen kuva',
+      moveLeft: 'Siirrä kuva vasemmalle',
+      moveRight: 'Siirrä kuva oikealle',
+      noImages: 'Ilmoituksessa ei ole kuvia. Lisää vähintään yksi kuva.',
+      saveChanges: 'Tallenna muutokset',
+      saving: 'Tallennetaan...',
+      savedTitle: 'Muutokset tallennettu',
+      savedDelayText: 'Muutokset on tallennettu. Niiden näkyminen live-ilmoituksessa voi kestää 5-10 minuuttia.',
+      close: 'Sulje',
+      backToListings: 'Takaisin ilmoituksiin',
+      imagesUploadError: 'Kuvia ei voitu ladata.',
+      saveError: 'Ilmoitusta ei voitu tallentaa.',
+    },
+    da: {
+      imagesTitle: 'Billeder',
+      imagesHelp: 'Tilføj JPG, PNG, WebP eller AVIF. Du kan ændre rækkefølgen og vælge hovedbilledet.',
+      addImages: 'Tilføj billeder',
+      uploadingImages: 'Uploader...',
+      saveImageOrder: 'Gem billedrækkefølge',
+      savingImageOrder: 'Gemmer rækkefølge...',
+      imagesOrderError: 'Billedrækkefølgen kunne ikke gemmes.',
+      mainImage: 'Hovedbillede',
+      makeMainImage: 'Gør til hovedbillede',
+      imageNumber: 'Billede',
+      imageAlt: 'Annoncebillede',
+      moveLeft: 'Flyt billede til venstre',
+      moveRight: 'Flyt billede til højre',
+      noImages: 'Annoncen har ingen billeder. Tilføj mindst ét billede.',
+      saveChanges: 'Gem ændringer',
+      saving: 'Gemmer...',
+      savedTitle: 'Ændringer gemt',
+      savedDelayText: 'Dine ændringer er gemt. Det kan tage 5-10 minutter, før de vises på live-annoncen.',
+      close: 'Luk',
+      backToListings: 'Tilbage til annoncer',
+      imagesUploadError: 'Billederne kunne ikke uploades.',
+      saveError: 'Annoncen kunne ikke gemmes.',
+    },
   }
-  return translatePublicObject(locale, en)
+  if (locale === 'at') return localized.de || en
+  if (locale === 'be') return localized.nl || en
+  return localized[locale] || translatePublicObject(locale, en)
 }
 
 function brandCorrectionLabel(locale: PublicLocale, suggestion: string) {
