@@ -151,39 +151,39 @@ export default function ListingMobileContactBar({
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[120] border-t border-[#e6ebf2] bg-white/98 px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-3 shadow-[0_-14px_38px_rgba(16,24,40,.14)] backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-[120] border-t border-[#e6ebf2] bg-white/98 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-10px_28px_rgba(16,24,40,.12)] backdrop-blur sm:hidden"
       role="region"
       aria-label={phoneText.call}
     >
-      <div className="mx-auto grid max-w-[560px] gap-2">
+      <div className="mx-auto grid max-w-[560px] gap-1.5">
         <button
           type="button"
           onClick={revealPhone}
           disabled={loadingPhone}
-          className="inline-flex min-h-[58px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
+          className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#0866ff] px-4 text-[15px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(8,102,255,.18)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
         >
-          <Phone className="h-5 w-5" />
+          <Phone className="h-[18px] w-[18px]" />
           <span className="truncate">
             {phone || (phoneError === 'login' ? phoneText.signIn : phoneError ? phoneText.unavailable : loadingPhone ? '...' : phoneText.call)}
           </span>
         </button>
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2">
           <ListingContactFormButton
             listingId={listingId}
             listingTitle={listingTitle}
             locale={locale}
             defaultCurrency={defaultCurrency}
             buttonLabel={emailLabel}
-            buttonClassName="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#0866ff] bg-white px-4 text-base font-semibold text-[#0866ff] transition hover:bg-[#f3f8ff]"
-            iconClassName="h-5 w-5 text-[#0866ff]"
+            buttonClassName="inline-flex min-h-[40px] w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#0866ff] bg-white px-3 text-[15px] font-semibold leading-none text-[#0866ff] transition hover:bg-[#f3f8ff]"
+            iconClassName="h-[18px] w-[18px] text-[#0866ff]"
           />
           <button
             type="button"
             onClick={startConversation}
             disabled={messageLoading}
-            className="inline-flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#0866ff] bg-white px-4 text-base font-semibold text-[#0866ff] transition hover:bg-[#f3f8ff] disabled:cursor-not-allowed disabled:border-[#b9cef5] disabled:text-[#98a2b3]"
+            className="inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#0866ff] bg-white px-3 text-[15px] font-semibold leading-none text-[#0866ff] transition hover:bg-[#f3f8ff] disabled:cursor-not-allowed disabled:border-[#b9cef5] disabled:text-[#98a2b3]"
           >
-            <MessageCircle className="h-5 w-5" />
+            <MessageCircle className="h-[18px] w-[18px]" />
             <span className="truncate">{messageLoading ? '...' : messageLabel}</span>
           </button>
         </div>
