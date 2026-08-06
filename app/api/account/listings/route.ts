@@ -553,7 +553,10 @@ export async function POST(request: Request) {
     const variant = text(form, 'variant')
     const title = `${make} ${model} ${variant}`.trim()
     const offerType = normalizeOfferType(form.get('offerType'))
-    const sellerNote = text(form, 'sellerNote')
+    const sellerNote =
+      text(form, 'sellerNote') ||
+      text(form, 'description') ||
+      text(form, 'sellerDescription')
     const city = text(form, 'city')
     const description = sellerNote || buildDefaultListingDescription({ title, city, offerType })
     const rawRegion = text(form, 'county') || text(form, 'region')

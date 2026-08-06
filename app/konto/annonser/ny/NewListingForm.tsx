@@ -676,6 +676,7 @@ export default function NewListingForm({
       if (structuredListingFieldNames.includes(key) && !allowedTechnicalKeys.has(key)) return
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
+    form.set('sellerNote', (values.sellerNote || '').trim())
     form.set(
       'color',
       values.colorChoice === 'other' ? 'Annan färg' : values.colorChoice || '',
