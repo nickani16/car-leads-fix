@@ -76,7 +76,6 @@ type ListingRow = {
   category: MarketplaceCategorySlug
   title: string
   description: string | null
-  metadata: Record<string, unknown> | null
   make: string | null
   model: string | null
   variant: string | null
@@ -2122,8 +2121,9 @@ function isPublicSellerDescription(value: string | null): value is string {
 }
 
 function publicSellerDescriptionFromListing(listing: ListingRow) {
+  const structuredData = isRecord(listing.structured_data) ? listing.structured_data : {}
   const originalSellerNote = textOrNull(
-    isRecord(listing.metadata) ? listing.metadata.seller_note_original : null,
+    structuredData.seller_note_original,
   )
   if (originalSellerNote) return originalSellerNote
   return isPublicSellerDescription(listing.description) ? listing.description : null

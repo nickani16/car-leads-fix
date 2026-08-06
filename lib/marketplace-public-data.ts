@@ -254,10 +254,12 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
       .is('deleted_at', null)
       .order('position', { ascending: true })
 
-  let [{ data, error }, { data: imageRows }] = await Promise.all([
+  const [listingResult, imageResult] = await Promise.all([
     listingQuery,
     imageQuery,
   ])
+  let { data, error } = listingResult
+  const { data: imageRows } = imageResult
 
   if (error) {
     console.error('[marketplace-public-detail] primary listing select failed', { id, error })

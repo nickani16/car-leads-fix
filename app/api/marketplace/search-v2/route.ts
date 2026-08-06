@@ -23,7 +23,7 @@ const marketplaceSearchCache =
   globalThis.__autorellMarketplaceSearchCache ||
   (globalThis.__autorellMarketplaceSearchCache = new Map<string, SearchCacheEntry>())
 
-const SEARCH_CACHE_TTL_MS = 60_000
+const SEARCH_CACHE_TTL_MS = 5_000
 const SEARCH_CACHE_MAX_ENTRIES = 1_000
 
 export async function GET(request: NextRequest) {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       return new Response(cached.body, {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+          'Cache-Control': 'no-store',
           'X-Autorell-Search-Cache': 'hit',
         },
       })
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     return new Response(body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+        'Cache-Control': 'no-store',
         'X-Autorell-Search-Cache': 'miss',
       },
     })
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       return new Response(body, {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+          'Cache-Control': 'no-store',
           'X-Autorell-Search-Cache': 'geo-empty-fallback',
         },
       })
