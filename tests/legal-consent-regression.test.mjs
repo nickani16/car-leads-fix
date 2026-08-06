@@ -14,6 +14,7 @@ const withdrawalApi = read('app/api/withdrawal/route.ts')
 const withdrawalForm = read('app/withdrawal/WithdrawalForm.tsx')
 const withdrawalEmail = read('lib/email/withdrawal-request.ts')
 const withdrawalMigration = read('supabase/migrations/20260806193000_marketplace_withdrawal_requests.sql')
+const termsPage = read('app/terms/page.tsx')
 const translations = JSON.parse(read('lib/generated-public-translations.json'))
 
 test('optional telemetry and advertising load only after explicit consent', () => {
@@ -71,4 +72,10 @@ test('active public translation catalogs are complete and contain no separator a
       assert.doesNotMatch(value, /ZXQ|_9Q_|SPLIT_\d|_\d+SPLIT|987654321/i, `${locale}: ${key}`)
     }
   }
+})
+
+test('the Swedish market route renders the complete Swedish marketplace terms', () => {
+  assert.match(termsPage, /import SwedishTermsPage from '\.\.\/villkor\/page'/)
+  assert.match(termsPage, /if \(locale === 'sv'\)/)
+  assert.match(termsPage, /return <SwedishTermsPage \/>/)
 })
