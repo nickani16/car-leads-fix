@@ -15,6 +15,7 @@ const email = readFileSync(new URL('../lib/email/dealer-vehicle-lead.ts', import
 const seo = readFileSync(new URL('../lib/public-seo.ts', import.meta.url), 'utf8')
 const baseMigration = readFileSync(new URL('../supabase/migrations/20260806103000_dealer_lead_country_notifications.sql', import.meta.url), 'utf8')
 const teamMigration = readFileSync(new URL('../supabase/migrations/20260806111500_dealer_lead_team_access.sql', import.meta.url), 'utf8')
+const entitlementMigration = readFileSync(new URL('../supabase/migrations/20260806140520_dealer_lead_entitlement_start.sql', import.meta.url), 'utf8')
 
 test('seller flow requires VIN and persists country and locale with every lead', () => {
   assert.match(form, /if \(!vin\) return t\('Enter VIN\/chassis number\.'\)/)
@@ -34,21 +35,28 @@ test('localized dropdowns store stable values instead of translated labels', () 
   assert.match(email, /translatePublic\(recipient\.locale, lead\.fuelType\)/)
 })
 
-test('Growth and higher receive country-scoped portal access and menu notifications', () => {
+test('Growth and higher receive only country-scoped leads created during their entitlement', () => {
   assert.match(access, /'growth', 'professional', 'enterprise'/)
   assert.match(portal, /\.in\('source_country_code', countries\)/)
+  assert.match(portal, /\.gte\('created_at', accessStartsAt\)/)
+  assert.match(access, /dealerLeadAccessStartsAt/)
+  assert.match(access, /\.gte\('created_at', accessStartsAt\)/)
   assert.match(preferences, /scopeAll/)
   assert.match(preferences, /max-h-48[\s\S]*overflow-y-auto/)
   assert.match(preferenceApi, /resolveBusinessAccountScope\(user\.id, admin\)/)
+  assert.match(preferenceApi, /dealerLeadAccessStartsAt\(subscription\)/)
   assert.match(companyPortal, /dealerOfferUnreadCount/)
   assert.match(companyPortal, /countUnreadDealerLeads/)
+  assert.match(companyPortal, /accessStartsAt: dealerLeadAccessStart/)
   assert.match(teamMigration, /coalesce\(company\.created_by, p\.user_id\)/)
 })
 
 test('new leads reserve idempotent localized emails and direct seller contact actions', () => {
   assert.match(requestApi, /after\(async \(\) =>/)
   assert.match(requestApi, /sendDealerVehicleLeadNotifications/)
+  assert.match(requestApi, /createdAt: lead\.created_at/)
   assert.match(email, /dealer_vehicle_lead_email_deliveries/)
+  assert.match(email, /dealerLeadWasCreatedDuringAccess\(subscription, lead\.createdAt\)/)
   assert.match(email, /Idempotency-Key.*dealer-lead-/s)
   assert.match(email, /allCountries/)
   assert.match(email, /marketplace_companies/)
@@ -69,6 +77,24 @@ test('lead notification tables are protected and deliveries cannot duplicate', (
   assert.match(teamMigration, /security definer/)
   assert.match(teamMigration, /set search_path = public, pg_temp/)
   assert.match(teamMigration, /revoke all on function private\./)
+})
+
+test('database policies and bid RPC fail closed outside the current Growth-or-higher window', () => {
+  assert.match(entitlementMigration, /dealer_lead_access_starts_at/)
+  assert.match(entitlementMigration, /array\['growth','professional','enterprise'\]::text\[\]/)
+  assert.match(entitlementMigration, /new\.dealer_lead_access_starts_at := null/)
+  assert.match(entitlementMigration, /old\.dealer_lead_access_starts_at/)
+  assert.match(entitlementMigration, /continuous_entitlement/)
+  assert.match(entitlementMigration, /min\(subscription\.dealer_lead_access_starts_at\)/)
+  assert.match(entitlementMigration, /coalesce\(new\.free_period_ends_at > statement_timestamp\(\), false\)/)
+  assert.match(entitlementMigration, /p_lead_created_at >= private\.current_user_dealer_lead_access_starts_at\(\)/)
+  assert.match(entitlementMigration, /can_current_user_access_dealer_lead\(source_country_code, created_at\)/)
+  assert.match(entitlementMigration, /An active Growth plan or higher is required to bid/)
+  assert.match(entitlementMigration, /\(l\.created_at at time zone 'UTC'\) >= v_access_starts_at/)
+  assert.match(entitlementMigration, /create trigger bids_enforce_dealer_lead_entitlement/)
+  assert.match(entitlementMigration, /before insert on public\.bids/)
+  assert.match(entitlementMigration, /set search_path = ''/)
+  assert.match(entitlementMigration, /drop function if exists private\.can_current_user_access_dealer_lead_country\(text\)/)
 })
 
 test('sell-to-dealer SEO stays within requested limits and publishes all language alternates', () => {

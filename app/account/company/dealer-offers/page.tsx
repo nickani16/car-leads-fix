@@ -13,8 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getEuCountryName } from '@/lib/eu-countries'
 import {
   DEALER_LEAD_COUNTRY_CODES,
-  dealerPlanCanReceiveLeads,
-  dealerSubscriptionIsActive,
+  dealerLeadAccessStartsAt,
   getDealerLeadPreferences,
   normalizeDealerLeadCountryCode,
   resolveDealerLeadCountryScope,
@@ -83,8 +82,8 @@ type DealerLeadImage = {
 export default async function CompanyDealerOffersPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
   const context = await getCompanyPortalContext(localeOverride)
   const copy = getDealerOffersCopy(context.locale)
-  const plan = String(context.subscription?.plan_key || 'free')
-  const unlocked = dealerPlanCanReceiveLeads(plan) && dealerSubscriptionIsActive(context.subscription)
+  const accessStartsAt = dealerLeadAccessStartsAt(context.subscription)
+  const unlocked = Boolean(accessStartsAt)
   const admin = createAdminClient()
   const homeCountry = normalizeDealerLeadCountryCode(context.profile.country_code)
   const preferences = unlocked ? await getDealerLeadPreferences(admin, {
@@ -94,7 +93,7 @@ export default async function CompanyDealerOffersPage({ localeOverride }: { loca
     profileEmail: context.profile.email,
   }) : null
   const countries = preferences ? resolveDealerLeadCountryScope(preferences, homeCountry) : []
-  const leads = unlocked ? await getDealerVehicleLeads(admin, countries) : []
+  const leads = accessStartsAt ? await getDealerVehicleLeads(admin, countries, accessStartsAt) : []
 
   if (unlocked) {
     const seenAt = new Date().toISOString()
@@ -227,10 +226,20 @@ function InfoGroup({ title, items }: { title: string; items: Array<[string, stri
   )
 }
 
-async function getDealerVehicleLeads(admin: ReturnType<typeof createAdminClient>, countries: DealerLeadCountryCode[]): Promise<DealerVehicleLead[]> {
+async function getDealerVehicleLeads(
+  admin: ReturnType<typeof createAdminClient>,
+  countries: DealerLeadCountryCode[],
+  accessStartsAt: string,
+): Promise<DealerVehicleLead[]> {
   if (!countries.length) return []
   try {
-    const { data, error } = await admin.from('dealer_vehicle_leads').select('*').in('source_country_code', countries).order('created_at', { ascending: false }).limit(50)
+    const { data, error } = await admin
+      .from('dealer_vehicle_leads')
+      .select('*')
+      .in('source_country_code', countries)
+      .gte('created_at', accessStartsAt)
+      .order('created_at', { ascending: false })
+      .limit(50)
     if (error) throw error
     const leads = (data || []) as Omit<DealerVehicleLead, 'images'>[]
     const leadIds = leads.map((lead) => lead.id)

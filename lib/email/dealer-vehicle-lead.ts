@@ -3,8 +3,7 @@ import 'server-only'
 import { Resend } from 'resend'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
-  dealerPlanCanReceiveLeads,
-  dealerSubscriptionIsActive,
+  dealerLeadWasCreatedDuringAccess,
   normalizeDealerLeadCountryCode,
   normalizeDealerLeadCountryCodes,
   normalizeEmail,
@@ -17,6 +16,7 @@ import { translatePublic } from '@/lib/public-i18n'
 type DealerLeadEmailInput = {
   id: string
   reference: string
+  createdAt: string
   sourceCountryCode: string
   make: string
   model: string
@@ -42,7 +42,7 @@ type Recipient = {
 }
 
 export async function sendDealerVehicleLeadNotifications(admin: SupabaseClient, lead: DealerLeadEmailInput) {
-  const recipients = await findRecipients(admin, lead.sourceCountryCode)
+  const recipients = await findRecipients(admin, lead)
   const results = []
   for (const recipient of recipients) {
     results.push(await sendToRecipient(admin, lead, recipient))
@@ -50,13 +50,16 @@ export async function sendDealerVehicleLeadNotifications(admin: SupabaseClient, 
   return results
 }
 
-async function findRecipients(admin: SupabaseClient, sourceCountryCode: string): Promise<Recipient[]> {
-  const country = normalizeDealerLeadCountryCode(sourceCountryCode)
+async function findRecipients(
+  admin: SupabaseClient,
+  lead: Pick<DealerLeadEmailInput, 'sourceCountryCode' | 'createdAt'>,
+): Promise<Recipient[]> {
+  const country = normalizeDealerLeadCountryCode(lead.sourceCountryCode)
   if (!country) return []
 
   const { data: subscriptions, error: subscriptionError } = await admin
     .from('business_subscriptions')
-    .select('user_id,plan_key,status,manually_activated,free_period_ends_at,updated_at')
+    .select('user_id,plan_key,status,manually_activated,free_period_ends_at,dealer_lead_access_starts_at,updated_at')
     .order('updated_at', { ascending: false })
     .limit(2000)
   if (subscriptionError) throw subscriptionError
@@ -66,7 +69,7 @@ async function findRecipients(admin: SupabaseClient, sourceCountryCode: string):
     if (!latestByUser.has(subscription.user_id)) latestByUser.set(subscription.user_id, subscription)
   }
   const eligibleOwnerIds = [...latestByUser.values()]
-    .filter((subscription) => dealerPlanCanReceiveLeads(subscription.plan_key) && dealerSubscriptionIsActive(subscription))
+    .filter((subscription) => dealerLeadWasCreatedDuringAccess(subscription, lead.createdAt))
     .map((subscription) => subscription.user_id)
   if (!eligibleOwnerIds.length) return []
 

@@ -18,6 +18,14 @@ export type DealerLeadPreferences = {
 const ELIGIBLE_PLANS = new Set(['growth', 'professional', 'enterprise'])
 const ACTIVE_STATUSES = new Set(['active', 'trialing'])
 
+export type DealerLeadSubscription = {
+  plan_key?: unknown
+  status?: unknown
+  manually_activated?: unknown
+  free_period_ends_at?: unknown
+  dealer_lead_access_starts_at?: unknown
+}
+
 export function normalizeDealerLeadCountryCode(value: unknown): DealerLeadCountryCode | null {
   const code = String(value || '').trim().toUpperCase()
   return DEALER_LEAD_COUNTRY_CODES.includes(code as DealerLeadCountryCode)
@@ -34,16 +42,30 @@ export function dealerPlanCanReceiveLeads(planKey: unknown) {
   return ELIGIBLE_PLANS.has(String(planKey || '').trim().toLowerCase())
 }
 
-export function dealerSubscriptionIsActive(subscription: {
-  status?: unknown
-  manually_activated?: unknown
-  free_period_ends_at?: unknown
-} | null | undefined) {
+export function dealerSubscriptionIsActive(subscription: DealerLeadSubscription | null | undefined) {
   if (!subscription) return false
   if (ACTIVE_STATUSES.has(String(subscription.status || '').toLowerCase())) return true
   if (subscription.manually_activated === true) return true
   const freeUntil = String(subscription.free_period_ends_at || '')
   return Boolean(freeUntil && new Date(freeUntil).getTime() > Date.now())
+}
+
+export function dealerLeadAccessStartsAt(subscription: DealerLeadSubscription | null | undefined) {
+  if (!subscription || !dealerPlanCanReceiveLeads(subscription.plan_key) || !dealerSubscriptionIsActive(subscription)) {
+    return null
+  }
+  const timestamp = normalizeTimestamp(subscription.dealer_lead_access_starts_at)
+  if (!timestamp || new Date(timestamp).getTime() > Date.now()) return null
+  return timestamp
+}
+
+export function dealerLeadWasCreatedDuringAccess(
+  subscription: DealerLeadSubscription | null | undefined,
+  leadCreatedAt: unknown,
+) {
+  const accessStartsAt = dealerLeadAccessStartsAt(subscription)
+  const leadTimestamp = normalizeTimestamp(leadCreatedAt)
+  return Boolean(accessStartsAt && leadTimestamp && new Date(leadTimestamp).getTime() >= new Date(accessStartsAt).getTime())
 }
 
 export function resolveDealerLeadCountryScope(
@@ -90,18 +112,24 @@ export async function countUnreadDealerLeads(
   admin: SupabaseClient,
   input: {
     preferences: DealerLeadPreferences
+    accessStartsAt: string
     homeCountry?: string | null
   },
 ) {
   const countries = resolveDealerLeadCountryScope(input.preferences, input.homeCountry)
-  if (!countries.length) return 0
+  const accessStartsAt = normalizeTimestamp(input.accessStartsAt)
+  if (!countries.length || !accessStartsAt) return 0
 
   let query = admin
     .from('dealer_vehicle_leads')
     .select('id', { count: 'exact', head: true })
     .in('source_country_code', countries)
+    .gte('created_at', accessStartsAt)
 
-  if (input.preferences.lastSeenAt) query = query.gt('created_at', input.preferences.lastSeenAt)
+  const lastSeenAt = normalizeTimestamp(input.preferences.lastSeenAt)
+  if (lastSeenAt && new Date(lastSeenAt).getTime() >= new Date(accessStartsAt).getTime()) {
+    query = query.gt('created_at', lastSeenAt)
+  }
   const { count, error } = await query
   if (error && error.code !== '42P01' && error.code !== '42703') throw error
   return count || 0
@@ -110,4 +138,10 @@ export async function countUnreadDealerLeads(
 export function normalizeEmail(value: unknown) {
   const email = String(value || '').trim().toLowerCase()
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null
+}
+
+function normalizeTimestamp(value: unknown) {
+  const timestamp = String(value || '').trim()
+  const milliseconds = timestamp ? new Date(timestamp).getTime() : Number.NaN
+  return Number.isFinite(milliseconds) ? new Date(milliseconds).toISOString() : null
 }

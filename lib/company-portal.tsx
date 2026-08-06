@@ -30,7 +30,7 @@ import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountB
 import AccountLogoutButton from '@/app/konto/AccountLogoutButton'
 import { getAccountCopy } from '@/lib/account-i18n'
 import { isBusinessFeatureEnabled } from '@/lib/business-feature-flags'
-import { countUnreadDealerLeads, dealerPlanCanReceiveLeads, dealerSubscriptionIsActive, getDealerLeadPreferences } from '@/lib/dealer-leads/access'
+import { countUnreadDealerLeads, dealerLeadAccessStartsAt, getDealerLeadPreferences } from '@/lib/dealer-leads/access'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -54,6 +54,7 @@ export type CompanyPortalContext = {
     cancellation_effective_at: string | null
     manually_activated: boolean | null
     free_period_ends_at: string | null
+    dealer_lead_access_starts_at: string | null
   } | null
   listingSummary: AccountListingSummary
   listingOwnerUserIds: string[]
@@ -328,7 +329,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   const [{ data: subscription }, listingSummary, { data: pilot }] = await Promise.all([
     admin
       .from('business_subscriptions')
-      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at,manually_activated,free_period_ends_at')
+      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at,manually_activated,free_period_ends_at,dealer_lead_access_starts_at')
       .eq('user_id', scope.subscriptionUserId)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -366,7 +367,8 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   )
 
   let dealerOfferUnreadCount = 0
-  if (dealerPlanCanReceiveLeads(subscription?.plan_key) && dealerSubscriptionIsActive(subscription)) {
+  const dealerLeadAccessStart = dealerLeadAccessStartsAt(subscription)
+  if (dealerLeadAccessStart) {
     try {
       const preferences = await getDealerLeadPreferences(admin, {
         userId: user.id,
@@ -374,7 +376,11 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
         homeCountry: profile.country_code,
         profileEmail: profile.email,
       })
-      dealerOfferUnreadCount = await countUnreadDealerLeads(admin, { preferences, homeCountry: profile.country_code })
+      dealerOfferUnreadCount = await countUnreadDealerLeads(admin, {
+        preferences,
+        accessStartsAt: dealerLeadAccessStart,
+        homeCountry: profile.country_code,
+      })
     } catch (error) {
       console.error('dealer lead unread count failed', error)
     }

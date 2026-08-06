@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { normalizeDealerLeadCountryCodes, normalizeEmail, dealerPlanCanReceiveLeads, dealerSubscriptionIsActive } from '@/lib/dealer-leads/access'
+import { dealerLeadAccessStartsAt, normalizeDealerLeadCountryCodes, normalizeEmail } from '@/lib/dealer-leads/access'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -13,9 +13,9 @@ export async function PUT(request: Request) {
   const scope = await resolveBusinessAccountScope(user.id, admin)
   const [{ data: profile }, { data: subscription }] = await Promise.all([
     admin.from('marketplace_profiles').select('account_type,company_id,country_code,email').eq('user_id', user.id).maybeSingle(),
-    admin.from('business_subscriptions').select('plan_key,status,manually_activated,free_period_ends_at').eq('user_id', scope.subscriptionUserId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+    admin.from('business_subscriptions').select('plan_key,status,manually_activated,free_period_ends_at,dealer_lead_access_starts_at').eq('user_id', scope.subscriptionUserId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
   ])
-  if (profile?.account_type !== 'business' || !dealerPlanCanReceiveLeads(subscription?.plan_key) || !dealerSubscriptionIsActive(subscription)) {
+  if (profile?.account_type !== 'business' || !dealerLeadAccessStartsAt(subscription)) {
     return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
   }
 

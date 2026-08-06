@@ -97,7 +97,7 @@ async function handlePost(request: Request) {
       source_country_code: payload.sourceCountryCode,
       source_locale: payload.sourceLocale,
     })
-    .select('id,reference')
+    .select('id,reference,created_at')
     .single()
 
   if (insertError || !lead) {
@@ -141,6 +141,7 @@ async function handlePost(request: Request) {
       await sendDealerVehicleLeadNotifications(admin, {
         id: lead.id,
         reference: lead.reference,
+        createdAt: lead.created_at,
         sourceCountryCode: payload.sourceCountryCode,
         make: payload.make,
         model: payload.model,
