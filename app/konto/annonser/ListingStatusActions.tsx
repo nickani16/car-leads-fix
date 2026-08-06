@@ -176,7 +176,7 @@ export default function ListingStatusActions({
   const secondary = secondaryActions(status)
   const paymentTrust = paymentTrustCopy(locale)
   const button = 'inline-flex min-h-10 items-center justify-center rounded-[11px] border border-[#cbd7e8] bg-white px-3.5 text-sm font-semibold text-[#344054] outline-none transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20 disabled:opacity-50'
-  const primary = 'inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.18)] outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30 disabled:opacity-50'
+  const primary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.18)] outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30 disabled:opacity-50'
 
   return (
     <>

@@ -227,7 +227,7 @@ export default function EditListingForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7 p-6 sm:p-8">
+    <form onSubmit={submit} className="autorell-edit-listing-form space-y-7 p-6 sm:p-8">
       <section aria-labelledby="listing-images-title" className="rounded-[18px] border border-[#dfe6f1] bg-[#f8faff] p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div><h2 id="listing-images-title" className="text-lg font-semibold text-[#101828]">{copy.imagesTitle}</h2><p className="mt-1 text-sm text-[#667085]">{copy.imagesHelp}</p></div>

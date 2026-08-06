@@ -20,6 +20,13 @@ body {
   font-weight: 400;
 }
 
+.autorell-edit-listing-form input::placeholder,
+.autorell-edit-listing-form textarea::placeholder {
+  color: #98a2b3 !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
 .autorell-range {
   appearance: none;
   background: transparent;

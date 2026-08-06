@@ -309,11 +309,41 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
 
   if (isExpiredPublished) return null
   const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
-  listing.image_variants = (imageRows || []).map((image) => ({
+  const orderedImageRows = orderImageRowsByListingImages(imageRows || [], listing.images || [])
+  listing.image_variants = orderedImageRows.map((image) => ({
     listingUrl: image.webp_url,
     fullscreenUrl: image.avif_url,
   }))
   return listing
+}
+
+function orderImageRowsByListingImages<
+  T extends { webp_url?: string | null; avif_url?: string | null; position?: number | string | null },
+>(imageRows: T[], listingImages: string[]) {
+  if (!imageRows.length) return imageRows
+  const rowsByKey = new Map(
+    imageRows.flatMap((row) => {
+      const keys = [imageOrderKey(row.webp_url), imageOrderKey(row.avif_url)].filter(Boolean)
+      return keys.map((key) => [key, row] as const)
+    }),
+  )
+  const ordered = listingImages
+    .map((image) => rowsByKey.get(imageOrderKey(image)))
+    .filter((row): row is T => Boolean(row))
+  if (!ordered.length) return imageRows
+  const used = new Set(ordered)
+  const leftovers = imageRows
+    .filter((row) => !used.has(row))
+    .sort((a, b) => Number(a.position || 0) - Number(b.position || 0))
+  return [...ordered, ...leftovers]
+}
+
+function imageOrderKey(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/[?#].*$/, '')
+    .replace(/\/(?:card|listing)\.webp$/i, '')
+    .replace(/\/fullscreen\.avif$/i, '')
 }
 
 export const getPublishedMarketplaceListingCount = unstable_cache(
