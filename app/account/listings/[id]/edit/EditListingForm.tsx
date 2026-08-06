@@ -20,7 +20,7 @@ import {
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
 import { localizedAccountError } from '@/lib/account-error-i18n'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { brandCorrectionSuggestion, matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 
 type EditableListing = {
@@ -453,19 +453,21 @@ export default function EditListingForm({
       </section>
 
       <label className="block">
-        <span className="mb-2 block text-sm font-semibold">Säljarens beskrivning</span>
+        <span className="mb-2 block text-sm font-semibold">{copy.descriptionTitle}</span>
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           rows={7}
-          className="w-full rounded-[16px] border border-[#d7deed] p-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-          placeholder="Skriv bara egen fritext här. Strukturerade uppgifter och utrustning väljs i fasta fält."
+          className="w-full rounded-[16px] border border-[#d7deed] p-4 text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          placeholder={copy.descriptionPlaceholder}
         />
       </label>
 
       <section className="rounded-[18px] border border-[#dfe6f1] p-4">
-        <h2 className="text-lg font-semibold tracking-[-.03em]">Utrustning</h2>
+        <h2 className="text-lg font-semibold tracking-[-.03em]">{copy.equipmentTitle}</h2>
         <EquipmentEditor
+          locale={locale}
+          searchPlaceholder={copy.equipmentSearchPlaceholder}
           category={listing.category}
           selectedKeys={equipmentKeys}
           search={equipmentSearch}
@@ -566,12 +568,16 @@ export default function EditListingForm({
 }
 
 function EquipmentEditor({
+  locale,
+  searchPlaceholder,
   category,
   selectedKeys,
   search,
   onSearch,
   onSelectedKeys,
 }: {
+  locale: PublicLocale
+  searchPlaceholder: string
   category: MarketplaceCategorySlug
   selectedKeys: string[]
   search: string
@@ -599,8 +605,8 @@ function EquipmentEditor({
         <div className="flex flex-wrap gap-2">
           {selectedOptions.map((option) => (
             <span key={option.key} className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-2 text-sm font-semibold text-[#0866ff]">
-              {equipmentLabel(option, 'sv')}
-              <button type="button" onClick={() => toggle(option.key)} aria-label={`Ta bort ${equipmentLabel(option, 'sv')}`}>
+              {equipmentLabel(option, locale)}
+              <button type="button" onClick={() => toggle(option.key)} aria-label={`${removeLabel(locale)} ${equipmentLabel(option, locale)}`}>
                 <X className="h-4 w-4" />
               </button>
             </span>
@@ -612,8 +618,8 @@ function EquipmentEditor({
         <input
           value={search}
           onChange={(event) => onSearch(event.target.value)}
-          placeholder="Sök utrustning"
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] pl-10 pr-4 outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          placeholder={searchPlaceholder}
+          className="h-12 w-full rounded-[14px] border border-[#d7deed] pl-10 pr-4 text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
       </label>
       <div className="max-h-[470px] space-y-4 overflow-y-auto pr-1">
@@ -625,7 +631,7 @@ function EquipmentEditor({
           if (!options.length) return null
           return (
             <section key={group.key} className="rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] p-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">{group.sv}</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">{groupLabel(group, locale)}</h3>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {options.map((option) => (
                   <label key={option.key} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[12px] border border-[#d7deed] bg-white px-3 py-2 text-sm font-semibold">
@@ -635,7 +641,7 @@ function EquipmentEditor({
                       onChange={() => toggle(option.key)}
                       className="h-4 w-4 accent-[#0866ff]"
                     />
-                    {option.sv}
+                    {equipmentLabel(option, locale)}
                   </label>
                 ))}
               </div>
@@ -767,6 +773,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
     backToListings: 'Back to listings',
     imagesUploadError: 'The images could not be uploaded.',
     saveError: 'The listing could not be saved.',
+    descriptionTitle: 'Description',
+    descriptionPlaceholder: 'Write only your own free text here. Structured details and equipment are selected in fixed fields.',
+    equipmentTitle: 'Equipment',
+    equipmentSearchPlaceholder: 'Search equipment',
   }
   const localized: Partial<Record<PublicLocale, typeof en>> = {
     sv: {
@@ -792,6 +802,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Tillbaka till annonser',
       imagesUploadError: 'Bilderna kunde inte laddas upp.',
       saveError: 'Annonsen kunde inte sparas.',
+      descriptionTitle: 'Beskrivning',
+      descriptionPlaceholder: 'Skriv bara egen fritext här. Strukturerade uppgifter och utrustning väljs i fasta fält.',
+      equipmentTitle: 'Utrustning',
+      equipmentSearchPlaceholder: 'Sök utrustning',
     },
     de: {
       imagesTitle: 'Bilder',
@@ -816,6 +830,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Zurück zu Anzeigen',
       imagesUploadError: 'Die Bilder konnten nicht hochgeladen werden.',
       saveError: 'Die Anzeige konnte nicht gespeichert werden.',
+      descriptionTitle: 'Beschreibung',
+      descriptionPlaceholder: 'Schreiben Sie hier nur Ihren eigenen Freitext. Strukturierte Angaben und Ausstattung werden in festen Feldern gewählt.',
+      equipmentTitle: 'Ausstattung',
+      equipmentSearchPlaceholder: 'Ausstattung suchen',
     },
     fr: {
       imagesTitle: 'Images',
@@ -840,6 +858,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Retour aux annonces',
       imagesUploadError: 'Les images n’ont pas pu être téléversées.',
       saveError: 'L’annonce n’a pas pu être enregistrée.',
+      descriptionTitle: 'Description',
+      descriptionPlaceholder: 'Rédigez uniquement votre texte libre ici. Les informations structurées et l’équipement se choisissent dans les champs prévus.',
+      equipmentTitle: 'Équipement',
+      equipmentSearchPlaceholder: 'Rechercher un équipement',
     },
     es: {
       imagesTitle: 'Imágenes',
@@ -864,6 +886,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Volver a anuncios',
       imagesUploadError: 'No se pudieron subir las imágenes.',
       saveError: 'No se pudo guardar el anuncio.',
+      descriptionTitle: 'Descripción',
+      descriptionPlaceholder: 'Escribe aquí solo tu texto libre. Los datos estructurados y el equipamiento se eligen en campos fijos.',
+      equipmentTitle: 'Equipamiento',
+      equipmentSearchPlaceholder: 'Buscar equipamiento',
     },
     it: {
       imagesTitle: 'Immagini',
@@ -888,6 +914,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Torna agli annunci',
       imagesUploadError: 'Impossibile caricare le immagini.',
       saveError: 'Impossibile salvare l’annuncio.',
+      descriptionTitle: 'Descrizione',
+      descriptionPlaceholder: 'Scrivi qui solo il tuo testo libero. Dati strutturati e dotazioni si selezionano nei campi dedicati.',
+      equipmentTitle: 'Dotazioni',
+      equipmentSearchPlaceholder: 'Cerca dotazioni',
     },
     nl: {
       imagesTitle: 'Afbeeldingen',
@@ -912,6 +942,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Terug naar advertenties',
       imagesUploadError: 'De afbeeldingen konden niet worden geüpload.',
       saveError: 'De advertentie kon niet worden opgeslagen.',
+      descriptionTitle: 'Beschrijving',
+      descriptionPlaceholder: 'Schrijf hier alleen uw eigen vrije tekst. Gestructureerde gegevens en uitrusting kiest u in vaste velden.',
+      equipmentTitle: 'Uitrusting',
+      equipmentSearchPlaceholder: 'Uitrusting zoeken',
     },
     pl: {
       imagesTitle: 'Zdjęcia',
@@ -936,6 +970,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Wróć do ogłoszeń',
       imagesUploadError: 'Nie udało się przesłać zdjęć.',
       saveError: 'Nie udało się zapisać ogłoszenia.',
+      descriptionTitle: 'Opis',
+      descriptionPlaceholder: 'Wpisz tutaj tylko własny tekst. Dane strukturalne i wyposażenie wybiera się w stałych polach.',
+      equipmentTitle: 'Wyposażenie',
+      equipmentSearchPlaceholder: 'Szukaj wyposażenia',
     },
     fi: {
       imagesTitle: 'Kuvat',
@@ -960,6 +998,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Takaisin ilmoituksiin',
       imagesUploadError: 'Kuvia ei voitu ladata.',
       saveError: 'Ilmoitusta ei voitu tallentaa.',
+      descriptionTitle: 'Kuvaus',
+      descriptionPlaceholder: 'Kirjoita tähän vain oma vapaatekstisi. Rakenteiset tiedot ja varusteet valitaan omista kentistään.',
+      equipmentTitle: 'Varusteet',
+      equipmentSearchPlaceholder: 'Hae varusteita',
     },
     da: {
       imagesTitle: 'Billeder',
@@ -984,6 +1026,10 @@ function getEditListingFormCopy(locale: PublicLocale) {
       backToListings: 'Tilbage til annoncer',
       imagesUploadError: 'Billederne kunne ikke uploades.',
       saveError: 'Annoncen kunne ikke gemmes.',
+      descriptionTitle: 'Beskrivelse',
+      descriptionPlaceholder: 'Skriv kun din egen fritekst her. Strukturerede oplysninger og udstyr vælges i faste felter.',
+      equipmentTitle: 'Udstyr',
+      equipmentSearchPlaceholder: 'Søg udstyr',
     },
   }
   if (locale === 'at') return localized.de || en
@@ -1008,6 +1054,34 @@ function brandCorrectionLabel(locale: PublicLocale, suggestion: string) {
   }
 
   return labels[locale] || labels.en
+}
+
+function removeLabel(locale: PublicLocale) {
+  const labels: Record<PublicLocale, string> = {
+    sv: 'Ta bort',
+    en: 'Remove',
+    de: 'Entfernen',
+    at: 'Entfernen',
+    be: 'Verwijderen',
+    fr: 'Supprimer',
+    es: 'Quitar',
+    it: 'Rimuovi',
+    pl: 'Usuń',
+    nl: 'Verwijderen',
+    fi: 'Poista',
+    da: 'Fjern',
+  }
+  return labels[locale] || labels.en
+}
+
+function groupLabel(
+  group: ReturnType<typeof equipmentGroupsForCategory>[number],
+  locale: PublicLocale,
+) {
+  if (locale === 'sv') return group.sv
+  if (locale === 'de' || locale === 'at') return group.de
+  if (locale === 'en') return group.en
+  return translatePublic(locale, group.en)
 }
 
 function isSwedishMileageCountry(country: string) {

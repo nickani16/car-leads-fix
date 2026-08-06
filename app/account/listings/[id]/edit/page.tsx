@@ -30,7 +30,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,status,seller_user_id,seller_type,phone_visibility,make,model,variant,model_year,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history,images')
+    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,structured_data,status,seller_user_id,seller_type,phone_visibility,make,model,variant,model_year,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history,images')
     .eq('id', id)
     .maybeSingle()
 
@@ -51,7 +51,9 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const category = normalizeMarketplaceCategory(listing.category)
   const metadata = isRecord(identifiers?.metadata) ? identifiers.metadata : {}
   const technicalMetadata = isRecord(metadata.technical_data) ? metadata.technical_data : {}
+  const listingStructuredData = isRecord(listing.structured_data) ? listing.structured_data : {}
   const technicalData = {
+    ...listingStructuredData,
     ...technicalMetadata,
     bodyType: listing.body_type || technicalMetadata.bodyType,
     fuelType: listing.fuel_type || technicalMetadata.fuelType,
@@ -113,7 +115,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
             longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
             description: listing.description || '',
-            equipmentKeys: parseEquipmentText(listing.equipment),
+            equipmentKeys: extractEquipmentKeys(listingStructuredData, technicalMetadata, listing.equipment),
             sellerType: listing.seller_type,
             phoneVisibility: listing.phone_visibility || 'public',
             mileage: listing.mileage_km ? Number(listing.mileage_km) : null,
@@ -129,8 +131,21 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   )
 }
 
-function parseEquipmentText(value: string | null) {
-  if (!value) return []
+function extractEquipmentKeys(
+  structuredData: Record<string, unknown>,
+  technicalMetadata: Record<string, unknown>,
+  equipmentText: string | null,
+) {
+  const values = [
+    structuredData.equipment_keys,
+    technicalMetadata.equipment_keys,
+  ]
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      return value.map(String).filter(Boolean)
+    }
+  }
+  if (!equipmentText) return []
   return []
 }
 
