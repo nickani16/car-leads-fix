@@ -1415,6 +1415,30 @@ select:-webkit-autofill {
   }
 }
 
+@media (min-width: 1024px) {
+  .marketplace-view-enter {
+    animation: marketplace-view-enter 220ms ease-out both;
+  }
+
+  @keyframes marketplace-view-enter {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketplace-view-enter {
+    animation: none;
+  }
+}
+
 @media print {
   @page {
     size: A4;

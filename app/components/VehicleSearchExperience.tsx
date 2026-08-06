@@ -18,6 +18,7 @@ import {
   Layers,
   List,
   MapPin,
+  RefreshCw,
   Search,
   Scale,
   ShieldCheck,
@@ -29,6 +30,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import MarketplaceDesktopListingRow, { MarketplaceDesktopListSkeleton } from './MarketplaceDesktopListingRow'
+import MarketplaceViewToggle from './MarketplaceViewToggle'
 import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
@@ -61,6 +64,11 @@ import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketpl
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
 import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
+import {
+  normalizeMarketplaceView,
+  withMarketplaceView,
+  type MarketplaceViewMode,
+} from '@/lib/marketplace-view'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
@@ -205,6 +213,7 @@ export type VehicleSearchListing = {
   condition: string | null
   color: string | null
   equipment: string | null
+  description?: string | null
   offerType?: 'sale' | 'lease' | 'sale_and_lease' | null
   leaseData?: Record<string, unknown> | null
   insuranceOffers?: ListingInsuranceOffer[] | null
@@ -857,6 +866,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible = false,
   initialEquipmentQuery = '',
   initialSortBy = 'published',
+  initialView = 'map',
   initialModeExplicit = false,
   disableUrlSync = false,
 }: {
@@ -897,6 +907,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible?: boolean
   initialEquipmentQuery?: string
   initialSortBy?: string
+  initialView?: MarketplaceViewMode
   initialModeExplicit?: boolean
   disableUrlSync?: boolean
 }) {
@@ -980,6 +991,7 @@ export default function VehicleSearchExperience({
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
+  const [marketplaceView, setMarketplaceView] = useState<MarketplaceViewMode>(initialView)
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
@@ -1026,18 +1038,19 @@ export default function VehicleSearchExperience({
   const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>(initialSearchSuggestions)
   const [searchListings, setSearchListings] = useState<VehicleSearchListing[]>(listings)
   const [searchFacets, setSearchFacets] = useState<MarketplaceSearchApiResponse['facets']>({})
-  const [, setSearchTotalCount] = useState(listings.length)
+  const [searchTotalCount, setSearchTotalCount] = useState(listings.length)
   const [searchPage, setSearchPage] = useState(1)
   const [searchTotalPages, setSearchTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  const [searchRetryToken, setSearchRetryToken] = useState(0)
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (window.matchMedia('(min-width: 768px)').matches) {
-      setResultsLayout('split')
-    }
+    if (!window.matchMedia('(min-width: 768px)').matches) return undefined
+    const timer = window.setTimeout(() => setResultsLayout('split'), 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
@@ -1134,6 +1147,11 @@ export default function VehicleSearchExperience({
     return params
   }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, geoFilterMode, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
 
+  const marketplaceUrlSearchParams = useMemo(
+    () => withMarketplaceView(marketplaceSearchParams, marketplaceView),
+    [marketplaceSearchParams, marketplaceView],
+  )
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setDebouncedSearchInput(searchInput.trim().replace(/\s+/g, ' '))
@@ -1143,12 +1161,15 @@ export default function VehicleSearchExperience({
   }, [searchInput])
 
   useEffect(() => {
-    if (mode !== 'leasing') return
-    setSelectedCategories((current) => {
-      const next = current.filter((category) => isLeasingMarketplaceCategory(category))
-      if (next.length === current.length && next.length) return current
-      return next.length ? next : ['cars']
-    })
+    if (mode !== 'leasing') return undefined
+    const timer = window.setTimeout(() => {
+      setSelectedCategories((current) => {
+        const next = current.filter((category) => isLeasingMarketplaceCategory(category))
+        if (next.length === current.length && next.length) return current
+        return next.length ? next : ['cars']
+      })
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [mode])
 
   useEffect(() => {
@@ -1220,7 +1241,7 @@ export default function VehicleSearchExperience({
   useEffect(() => {
     if (disableUrlSync || !searchStateReady || typeof window === 'undefined') return
     const timer = window.setTimeout(() => {
-      const nextQuery = marketplaceSearchParams.toString()
+      const nextQuery = marketplaceUrlSearchParams.toString()
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
       const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
       if (nextUrl !== currentUrl) {
@@ -1233,7 +1254,15 @@ export default function VehicleSearchExperience({
     }, 350)
 
     return () => window.clearTimeout(timer)
-  }, [disableUrlSync, marketplaceSearchParams, searchStateReady])
+  }, [disableUrlSync, marketplaceUrlSearchParams, searchStateReady])
+
+  useEffect(() => {
+    const syncViewFromHistory = () => {
+      setMarketplaceView(normalizeMarketplaceView(new URLSearchParams(window.location.search).get('view')))
+    }
+    window.addEventListener('popstate', syncViewFromHistory)
+    return () => window.removeEventListener('popstate', syncViewFromHistory)
+  }, [])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearchPage(1), 0)
@@ -1302,7 +1331,7 @@ export default function VehicleSearchExperience({
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [debouncedSearchInput, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
+  }, [debouncedSearchInput, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchRetryToken, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -1447,6 +1476,7 @@ export default function VehicleSearchExperience({
         listing.condition,
         listing.color,
         listing.equipment,
+        listing.description,
         listing.city,
         listing.municipality,
       ]
@@ -1472,7 +1502,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, locale, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -1568,12 +1598,28 @@ export default function VehicleSearchExperience({
     setGeoFilterMode('legacy')
   }
 
+  function updateMarketplaceView(nextView: MarketplaceViewMode) {
+    if (nextView === marketplaceView) return
+    setMarketplaceView(nextView)
+    setFiltersOpen(false)
+    setDesktopFilterMenu(null)
+
+    if (disableUrlSync || typeof window === 'undefined') return
+    const nextParams = withMarketplaceView(
+      new URLSearchParams(window.location.search),
+      nextView,
+    )
+    const nextQuery = nextParams.toString()
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
+    window.history.pushState(window.history.state, '', nextUrl)
+  }
+
   async function saveCurrentSearch() {
     if (savingSearch) return
     setSavingSearch(true)
     setSavedSearchMessage('')
 
-    const params = marketplaceSearchParams
+    const params = marketplaceUrlSearchParams
     const href = `/marketplace${params.size ? `?${params.toString()}` : ''}`
     const filterSnapshot = currentSearchState
     const name = query.trim() || selectedCategoryItems.map((item) => categoryText(item, locale, true)).join(', ') || marketSummary || uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge')
@@ -1689,7 +1735,9 @@ export default function VehicleSearchExperience({
     })
   }
 
-  const visibleCount = filteredListings.length
+  const visibleCount = searchError
+    ? filteredListings.length
+    : Math.max(filteredListings.length, searchTotalCount)
   const compareListings = compareIds
     .map((id) => filteredListings.find((listing) => listing.id === id) || listings.find((listing) => listing.id === id))
     .filter((listing): listing is VehicleSearchListing => Boolean(listing))
@@ -1885,7 +1933,7 @@ export default function VehicleSearchExperience({
     return translatePublic(locale, english)
   }
 
-  function renderDynamicTechnicalFacets() {
+  function renderDynamicTechnicalFacets(sidebar = false) {
     const knownKeys = new Set(['fuelType', 'gearbox', 'bodyType', 'condition', 'color', 'equipment'])
     const entries = Object.entries(searchFacets?.technical || {})
       .filter(([key, options]) => !knownKeys.has(key) && options.length > 0)
@@ -1893,7 +1941,7 @@ export default function VehicleSearchExperience({
     if (!entries.length) return null
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 sm:col-span-2">
+      <div className={`grid gap-3 ${sidebar ? '' : 'sm:grid-cols-2 sm:col-span-2'}`}>
         {entries.map(([key, options]) => (
           <FilterSelect
             key={key}
@@ -1998,7 +2046,8 @@ export default function VehicleSearchExperience({
     return null
   }
 
-  function renderCategoryFilterSections() {
+  function renderCategoryFilterSections(placement: 'sheet' | 'sidebar' = 'sheet') {
+    const sidebar = placement === 'sidebar'
     const profile = categoryFilterProfile(activeCategoryKey)
     const primaryKeys = new Set(categoryPrimaryFilterKeys(activeCategoryKey))
     const primaryFilters = profile.filter((filter) => primaryKeys.has(filter.key))
@@ -2007,7 +2056,7 @@ export default function VehicleSearchExperience({
 
     return (
       <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`grid gap-3 ${sidebar ? '' : 'sm:grid-cols-2'}`}>
           <MakeModelFilter
             locale={locale}
             make={make}
@@ -2019,8 +2068,9 @@ export default function VehicleSearchExperience({
               setModel('')
             }}
             onModelChange={setModel}
+            sidebar={sidebar}
           />
-          <div className="grid gap-3 sm:col-span-2">
+          <div className={`grid gap-3 ${sidebar ? '' : 'sm:col-span-2'}`}>
             <RangeFilter
               locale={locale}
               title={uiText(locale, 'Price', 'Pris', 'Preis')}
@@ -2055,9 +2105,9 @@ export default function VehicleSearchExperience({
             open={moreFiltersOpen}
             onToggle={() => setMoreFiltersOpen((open) => !open)}
           >
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`grid gap-3 ${sidebar ? '' : 'sm:grid-cols-2'}`}>
               {moreFilters.map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
-              {renderDynamicTechnicalFacets()}
+              {renderDynamicTechnicalFacets(sidebar)}
             </div>
           </CollapsibleFilterSection>
         ) : null}
@@ -2091,7 +2141,7 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function renderLocationFilterSection() {
+  function renderLocationFilterSection(sidebar = false) {
     return (
       <CollapsibleFilterSection
         title={uiText(locale, 'County and municipality', 'L\u00e4n och kommun', 'Region und Kommune')}
@@ -2099,7 +2149,7 @@ export default function VehicleSearchExperience({
         open={locationFiltersOpen}
         onToggle={() => setLocationFiltersOpen((open) => !open)}
       >
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`grid gap-3 ${sidebar ? '' : 'sm:grid-cols-2'}`}>
           <FilterSelect
             locale={locale}
             label={uiText(locale, 'County', 'L\u00e4n', 'Region')}
@@ -2514,7 +2564,16 @@ export default function VehicleSearchExperience({
           </div>
           {placement === 'mobile' ? <div className="order-last shrink-0">{saveSearchButton}</div> : null}
           </div>
-          {placement === 'desktop' ? <div className="shrink-0">{saveSearchButton}</div> : null}
+          {placement === 'desktop' ? (
+            <div className="flex shrink-0 items-center gap-2">
+              <MarketplaceViewToggle
+                locale={locale}
+                value={marketplaceView}
+                onChange={updateMarketplaceView}
+              />
+              {saveSearchButton}
+            </div>
+          ) : null}
         </div>
       </div>
     )
@@ -2578,8 +2637,16 @@ export default function VehicleSearchExperience({
   }, [])
 
   return (
-    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:!h-[calc(100dvh-62px)] min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
-      <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:!h-full min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
+    <main className={`min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] ${
+      marketplaceView === 'map'
+        ? 'min-[1120px]:!h-[calc(100dvh-62px)] min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0'
+        : 'min-[1024px]:w-full min-[1024px]:pb-0'
+    }`}>
+      <div className={`flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden ${
+        marketplaceView === 'map'
+          ? 'min-[1120px]:!h-full min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden'
+          : 'min-[1024px]:w-full'
+      }`}>
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -2609,9 +2676,11 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        {renderDesktopFilterBar('desktop')}
+        {marketplaceView === 'map' ? renderDesktopFilterBar('desktop') : null}
 
-        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
+        <section className={`marketplace-view-enter grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${
+          marketplaceView === 'list' ? 'min-[1024px]:hidden' : ''
+        }`}>
           <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
@@ -2794,6 +2863,12 @@ export default function VehicleSearchExperience({
                 >
                   {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
+                <MarketplaceViewToggle
+                  locale={locale}
+                  value={marketplaceView}
+                  onChange={updateMarketplaceView}
+                  className="hidden min-[1024px]:inline-flex min-[1120px]:hidden"
+                />
                 <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
@@ -3101,6 +3176,7 @@ export default function VehicleSearchExperience({
           <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden`}>
             <VehicleSearchMap
               listings={filteredListings}
+              active={marketplaceView === 'map' || mobileMapOpen}
               country={primaryMapCountry}
               locale={locale}
               searchPlaceholder={searchPlaceholder}
@@ -3233,6 +3309,209 @@ export default function VehicleSearchExperience({
           </div>
 
         </section>
+
+        {marketplaceView === 'list' ? (
+          <section className="marketplace-view-enter hidden flex-1 bg-[#f7f9fc] min-[1024px]:block" aria-labelledby="marketplace-list-results-title">
+            <div className="mx-auto w-full max-w-[1600px] px-6 py-6 xl:px-8 xl:py-8 2xl:px-10">
+              <div className="grid items-start gap-7 min-[1024px]:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)] xl:gap-9">
+                <aside
+                  aria-label={translatePublic(locale, 'Filters')}
+                  className="sticky top-4 max-h-[calc(100dvh-32px)] self-start overflow-y-auto border-r border-[#dfe5ee] pr-5 [scrollbar-width:thin] xl:pr-7"
+                >
+                  <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#dfe5ee] bg-[#f7f9fc] pb-3 pt-1">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" aria-hidden="true" />
+                      <h2 className="text-[17px] font-semibold text-[#101828]">{translatePublic(locale, 'Filters')}</h2>
+                      {activeFilters.length ? (
+                        <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
+                          {activeFilters.length}
+                        </span>
+                      ) : null}
+                    </div>
+                    {activeFilters.length ? (
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="text-[12px] font-semibold text-[#0866ff] transition-colors hover:text-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+                      >
+                        {translatePublic(locale, 'Clear all')}
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-5 py-5">
+                    {renderCategoryFilterSections('sidebar')}
+                    {renderLocationFilterSection(true)}
+                    <CollapsibleFilterSection
+                      title={translatePublic(locale, 'Seller type')}
+                      summary={sellerSummary}
+                      open={sellerFiltersOpen}
+                      onToggle={() => setSellerFiltersOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        <FilterSelect locale={locale} label={translatePublic(locale, 'Condition')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                        <FilterSelect
+                          locale={locale}
+                          label={translatePublic(locale, 'Seller type')}
+                          value={sellerType}
+                          onChange={setSellerType}
+                          options={[
+                            { value: 'all', label: translatePublic(locale, 'All sellers') },
+                            { value: 'business', label: translatePublic(locale, 'Business') },
+                            { value: 'private', label: translatePublic(locale, 'Private seller') },
+                          ]}
+                        />
+                        <ToggleFilter label={translatePublic(locale, 'Verified listings')} checked={verifiedOnly} onChange={setVerifiedOnly} />
+                      </div>
+                    </CollapsibleFilterSection>
+                  </div>
+                </aside>
+
+                <div className="min-w-0">
+                  <div className="border-b border-[#dfe5ee] pb-5">
+                    {renderMarketplaceSearchInput('max-w-[920px]')}
+                    <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+                      <div className="min-w-[240px] flex-1">
+                        <h1 id="marketplace-list-results-title" className="text-[24px] font-semibold leading-8 text-[#101828]">
+                          {searchLoading && searchPage === 1 ? (
+                            <span className="inline-block h-7 w-[min(460px,70vw)] animate-pulse rounded bg-[#e8eef6] motion-reduce:animate-none" />
+                          ) : (
+                            resultCountSummary
+                          )}
+                        </h1>
+                        <span className="sr-only" aria-live="polite" aria-atomic="true">
+                          {!searchLoading ? resultCountSummary : translatePublic(locale, 'Loading listings')}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <label className="relative block min-w-[180px]">
+                          <span className="sr-only">{translatePublic(locale, 'Sort by')}</span>
+                          <select
+                            value={sortBy}
+                            onChange={(event) => setSortBy(event.target.value)}
+                            className="h-10 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-[13px] font-semibold text-[#101828] outline-none transition focus:border-[#0866ff] focus-visible:ring-2 focus-visible:ring-[#dbeafe]"
+                          >
+                            {sortOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {sortOptionLabel(option.value, option.label, locale)}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={saveCurrentSearch}
+                          disabled={savingSearch}
+                          className={`inline-flex h-10 items-center justify-center gap-2 rounded-[8px] px-3 text-[13px] font-semibold text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70 ${
+                            savedSearchMessage ? 'bg-[#079455]' : 'bg-[#101828] hover:bg-[#344054]'
+                          }`}
+                        >
+                          <Bookmark className="h-4 w-4" aria-hidden="true" />
+                          <span className="max-w-[190px] truncate">{saveSearchButtonLabel}</span>
+                        </button>
+                        <MarketplaceViewToggle
+                          locale={locale}
+                          value={marketplaceView}
+                          onChange={updateMarketplaceView}
+                        />
+                      </div>
+                    </div>
+                    {activeFilters.length ? (
+                      <div className="mt-4 flex flex-wrap items-start gap-2">
+                        <ActiveFilterChips filters={activeFilters} locale={locale} />
+                        <button
+                          type="button"
+                          onClick={resetFilters}
+                          className="h-8 px-2 text-[12px] font-semibold text-[#0866ff] underline decoration-[#9fc3ff] underline-offset-4 transition hover:text-[#0757da]"
+                        >
+                          {translatePublic(locale, 'Clear all filters')}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {searchError ? (
+                    <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[#f5c2c7] bg-[#fff7f7] px-4 py-3">
+                      <p className="text-[13px] font-medium text-[#7a271a]">
+                        {translatePublic(locale, 'Could not load listings')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchPage(1)
+                          setSearchRetryToken((token) => token + 1)
+                        }}
+                        className="inline-flex h-9 items-center gap-2 rounded-[7px] border border-[#e8a4aa] bg-white px-3 text-[12px] font-semibold text-[#7a271a] transition hover:border-[#b42318] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b42318]"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                        {translatePublic(locale, 'Try again')}
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5">
+                    {searchLoading && searchPage === 1 ? (
+                      <MarketplaceDesktopListSkeleton />
+                    ) : filteredListings.length ? (
+                      <ol className="space-y-4" aria-label={translatePublic(locale, 'Search results')}>
+                        {filteredListings.map((listing) => (
+                          <li key={listing.id}>
+                            <MarketplaceDesktopListingRow
+                              listing={listing}
+                              locale={locale}
+                              onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                            />
+                          </li>
+                        ))}
+                      </ol>
+                    ) : searchError ? null : (
+                      <div className="border-y border-[#dfe5ee] py-14 text-center">
+                        <Image
+                          src="/autorell-empty-search.svg"
+                          alt=""
+                          aria-hidden="true"
+                          width={220}
+                          height={150}
+                          className="mx-auto h-auto w-[190px]"
+                        />
+                        <h2 className="mt-5 text-[22px] font-semibold text-[#101828]">
+                          {translatePublic(locale, 'No listings found')}
+                        </h2>
+                        <p className="mx-auto mt-2 max-w-[520px] text-sm leading-6 text-[#667085]">
+                          {translatePublic(locale, 'Adjust or clear your filters to see more vehicles.')}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={resetFilters}
+                          className="mt-5 inline-flex h-11 items-center justify-center rounded-[8px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+                        >
+                          {translatePublic(locale, 'Clear all filters')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {filteredListings.length > 0 && searchPage < searchTotalPages ? (
+                    <div className="py-7 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSearchPage((page) => page + 1)}
+                        disabled={searchLoading}
+                        className="inline-flex h-11 items-center justify-center rounded-[8px] border border-[#b8d3ff] bg-white px-5 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f4f8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                      >
+                        {searchLoading
+                          ? translatePublic(locale, 'Loading...')
+                          : translatePublic(locale, 'Load more')}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <VehicleSearchFooter locale={locale} />
+          </section>
+        ) : null}
       </div>
     </main>
   )
@@ -3551,6 +3830,7 @@ function MakeModelFilter({
   onMakeChange,
   onModelChange,
   compact = false,
+  sidebar = false,
 }: {
   locale: PublicLocale
   make: string
@@ -3560,6 +3840,7 @@ function MakeModelFilter({
   onMakeChange: (value: string) => void
   onModelChange: (value: string) => void
   compact?: boolean
+  sidebar?: boolean
 }) {
   const [mobilePanel, setMobilePanel] = useState<'make' | 'model'>('make')
   const copy = makeModelPickerCopy(locale)
@@ -3570,6 +3851,40 @@ function MakeModelFilter({
   const panelHeight = compact ? 'max-h-[280px]' : 'max-h-[340px]'
   const modelIntro = copy.models
   const noModelsLabel = make ? copy.noModelsForMake : copy.chooseMake
+
+  if (sidebar) {
+    return (
+      <div className="grid gap-3">
+        <div>
+          <p className="text-[15px] font-semibold text-[#101828]">{copy.title}</p>
+          <p className="mt-1 text-[12px] font-medium leading-5 text-[#667085]">{copy.intro}</p>
+        </div>
+        <FilterSelect
+          locale={locale}
+          label={copy.make}
+          value={make}
+          onChange={(value) => {
+            onMakeChange(value)
+            onModelChange('')
+          }}
+          options={makeOptions.map((option) => ({
+            value: option.value,
+            label: `${option.label} (${option.count})`,
+          }))}
+        />
+        <FilterSelect
+          locale={locale}
+          label={copy.model}
+          value={model}
+          onChange={onModelChange}
+          options={modelOptions.map((option) => ({
+            value: option.value,
+            label: `${option.label} (${option.count})`,
+          }))}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
@@ -4339,6 +4654,7 @@ function VehicleResultCard({
 
 function VehicleSearchMap({
   listings,
+  active = true,
   country,
   locale,
   searchPlaceholder,
@@ -4363,6 +4679,7 @@ function VehicleSearchMap({
   onSmartSearchSelect,
 }: {
   listings: VehicleSearchListing[]
+  active?: boolean
   country: string
   locale: PublicLocale
   searchPlaceholder: string
@@ -4463,6 +4780,16 @@ function VehicleSearchMap({
     }, 80)
     return () => window.clearTimeout(timer)
   }, [fullscreen])
+
+  useEffect(() => {
+    if (!active) return undefined
+    const frame = window.requestAnimationFrame(() => mapRef.current?.resize())
+    const timer = window.setTimeout(() => mapRef.current?.resize(), 240)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [active])
 
   useEffect(() => {
     let cancelled = false
@@ -5221,6 +5548,7 @@ function mapApiListingToVehicleSearchListing(
     condition: stringOrNull(listing.condition),
     color: stringOrNull(listing.color),
     equipment: stringOrNull(listing.equipment),
+    description: stringOrNull(listing.description),
     offerType: listing.offer_type === 'lease' || listing.offer_type === 'sale_and_lease' || listing.offer_type === 'sale'
       ? listing.offer_type
       : null,

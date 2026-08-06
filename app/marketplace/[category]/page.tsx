@@ -33,6 +33,7 @@ import {
   parseMarketplaceSearchState,
   resolveMarketplaceGeoArea,
 } from '@/lib/marketplace-search-state'
+import { normalizeMarketplaceView } from '@/lib/marketplace-view'
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -246,6 +247,7 @@ export default async function MarketplaceCategoryPage({
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,
+        description: listing.description || null,
         offerType: normalizeListingOfferType(listing.offer_type),
         leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
           ? listing.lease_data as Record<string, unknown>
@@ -306,6 +308,7 @@ export default async function MarketplaceCategoryPage({
         initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
         initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment')}
         initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
+        initialView={normalizeMarketplaceView(getSearchParam(resolvedSearchParams, 'view'))}
       />
     </>
   )
@@ -622,7 +625,7 @@ function resolveMarketplaceSeoCanonical(
 }
 
 function canonicalSearchParams(params: { [key: string]: string | string[] | undefined }) {
-  const ignored = new Set(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'])
+  const ignored = new Set(['view', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'])
   const searchParams = new URLSearchParams()
   for (const key of Object.keys(params).sort()) {
     if (ignored.has(key)) continue

@@ -13,6 +13,7 @@ import {
   getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
+import { normalizeMarketplaceView } from '@/lib/marketplace-view'
 import { getRequestLocale } from '@/lib/request-locale'
 
 export const metadata: Metadata = {
@@ -95,6 +96,7 @@ export default async function FindCarsPage({
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,
+        description: listing.description || null,
         offerType: normalizeListingOfferType(listing.offer_type),
         leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
           ? listing.lease_data as Record<string, unknown>
@@ -144,6 +146,7 @@ export default async function FindCarsPage({
         initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
         initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment') || ''}
         initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
+        initialView={normalizeMarketplaceView(getSearchParam(resolvedSearchParams, 'view'))}
       />
     </>
   )
