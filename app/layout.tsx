@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Geist } from 'next/font/google'
+import Script from 'next/script'
 import CookieConsent from './components/CookieConsent'
 import './globals.css'
 
@@ -75,6 +76,12 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9346574351719564"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
         <CookieConsent />
         <Analytics />
         <SpeedInsights />
