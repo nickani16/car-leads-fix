@@ -3,44 +3,51 @@
 import { useEffect, useState } from 'react'
 import { MessageCircle, Phone } from 'lucide-react'
 import { translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import ListingContactFormButton from './ListingContactFormButton'
 
 type ListingMobileContactBarProps = {
   listingId: string
+  listingTitle: string
   locale: PublicLocale
-  contactTargetId: string
+  defaultCurrency?: string
 }
 
 const phoneCopy = {
   sv: {
-    show: 'Visa telefon',
+    call: 'Ring',
     signIn: 'Logga in',
     unavailable: 'Saknas',
   },
   en: {
-    show: 'Show phone',
+    call: 'Call',
     signIn: 'Sign in',
     unavailable: 'Unavailable',
   },
   de: {
-    show: 'Telefon',
+    call: 'Anrufen',
     signIn: 'Anmelden',
     unavailable: 'Fehlt',
   },
 } as const
 
+const emailCopy = {
+  sv: 'E-post',
+  en: 'Email',
+  de: 'E-Mail',
+} as const
+
 const messageCopy = {
-  sv: 'Skriv till säljaren',
-  en: 'Write to seller',
-  de: 'Verkäufer schreiben',
+  sv: 'Meddelande',
+  en: 'Text',
+  de: 'Nachricht',
 } as const
 
 export default function ListingMobileContactBar({
   listingId,
+  listingTitle,
   locale,
-  contactTargetId,
+  defaultCurrency = 'EUR',
 }: ListingMobileContactBarProps) {
-  const [visible, setVisible] = useState(false)
-  const [contactVisible, setContactVisible] = useState(false)
   const [phone, setPhone] = useState('')
   const [loadingPhone, setLoadingPhone] = useState(false)
   const [phoneError, setPhoneError] = useState<'login' | 'unavailable' | ''>('')
@@ -49,33 +56,34 @@ export default function ListingMobileContactBar({
   const phoneText =
     locale === 'sv'
       ? phoneCopy.sv
-      : locale === 'de'
+      : locale === 'de' || locale === 'at'
         ? phoneCopy.de
         : locale === 'en'
           ? phoneCopy.en
           : translatePublicObject(locale, phoneCopy.en)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
+  const emailLabel =
+    locale === 'sv'
+      ? emailCopy.sv
+      : locale === 'de' || locale === 'at'
+        ? emailCopy.de
+        : locale === 'en'
+          ? emailCopy.en
+          : translatePublic(locale, emailCopy.en)
 
-      setVisible(currentScrollY > 420)
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+  const messageLabel =
+    locale === 'sv'
+      ? messageCopy.sv
+      : locale === 'de' || locale === 'at'
+        ? messageCopy.de
+        : locale === 'en'
+          ? messageCopy.en
+          : translatePublic(locale, messageCopy.en)
+
+  useEffect(() => {
+    document.documentElement.classList.add('autorell-listing-mobile-contact-active')
+    return () => document.documentElement.classList.remove('autorell-listing-mobile-contact-active')
   }, [])
-
-  useEffect(() => {
-    const target = document.getElementById(contactTargetId)
-    if (!target) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setContactVisible(Boolean(entry?.isIntersecting)),
-      { rootMargin: '0px 0px -18% 0px', threshold: 0.08 },
-    )
-    observer.observe(target)
-    return () => observer.disconnect()
-  }, [contactTargetId])
 
   function accountMessagesHref(conversationId?: string) {
     const firstSegment = window.location.pathname.split('/').filter(Boolean)[0]
@@ -117,6 +125,7 @@ export default function ListingMobileContactBar({
     }
 
     setPhone(data.phone)
+    window.location.href = `tel:${data.phone.replace(/[^\d+]/g, '')}`
   }
 
   async function startConversation() {
@@ -140,45 +149,44 @@ export default function ListingMobileContactBar({
     setMessageLoading(false)
   }
 
-  const show = visible && !contactVisible
-
   return (
     <div
-      className={`fixed inset-x-3 bottom-[calc(4.35rem+env(safe-area-inset-bottom))] z-[60] rounded-[18px] border border-[#d7e2f2] bg-white/96 p-2 shadow-[0_18px_50px_rgba(16,24,40,.22)] backdrop-blur transition-[transform,opacity] duration-300 ease-out sm:hidden ${
-        show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-5 opacity-0'
-      }`}
+      className="fixed inset-x-0 bottom-0 z-[120] border-t border-[#e6ebf2] bg-white/98 px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-3 shadow-[0_-14px_38px_rgba(16,24,40,.14)] backdrop-blur sm:hidden"
+      role="region"
+      aria-label={phoneText.call}
     >
-      <div className="grid grid-cols-2 gap-2">
+      <div className="mx-auto grid max-w-[560px] gap-2">
         <button
           type="button"
           onClick={revealPhone}
           disabled={loadingPhone}
-          className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[13px] border border-[#cfd8e6] bg-white px-3 text-xs font-semibold text-[#0866ff] transition hover:border-[#0866ff] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex min-h-[58px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
         >
-          <Phone className="h-4 w-4" />
+          <Phone className="h-5 w-5" />
           <span className="truncate">
-            {phone || (phoneError === 'login' ? phoneText.signIn : phoneError ? phoneText.unavailable : loadingPhone ? '...' : phoneText.show)}
+            {phone || (phoneError === 'login' ? phoneText.signIn : phoneError ? phoneText.unavailable : loadingPhone ? '...' : phoneText.call)}
           </span>
         </button>
-        <button
-          type="button"
-          onClick={startConversation}
-          disabled={messageLoading}
-          className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[13px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
-        >
-          <MessageCircle className="h-4 w-4" />
-          <span className="truncate">
-            {messageLoading
-              ? '...'
-              : locale === 'sv'
-                ? messageCopy.sv
-                : locale === 'de'
-                  ? messageCopy.de
-                  : locale === 'en'
-                    ? messageCopy.en
-                    : translatePublic(locale, messageCopy.en)}
-          </span>
-        </button>
+        <div className="grid grid-cols-2 gap-2.5">
+          <ListingContactFormButton
+            listingId={listingId}
+            listingTitle={listingTitle}
+            locale={locale}
+            defaultCurrency={defaultCurrency}
+            buttonLabel={emailLabel}
+            buttonClassName="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#0866ff] bg-white px-4 text-base font-semibold text-[#0866ff] transition hover:bg-[#f3f8ff]"
+            iconClassName="h-5 w-5 text-[#0866ff]"
+          />
+          <button
+            type="button"
+            onClick={startConversation}
+            disabled={messageLoading}
+            className="inline-flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#0866ff] bg-white px-4 text-base font-semibold text-[#0866ff] transition hover:bg-[#f3f8ff] disabled:cursor-not-allowed disabled:border-[#b9cef5] disabled:text-[#98a2b3]"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span className="truncate">{messageLoading ? '...' : messageLabel}</span>
+          </button>
+        </div>
       </div>
     </div>
   )

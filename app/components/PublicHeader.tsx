@@ -80,6 +80,7 @@ type PublicHeaderProps = {
   marketCode?: string
   hideOnMobile?: boolean
   lockMobileBottomNav?: boolean
+  hideMobileBottomNav?: boolean
 }
 
 type MenuItem = {
@@ -438,6 +439,7 @@ export default function PublicHeader({
   marketCode,
   hideOnMobile = false,
   lockMobileBottomNav = false,
+  hideMobileBottomNav = false,
 }: PublicHeaderProps) {
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
@@ -2255,7 +2257,7 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
-        className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[calc(10px+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[calc(10px+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
           lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
       >

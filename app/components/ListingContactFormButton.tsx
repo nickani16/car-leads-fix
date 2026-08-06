@@ -11,6 +11,9 @@ type ListingContactFormButtonProps = {
   listingTitle: string
   locale: PublicLocale
   defaultCurrency?: string
+  buttonLabel?: string
+  buttonClassName?: string
+  iconClassName?: string
 }
 
 type ContactCopy = {
@@ -198,6 +201,9 @@ export default function ListingContactFormButton({
   listingTitle,
   locale,
   defaultCurrency = 'EUR',
+  buttonLabel,
+  buttonClassName,
+  iconClassName,
 }: ListingContactFormButtonProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -374,10 +380,10 @@ export default function ListingContactFormButton({
           setOpen(true)
           setStatus('idle')
         }}
-        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+        className={buttonClassName || 'inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]'}
       >
-        <Mail className="h-4 w-4 text-[#0866ff]" />
-        {text.open}
+        <Mail className={iconClassName || 'h-4 w-4 text-[#0866ff]'} />
+        {buttonLabel || text.open}
       </button>
 
       {modal}
