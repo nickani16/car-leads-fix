@@ -114,25 +114,54 @@ export async function countUnreadDealerLeads(
     preferences: DealerLeadPreferences
     accessStartsAt: string
     homeCountry?: string | null
+    companyId?: string | null
   },
 ) {
   const countries = resolveDealerLeadCountryScope(input.preferences, input.homeCountry)
   const accessStartsAt = normalizeTimestamp(input.accessStartsAt)
   if (!countries.length || !accessStartsAt) return 0
 
-  let query = admin
-    .from('dealer_vehicle_leads')
-    .select('id', { count: 'exact', head: true })
-    .in('source_country_code', countries)
-    .gte('created_at', accessStartsAt)
-
   const lastSeenAt = normalizeTimestamp(input.preferences.lastSeenAt)
-  if (lastSeenAt && new Date(lastSeenAt).getTime() >= new Date(accessStartsAt).getTime()) {
-    query = query.gt('created_at', lastSeenAt)
+  const hasSeenDuringAccess = Boolean(
+    lastSeenAt && new Date(lastSeenAt).getTime() >= new Date(accessStartsAt).getTime(),
+  )
+  const pageSize = 250
+  let offset = 0
+  let visibleCount = 0
+
+  while (visibleCount < 100) {
+    let query = admin
+      .from('dealer_vehicle_leads')
+      .select('id')
+      .in('source_country_code', countries)
+      .gte('created_at', accessStartsAt)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1)
+    if (hasSeenDuringAccess) query = query.gt('created_at', lastSeenAt!)
+    const { data, error } = await query
+    if (error && error.code !== '42P01' && error.code !== '42703') throw error
+
+    const leadIds = (data || []).map((lead) => String(lead.id)).filter(Boolean)
+    if (!leadIds.length) break
+    if (!input.companyId) {
+      visibleCount += leadIds.length
+    } else {
+      const { data: hiddenContacts, error: contactError } = await admin
+        .from('dealer_vehicle_lead_company_contacts')
+        .select('lead_id')
+        .eq('company_id', input.companyId)
+        .in('lead_id', leadIds)
+        .lte('hide_after', new Date().toISOString())
+      if (contactError && contactError.code !== '42P01') throw contactError
+      const hiddenLeadIds = new Set((hiddenContacts || []).map((contact) => String(contact.lead_id)))
+      visibleCount += leadIds.filter((leadId) => !hiddenLeadIds.has(leadId)).length
+    }
+
+    if (leadIds.length < pageSize) break
+    offset += pageSize
   }
-  const { count, error } = await query
-  if (error && error.code !== '42P01' && error.code !== '42703') throw error
-  return count || 0
+
+  return Math.min(visibleCount, 100)
 }
 
 export function normalizeEmail(value: unknown) {

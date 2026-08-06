@@ -34,8 +34,18 @@ export type DealerOffersCopy = {
   conditionHistory: string
   contactDetails: string
   country: string
+  contactTracking: DealerLeadContactTrackingCopy
   labels: Record<string, string>
   statuses: Record<string, string>
+}
+
+export type DealerLeadContactTrackingCopy = {
+  label: string
+  help: string
+  markedBy: string
+  visibleUntil: string
+  saving: string
+  error: string
 }
 
 const en: DealerOffersCopy = {
@@ -52,6 +62,7 @@ const en: DealerOffersCopy = {
   workflow: ['Check the vehicle and condition before contacting the seller.', 'Review notes and photos before making an offer.', 'Respond quickly and agree the next step directly with the seller.'],
   notificationsTitle: 'Lead notifications', notificationsText: 'Choose where you want to receive seller requests. Your home country is used until you change this setting.', emailEnabled: 'Email me about new requests', emailLabel: 'Notification email', emailPlaceholder: 'dealer@example.com', scopeLabel: 'Countries', scopeHome: 'My home country', scopeSelected: 'Selected countries', scopeAll: 'All Autorell countries', countriesLabel: 'Choose countries', save: 'Save settings', saving: 'Saving…', saved: 'Settings saved', saveError: 'Settings could not be saved.',
   call: 'Call seller', sendEmail: 'Email seller', images: 'Photos', noImages: 'No photos uploaded.', vehicleDetails: 'Vehicle details', conditionHistory: 'Condition and history', contactDetails: 'Contact details', country: 'Country',
+  contactTracking: { label: 'Seller contacted', help: 'Shared with everyone in your company to prevent duplicate follow-up.', markedBy: 'Contacted by', visibleUntil: 'This request remains visible until', saving: 'Saving contact status…', error: 'Contact status could not be saved.' },
   labels: labels('Mileage','Fuel','Transmission','Body type','Colour','Engine power','Previous owners','Keys','Service book','Last service','Summer tyres','Winter tyres','Inspected','Drivable','Finance or credit','Visible damage','Damage description','Scratches, dents or paint','Accident','Warning lights','Technical problems','Engine or transmission','Rust','Serviced on schedule','Smoke-free','Interior wear','Other information','Name','Email','Phone','Postal code','City','Preferred contact','VIN'),
   statuses: statuses('New','Contacted','Offer sent','Accepted','Closed'),
 }
@@ -87,8 +98,25 @@ const copies: Partial<Record<PublicLocale, DealerOffersCopy>> = {
   }),
 }
 
+const contactTrackingByLocale: Partial<Record<ReturnType<typeof translationLocale>, DealerLeadContactTrackingCopy>> = {
+  sv: { label: 'Säljaren är kontaktad', help: 'Delas med alla i företaget så att säljaren inte kontaktas flera gånger.', markedBy: 'Kontaktad av', visibleUntil: 'Förfrågan visas till', saving: 'Sparar kontaktstatus…', error: 'Kontaktstatusen kunde inte sparas.' },
+  de: { label: 'Verkäufer wurde kontaktiert', help: 'Wird im Unternehmen geteilt, um doppelte Kontaktaufnahme zu vermeiden.', markedBy: 'Kontaktiert von', visibleUntil: 'Die Anfrage bleibt sichtbar bis', saving: 'Kontaktstatus wird gespeichert…', error: 'Der Kontaktstatus konnte nicht gespeichert werden.' },
+  fr: { label: 'Vendeur contacté', help: 'Partagé avec toute votre entreprise afin d’éviter les doubles contacts.', markedBy: 'Contacté par', visibleUntil: 'La demande reste visible jusqu’au', saving: 'Enregistrement du statut…', error: 'Impossible d’enregistrer le statut de contact.' },
+  es: { label: 'Vendedor contactado', help: 'Se comparte con toda la empresa para evitar contactos duplicados.', markedBy: 'Contactado por', visibleUntil: 'La solicitud seguirá visible hasta', saving: 'Guardando el estado…', error: 'No se pudo guardar el estado de contacto.' },
+  it: { label: 'Venditore contattato', help: 'Condiviso con tutta l’azienda per evitare contatti duplicati.', markedBy: 'Contattato da', visibleUntil: 'La richiesta resta visibile fino al', saving: 'Salvataggio dello stato…', error: 'Impossibile salvare lo stato del contatto.' },
+  nl: { label: 'Verkoper gecontacteerd', help: 'Gedeeld met iedereen in uw bedrijf om dubbel contact te voorkomen.', markedBy: 'Gecontacteerd door', visibleUntil: 'De aanvraag blijft zichtbaar tot', saving: 'Contactstatus opslaan…', error: 'De contactstatus kon niet worden opgeslagen.' },
+  fi: { label: 'Myyjään on otettu yhteyttä', help: 'Tieto jaetaan koko yritykselle päällekkäisten yhteydenottojen estämiseksi.', markedBy: 'Yhteydenottaja', visibleUntil: 'Pyyntö näkyy tähän asti', saving: 'Tallennetaan yhteydenoton tila…', error: 'Yhteydenoton tilaa ei voitu tallentaa.' },
+  da: { label: 'Sælgeren er kontaktet', help: 'Deles med hele virksomheden for at undgå dobbelt kontakt.', markedBy: 'Kontaktet af', visibleUntil: 'Forespørgslen vises indtil', saving: 'Gemmer kontaktstatus…', error: 'Kontaktstatus kunne ikke gemmes.' },
+  pl: { label: 'Skontaktowano się ze sprzedającym', help: 'Informacja jest udostępniana całej firmie, aby uniknąć wielokrotnego kontaktu.', markedBy: 'Kontakt nawiązał(a)', visibleUntil: 'Zapytanie będzie widoczne do', saving: 'Zapisywanie statusu kontaktu…', error: 'Nie udało się zapisać statusu kontaktu.' },
+}
+
 export function getDealerOffersCopy(locale: PublicLocale) {
-  return copies[translationLocale(locale)] || en
+  const normalizedLocale = translationLocale(locale)
+  const copy = copies[normalizedLocale] || en
+  return {
+    ...copy,
+    contactTracking: contactTrackingByLocale[normalizedLocale] || en.contactTracking,
+  }
 }
 
 function language(base: DealerOffersCopy, override: Partial<DealerOffersCopy>): DealerOffersCopy {

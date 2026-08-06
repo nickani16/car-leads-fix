@@ -21,6 +21,7 @@ import {
 } from '@/lib/dealer-leads/access'
 import { getDealerOffersCopy, type DealerOffersCopy } from '@/lib/dealer-leads/i18n'
 import DealerLeadPreferencesForm from './DealerLeadPreferencesForm'
+import DealerLeadContactStatus, { type DealerLeadCompanyContact } from './DealerLeadContactStatus'
 
 type DealerVehicleLead = {
   id: string
@@ -68,6 +69,7 @@ type DealerVehicleLead = {
   status: string
   created_at: string
   images: DealerLeadImage[]
+  companyContact: DealerLeadCompanyContact | null
 }
 
 type DealerLeadImage = {
@@ -93,7 +95,12 @@ export default async function CompanyDealerOffersPage({ localeOverride }: { loca
     profileEmail: context.profile.email,
   }) : null
   const countries = preferences ? resolveDealerLeadCountryScope(preferences, homeCountry) : []
-  const leads = accessStartsAt ? await getDealerVehicleLeads(admin, countries, accessStartsAt) : []
+  const leads = accessStartsAt ? await getDealerVehicleLeads(
+    admin,
+    countries,
+    accessStartsAt,
+    context.profile.company_id,
+  ) : []
 
   if (unlocked) {
     const seenAt = new Date().toISOString()
@@ -186,6 +193,13 @@ function LeadCard({ lead, copy, locale }: { lead: DealerVehicleLead; copy: Deale
         {lead.contact_email ? <a href={`mailto:${lead.contact_email}?subject=${encodeURIComponent(`${lead.reference} - ${vehicleLabel(lead)}`)}`} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#0866ff] px-5 text-sm font-bold text-[#0866ff]"><Mail className="h-4 w-4" />{copy.sendEmail}</a> : null}
       </div>
 
+      <DealerLeadContactStatus
+        leadId={lead.id}
+        initialContact={lead.companyContact}
+        copy={copy.contactTracking}
+        locale={locale}
+      />
+
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <InfoGroup title={copy.vehicleDetails} items={[
           [l.mileage, lead.mileage_km ? `${new Intl.NumberFormat(localeTag(locale)).format(lead.mileage_km)} km` : '-'], [l.fuel, localizedLeadValue(locale, lead.fuel_type)], [l.transmission, localizedLeadValue(locale, lead.transmission)], [l.bodyType, localizedLeadValue(locale, lead.body_type)], [l.color, lead.color], [l.enginePower, lead.engine_power], [l.previousOwners, lead.previous_owners?.toString()], [l.keys, localizedLeadValue(locale, lead.key_count)], [l.serviceBook, localizedLeadValue(locale, lead.service_book)], [l.lastService, lead.last_service], [l.summerTires, localizedLeadValue(locale, lead.summer_tires)], [l.winterTires, localizedLeadValue(locale, lead.winter_tires)], [l.inspected, localizedLeadValue(locale, lead.inspected)], [l.drivable, localizedLeadValue(locale, lead.drivable)], [l.finance, localizedLeadValue(locale, lead.finance_status)],
@@ -230,6 +244,7 @@ async function getDealerVehicleLeads(
   admin: ReturnType<typeof createAdminClient>,
   countries: DealerLeadCountryCode[],
   accessStartsAt: string,
+  companyId: string | null,
 ): Promise<DealerVehicleLead[]> {
   if (!countries.length) return []
   try {
@@ -241,15 +256,43 @@ async function getDealerVehicleLeads(
       .order('created_at', { ascending: false })
       .limit(50)
     if (error) throw error
-    const leads = (data || []) as Omit<DealerVehicleLead, 'images'>[]
+    const leads = (data || []) as Omit<DealerVehicleLead, 'images' | 'companyContact'>[]
     const leadIds = leads.map((lead) => lead.id)
     const imagesByLead = new Map<string, DealerLeadImage[]>()
+    const contactsByLead = new Map<string, DealerLeadCompanyContact>()
     if (leadIds.length) {
       const { data: images, error: imageError } = await admin.from('dealer_vehicle_lead_images').select('id,lead_id,image_type,label,position,webp_url').in('lead_id', leadIds).order('position', { ascending: true })
       if (imageError) throw imageError
       for (const image of (images || []) as DealerLeadImage[]) imagesByLead.set(image.lead_id, [...(imagesByLead.get(image.lead_id) || []), image])
+
+      if (companyId) {
+        const { data: contacts, error: contactError } = await admin
+          .from('dealer_vehicle_lead_company_contacts')
+          .select('lead_id,contacted_by_name,contact_method,contacted_at,hide_after')
+          .eq('company_id', companyId)
+          .in('lead_id', leadIds)
+        if (contactError && contactError.code !== '42P01') throw contactError
+        for (const contact of contacts || []) {
+          contactsByLead.set(String(contact.lead_id), {
+            contactedByName: String(contact.contacted_by_name),
+            method: String(contact.contact_method),
+            contactedAt: String(contact.contacted_at),
+            hideAfter: String(contact.hide_after),
+          })
+        }
+      }
     }
-    return leads.map((lead) => ({ ...lead, images: imagesByLead.get(lead.id) || [] }))
+    const now = Date.now()
+    return leads
+      .filter((lead) => {
+        const contact = contactsByLead.get(lead.id)
+        return !contact || new Date(contact.hideAfter).getTime() > now
+      })
+      .map((lead) => ({
+        ...lead,
+        images: imagesByLead.get(lead.id) || [],
+        companyContact: contactsByLead.get(lead.id) || null,
+      }))
   } catch (error) {
     console.error('dealer vehicle leads select failed', error)
     return []

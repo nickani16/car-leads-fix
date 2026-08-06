@@ -1,8 +1,8 @@
 import type { MarketplaceCategorySlug } from './marketplace'
 
-export const MARKETPLACE_TERMS_VERSION = 'marketplace-terms-v1.2-2026-06-25'
-export const MARKETPLACE_PURCHASE_TERMS_VERSION = 'purchase-terms-v1.0-2026-06-25'
-export const MARKETPLACE_PRIVACY_VERSION = 'marketplace-privacy-v1.2-2026-06-25'
+export const MARKETPLACE_TERMS_VERSION = 'marketplace-terms-v1.3-2026-08-06'
+export const MARKETPLACE_PURCHASE_TERMS_VERSION = 'purchase-terms-v1.1-2026-08-06'
+export const MARKETPLACE_PRIVACY_VERSION = 'marketplace-privacy-v1.3-2026-08-06'
 
 export type ListingIdentifierInput = {
   registrationNumber: string

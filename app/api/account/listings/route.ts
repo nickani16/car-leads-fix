@@ -541,6 +541,18 @@ export async function POST(request: Request) {
     if (form.get('listingTerms') !== 'on') {
       return listingFormError('Godkänn annons- och betalningsvillkoren.', 4, 'listingTerms')
     }
+    const requiresImmediateServiceConsent =
+      profile.account_type === 'private' && packageId !== 'free_7d'
+    if (
+      requiresImmediateServiceConsent &&
+      form.get('digitalServiceConsent') !== 'on'
+    ) {
+      return listingFormError(
+        'Godkänn att den betalda annonstjänsten börjar levereras direkt.',
+        4,
+        'digitalServiceConsent',
+      )
+    }
     const missingConfirmation = sellerListingConfirmationKeys.find(
       (key) => form.get(key) !== 'on',
     )
@@ -967,6 +979,50 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       null
     const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
+    const legalAcceptances: Array<{
+      user_id: string
+      listing_id: string
+      acceptance_scope: string
+      acceptance_key: string
+      accepted: boolean
+      terms_version: string
+      ip_address: string | null
+      user_agent: string | null
+      metadata: { reference_number: string }
+    }> = sellerListingConfirmationKeys.map((key) => ({
+      user_id: user.id,
+      listing_id: listing.id,
+      acceptance_scope:
+        key === 'privacy_policy'
+          ? 'privacy'
+          : key === 'purchase_terms'
+            ? 'purchase'
+            : 'listing',
+      acceptance_key: key,
+      accepted: true,
+      terms_version:
+        key === 'privacy_policy'
+          ? MARKETPLACE_PRIVACY_VERSION
+          : key === 'purchase_terms'
+            ? MARKETPLACE_PURCHASE_TERMS_VERSION
+            : MARKETPLACE_TERMS_VERSION,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      metadata: { reference_number: listing.reference_number },
+    }))
+    if (requiresImmediateServiceConsent) {
+      legalAcceptances.push({
+        user_id: user.id,
+        listing_id: listing.id,
+        acceptance_scope: 'purchase',
+        acceptance_key: 'immediate_digital_service',
+        accepted: true,
+        terms_version: MARKETPLACE_PURCHASE_TERMS_VERSION,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        metadata: { reference_number: listing.reference_number },
+      })
+    }
     const optionalSideEffects = await Promise.allSettled([
       admin.from('marketplace_listing_identifiers').insert({
         listing_id: listing.id,
@@ -1016,29 +1072,7 @@ export async function POST(request: Request) {
           })),
         },
       }),
-      admin.from('marketplace_legal_acceptances').insert(
-        sellerListingConfirmationKeys.map((key) => ({
-          user_id: user.id,
-          listing_id: listing.id,
-          acceptance_scope:
-            key === 'privacy_policy'
-              ? 'privacy'
-              : key === 'purchase_terms'
-                ? 'purchase'
-                : 'listing',
-          acceptance_key: key,
-          accepted: true,
-          terms_version:
-            key === 'privacy_policy'
-              ? MARKETPLACE_PRIVACY_VERSION
-              : key === 'purchase_terms'
-                ? MARKETPLACE_PURCHASE_TERMS_VERSION
-                : MARKETPLACE_TERMS_VERSION,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          metadata: { reference_number: listing.reference_number },
-        })),
-      ),
+      admin.from('marketplace_legal_acceptances').insert(legalAcceptances),
       admin.from('marketplace_listing_events').insert({
         listing_id: listing.id,
         actor_user_id: user.id,

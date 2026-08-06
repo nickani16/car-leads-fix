@@ -39,20 +39,33 @@ const sections = [
   },
   {
     id: 'naringidkare',
-    title: 'När säljaren är ett företag',
+    title: 'Fordonsköp och vem som är säljare',
     paragraphs: [
-      'Företagsannonser markeras som publicerade av en näringsidkare. Företaget ansvarar för obligatorisk information om identitet, totalpris, skatter, avgifter, leverans, garantier, reklamation, ångerrätt när sådan gäller och övriga tvingande konsumentregler.',
-      'En privat säljare omfattas normalt inte av samma konsumenträttsliga skyldigheter som en näringsidkare. Plattformen visar därför kontotypen så att köparen kan förstå vem motparten är.',
+      'Företagsannonser markeras som publicerade av en näringsidkare. När en konsument köper ett fordon av ett företag gäller konsumentköplagen och andra tvingande konsumentregler. Företagssäljaren ansvarar bland annat för korrekt identitet, totalpris, avgifter, leveransinformation, reklamationsrätt och eventuell ångerrätt vid distansavtal.',
+      'När en privatperson köper av en annan privatperson gäller normalt köplagen och det parterna har avtalat. Det finns ingen allmän lagstadgad ångerrätt för ett sådant privatköp. Autorell visar därför kontotypen så att köparen kan förstå vem motparten är.',
+      'Vid ett förmedlingsköp där ett företag sköter försäljningen till en konsument kan tvingande konsumentregler gälla även om fordonet är registrerat på en privatperson. Den som faktiskt förmedlar eller säljer ansvarar för att bedöma och uppfylla sina skyldigheter.',
     ],
   },
   {
     id: 'purchase-terms',
-    title: 'Annonspaket och betalning',
+    title: 'Annonspaket, digital tjänst och ångerrätt',
     items: [
-      'Fem dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
+      'Sju dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
       'Samma publicerade kategoripris gäller för privatkonton och företagskonton, om inget separat skriftligt volymavtal gäller.',
       'Betalning hanteras av extern betalningsleverantör. Betalningsuppgifter ska aldrig skickas i meddelanden.',
-      'Köpta digitala annonstjänster börjar enligt det valda paketet. Information om eventuell lagstadgad ångerrätt och samtycke till omedelbar leverans ska visas i checkout när det krävs.',
+      'En konsument som köper ett annonspaket på distans har normalt 14 dagars ångerrätt. Före omedelbar publicering ska konsumenten uttryckligen begära att tjänsten börjar under ångerfristen och bekräfta vad det innebär för ångerrätten när tjänsten har fullgjorts.',
+      'Om konsumenten ångrar innan tjänsten är helt utförd kan Autorell, när lagen medger det, ha rätt till proportionell ersättning för den del som utförts efter konsumentens uttryckliga begäran.',
+      'Från 19 juni 2026 kan konsumenter använda den tydliga ångerfunktionen på webbplatsen när ett avtal omfattas av lagstadgad ångerrätt. Autorell bekräftar mottagandet utan onödigt dröjsmål.',
+    ],
+  },
+  {
+    id: 'invoice-credit',
+    title: 'Faktura, kredit och sen betalning',
+    paragraphs: [
+      'Företagsfaktura erbjuds endast när alternativet visas för ett behörigt företagskonto. Nuvarande betalningsvillkor är 14 dagar från fakturadatum. Företaget ansvarar för att faktura- och kontaktuppgifter är korrekta och för betalning på förfallodagen.',
+      'Vid sen betalning får Autorell ta ut dröjsmålsränta enligt räntelagen och avtalade, lagligen tillåtna påminnelse- och inkassoavgifter. En påminnelseavgift tas bara ut när det finns stöd i avtalet och lagen. Åtkomst till ny publicering kan begränsas medan en ostridig faktura är förfallen.',
+      'Autorell erbjuder inte själv fordonslån eller konsumentkredit om det inte uttryckligen anges i ett separat erbjudande. Finansieringsuppgifter i en annons kommer från företagssäljaren eller angiven kreditgivare. Kreditgivaren ansvarar för förköpsinformation, kreditprövning, avtal, effektiv ränta och övriga krav enligt konsumentkreditlagen.',
+      'Om ett framtida betalningsalternativ innebär kredit till en konsument, exempelvis faktura via ett faktureringsbolag, gäller konsumentkreditlagens tvingande skydd och den angivna kreditgivarens villkor. Lån och faktura mellan företag omfattas inte av konsumentkreditlagen.',
     ],
   },
   {
@@ -87,6 +100,8 @@ const sections = [
     title: 'Klagomål, lag och kontakt',
     paragraphs: [
       'Klagomål skickas till info@autorell.com eller via hjälpcentret. Ange konto, annons eller konversation och önskad lösning.',
+      'En konsument kan använda webbplatsens ångerfunktion för ett avtal som omfattas av ångerrätt. Reklamationer och bestridanden ska göras så snart som möjligt och påverkar inte tvingande lagstadgade rättigheter.',
+      'Om en konsument och Autorell inte kommer överens kan konsumenten anmäla tvisten till Allmänna reklamationsnämnden (ARN) när nämndens villkor är uppfyllda. Autorell deltar i tillämplig alternativ tvistlösning och lämnar den information som lagen kräver.',
       'Svensk lag tillämpas i den utsträckning den inte undanträngs av tvingande regler i användarens land. Konsumenter behåller rätten att använda behörig domstol och tvistlösning enligt tvingande lag.',
       'Tjänsten tillhandahålls av Autorell AB i Sverige. Fullständiga bolags- och adressuppgifter ska alltid framgå av avtal, betalningsunderlag och obligatorisk företagsinformation innan kommersiell transaktion slutförs.',
     ],

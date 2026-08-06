@@ -18,6 +18,9 @@ const baseMigration = readFileSync(new URL('../supabase/migrations/2026080610300
 const teamMigration = readFileSync(new URL('../supabase/migrations/20260806111500_dealer_lead_team_access.sql', import.meta.url), 'utf8')
 const entitlementMigration = readFileSync(new URL('../supabase/migrations/20260806140520_dealer_lead_entitlement_start.sql', import.meta.url), 'utf8')
 const customerEmailMigration = readFileSync(new URL('../supabase/migrations/20260806171823_dealer_lead_customer_confirmation.sql', import.meta.url), 'utf8')
+const contactStatus = readFileSync(new URL('../app/account/company/dealer-offers/DealerLeadContactStatus.tsx', import.meta.url), 'utf8')
+const contactApi = readFileSync(new URL('../app/api/account/company/dealer-leads/[id]/contact/route.ts', import.meta.url), 'utf8')
+const contactMigration = readFileSync(new URL('../supabase/migrations/20260806180955_dealer_lead_company_contacts.sql', import.meta.url), 'utf8')
 
 test('seller flow requires VIN and persists country and locale with every lead', () => {
   assert.match(form, /if \(!vin\) return t\('Enter VIN\/chassis number\.'\)/)
@@ -140,4 +143,27 @@ test('sell-to-dealer SEO stays within requested limits and publishes all languag
   for (const hreflang of ['sv-SE', 'de-DE', 'de-AT', 'nl-BE', 'fr-FR', 'es-ES', 'it-IT', 'pl-PL', 'nl-NL', 'fi-FI', 'da-DK']) {
     assert.match(seo, new RegExp(`'${hreflang}'`))
   }
+})
+
+test('dealer teams share a signed contacted state and contacted leads disappear after 24 hours', () => {
+  assert.match(contactStatus, /type="checkbox"/)
+  assert.match(contactStatus, /contactedByName/)
+  assert.match(contactStatus, /visibleUntil/)
+  assert.match(contactApi, /resolveBusinessAccountScope\(user\.id, admin\)/)
+  assert.match(contactApi, /dealerLeadAccessStartsAt\(subscription\)/)
+  assert.match(contactApi, /\.in\('source_country_code', countries\)/)
+  assert.match(contactApi, /\.eq\('company_id', companyId\)/)
+  assert.match(contactApi, /24 \* 60 \* 60 \* 1000/)
+  assert.match(portal, /dealer_vehicle_lead_company_contacts/)
+  assert.match(portal, /new Date\(contact\.hideAfter\)\.getTime\(\) > now/)
+  assert.match(access, /\.lte\('hide_after', new Date\(\)\.toISOString\(\)\)/)
+})
+
+test('dealer contact audit table is company scoped, server only and indexed', () => {
+  assert.match(contactMigration, /unique \(lead_id, company_id\)/)
+  assert.match(contactMigration, /hide_after = contacted_at \+ interval '24 hours'/)
+  assert.match(contactMigration, /enable row level security/)
+  assert.match(contactMigration, /revoke all[\s\S]*public, anon, authenticated/)
+  assert.match(contactMigration, /grant select, insert, update, delete[\s\S]*service_role/)
+  assert.match(contactMigration, /contacted_by_user_id\)/)
 })

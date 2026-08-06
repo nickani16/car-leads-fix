@@ -93,8 +93,10 @@ const footerCopy = {
     terms: 'Användarvillkor',
     purchaseTerms: 'Köpvillkor',
     refundPolicy: 'Återbetalningspolicy',
+    withdrawal: 'Utöva ångerrätt',
     privacy: 'Integritetspolicy',
     cookies: 'Cookiepolicy',
+    cookieSettings: 'Cookieinställningar',
     legalNotice:
       'Autorell \u00e4r en europeisk marknadsplats f\u00f6r fordonsannonser. Inneh\u00e5ll, fordonsdata, bilder och annonsinformation f\u00e5r inte kopieras, skrapas eller \u00e5teranv\u00e4ndas utan tillst\u00e5nd fr\u00e5n Autorell.',
   },
@@ -169,8 +171,10 @@ const footerCopy = {
     terms: 'Nutzungsbedingungen',
     purchaseTerms: 'Kaufbedingungen',
     refundPolicy: 'Erstattungsrichtlinie',
+    withdrawal: 'Widerruf erklären',
     privacy: 'Datenschutz',
     cookies: 'Cookie-Richtlinie',
+    cookieSettings: 'Cookie-Einstellungen',
     legalNotice:
       'Autorell ist ein europ\u00e4ischer Marktplatz f\u00fcr Fahrzeuganzeigen. Inhalte, Fahrzeugdaten, Bilder und Anzeigeninformationen d\u00fcrfen ohne Genehmigung von Autorell nicht kopiert, ausgelesen oder wiederverwendet werden.',
   },
@@ -245,8 +249,10 @@ const footerCopy = {
     terms: 'Terms of Service',
     purchaseTerms: 'Purchase terms',
     refundPolicy: 'Refund policy',
+    withdrawal: 'Exercise withdrawal right',
     privacy: 'Privacy Policy',
     cookies: 'Cookie Policy',
+    cookieSettings: 'Cookie settings',
     legalNotice:
       'Autorell is a European marketplace for vehicle listings. Content, vehicle data, images and listing information may not be copied, scraped or reused without permission from Autorell.',
   },
@@ -308,6 +314,7 @@ export default function PublicFooter({
   const termsHref = localizePublicHref(locale, '/terms')
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
+  const withdrawalHref = localizePublicHref(locale, '/withdrawal')
   const homeHref = localizePublicHref(locale, '/')
   const appHref = getAppDownloadHref(locale)
   const appCopy = getAppDownloadCopy(locale)
@@ -402,6 +409,9 @@ export default function PublicFooter({
               <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
                 {t.refundPolicy}
               </Link>
+              <Link href={withdrawalHref} className="transition hover:text-[#075fff]">
+                {t.withdrawal}
+              </Link>
               <Link href={privacyHref} className="transition hover:text-[#075fff]">
                 {t.privacy}
               </Link>
@@ -411,6 +421,13 @@ export default function PublicFooter({
               >
                 {t.cookies}
               </Link>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('autorell-open-cookie-settings'))}
+                className="text-left transition hover:text-[#075fff]"
+              >
+                {t.cookieSettings}
+              </button>
             </nav>
           </div>
         </div>

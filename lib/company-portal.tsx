@@ -380,6 +380,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
         preferences,
         accessStartsAt: dealerLeadAccessStart,
         homeCountry: profile.country_code,
+        companyId: profile.company_id,
       })
     } catch (error) {
       console.error('dealer lead unread count failed', error)

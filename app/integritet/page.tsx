@@ -32,6 +32,8 @@ const sections = [
       'För privatkonton behandlas nationellt identitetsnummer för format-, dubblett- och riskkontroll. Råvärdet sparas inte i marknadsplatsprofilen; en skyddad kontrollreferens och de sista fyra tecknen kan sparas.',
       'För företag: företagsnamn, registreringsnummer, VAT-nummer, företrädare och verifieringsuppgifter.',
       'Annonsdata, bilder, fordonsidentitet, pris, plats, skick, historik, kända fel och publiceringspaket.',
+      'I flödet för handlarbud behandlas fordonsuppgifter, skade- och serviceinformation, bilder, ort, kontaktuppgifter och önskad kontaktväg som säljaren lämnar.',
+      'När en företagsanvändare markerar en säljare som kontaktad behandlas företags-ID, användar-ID, namn, e-post, kontaktsätt och tidsstämplar för att samordna företagets uppföljning.',
       'Meddelanden, rapporter, supportärenden, modereringsbeslut och bevisning om misstänkt missbruk.',
       'Betalningsreferenser, paket, belopp, kvitto- och återbetalningsstatus. Fullständiga kortuppgifter lagras inte av Autorell.',
       'IP-adress, enhets-, webbläsar-, sessions- och händelseloggar när det behövs för drift och säkerhet.',
@@ -44,6 +46,7 @@ const sections = [
       'Avtal och åtgärder på din begäran: skapa konto, publicera annons, leverera annonspaket, möjliggöra meddelanden och support.',
       'Rättslig skyldighet: bokföring, skatt, myndighetsförfrågningar och skyldigheter för digitala plattformar och näringsidkare.',
       'Berättigat intresse: säker drift, bedrägeribekämpning, moderering, tvistbevisning, tjänsteutveckling och skydd av användare.',
+      'Berättigat intresse och åtgärder på säljarens begäran: matcha en handlarförfrågan mot behöriga företag i valda länder, skicka notifieringar och undvika att flera personer i samma företag kontaktar säljaren i onödan.',
       'Nationella identitetsnummer behandlas endast när det är tillåtet enligt tillämplig nationell rätt och med särskilda skyddsåtgärder. Ytterligare identitetskontroll kan utföras av en separat verifieringsleverantör.',
       'Samtycke används där lagen kräver det, exempelvis för icke nödvändiga cookies eller separat marknadsföring.',
     ],
@@ -54,6 +57,7 @@ const sections = [
     paragraphs: [
       'Annonsen visar relevanta fordonsuppgifter, säljarens visningsnamn eller företagsnamn, land och om säljaren är privatperson eller näringsidkare.',
       'E-post, telefon, full adress, identitetsuppgifter och betalningsinformation visas inte öppet. Nödvändiga uppgifter kan delas mellan parter när ett avtal, leverans, kontroll eller rättslig skyldighet kräver det.',
+      'Uppgifter i en handlarförfrågan visas endast för företagskonton med behörig plan och landstillgång. Medlemmar i samma företag kan se om säljaren redan har kontaktats, av vem och när.',
     ],
   },
   {
@@ -61,7 +65,9 @@ const sections = [
     title: 'Mottagare och leverantörer',
     items: [
       'Motparten i en affär när det är nödvändigt och tydligt för användaren.',
+      'Behöriga bilhandlarföretag vars landinställningar matchar säljarens förfrågan. Kontaktuppgifter lämnas för att företaget ska kunna ringa eller mejla säljaren om fordonet.',
       'Leverantörer av hosting, databas, autentisering, lagring, e-post, betalning, analys, säkerhet och kundsupport.',
+      'Vercel för hosting samt, endast efter samtycke när det krävs, analys och prestandamätning; Google för AdSense-annonsering; Supabase för databas, autentisering och lagring; Resend för transaktionsmejl; Stripe för kortbetalning och betalningsstatus.',
       'Rådgivare, transportörer, försäkrings- och identitetsleverantörer när användaren väljer ett flöde som kräver dem.',
       'Myndigheter och brottsbekämpande organ när lag, rättsligt krav eller skydd av personer och egendom kräver det.',
     ],
@@ -73,6 +79,8 @@ const sections = [
       'Kontodata sparas medan kontot är aktivt och därefter under den tid som behövs för rättsliga anspråk, säkerhet och skyldigheter. Annons- och meddelandedata kan sparas efter borttagning när det behövs för moderering, bedrägeribekämpning eller tvist.',
       'Skyddade identitetsreferenser och kontrollhistorik gallras när de inte längre behövs för kontosäkerhet, rättsliga krav eller bedrägeribekämpning.',
       'Betalnings- och bokföringsunderlag sparas enligt tillämpliga bokförings- och skatteregler. Uppgifter som inte längre behövs raderas eller anonymiseras.',
+      'När ett företag markerar en säljarförfrågan som kontaktad ligger den kvar i företagets feed i 24 timmar och döljs sedan för företaget. Kontaktloggen kan sparas längre i begränsad åtkomst för samordning, säkerhet, tvistbevisning och rättsliga anspråk och gallras när ändamålet upphör.',
+      'Ångerbegäranden och tillhörande bekräftelser sparas så länge det behövs för att handlägga begäran, styrka tidpunkten och uppfylla bokförings- eller rättsliga skyldigheter.',
     ],
   },
   {

@@ -584,9 +584,17 @@ export default function NewListingForm({
     }
 
     if (targetStep === 4) {
-      if (!normalizeListingPackageId(values.packageId)) return missing(copy.errors.package)
+      const packageId = normalizeListingPackageId(values.packageId)
+      if (!packageId) return missing(copy.errors.package)
       if (values.listingTerms !== 'on') {
         return missing(copy.errors.terms)
+      }
+      if (
+        accountType === 'private' &&
+        packageId !== 'free_7d' &&
+        values.digitalServiceConsent !== 'on'
+      ) {
+        return missing(getImmediateServiceConsentCopy(locale).error)
       }
     }
 
@@ -686,6 +694,9 @@ export default function NewListingForm({
       form.set('insuranceOffers', JSON.stringify(serializeInsuranceOffers(insuranceOffers, (values.currency || defaultCurrency) as SupportedCurrency)))
     }
     if (values.listingTerms === 'on') form.set('listingTerms', 'on')
+    if (values.digitalServiceConsent === 'on') {
+      form.set('digitalServiceConsent', 'on')
+    }
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
     orderedImages.forEach((image) => form.append('images', image.file, image.name))
 
@@ -1991,6 +2002,7 @@ function PublishStep({
 }) {
   const billingMarket = normalizeBillingMarket(marketCode)
   const trustCopy = getCheckoutTrustCopy(locale)
+  const immediateServiceCopy = getImmediateServiceConsentCopy(locale)
   const numberLocale =
     locale === 'sv' ? 'sv-SE' :
     locale === 'da' ? 'da-DK' :
@@ -2101,8 +2113,68 @@ function PublishStep({
           {copy.terms}
         </span>
       </label>
+      {accountType === 'private' && normalizeListingPackageId(values.packageId) !== 'free_7d' ? (
+        <label className="mt-3 flex gap-3 rounded-[18px] border border-[#bfd3fb] bg-[#f7fbff] p-4 text-sm leading-6 text-[#475467]">
+          <input
+            type="checkbox"
+            checked={values.digitalServiceConsent === 'on'}
+            onChange={(event) => onChange('digitalServiceConsent', event.target.checked ? 'on' : '')}
+            className="mt-1 h-4 w-4 accent-[#0866ff]"
+          />
+          <span>{immediateServiceCopy.label}</span>
+        </label>
+      ) : null}
     </section>
   )
+}
+
+function getImmediateServiceConsentCopy(locale: PublicLocale) {
+  const copy = {
+    en: {
+      label: 'I expressly request that the paid listing service starts immediately during the 14-day withdrawal period. I understand that the withdrawal right ends once the service has been fully performed.',
+      error: 'Confirm immediate delivery of the paid listing service before publishing.',
+    },
+    sv: {
+      label: 'Jag begär uttryckligen att den betalda annonstjänsten börjar levereras direkt under den 14 dagar långa ångerfristen. Jag förstår att ångerrätten upphör när tjänsten har fullgjorts.',
+      error: 'Godkänn att den betalda annonstjänsten börjar levereras direkt innan du publicerar.',
+    },
+    de: {
+      label: 'Ich verlange ausdrücklich, dass die kostenpflichtige Anzeigenleistung während der 14-tägigen Widerrufsfrist sofort beginnt. Mir ist bekannt, dass das Widerrufsrecht bei vollständiger Vertragserfüllung erlischt.',
+      error: 'Bestätigen Sie vor der Veröffentlichung den sofortigen Beginn der kostenpflichtigen Anzeigenleistung.',
+    },
+    fr: {
+      label: 'Je demande expressément que le service payant de publication commence immédiatement pendant le délai de rétractation de 14 jours. Je comprends que ce droit prend fin lorsque le service a été entièrement exécuté.',
+      error: 'Confirmez le début immédiat du service payant avant la publication.',
+    },
+    es: {
+      label: 'Solicito expresamente que el servicio de anuncio de pago comience de inmediato durante el plazo de desistimiento de 14 días. Entiendo que este derecho finaliza cuando el servicio se haya ejecutado por completo.',
+      error: 'Confirma el inicio inmediato del servicio de pago antes de publicar.',
+    },
+    it: {
+      label: 'Chiedo espressamente che il servizio di pubblicazione a pagamento inizi subito durante il periodo di recesso di 14 giorni. Comprendo che il diritto di recesso termina quando il servizio è stato eseguito integralmente.',
+      error: 'Conferma l’avvio immediato del servizio a pagamento prima della pubblicazione.',
+    },
+    pl: {
+      label: 'Wyraźnie żądam, aby płatna usługa ogłoszeniowa rozpoczęła się natychmiast w 14-dniowym okresie odstąpienia. Rozumiem, że prawo odstąpienia wygasa po pełnym wykonaniu usługi.',
+      error: 'Przed publikacją potwierdź natychmiastowe rozpoczęcie płatnej usługi.',
+    },
+    nl: {
+      label: 'Ik verzoek uitdrukkelijk dat de betaalde advertentieservice onmiddellijk begint tijdens de bedenktijd van 14 dagen. Ik begrijp dat het herroepingsrecht eindigt zodra de dienst volledig is uitgevoerd.',
+      error: 'Bevestig de onmiddellijke start van de betaalde dienst voordat u publiceert.',
+    },
+    fi: {
+      label: 'Pyydän nimenomaisesti, että maksullinen ilmoituspalvelu alkaa heti 14 päivän peruuttamisajan aikana. Ymmärrän, että peruuttamisoikeus päättyy, kun palvelu on suoritettu kokonaan.',
+      error: 'Vahvista maksullisen palvelun välitön aloitus ennen julkaisua.',
+    },
+    da: {
+      label: 'Jeg anmoder udtrykkeligt om, at den betalte annoncetjeneste begynder straks i den 14-dages fortrydelsesperiode. Jeg forstår, at fortrydelsesretten ophører, når tjenesten er fuldt leveret.',
+      error: 'Bekræft, at den betalte tjeneste skal begynde straks, før du offentliggør.',
+    },
+  } as const
+
+  if (locale === 'at') return copy.de
+  if (locale === 'be') return copy.nl
+  return copy[locale] || copy.en
 }
 
 function Field(
