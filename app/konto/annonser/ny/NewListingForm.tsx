@@ -298,7 +298,7 @@ export default function NewListingForm({
       draftRestored.current = true
     }, 0)
     return () => window.clearTimeout(timeout)
-  }, [draftKey])
+  }, [defaultCurrency, draftKey])
 
   useEffect(() => {
     let active = true
@@ -327,19 +327,22 @@ export default function NewListingForm({
 
   useEffect(() => {
     if (leasingAllowedForCategory) return
-    setValues((current) => (
-      isLeaseOffer(normalizeOfferType(current.offerType))
-        ? { ...current, offerType: 'sale' }
-        : current
-    ))
+    const timeout = window.setTimeout(() => {
+      setValues((current) => (
+        isLeaseOffer(normalizeOfferType(current.offerType))
+          ? { ...current, offerType: 'sale' }
+          : current
+      ))
+    }, 0)
+    return () => window.clearTimeout(timeout)
   }, [leasingAllowedForCategory])
 
   useEffect(() => {
     if (!loading) {
-      setPublishProgress(0)
-      return
+      const frame = window.requestAnimationFrame(() => setPublishProgress(0))
+      return () => window.cancelAnimationFrame(frame)
     }
-    setPublishProgress(8)
+    const frame = window.requestAnimationFrame(() => setPublishProgress(8))
     const interval = window.setInterval(() => {
       setPublishProgress((current) => {
         if (current >= 92) return current
@@ -347,7 +350,10 @@ export default function NewListingForm({
         return Math.min(92, current + increment)
       })
     }, 650)
-    return () => window.clearInterval(interval)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearInterval(interval)
+    }
   }, [loading])
 
   useEffect(() => {
@@ -503,6 +509,15 @@ export default function NewListingForm({
     setEquipment([])
     setEquipmentSearch('')
     setOpenField(null)
+  }
+
+  function chooseMainImage(imageId: string) {
+    setMainImageId(imageId)
+    setImages((current) => {
+      const selected = current.find((image) => image.id === imageId)
+      if (!selected) return current
+      return [selected, ...current.filter((image) => image.id !== imageId)]
+    })
   }
 
   function validate(targetStep = step) {
@@ -1061,12 +1076,12 @@ export default function NewListingForm({
         {step === 2 ? (
           <ImageStep
             copy={copy}
-            images={images}
+            images={orderedImages}
             mainImageId={mainImageId}
             draggedImageId={draggedImageId}
             onDraggedImageId={setDraggedImageId}
             onImages={setImages}
-            onMainImageId={setMainImageId}
+            onMainImageId={chooseMainImage}
           />
         ) : null}
 
@@ -1398,27 +1413,33 @@ function DatePickerCard({
             <button type="button" onClick={() => moveMonth(-1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="grid min-w-0 flex-1 grid-cols-[1fr_auto] gap-2">
-              <select
-                value={visibleMonth}
-                onChange={(event) => setVisibleMonth(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
-              >
-                {Array.from({ length: 12 }, (_, month) => (
-                  <option key={month} value={month}>
-                    {new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, month, 1))}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={visibleYear}
-                onChange={(event) => setVisibleYear(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+            <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(96px,116px)] gap-2">
+              <div className="relative min-w-0">
+                <select
+                  value={visibleMonth}
+                  onChange={(event) => setVisibleMonth(Number(event.target.value))}
+                  className="h-10 w-full min-w-0 appearance-none rounded-[12px] border border-[#d7deed] bg-white py-0 pl-3 pr-8 text-sm font-medium text-[#101828] outline-none"
+                >
+                  {Array.from({ length: 12 }, (_, month) => (
+                    <option key={month} value={month}>
+                      {new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, month, 1))}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+              </div>
+              <div className="relative min-w-0">
+                <select
+                  value={visibleYear}
+                  onChange={(event) => setVisibleYear(Number(event.target.value))}
+                  className="h-10 w-full min-w-0 appearance-none rounded-[12px] border border-[#d7deed] bg-white py-0 pl-3 pr-8 text-sm font-medium text-[#101828] outline-none"
+                >
+                  {years.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+              </div>
             </div>
             <button type="button" onClick={() => moveMonth(1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
               <ChevronRight className="h-4 w-4" />
@@ -1738,6 +1759,7 @@ function ImageStep({
     const [moved] = next.splice(from, 1)
     next.splice(to, 0, moved)
     onImages(next)
+    onMainImageId(next[0]?.id || '')
     onDraggedImageId('')
   }
 
