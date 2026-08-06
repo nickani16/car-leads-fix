@@ -141,16 +141,25 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   const { data: imageRows, error: imageRowsError } = await admin
     .from('marketplace_listing_images')
-    .select('id,position')
+    .select('id,position,webp_url,avif_url,storage_webp_path,storage_avif_path')
     .eq('listing_id', listing.id)
     .is('deleted_at', null)
     .order('position', { ascending: true })
   if (!imageRowsError && imageRows?.length === existingImages.length) {
-    const oldIndexByImage = new Map(existingImages.map((image, index) => [image, index]))
+    const rowsByImageKey = new Map(
+      imageRows.flatMap((row) => {
+        const keys = [
+          imageOrderKey(row.webp_url),
+          imageOrderKey(row.avif_url),
+          imageOrderKey(row.storage_webp_path),
+          imageOrderKey(row.storage_avif_path),
+        ].filter(Boolean)
+        return keys.map((key) => [key, row] as const)
+      }),
+    )
     await Promise.all(
       nextImages.map((image, nextPosition) => {
-        const oldIndex = oldIndexByImage.get(image)
-        const row = oldIndex === undefined ? null : imageRows[oldIndex]
+        const row = rowsByImageKey.get(imageOrderKey(image))
         if (!row) return Promise.resolve()
         return admin
           .from('marketplace_listing_images')
@@ -210,4 +219,12 @@ function imageError(error: unknown) {
   if (code === 'IMAGE_SIZE_INVALID') return 'En bild är tom eller större än 25 MB.'
   if (code === 'UNSUPPORTED_IMAGE_TYPE' || code === 'IMAGE_SIGNATURE_MISMATCH') return 'En fil har ett format eller innehåll som inte stöds.'
   return 'Bilderna kunde inte behandlas. Försök igen.'
+}
+
+function imageOrderKey(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/[?#].*$/, '')
+    .replace(/\/(?:card|listing)\.webp$/i, '')
+    .replace(/\/fullscreen\.avif$/i, '')
 }

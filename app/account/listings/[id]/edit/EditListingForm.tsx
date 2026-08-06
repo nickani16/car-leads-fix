@@ -145,29 +145,32 @@ export default function EditListingForm({
     router.refresh()
   }
 
-  function reorderImage(fromIndex: number, toIndex: number) {
+  function nextImageOrder(fromIndex: number, toIndex: number) {
     if (toIndex < 0 || toIndex >= listingImages.length || fromIndex === toIndex) return
-    setListingImages((current) => {
-      const next = [...current]
-      const [image] = next.splice(fromIndex, 1)
-      if (!image) return current
-      next.splice(toIndex, 0, image)
-      return next
-    })
+    const next = [...listingImages]
+    const [image] = next.splice(fromIndex, 1)
+    if (!image) return
+    next.splice(toIndex, 0, image)
+    setListingImages(next)
+    void persistImageOrder(next)
+  }
+
+  function reorderImage(fromIndex: number, toIndex: number) {
+    nextImageOrder(fromIndex, toIndex)
   }
 
   function makeMainImage(index: number) {
-    reorderImage(index, 0)
+    nextImageOrder(index, 0)
   }
 
-  async function saveImageOrder() {
-    if (!listingImages.length || savingImageOrder) return
+  async function persistImageOrder(images: string[]) {
+    if (!images.length || savingImageOrder) return
     setSavingImageOrder(true)
     setError('')
     const response = await fetch(`/api/account/listings/${listing.id}/images`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images: listingImages }),
+      body: JSON.stringify({ images }),
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string; images?: string[] }
     setSavingImageOrder(false)
@@ -178,6 +181,10 @@ export default function EditListingForm({
     setListingImages(result.images)
     setSuccessNoticeOpen(true)
     router.refresh()
+  }
+
+  async function saveImageOrder() {
+    await persistImageOrder(listingImages)
   }
 
   async function submit(event: FormEvent) {
@@ -253,10 +260,10 @@ export default function EditListingForm({
                     {index === 0 ? copy.mainImage : `${copy.imageNumber} ${index + 1}`}
                   </span>
                   <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => reorderImage(index, index - 1)} disabled={index === 0} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveLeft}>
+                    <button type="button" onClick={() => reorderImage(index, index - 1)} disabled={savingImageOrder || index === 0} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveLeft}>
                       <ChevronLeft className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => reorderImage(index, index + 1)} disabled={index === listingImages.length - 1} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveRight}>
+                    <button type="button" onClick={() => reorderImage(index, index + 1)} disabled={savingImageOrder || index === listingImages.length - 1} className="grid h-8 w-8 place-items-center rounded-full border border-[#d7deed] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:opacity-40" aria-label={copy.moveRight}>
                       <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
@@ -265,6 +272,7 @@ export default function EditListingForm({
                   <button
                     type="button"
                     onClick={() => makeMainImage(index)}
+                    disabled={savingImageOrder}
                     className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-[10px] border border-[#cbd7e8] bg-white px-3 text-xs font-semibold text-[#0866ff] transition hover:bg-[#eef5ff]"
                   >
                     <Star className="h-3.5 w-3.5" />

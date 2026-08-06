@@ -114,7 +114,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             address: listing.address || '',
             latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
             longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
-            description: listing.description || '',
+            description: editableDescription(listing.description),
             equipmentKeys: extractEquipmentKeys(listingStructuredData, technicalMetadata, listing.equipment),
             sellerType: listing.seller_type,
             phoneVisibility: listing.phone_visibility || 'public',
@@ -147,6 +147,27 @@ function extractEquipmentKeys(
   }
   if (!equipmentText) return []
   return []
+}
+
+const savedPlaceholderPatterns = [
+  /^Strukturerad Autorell-annons:/i,
+  /^Skriv bara egen fritext/i,
+  /^Write only your own free text/i,
+  /^Schreiben Sie hier nur Ihren eigenen Freitext/i,
+  /^Rédigez uniquement votre texte libre/i,
+  /^Escribe aquí solo tu texto libre/i,
+  /^Scrivi qui solo il tuo testo libero/i,
+  /^Schrijf hier alleen uw eigen vrije tekst/i,
+  /^Wpisz tutaj tylko własny tekst/i,
+  /^Kirjoita tähän vain oma vapaatekstisi/i,
+  /^Skriv kun din egen fritekst/i,
+]
+
+function editableDescription(value: string | null) {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  if (savedPlaceholderPatterns.some((pattern) => pattern.test(text))) return ''
+  return value || ''
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

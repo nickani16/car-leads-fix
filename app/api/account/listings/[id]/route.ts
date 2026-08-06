@@ -362,7 +362,7 @@ export async function PATCH(
       address: address || null,
       latitude,
       longitude,
-      description: description || listing.description,
+      description: description || null,
       equipment: equipmentTextFromKeys(equipmentKeys) || null,
       phone_visibility: phoneVisibility,
       updated_at: now,

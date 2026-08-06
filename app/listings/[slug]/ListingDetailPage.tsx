@@ -2117,8 +2117,23 @@ function buildSpecs(
 
 function isPublicSellerDescription(value: string | null): value is string {
   if (!value) return false
-  return !/^Strukturerad Autorell-annons:/i.test(value.trim())
+  const text = value.trim()
+  return !savedPlaceholderDescriptionPatterns.some((pattern) => pattern.test(text))
 }
+
+const savedPlaceholderDescriptionPatterns = [
+  /^Strukturerad Autorell-annons:/i,
+  /^Skriv bara egen fritext/i,
+  /^Write only your own free text/i,
+  /^Schreiben Sie hier nur Ihren eigenen Freitext/i,
+  /^Rédigez uniquement votre texte libre/i,
+  /^Escribe aquí solo tu texto libre/i,
+  /^Scrivi qui solo il tuo testo libero/i,
+  /^Schrijf hier alleen uw eigen vrije tekst/i,
+  /^Wpisz tutaj tylko własny tekst/i,
+  /^Kirjoita tähän vain oma vapaatekstisi/i,
+  /^Skriv kun din egen fritekst/i,
+]
 
 function publicSellerDescriptionFromListing(listing: ListingRow) {
   const structuredData = isRecord(listing.structured_data) ? listing.structured_data : {}
