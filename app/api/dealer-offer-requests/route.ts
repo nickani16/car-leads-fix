@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { normalizeDealerLeadCountryCode } from '@/lib/dealer-leads/access'
+import { sendDealerVehicleLeadNotifications } from '@/lib/email/dealer-vehicle-lead'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
@@ -92,6 +94,8 @@ async function handlePost(request: Request) {
       privacy_accepted: payload.privacyAccepted,
       status: 'new',
       source_path: safeReferer(request),
+      source_country_code: payload.sourceCountryCode,
+      source_locale: payload.sourceLocale,
     })
     .select('id,reference')
     .single()
@@ -131,6 +135,32 @@ async function handlePost(request: Request) {
     await admin.from('dealer_vehicle_leads').delete().eq('id', lead.id)
     return NextResponse.json({ error: imageUploadErrorMessage(uploadError) }, { status: 400 })
   }
+
+  after(async () => {
+    try {
+      await sendDealerVehicleLeadNotifications(admin, {
+        id: lead.id,
+        reference: lead.reference,
+        sourceCountryCode: payload.sourceCountryCode,
+        make: payload.make,
+        model: payload.model,
+        modelYear: Number(payload.modelYear),
+        mileageKm: Number(payload.mileageKm),
+        fuelType: payload.fuelType,
+        transmission: payload.transmission,
+        city: payload.city,
+        postalCode: payload.postalCode,
+        contactName: `${payload.firstName} ${payload.lastName}`.trim(),
+        contactEmail: payload.email,
+        contactPhone: payload.phone,
+        preferredContact: payload.preferredContact,
+        visibleDamage: payload.visibleDamage,
+        imageCount: uploadedImages.length,
+      })
+    } catch (notificationError) {
+      console.error('dealer lead notifications failed', { leadId: lead.id, notificationError })
+    }
+  })
 
   return NextResponse.json({ success: true, reference: lead.reference })
 }
@@ -176,16 +206,21 @@ function parsePayload(form: FormData) {
     city: text(form, 'city', 100),
     preferredContact: text(form, 'preferredContact', 20),
     privacyAccepted: text(form, 'privacyAccepted') === 'true',
+    sourceCountryCode: normalizeDealerLeadCountryCode(text(form, 'sourceCountryCode', 2)) || '',
+    sourceLocale: normalizeSourceLocale(text(form, 'sourceLocale', 5)),
   }
 }
 
 function validatePayload(payload: ReturnType<typeof parsePayload>) {
+  if (!payload.vin) return 'VIN is required.'
+  if (!payload.sourceCountryCode) return 'Select a country.'
   if (payload.vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(payload.vin)) return 'VIN ska vara exakt 17 tecken och får inte innehålla I, O eller Q.'
   if (!payload.make || !payload.model || !/^\d{4}$/.test(payload.modelYear)) return 'Ange märke, modell och årsmodell.'
   if (!positiveInteger(payload.mileageKm)) return 'Ange mätarställning i kilometer.'
   const requiredDetails = ['fuelType', 'transmission', 'bodyType', 'color', 'keyCount', 'serviceBook', 'summerTires', 'winterTires', 'inspected', 'drivable', 'financeStatus'] as const
   if (requiredDetails.some((key) => !payload[key])) return 'Fyll i bilens uppgifter.'
   const requiredCondition = ['visibleDamage', 'cosmeticDamage', 'accidentHistory', 'warningLights', 'technicalProblems', 'engineTransmissionProblems', 'rust', 'servicedBySchedule', 'smokeFree', 'interiorDamage'] as const
+  if (isAffirmative(payload.visibleDamage) && payload.damageDescription.length < 3) return 'Describe the damage.'
   if (requiredCondition.some((key) => !payload[key])) return 'Fyll i bilens skick.'
   if (payload.visibleDamage === 'Ja' && payload.damageDescription.length < 3) return 'Beskriv skadorna.'
   if (!payload.firstName || !payload.lastName || !isValidEmail(payload.email) || payload.phone.length < 6 || !payload.postalCode || !payload.city || !payload.preferredContact) return 'Fyll i kontaktuppgifter.'
@@ -281,4 +316,13 @@ function safeReferer(request: Request) {
   } catch {
     return null
   }
+}
+
+function normalizeSourceLocale(value: string) {
+  const locale = value.trim().toLowerCase()
+  return ['sv', 'en', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da', 'at', 'be'].includes(locale) ? locale : 'en'
+}
+
+function isAffirmative(value: string) {
+  return ['yes', 'ja', 'oui', 'sí', 'si', 'sì', 'kyllä', 'tak'].includes(value.trim().toLowerCase())
 }

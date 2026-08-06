@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { ACTIVE_MARKET_COUNTRIES, getEuCountryName, isActiveMarketCountryCode } from '@/lib/eu-countries'
 import { translatePublic } from '@/lib/public-i18n'
 
 export type SellToDealerFormCopy = {
@@ -40,15 +41,16 @@ export type SellToDealerFormCopy = {
 type PublicFormLocale = 'sv' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da' | 'at' | 'be'
 type ImageKey = 'front' | 'rear' | 'leftSide' | 'rightSide' | 'interior' | 'odometer' | 'damage'
 type Translator = (value: string) => string
+type DealerFormOption = { value: string; label: string }
 type DealerFormOptions = {
-  fuelTypes: string[]
-  transmissions: string[]
-  bodyTypes: string[]
-  keyCounts: string[]
-  serviceBook: string[]
-  yesNo: string[]
-  yesNoUnknown: string[]
-  preferredContact: string[]
+  fuelTypes: DealerFormOption[]
+  transmissions: DealerFormOption[]
+  bodyTypes: DealerFormOption[]
+  keyCounts: DealerFormOption[]
+  serviceBook: DealerFormOption[]
+  yesNo: DealerFormOption[]
+  yesNoUnknown: DealerFormOption[]
+  preferredContact: DealerFormOption[]
 }
 
 type FormState = {
@@ -90,6 +92,7 @@ type FormState = {
   phone: string
   postalCode: string
   city: string
+  countryCode: string
   preferredContact: string
   privacyAccepted: boolean
 }
@@ -133,6 +136,7 @@ const initialState: FormState = {
   phone: '',
   postalCode: '',
   city: '',
+  countryCode: '',
   preferredContact: '',
   privacyAccepted: false,
 }
@@ -149,9 +153,20 @@ const imageFields = [
   'damage',
 ] as const
 
-export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: SellToDealerFormCopy; locale?: PublicFormLocale }) {
+export default function SellToDealerLeadForm({
+  copy,
+  locale = 'sv',
+  sourceCountryCode,
+}: {
+  copy: SellToDealerFormCopy
+  locale?: PublicFormLocale
+  sourceCountryCode?: string
+}) {
   const [step, setStep] = useState(0)
-  const [form, setForm] = useState<FormState>(initialState)
+  const [form, setForm] = useState<FormState>(() => ({
+    ...initialState,
+    countryCode: isActiveMarketCountryCode(sourceCountryCode) ? sourceCountryCode.toUpperCase() : '',
+  }))
   const [images, setImages] = useState<Record<string, File | null>>({})
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -160,15 +175,15 @@ export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: Se
   const selectedMake = form.make.trim()
   const imageCount = useMemo(() => Object.values(images).filter(Boolean).length, [images])
   const t = (value: string) => translatePublic(locale, value)
-  const options = {
-    fuelTypes: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Plug-in hybrid', 'Ethanol', 'Gas'].map(t),
-    transmissions: ['Automatic', 'Manual'].map(t),
-    bodyTypes: ['Estate', 'Sedan', 'Hatchback', 'SUV', 'Coupe', 'Convertible', 'Pickup', 'Minibus'].map(t),
-    keyCounts: ['1', '2', '3 or more'].map(t),
-    serviceBook: ['Yes', 'Partial', 'No'].map(t),
-    yesNo: ['Yes', 'No'].map(t),
-    yesNoUnknown: ['Yes', 'No', 'I do not know'].map(t),
-    preferredContact: ['Phone', 'SMS', 'Email'].map(t),
+  const options: DealerFormOptions = {
+    fuelTypes: localizedOptions(['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Plug-in hybrid', 'Ethanol', 'Gas'], t),
+    transmissions: localizedOptions(['Automatic', 'Manual'], t),
+    bodyTypes: localizedOptions(['Estate', 'Sedan', 'Hatchback', 'SUV', 'Coupe', 'Convertible', 'Pickup', 'Minibus'], t),
+    keyCounts: localizedOptions(['1', '2', '3 or more'], t),
+    serviceBook: localizedOptions(['Yes', 'Partial', 'No'], t),
+    yesNo: localizedOptions(['Yes', 'No'], t),
+    yesNoUnknown: localizedOptions(['Yes', 'No', 'I do not know'], t),
+    preferredContact: localizedOptions(['Phone', 'SMS', 'Email'], t),
   }
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -194,13 +209,13 @@ export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: Se
     }
     if (targetStep === 3) {
       if (!form.visibleDamage || !form.cosmeticDamage || !form.accidentHistory || !form.warningLights || !form.technicalProblems || !form.engineTransmissionProblems || !form.rust || !form.servicedBySchedule || !form.smokeFree || !form.interiorDamage) return t('Fill in vehicle condition and history.')
-      if (form.visibleDamage === options.yesNo[0] && form.damageDescription.trim().length < 3) return t('Describe the damage.')
+      if (form.visibleDamage === options.yesNo[0].value && form.damageDescription.trim().length < 3) return t('Describe the damage.')
     }
     if (targetStep === 4) {
       if (!form.firstName.trim() || !form.lastName.trim()) return t('Fill in first and last name.')
       if (!isValidEmail(form.email)) return t('Enter a valid email address.')
       if (form.phone.trim().length < 6) return t('Enter phone number.')
-      if (!form.postalCode.trim() || !form.city.trim() || !form.preferredContact) return t('Fill in postal code, city and preferred contact method.')
+      if (!form.postalCode.trim() || !form.city.trim() || !form.countryCode || !form.preferredContact) return t('Fill in country, postal code, city and preferred contact method.')
       if (!form.privacyAccepted) return t('Accept the privacy policy and terms.')
     }
     return ''
@@ -230,6 +245,8 @@ export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: Se
     body.set('vin', normalizeVin(form.vin))
     body.set('make', selectedMake)
     body.set('makeSource', 'manual')
+    body.set('sourceCountryCode', form.countryCode)
+    body.set('sourceLocale', locale)
     for (const key of imageFields) {
       const file = images[key]
       if (file) body.append(`image_${key}`, file)
@@ -238,7 +255,7 @@ export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: Se
     try {
       const response = await fetch('/api/dealer-offer-requests', { method: 'POST', body })
       const result = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(result?.error || copy.submitError)
+      if (!response.ok) throw new Error(copy.submitError)
       setSubmittedReference(result.reference || '')
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : copy.submitError)
@@ -275,7 +292,7 @@ export default function SellToDealerLeadForm({ copy, locale = 'sv' }: { copy: Se
         {step === 1 ? <VehicleIdentityStep form={form} update={update} selectedMake={selectedMake} t={t} /> : null}
         {step === 2 ? <DetailsStep form={form} update={update} t={t} options={options} /> : null}
         {step === 3 ? <ConditionStep form={form} update={update} images={images} setImages={setImages} t={t} options={options} /> : null}
-        {step === 4 ? <ContactStep form={form} update={update} selectedMake={selectedMake} imageCount={imageCount} t={t} options={options} /> : null}
+        {step === 4 ? <ContactStep form={form} update={update} selectedMake={selectedMake} imageCount={imageCount} t={t} options={options} locale={locale} /> : null}
       </div>
 
       {error ? <p className="mt-4 rounded-[12px] bg-[#fff4ed] px-3 py-2 text-xs font-semibold text-[#b42318]">{error}</p> : null}
@@ -393,7 +410,7 @@ function ConditionStep({ form, update, images, setImages, t, options }: StepProp
   )
 }
 
-function ContactStep({ form, update, selectedMake, imageCount, t, options }: StepProps & { selectedMake: string; imageCount: number; t: Translator; options: DealerFormOptions }) {
+function ContactStep({ form, update, selectedMake, imageCount, t, options, locale }: StepProps & { selectedMake: string; imageCount: number; t: Translator; options: DealerFormOptions; locale: PublicFormLocale }) {
   return (
     <section>
       <h3 className="text-lg font-semibold tracking-[-.025em]">{t('Your contact details')}</h3>
@@ -404,6 +421,7 @@ function ContactStep({ form, update, selectedMake, imageCount, t, options }: Ste
         <Field label={t('Phone number')} value={form.phone} placeholder={t('Phone number')} onChange={(value) => update('phone', value)} type="tel" />
         <Field label={t('Postal code')} value={form.postalCode} placeholder={t('Postal code')} onChange={(value) => update('postalCode', value)} />
         <Field label={t('City')} value={form.city} placeholder={t('City')} onChange={(value) => update('city', value)} />
+        <CountrySelect label={t('Country')} value={form.countryCode} onChange={(value) => update('countryCode', value)} placeholder={t('Select country')} locale={locale} />
         <Select label={t('Preferred contact method')} value={form.preferredContact} onChange={(value) => update('preferredContact', value)} options={options.preferredContact} placeholder={t('Select')} />
       </div>
       <div className="mt-4 rounded-[14px] bg-[#f8fbff] p-3 text-xs leading-5 text-[#344054]">
@@ -412,9 +430,10 @@ function ContactStep({ form, update, selectedMake, imageCount, t, options }: Ste
         <span className="block">{t('Mileage')}: {form.mileageKm || '-'} km</span>
         <span className="block">{t('Fuel')}: {form.fuelType || '-'}</span>
         <span className="block">{t('Transmission')}: {form.transmission || '-'}</span>
-        <span className="block">{t('Condition')}: {form.visibleDamage === options.yesNo[0] ? t('Damage reported') : t('No visible damage specified')}</span>
+        <span className="block">{t('Condition')}: {form.visibleDamage === options.yesNo[0].value ? t('Damage reported') : t('No visible damage specified')}</span>
         <span className="block">{t('Uploaded photos')}: {imageCount}</span>
         <span className="block">{t('Contact')}: {form.firstName} {form.lastName}, {form.email}, {form.phone}</span>
+        <span className="block">{t('Country')}: {form.countryCode ? getEuCountryName(form.countryCode, locale) : '-'}</span>
       </div>
       <label className="mt-4 flex gap-3 text-xs font-semibold leading-5 text-[#344054]">
         <input type="checkbox" className="mt-1 h-4 w-4 rounded border-[#98a2b3]" checked={form.privacyAccepted} onChange={(event) => update('privacyAccepted', event.target.checked)} />
@@ -441,15 +460,35 @@ function Field({ label, value, placeholder, onChange, inputMode, maxLength, type
   )
 }
 
-function Select({ label, value, options, onChange, placeholder = 'Välj' }: { label: string; value: string; options: string[]; onChange: (value: string) => void; placeholder?: string }) {
+function Select({ label, value, options, onChange, placeholder = 'Välj' }: { label: string; value: string; options: DealerFormOption[] | string[]; onChange: (value: string) => void; placeholder?: string }) {
   return (
     <label className="block text-xs font-bold text-[#344054]">
       {label}
       <span className="relative mt-1 block">
       <select className={`dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-[#7a8699]'}`} style={{ WebkitTextFillColor: value ? '#101828' : '#7a8699', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
         <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+        {options.map((option) => {
+          const value = typeof option === 'string' ? option : option.value
+          const label = typeof option === 'string' ? option : option.label
+          return <option key={value} value={value}>{label}</option>
+        })}
       </select>
+      </span>
+    </label>
+  )
+}
+
+function CountrySelect({ label, value, onChange, placeholder, locale }: { label: string; value: string; onChange: (value: string) => void; placeholder: string; locale: PublicFormLocale }) {
+  return (
+    <label className="block text-xs font-bold text-[#344054]">
+      {label}
+      <span className="relative mt-1 block">
+        <select className={`dealer-lead-input h-11 w-full rounded-[12px] border border-[#b9c3d1] bg-white px-3 text-sm font-normal outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12 ${value ? 'text-[#101828]' : 'text-[#7a8699]'}`} style={{ WebkitTextFillColor: value ? '#101828' : '#7a8699', fontWeight: 400 }} value={value} onChange={(event) => onChange(event.target.value)}>
+          <option value="" className="font-normal text-[#7a8699]">{placeholder}</option>
+          {ACTIVE_MARKET_COUNTRIES.map(([code]) => (
+            <option key={code} value={code}>{getEuCountryName(code, locale)}</option>
+          ))}
+        </select>
       </span>
     </label>
   )
@@ -474,4 +513,8 @@ function positiveInteger(value: string) {
 
 function digits(value: string) {
   return value.replace(/\D/g, '').slice(0, 8)
+}
+
+function localizedOptions(values: string[], translate: Translator): DealerFormOption[] {
+  return values.map((value) => ({ value, label: translate(value) }))
 }

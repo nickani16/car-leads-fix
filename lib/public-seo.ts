@@ -19,6 +19,22 @@ const hreflangByLocale: Record<PublicLocale, string> = {
   da: 'da-DK',
 }
 
+export function getPublicLanguageAlternates(path: string, languagePaths?: Partial<Record<PublicLocale, string>>) {
+  const normalizedPath = path === '/' ? '' : path
+  const localizedHref = (targetLocale: PublicLocale) => {
+    const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
+    const pathPart = targetPath === '/' ? '' : targetPath
+    return `${siteHost}${localePathPrefix(targetLocale)}${pathPart}`
+  }
+  const alternates = Object.fromEntries(
+    (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
+      hreflangByLocale[targetLocale],
+      localizedHref(targetLocale),
+    ]),
+  )
+  return { ...alternates, 'x-default': localizedHref('en') }
+}
+
 export function createPublicMetadata({
   title,
   description,
@@ -38,17 +54,7 @@ export function createPublicMetadata({
   const canonical = `${siteHost}${localePathPrefix(locale)}${normalizedPath}`
   const seoTitle = cleanSeoText(title, 65)
   const seoDescription = cleanSeoText(description, 150)
-  const localizedHref = (targetLocale: PublicLocale) => {
-    const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
-    const pathPart = targetPath === '/' ? '' : targetPath
-    return `${siteHost}${localePathPrefix(targetLocale)}${pathPart}`
-  }
-  const alternates = Object.fromEntries(
-    (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
-      hreflangByLocale[targetLocale],
-      localizedHref(targetLocale),
-    ]),
-  )
+  const alternates = getPublicLanguageAlternates(normalizedPath, languagePaths)
 
   return {
     title: { absolute: seoTitle },
@@ -56,10 +62,7 @@ export function createPublicMetadata({
     keywords,
     alternates: {
       canonical,
-      languages: {
-        ...alternates,
-        'x-default': localizedHref('en'),
-      },
+      languages: alternates,
     },
     openGraph: {
       title: seoTitle,

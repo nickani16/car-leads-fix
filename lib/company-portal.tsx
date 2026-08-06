@@ -30,6 +30,7 @@ import { AccountBreadcrumbs, type AccountCrumbKey } from '@/app/account/AccountB
 import AccountLogoutButton from '@/app/konto/AccountLogoutButton'
 import { getAccountCopy } from '@/lib/account-i18n'
 import { isBusinessFeatureEnabled } from '@/lib/business-feature-flags'
+import { countUnreadDealerLeads, dealerPlanCanReceiveLeads, dealerSubscriptionIsActive, getDealerLeadPreferences } from '@/lib/dealer-leads/access'
 
 export type CompanyPortalContext = {
   locale: PublicLocale
@@ -51,10 +52,13 @@ export type CompanyPortalContext = {
     current_period_end: string | null
     cancel_at_period_end: boolean | null
     cancellation_effective_at: string | null
+    manually_activated: boolean | null
+    free_period_ends_at: string | null
   } | null
   listingSummary: AccountListingSummary
   listingOwnerUserIds: string[]
   inventoryImportEnabled: boolean
+  dealerOfferUnreadCount: number
 }
 
 export type CompanyPortalPageKey =
@@ -324,7 +328,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
   const [{ data: subscription }, listingSummary, { data: pilot }] = await Promise.all([
     admin
       .from('business_subscriptions')
-      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at')
+      .select('plan_key,status,payment_status,active_listing_limit,next_billing_at,current_period_end,cancel_at_period_end,cancellation_effective_at,manually_activated,free_period_ends_at')
       .eq('user_id', scope.subscriptionUserId)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -361,6 +365,21 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     },
   )
 
+  let dealerOfferUnreadCount = 0
+  if (dealerPlanCanReceiveLeads(subscription?.plan_key) && dealerSubscriptionIsActive(subscription)) {
+    try {
+      const preferences = await getDealerLeadPreferences(admin, {
+        userId: user.id,
+        companyId: profile.company_id,
+        homeCountry: profile.country_code,
+        profileEmail: profile.email,
+      })
+      dealerOfferUnreadCount = await countUnreadDealerLeads(admin, { preferences, homeCountry: profile.country_code })
+    } catch (error) {
+      console.error('dealer lead unread count failed', error)
+    }
+  }
+
   return {
     locale,
     userId: user.id,
@@ -369,6 +388,7 @@ export async function getCompanyPortalContext(localeOverride?: PublicLocale): Pr
     listingSummary,
     listingOwnerUserIds: scope.listingOwnerUserIds,
     inventoryImportEnabled,
+    dealerOfferUnreadCount,
   }
 }
 
@@ -425,7 +445,11 @@ export function CompanyPortalShell({
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{label}</span>
                     </span>
-                    {locked ? <Lock className="h-3.5 w-3.5 shrink-0 opacity-70" /> : null}
+                    {locked ? <Lock className="h-3.5 w-3.5 shrink-0 opacity-70" /> : item.key === 'dealerOffers' && context.dealerOfferUnreadCount > 0 ? (
+                      <span className={`grid min-w-5 place-items-center rounded-full px-1.5 py-0.5 text-[11px] font-bold ${active === item.key ? 'bg-white text-[#0866ff]' : 'bg-[#0866ff] text-white'}`}>
+                        {context.dealerOfferUnreadCount > 99 ? '99+' : context.dealerOfferUnreadCount}
+                      </span>
+                    ) : null}
                   </Link>
                 )
               })}

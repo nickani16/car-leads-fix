@@ -7,6 +7,7 @@ import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import SellToDealerLeadForm, { type SellToDealerFormCopy } from '@/app/components/SellToDealerLeadForm'
 import { cleanSeoText } from '@/lib/market-seo'
+import { getPublicLanguageAlternates } from '@/lib/public-seo'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -621,16 +622,21 @@ const copyByLocale: Record<Exclude<PublicLocale, 'at' | 'be'>, SellToDealerBaseC
   },
 }
 
-export async function generateSellToDealerMetadata(): Promise<Metadata> {
+export async function generateSellToDealerMetadata({ localeOverride }: { localeOverride?: PublicLocale } = {}): Promise<Metadata> {
   const headerStore = await headers()
-  const locale = getRequestedLocale(headerStore)
+  const locale = localeOverride || getRequestedLocale(headerStore)
   const copy = getSellToDealerCopy(locale)
-  const canonicalPath = headerStore.get('x-autorell-pathname') || localizePublicHref(locale, '/sell-to-dealer')
+  const canonicalPath = localeOverride ? localizePublicHref(locale, '/sell-to-dealer') : headerStore.get('x-autorell-pathname') || localizePublicHref(locale, '/sell-to-dealer')
+  const title = cleanSeoText(copy.metaTitle, 55)
+  const description = cleanSeoText(copy.metaDescription, 155)
+  const canonical = `https://www.autorell.com${canonicalPath}`
 
   return {
-    title: { absolute: cleanSeoText(copy.metaTitle, 65) },
-    description: cleanSeoText(copy.metaDescription, 155),
-    alternates: { canonical: `https://www.autorell.com${canonicalPath}` },
+    title: { absolute: title },
+    description,
+    alternates: { canonical, languages: getPublicLanguageAlternates('/sell-to-dealer') },
+    openGraph: { title, description, url: canonical, type: 'website', siteName: 'Autorell' },
+    twitter: { card: 'summary_large_image', title, description },
   }
 }
 
@@ -677,7 +683,7 @@ export default async function SellToDealerPage({
             </div>
 
             <div className="sell-to-dealer-form-wrap flex min-w-0 items-center p-4 sm:p-7">
-              <SellToDealerLeadForm copy={copy} locale={locale} />
+              <SellToDealerLeadForm copy={copy} locale={locale} sourceCountryCode={marketCode} />
             </div>
           </div>
           <style>{`

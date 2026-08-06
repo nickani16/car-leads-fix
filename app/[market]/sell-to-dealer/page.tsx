@@ -7,8 +7,11 @@ import type { PublicLocale } from '@/lib/public-i18n'
 
 export const dynamic = 'force-dynamic'
 
-export async function generateMetadata(): Promise<Metadata> {
-  return generateSellToDealerMetadata()
+export async function generateMetadata({ params }: { params: Promise<{ market: string }> }): Promise<Metadata> {
+  const { market } = await params
+  const locale = resolveMarketLocale(market)
+  if (!locale) notFound()
+  return generateSellToDealerMetadata({ localeOverride: locale })
 }
 
 export default async function LocalizedSellToDealerPage({ params }: { params: Promise<{ market: string }> }) {
