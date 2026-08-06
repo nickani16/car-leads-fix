@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Camera, ImagePlus, LoaderCircle, Trash2 } from 'lucide-react'
 import { ACTIVE_MARKET_COUNTRIES, getEuCountryName, isActiveMarketCountryCode } from '@/lib/eu-countries'
 import { translatePublic } from '@/lib/public-i18n'
 
@@ -40,6 +41,7 @@ export type SellToDealerFormCopy = {
 
 type PublicFormLocale = 'sv' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da' | 'at' | 'be'
 type ImageKey = 'front' | 'rear' | 'leftSide' | 'rightSide' | 'interior' | 'odometer' | 'damage'
+type SubmitPhase = 'uploading' | 'processing'
 type Translator = (value: string) => string
 type DealerFormOption = { value: string; label: string }
 type DealerFormOptions = {
@@ -167,9 +169,11 @@ export default function SellToDealerLeadForm({
     ...initialState,
     countryCode: isActiveMarketCountryCode(sourceCountryCode) ? sourceCountryCode.toUpperCase() : '',
   }))
-  const [images, setImages] = useState<Record<string, File | null>>({})
+  const [images, setImages] = useState<Partial<Record<ImageKey, File | null>>>({})
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submitProgress, setSubmitProgress] = useState(0)
+  const [submitPhase, setSubmitPhase] = useState<SubmitPhase>('uploading')
   const [submittedReference, setSubmittedReference] = useState('')
 
   const selectedMake = form.make.trim()
@@ -230,6 +234,19 @@ export default function SellToDealerLeadForm({
     setStep((current) => Math.min(current + 1, 4))
   }
 
+  function updateImage(key: ImageKey, file: File | null) {
+    if (file && file.size > 25 * 1024 * 1024) {
+      setError(t('The image is larger than 25 MB.'))
+      return
+    }
+    if (file && !isSupportedClientImage(file)) {
+      setError(t('The selected file is not a supported image.'))
+      return
+    }
+    setImages((current) => ({ ...current, [key]: file }))
+    setError('')
+  }
+
   async function submit() {
     const message = validate(4)
     if (message) {
@@ -237,6 +254,8 @@ export default function SellToDealerLeadForm({
       return
     }
     setSubmitting(true)
+    setSubmitProgress(1)
+    setSubmitPhase('uploading')
     setError('')
     const body = new FormData()
     for (const [key, value] of Object.entries(form)) {
@@ -253,14 +272,22 @@ export default function SellToDealerLeadForm({
     }
 
     try {
-      const response = await fetch('/api/dealer-offer-requests', { method: 'POST', body })
-      const result = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(copy.submitError)
+      const result = await submitDealerRequest(body, {
+        onUploadProgress: (progress) => setSubmitProgress(progress),
+        onProcessing: () => setSubmitPhase('processing'),
+      }, {
+        generic: copy.submitError,
+        timeout: t('The request took too long. Please try again.'),
+      })
+      setSubmitProgress(100)
+      await wait(300)
       setSubmittedReference(result.reference || '')
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : copy.submitError)
     } finally {
       setSubmitting(false)
+      setSubmitProgress(0)
+      setSubmitPhase('uploading')
     }
   }
 
@@ -270,9 +297,6 @@ export default function SellToDealerLeadForm({
         <h2 className="text-2xl font-semibold tracking-[-.04em]">{copy.successTitle || t('Your vehicle request has been sent')}</h2>
         <p className="mt-3 text-sm leading-6 text-[#475467]">
           {t('Reference number')}: <strong className="text-[#101828]">{submittedReference}</strong>
-        </p>
-        <p className="mt-2 text-sm leading-6 text-[#475467]">
-          {copy.successText || t('Connected dealers can now review the details, photos and your contact information and respond with offers.')}
         </p>
       </div>
     )
@@ -291,7 +315,7 @@ export default function SellToDealerLeadForm({
         {step === 0 ? <VinStep form={form} update={update} t={t} /> : null}
         {step === 1 ? <VehicleIdentityStep form={form} update={update} selectedMake={selectedMake} t={t} /> : null}
         {step === 2 ? <DetailsStep form={form} update={update} t={t} options={options} /> : null}
-        {step === 3 ? <ConditionStep form={form} update={update} images={images} setImages={setImages} t={t} options={options} /> : null}
+        {step === 3 ? <ConditionStep form={form} update={update} images={images} updateImage={updateImage} t={t} options={options} /> : null}
         {step === 4 ? <ContactStep form={form} update={update} selectedMake={selectedMake} imageCount={imageCount} t={t} options={options} locale={locale} /> : null}
       </div>
 
@@ -313,6 +337,8 @@ export default function SellToDealerLeadForm({
           </button>
         )}
       </div>
+
+      {submitting ? <SubmissionProgress progress={submitProgress} phase={submitPhase} t={t} /> : null}
     </div>
   )
 }
@@ -367,7 +393,7 @@ function DetailsStep({ form, update, t, options }: StepProps & { t: Translator; 
   )
 }
 
-function ConditionStep({ form, update, images, setImages, t, options }: StepProps & { images: Record<string, File | null>; setImages: (images: Record<string, File | null>) => void; t: Translator; options: DealerFormOptions }) {
+function ConditionStep({ form, update, images, updateImage, t, options }: StepProps & { images: Partial<Record<ImageKey, File | null>>; updateImage: (key: ImageKey, file: File | null) => void; t: Translator; options: DealerFormOptions }) {
   const imageLabels: Record<ImageKey, string> = {
     front: t('Front'),
     rear: t('Rear'),
@@ -398,12 +424,16 @@ function ConditionStep({ form, update, images, setImages, t, options }: StepProp
         {t('Anything else the dealer should know')}
         <textarea className="dealer-lead-input mt-1 min-h-20 w-full rounded-[12px] border border-[#b9c3d1] px-3 py-2 text-sm font-normal text-[#101828] outline-none transition placeholder:text-[#7a8699] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/12" placeholder={t('For example import, extra equipment or upcoming service')} value={form.otherNotes} onChange={(event) => update('otherNotes', event.target.value)} />
       </label>
-      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {imageFields.map((key) => (
-          <label key={key} className="rounded-[14px] border border-dashed border-[#b9c3d1] bg-[#f8fbff] p-3 text-xs font-bold text-[#344054]">
-            {imageLabels[key]}
-            <input className="mt-2 block w-full text-xs font-normal text-[#667085] file:mr-3 file:rounded-full file:border-0 file:bg-[#0866ff] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setImages({ ...images, [key]: event.target.files?.[0] || null })} />
-          </label>
+          <ImageUploadCard
+            key={key}
+            imageKey={key}
+            label={imageLabels[key]}
+            file={images[key] || null}
+            onChange={(file) => updateImage(key, file)}
+            t={t}
+          />
         ))}
       </div>
     </section>
@@ -492,6 +522,174 @@ function CountrySelect({ label, value, onChange, placeholder, locale }: { label:
       </span>
     </label>
   )
+}
+
+function ImageUploadCard({ imageKey, label, file, onChange, t }: { imageKey: ImageKey; label: string; file: File | null; onChange: (file: File | null) => void; t: Translator }) {
+  const pickerId = `dealer-image-${imageKey}-picker`
+  const cameraId = `dealer-image-${imageKey}-camera`
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
+
+  function readSelectedFile(files: FileList | null) {
+    onChange(files?.[0] || null)
+  }
+
+  return (
+    <article className="min-w-0 overflow-hidden rounded-[14px] border border-[#c7d2e2] bg-white shadow-[0_4px_14px_rgba(16,24,40,.06)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#eef5ff]">
+        {previewUrl ? (
+          <div
+            role="img"
+            aria-label={`${t('Photo selected')}: ${label}`}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${JSON.stringify(previewUrl)})` }}
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center text-[#667085]">
+            <ImagePlus aria-hidden="true" className="h-7 w-7 stroke-[1.6] text-[#0866ff]" />
+            <span className="text-[11px] font-normal leading-4">{t('No photo selected')}</span>
+          </div>
+        )}
+        {file ? (
+          <button
+            type="button"
+            title={t('Remove photo')}
+            aria-label={`${t('Remove photo')}: ${label}`}
+            className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-[0_3px_12px_rgba(16,24,40,.2)] transition hover:bg-[#f2f4f7]"
+            onClick={() => onChange(null)}
+          >
+            <Trash2 aria-hidden="true" className="h-4 w-4 stroke-[1.8]" />
+          </button>
+        ) : null}
+      </div>
+      <div className="p-2.5">
+        <h4 className="truncate text-xs font-bold text-[#344054]">{label}</h4>
+        <p className="mt-1 truncate text-[10px] font-normal text-[#667085]" title={file?.name}>
+          {file ? `${file.name} · ${formatFileSize(file.size)}` : t('JPG, PNG, WebP or AVIF, max 25 MB.')}
+        </p>
+        <div className="mt-2 grid gap-1.5">
+          <input
+            id={pickerId}
+            className="sr-only"
+            type="file"
+            accept="image/*,.jpg,.jpeg,.png,.webp,.avif"
+            onClick={(event) => { event.currentTarget.value = '' }}
+            onChange={(event) => readSelectedFile(event.target.files)}
+          />
+          <label htmlFor={pickerId} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#0866ff] px-2 text-[11px] font-bold text-white transition hover:bg-[#0759de]">
+            <ImagePlus aria-hidden="true" className="h-4 w-4 stroke-[1.8]" />
+            {file ? t('Replace photo') : t('Choose photo')}
+          </label>
+          <input
+            id={cameraId}
+            className="sr-only"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onClick={(event) => { event.currentTarget.value = '' }}
+            onChange={(event) => readSelectedFile(event.target.files)}
+          />
+          <label htmlFor={cameraId} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#0866ff] bg-white px-2 text-[11px] font-bold text-[#0866ff] transition hover:bg-[#eef5ff]">
+            <Camera aria-hidden="true" className="h-4 w-4 stroke-[1.8]" />
+            {t('Take photo')}
+          </label>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function SubmissionProgress({ progress, phase, t }: { progress: number; phase: SubmitPhase; t: Translator }) {
+  const roundedProgress = Math.max(1, Math.min(100, Math.round(progress)))
+  const title = phase === 'uploading' ? t('Uploading details and photos') : t('Reviewing vehicle details and processing photos')
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#101828]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-labelledby="dealer-submit-progress-title">
+      <div className="w-full max-w-md rounded-[18px] bg-white p-5 shadow-[0_24px_80px_rgba(16,24,40,.28)] sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eaf2ff] text-[#0866ff]">
+            <LoaderCircle aria-hidden="true" className="h-6 w-6 animate-spin stroke-[1.8]" />
+          </span>
+          <div className="min-w-0">
+            <h2 id="dealer-submit-progress-title" className="text-lg font-semibold leading-6 text-[#101828]">{t('Preparing your request')}</h2>
+            <p className="mt-1 text-sm font-normal leading-5 text-[#667085]">{title}</p>
+          </div>
+        </div>
+        <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-[#e4e7ec]" aria-hidden="true">
+          <div className="h-full rounded-full bg-[#0866ff] transition-[width] duration-300 ease-out" style={{ width: `${roundedProgress}%` }} />
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+          <span className="font-normal text-[#667085]">{t('Please wait. Keep this page open until the request is sent.')}</span>
+          <strong className="shrink-0 text-[#101828]" aria-live="polite">{roundedProgress}%</strong>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function submitDealerRequest(body: FormData, handlers: { onUploadProgress: (progress: number) => void; onProcessing: () => void }, messages: { generic: string; timeout: string }): Promise<{ reference?: string }> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest()
+    let processingProgress = 78
+    let processingTimer: number | undefined
+
+    function stopTimer() {
+      if (processingTimer !== undefined) window.clearInterval(processingTimer)
+    }
+
+    request.open('POST', '/api/dealer-offer-requests')
+    request.responseType = 'json'
+    request.timeout = 5 * 60 * 1000
+    request.upload.addEventListener('progress', (event) => {
+      if (!event.lengthComputable || event.total <= 0) return
+      handlers.onUploadProgress(Math.max(3, Math.min(75, Math.round((event.loaded / event.total) * 75))))
+    })
+    request.upload.addEventListener('load', () => {
+      handlers.onProcessing()
+      handlers.onUploadProgress(processingProgress)
+      processingTimer = window.setInterval(() => {
+        processingProgress = Math.min(94, processingProgress + 1)
+        handlers.onUploadProgress(processingProgress)
+      }, 700)
+    })
+    request.addEventListener('load', () => {
+      stopTimer()
+      const result = request.response && typeof request.response === 'object' ? request.response as { reference?: string } : null
+      if (request.status >= 200 && request.status < 300) {
+        resolve({ reference: result?.reference })
+        return
+      }
+      reject(new Error(messages.generic))
+    })
+    request.addEventListener('error', () => {
+      stopTimer()
+      reject(new Error(messages.generic))
+    })
+    request.addEventListener('timeout', () => {
+      stopTimer()
+      reject(new Error(messages.timeout))
+    })
+    request.send(body)
+  })
+}
+
+function isSupportedClientImage(file: File) {
+  const type = file.type.toLowerCase()
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(type)) return true
+  return !type && /\.(jpe?g|png|webp|avif)$/i.test(file.name)
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 }
 
 function normalizeVin(value: string) {

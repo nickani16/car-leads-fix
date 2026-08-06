@@ -12,10 +12,12 @@ const companyPortal = readFileSync(new URL('../lib/company-portal.tsx', import.m
 const access = readFileSync(new URL('../lib/dealer-leads/access.ts', import.meta.url), 'utf8')
 const portalCopy = readFileSync(new URL('../lib/dealer-leads/i18n.ts', import.meta.url), 'utf8')
 const email = readFileSync(new URL('../lib/email/dealer-vehicle-lead.ts', import.meta.url), 'utf8')
+const customerEmail = readFileSync(new URL('../lib/email/dealer-vehicle-lead-customer.ts', import.meta.url), 'utf8')
 const seo = readFileSync(new URL('../lib/public-seo.ts', import.meta.url), 'utf8')
 const baseMigration = readFileSync(new URL('../supabase/migrations/20260806103000_dealer_lead_country_notifications.sql', import.meta.url), 'utf8')
 const teamMigration = readFileSync(new URL('../supabase/migrations/20260806111500_dealer_lead_team_access.sql', import.meta.url), 'utf8')
 const entitlementMigration = readFileSync(new URL('../supabase/migrations/20260806140520_dealer_lead_entitlement_start.sql', import.meta.url), 'utf8')
+const customerEmailMigration = readFileSync(new URL('../supabase/migrations/20260806171823_dealer_lead_customer_confirmation.sql', import.meta.url), 'utf8')
 
 test('seller flow requires VIN and persists country and locale with every lead', () => {
   assert.match(form, /if \(!vin\) return t\('Enter VIN\/chassis number\.'\)/)
@@ -66,6 +68,34 @@ test('new leads reserve idempotent localized emails and direct seller contact ac
   for (const locale of ['en', 'sv', 'de', 'fr', 'es', 'it', 'nl', 'fi', 'da', 'pl']) {
     assert.match(email, new RegExp(`\\n  ${locale}: copy\\(`))
     if (locale !== 'en') assert.match(portalCopy, new RegExp(`\\n  ${locale}: language\\(`))
+  }
+})
+
+test('seller photo uploads preview on-device and report real submission progress', () => {
+  assert.match(form, /URL\.createObjectURL\(file\)/)
+  assert.match(form, /URL\.revokeObjectURL\(previewUrl\)/)
+  assert.match(form, /capture="environment"/)
+  assert.match(form, /accept="image\/\*[^\"]*"/)
+  assert.match(form, /text-white[\s\S]*Choose photo/)
+  assert.match(form, /new XMLHttpRequest\(\)/)
+  assert.match(form, /request\.upload\.addEventListener\('progress'/)
+  assert.match(form, /<SubmissionProgress progress=\{submitProgress\}/)
+  assert.match(form, /Keep this page open until the request is sent/)
+  assert.doesNotMatch(form, /\{copy\.successText\}/)
+})
+
+test('seller receives one localized confirmation email with the request reference', () => {
+  assert.match(requestApi, /sendDealerVehicleLeadCustomerConfirmation/)
+  assert.match(requestApi, /Promise\.allSettled/)
+  assert.match(customerEmail, /dealer_vehicle_lead_customer_email_deliveries/)
+  assert.match(customerEmail, /Idempotency-Key.*dealer-lead-customer-/s)
+  assert.match(customerEmail, /lead\.reference/)
+  assert.match(customerEmailMigration, /unique \(lead_id\)/)
+  assert.match(customerEmailMigration, /enable row level security/)
+  assert.match(customerEmailMigration, /revoke all.*anon, authenticated/s)
+  assert.match(customerEmailMigration, /grant all.*service_role/s)
+  for (const locale of ['en', 'sv', 'de', 'fr', 'es', 'it', 'nl', 'fi', 'da', 'pl']) {
+    assert.match(customerEmail, new RegExp(`\\n  ${locale}: customerCopy\\(`))
   }
 })
 

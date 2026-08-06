@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizeDealerLeadCountryCode } from '@/lib/dealer-leads/access'
 import { sendDealerVehicleLeadNotifications } from '@/lib/email/dealer-vehicle-lead'
+import { sendDealerVehicleLeadCustomerConfirmation } from '@/lib/email/dealer-vehicle-lead-customer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
@@ -137,30 +138,47 @@ async function handlePost(request: Request) {
   }
 
   after(async () => {
-    try {
-      await sendDealerVehicleLeadNotifications(admin, {
+    const notificationInput = {
+      id: lead.id,
+      reference: lead.reference,
+      createdAt: lead.created_at,
+      sourceCountryCode: payload.sourceCountryCode,
+      make: payload.make,
+      model: payload.model,
+      modelYear: Number(payload.modelYear),
+      mileageKm: Number(payload.mileageKm),
+      fuelType: payload.fuelType,
+      transmission: payload.transmission,
+      city: payload.city,
+      postalCode: payload.postalCode,
+      contactName: `${payload.firstName} ${payload.lastName}`.trim(),
+      contactEmail: payload.email,
+      contactPhone: payload.phone,
+      preferredContact: payload.preferredContact,
+      visibleDamage: payload.visibleDamage,
+      imageCount: uploadedImages.length,
+    }
+    const results = await Promise.allSettled([
+      sendDealerVehicleLeadNotifications(admin, notificationInput),
+      sendDealerVehicleLeadCustomerConfirmation(admin, {
         id: lead.id,
         reference: lead.reference,
-        createdAt: lead.created_at,
+        sourceLocale: payload.sourceLocale,
         sourceCountryCode: payload.sourceCountryCode,
         make: payload.make,
         model: payload.model,
         modelYear: Number(payload.modelYear),
-        mileageKm: Number(payload.mileageKm),
-        fuelType: payload.fuelType,
-        transmission: payload.transmission,
-        city: payload.city,
-        postalCode: payload.postalCode,
         contactName: `${payload.firstName} ${payload.lastName}`.trim(),
         contactEmail: payload.email,
-        contactPhone: payload.phone,
         preferredContact: payload.preferredContact,
-        visibleDamage: payload.visibleDamage,
-        imageCount: uploadedImages.length,
-      })
-    } catch (notificationError) {
-      console.error('dealer lead notifications failed', { leadId: lead.id, notificationError })
-    }
+      }),
+    ])
+    const labels = ['dealer notifications', 'customer confirmation']
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`dealer lead ${labels[index]} failed`, { leadId: lead.id, error: result.reason })
+      }
+    })
   })
 
   return NextResponse.json({ success: true, reference: lead.reference })
