@@ -24,8 +24,8 @@ export const sitemapMarketCountries: Record<SitemapMarketCode, string> = {
 }
 
 export async function GET() {
+  const staticSitemapNames = allSitemapMarkets.map((market) => `static-${market}`)
   const seoSitemapNames = ['se', 'de', 'es'].flatMap((market) => [
-    `static-${market}`,
     `categories-${market}`,
     `brands-${market}`,
     `models-${market}`,
@@ -37,6 +37,7 @@ export async function GET() {
   const geoMakeSitemapNames = await getGeoMakeSitemapNames()
   const vehicleNewsSitemapNames = allSitemapMarkets.map((market) => `vehicle-news-${market}`)
   const sitemapNames = [
+    ...staticSitemapNames,
     ...seoSitemapNames,
     ...marketplaceSitemapNames,
     ...geoSitemapNames,

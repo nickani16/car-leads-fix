@@ -1,11 +1,6 @@
-import {
-  getPublicMarket,
-  getPublicMarketConfig,
-} from '@/lib/public-market'
+const canonicalSitemap = 'https://www.autorell.com/sitemap.xml'
 
-export function GET(request: Request) {
-  const market = getPublicMarket(request)
-  const { host } = getPublicMarketConfig(market)
+export function GET() {
   const body = [
     'User-Agent: *',
     'Allow: /',
@@ -31,7 +26,7 @@ export function GET(request: Request) {
     'Disallow: /*?*gclid=',
     'Disallow: /*?*fbclid=',
     '',
-    `Sitemap: ${host}/sitemap.xml`,
+    `Sitemap: ${canonicalSitemap}`,
     '',
   ].join('\n')
 
@@ -39,7 +34,6 @@ export function GET(request: Request) {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
-      Vary: 'Host, X-Forwarded-Host',
     },
   })
 }

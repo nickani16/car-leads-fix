@@ -10,6 +10,8 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { currencyForLocale } from '@/lib/market-locale'
+import { createPublicMetadata } from '@/lib/public-seo'
+import { getRequestLocale } from '@/lib/request-locale'
 
 type ReportPageCopy = {
   title: string
@@ -166,6 +168,18 @@ const reportPageCopy: Record<PublicLocale, ReportPageCopy> = {
       'Vi kan gemme annonce-, konto-, besked- og betalingsreferencer, gennemgå mistænkelig aktivitet, begrænse konti og give relevante platformoplysninger til en lovlig undersøgelse.',
     helpLink: 'Åbn hjælpecenter',
   },
+}
+
+export async function generateMetadata() {
+  const locale = await getRequestLocale()
+  const copy = reportPageCopy[locale] || reportPageCopy.en
+
+  return createPublicMetadata({
+    title: `${copy.title} | Autorell`,
+    description: copy.intro,
+    path: '/report',
+    locale,
+  })
 }
 
 export default async function ReportPage() {

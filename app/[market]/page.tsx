@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import {
   euBuyerMarkets,
-  getEuBuyerHubAlternates,
   getEuBuyerMarket,
 } from '@/lib/eu-buyer-markets'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { type PublicLocale } from '@/lib/public-i18n'
+import { getPublicLanguageAlternates } from '@/lib/public-seo'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -26,11 +26,13 @@ export async function generateMetadata({
   params,
 }: MarketPageProps): Promise<Metadata> {
   const { market: marketCode } = await params
+  const languages = getPublicLanguageAlternates('/')
 
   if (marketCode === 'se' || marketCode === 'de') {
     return createSeoMetadata({
       seo: getMarketHomeSeo(marketCode),
       canonical: `https://www.autorell.com/${marketCode}`,
+      alternates: { languages },
     })
   }
 
@@ -41,7 +43,7 @@ export async function generateMetadata({
   return createSeoMetadata({
     seo: getMarketHomeSeo(market.code),
     canonical,
-    alternates: { canonical, languages: getEuBuyerHubAlternates() },
+    alternates: { languages },
   })
 }
 

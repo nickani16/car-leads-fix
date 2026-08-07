@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import { Geist } from 'next/font/google'
 import CookieConsent from './components/CookieConsent'
 import ConsentManagedTelemetry from './components/ConsentManagedTelemetry'
@@ -60,6 +61,51 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
+  verification: buildSiteVerification(),
+}
+
+function buildSiteVerification(): Metadata['verification'] {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim()
+  const bing = process.env.BING_SITE_VERIFICATION?.trim()
+  if (!google && !bing) return undefined
+
+  return {
+    google: google || undefined,
+    other: bing ? { 'msvalidate.01': bing } : undefined,
+  }
+}
+
+async function getDocumentLanguage() {
+  const requestHeaders = await headers()
+  const market = requestHeaders.get('x-autorell-market')?.toUpperCase()
+  const language = requestHeaders.get('x-autorell-language')?.toLowerCase()
+  const marketLanguages: Record<string, string> = {
+    SE: 'sv-SE',
+    DE: 'de-DE',
+    AT: 'de-AT',
+    BE: 'nl-BE',
+    FR: 'fr-FR',
+    ES: 'es-ES',
+    IT: 'it-IT',
+    PL: 'pl-PL',
+    NL: 'nl-NL',
+    FI: 'fi-FI',
+    DK: 'da-DK',
+  }
+  const languageFallbacks: Record<string, string> = {
+    sv: 'sv-SE',
+    de: 'de-DE',
+    fr: 'fr-FR',
+    es: 'es-ES',
+    it: 'it-IT',
+    pl: 'pl-PL',
+    nl: 'nl-NL',
+    fi: 'fi-FI',
+    da: 'da-DK',
+    en: 'en',
+  }
+
+  return (market && marketLanguages[market]) || (language && languageFallbacks[language]) || 'en'
 }
 
 export default async function RootLayout({
@@ -67,9 +113,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const documentLanguage = await getDocumentLanguage()
+
   return (
     <html
-      lang="en"
+      lang={documentLanguage}
       className={`${geist.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">

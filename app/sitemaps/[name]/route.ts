@@ -45,14 +45,17 @@ export async function GET(
   const { name } = await params
   const normalizedName = name.replace(/\.xml$/i, '')
   const market = marketFromSitemapName(normalizedName)
+  const staticMarket = marketFromPrefixedSitemapName(normalizedName, 'static')
   const listingCountry = listingCountryFromSitemapName(normalizedName)
   const geoSitemap = geoSitemapFromName(normalizedName)
   const geoMakeSitemap = geoMakeSitemapFromName(normalizedName)
   const marketplaceSearchMarket = marketFromPrefixedSitemapName(normalizedName, 'marketplace')
   const vehicleNewsMarket = marketFromPrefixedSitemapName(normalizedName, 'vehicle-news')
-  if (!market && !listingCountry && !geoSitemap && !geoMakeSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
+  if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
 
-  const urls = vehicleNewsMarket
+  const urls = staticMarket
+    ? staticPublicUrls(staticMarket)
+    : vehicleNewsMarket
     ? await vehicleNewsUrls(vehicleNewsMarket)
     : marketplaceSearchMarket
     ? marketplaceSearchUrls(marketplaceSearchMarket)
@@ -205,14 +208,6 @@ function staticSeoUrls(market: SeoMarketCode, name: string) {
     .map((category) => buildSeoPath({ market, category: category.slug }))
     .filter((path): path is string => Boolean(path))
 
-  if (name.startsWith('static-')) {
-    return [
-      `/${market}`,
-      `/${market}/marketplace`,
-      ...categoryUrls,
-    ].map((path) => sitemapUrl(path, now, 'daily', '0.8'))
-  }
-
   if (name.startsWith('categories-')) {
     return categoryUrls.map((path) => sitemapUrl(path, now, 'daily', '0.9'))
   }
@@ -238,6 +233,39 @@ function staticSeoUrls(market: SeoMarketCode, name: string) {
   return []
 }
 
+function staticPublicUrls(market: SitemapMarketCode) {
+  const publicPaths = [
+    '',
+    '/app',
+    '/sell-car',
+    '/sell-to-dealer',
+    '/sell-van',
+    '/about',
+    '/help-center',
+    '/contact',
+    '/pricing',
+    '/business',
+    '/privacy',
+    '/cookies',
+    '/terms',
+    '/refund-policy',
+    '/withdrawal',
+    '/report',
+  ]
+  const paths = publicPaths.map((path) => `/${market}${path}`)
+
+  if (market === 'se' || market === 'de' || market === 'es') {
+    const seoMarket = market as SeoMarketCode
+    const categoryUrls = marketplaceCategories
+      .filter((category) => ['cars', 'vans', 'motorcycles', 'trucks'].includes(category.slug))
+      .map((category) => buildSeoPath({ market: seoMarket, category: category.slug }))
+      .filter((path): path is string => Boolean(path))
+    paths.push(`/${market}/marketplace`, ...categoryUrls)
+  }
+
+  return [...new Set(paths)].map((path) => sitemapUrl(path, undefined, 'weekly', '0.8'))
+}
+
 function flatCategoryUrls(
   market: SeoMarketCode,
   build: (category: MarketplaceCategorySlug) => Array<string | null>,
@@ -252,7 +280,7 @@ async function listingUrls(country: string, page: number) {
   const offset = (page - 1) * maxUrlsPerSitemap
   const { data } = await createAdminClient()
     .from('marketplace_listings')
-    .select('id,title,make,model,model_year,city,country_code,published_at,created_at')
+    .select('id,title,make,model,model_year,city,country_code,updated_at,published_at,created_at')
     .eq('status', 'published')
     .eq('country_code', country)
     .not('published_at', 'is', null)
@@ -263,7 +291,7 @@ async function listingUrls(country: string, page: number) {
 
   return (data || []).map((listing) => sitemapUrl(
     buildListingPath(listing),
-    listing.published_at || listing.created_at,
+    listing.updated_at || listing.published_at || listing.created_at,
     'daily',
     '0.9',
   ))

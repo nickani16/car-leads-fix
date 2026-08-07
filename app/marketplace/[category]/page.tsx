@@ -24,10 +24,12 @@ import {
 } from '@/lib/marketplace-public-data'
 import {
   isPublicLanguage,
+  stripLocalePrefix,
   translatePublic,
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import { getPublicLanguageAlternates } from '@/lib/public-seo'
 import {
   normalizeSearchBounds,
   parseMarketplaceSearchState,
@@ -94,11 +96,16 @@ export async function generateMetadata({
       : `${host}${canonicalPath}`
   )
   const { title, description } = seo
+  const canonicalUrl = new URL(canonical)
+  const alternatePath = `${stripLocalePrefix(canonicalUrl.pathname)}${canonicalUrl.search}`
 
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: getPublicLanguageAlternates(alternatePath),
+    },
     robots: marketplaceSeo.robots,
     openGraph: {
       title,
