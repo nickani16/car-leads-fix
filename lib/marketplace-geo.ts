@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getStaticGeoDataset, normalizeGeoName, type StaticGeoPlace } from './geo-static-datasets'
+import type { MarketplaceGeoArea } from './marketplace-search-state'
 import { createAdminClient } from './supabase/admin'
 
 export type GeoRegionOption = {
@@ -47,9 +48,120 @@ const supportedGeoCountries = new Set([
   'ES',
   'SE',
 ])
+
+const geoAreaCache = new Map<string, MarketplaceGeoArea[]>()
+
+const countryMapGeometry: Record<
+  string,
+  Pick<MarketplaceGeoArea, 'centroid' | 'bounds'>
+> = {
+  AT: { centroid: { latitude: 47.6, longitude: 14.1 }, bounds: { north: 49.1, east: 17.2, south: 46.3, west: 9.5 } },
+  BE: { centroid: { latitude: 50.6, longitude: 4.7 }, bounds: { north: 51.5, east: 6.4, south: 49.5, west: 2.5 } },
+  DE: { centroid: { latitude: 51.2, longitude: 10.4 }, bounds: { north: 55.1, east: 15.1, south: 47.2, west: 5.8 } },
+  DK: { centroid: { latitude: 56.1, longitude: 10 }, bounds: { north: 57.8, east: 15.2, south: 54.5, west: 8 } },
+  ES: { centroid: { latitude: 40.4, longitude: -3.7 }, bounds: { north: 43.8, east: 4.4, south: 36, west: -9.4 } },
+  FI: { centroid: { latitude: 64.5, longitude: 26 }, bounds: { north: 70.1, east: 31.6, south: 59.7, west: 19.1 } },
+  FR: { centroid: { latitude: 46.6, longitude: 2.3 }, bounds: { north: 51.2, east: 8.3, south: 41.3, west: -5.2 } },
+  IT: { centroid: { latitude: 42.8, longitude: 12.5 }, bounds: { north: 47.1, east: 18.8, south: 36.6, west: 6.6 } },
+  NL: { centroid: { latitude: 52.1, longitude: 5.3 }, bounds: { north: 53.7, east: 7.3, south: 50.7, west: 3.3 } },
+  PL: { centroid: { latitude: 52.1, longitude: 19.4 }, bounds: { north: 54.9, east: 24.2, south: 49, west: 14.1 } },
+  SE: { centroid: { latitude: 62, longitude: 15 }, bounds: { north: 69.1, east: 24.2, south: 55.2, west: 10.6 } },
+}
+
 export function normalizeGeoCountry(countryCode: string | null | undefined) {
   const normalized = String(countryCode || '').trim().toUpperCase()
   return supportedGeoCountries.has(normalized) ? normalized : 'SE'
+}
+
+export function getStaticMarketplaceGeoAreas(countryCode: string) {
+  const country = normalizeGeoCountry(countryCode)
+  const cached = geoAreaCache.get(country)
+  if (cached) return cached
+
+  const dataset = getStaticGeoDataset(country)
+  if (!dataset) return []
+  const geometry = countryMapGeometry[country] || {
+    centroid: { latitude: 50, longitude: 10 },
+    bounds: { north: 72, east: 32, south: 35, west: -10 },
+  }
+  const areas: MarketplaceGeoArea[] = [
+    ...dataset.regions.map((region) => ({
+      id: `${country}:region:${region.code}`,
+      countryCode: country,
+      level: 'region' as const,
+      name: region.name,
+      code: region.code,
+      slug: marketplaceGeoSlug(region.name),
+      region: region.name,
+      centroid: geometry.centroid,
+      bounds: geometry.bounds,
+      aliases: [region.code, region.name, marketplaceGeoSlug(region.name)],
+    })),
+    ...dataset.places.map((place) => ({
+      id: `${country}:locality:${place.code}`,
+      countryCode: country,
+      level: 'locality' as const,
+      name: place.name,
+      code: place.code,
+      slug: marketplaceGeoSlug(place.name || place.city),
+      region: place.regionName,
+      municipality: place.name,
+      locality: place.city || place.name,
+      postalCode: place.postalCode || undefined,
+      centroid: geometry.centroid,
+      bounds: geometry.bounds,
+      aliases: [place.code, place.name, place.city, marketplaceGeoSlug(place.name || place.city)].filter(Boolean),
+    })),
+  ]
+
+  const seen = new Set<string>()
+  const uniqueAreas = areas.filter((area) => {
+    if (!area.slug || seen.has(area.slug)) return false
+    seen.add(area.slug)
+    return true
+  })
+  geoAreaCache.set(country, uniqueAreas)
+  return uniqueAreas
+}
+
+export function resolveStaticMarketplaceGeoAreaBySlug(
+  countryCode: string,
+  slug: string | null | undefined,
+) {
+  const normalizedSlug = marketplaceGeoSlug(slug || '')
+  if (!normalizedSlug) return null
+  return (
+    getStaticMarketplaceGeoAreas(countryCode).find((area) =>
+      area.slug === normalizedSlug ||
+      marketplaceGeoSlug(area.code || '') === normalizedSlug ||
+      area.aliases.some((alias) => marketplaceGeoSlug(alias) === normalizedSlug),
+    ) || null
+  )
+}
+
+export function resolveStaticMarketplaceGeoArea(
+  value: string | null | undefined,
+) {
+  const normalized = String(value || '').trim().toLowerCase()
+  if (!normalized) return null
+  const countryCode = normalized.slice(0, 2).toUpperCase()
+  if (!supportedGeoCountries.has(countryCode)) return null
+  return (
+    getStaticMarketplaceGeoAreas(countryCode).find((area) =>
+      area.id.toLowerCase() === normalized ||
+      String(area.code || '').toLowerCase() === normalized,
+    ) || null
+  )
+}
+
+export function marketplaceGeoSlug(value: string) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 export async function getGeoRegions(countryCode: string) {
