@@ -122,9 +122,9 @@ test('geo area filters prefer stable columns before text fallback', () => {
   ]) {
     assert.ok(searchStateSource.includes(snippet), `${snippet} should be present`)
   }
-  assert.match(searchSource, /geoArea\.level === 'region'/)
-  assert.match(searchSource, /geoArea\.level === 'municipality'/)
-  assert.match(searchSource, /geoArea\.level === 'locality'/)
+  assert.match(searchSource, /marketplaceGeoAreaOrFilters\(geoArea\)/)
+  assert.match(searchSource, /resolveStaticMarketplaceGeoArea\(geoAreaValue\)/)
+  assert.match(searchSource, /query\.or\(filters\.join\(','\)\)/)
   assert.match(searchSource, /geoArea\.level === 'postal_code'/)
 })
 
@@ -206,8 +206,13 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.doesNotMatch(geoLandingSource, /buildGeoLandingMetadata/)
   assert.match(marketCatchAllSource, /redirect\(buildGeoMarketplaceHref\(geoLanding\)\)/)
   assert.match(swedishCarRouteSource, /redirect\(buildGeoMarketplaceHref\(landing\)\)/)
-  assert.match(internalSeoRouteSource, /redirect\(destination\)/)
-  assert.match(internalSeoRouteSource, /buildGeoMarketplaceHref\(geoLanding\)/)
+  assert.match(internalSeoRouteSource, /import MarketplaceCategoryPage/)
+  assert.match(internalSeoRouteSource, /buildSeoMarketplaceSearchParams/)
+  assert.match(internalSeoRouteSource, /seoLanding=\{landing\}/)
+  assert.match(internalSeoRouteSource, /robots: \{ index: true, follow: true \}/)
+  assert.match(internalSeoRouteSource, /CollectionPage/)
+  assert.match(internalSeoRouteSource, /BreadcrumbList/)
+  assert.match(internalSeoRouteSource, /permanentRedirect\(landing\.canonicalPath\)/)
   assert.doesNotMatch(marketCatchAllSource, /GeoLandingSearchPage/)
   assert.doesNotMatch(swedishCarRouteSource, /GeoLandingSearchPage/)
   assert.doesNotMatch(internalSeoRouteSource, /PublicHeader|PublicFooter|getSeoLandingData/)

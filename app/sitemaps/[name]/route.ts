@@ -1,21 +1,19 @@
 import { notFound } from 'next/navigation'
 import { buildListingPath, listingMarketPath } from '@/lib/listing-url'
-import { marketplaceCategories, type MarketplaceCategorySlug } from '@/lib/marketplace'
-import { getStaticGeoDataset } from '@/lib/geo-static-datasets'
-import { getGeoSitemapMarketConfig } from '@/lib/seo-geo-landings'
 import {
-  buildSeoPath,
-  getPopularSeoLocations,
-  popularSeoMakes,
-  popularSeoModels,
-  type SeoMarketCode,
-} from '@/lib/seo-routes'
+  buildSeoMarketplacePath,
+  getGeoSitemapMarketConfig,
+  getSeoSitemapAreas,
+  getSeoSitemapMakes,
+  getSeoSitemapModels,
+  shouldIncludeInSitemap,
+} from '@/lib/seo-geo-landings'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
   marketFromSitemapName,
-  popularGeoMakeSlugs,
-  sitemapMarketCountries,
+  popularGeoMakes,
+  popularGeoModels,
   type SitemapMarketCode,
   xmlResponse,
 } from '@/app/sitemap.xml/route'
@@ -49,9 +47,10 @@ export async function GET(
   const listingCountry = listingCountryFromSitemapName(normalizedName)
   const geoSitemap = geoSitemapFromName(normalizedName)
   const geoMakeSitemap = geoMakeSitemapFromName(normalizedName)
+  const geoModelSitemap = geoModelSitemapFromName(normalizedName)
   const marketplaceSearchMarket = marketFromPrefixedSitemapName(normalizedName, 'marketplace')
   const vehicleNewsMarket = marketFromPrefixedSitemapName(normalizedName, 'vehicle-news')
-  if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
+  if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !geoModelSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
 
   const urls = staticMarket
     ? staticPublicUrls(staticMarket)
@@ -59,10 +58,12 @@ export async function GET(
     ? await vehicleNewsUrls(vehicleNewsMarket)
     : marketplaceSearchMarket
     ? marketplaceSearchUrls(marketplaceSearchMarket)
+    : geoModelSitemap
+    ? geoModelSitemapUrls(geoModelSitemap.market, geoModelSitemap.page)
     : geoMakeSitemap
-    ? await geoMakeSitemapUrls(geoMakeSitemap.market, geoMakeSitemap.page)
+    ? geoMakeSitemapUrls(geoMakeSitemap.market, geoMakeSitemap.page)
     : geoSitemap
-    ? await geoSitemapUrls(geoSitemap.market, geoSitemap.page)
+    ? geoSitemapUrls(geoSitemap.market, geoSitemap.page)
     : normalizedName.startsWith('listings-')
     ? await listingUrls(listingCountry!, pageFromSitemapName(normalizedName))
     : staticSeoUrls(market!, normalizedName)
@@ -88,145 +89,96 @@ export async function GET(
 async function vehicleNewsUrls(market: string) {
   const language = market === 'se' ? 'sv' : market
   const base = [sitemapUrl(`/${market}/vehicle-news`, undefined, 'daily', '0.8')]
-  const { data, error } = await createAdminClient()
-    .from('content_posts')
-    .select('slug,updated_at,published_at')
-    .eq('post_type', 'news')
-    .eq('status', 'published')
-    .eq('market', market.toUpperCase())
-    .eq('language', language)
-    .lte('published_at', new Date().toISOString())
-    .order('published_at', { ascending: false })
-    .limit(maxUrlsPerSitemap - 1)
-  if (error) return base
-  return [...base, ...(data || []).map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
+  try {
+    const { data, error } = await createAdminClient()
+      .from('content_posts')
+      .select('slug,updated_at,published_at')
+      .eq('post_type', 'news')
+      .eq('status', 'published')
+      .eq('market', market.toUpperCase())
+      .eq('language', language)
+      .lte('published_at', new Date().toISOString())
+      .order('published_at', { ascending: false })
+      .limit(maxUrlsPerSitemap - 1)
+    if (error) return base
+    return [...base, ...(data || []).map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
+  } catch {
+    return base
+  }
 }
 
-async function geoSitemapUrls(market: string, page: number) {
+function geoSitemapUrls(market: string, page: number) {
   const config = getGeoSitemapMarketConfig(market)
   if (!config) return []
-  const areas = await geoSitemapAreas(config.countryCode)
+  const areas = getSeoSitemapAreas(config.countryCode)
   const urlsPerArea = config.categorySlugs.length
   const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
   const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
   return pageAreas.flatMap((area) =>
-    config.categorySlugs.map((categorySlug) =>
-      sitemapUrl(`/${config.market}/${categorySlug}/${area.slug}`, undefined, 'daily', '0.8'),
-    ),
+    config.categories
+      .filter((entry) => shouldIncludeInSitemap({ category: entry.category, make: null, model: null, place: area }))
+      .map((entry) => sitemapUrl(`/${config.market}/${entry.slug}/${area.slug}`, undefined, 'daily', '0.8')),
   )
 }
 
-async function geoMakeSitemapUrls(market: SitemapMarketCode, page: number) {
+function geoMakeSitemapUrls(market: SitemapMarketCode, page: number) {
   const config = getGeoSitemapMarketConfig(market)
-  const carCategorySlug = geoMakeCarCategorySlugs[market]
+  const carCategorySlug = config?.categories.find((entry) => entry.category === 'cars' && !entry.leasing)?.slug
   if (!config || !carCategorySlug) return []
-  const areas = await geoSitemapAreas(config.countryCode)
-  const urlsPerArea = popularGeoMakeSlugs.length
+  const areas = getSeoSitemapAreas(config.countryCode)
+  const urlsPerArea = popularGeoMakes.length
   const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
   const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
   return pageAreas.flatMap((area) =>
-    popularGeoMakeSlugs.map((makeSlug) =>
-      sitemapUrl(`/${market}/${carCategorySlug}/${makeSlug}/${area.slug}`, undefined, 'daily', '0.78'),
-    ),
+    popularGeoMakes
+      .filter((make) => shouldIncludeInSitemap({ category: 'cars', make, model: null, place: area }))
+      .map((make) => sitemapUrl(buildSeoMarketplacePath({ market, categorySlug: carCategorySlug, make, placeSlug: area.slug }), undefined, 'daily', '0.78')),
+  )
+}
+
+function geoModelSitemapUrls(market: SitemapMarketCode, page: number) {
+  const config = getGeoSitemapMarketConfig(market)
+  const carCategorySlug = config?.categories.find((entry) => entry.category === 'cars' && !entry.leasing)?.slug
+  if (!config || !carCategorySlug) return []
+  const areas = getSeoSitemapAreas(config.countryCode)
+  const urlsPerArea = popularGeoModels.length
+  const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
+  const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
+  return pageAreas.flatMap((area) =>
+    popularGeoModels
+      .filter(({ make, model }) => shouldIncludeInSitemap({ category: 'cars', make, model, place: area }))
+      .map(({ make, model }) => sitemapUrl(buildSeoMarketplacePath({ market, categorySlug: carCategorySlug, make, model, placeSlug: area.slug }), undefined, 'weekly', '0.75')),
   )
 }
 
 function marketplaceSearchUrls(market: SitemapMarketCode) {
-  const country = sitemapMarketCountries[market]
-  const now = undefined
-  const urls = [
-    sitemapUrl(`/${market}/marketplace`, now, 'daily', '0.9'),
-    sitemapUrl(`/${market}/marketplace?markets=${country}`, now, 'daily', '0.82'),
-    sitemapUrl(`/${market}/marketplace?markets=EU`, now, 'daily', '0.78'),
-    sitemapUrl(`/${market}/marketplace?mode=sale&markets=${country}`, now, 'daily', '0.82'),
-    sitemapUrl(`/${market}/marketplace?mode=leasing&leasingPossible=true&markets=${country}`, now, 'daily', '0.82'),
-  ]
-
-  for (const category of marketplaceCategories) {
-    urls.push(
-      sitemapUrl(`/${market}/marketplace/${category.slug}`, now, 'daily', '0.88'),
-      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&markets=${country}`, now, 'daily', '0.82'),
-      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&mode=sale&markets=${country}`, now, 'daily', '0.8'),
-      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&mode=leasing&leasingPossible=true&markets=${country}`, now, 'daily', '0.8'),
-      sitemapUrl(`/${market}/marketplace/${category.slug}?categories=${category.slug}&markets=EU`, now, 'daily', '0.76'),
-    )
-  }
-
-  return urls
+  return [sitemapUrl(`/${market}/marketplace`, undefined, 'daily', '0.9')]
 }
 
-async function geoSitemapAreas(countryCode: string) {
-  const [regions, places] = await Promise.all([
-    readGeoRegions(countryCode),
-    readGeoPlaces(countryCode),
-  ])
-  const staticDataset = getStaticGeoDataset(countryCode)
-  const rows = [
-    ...regions.map((region) => ({
-      key: `region:${region.code}`,
-      slug: slugify(region.name || region.code),
-      name: region.name || region.code,
-    })),
-    ...places.map((place) => ({
-      key: `place:${place.code}`,
-      slug: slugify(place.name || place.city || place.code.split(':').pop() || place.code),
-      name: place.name || place.city || place.code,
-    })),
-  ]
-
-  if (staticDataset) {
-    rows.push(
-      ...staticDataset.regions.map((region) => ({
-        key: `region:${region.code}`,
-        slug: slugify(region.name || region.code),
-        name: region.name || region.code,
-      })),
-      ...staticDataset.places.map((place) => ({
-        key: `place:${place.code}`,
-        slug: slugify(place.name || place.city || place.code.split(':').pop() || place.code),
-        name: place.name || place.city || place.code,
-      })),
-    )
-  }
-
-  const seen = new Set<string>()
-  return rows
-    .filter((area) => {
-      if (!area.slug) return false
-      const dedupeKey = area.slug
-      if (seen.has(dedupeKey)) return false
-      seen.add(dedupeKey)
-      return true
-    })
-    .sort((left, right) => left.name.localeCompare(right.name, 'en'))
-}
-
-function staticSeoUrls(market: SeoMarketCode, name: string) {
-  const now = undefined
-  const categoryUrls = marketplaceCategories
-    .filter((category) => ['cars', 'vans', 'motorcycles', 'trucks'].includes(category.slug))
-    .map((category) => buildSeoPath({ market, category: category.slug }))
-    .filter((path): path is string => Boolean(path))
+function staticSeoUrls(market: SitemapMarketCode, name: string) {
+  const config = getGeoSitemapMarketConfig(market)
+  if (!config) return []
+  const categoryUrls = config.categories.map((entry) =>
+    buildSeoMarketplacePath({ market, categorySlug: entry.slug }),
+  )
 
   if (name.startsWith('categories-')) {
-    return categoryUrls.map((path) => sitemapUrl(path, now, 'daily', '0.9'))
+    return categoryUrls.map((path) => sitemapUrl(path, undefined, 'daily', '0.9'))
   }
 
   if (name.startsWith('brands-')) {
-    return flatCategoryUrls(market, (category) =>
-      popularSeoMakes.map((make) => buildSeoPath({ market, category, make })),
+    return config.categories.flatMap((entry) =>
+      getSeoSitemapMakes(entry.category)
+        .filter((make) => shouldIncludeInSitemap({ category: entry.category, make, model: null, place: null }))
+        .map((make) => sitemapUrl(buildSeoMarketplacePath({ market, categorySlug: entry.slug, make }), undefined, 'daily', '0.82')),
     )
   }
 
   if (name.startsWith('models-')) {
-    return flatCategoryUrls(market, (category) =>
-      popularSeoModels.map(({ make, model }) => buildSeoPath({ market, category, make, model })),
-    )
-  }
-
-  if (name.startsWith('locations-')) {
-    return flatCategoryUrls(market, (category) =>
-      getPopularSeoLocations(market).map((location) => buildSeoPath({ market, category, location })),
+    return config.categories.flatMap((entry) =>
+      getSeoSitemapModels(entry.category)
+        .filter(({ make, model }) => shouldIncludeInSitemap({ category: entry.category, make, model, place: null }))
+        .map(({ make, model }) => sitemapUrl(buildSeoMarketplacePath({ market, categorySlug: entry.slug, make, model }), undefined, 'weekly', '0.78')),
     )
   }
 
@@ -252,28 +204,9 @@ function staticPublicUrls(market: SitemapMarketCode) {
     '/withdrawal',
     '/report',
   ]
-  const paths = publicPaths.map((path) => `/${market}${path}`)
-
-  if (market === 'se' || market === 'de' || market === 'es') {
-    const seoMarket = market as SeoMarketCode
-    const categoryUrls = marketplaceCategories
-      .filter((category) => ['cars', 'vans', 'motorcycles', 'trucks'].includes(category.slug))
-      .map((category) => buildSeoPath({ market: seoMarket, category: category.slug }))
-      .filter((path): path is string => Boolean(path))
-    paths.push(`/${market}/marketplace`, ...categoryUrls)
-  }
+  const paths = [...publicPaths.map((path) => `/${market}${path}`), `/${market}/marketplace`]
 
   return [...new Set(paths)].map((path) => sitemapUrl(path, undefined, 'weekly', '0.8'))
-}
-
-function flatCategoryUrls(
-  market: SeoMarketCode,
-  build: (category: MarketplaceCategorySlug) => Array<string | null>,
-) {
-  return (['cars', 'vans', 'motorcycles', 'trucks'] as MarketplaceCategorySlug[])
-    .flatMap((category) => build(category))
-    .filter((path): path is string => Boolean(path))
-    .map((path) => sitemapUrl(path, undefined, 'daily', '0.8'))
 }
 
 async function listingUrls(country: string, page: number) {
@@ -295,37 +228,6 @@ async function listingUrls(country: string, page: number) {
     'daily',
     '0.9',
   ))
-}
-
-async function readGeoRegions(countryCode: string) {
-  try {
-    const { data } = await createAdminClient()
-      .from('geo_regions')
-      .select('code,name')
-      .eq('country_code', countryCode)
-      .eq('active', true)
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
-      .limit(maxUrlsPerSitemap)
-    return (data || []) as Array<{ code: string; name: string }>
-  } catch {
-    return []
-  }
-}
-
-async function readGeoPlaces(countryCode: string) {
-  try {
-    const { data } = await createAdminClient()
-      .from('geo_places')
-      .select('code,name,city')
-      .eq('country_code', countryCode)
-      .eq('active', true)
-      .order('name', { ascending: true })
-      .limit(maxUrlsPerSitemap)
-    return (data || []) as Array<{ code: string; name: string; city: string | null }>
-  } catch {
-    return []
-  }
 }
 
 function listingCountryFromSitemapName(name: string) {
@@ -350,6 +252,14 @@ function geoMakeSitemapFromName(name: string) {
   return isSitemapMarket(market) && Number.isFinite(page) && page > 0 ? { market, page } : null
 }
 
+function geoModelSitemapFromName(name: string) {
+  const match = name.match(/^geo-models-([a-z]{2})-(\d+)$/i)
+  if (!match) return null
+  const market = match[1].toLowerCase()
+  const page = Number(match[2])
+  return isSitemapMarket(market) && Number.isFinite(page) && page > 0 ? { market, page } : null
+}
+
 function marketFromPrefixedSitemapName(name: string, prefix: string) {
   const market = name.match(new RegExp(`^${prefix}-([a-z]{2})$`, 'i'))?.[1]?.toLowerCase()
   return market && isSitemapMarket(market) ? market : null
@@ -359,33 +269,9 @@ function isSitemapMarket(value: string): value is SitemapMarketCode {
   return (allSitemapMarkets as readonly string[]).includes(value)
 }
 
-const geoMakeCarCategorySlugs: Record<SitemapMarketCode, string> = {
-  se: 'bilar',
-  de: 'autos',
-  es: 'coches',
-  fr: 'voitures',
-  it: 'auto',
-  nl: 'autos',
-  be: 'autos',
-  pl: 'samochody',
-  at: 'autos',
-  dk: 'biler',
-  fi: 'autot',
-}
-
 function pageFromSitemapName(name: string) {
   const page = Number(name.match(/-(\d+)$/)?.[1] || '1')
   return Number.isFinite(page) && page > 0 ? page : 1
-}
-
-function slugify(value: string) {
-  return String(value || '')
-    .trim()
-    .toLocaleLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
 }
 
 function sitemapUrl(path: string, lastmod?: string, changefreq?: string, priority?: string) {

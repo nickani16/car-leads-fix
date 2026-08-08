@@ -22,6 +22,7 @@ import {
   getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
+import { searchMarketplaceListings } from '@/lib/marketplace-search-v2'
 import {
   isPublicLanguage,
   stripLocalePrefix,
@@ -35,6 +36,21 @@ import {
   parseMarketplaceSearchState,
   resolveMarketplaceGeoArea,
 } from '@/lib/marketplace-search-state'
+import {
+  resolveStaticMarketplaceGeoArea,
+  resolveStaticMarketplaceGeoAreaBySlug,
+} from '@/lib/marketplace-geo'
+import {
+  getSeoCategoryPath,
+  resolveGeoLandingRoute,
+  type GeoLandingRoute,
+} from '@/lib/seo-geo-landings'
+
+type MarketplaceCategoryPageProps = {
+  params: Promise<{ category: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  seoLanding?: GeoLandingRoute | null
+}
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -76,19 +92,46 @@ export async function generateMetadata({
   const metadataSearch = parseMarketplaceSearchState(getSearchParam(resolvedSearchParams, 'q') || filter, {
     markets: metadataMarkets,
   })
+  const metadataGeoValue =
+    getSearchParam(resolvedSearchParams, 'geoAreaId') ||
+    getSearchParam(resolvedSearchParams, 'geoPlaceCode')
+  const metadataLocationHint =
+    getSearchParam(resolvedSearchParams, 'chips') ||
+    getSearchParam(resolvedSearchParams, 'city') ||
+    getSearchParam(resolvedSearchParams, 'municipality') ||
+    getSearchParam(resolvedSearchParams, 'region')
   const metadataGeoArea =
-    resolveMarketplaceGeoArea(
-      getSearchParam(resolvedSearchParams, 'geoAreaId') ||
-      getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
-    ) || metadataSearch.geoArea
-  const seo = metadataGeoArea
-    ? getGeoMarketplaceSeoCopy(category.slug, label, locale, metadataGeoArea.name, metadataSearch.make)
-    : getMarketplaceSeoCopy(category.slug, label, locale, metadataSearch.make || filter)
+    resolveMarketplaceGeoArea(metadataGeoValue) ||
+    resolveStaticMarketplaceGeoArea(metadataGeoValue) ||
+    (marketCode && metadataLocationHint
+      ? resolveStaticMarketplaceGeoAreaBySlug(marketCode, metadataLocationHint)
+      : null) ||
+    metadataSearch.geoArea
+  const metadataMake = getSearchParam(resolvedSearchParams, 'make') || metadataSearch.make
+  const metadataModel = getSearchParam(resolvedSearchParams, 'model')
   const pathname = requestHeaders.get('x-autorell-pathname')
-  const canonicalPath = pathname || `/marketplace/${category.slug}`
+  const localizedCategoryPath = category.slug !== 'vehicles' && marketCode
+    ? getSeoCategoryPath(marketCode.toLowerCase(), category.slug)
+    : null
+  const canonicalPath = localizedCategoryPath || pathname || `/marketplace/${category.slug}`
+  const canonicalLanding = localizedCategoryPath && marketCode
+    ? await resolveCanonicalSeoLanding({
+        market: marketCode.toLowerCase(),
+        categoryPath: localizedCategoryPath,
+        make: metadataMake,
+        model: metadataModel,
+        place: metadataGeoArea,
+      })
+    : null
+  const seo = canonicalLanding
+    ? { title: canonicalLanding.title, description: canonicalLanding.description }
+    : metadataGeoArea
+      ? getGeoMarketplaceSeoCopy(category.slug, label, locale, metadataGeoArea.name, metadataMake)
+      : getMarketplaceSeoCopy(category.slug, label, locale, metadataMake || filter)
   const marketplaceSeo = resolveMarketplaceSeoCanonical(
     resolvedSearchParams,
     canonicalPath,
+    canonicalLanding?.canonicalPath,
   )
   const canonical = marketplaceSeo.canonical || (
     filter
@@ -104,7 +147,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical,
-      languages: getPublicLanguageAlternates(alternatePath),
+      languages: canonicalLanding ? undefined : getPublicLanguageAlternates(alternatePath),
     },
     robots: marketplaceSeo.robots,
     openGraph: {
@@ -120,10 +163,8 @@ export async function generateMetadata({
 export default async function MarketplaceCategoryPage({
   params,
   searchParams,
-}: {
-  params: Promise<{ category: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+  seoLanding = null,
+}: MarketplaceCategoryPageProps) {
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
   if (requestedCategory === 'all' || requestedCategory === 'all-vehicles' || requestedCategory === 'alla-fordon') {
@@ -141,7 +182,7 @@ export default async function MarketplaceCategoryPage({
     : getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
-  const marketCode = requestHeaders.get('x-autorell-market') || undefined
+  const marketCode = seoLanding?.countryCode || requestHeaders.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
   const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
     .map((value) => value.toUpperCase())
@@ -159,7 +200,7 @@ export default async function MarketplaceCategoryPage({
     requestedMarkets.find((value) => value !== 'EU') ||
     requestedCountry ||
     automaticCountry
-  const locale: PublicLocale =
+  const locale: PublicLocale = seoLanding?.locale || (
     marketCode?.toUpperCase() === 'AT'
       ? 'at'
       : marketCode?.toUpperCase() === 'BE'
@@ -169,6 +210,7 @@ export default async function MarketplaceCategoryPage({
           : requestedLanguage && isPublicLanguage(requestedLanguage)
             ? requestedLanguage
             : 'en'
+  )
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -181,7 +223,7 @@ export default async function MarketplaceCategoryPage({
     markets: initialMarkets.length ? initialMarkets : [defaultCountry].filter(Boolean),
   })
   const initialGeoArea =
-    resolveMarketplaceGeoArea(
+    seoLanding?.place || resolveMarketplaceGeoArea(
       getSearchParam(resolvedSearchParams, 'geoAreaId') ||
       getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
     ) || parsedInitialSearch.geoArea
@@ -199,10 +241,12 @@ export default async function MarketplaceCategoryPage({
     getSearchParam(resolvedSearchParams, 'maxPrice') ||
     (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
 
-  const data = await getPublishedMarketplaceCategoryListings(
-    requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
-    requestedCategory === 'vehicles' ? 360 : 240,
-  )
+  const data = seoLanding
+    ? await getSeoLandingListings(seoLanding)
+    : await getPublishedMarketplaceCategoryListings(
+        requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
+        requestedCategory === 'vehicles' ? 360 : 240,
+      )
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
@@ -286,9 +330,9 @@ export default async function MarketplaceCategoryPage({
         initialSearchChips={initialSearchChips}
         initialMake={getSearchParam(resolvedSearchParams, 'make') || parsedInitialSearch.make}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
-        initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county') || initialGeoArea?.region || ''}
-        initialCity={getSearchParam(resolvedSearchParams, 'city') || initialGeoArea?.locality || ''}
-        initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality') || initialGeoArea?.municipality || ''}
+        initialRegion={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county') || initialGeoArea?.region || ''}
+        initialCity={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'city') || initialGeoArea?.locality || ''}
+        initialMunicipality={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'municipality') || initialGeoArea?.municipality || ''}
         initialGeoAreaId={initialGeoArea?.id || ''}
         initialGeoBounds={initialGeoBounds}
         initialGeoFilterMode={initialGeoArea ? 'strict' : 'legacy'}
@@ -313,9 +357,36 @@ export default async function MarketplaceCategoryPage({
         initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
         initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment')}
         initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
+        seoLanding={seoLanding ? {
+          h1: seoLanding.h1,
+          description: seoLanding.description,
+          zeroResultsText: seoLanding.zeroResultsText,
+          breadcrumbs: seoLanding.breadcrumbs,
+          relatedLinks: seoLanding.relatedLinks,
+        } : undefined}
+        preserveCanonicalUrl={Boolean(seoLanding)}
       />
     </>
   )
+}
+
+async function getSeoLandingListings(landing: GeoLandingRoute) {
+  try {
+    const result = await searchMarketplaceListings({
+      categories: landing.category,
+      markets: landing.countryCode,
+      make: landing.make,
+      model: landing.model,
+      geoAreaId: landing.place?.id,
+      geoFilterMode: landing.place ? 'strict' : 'legacy',
+      mode: landing.leasing ? 'leasing' : null,
+      leasingPossible: landing.leasing,
+      limit: 48,
+    })
+    return result.items as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
+  } catch {
+    return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
+  }
 }
 
 function getSearchParam(
@@ -607,6 +678,7 @@ function normalizeFilterLabel(filter?: string) {
 function resolveMarketplaceSeoCanonical(
   params: { [key: string]: string | string[] | undefined },
   fallbackPath: string,
+  cleanSeoPath?: string | null,
 ) {
   const host = 'https://www.autorell.com'
   const meaningfulParams = canonicalSearchParams(params)
@@ -617,15 +689,32 @@ function resolveMarketplaceSeoCanonical(
     }
   }
 
-  const selfCanonical = `${host}${fallbackPath}?${meaningfulParams.toString()}`
-
   return {
-    canonical: selfCanonical,
+    canonical: `${host}${cleanSeoPath || fallbackPath}`,
     robots: {
-      index: true,
+      index: false,
       follow: true,
     },
   }
+}
+
+async function resolveCanonicalSeoLanding({
+  market,
+  categoryPath,
+  make,
+  model,
+  place,
+}: {
+  market: string
+  categoryPath: string
+  make: string
+  model: string
+  place: ReturnType<typeof resolveStaticMarketplaceGeoAreaBySlug> | ReturnType<typeof resolveMarketplaceGeoArea>
+}) {
+  const categorySlug = categoryPath.split('/').filter(Boolean).at(-1)
+  if (!categorySlug) return null
+  const segments = [make, model, place?.slug].filter(Boolean) as string[]
+  return resolveGeoLandingRoute(market, categorySlug, segments)
 }
 
 function canonicalSearchParams(params: { [key: string]: string | string[] | undefined }) {

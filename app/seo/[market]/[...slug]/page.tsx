@@ -1,7 +1,9 @@
 import { headers } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { notFound, permanentRedirect, redirect } from 'next/navigation'
+import MarketplaceCategoryPage from '@/app/marketplace/[category]/page'
 import {
   buildGeoMarketplaceHref,
+  buildSeoMarketplaceSearchParams,
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
 import { isSeoMarketCode, parseSeoRoute } from '@/lib/seo-routes'
@@ -13,6 +15,24 @@ type SeoPageProps = {
 export async function generateMetadata({ params }: SeoPageProps) {
   const { market, slug } = await params
   await assertInternalSeoRequest()
+  const [categorySlug, ...segments] = slug
+  const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
+  if (landing) {
+    const canonical = `https://www.autorell.com${landing.canonicalPath}`
+    return {
+      title: { absolute: landing.title },
+      description: landing.description,
+      alternates: { canonical },
+      robots: { index: true, follow: true },
+      openGraph: {
+        title: landing.title,
+        description: landing.description,
+        url: canonical,
+        siteName: 'Autorell',
+        type: 'website',
+      },
+    }
+  }
   const destination = await resolveMarketplaceDestination(market, slug)
   if (!destination) notFound()
   return {
@@ -24,6 +44,26 @@ export async function generateMetadata({ params }: SeoPageProps) {
 export default async function SeoLandingPage({ params }: SeoPageProps) {
   const { market, slug } = await params
   await assertInternalSeoRequest()
+  const [categorySlug, ...segments] = slug
+  const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
+  if (landing) {
+    const requestedPath = `/${market}/${slug.join('/')}`
+    if (requestedPath !== landing.canonicalPath) permanentRedirect(landing.canonicalPath)
+    const structuredData = buildStructuredData(landing)
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
+        />
+        <MarketplaceCategoryPage
+          params={Promise.resolve({ category: landing.category })}
+          searchParams={Promise.resolve(buildSeoMarketplaceSearchParams(landing))}
+          seoLanding={landing}
+        />
+      </>
+    )
+  }
   const destination = await resolveMarketplaceDestination(market, slug)
   if (!destination) notFound()
   redirect(destination)
@@ -55,4 +95,32 @@ function marketplaceHref(route: NonNullable<ReturnType<typeof parseSeoRoute>>) {
   if (route.location) params.set('chips', route.location.name)
   const query = params.toString()
   return `/${route.market}/marketplace/${route.category}${query ? `?${query}` : ''}`
+}
+
+function buildStructuredData(landing: NonNullable<Awaited<ReturnType<typeof resolveGeoLandingRoute>>>) {
+  const canonical = `https://www.autorell.com${landing.canonicalPath}`
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${canonical}#collection`,
+        url: canonical,
+        name: landing.h1,
+        description: landing.description,
+        inLanguage: landing.locale,
+        isPartOf: { '@id': 'https://www.autorell.com/#website' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${canonical}#breadcrumbs`,
+        itemListElement: landing.breadcrumbs.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.label,
+          item: `https://www.autorell.com${item.href}`,
+        })),
+      },
+    ],
+  }
 }

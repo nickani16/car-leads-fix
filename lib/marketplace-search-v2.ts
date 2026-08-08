@@ -14,6 +14,7 @@ import {
   parseMarketplaceSearchState,
   resolveMarketplaceGeoArea,
 } from './marketplace-search-state'
+import { resolveStaticMarketplaceGeoArea } from './marketplace-geo'
 import { createAdminClient } from './supabase/admin'
 import { fieldsForCategory } from './listing-schema'
 
@@ -298,7 +299,11 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
   const categories = explicitCategories.length
     ? explicitCategories
     : normalizeCategoryFilters(parsedSearchState.categories)
-  const geoArea = resolveMarketplaceGeoArea(input.geoAreaId || input.geoPlaceCode) || parsedSearchState.geoArea
+  const geoAreaValue = input.geoAreaId || input.geoPlaceCode
+  const geoArea =
+    resolveMarketplaceGeoArea(geoAreaValue) ||
+    resolveStaticMarketplaceGeoArea(geoAreaValue) ||
+    parsedSearchState.geoArea
   const bounds = normalizeSearchBounds(input)
   const sort = normalizeSort(input.sort)
   const cursor = decodeCursor(input.cursor, sort)
@@ -522,23 +527,16 @@ function applyMarketplaceListingFilters<T extends {
 
 function applyStrictGeoAreaFilter<T extends {
   eq: (column: string, value: string | boolean) => T
+  or: (filters: string) => T
 }>(query: T, geoArea: NonNullable<ReturnType<typeof normalizeMarketplaceSearchInput>['geoArea']>) {
   if (geoArea.level === 'country') {
     return query.eq('country_code', geoArea.countryCode)
   }
-  if (geoArea.level === 'region' && geoArea.code) {
-    return query.eq('geo_region_code', geoArea.code)
-  }
-  if (geoArea.level === 'municipality' && geoArea.code) {
-    return query.eq('geo_municipality_code', geoArea.code)
-  }
-  if (geoArea.level === 'locality' && geoArea.code) {
-    return query.eq('geo_locality_code', geoArea.code)
-  }
   if (geoArea.level === 'postal_code' && geoArea.postalCode) {
     return query.eq('postal_code', geoArea.postalCode)
   }
-  return query.eq('geo_area_id', geoArea.id)
+  const filters = marketplaceGeoAreaOrFilters(geoArea)
+  return filters.length ? query.or(filters.join(',')) : query.eq('geo_area_id', geoArea.id)
 }
 
 function marketplaceSearchTokens(query: string) {

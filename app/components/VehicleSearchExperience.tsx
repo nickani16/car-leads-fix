@@ -210,6 +210,14 @@ export type VehicleSearchListing = {
   insuranceOffers?: ListingInsuranceOffer[] | null
 }
 
+export type VehicleSearchSeoLanding = {
+  h1: string
+  description: string
+  zeroResultsText: string
+  breadcrumbs: Array<{ label: string; href: string }>
+  relatedLinks: Array<{ label: string; href: string }>
+}
+
 type MarketplaceSearchApiResponse = {
   items: Array<Record<string, unknown>>
   totalCount?: number
@@ -859,6 +867,8 @@ export default function VehicleSearchExperience({
   initialSortBy = 'published',
   initialModeExplicit = false,
   disableUrlSync = false,
+  seoLanding,
+  preserveCanonicalUrl = false,
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
@@ -899,6 +909,8 @@ export default function VehicleSearchExperience({
   initialSortBy?: string
   initialModeExplicit?: boolean
   disableUrlSync?: boolean
+  seoLanding?: VehicleSearchSeoLanding
+  preserveCanonicalUrl?: boolean
 }) {
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
@@ -981,6 +993,7 @@ export default function VehicleSearchExperience({
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const canonicalSearchBaselineRef = useRef<string | null>(null)
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -1220,7 +1233,13 @@ export default function VehicleSearchExperience({
   useEffect(() => {
     if (disableUrlSync || !searchStateReady || typeof window === 'undefined') return
     const timer = window.setTimeout(() => {
-      const nextQuery = marketplaceSearchParams.toString()
+      const currentQuery = marketplaceSearchParams.toString()
+      if (preserveCanonicalUrl && canonicalSearchBaselineRef.current === null) {
+        canonicalSearchBaselineRef.current = currentQuery
+      }
+      const nextQuery = preserveCanonicalUrl && currentQuery === canonicalSearchBaselineRef.current
+        ? ''
+        : currentQuery
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
       const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
       if (nextUrl !== currentUrl) {
@@ -1233,7 +1252,7 @@ export default function VehicleSearchExperience({
     }, 350)
 
     return () => window.clearTimeout(timer)
-  }, [disableUrlSync, marketplaceSearchParams, searchStateReady])
+  }, [disableUrlSync, marketplaceSearchParams, preserveCanonicalUrl, searchStateReady])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearchPage(1), 0)
@@ -1272,6 +1291,9 @@ export default function VehicleSearchExperience({
       setSearchLoading(true)
       setSearchError(false)
       const params = new URLSearchParams(marketplaceSearchParams)
+      if (!params.has('markets') && safeAutomaticCountry) {
+        params.set('markets', safeAutomaticCountry)
+      }
       params.set('page', String(searchPage))
       params.set('limit', '48')
       params.set('locale', locale)
@@ -2769,6 +2791,43 @@ export default function VehicleSearchExperience({
                     </div>
                 </div>
 
+            {seoLanding ? (
+              <section className="border-b border-[#eceff4] bg-white px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6" aria-labelledby="seo-marketplace-heading">
+                <nav aria-label="Breadcrumb" className="overflow-hidden">
+                  <ol className="flex min-w-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[12px] font-medium text-[#667085] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:text-[13px]">
+                    {seoLanding.breadcrumbs.map((item, index) => (
+                      <li key={item.href} className="inline-flex min-w-0 items-center gap-1.5">
+                        {index ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" aria-hidden="true" /> : null}
+                        <Link href={item.href} prefetch={false} className="truncate transition hover:text-[#0866ff]">
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+                <h1 id="seo-marketplace-heading" className="mt-3 text-[24px] font-semibold leading-[1.16] text-[#101828] sm:text-[30px]">
+                  {seoLanding.h1}
+                </h1>
+                <p className="mt-2 max-w-[680px] text-[14px] font-normal leading-6 text-[#667085] sm:text-[15px]">
+                  {seoLanding.description}
+                </p>
+                {seoLanding.relatedLinks.length ? (
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label={translatePublic(locale, 'Related searches')}>
+                    {seoLanding.relatedLinks.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        prefetch={false}
+                        className="shrink-0 rounded-full border border-[#c9d9ef] bg-white px-3 py-1.5 text-[12px] font-medium text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] sm:text-[13px]"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+
             <div className="w-screen max-w-[100vw] overflow-hidden bg-white px-4 py-3 sm:px-6 sm:py-4 min-[1120px]:w-full min-[1120px]:max-w-full">
               <div className="relative flex w-full items-center justify-between gap-2 sm:gap-3">
                 <p className="min-h-6 min-w-0 flex-1 truncate pr-[150px] text-sm font-medium leading-6 sm:pr-2">
@@ -2840,7 +2899,7 @@ export default function VehicleSearchExperience({
                       className="h-auto w-[180px] max-w-[60vw] sm:w-[220px]"
                     />
                     <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
-                      {translatePublic(locale, 'There do not seem to be any results.')}
+                      {seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}
                     </p>
                     <p className="mt-2 max-w-[420px] text-sm leading-6 text-[#667085] sm:text-base">
                       {translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}

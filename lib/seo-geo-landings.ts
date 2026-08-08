@@ -1,10 +1,17 @@
 import { cleanSeoText } from './market-seo'
 import { type MarketplaceCategorySlug } from './marketplace'
+import { brandSuggestionsForCategory } from './listing-brand-suggestions'
 import {
   resolveMarketplaceGeoAreaBySlug,
   type MarketplaceGeoArea,
 } from './marketplace-search-state'
-import { getGeoRegions, searchGeoPlaces } from './marketplace-geo'
+import {
+  getGeoRegions,
+  getStaticMarketplaceGeoAreas,
+  marketplaceGeoSlug,
+  resolveStaticMarketplaceGeoAreaBySlug,
+  searchGeoPlaces,
+} from './marketplace-geo'
 import type { PublicLocale } from './public-i18n'
 
 type GeoCategoryRoute = {
@@ -17,6 +24,16 @@ export type GeoSitemapMarketConfig = {
   market: string
   countryCode: string
   categorySlugs: string[]
+  categories: Array<{
+    slug: string
+    category: MarketplaceCategorySlug
+    leasing: boolean
+  }>
+}
+
+export type SeoLandingLink = {
+  label: string
+  href: string
 }
 
 type GeoMarketRouteConfig = {
@@ -36,14 +53,25 @@ export type GeoLandingRoute = {
   categorySlug: string
   categoryLabel: string
   leasing: boolean
-  place: MarketplaceGeoArea
+  place: MarketplaceGeoArea | null
   makeSlug: string | null
   make: string | null
+  modelSlug: string | null
+  model: string | null
+  routeKind:
+    | 'category'
+    | 'category-location'
+    | 'category-make'
+    | 'category-make-location'
+    | 'category-make-model'
+    | 'category-make-model-location'
   canonicalPath: string
   h1: string
   title: string
   description: string
   zeroResultsText: string
+  breadcrumbs: SeoLandingLink[]
+  relatedLinks: SeoLandingLink[]
 }
 
 const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
@@ -221,15 +249,50 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
   },
 }
 
-const knownMakeLabels: Record<string, string> = {
-  audi: 'Audi',
-  bmw: 'BMW',
-  mercedes: 'Mercedes-Benz',
-  'mercedes-benz': 'Mercedes-Benz',
-  tesla: 'Tesla',
-  toyota: 'Toyota',
-  volkswagen: 'Volkswagen',
-  volvo: 'Volvo',
+const marketCountryNames: Record<string, string> = {
+  se: 'Sverige',
+  de: 'Deutschland',
+  at: '\u00d6sterreich',
+  fr: 'France',
+  it: 'Italia',
+  es: 'Espa\u00f1a',
+  nl: 'Nederland',
+  be: 'Belgi\u00eb',
+  pl: 'Polska',
+  dk: 'Danmark',
+  fi: 'Suomi',
+}
+
+const sitemapMakesByCategory: Record<MarketplaceCategorySlug, readonly string[]> = {
+  cars: ['Audi', 'BMW', 'Mercedes-Benz', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'Peugeot', 'Renault', 'Ford', 'Fiat', 'Skoda'],
+  vans: ['Citroen', 'Ford', 'Iveco', 'Mercedes-Benz', 'Opel', 'Peugeot', 'Renault', 'Volkswagen'],
+  motorcycles: ['BMW Motorrad', 'Ducati', 'Harley-Davidson', 'Honda', 'Kawasaki', 'KTM', 'Suzuki', 'Yamaha'],
+  motorhomes: ['Adria', 'Dethleffs', 'Hobby', 'Hymer', 'Knaus', 'Rapido'],
+  caravans: ['Adria', 'Fendt', 'Hobby', 'Kabe', 'Knaus', 'Polar'],
+  trucks: ['DAF', 'Iveco', 'MAN', 'Mercedes-Benz', 'Scania', 'Volvo'],
+  agriculture: ['Case IH', 'Claas', 'Fendt', 'John Deere', 'Massey Ferguson', 'New Holland', 'Valtra'],
+  construction: ['Bobcat', 'Caterpillar', 'Hitachi', 'JCB', 'Komatsu', 'Liebherr', 'Volvo CE'],
+  'electric-bikes': ['Canyon', 'Cube', 'Gazelle', 'Giant', 'Haibike', 'Specialized', 'Trek'],
+}
+
+const seoModelsByMake: Record<string, readonly string[]> = {
+  Audi: ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5'],
+  BMW: ['1 Series', '3 Series', '5 Series', 'X1', 'X3', 'X5'],
+  'Mercedes-Benz': ['A-Class', 'C-Class', 'E-Class', 'GLC', 'GLE', 'Sprinter'],
+  Volkswagen: ['Golf', 'Passat', 'Polo', 'Tiguan', 'T-Roc', 'ID.4'],
+  Volvo: ['V40', 'V60', 'V90', 'XC40', 'XC60', 'XC90'],
+  Toyota: ['Corolla', 'Yaris', 'C-HR', 'RAV4', 'Prius', 'Land Cruiser'],
+  Ford: ['Fiesta', 'Focus', 'Kuga', 'Mustang', 'Puma', 'Ranger'],
+  Tesla: ['Model 3', 'Model Y', 'Model S', 'Model X', 'Cybertruck', 'Roadster'],
+  Peugeot: ['208', '308', '2008', '3008', '5008'],
+  Renault: ['Clio', 'Captur', 'Megane', 'Austral', 'Scenic'],
+  Fiat: ['500', 'Panda', 'Tipo', '600'],
+  Skoda: ['Fabia', 'Octavia', 'Superb', 'Karoq', 'Kodiaq', 'Enyaq'],
+}
+
+const makeSlugAliases: Record<string, string> = {
+  mercedes: 'mercedes-benz',
+  vw: 'volkswagen',
 }
 
 export async function resolveGeoLandingRoute(
@@ -239,27 +302,74 @@ export async function resolveGeoLandingRoute(
 ): Promise<GeoLandingRoute | null> {
   const normalizedMarket = normalizeSegment(market)
   const config = marketRouteConfigs[normalizedMarket]
-  if (!config || !categorySlug || !segments?.length) return null
+  if (!config || !categorySlug) return null
 
   const normalizedCategorySlug = normalizeSegment(categorySlug)
   const categoryRoute = config.categories[normalizedCategorySlug]
   if (!categoryRoute) return null
-  if (segments.length !== 1 && segments.length !== 2) return null
+  const normalizedSegments = (segments || []).map((segment) => normalizeSegment(segment)).filter(Boolean)
+  if (normalizedSegments.length > 3) return null
 
-  const normalizedSegments = segments.map((segment) => normalizeSegment(segment))
-  const makeSlug = normalizedSegments.length === 2 ? normalizedSegments[0] : null
-  const placeSlug = normalizedSegments.length === 2 ? normalizedSegments[1] : normalizedSegments[0]
-  if (!placeSlug) return null
+  let make: string | null = null
+  let model: string | null = null
+  let place: MarketplaceGeoArea | null = null
 
-  const place = await resolveGeoLandingPlace(config.countryCode, placeSlug)
-  if (!place) return null
+  if (normalizedSegments.length === 1) {
+    make = resolveCategoryMake(categoryRoute.category, normalizedSegments[0])
+    if (!make) place = await resolveGeoLandingPlace(config.countryCode, normalizedSegments[0])
+    if (!make && !place) return null
+  }
 
-  const make = makeSlug ? knownMakeLabels[makeSlug] || toTitleCase(makeSlug) : null
-  const subject = make || capitalize(categoryRoute.plural)
-  const h1 = config.title(subject, place.name)
-  const canonicalPath = makeSlug
-    ? `/${normalizedMarket}/${normalizedCategorySlug}/${makeSlug}/${placeSlug}`
-    : `/${normalizedMarket}/${normalizedCategorySlug}/${placeSlug}`
+  if (normalizedSegments.length >= 2) {
+    make = resolveCategoryMake(categoryRoute.category, normalizedSegments[0])
+    if (!make) return null
+    model = resolveMakeModel(categoryRoute.category, make, normalizedSegments[1])
+    if (!model) place = await resolveGeoLandingPlace(config.countryCode, normalizedSegments[1])
+    if (!model && !place) return null
+  }
+
+  if (normalizedSegments.length === 3) {
+    if (!make || !model) return null
+    place = await resolveGeoLandingPlace(config.countryCode, normalizedSegments[2])
+    if (!place) return null
+  }
+
+  const makeSlug = make ? slugify(make) : null
+  const modelSlug = model ? slugify(model) : null
+  const canonicalPath = buildSeoMarketplacePath({
+    market: normalizedMarket,
+    categorySlug: normalizedCategorySlug,
+    make,
+    model,
+    placeSlug: place?.slug,
+  })
+  const countryName = marketCountryNames[normalizedMarket]
+  const subject = model ? `${make} ${model}` : make || capitalize(categoryRoute.plural)
+  const scope = place?.name || countryName
+  const copy = buildLocalizedSeoCopy(config.locale, subject, scope, !place)
+  const routeKind = getRouteKind({ make, model, place })
+  const breadcrumbs = buildBreadcrumbs({
+    market: normalizedMarket,
+    countryName,
+    categorySlug: normalizedCategorySlug,
+    categoryLabel: capitalize(categoryRoute.plural),
+    make,
+    model,
+    place,
+    canonicalPath,
+  })
+  const relatedLinks = buildRelatedLinks({
+    market: normalizedMarket,
+    locale: config.locale,
+    countryName,
+    category: categoryRoute.category,
+    categorySlug: normalizedCategorySlug,
+    categoryLabel: capitalize(categoryRoute.plural),
+    make,
+    model,
+    place,
+    canonicalPath,
+  })
 
   return {
     market: normalizedMarket,
@@ -272,13 +382,20 @@ export async function resolveGeoLandingRoute(
     place,
     makeSlug,
     make,
+    modelSlug,
+    model,
+    routeKind,
     canonicalPath,
-    h1,
-    title: cleanSeoText(`${h1} | Autorell`, 60),
-    description: cleanSeoText(config.description(subject, place.name), 155),
-    zeroResultsText: config.zeroResults(subject, place.name),
+    h1: copy.h1,
+    title: cleanSeoText(`${copy.h1} | Autorell`, 60),
+    description: cleanSeoText(copy.description, 155),
+    zeroResultsText: copy.zeroResults,
+    breadcrumbs,
+    relatedLinks,
   }
 }
+
+export const resolveSeoMarketplaceRoute = resolveGeoLandingRoute
 
 export function isGeoLandingCandidate(
   market: string,
@@ -286,22 +403,101 @@ export function isGeoLandingCandidate(
   segments: string[] | undefined,
 ) {
   const config = marketRouteConfigs[normalizeSegment(market)]
-  return Boolean(config && categorySlug && config.categories[normalizeSegment(categorySlug)] && segments?.length)
+  return Boolean(config && categorySlug && config.categories[normalizeSegment(categorySlug)] && (segments?.length || 0) <= 3)
 }
 
 export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
   const params = new URLSearchParams()
   params.set('categories', landing.category)
   params.set('markets', landing.countryCode)
-  params.set('geoAreaId', landing.place.id)
-  params.set('geoFilterMode', 'strict')
-  params.set('chips', landing.place.name)
+  if (landing.place) {
+    params.set('geoAreaId', landing.place.id)
+    params.set('geoFilterMode', 'strict')
+    params.set('chips', landing.place.name)
+  }
   if (landing.leasing) {
     params.set('mode', 'leasing')
     params.set('leasingPossible', 'true')
   }
   if (landing.make) params.set('make', landing.make)
+  if (landing.model) params.set('model', landing.model)
   return `/${landing.market}/marketplace/${landing.category}?${params.toString()}`
+}
+
+export function buildSeoMarketplaceSearchParams(landing: GeoLandingRoute) {
+  const params: Record<string, string | string[]> = {
+    categories: landing.category,
+    markets: landing.countryCode,
+  }
+  if (landing.make) params.make = landing.make
+  if (landing.model) params.model = landing.model
+  if (landing.place) {
+    params.geoAreaId = landing.place.id
+    params.geoFilterMode = 'strict'
+    params.chips = landing.place.name
+  }
+  if (landing.leasing) {
+    params.mode = 'leasing'
+    params.leasingPossible = 'true'
+  }
+  return params
+}
+
+export function buildSeoMarketplacePath({
+  market,
+  categorySlug,
+  make,
+  model,
+  placeSlug,
+}: {
+  market: string
+  categorySlug: string
+  make?: string | null
+  model?: string | null
+  placeSlug?: string | null
+}) {
+  return `/${[
+    normalizeSegment(market),
+    normalizeSegment(categorySlug),
+    make ? slugify(make) : '',
+    model ? slugify(model) : '',
+    placeSlug ? slugify(placeSlug) : '',
+  ].filter(Boolean).join('/')}`
+}
+
+export function getSeoCategoryPath(market: string, category: MarketplaceCategorySlug) {
+  const normalizedMarket = normalizeSegment(market)
+  const config = marketRouteConfigs[normalizedMarket]
+  if (!config) return null
+  const entry = Object.entries(config.categories).find(([, route]) => route.category === category && !route.leasing)
+  return entry ? `/${normalizedMarket}/${entry[0]}` : null
+}
+
+export function getSeoSitemapMakes(category: MarketplaceCategorySlug) {
+  const allowed = new Set(brandSuggestionsForCategory(category))
+  return (sitemapMakesByCategory[category] || []).filter((make) => allowed.has(make))
+}
+
+export function getSeoSitemapModels(category: MarketplaceCategorySlug) {
+  if (category !== 'cars') return []
+  return Object.entries(seoModelsByMake)
+    .filter(([make]) => getSeoSitemapMakes('cars').includes(make))
+    .flatMap(([make, models]) => models.slice(0, 2).map((model) => ({ make, model })))
+}
+
+export function getSeoSitemapAreas(countryCode: string) {
+  return getStaticMarketplaceGeoAreas(countryCode)
+}
+
+export function shouldIncludeInSitemap({
+  category,
+  make,
+  model,
+  place,
+}: Pick<GeoLandingRoute, 'category' | 'make' | 'model' | 'place'>) {
+  if (make && !resolveCategoryMake(category, slugify(make))) return false
+  if (model && (!make || !resolveMakeModel(category, make, slugify(model)))) return false
+  return !place || Boolean(place.slug && place.countryCode)
 }
 
 export function getGeoSitemapMarketCodes() {
@@ -316,7 +512,224 @@ export function getGeoSitemapMarketConfig(market: string): GeoSitemapMarketConfi
     market: normalizedMarket,
     countryCode: config.countryCode,
     categorySlugs: Object.keys(config.categories),
+    categories: Object.entries(config.categories).map(([slug, route]) => ({
+      slug,
+      category: route.category,
+      leasing: Boolean(route.leasing),
+    })),
   }
+}
+
+function resolveCategoryMake(categorySlug: MarketplaceCategorySlug, rawSlug: string) {
+  const normalizedSlug = makeSlugAliases[slugify(rawSlug)] || slugify(rawSlug)
+  return (
+    brandSuggestionsForCategory(categorySlug).find((make) => slugify(make) === normalizedSlug) ||
+    null
+  )
+}
+
+function resolveMakeModel(
+  categorySlug: MarketplaceCategorySlug,
+  make: string,
+  rawSlug: string,
+) {
+  if (categorySlug !== 'cars') return null
+  const normalizedSlug = slugify(rawSlug)
+  return (seoModelsByMake[make] || []).find((model) => slugify(model) === normalizedSlug) || null
+}
+
+function getRouteKind({
+  make,
+  model,
+  place,
+}: Pick<GeoLandingRoute, 'make' | 'model' | 'place'>): GeoLandingRoute['routeKind'] {
+  if (make && model && place) return 'category-make-model-location'
+  if (make && model) return 'category-make-model'
+  if (make && place) return 'category-make-location'
+  if (make) return 'category-make'
+  if (place) return 'category-location'
+  return 'category'
+}
+
+function buildBreadcrumbs({
+  market,
+  countryName,
+  categorySlug,
+  categoryLabel,
+  make,
+  model,
+  place,
+  canonicalPath,
+}: {
+  market: string
+  countryName: string
+  categorySlug: string
+  categoryLabel: string
+  make: string | null
+  model: string | null
+  place: MarketplaceGeoArea | null
+  canonicalPath: string
+}) {
+  const links: SeoLandingLink[] = [
+    { label: countryName, href: `/${market}` },
+    { label: categoryLabel, href: buildSeoMarketplacePath({ market, categorySlug }) },
+  ]
+  if (make) {
+    links.push({
+      label: make,
+      href: buildSeoMarketplacePath({ market, categorySlug, make }),
+    })
+  }
+  if (model) {
+    links.push({
+      label: `${make} ${model}`,
+      href: buildSeoMarketplacePath({ market, categorySlug, make, model }),
+    })
+  }
+  if (place) links.push({ label: place.name, href: canonicalPath })
+  return dedupeLinks(links)
+}
+
+function buildRelatedLinks({
+  market,
+  locale,
+  countryName,
+  category,
+  categorySlug,
+  categoryLabel,
+  make,
+  model,
+  place,
+  canonicalPath,
+}: {
+  market: string
+  locale: PublicLocale
+  countryName: string
+  category: MarketplaceCategorySlug
+  categorySlug: string
+  categoryLabel: string
+  make: string | null
+  model: string | null
+  place: MarketplaceGeoArea | null
+  canonicalPath: string
+}) {
+  const links: SeoLandingLink[] = []
+  const add = (targetMake?: string | null, targetModel?: string | null, targetPlace: MarketplaceGeoArea | null = place) => {
+    const subject = targetModel
+      ? `${targetMake} ${targetModel}`
+      : targetMake || categoryLabel
+    const scope = targetPlace?.name || countryName
+    links.push({
+      label: buildLocalizedSeoCopy(locale, subject, scope, !targetPlace).h1,
+      href: buildSeoMarketplacePath({
+        market,
+        categorySlug,
+        make: targetMake,
+        model: targetModel,
+        placeSlug: targetPlace?.slug,
+      }),
+    })
+  }
+
+  if (place && (make || model)) add(null, null, place)
+  if (make && place) add(make, null, null)
+  if (model) add(make, null, place)
+
+  for (const relatedMake of getSeoSitemapMakes(category)) {
+    if (relatedMake === make) continue
+    add(relatedMake, null, place)
+    if (links.length >= 5) break
+  }
+
+  if (make) {
+    for (const relatedModel of (seoModelsByMake[make] || []).slice(0, 3)) {
+      if (relatedModel === model) continue
+      add(make, relatedModel, place)
+      if (links.length >= 8) break
+    }
+  }
+
+  return dedupeLinks(links).filter((link) => link.href !== canonicalPath).slice(0, 8)
+}
+
+function dedupeLinks(links: SeoLandingLink[]) {
+  const seen = new Set<string>()
+  return links.filter((link) => {
+    if (seen.has(link.href)) return false
+    seen.add(link.href)
+    return true
+  })
+}
+
+function buildLocalizedSeoCopy(
+  locale: PublicLocale,
+  subject: string,
+  scope: string,
+  countryScope: boolean,
+) {
+  const copy = {
+    sv: {
+      h1: `${subject} till salu i ${scope}`,
+      description: `Se ${subject} till salu i ${scope}. J\u00e4mf\u00f6r aktuella annonser fr\u00e5n privata s\u00e4ljare och f\u00f6retag p\u00e5 Autorell.`,
+      zeroResults: `Inga annonser f\u00f6r ${subject} i ${scope} just nu`,
+    },
+    de: {
+      h1: `${subject} kaufen in ${scope}`,
+      description: `${subject} in ${scope} suchen und vergleichen. Finden Sie aktuelle Angebote von privaten und gewerblichen Verk\u00e4ufern auf Autorell.`,
+      zeroResults: `Derzeit keine Anzeigen f\u00fcr ${subject} in ${scope}`,
+    },
+    at: {
+      h1: `${subject} kaufen in ${scope}`,
+      description: `${subject} in ${scope} suchen und vergleichen. Finden Sie aktuelle Angebote von privaten und gewerblichen Verk\u00e4ufern auf Autorell.`,
+      zeroResults: `Derzeit keine Anzeigen f\u00fcr ${subject} in ${scope}`,
+    },
+    fr: {
+      h1: `${subject} \u00e0 vendre ${countryScope ? 'en' : '\u00e0'} ${scope}`,
+      description: `Recherchez ${subject} \u00e0 vendre ${countryScope ? 'en' : '\u00e0'} ${scope}. Comparez les annonces de particuliers et de professionnels sur Autorell.`,
+      zeroResults: `Aucune annonce pour ${subject} ${countryScope ? 'en' : '\u00e0'} ${scope} pour le moment`,
+    },
+    it: {
+      h1: `${subject} in vendita ${countryScope ? 'in' : 'a'} ${scope}`,
+      description: `Scopri ${subject} in vendita ${countryScope ? 'in' : 'a'} ${scope}. Confronta annunci di privati e aziende su Autorell.`,
+      zeroResults: `Nessun annuncio per ${subject} ${countryScope ? 'in' : 'a'} ${scope} al momento`,
+    },
+    es: {
+      h1: `${subject} en venta en ${scope}`,
+      description: `Busca ${subject} en venta en ${scope}. Compara anuncios actuales de particulares y empresas en Autorell.`,
+      zeroResults: `No hay anuncios de ${subject} en ${scope} ahora mismo`,
+    },
+    nl: {
+      h1: `${subject} te koop in ${scope}`,
+      description: `Bekijk ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
+      zeroResults: `Momenteel geen advertenties voor ${subject} in ${scope}`,
+    },
+    be: {
+      h1: `${subject} te koop in ${scope}`,
+      description: `Bekijk ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
+      zeroResults: `Momenteel geen advertenties voor ${subject} in ${scope}`,
+    },
+    pl: {
+      h1: `${subject} na sprzeda\u017c - ${scope}`,
+      description: `Zobacz aktualne og\u0142oszenia ${subject} w lokalizacji ${scope}. Por\u00f3wnaj oferty prywatne i firmowe w Autorell.`,
+      zeroResults: `Obecnie brak og\u0142osze\u0144 dla ${subject} - ${scope}`,
+    },
+    da: {
+      h1: `${subject} til salg i ${scope}`,
+      description: `Se ${subject} til salg i ${scope}. Sammenlign aktuelle annoncer fra private og virksomheder p\u00e5 Autorell.`,
+      zeroResults: `Ingen annoncer for ${subject} i ${scope} lige nu`,
+    },
+    fi: {
+      h1: `${subject} myynniss\u00e4 - ${scope}`,
+      description: `Katso kohteen ${subject} ajankohtaiset ilmoitukset alueella ${scope}. Vertaile yksityisten ja yritysten tarjontaa Autorellissa.`,
+      zeroResults: `Ei ilmoituksia haulle ${subject} - ${scope}`,
+    },
+    en: {
+      h1: `${subject} for sale in ${scope}`,
+      description: `Browse ${subject} for sale in ${scope}. Compare current listings from private and business sellers on Autorell.`,
+      zeroResults: `No listings for ${subject} in ${scope} right now`,
+    },
+  } satisfies Record<PublicLocale, { h1: string; description: string; zeroResults: string }>
+  return copy[locale] || copy.en
 }
 
 function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {
@@ -330,6 +743,9 @@ function leasingCategory(categorySlug: MarketplaceCategorySlug, plural: string):
 async function resolveGeoLandingPlace(countryCode: string, placeSlug: string) {
   const staticPlace = resolveMarketplaceGeoAreaBySlug(countryCode, placeSlug)
   if (staticPlace) return staticPlace
+
+  const datasetPlace = resolveStaticMarketplaceGeoAreaBySlug(countryCode, placeSlug)
+  if (datasetPlace) return datasetPlace
 
   const [regions, places] = await Promise.all([
     getGeoRegions(countryCode),
@@ -457,13 +873,7 @@ function countryBounds(countryCode: string) {
 }
 
 function slugify(value: string) {
-  return String(value || '')
-    .trim()
-    .toLocaleLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+  return marketplaceGeoSlug(value)
 }
 
 function capitalize(value: string) {
@@ -472,12 +882,4 @@ function capitalize(value: string) {
 
 function lower(value: string) {
   return value.toLocaleLowerCase()
-}
-
-function toTitleCase(value: string) {
-  return value
-    .split('-')
-    .filter(Boolean)
-    .map((part) => capitalize(part))
-    .join(' ')
 }
