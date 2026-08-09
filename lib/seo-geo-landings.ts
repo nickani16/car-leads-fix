@@ -276,18 +276,18 @@ const sitemapMakesByCategory: Record<MarketplaceCategorySlug, readonly string[]>
 }
 
 const seoModelsByMake: Record<string, readonly string[]> = {
-  Audi: ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5'],
-  BMW: ['1 Series', '3 Series', '5 Series', 'X1', 'X3', 'X5'],
-  'Mercedes-Benz': ['A-Class', 'C-Class', 'E-Class', 'GLC', 'GLE', 'Sprinter'],
-  Volkswagen: ['Golf', 'Passat', 'Polo', 'Tiguan', 'T-Roc', 'ID.4'],
-  Volvo: ['V40', 'V60', 'V90', 'XC40', 'XC60', 'XC90'],
-  Toyota: ['Corolla', 'Yaris', 'C-HR', 'RAV4', 'Prius', 'Land Cruiser'],
-  Ford: ['Fiesta', 'Focus', 'Kuga', 'Mustang', 'Puma', 'Ranger'],
+  Audi: ['A4', 'Q5', 'A3', 'A5', 'A6', 'Q3'],
+  BMW: ['X5', '3 Series', '1 Series', '5 Series', 'X1', 'X3'],
+  'Mercedes-Benz': ['GLC', 'C-Class', 'A-Class', 'E-Class', 'GLE', 'Sprinter'],
+  Volkswagen: ['Golf', 'Tiguan', 'Passat', 'Polo', 'T-Roc', 'ID.4'],
+  Volvo: ['XC60', 'V60', 'V40', 'V90', 'XC40', 'XC90'],
+  Toyota: ['Corolla', 'RAV4', 'Yaris', 'C-HR', 'Prius', 'Land Cruiser'],
+  Ford: ['Focus', 'Kuga', 'Fiesta', 'Mustang', 'Puma', 'Ranger'],
   Tesla: ['Model 3', 'Model Y', 'Model S', 'Model X', 'Cybertruck', 'Roadster'],
-  Peugeot: ['208', '308', '2008', '3008', '5008'],
+  Peugeot: ['208', '3008', '308', '2008', '5008'],
   Renault: ['Clio', 'Captur', 'Megane', 'Austral', 'Scenic'],
   Fiat: ['500', 'Panda', 'Tipo', '600'],
-  Skoda: ['Fabia', 'Octavia', 'Superb', 'Karoq', 'Kodiaq', 'Enyaq'],
+  Skoda: ['Octavia', 'Kodiaq', 'Fabia', 'Superb', 'Karoq', 'Enyaq'],
 }
 
 const makeSlugAliases: Record<string, string> = {
