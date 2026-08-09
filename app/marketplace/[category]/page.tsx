@@ -313,6 +313,7 @@ export default async function MarketplaceCategoryPage({
       <PublicHeader
         locale={locale}
         marketCode={marketCode}
+        marketplaceResultsPage
         marketplaceChannel={{
           label,
           slug: requestedCategory === 'vehicles' ? 'vehicles' : category.slug,

@@ -77,6 +77,7 @@ type PublicHeaderProps = {
     label: string
     slug: string
   }
+  marketplaceResultsPage?: boolean
   marketCode?: string
   hideOnMobile?: boolean
   lockMobileBottomNav?: boolean
@@ -436,6 +437,7 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
 export default function PublicHeader({
   locale: providedLocale,
   marketplaceChannel,
+  marketplaceResultsPage = false,
   marketCode,
   hideOnMobile = false,
   lockMobileBottomNav = false,
@@ -848,7 +850,9 @@ export default function PublicHeader({
   const isHomePage = activePathname === '/'
   const isFindCarsPage = activePathname === '/find-cars'
   const isMarketplaceResults =
-    activePathname === '/marketplace' || activePathname.startsWith('/marketplace/')
+    marketplaceResultsPage ||
+    activePathname === '/marketplace' ||
+    activePathname.startsWith('/marketplace/')
   const firstPathSegment = unprefixedPathname.split('/').filter(Boolean)[0] || ''
   const isListingDetail = new Set([
     'listings',

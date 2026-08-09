@@ -6,6 +6,7 @@ const geoLandingSource = readFileSync(new URL('../lib/seo-geo-landings.ts', impo
 const marketplaceGeoSource = readFileSync(new URL('../lib/marketplace-geo.ts', import.meta.url), 'utf8')
 const marketplacePageSource = readFileSync(new URL('../app/marketplace/[category]/page.tsx', import.meta.url), 'utf8')
 const vehicleSearchSource = readFileSync(new URL('../app/components/VehicleSearchExperience.tsx', import.meta.url), 'utf8')
+const publicHeaderSource = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const seoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const sitemapIndexSource = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapShardSource = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
@@ -38,10 +39,17 @@ test('clean SEO URLs render the real Marketplace with server metadata and struct
   assert.match(seoRouteSource, /BreadcrumbList/)
   assert.match(marketplacePageSource, /searchMarketplaceListings/)
   assert.match(marketplacePageSource, /initialGeoArea/)
+  assert.match(marketplacePageSource, /marketplaceResultsPage/)
   assert.match(marketplacePageSource, /preserveCanonicalUrl=\{Boolean\(seoLanding\)\}/)
+  assert.match(publicHeaderSource, /marketplaceResultsPage \|\|/)
   assert.match(vehicleSearchSource, /<h1 id="seo-marketplace-heading"/)
   assert.match(vehicleSearchSource, /seoLanding\?\.zeroResultsText/)
   assert.match(vehicleSearchSource, /params\.set\('markets', safeAutomaticCountry\)/)
+  assert.ok(
+    vehicleSearchSource.indexOf('aria-labelledby="seo-marketplace-heading"') >
+      vehicleSearchSource.indexOf("Show more listings"),
+    'SEO support copy must stay below Marketplace results instead of becoming a second top navigation',
+  )
 })
 
 test('filtered query pages canonicalize to clean SEO paths and stay out of the index', () => {
