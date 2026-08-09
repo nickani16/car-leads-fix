@@ -23,6 +23,8 @@ test('SEO route state is centralized for all eleven active markets', () => {
   assert.match(geoLandingSource, /category-make-model-location/)
   assert.match(geoLandingSource, /buildSeoMarketplaceSearchParams/)
   assert.match(geoLandingSource, /shouldIncludeInSitemap/)
+  assert.match(geoLandingSource, /BMW: \['X5', '3 Series'/)
+  assert.match(geoLandingSource, /Volvo: \['XC60', 'V60'/)
   assert.match(marketplaceGeoSource, /getStaticGeoDataset/)
   assert.match(marketplaceGeoSource, /getStaticMarketplaceGeoAreas/)
 })
