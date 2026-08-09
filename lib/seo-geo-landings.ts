@@ -334,6 +334,8 @@ export async function resolveGeoLandingRoute(
     if (!place) return null
   }
 
+  const localizedPlace = place ? localizeSeoPlace(place, config.locale) : null
+
   const makeSlug = make ? slugify(make) : null
   const modelSlug = model ? slugify(model) : null
   const canonicalPath = buildSeoMarketplacePath({
@@ -341,13 +343,13 @@ export async function resolveGeoLandingRoute(
     categorySlug: normalizedCategorySlug,
     make,
     model,
-    placeSlug: place?.slug,
+    placeSlug: localizedPlace?.slug,
   })
   const countryName = marketCountryNames[normalizedMarket]
   const subject = model ? `${make} ${model}` : make || capitalize(categoryRoute.plural)
-  const scope = place?.name || countryName
-  const copy = buildLocalizedSeoCopy(config.locale, subject, scope, !place)
-  const routeKind = getRouteKind({ make, model, place })
+  const scope = localizedPlace?.name || countryName
+  const copy = buildLocalizedSeoCopy(config.locale, subject, scope, !localizedPlace)
+  const routeKind = getRouteKind({ make, model, place: localizedPlace })
   const breadcrumbs = buildBreadcrumbs({
     market: normalizedMarket,
     countryName,
@@ -355,7 +357,7 @@ export async function resolveGeoLandingRoute(
     categoryLabel: capitalize(categoryRoute.plural),
     make,
     model,
-    place,
+    place: localizedPlace,
     canonicalPath,
   })
   const relatedLinks = buildRelatedLinks({
@@ -367,7 +369,7 @@ export async function resolveGeoLandingRoute(
     categoryLabel: capitalize(categoryRoute.plural),
     make,
     model,
-    place,
+    place: localizedPlace,
     canonicalPath,
   })
 
@@ -379,7 +381,7 @@ export async function resolveGeoLandingRoute(
     categorySlug: normalizedCategorySlug,
     categoryLabel: capitalize(categoryRoute.plural),
     leasing: Boolean(categoryRoute.leasing),
-    place,
+    place: localizedPlace,
     makeSlug,
     make,
     modelSlug,
@@ -387,12 +389,38 @@ export async function resolveGeoLandingRoute(
     routeKind,
     canonicalPath,
     h1: copy.h1,
-    title: cleanSeoText(`${copy.h1} | Autorell`, 60),
-    description: cleanSeoText(copy.description, 155),
+    title: normalizeSeoText(`${copy.h1} | Autorell`),
+    description: fitSeoDescription(copy.description),
     zeroResultsText: copy.zeroResults,
     breadcrumbs,
     relatedLinks,
   }
+}
+
+function localizeSeoPlace(place: MarketplaceGeoArea, locale: PublicLocale): MarketplaceGeoArea {
+  if (locale !== 'be' || !place.name.includes('/')) return place
+
+  const dutchName = place.name
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .at(-1)
+
+  return dutchName ? { ...place, name: dutchName } : place
+}
+
+function normalizeSeoText(value: string) {
+  return cleanSeoText(value, Number.MAX_SAFE_INTEGER)
+}
+
+function fitSeoDescription(value: string) {
+  const cleaned = normalizeSeoText(value)
+  if (cleaned.length <= 155) return cleaned
+
+  const candidate = cleaned.slice(0, 152).trimEnd()
+  const wordBoundary = candidate.lastIndexOf(' ')
+  const shortened = wordBoundary >= 120 ? candidate.slice(0, wordBoundary) : candidate
+  return `${shortened.replace(/[\s,;:.-]+$/g, '')}...`
 }
 
 export const resolveSeoMarketplaceRoute = resolveGeoLandingRoute
