@@ -79,10 +79,11 @@ test('homepage search panels and placeholder retain their accessibility behavior
 
 test('homepage search keeps compact rounded filter controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
-  assert.match(homeSearchSource, /min-h-9 w-full appearance-none rounded-\[14px\]/)
-  assert.match(homeSearchSource, /grid min-h-9 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
+  assert.match(homeSearchSource, /home-hero-filter-select h-9 min-h-9 w-full appearance-none rounded-\[14px\]/)
+  assert.match(homeSearchSource, /grid min-h-9 grid-cols-2 h-9 gap-0\.5 rounded-\[16px\]/)
   assert.match(homeSearchSource, /min-h-8 rounded-\[14px\]/)
-  assert.match(homeSearchSource, /min-h-11 self-end items-center justify-center gap-2 rounded-full/)
+  assert.match(homeSearchSource, /h-10 w-full rounded-\[14px\].*lg:h-9/)
+  assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
 })
 

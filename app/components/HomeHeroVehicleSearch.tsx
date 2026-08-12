@@ -1321,7 +1321,7 @@ function HomeSelectControl({
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-8 w-full appearance-none rounded-[13px] border border-[#98a2b3] bg-white px-2.5 pr-8 text-[11.5px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:min-h-9 sm:rounded-[14px] sm:px-3 sm:pr-9 sm:text-[12px]"
+          className="home-hero-filter-select h-9 min-h-9 w-full appearance-none rounded-[14px] border border-[#98a2b3] bg-white px-3 pr-8 text-[11px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:pr-9 sm:text-[12px]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1331,7 +1331,7 @@ function HomeSelectControl({
           ))}
         </select>
         <ChevronDown
-          className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085] sm:right-3 sm:h-4 sm:w-4"
+          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085] sm:h-4 sm:w-4"
           aria-hidden="true"
         />
       </span>
@@ -1357,7 +1357,7 @@ function PurchaseTypeControl({
       <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid min-h-8 grid-cols-2 gap-0.5 rounded-[15px] border border-[#98a2b3] bg-white p-0.5 sm:min-h-9 sm:rounded-[16px]">
+      <div className="grid min-h-9 grid-cols-2 h-9 gap-0.5 rounded-[16px] border border-[#98a2b3] bg-white p-0.5">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1367,7 +1367,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`min-h-7 rounded-[13px] px-2 text-[11.5px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-8 sm:rounded-[14px] sm:text-[12px] ${
+            className={`min-h-8 rounded-[14px] px-2 text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
               value === option
                 ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1402,10 +1402,10 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="min-h-8 w-full rounded-[13px] border border-[#98a2b3] bg-white px-2.5 pr-8 text-[11.5px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:min-h-9 sm:rounded-[14px] sm:px-3 sm:pr-9 sm:text-[12px]"
+          className="h-10 w-full rounded-[14px] border border-[#98a2b3] bg-white px-3 pr-9 text-[11.5px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[12px] lg:h-9"
         />
         <MapPin
-          className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085] sm:right-3 sm:h-4 sm:w-4"
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
           aria-hidden="true"
         />
         <datalist id="home-search-location-options">

@@ -507,6 +507,11 @@ input, textarea, select {
   .vehicle-search-control {
     font-size: 16px !important;
   }
+
+  /* Native selects do not open the keyboard; keep the compact home filter legible. */
+  .home-hero-filter-select {
+    font-size: 14px !important;
+  }
 }
 
 .market-blob {
