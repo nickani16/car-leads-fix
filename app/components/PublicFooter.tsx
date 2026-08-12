@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Check,
   ChevronDown,
+  Download,
   Globe2,
   X,
 } from 'lucide-react'
@@ -362,7 +362,7 @@ export default function PublicFooter({
 
         <div className="flex flex-col gap-5 bg-white pb-7 text-[13px] text-[#475467]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <AppDownloadBadges href={appHref} copy={appCopy} />
+            <AppDownloadLinks href={appHref} copy={appCopy} />
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium sm:justify-end">
               <button
                 type="button"
@@ -652,7 +652,7 @@ function SocialLinks() {
   )
 }
 
-function AppDownloadBadges({
+function AppDownloadLinks({
   href,
   copy,
   align = 'left',
@@ -664,20 +664,22 @@ function AppDownloadBadges({
   return (
     <div className={align === 'right' ? 'sm:text-right' : ''}>
       <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
-      <div className={`mt-2 flex flex-wrap gap-2 ${align === 'right' ? 'sm:justify-end' : ''}`}>
-        <Link
-          href={href}
-          aria-label={copy.appStoreAlt}
-          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <Image src="/app-store.svg" alt={copy.appStoreAlt} width={120} height={41} className="h-[38px] w-auto" />
-        </Link>
+      <div className={`mt-2 grid gap-2 ${align === 'right' ? 'sm:justify-items-end' : ''}`}>
         <Link
           href={href}
           aria-label={copy.googlePlayAlt}
-          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <Image src="/google-play.svg" alt={copy.googlePlayAlt} width={120} height={41} className="h-[38px] w-auto" />
+          <span>Google Play</span>
+          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
+        </Link>
+        <Link
+          href={href}
+          aria-label={copy.appStoreAlt}
+          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <span>App Store</span>
+          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
         </Link>
       </div>
     </div>

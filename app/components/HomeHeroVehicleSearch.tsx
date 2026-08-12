@@ -909,8 +909,8 @@ export default function HomeHeroVehicleSearch({
 
   return (
     <form onSubmit={submit} role="search" className="mx-auto w-full min-w-0 overflow-x-hidden">
-      <section className="mx-auto w-full max-w-none rounded-[18px] border border-[#cfd8e4] bg-white px-4 py-4 sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
-        <h1 className="mx-auto max-w-[330px] text-center text-[22px] font-semibold leading-tight text-[#101828] sm:max-w-none sm:text-[26px] lg:text-[28px]">
+      <section className="mx-auto w-full max-w-none rounded-[16px] border border-[#cfd8e4] bg-white px-3 py-3 sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
+        <h1 className="mx-auto max-w-[310px] text-center text-[19px] font-semibold leading-tight text-[#101828] sm:max-w-none sm:text-[26px] lg:text-[28px]">
           {titleRest ? (
             <>
               <span className="block sm:inline">{titleLead}</span>
@@ -920,9 +920,9 @@ export default function HomeHeroVehicleSearch({
             t.title
           )}
         </h1>
-        <div className="relative mt-3">
-          <div className="relative flex min-h-[52px] items-center gap-2 rounded-[13px] border border-[#98a2b3] bg-white px-3 pl-10 pr-[56px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:pr-[60px]">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+        <div className="relative mt-2.5 sm:mt-3">
+          <div className="relative flex min-h-[46px] items-center gap-2 rounded-[12px] border border-[#98a2b3] bg-white px-3 pl-9 pr-[50px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:min-h-[52px] sm:pl-10 sm:pr-[60px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#667085] sm:left-3.5 sm:h-5 sm:w-5" aria-hidden="true" />
             {selectedSuggestions.map((suggestion) => (
               <span
                 key={suggestion.chipId}
@@ -951,12 +951,12 @@ export default function HomeHeroVehicleSearch({
               onBlur={() => window.setTimeout(() => setSearchFocused(false), 140)}
               aria-label={t.searchLabel}
               autoComplete="off"
-              className="h-9 min-w-[80px] flex-1 bg-transparent text-[15px] font-normal text-[#101828] outline-none sm:text-[16px]"
+              className="h-8 min-w-[80px] flex-1 bg-transparent text-[14px] font-normal text-[#101828] outline-none sm:h-9 sm:text-[16px]"
             />
             {!searchFocused && !query && !selectedSuggestions.length ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute left-10 right-[58px] truncate text-[14px] font-normal text-[#7b8493] sm:right-[64px] sm:text-[15px]"
+                className="pointer-events-none absolute left-9 right-[52px] truncate text-[13px] font-normal text-[#7b8493] sm:left-10 sm:right-[64px] sm:text-[15px]"
               >
                 <HomeSearchAnimatedPlaceholder examples={categoryExamples} />
               </span>
@@ -965,9 +965,9 @@ export default function HomeHeroVehicleSearch({
               type="submit"
               title={t.searchButton}
               aria-label={t.searchButton}
-              className="absolute right-2 grid h-10 w-10 place-items-center rounded-[10px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
+              className="absolute right-1.5 grid h-9 w-9 place-items-center rounded-[9px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:right-2 sm:h-10 sm:w-10 sm:rounded-[10px]"
             >
-              <ArrowRight className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
+              <ArrowRight className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
           </div>
           <VehicleSmartSearchSuggestionPanel
@@ -982,7 +982,7 @@ export default function HomeHeroVehicleSearch({
         </div>
       </section>
 
-      <section className="relative mx-auto mt-3 w-full max-w-none overflow-hidden rounded-[16px] border border-[#cfd8e4] bg-white sm:max-w-[1120px] sm:rounded-[14px]">
+      <section className="relative mx-auto mt-2 w-full max-w-none overflow-hidden rounded-[14px] border border-[#cfd8e4] bg-white sm:mt-3 sm:max-w-[1120px] sm:rounded-[14px]">
         <div ref={categoryMenuRef} className="relative border-b border-[#d8e0ea]">
           <div
             role="tablist"
@@ -999,13 +999,13 @@ export default function HomeHeroVehicleSearch({
                     role="tab"
                     aria-selected={selected}
                     onClick={() => selectCategory(slug)}
-                    className={`relative flex min-h-[54px] flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] lg:min-h-[58px] ${
+                    className={`relative flex min-h-[47px] flex-col items-center justify-center gap-0.5 px-2 py-1 text-center text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-[54px] sm:py-1.5 sm:text-[13px] lg:min-h-[58px] ${
                       selected
                         ? 'bg-[#f5f9ff] text-[#0866ff]'
                         : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                     }`}
                   >
-                    <Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+                    <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} aria-hidden="true" />
                     <span className="max-w-full truncate">{categoryLabel(slug, locale)}</span>
                     {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
                   </button>
@@ -1018,13 +1018,13 @@ export default function HomeHeroVehicleSearch({
                 aria-expanded={categoryMenuOpen}
                 aria-controls="home-search-category-menu"
                 onClick={() => setCategoryMenuOpen((current) => !current)}
-                className={`relative flex min-h-[54px] flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[13px] lg:min-h-[58px] ${
+                className={`relative flex min-h-[47px] flex-col items-center justify-center gap-0.5 px-2 py-1 text-center text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-[54px] sm:py-1.5 sm:text-[13px] lg:min-h-[58px] ${
                   selectedExtraCategory
                     ? 'bg-[#f5f9ff] text-[#0866ff]'
                     : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                 }`}
               >
-                <MoreCategoryIcon className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
+                <MoreCategoryIcon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} aria-hidden="true" />
                 <span className="max-w-full truncate">
                   {selectedExtraCategory ? categoryLabel(selectedExtraCategory.slug, locale) : t.moreCategories}
                 </span>
@@ -1078,8 +1078,8 @@ export default function HomeHeroVehicleSearch({
           ) : null}
         </div>
 
-        <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-6">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-4 lg:gap-x-4">
+        <div className="px-3 py-2 sm:px-5 sm:py-3 lg:px-6">
+          <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-4 lg:gap-x-4">
             {categoryLayout.top.map((key) => (
               <HomeFilterControl
                 key={key}
@@ -1096,7 +1096,7 @@ export default function HomeHeroVehicleSearch({
             ))}
           </div>
 
-          <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-4 lg:gap-x-4">
+          <div className="mt-2 grid grid-cols-2 gap-x-2.5 gap-y-2 lg:mt-2.5 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-2.5">
             {categoryLayout.bottom.map((slot) => {
               if (slot === 'mode') {
                 return (
@@ -1147,12 +1147,12 @@ export default function HomeHeroVehicleSearch({
             />
           </div>
 
-          <div className="mt-2.5 flex items-center justify-end gap-4">
+          <div className="mt-2 flex items-center justify-end gap-4 sm:mt-2.5">
             <button
               ref={moreFiltersTriggerRef}
               type="button"
               onClick={resetSearch}
-              className="inline-flex min-h-9 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              className="inline-flex min-h-8 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:min-h-9 sm:gap-2 sm:text-[13px]"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               {t.reset}
@@ -1162,7 +1162,7 @@ export default function HomeHeroVehicleSearch({
               onClick={() => setMoreFiltersOpen(true)}
               aria-expanded={moreFiltersOpen}
               aria-controls="home-search-more-filters"
-              className="inline-flex min-h-9 items-center gap-2 text-[13px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              className="inline-flex min-h-8 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:min-h-9 sm:gap-2 sm:text-[13px]"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               {t.moreFilters}
@@ -1170,7 +1170,7 @@ export default function HomeHeroVehicleSearch({
           </div>
 
           <SearchSubmitButton
-            className="mt-2.5 flex w-full lg:hidden"
+            className="mt-2 flex w-full sm:mt-2.5 lg:hidden"
             label={countLabel}
             loading={countLoading}
             loadingLabel={t.updatingCount}
@@ -1313,15 +1313,15 @@ function HomeSelectControl({
   onChange: (value: string) => void
 }) {
   return (
-    <label htmlFor={id} className="min-w-0 text-[10.5px] font-medium leading-4 text-[#344054] sm:text-[11px]">
-      <span className="flex min-h-6 items-end pb-0.5">{label}</span>
+    <label htmlFor={id} className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
+      <span className="flex min-h-5 items-end pb-0.5 sm:min-h-6">{label}</span>
       <span className="relative block">
         <select
           id={id}
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="min-h-9 w-full appearance-none rounded-[14px] border border-[#98a2b3] bg-white px-3 pr-9 text-[12px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[12px]"
+          className="min-h-8 w-full appearance-none rounded-[13px] border border-[#98a2b3] bg-white px-2.5 pr-8 text-[11.5px] font-normal text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:min-h-9 sm:rounded-[14px] sm:px-3 sm:pr-9 sm:text-[12px]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1331,7 +1331,7 @@ function HomeSelectControl({
           ))}
         </select>
         <ChevronDown
-          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085] sm:right-3 sm:h-4 sm:w-4"
           aria-hidden="true"
         />
       </span>
@@ -1354,10 +1354,10 @@ function PurchaseTypeControl({
 }) {
   return (
     <fieldset className="min-w-0">
-      <legend className="flex min-h-6 items-end pb-0.5 text-[10.5px] font-medium leading-4 text-[#344054] sm:text-[11px]">
+      <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid min-h-9 grid-cols-2 gap-0.5 rounded-[16px] border border-[#98a2b3] bg-white p-0.5">
+      <div className="grid min-h-8 grid-cols-2 gap-0.5 rounded-[15px] border border-[#98a2b3] bg-white p-0.5 sm:min-h-9 sm:rounded-[16px]">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1367,7 +1367,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`min-h-8 rounded-[14px] px-2 text-[12px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
+            className={`min-h-7 rounded-[13px] px-2 text-[11.5px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-8 sm:rounded-[14px] sm:text-[12px] ${
               value === option
                 ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1393,8 +1393,8 @@ function LocationControl({
   onChange: (value: string) => void
 }) {
   return (
-    <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[10.5px] font-medium leading-4 text-[#344054] sm:text-[11px] lg:col-span-1">
-      <span className="flex min-h-6 items-end pb-0.5">{label}</span>
+    <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px] lg:col-span-1">
+      <span className="flex min-h-5 items-end pb-0.5 sm:min-h-6">{label}</span>
       <span className="relative block">
         <input
           id="home-search-location"
@@ -1402,10 +1402,10 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="min-h-9 w-full rounded-[14px] border border-[#98a2b3] bg-white px-3 pr-9 text-[12px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[12px]"
+          className="min-h-8 w-full rounded-[13px] border border-[#98a2b3] bg-white px-2.5 pr-8 text-[11.5px] font-normal text-[#101828] outline-none transition placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:min-h-9 sm:rounded-[14px] sm:px-3 sm:pr-9 sm:text-[12px]"
         />
         <MapPin
-          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085] sm:right-3 sm:h-4 sm:w-4"
           aria-hidden="true"
         />
         <datalist id="home-search-location-options">
@@ -1432,7 +1432,7 @@ function SearchSubmitButton({
   return (
     <button
       type="submit"
-      className={`${className} min-h-11 self-end items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-center text-[14px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:text-[14px]`}
+      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:min-h-11 sm:text-[14px]`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-label={loadingLabel} />

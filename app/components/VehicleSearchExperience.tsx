@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Check,
   Columns2,
+  Download,
   Expand,
   Globe2,
   Heart,
@@ -4033,7 +4034,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
       </div>
       <div className="mt-8 grid gap-5 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
-          <div className="inline-flex w-[112px] flex-col items-center">
+          <div className="inline-flex w-[126px] flex-col items-center sm:w-[132px]">
             <BrandLogo compact underline={false} />
             <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
               {marketplaceBrandSubtitle[locale]}
@@ -4046,7 +4047,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         <MarketplaceSocialLinks />
       </div>
       <div className="mt-6 flex flex-col gap-4 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-end min-[560px]:justify-between">
-        <MarketplaceAppDownloadBadges href={appHref} copy={appCopy} />
+        <MarketplaceAppDownloadLinks href={appHref} copy={appCopy} />
         <div className="flex flex-col gap-3 min-[560px]:items-end">
         <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
@@ -4072,7 +4073,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   )
 }
 
-function MarketplaceAppDownloadBadges({
+function MarketplaceAppDownloadLinks({
   href,
   copy,
 }: {
@@ -4082,20 +4083,22 @@ function MarketplaceAppDownloadBadges({
   return (
     <div>
       <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <Link
-          href={href}
-          aria-label={copy.appStoreAlt}
-          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <Image src="/app-store.svg" alt={copy.appStoreAlt} width={120} height={41} className="h-[38px] w-auto" />
-        </Link>
+      <div className="mt-2 grid gap-2">
         <Link
           href={href}
           aria-label={copy.googlePlayAlt}
-          className="block transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <Image src="/google-play.svg" alt={copy.googlePlayAlt} width={120} height={41} className="h-[38px] w-auto" />
+          <span>Google Play</span>
+          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
+        </Link>
+        <Link
+          href={href}
+          aria-label={copy.appStoreAlt}
+          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <span>App Store</span>
+          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
         </Link>
       </div>
     </div>
@@ -4122,15 +4125,15 @@ function MarketplaceSocialLinks() {
   ]
 
   return (
-    <nav className="flex items-center gap-3 lg:justify-end" aria-label="Social media">
+    <nav className="flex items-center gap-2.5 lg:justify-end" aria-label="Social media">
       {links.map((link) => (
         <Link
           key={link.label}
           href={link.href}
           aria-label={link.label}
-          className="grid h-11 w-11 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="grid h-9 w-9 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
             <path d={link.path} />
           </svg>
         </Link>

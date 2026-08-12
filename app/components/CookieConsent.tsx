@@ -575,7 +575,7 @@ export default function CookieConsent({
             <button
               type="button"
               onClick={() => choose('all')}
-              className="order-1 inline-flex min-h-11 min-w-0 items-center justify-center rounded-[14px] border border-[#0866ff] bg-white px-5 text-[14px] font-medium text-[#0866ff] transition hover:bg-[#f2f6ff] sm:order-3"
+              className="order-1 inline-flex min-h-11 min-w-0 items-center justify-center rounded-[14px] border border-[#0866ff] bg-[#0866ff] px-5 text-[14px] font-medium text-white transition hover:border-[#075be5] hover:bg-[#075be5] sm:order-3"
             >
               <Check className="mr-2 h-4 w-4" />
               {t.acceptAll}
