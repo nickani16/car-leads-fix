@@ -60,21 +60,16 @@ type BillingPriceRow = {
 
 export default async function AccountListingsPage({
   searchParams,
-  localeOverride,
-  marketOverride,
-  companyMode = false,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
-  localeOverride?: PublicLocale
-  marketOverride?: string
-  companyMode?: boolean
 }) {
   const query = await searchParams
   const renderedAt = new Date().getTime()
-  const locale = localeOverride || await getRequestLocale()
+  const locale = await getRequestLocale()
   const requestHeaders = await headers()
+  const requestPathname = requestHeaders.get('x-autorell-pathname') || ''
+  const companyMode = /\/account\/company\/listings(?:\/|$)/.test(requestPathname)
   const billingMarket = normalizeBillingMarket(
-    marketOverride ||
     requestHeaders.get('x-autorell-market') ||
     billingMarketForLocale(locale),
   )

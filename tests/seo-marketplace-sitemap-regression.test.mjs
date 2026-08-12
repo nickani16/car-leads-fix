@@ -10,6 +10,7 @@ const publicHeaderSource = readFileSync(new URL('../app/components/PublicHeader.
 const seoRouteSource = readFileSync(new URL('../app/seo/[market]/[...slug]/page.tsx', import.meta.url), 'utf8')
 const sitemapIndexSource = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapShardSource = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
+const sitemapUtilsSource = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
 const robotsSource = readFileSync(new URL('../app/robots.txt/route.ts', import.meta.url), 'utf8')
 
 const markets = ['se', 'de', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'at', 'dk', 'fi']
@@ -17,7 +18,7 @@ const markets = ['se', 'de', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'at', 'dk', 'fi
 test('SEO route state is centralized for all eleven active markets', () => {
   for (const market of markets) {
     assert.match(geoLandingSource, new RegExp(`\\b${market}:`), `${market} is missing from SEO route config`)
-    assert.ok(sitemapIndexSource.includes(`'${market}'`), `${market} is missing from sitemap index config`)
+    assert.ok(sitemapUtilsSource.includes(`'${market}'`), `${market} is missing from sitemap config`)
   }
   assert.match(geoLandingSource, /resolveStaticMarketplaceGeoAreaBySlug/)
   assert.match(geoLandingSource, /brandSuggestionsForCategory/)

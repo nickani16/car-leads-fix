@@ -219,6 +219,21 @@ const localizedHeroHeadingCopy: Record<PublicLocale, string> = {
   da: 'Europas bedste køretøjsmarked',
 }
 
+const localizedHeroAltCopy: Record<PublicLocale, string> = {
+  sv: 'Person som söker fordon online på Autorell',
+  en: 'Person searching for vehicles online on Autorell',
+  de: 'Person sucht online nach Fahrzeugen auf Autorell',
+  at: 'Person sucht online nach Fahrzeugen auf Autorell',
+  be: 'Persoon zoekt online naar voertuigen op Autorell',
+  fr: 'Personne recherchant des véhicules en ligne sur Autorell',
+  es: 'Persona buscando vehículos en línea en Autorell',
+  it: 'Persona che cerca veicoli online su Autorell',
+  pl: 'Osoba wyszukująca pojazdy online w Autorell',
+  nl: 'Persoon zoekt online naar voertuigen op Autorell',
+  fi: 'Henkilö etsii ajoneuvoja verkossa Autorellista',
+  da: 'Person søger efter køretøjer online på Autorell',
+}
+
 const localizedLocalHeroHeadingCopy: Record<PublicLocale, string> = {
   sv: 'Sveriges bästa fordonsmarknad',
   en: "Europe's best vehicle marketplace",
@@ -474,6 +489,7 @@ export function getHomeCopy(locale: PublicLocale) {
 
   return {
     ...base,
+    heroAlt: localizedHeroAltCopy[locale],
     heroHeading: localizedHeroHeadingCopy[locale],
     localHeroHeading: localizedLocalHeroHeadingCopy[locale],
     heroHeadingSlider: localizedHeroHeadingSliderCopy[locale],

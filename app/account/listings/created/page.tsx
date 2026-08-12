@@ -14,17 +14,7 @@ export default async function ListingCreatedPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  return renderListingCreatedPage({ searchParams })
-}
-
-export async function renderListingCreatedPage({
-  searchParams,
-  localeOverride,
-}: {
-  searchParams: Promise<SearchParams>
-  localeOverride?: PublicLocale
-}) {
-  const locale = localeOverride || await getRequestLocale()
+  const locale = await getRequestLocale()
   const copy = getListingCreatedCopy(locale)
   const query = await searchParams
   const listingId = firstParam(query.listing)

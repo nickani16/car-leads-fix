@@ -184,7 +184,7 @@ export async function POST(request: Request) {
           priority: 0,
           published_at: approved ? now.toISOString() : null,
           expires_at: approved
-            ? new Date(now.getTime() + (product.durationDays || 7) * 86_400_000).toISOString()
+            ? new Date(now.getTime() + (product.durationDays || 5) * 86_400_000).toISOString()
             : null,
           updated_at: now.toISOString(),
         })

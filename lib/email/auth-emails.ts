@@ -242,6 +242,119 @@ const resetCopy: Record<string, AuthEmailCopy> = {
   },
 }
 
+const signupCopy: Record<string, AuthEmailCopy> = {
+  en: {
+    subject: 'Confirm your Autorell email',
+    preheader: 'Use this secure link to confirm your email and activate your Autorell account.',
+    eyebrow: 'Email confirmation',
+    heading: 'Confirm your email',
+    intro: 'Confirm your email address to activate your Autorell account and continue setting up your profile.',
+    cta: 'Confirm email',
+    expiry: 'The link is temporary and can only be used once.',
+    ignore: 'If you did not create an Autorell account, you can ignore this email.',
+    footer: 'Security messages are sent from noreply@autorell.com.',
+  },
+  sv: {
+    subject: 'Bekr\u00e4fta din mejladress hos Autorell',
+    preheader: 'Anv\u00e4nd den s\u00e4kra l\u00e4nken f\u00f6r att bekr\u00e4fta din mejladress och aktivera kontot.',
+    eyebrow: 'Mejlbekr\u00e4ftelse',
+    heading: 'Bekr\u00e4fta din mejladress',
+    intro: 'Bekr\u00e4fta mejladressen f\u00f6r att aktivera ditt Autorell-konto och forts\u00e4tta skapa din profil.',
+    cta: 'Bekr\u00e4fta mejladress',
+    expiry: 'L\u00e4nken \u00e4r tillf\u00e4llig och kan bara anv\u00e4ndas en g\u00e5ng.',
+    ignore: 'Om du inte skapade ett Autorell-konto kan du ignorera det h\u00e4r mejlet.',
+    footer: 'S\u00e4kerhetsmeddelanden skickas fr\u00e5n noreply@autorell.com.',
+  },
+  de: {
+    subject: 'E-Mail-Adresse bei Autorell best\u00e4tigen',
+    preheader: 'Best\u00e4tigen Sie Ihre E-Mail-Adresse mit diesem sicheren Link und aktivieren Sie Ihr Konto.',
+    eyebrow: 'E-Mail-Best\u00e4tigung',
+    heading: 'E-Mail-Adresse best\u00e4tigen',
+    intro: 'Best\u00e4tigen Sie Ihre E-Mail-Adresse, um Ihr Autorell-Konto zu aktivieren und Ihr Profil einzurichten.',
+    cta: 'E-Mail best\u00e4tigen',
+    expiry: 'Der Link ist zeitlich begrenzt und kann nur einmal verwendet werden.',
+    ignore: 'Wenn Sie kein Autorell-Konto erstellt haben, k\u00f6nnen Sie diese E-Mail ignorieren.',
+    footer: 'Sicherheitsmeldungen werden von noreply@autorell.com gesendet.',
+  },
+  fr: {
+    subject: 'Confirmez votre adresse e-mail Autorell',
+    preheader: 'Utilisez ce lien s\u00e9curis\u00e9 pour confirmer votre e-mail et activer votre compte.',
+    eyebrow: 'Confirmation de l\u2019e-mail',
+    heading: 'Confirmez votre adresse e-mail',
+    intro: 'Confirmez votre adresse e-mail pour activer votre compte Autorell et poursuivre la cr\u00e9ation de votre profil.',
+    cta: 'Confirmer l\u2019e-mail',
+    expiry: 'Le lien est temporaire et ne peut \u00eatre utilis\u00e9 qu\u2019une seule fois.',
+    ignore: 'Si vous n\u2019avez pas cr\u00e9\u00e9 de compte Autorell, vous pouvez ignorer cet e-mail.',
+    footer: 'Les messages de s\u00e9curit\u00e9 sont envoy\u00e9s depuis noreply@autorell.com.',
+  },
+  es: {
+    subject: 'Confirma tu correo de Autorell',
+    preheader: 'Usa este enlace seguro para confirmar tu correo y activar tu cuenta.',
+    eyebrow: 'Confirmaci\u00f3n de correo',
+    heading: 'Confirma tu correo electr\u00f3nico',
+    intro: 'Confirma tu correo para activar tu cuenta de Autorell y continuar configurando tu perfil.',
+    cta: 'Confirmar correo',
+    expiry: 'El enlace es temporal y solo puede usarse una vez.',
+    ignore: 'Si no creaste una cuenta de Autorell, puedes ignorar este correo.',
+    footer: 'Los mensajes de seguridad se env\u00edan desde noreply@autorell.com.',
+  },
+  it: {
+    subject: 'Conferma la tua e-mail Autorell',
+    preheader: 'Usa questo link sicuro per confermare la tua e-mail e attivare l\u2019account.',
+    eyebrow: 'Conferma e-mail',
+    heading: 'Conferma il tuo indirizzo e-mail',
+    intro: 'Conferma la tua e-mail per attivare l\u2019account Autorell e continuare a configurare il profilo.',
+    cta: 'Conferma e-mail',
+    expiry: 'Il link \u00e8 temporaneo e pu\u00f2 essere usato una sola volta.',
+    ignore: 'Se non hai creato un account Autorell, puoi ignorare questa e-mail.',
+    footer: 'I messaggi di sicurezza vengono inviati da noreply@autorell.com.',
+  },
+  pl: {
+    subject: 'Potwierd\u017a adres e-mail w Autorell',
+    preheader: 'U\u017cyj bezpiecznego linku, aby potwierdzi\u0107 e-mail i aktywowa\u0107 konto.',
+    eyebrow: 'Potwierdzenie e-mail',
+    heading: 'Potwierd\u017a adres e-mail',
+    intro: 'Potwierd\u017a adres e-mail, aby aktywowa\u0107 konto Autorell i kontynuowa\u0107 tworzenie profilu.',
+    cta: 'Potwierd\u017a e-mail',
+    expiry: 'Link jest tymczasowy i mo\u017cna go u\u017cy\u0107 tylko raz.',
+    ignore: 'Je\u015bli nie utworzono konta Autorell, mo\u017cesz zignorowa\u0107 t\u0119 wiadomo\u015b\u0107.',
+    footer: 'Wiadomo\u015bci bezpiecze\u0144stwa s\u0105 wysy\u0142ane z noreply@autorell.com.',
+  },
+  nl: {
+    subject: 'Bevestig je Autorell-e-mailadres',
+    preheader: 'Gebruik deze beveiligde link om je e-mailadres te bevestigen en je account te activeren.',
+    eyebrow: 'E-mailbevestiging',
+    heading: 'Bevestig je e-mailadres',
+    intro: 'Bevestig je e-mailadres om je Autorell-account te activeren en verder te gaan met je profiel.',
+    cta: 'E-mail bevestigen',
+    expiry: 'De link is tijdelijk en kan slechts \u00e9\u00e9n keer worden gebruikt.',
+    ignore: 'Als je geen Autorell-account hebt aangemaakt, kun je deze e-mail negeren.',
+    footer: 'Beveiligingsberichten worden verzonden vanaf noreply@autorell.com.',
+  },
+  fi: {
+    subject: 'Vahvista Autorell-s\u00e4hk\u00f6postiosoitteesi',
+    preheader: 'Vahvista s\u00e4hk\u00f6postisi turvallisen linkin avulla ja aktivoi tilisi.',
+    eyebrow: 'S\u00e4hk\u00f6postin vahvistus',
+    heading: 'Vahvista s\u00e4hk\u00f6postiosoitteesi',
+    intro: 'Vahvista s\u00e4hk\u00f6posti aktivoidaksesi Autorell-tilisi ja jatkaaksesi profiilin luomista.',
+    cta: 'Vahvista s\u00e4hk\u00f6posti',
+    expiry: 'Linkki on v\u00e4liaikainen ja sit\u00e4 voi k\u00e4ytt\u00e4\u00e4 vain kerran.',
+    ignore: 'Jos et luonut Autorell-tili\u00e4, voit ohittaa t\u00e4m\u00e4n viestin.',
+    footer: 'Turvaviestit l\u00e4hetet\u00e4\u00e4n osoitteesta noreply@autorell.com.',
+  },
+  da: {
+    subject: 'Bekr\u00e6ft din Autorell-e-mailadresse',
+    preheader: 'Brug dette sikre link til at bekr\u00e6fte din e-mail og aktivere din konto.',
+    eyebrow: 'E-mailbekr\u00e6ftelse',
+    heading: 'Bekr\u00e6ft din e-mailadresse',
+    intro: 'Bekr\u00e6ft din e-mail for at aktivere din Autorell-konto og forts\u00e6tte ops\u00e6tningen af din profil.',
+    cta: 'Bekr\u00e6ft e-mail',
+    expiry: 'Linket er midlertidigt og kan kun bruges \u00e9n gang.',
+    ignore: 'Hvis du ikke har oprettet en Autorell-konto, kan du ignorere denne mail.',
+    footer: 'Sikkerhedsbeskeder sendes fra noreply@autorell.com.',
+  },
+}
+
 function copyKey(locale: PublicLocale) {
   const key = translationLocale(locale)
   return key in otpCopy ? key : 'en'
@@ -331,6 +444,10 @@ export function getEmailVerificationCodeCopy(locale: PublicLocale, code: string)
 
 export function getPasswordResetEmailCopy(locale: PublicLocale): AuthEmailCopy {
   return resetCopy[copyKey(locale)] || resetCopy.en
+}
+
+export function getSignupConfirmationEmailCopy(locale: PublicLocale): AuthEmailCopy {
+  return signupCopy[copyKey(locale)] || signupCopy.en
 }
 
 function escapeHtml(value: string) {

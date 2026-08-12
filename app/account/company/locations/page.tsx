@@ -455,8 +455,8 @@ function getLocationsCopy(locale: PublicLocale) {
   } as typeof baseCopy
 }
 
-export default async function CompanyLocationsPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyLocationsPage() {
+  const context = await getCompanyPortalContext()
   const copy = getLocationsCopy(context.locale)
   const admin = createAdminClient()
   const locations = await loadLocations(admin, context.profile.company_id)

@@ -258,7 +258,8 @@ export async function getMarketplaceListingForPublicDetail(id: string) {
     listingQuery,
     imageQuery,
   ])
-  let { data, error } = listingResult
+  let { data } = listingResult
+  const { error } = listingResult
   const { data: imageRows } = imageResult
 
   if (error) {

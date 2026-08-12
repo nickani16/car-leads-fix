@@ -293,7 +293,7 @@ function savedSearchesClientCopy(locale: PublicLocale) {
       emptyText: 'Filtern Sie Fahrzeuge nach Kategorie, Markt, Preis, Kraftstoff, Ausstattung und mehr. Speichern Sie die Suche anschließend auf der Suchseite.',
     }
   }
-  const copy: Partial<Record<PublicLocale, typeof en>> = {
+  const copy: Record<PublicLocale, typeof en> = {
     en,
     sv: {
       savedSearch: 'Sparad sökning',
@@ -461,5 +461,5 @@ function savedSearchesClientCopy(locale: PublicLocale) {
       emptyText: 'Filtrer køretøjer efter kategori, marked, pris, brændstof, udstyr og mere. Gem derefter søgningen fra søgesiden.',
     },
   }
-  return copy[locale] || en
+  return copy[locale]
 }

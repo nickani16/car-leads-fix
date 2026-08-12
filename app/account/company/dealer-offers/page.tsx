@@ -81,8 +81,8 @@ type DealerLeadImage = {
   webp_url: string
 }
 
-export default async function CompanyDealerOffersPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyDealerOffersPage() {
+  const context = await getCompanyPortalContext()
   const copy = getDealerOffersCopy(context.locale)
   const accessStartsAt = dealerLeadAccessStartsAt(context.subscription)
   const unlocked = Boolean(accessStartsAt)

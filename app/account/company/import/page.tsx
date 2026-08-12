@@ -1,5 +1,5 @@
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { companyImportLimitsForPlan } from '@/lib/company-import-limits'
@@ -63,8 +63,8 @@ type ImportJobRow = {
   finished_at: string | null
 }
 
-export default async function CompanyImportPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyImportPage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   const importLimits = companyImportLimitsForPlan(context.subscription?.plan_key || 'free')
   const importJobs = await loadImportJobs(context.profile.company_id)

@@ -24,17 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function InventoryImportPage({
-  localeOverride,
-  marketCodeOverride,
-}: {
-  localeOverride?: PublicLocale
-  marketCodeOverride?: string
-} = {}) {
+export default async function InventoryImportPage() {
   const headerStore = await headers()
-  const locale = localeOverride || getRequestedLocale(headerStore)
+  const locale = getRequestedLocale(headerStore)
   const market = marketForLocale(locale)
-  const marketCode = String(marketCodeOverride || headerStore.get('x-autorell-market') || market.pathCode || 'en').toLowerCase()
+  const marketCode = String(headerStore.get('x-autorell-market') || market.pathCode || 'en').toLowerCase()
   if (!await isBusinessFeatureEnabled('business_pilot_program', { marketCode })) notFound()
 
   const copy = getInventoryImportCopy(locale).publicPage

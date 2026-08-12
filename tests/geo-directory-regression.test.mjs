@@ -11,6 +11,7 @@ const geoHelper = readFileSync(new URL('../lib/marketplace-geo.ts', import.meta.
 const staticGeoDatasets = readFileSync(new URL('../lib/geo-static-datasets.ts', import.meta.url), 'utf8')
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
+const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
 const largeMarketRows = JSON.parse(
   readFileSync(new URL('../scripts/data/geonames-large-market-places-2026.json', import.meta.url), 'utf8'),
 )
@@ -175,6 +176,7 @@ test('manual location fallback is tracked separately from verified places', () =
 test('geo marketplace routes are advertised through dynamic sitemaps for every market', () => {
   assert.match(sitemapIndex, /getGeoSitemapMarketCodes/)
   assert.match(sitemapIndex, /getGeoSitemapNames/)
+  assert.match(sitemapUtils, /allSitemapMarkets/)
   assert.match(sitemapIndex, /const maxGeoUrlsPerSitemap = 10_000/)
   assert.match(sitemapIndex, /names\.push\(`geo-\$\{market\}-\$\{page\}`\)/)
   assert.match(sitemapIndex, /Math\.floor\(maxGeoUrlsPerSitemap \/ urlsPerArea\)/)

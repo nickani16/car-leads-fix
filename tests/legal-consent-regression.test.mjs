@@ -15,6 +15,8 @@ const withdrawalForm = read('app/withdrawal/WithdrawalForm.tsx')
 const withdrawalEmail = read('lib/email/withdrawal-request.ts')
 const withdrawalMigration = read('supabase/migrations/20260806193000_marketplace_withdrawal_requests.sql')
 const termsPage = read('app/terms/page.tsx')
+const swedishTermsPage = read('app/villkor/page.tsx')
+const publicLegalPage = read('app/components/PublicLegalPage.tsx')
 const translations = JSON.parse(read('lib/generated-public-translations.json'))
 
 test('optional telemetry and advertising load only after explicit consent', () => {
@@ -78,4 +80,14 @@ test('the Swedish market route renders the complete Swedish marketplace terms', 
   assert.match(termsPage, /import SwedishTermsPage from '\.\.\/villkor\/page'/)
   assert.match(termsPage, /if \(locale === 'sv'\)/)
   assert.match(termsPage, /return <SwedishTermsPage \/>/)
+})
+
+test('private free-listing terms consistently state five days in every active market', () => {
+  assert.match(publicLegalPage, /const freeListingTermByLocale: Record<PublicLocale, string>/)
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(publicLegalPage, new RegExp(`\\n  ${locale}:`))
+  }
+  assert.match(swedishTermsPage, /Fem dagars grundpublicering är gratis/)
+  assert.doesNotMatch(publicLegalPage, /free listing period is seven days|kostenlose Anzeigenlaufzeit beträgt derzeit sieben Tage/i)
+  assert.doesNotMatch(swedishTermsPage, /Sju dagars grundpublicering/i)
 })

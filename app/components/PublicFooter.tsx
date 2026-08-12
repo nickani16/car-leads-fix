@@ -327,7 +327,7 @@ export default function PublicFooter({
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
       <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-4 lg:gap-x-12">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
           {t.columns.map((column) => (
             <FooterColumn
               key={column.title}
@@ -338,6 +338,7 @@ export default function PublicFooter({
               ])}
             />
           ))}
+          <AppDownloadLinks href={appHref} copy={appCopy} />
         </div>
 
         <div className="my-8 h-px bg-[#dfe5ee]" />
@@ -361,9 +362,7 @@ export default function PublicFooter({
         <div className="my-6 h-px bg-[#dfe5ee]" />
 
         <div className="flex flex-col gap-5 bg-white pb-7 text-[13px] text-[#475467]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <AppDownloadLinks href={appHref} copy={appCopy} />
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium sm:justify-end">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium sm:justify-end">
               <button
                 type="button"
                 onClick={() => setIsMarketOpen(true)}
@@ -393,7 +392,6 @@ export default function PublicFooter({
                   ['usd', 'USD'],
                 ]}
               />
-            </div>
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

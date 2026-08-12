@@ -27,8 +27,8 @@ const baseCopy = {
   contactSupport: 'Contact support',
 }
 
-export default async function CompanySettingsPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanySettingsPage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   return (
     <CompanyPortalShell context={context} active="settings" title={copy.title} description={copy.description}>

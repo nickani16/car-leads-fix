@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { HelpCircle } from 'lucide-react'
 import { CompanyPortalShell, EmptyPanel, getCompanyPortalContext } from '@/lib/company-portal'
-import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translatePublicObject } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 
 export const generateMetadata = generateAccountMetadata('company-support')
@@ -14,8 +14,8 @@ const baseCopy = {
   contactSupport: 'Contact support',
 }
 
-export default async function CompanySupportPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanySupportPage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   return (
     <CompanyPortalShell context={context} active="support" title={copy.title} description={copy.description}>

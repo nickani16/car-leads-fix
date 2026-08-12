@@ -14,13 +14,22 @@ const registerApi = readFileSync(
 test('email login codes are consumed atomically before session creation', () => {
   assert.match(emailCodeVerifyApi, /const consumedAt = new Date\(\)\.toISOString\(\)/)
   assert.match(emailCodeVerifyApi, /\.update\(\{ consumed_at: consumedAt \}\)/)
-  assert.match(emailCodeVerifyApi, /\.eq\('id', challenge\.id\)/)
+  assert.match(emailCodeVerifyApi, /const challengeId = challenge\.id/)
+  assert.match(emailCodeVerifyApi, /\.eq\('id', challengeId\)/)
   assert.match(emailCodeVerifyApi, /\.is\('consumed_at', null\)/)
   assert.match(emailCodeVerifyApi, /\.select\('id'\)/)
   assert.match(emailCodeVerifyApi, /copy\.usedCode/)
   assert.match(emailCodeVerifyApi, /supabase\.auth\.verifyOtp/)
-  assert.match(emailCodeVerifyApi, /identity_status: 'basic_checked'/)
+  assert.match(emailCodeVerifyApi, /identity_status: 'format_validated'/)
   assert.match(emailCodeVerifyApi, /verification_updated_at/)
+
+  const consumptionChecks = [...emailCodeVerifyApi.matchAll(/if \(!\(await consumeChallenge\(\)\)\)/g)]
+  assert.equal(consumptionChecks.length, 2)
+  const loginConsumptionIndex = consumptionChecks[1].index
+  const loginLinkIndex = emailCodeVerifyApi.indexOf('let link = await admin.auth.admin.generateLink')
+  const verifyOtpIndex = emailCodeVerifyApi.indexOf('supabase.auth.verifyOtp')
+  assert.ok(loginConsumptionIndex < loginLinkIndex)
+  assert.ok(loginConsumptionIndex < verifyOtpIndex)
 })
 
 test('marketplace profile creation requires a confirmed email session', () => {

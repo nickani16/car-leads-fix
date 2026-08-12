@@ -1049,9 +1049,12 @@ export default function VehicleSearchExperience({
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (window.matchMedia('(min-width: 768px)').matches) {
-      setResultsLayout('split')
-    }
+    const timer = window.setTimeout(() => {
+      if (window.matchMedia('(min-width: 768px)').matches) {
+        setResultsLayout('split')
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
@@ -1158,11 +1161,14 @@ export default function VehicleSearchExperience({
 
   useEffect(() => {
     if (mode !== 'leasing') return
-    setSelectedCategories((current) => {
-      const next = current.filter((category) => isLeasingMarketplaceCategory(category))
-      if (next.length === current.length && next.length) return current
-      return next.length ? next : ['cars']
-    })
+    const timer = window.setTimeout(() => {
+      setSelectedCategories((current) => {
+        const next = current.filter((category) => isLeasingMarketplaceCategory(category))
+        if (next.length === current.length && next.length) return current
+        return next.length ? next : ['cars']
+      })
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [mode])
 
   useEffect(() => {
@@ -1495,7 +1501,7 @@ export default function VehicleSearchExperience({
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
     })
-  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, locale, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
+  }, [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, searchListings, selectedCategories, selectedMarkets, sellerType, sortBy, verifiedOnly])
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
@@ -4018,7 +4024,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-4">
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold">{column.title}</p>
@@ -4031,6 +4037,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             </nav>
           </div>
         ))}
+        <MarketplaceAppDownloadLinks href={appHref} copy={appCopy} />
       </div>
       <div className="mt-8 grid gap-5 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
@@ -4046,9 +4053,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </div>
         <MarketplaceSocialLinks />
       </div>
-      <div className="mt-6 flex flex-col gap-4 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-end min-[560px]:justify-between">
-        <MarketplaceAppDownloadLinks href={appHref} copy={appCopy} />
-        <div className="flex flex-col gap-3 min-[560px]:items-end">
+      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:items-end">
         <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
           <Link href={termsHref} className="hover:text-[#0866ff]">
@@ -4067,7 +4072,6 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             {uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}
           </Link>
         </nav>
-        </div>
       </div>
     </footer>
   )

@@ -1,7 +1,7 @@
 import { BarChart3, CheckCircle2, Eye, Gauge, Heart, MessageCircle, MousePointerClick, Target, TrendingUp, type LucideIcon } from 'lucide-react'
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
 import { getSellerInsights } from '@/lib/marketplace-insights'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateAccountMetadata } from '@/lib/account-seo'
 
@@ -42,8 +42,8 @@ const baseCopy = {
   noInsights: 'No activity has been recorded yet.',
 }
 
-export default async function CompanyAnalyticsPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyAnalyticsPage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   const summary = context.listingSummary
   const insights = await getSellerInsights(createAdminClient(), context.listingOwnerUserIds)

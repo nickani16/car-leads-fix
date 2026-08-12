@@ -265,7 +265,7 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(publicHeaderSource, /shortLabel/)
   assert.match(publicHeaderSource, /max-h-8 min-w-0 overflow-hidden whitespace-normal break-words/)
   assert.match(publicHeaderSource, /\[overflow-wrap:anywhere\]/)
-  assert.match(vehicleSearchExperienceSource, /const visibleMeta = layout === 'split' \? meta\.slice\(0, 2\) : meta/)
+  assert.match(vehicleSearchExperienceSource, /const visibleMeta = meta/)
   assert.match(vehicleSearchExperienceSource, /createCategoryMapMarker/)
   assert.match(mapCategoryMarkerSource, /categoryIconPaths/)
   assert.match(mapCategoryMarkerSource, /offerType === 'lease'/)
@@ -310,7 +310,7 @@ test('marketplace make and model filters use live category-scoped options while 
 
 test('marketplace price filters use the active market currency instead of hardcoded SEK', () => {
   assert.match(vehicleSearchExperienceSource, /import \{ currencyForCountry, isLeasingMarketplaceCategory \} from '@\/lib\/marketplace'/)
-  assert.match(vehicleSearchExperienceSource, /import \{ currencyForLocale \} from '@\/lib\/market-locale'/)
+  assert.match(vehicleSearchExperienceSource, /import \{ countryForLocale, currencyForLocale \} from '@\/lib\/market-locale'/)
   assert.match(vehicleSearchExperienceSource, /const priceFilterCurrency = selectedMarkets\.filter\(Boolean\)\.length === 1/)
   assert.match(vehicleSearchExperienceSource, /currencyForCountry\(selectedMarkets\.filter\(Boolean\)\[0\]\)/)
   assert.match(vehicleSearchExperienceSource, /currencyForLocale\(locale\)/)
@@ -411,8 +411,9 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   }
   assert.match(vehicleSearchExperienceSource, /buildVehicleCompareRows\(compareListings, locale, compareCopy\)/)
   assert.match(vehicleSearchExperienceSource, /type ResultsLayout = 'single' \| 'split'/)
-  assert.match(vehicleSearchExperienceSource, /useState<ResultsLayout>\('split'\)/)
-  assert.match(vehicleSearchExperienceSource, /grid sm:grid-cols-2/)
+  assert.match(vehicleSearchExperienceSource, /useState<ResultsLayout>\('single'\)/)
+  assert.match(vehicleSearchExperienceSource, /window\.matchMedia\('\(min-width: 768px\)'\)\.matches[\s\S]*setResultsLayout\('split'\)/)
+  assert.match(vehicleSearchExperienceSource, /resultsLayout === 'split' && filteredListings\.length > 1 \? 'grid grid-cols-2' : ''/)
   assert.match(vehicleSearchExperienceSource, /layout=\{resultsLayout === 'split' && filteredListings\.length > 1 \? 'split' : 'single'\}/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /desktopSplit/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /min-\[1120px\]:grid-cols-2/)
@@ -438,7 +439,7 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {
   assert.match(marketplacePublicDataSource, /export async function getMarketplaceListingForPublicDetail\(id: string\)/)
   assert.doesNotMatch(marketplacePublicDataSource, /public-marketplace-listing-detail-by-id/)
-  assert.match(marketplacePublicDataSource, /\.select\(`\$\{marketplacePublicSelect\},metadata`\)/)
+  assert.match(marketplacePublicDataSource, /\.select\(`\$\{marketplacePublicSelect\},insurance_offers`\)/)
   assert.match(marketplacePublicDataSource, /if \(error\) \{/)
   assert.match(marketplacePublicDataSource, /\.select\(marketplacePublicSelect\)/)
 })

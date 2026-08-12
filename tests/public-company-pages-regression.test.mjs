@@ -109,7 +109,7 @@ test('listing detail desktop spec tabs stay compact and company flag is round', 
   assert.match(listingDetail, /sm:gap-2\.5 sm:rounded-\[11px\] sm:px-3 sm:py-2\.5/)
   assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
   assert.match(listingDetail, /sm:text-\[13px\] sm:leading-4/)
-  assert.match(listingDetail, /CountryFlag code=\{listing\.country_code \|\| 'eu'\} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black\/5"/)
+  assert.match(listingDetail, /CountryFlag code=\{listing\.country_code \|\| 'eu'\} className="h-4 w-4 shrink-0 rounded-full shadow-sm"/)
 })
 
 test('listing detail map has no duplicate location overlay and uses refined controls', () => {
@@ -160,15 +160,15 @@ test('listing detail shows electric vehicle technical values from current form k
 test('generated fallback seller descriptions are not shown as seller information', () => {
   assert.match(listingDetail, /isPublicSellerDescription/)
   assert.match(listingDetail, /function publicSellerDescriptionFromListing/)
-  assert.match(listingDetail, /listing\.metadata\.seller_note_original/)
+  assert.match(listingDetail, /structuredData\.seller_note_original/)
   assert.match(listingDetail, /Strukturerad Autorell-annons:/)
   assert.match(listingCreateRoute, /Strukturerad Autorell-annons:/)
-  assert.match(marketplacePublicData, /select\(`\$\{marketplacePublicSelect\},metadata`\)/)
+  assert.match(marketplacePublicData, /select\(`\$\{marketplacePublicSelect\},insurance_offers`\)/)
 })
 
 test('listing contact card separates actions from seller identity', () => {
   assert.match(listingDetail, /function PrivateSellerProfileCard/)
-  assert.match(listingDetail, /grid gap-2\.5 border-b border-\[#edf1f6\] p-4 sm:p-5/)
+  assert.match(listingDetail, /flex items-start gap-3 py-4/)
   assert.doesNotMatch(listingDetail, /flex items-start gap-3 border-y border\[#dfe6f2\] py-4/)
   assert.doesNotMatch(listingDetail, /<div className="border-t border\[#edf1f6\] p-4 sm:p-5">\s*\{listing\.seller_type === 'private'/)
 })

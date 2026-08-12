@@ -1357,7 +1357,7 @@ function PurchaseTypeControl({
       <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid min-h-9 grid-cols-2 h-9 gap-0.5 rounded-[16px] border border-[#98a2b3] bg-white p-0.5">
+      <div className="grid h-9 grid-cols-2 gap-0.5 rounded-[16px] border border-[#98a2b3] bg-white p-0.5">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1367,7 +1367,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`min-h-8 rounded-[14px] px-2 text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
+            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[13px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
               value === option
                 ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'

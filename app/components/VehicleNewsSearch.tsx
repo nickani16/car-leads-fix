@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import type { PublicNewsArticle, PublicNewsListing } from '@/lib/content/vehicle-news'
 
 export default function VehicleNewsSearch({
@@ -17,13 +17,9 @@ export default function VehicleNewsSearch({
   articles: PublicNewsArticle[]
   featuredListings: PublicNewsListing[]
 }) {
-  const [activeCategory, setActiveCategory] = useState(initialCategory)
+  const activeCategory = initialCategory
   const [query, setQuery] = useState('')
   const copy = vehicleNewsSearchCopy(market)
-
-  useEffect(() => {
-    setActiveCategory(initialCategory)
-  }, [initialCategory])
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -67,7 +63,7 @@ export default function VehicleNewsSearch({
               </h3>
               <div className="mt-3 divide-y divide-[#e4eaf3] border-y border-[#e4eaf3]">
                 {rest.map((article) => (
-                  <CompactNewsArticle key={article.id} market={market} article={article} copy={copy} />
+                  <CompactNewsArticle key={article.id} market={market} article={article} />
                 ))}
               </div>
             </div>
@@ -130,7 +126,7 @@ function FeaturedNewsArticle({ market, article, copy }: { market: string; articl
   )
 }
 
-function CompactNewsArticle({ market, article, copy }: { market: string; article: PublicNewsArticle; copy: ReturnType<typeof vehicleNewsSearchCopy> }) {
+function CompactNewsArticle({ market, article }: { market: string; article: PublicNewsArticle }) {
   return (
     <article className="py-4">
       <Link href={vehicleNewsArticleHref(market, article.slug)} className="group grid gap-4 sm:grid-cols-[112px_minmax(0,1fr)]">

@@ -35,11 +35,12 @@ function isRateLimited(key: string) {
 
 export async function POST(request: Request) {
   const genericResponse = NextResponse.json({ success: true })
+  let locale = localeFromRequest(request)
 
   try {
     const body = (await request.json()) as { email?: string; locale?: string }
     const email = body.email?.trim().toLowerCase() || ''
-    const locale = localeFromRequest(request, body.locale)
+    locale = localeFromRequest(request, body.locale)
     const apiCopy = getAuthApiCopy(locale)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Password recovery route error:', error)
     return NextResponse.json(
-      { error: 'Password recovery is temporarily unavailable.' },
+      { error: getAuthApiCopy(locale).recoveryUnavailable },
       { status: 500 },
     )
   }

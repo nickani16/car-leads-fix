@@ -17,6 +17,21 @@ type LegalSection = {
   items?: string[]
 }
 
+const freeListingTermByLocale: Record<PublicLocale, string> = {
+  sv: 'Grundpubliceringen är gratis i fem dagar. Priser för 15 dagar och Premium 30 dagar visas före betalning.',
+  en: 'The current free listing period is five days. Paid 15-day and Premium 30-day package prices are shown before payment.',
+  de: 'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+  at: 'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+  be: 'De huidige gratis advertentieperiode bedraagt vijf dagen. De prijzen voor betaalde pakketten van 15 dagen en Premium 30 dagen worden vóór betaling getoond.',
+  fr: 'La période de publication gratuite est actuellement de cinq jours. Les prix des forfaits payants de 15 jours et Premium de 30 jours sont affichés avant le paiement.',
+  es: 'El periodo gratuito de publicación es actualmente de cinco días. Los precios de los paquetes de pago de 15 días y Premium de 30 días se muestran antes del pago.',
+  it: 'Il periodo di pubblicazione gratuito è attualmente di cinque giorni. I prezzi dei pacchetti a pagamento da 15 giorni e Premium da 30 giorni vengono mostrati prima del pagamento.',
+  pl: 'Bezpłatny okres publikacji wynosi obecnie pięć dni. Ceny płatnych pakietów 15-dniowych i Premium 30-dniowych są wyświetlane przed płatnością.',
+  nl: 'De huidige gratis advertentieperiode bedraagt vijf dagen. De prijzen voor betaalde pakketten van 15 dagen en Premium 30 dagen worden vóór betaling getoond.',
+  fi: 'Ilmainen ilmoitusaika on tällä hetkellä viisi päivää. Maksullisten 15 päivän ja Premium 30 päivän pakettien hinnat näytetään ennen maksua.',
+  da: 'Den gratis annonceperiode er i øjeblikket fem dage. Priserne for de betalte 15-dages- og Premium 30-dagespakker vises før betaling.',
+}
+
 export default async function PublicLegalPage({
   eyebrow,
   title,
@@ -36,7 +51,7 @@ export default async function PublicLegalPage({
   const fallback = activeLocale === 'de' || activeLocale === 'at'
     ? legalFallbackCopyDe(title)
     : legalFallbackCopy(title)
-  const localized =
+  const localizedBase =
     activeLocale === 'sv'
       ? {
           eyebrow,
@@ -60,6 +75,17 @@ export default async function PublicLegalPage({
           contact: 'Contact Autorell',
           sections: fallback.sections,
         })
+  const localized = {
+    ...localizedBase,
+    sections: localizedBase.sections.map((section) =>
+      ['purchase-terms', 'listing-services'].includes(section.id) && section.items?.length
+        ? {
+            ...section,
+            items: [freeListingTermByLocale[activeLocale], ...section.items.slice(1)],
+          }
+        : section,
+    ),
+  }
 
   return (
     <main className="bg-[#f7f8fb] text-[#101828]">
@@ -381,7 +407,7 @@ function legalFallbackCopyDe(title: string): {
         id: 'listing-services',
         title: 'Anzeigenpakete und Widerrufsrecht',
         items: [
-          'Die kostenlose Anzeigenlaufzeit beträgt derzeit sieben Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+          'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
           'Verbraucher haben bei einem online gekauften Anzeigendienst grundsätzlich ein 14-tägiges Widerrufsrecht. Vor sofortiger Veröffentlichung müssen sie den Beginn während der Widerrufsfrist ausdrücklich verlangen und die gesetzlichen Folgen bestätigen.',
           'Seit dem 19. Juni 2026 stellt die Website für erfasste Verträge eine leicht zugängliche Widerrufsfunktion und eine unverzügliche Eingangsbestätigung bereit.',
         ],
@@ -664,7 +690,7 @@ function legalFallbackCopy(title: string): {
         id: 'listing-services',
         title: 'Listing packages and consumer withdrawal rights',
         items: [
-          'The current free listing period is seven days. Paid 15-day and Premium 30-day package prices are shown before payment.',
+          'The current free listing period is five days. Paid 15-day and Premium 30-day package prices are shown before payment.',
           'A consumer who buys a listing service at a distance normally has a 14-day withdrawal right. Before immediate publication, the consumer must expressly request performance during that period and acknowledge the legal effect when the service has been fully performed.',
           'If the consumer withdraws before the service is fully performed, Autorell may charge a proportionate amount for the part performed after the consumer’s express request where permitted by law.',
           'From 19 June 2026, the website provides an accessible withdrawal function for agreements covered by a statutory withdrawal right and confirms receipt without undue delay.',

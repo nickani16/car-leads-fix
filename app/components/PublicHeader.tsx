@@ -434,6 +434,89 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   ],
 }
 
+const businessMenuCopy: Record<
+  PublicLocale,
+  {
+    solutionsLabel: string
+    solutionsDescription: string
+    plansLabel: string
+    plansDescription: string
+  }
+> = {
+  sv: {
+    solutionsLabel: 'Handlarlösningar',
+    solutionsDescription: 'Verktyg för handlare och återkommande professionella säljare.',
+    plansLabel: 'Planer',
+    plansDescription: 'Jämför företagsplaner och vad som ingår.',
+  },
+  en: {
+    solutionsLabel: 'Dealer solutions',
+    solutionsDescription: 'Tools for dealers and recurring professional sellers.',
+    plansLabel: 'Plans',
+    plansDescription: 'Compare business plans and what is included.',
+  },
+  de: {
+    solutionsLabel: 'Händlerlösungen',
+    solutionsDescription: 'Werkzeuge für Händler und regelmäßig aktive gewerbliche Verkäufer.',
+    plansLabel: 'Tarife',
+    plansDescription: 'Unternehmenstarife und enthaltene Leistungen vergleichen.',
+  },
+  at: {
+    solutionsLabel: 'Händlerlösungen',
+    solutionsDescription: 'Werkzeuge für Händler und regelmäßig aktive gewerbliche Verkäufer.',
+    plansLabel: 'Tarife',
+    plansDescription: 'Unternehmenstarife und enthaltene Leistungen vergleichen.',
+  },
+  be: {
+    solutionsLabel: 'Dealeroplossingen',
+    solutionsDescription: 'Tools voor dealers en professionele verkopers met een terugkerend aanbod.',
+    plansLabel: 'Abonnementen',
+    plansDescription: 'Vergelijk zakelijke abonnementen en wat inbegrepen is.',
+  },
+  fr: {
+    solutionsLabel: 'Solutions pour professionnels',
+    solutionsDescription: 'Outils pour les professionnels de l’automobile et les vendeurs réguliers.',
+    plansLabel: 'Formules',
+    plansDescription: 'Comparez les formules professionnelles et leurs services inclus.',
+  },
+  es: {
+    solutionsLabel: 'Soluciones para concesionarios',
+    solutionsDescription: 'Herramientas para concesionarios y vendedores profesionales habituales.',
+    plansLabel: 'Planes',
+    plansDescription: 'Compara los planes para empresas y todo lo que incluyen.',
+  },
+  it: {
+    solutionsLabel: 'Soluzioni per concessionari',
+    solutionsDescription: 'Strumenti per concessionari e venditori professionali abituali.',
+    plansLabel: 'Piani',
+    plansDescription: 'Confronta i piani aziendali e i servizi inclusi.',
+  },
+  pl: {
+    solutionsLabel: 'Rozwiązania dla dealerów',
+    solutionsDescription: 'Narzędzia dla dealerów i regularnych sprzedawców profesjonalnych.',
+    plansLabel: 'Plany',
+    plansDescription: 'Porównaj plany firmowe i ich zakres.',
+  },
+  nl: {
+    solutionsLabel: 'Dealeroplossingen',
+    solutionsDescription: 'Tools voor dealers en professionele verkopers met een terugkerend aanbod.',
+    plansLabel: 'Abonnementen',
+    plansDescription: 'Vergelijk zakelijke abonnementen en wat inbegrepen is.',
+  },
+  fi: {
+    solutionsLabel: 'Ratkaisut autoliikkeille',
+    solutionsDescription: 'Työkalut autoliikkeille ja säännöllisesti myyville ammattilaisille.',
+    plansLabel: 'Paketit',
+    plansDescription: 'Vertaa yrityspaketteja ja niihin sisältyviä palveluja.',
+  },
+  da: {
+    solutionsLabel: 'Forhandlerløsninger',
+    solutionsDescription: 'Værktøjer til forhandlere og professionelle sælgere med løbende salg.',
+    plansLabel: 'Abonnementer',
+    plansDescription: 'Sammenlign virksomhedsabonnementer og deres indhold.',
+  },
+}
+
 export default function PublicHeader({
   locale: providedLocale,
   marketplaceChannel,
@@ -898,25 +981,18 @@ export default function PublicHeader({
       href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
+  const localizedBusinessMenu = businessMenuCopy[locale]
   const businessMenuLinks = [
     {
       href: localizePublicHref(locale, '/business'),
-      label: publicLabel('Dealer solutions', 'Dealer solutions', 'Dealer solutions'),
-      description: publicLabel(
-        'Tools for dealers and recurring professional sellers.',
-        'Verktyg för handlare och återkommande företagssäljare.',
-        'Werkzeuge für Händler und professionelle Verkäufer.',
-      ),
+      label: localizedBusinessMenu.solutionsLabel,
+      description: localizedBusinessMenu.solutionsDescription,
       icon: Store,
     },
     {
       href: localizePublicHref(locale, '/pricing#business'),
-      label: publicLabel('Plans', 'Planer', 'Tarife'),
-      description: publicLabel(
-        'Compare business plans and what is included.',
-        'Jämför företagsplaner och vad som ingår.',
-        'Unternehmenstarife und Leistungen vergleichen.',
-      ),
+      label: localizedBusinessMenu.plansLabel,
+      description: localizedBusinessMenu.plansDescription,
       icon: CreditCard,
     },
   ]

@@ -127,10 +127,22 @@ export async function POST(request: Request) {
     const challenge = availableChallenges.find((item) => matchesCode(item.code_hash, email, code)) || null
     const latestChallenge = ((challenges || []) as EmailCodeChallenge[])[0] || null
 
-    async function consumeChallenge(challengeId: string) {
+    if (!challenge) {
+      if (latestChallenge) {
+        await admin
+          .from('auth_email_codes')
+          .update({ attempts: Math.min(latestChallenge.attempts + 1, 10) })
+          .eq('id', latestChallenge.id)
+      }
+      return NextResponse.json({ error: copy.codeError }, { status: 401 })
+    }
+    const challengeId = challenge.id
+
+    async function consumeChallenge() {
+      const consumedAt = new Date().toISOString()
       const { data: consumedChallenge, error: consumeError } = await admin
         .from('auth_email_codes')
-        .update({ consumed_at: new Date().toISOString() })
+        .update({ consumed_at: consumedAt })
         .eq('id', challengeId)
         .is('consumed_at', null)
         .select('id')
@@ -140,22 +152,13 @@ export async function POST(request: Request) {
     }
 
     async function consumeOtherChallenges() {
-      await admin
+      const { error: consumeError } = await admin
         .from('auth_email_codes')
         .update({ consumed_at: new Date().toISOString() })
         .eq('email_hash', hashedEmail)
         .is('consumed_at', null)
-        .neq('id', challenge!.id)
-    }
-
-    if (!challenge) {
-      if (latestChallenge) {
-        await admin
-          .from('auth_email_codes')
-          .update({ attempts: Math.min(latestChallenge.attempts + 1, 10) })
-          .eq('id', latestChallenge.id)
-      }
-      return NextResponse.json({ error: copy.codeError }, { status: 401 })
+        .neq('id', challengeId)
+      if (consumeError) throw consumeError
     }
 
     const isEmailVerification = body.purpose === 'email_verification' || challenge.redirect_path === 'email_verification'
@@ -168,6 +171,11 @@ export async function POST(request: Request) {
       if (normalizeEmail(sessionUser.user.email) !== email) {
         return NextResponse.json({ error: copy.codeError }, { status: 403 })
       }
+
+      if (!(await consumeChallenge())) {
+        return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+      }
+      await consumeOtherChallenges()
 
       const now = new Date().toISOString()
       const [{ data: profile }, authUpdate] = await Promise.all([
@@ -197,13 +205,13 @@ export async function POST(request: Request) {
         if (profileError) throw profileError
       }
 
-      if (!(await consumeChallenge(challenge.id))) {
-        return NextResponse.json({ error: copy.usedCode }, { status: 401 })
-      }
-      await consumeOtherChallenges()
-
       return NextResponse.json({ success: true, emailVerified: true })
     }
+
+    if (!(await consumeChallenge())) {
+      return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+    }
+    await consumeOtherChallenges()
 
     let link = await admin.auth.admin.generateLink({
       type: 'magiclink',
@@ -230,11 +238,6 @@ export async function POST(request: Request) {
       type: 'email',
     })
     if (error || !data.user) throw error || new Error('Session could not be created.')
-
-    if (!(await consumeChallenge(challenge.id))) {
-      return NextResponse.json({ error: copy.usedCode }, { status: 401 })
-    }
-    await consumeOtherChallenges()
 
     const [{ data: profile }, { data: adminUser }, { data: invitation }] = await Promise.all([
       admin

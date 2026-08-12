@@ -4,7 +4,7 @@ import { ArrowLeft, AlertTriangle, FileText } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { formatMoneyMinor, normalizeBillingMarket, type BillingCurrency, type BillingMarket } from '@/lib/billing/product-catalog'
+import { formatMoneyMinor, type BillingCurrency } from '@/lib/billing/product-catalog'
 import { localizePublicHref, translatePublicObject, translationLocale, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import CancelSubscriptionClient from './CancelSubscriptionClient'
@@ -39,15 +39,8 @@ type InvoiceRow = {
   created_at: string
 }
 
-export default async function BusinessSubscriptionCancelPage({
-  localeOverride,
-  marketOverride,
-}: {
-  localeOverride?: PublicLocale
-  marketOverride?: BillingMarket
-} = {}) {
-  const locale = localeOverride || await getRequestLocale()
-  const market = marketOverride || normalizeBillingMarket(locale === 'sv' ? 'se' : locale === 'da' ? 'dk' : locale)
+export default async function BusinessSubscriptionCancelPage() {
+  const locale = await getRequestLocale()
   const copy = translatePublicObject(locale, baseCopy)
   const localeTag = localeToIntl(locale)
   const supabase = await createClient()

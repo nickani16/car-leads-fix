@@ -1,6 +1,6 @@
 import { Mail, Users } from 'lucide-react'
 import { CompanyPortalShell, LockedFeature, getCompanyPortalContext, planAllows } from '@/lib/company-portal'
-import { translationLocale, type PublicLocale } from '@/lib/public-i18n'
+import { translationLocale } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCompanyTeamOverview } from '@/lib/business-team'
 import { generateAccountMetadata } from '@/lib/account-seo'
@@ -464,8 +464,8 @@ function invitationStatusLabel(locale: ReturnType<typeof translationLocale>, sta
   return localizedInvitationStatusLabels[locale]?.[status] || (baseCopy.invitationStatusLabels as Record<string, string>)[status] || status
 }
 
-export default async function CompanyTeamPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyTeamPage() {
+  const context = await getCompanyPortalContext()
   const locale = translationLocale(context.locale)
   const copy = {
     ...baseCopy,

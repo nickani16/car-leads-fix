@@ -8,13 +8,26 @@ export async function GET(request: Request) {
   const type = requestUrl.searchParams.get('type')
   const next = requestUrl.searchParams.get('next') || '/account'
   const safeNext =
-    next.startsWith('/') && !next.startsWith('//') ? next : '/account'
+    next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
+      ? next
+      : '/account'
   const supabase = await createClient()
 
   if (tokenHash && type === 'recovery') {
     const { error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: 'recovery',
+    })
+
+    if (!error) {
+      return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+    }
+  }
+
+  if (tokenHash && type === 'signup') {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'signup',
     })
 
     if (!error) {

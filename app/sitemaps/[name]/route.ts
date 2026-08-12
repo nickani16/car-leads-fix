@@ -16,7 +16,7 @@ import {
   popularGeoModels,
   type SitemapMarketCode,
   xmlResponse,
-} from '@/app/sitemap.xml/route'
+} from '@/lib/sitemap-utils'
 
 const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000

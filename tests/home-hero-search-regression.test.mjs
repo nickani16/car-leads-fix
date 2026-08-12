@@ -14,6 +14,10 @@ const homeSource = readFileSync(
   new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url),
   'utf8',
 )
+const publicHeaderSource = readFileSync(
+  new URL('../app/components/PublicHeader.tsx', import.meta.url),
+  'utf8',
+)
 const categoryRailsSource = readFileSync(
   new URL('../app/components/HomeVehicleCategoryRails.tsx', import.meta.url),
   'utf8',
@@ -80,11 +84,22 @@ test('homepage search panels and placeholder retain their accessibility behavior
 test('homepage search keeps compact rounded filter controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
   assert.match(homeSearchSource, /home-hero-filter-select h-9 min-h-9 w-full appearance-none rounded-\[14px\]/)
-  assert.match(homeSearchSource, /grid min-h-9 grid-cols-2 h-9 gap-0\.5 rounded-\[16px\]/)
-  assert.match(homeSearchSource, /min-h-8 rounded-\[14px\]/)
+  assert.match(homeSearchSource, /grid h-9 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
+  assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[13px\]/)
+  assert.doesNotMatch(homeSearchSource, /className=\{`min-h-8 rounded-\[14px\]/)
   assert.match(homeSearchSource, /h-10 w-full rounded-\[14px\].*lg:h-9/)
   assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
+test('public header business links are explicit in every public locale', () => {
+  assert.match(publicHeaderSource, /const businessMenuCopy: Record</)
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(publicHeaderSource, new RegExp(`\\n  ${locale}: \\{`))
+  }
+  assert.match(publicHeaderSource, /sv: \{[\s\S]*solutionsLabel: 'Handlarlösningar'/)
+  assert.match(publicHeaderSource, /fi: \{[\s\S]*solutionsLabel: 'Ratkaisut autoliikkeille'/)
+  assert.doesNotMatch(publicHeaderSource, /publicLabel\('Dealer solutions', 'Dealer solutions'/)
 })
 
 test('homepage popular brands keep an even logo grid', () => {
@@ -98,7 +113,8 @@ test('homepage popular brands keep an even logo grid', () => {
 
 test('homepage search overrides broken generated Finnish reset copy', () => {
   assert.match(manualTranslationsSource, /fi:\s*\{[\s\S]*Reset: 'Tyhjennä'/)
-  assert.match(translations.fi?.Reset || '', /ZXQ/)
+  assert.ok(translations.fi?.Reset)
+  assert.doesNotMatch(translations.fi.Reset, /ZXQ|_9Q_|SPLIT_/)
   assert.doesNotMatch(manualTranslationsSource, /Reset: 'Korjaus/)
 })
 
@@ -112,7 +128,7 @@ test('homepage search uses the supplied hero image and translated public copy', 
   assert.match(homeSource, /max-w-\[215px\]/)
   assert.match(headingSliderSource, /text-\[20px\]/)
   assert.doesNotMatch(homeSource, /w-\[68%\]/)
-  assert.match(homeSource, /heroHeading: 'Europas största fordonsmarknad'/)
+  assert.match(homeSource, /heroHeading: 'Europas bästa fordonsmarknad'/)
   assert.match(homeSource, /<HomeMarketHeadingSlider/)
   assert.match(homeSource, /lead=\{t\.heroHeadingSlider\.lead\}/)
   assert.match(homeSource, /t\.heroHeadingSlider\.localTerm/)
@@ -138,8 +154,9 @@ test('homepage search uses the supplied hero image and translated public copy', 
   for (const locale of ['fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.ok(translations[locale]?.['Find the right vehicle. One simpler search.'])
     assert.ok(translations[locale]?.['More search filters'])
-    assert.ok(translations[locale]?.['Two people sharing a moment inside a car'])
   }
+  assert.match(homeSource, /const localizedHeroAltCopy: Record<PublicLocale, string>/)
+  assert.match(homeSource, /heroAlt: localizedHeroAltCopy\[locale\]/)
 })
 
 test('homepage hero heading is explicitly localized for every public locale', () => {
@@ -151,18 +168,18 @@ test('homepage hero heading is explicitly localized for every public locale', ()
   assert.match(homeSource, /heroHeadingSlider: localizedHeroHeadingSliderCopy\[locale\]/)
 
   const expectedHeadings = [
-    "sv: 'Europas största fordonsmarknad'",
-    `en: "Europe's largest vehicle marketplace"`,
-    "de: 'Europas größter Fahrzeugmarkt'",
-    "at: 'Europas größter Fahrzeugmarkt'",
-    `be: "Europa's grootste voertuigmarkt"`,
-    `fr: "Le plus grand marché de véhicules d'Europe"`,
-    "es: 'El mayor mercado de vehículos de Europa'",
-    `it: "Il più grande mercato di veicoli d'Europa"`,
-    "pl: 'Największy rynek pojazdów w Europie'",
-    `nl: "Europa's grootste voertuigmarkt"`,
-    "fi: 'Euroopan suurin ajoneuvomarkkina'",
-    "da: 'Europas største køretøjsmarked'",
+    "sv: 'Europas bästa fordonsmarknad'",
+    `en: "Europe's best vehicle marketplace"`,
+    "de: 'Europas bester Fahrzeugmarkt'",
+    "at: 'Europas bester Fahrzeugmarkt'",
+    `be: "Europa's beste voertuigmarkt"`,
+    `fr: "Le meilleur marché de véhicules d'Europe"`,
+    "es: 'El mejor mercado de vehículos de Europa'",
+    `it: "Il miglior mercato di veicoli d'Europa"`,
+    "pl: 'Najlepszy rynek pojazdów w Europie'",
+    `nl: "Europa's beste voertuigmarkt"`,
+    "fi: 'Euroopan paras ajoneuvomarkkina'",
+    "da: 'Europas bedste køretøjsmarked'",
   ]
 
   for (const heading of expectedHeadings) {
@@ -170,18 +187,18 @@ test('homepage hero heading is explicitly localized for every public locale', ()
   }
 
   const expectedLocalHeadings = [
-    "sv: 'Sveriges största fordonsmarknad'",
-    `en: "Europe's largest vehicle marketplace"`,
-    "de: 'Deutschlands größter Fahrzeugmarkt'",
-    "at: 'Österreichs größter Fahrzeugmarkt'",
-    "be: 'Belgiës grootste voertuigmarkt'",
-    "fr: 'Le plus grand marché de véhicules de France'",
-    "es: 'El mayor mercado de vehículos de España'",
-    "it: 'Il più grande mercato di veicoli in Italia'",
-    "pl: 'Największy rynek pojazdów w Polsce'",
-    "nl: 'De grootste voertuigmarkt van Nederland'",
-    "fi: 'Suomen suurin ajoneuvomarkkina'",
-    "da: 'Danmarks største køretøjsmarked'",
+    "sv: 'Sveriges bästa fordonsmarknad'",
+    `en: "Europe's best vehicle marketplace"`,
+    "de: 'Deutschlands bester Fahrzeugmarkt'",
+    "at: 'Österreichs bester Fahrzeugmarkt'",
+    "be: 'Belgiës beste voertuigmarkt'",
+    "fr: 'Le meilleur marché de véhicules de France'",
+    "es: 'El mejor mercado de vehículos de España'",
+    "it: 'Il miglior mercato di veicoli in Italia'",
+    "pl: 'Najlepszy rynek pojazdów w Polsce'",
+    "nl: 'De beste voertuigmarkt van Nederland'",
+    "fi: 'Suomen paras ajoneuvomarkkina'",
+    "da: 'Danmarks bedste køretøjsmarked'",
   ]
 
   for (const heading of expectedLocalHeadings) {

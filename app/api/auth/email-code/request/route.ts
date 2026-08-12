@@ -34,10 +34,11 @@ function isRateLimited(key: string) {
 }
 
 export async function POST(request: Request) {
+  let locale = localeFromRequest(request)
   try {
     const body = (await request.json()) as { email?: string; locale?: string; purpose?: string }
     const email = normalizeEmail(body.email)
-    const locale = localeFromRequest(request, body.locale)
+    locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
 
     if (!isValidEmail(email)) {
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Email code request failed', error)
     return NextResponse.json(
-      { error: 'The code could not be sent. Try again in a moment.' },
+      { error: getAuthApiCopy(locale).sendError },
       { status: 500 },
     )
   }

@@ -50,7 +50,7 @@ const sections = [
     id: 'purchase-terms',
     title: 'Annonspaket, digital tjänst och ångerrätt',
     items: [
-      'Sju dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
+      'Fem dagars grundpublicering är gratis. Varje fordonskategori har ett fast pris för 15 dagar och Premium 30 dagar. Priset visas innan betalning.',
       'Samma publicerade kategoripris gäller för privatkonton och företagskonton, om inget separat skriftligt volymavtal gäller.',
       'Betalning hanteras av extern betalningsleverantör. Betalningsuppgifter ska aldrig skickas i meddelanden.',
       'En konsument som köper ett annonspaket på distans har normalt 14 dagars ångerrätt. Före omedelbar publicering ska konsumenten uttryckligen begära att tjänsten börjar under ångerfristen och bekräfta vad det innebär för ångerrätten när tjänsten har fullgjorts.',

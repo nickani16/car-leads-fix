@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { CompanyPortalShell, formatCompanyDate, getCompanyPortalContext } from '@/lib/company-portal'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getInventoryImportCopy } from '@/lib/inventory-import-i18n'
-import type { PublicLocale } from '@/lib/public-i18n'
 import InventorySourcesClient, { type InventorySourceView } from './InventorySourcesClient'
 import PilotDashboard from './PilotDashboard'
 import { loadBusinessPilotDashboard } from '@/lib/business-pilot-dashboard'
@@ -10,8 +9,8 @@ import { getPilotDashboardCopy } from '@/lib/pilot-dashboard-i18n'
 
 export const dynamic = 'force-dynamic'
 
-export default async function CompanyInventoryPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyInventoryPage() {
+  const context = await getCompanyPortalContext()
   const organizationId = context.profile.company_id
   if (!organizationId || !context.inventoryImportEnabled) notFound()
 

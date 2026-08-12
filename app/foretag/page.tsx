@@ -311,16 +311,10 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function BusinessPage({
-  localeOverride,
-  marketCodeOverride,
-}: {
-  localeOverride?: PublicLocale
-  marketCodeOverride?: string
-} = {}) {
+export default async function BusinessPage() {
   const headerStore = await headers()
-  const locale = localeOverride || getRequestedLocale(headerStore)
-  const marketCode = marketCodeOverride || headerStore.get('x-autorell-market') || undefined
+  const locale = getRequestedLocale(headerStore)
+  const marketCode = headerStore.get('x-autorell-market') || undefined
   const copy = getBusinessCopy(locale)
   const registerHref = localizePublicHref(locale, '/register?account=business')
   const pricingHref = localizePublicHref(locale, '/pricing#business')

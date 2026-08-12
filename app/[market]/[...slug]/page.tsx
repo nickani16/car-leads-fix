@@ -7,7 +7,7 @@ import InventoryImportPage, { generateMetadata as generateInventoryImportMetadat
 import ListingDetailPage, { generateListingMetadata } from '@/app/listings/[slug]/ListingDetailPage'
 import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
-import { renderListingCreatedPage } from '@/app/account/listings/created/page'
+import ListingCreatedPage from '@/app/account/listings/created/page'
 import AccountSavedListingsPage from '@/app/account/saved-listings/page'
 import AccountSavedSearchesPage from '@/app/account/saved-searches/page'
 import PrivateProfilePage from '@/app/account/profile/page'
@@ -166,23 +166,23 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'account/business/subscription' || slugPath === 'konto/business/subscription') {
-    return <BusinessSubscriptionPage localeOverride={locale} marketOverride={normalizedMarket} />
+    return <BusinessSubscriptionPage />
   }
 
   if (slugPath === 'account/business/subscription/cancel' || slugPath === 'konto/business/subscription/avsluta') {
-    return <BusinessSubscriptionCancelPage localeOverride={locale} marketOverride={normalizedMarket} />
+    return <BusinessSubscriptionCancelPage />
   }
 
   if (slugPath === 'account/company') {
-    return <CompanyOverviewPage localeOverride={locale} />
+    return <CompanyOverviewPage />
   }
 
   if (slugPath === 'account/listings' || slugPath === 'konto/annonser' || slugPath === 'account/company/listings') {
-    return <AccountListingsPage searchParams={searchParams} localeOverride={locale} marketOverride={normalizedMarket} companyMode={slugPath === 'account/company/listings'} />
+    return <AccountListingsPage searchParams={searchParams} />
   }
 
   if (slugPath === 'account/listings/created' || slugPath === 'konto/annonser/klar') {
-    return renderListingCreatedPage({ searchParams, localeOverride: locale })
+    return <ListingCreatedPage searchParams={searchParams} />
   }
 
   if (slugPath === 'account/company/listings/create') {
@@ -194,23 +194,23 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'account/company/import') {
-    return <CompanyImportPage localeOverride={locale} />
+    return <CompanyImportPage />
   }
 
   if (slugPath === 'account/company/inventory' || slugPath === 'business/dashboard/inventory') {
-    return <CompanyInventoryPage localeOverride={locale} />
+    return <CompanyInventoryPage />
   }
 
   if (slugPath === 'account/company/analytics') {
-    return <CompanyAnalyticsPage localeOverride={locale} />
+    return <CompanyAnalyticsPage />
   }
 
   if (slugPath === 'account/company/locations') {
-    return <CompanyLocationsPage localeOverride={locale} />
+    return <CompanyLocationsPage />
   }
 
   if (slugPath === 'account/company/team') {
-    return <CompanyTeamPage localeOverride={locale} />
+    return <CompanyTeamPage />
   }
 
   if (slugPath === 'account/company/team/accept') {
@@ -222,23 +222,23 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'account/company/subscription') {
-    return <BusinessSubscriptionPage localeOverride={locale} marketOverride={normalizedMarket} />
+    return <BusinessSubscriptionPage />
   }
 
   if (slugPath === 'account/company/subscription/cancel') {
-    return <BusinessSubscriptionCancelPage localeOverride={locale} marketOverride={normalizedMarket} />
+    return <BusinessSubscriptionCancelPage />
   }
 
   if (slugPath === 'account/company/profile') {
-    return <CompanyProfilePage localeOverride={locale} />
+    return <CompanyProfilePage />
   }
 
   if (slugPath === 'account/company/settings') {
-    return <CompanySettingsPage localeOverride={locale} />
+    return <CompanySettingsPage />
   }
 
   if (slugPath === 'account/company/support') {
-    return <CompanySupportPage localeOverride={locale} />
+    return <CompanySupportPage />
   }
 
   if (slugPath === 'account/business/status' || slugPath === 'konto/business/status') {
@@ -274,15 +274,15 @@ export default async function LocalizedMarketPage({
   }
 
   if (slugPath === 'business') {
-    return <BusinessPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
+    return <BusinessPage />
   }
 
   if (slugPath === 'business/pilot') {
-    return <BusinessPilotPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
+    return <BusinessPilotPage />
   }
 
   if (slugPath === 'business/inventory-import') {
-    return <InventoryImportPage localeOverride={locale} marketCodeOverride={normalizedMarket.toUpperCase()} />
+    return <InventoryImportPage />
   }
 
   return <BusinessMarketplaceHome locale={locale} marketCode={normalizedMarket.toUpperCase()} />

@@ -120,7 +120,7 @@ const products: BillingProduct[] = [
   ...Object.entries(listingPrices).flatMap(([category, prices]) => {
     const typedCategory = category as ListingCategory
     return [
-      listingProduct(typedCategory, 'start', 7, {
+      listingProduct(typedCategory, 'start', 5, {
         sek: 0,
         eur: 0,
         dkk: 0,

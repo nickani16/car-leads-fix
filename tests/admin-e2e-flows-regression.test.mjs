@@ -48,9 +48,11 @@ test('newsletter test delivery stays private and has web and unsubscribe flows',
 test('support and company notifications have outbound delivery while internal notes remain isolated', () => {
   const support = read('app/api/admin/support/tickets/[id]/route.ts')
   const registration = read('app/api/account/register/route.ts')
+  const companyReview = read('lib/admin/company-application-review.ts')
   assert.match(support, /isInternal[\s\S]*delivery_status: isInternal \? 'not_applicable' : 'queued'/)
   assert.match(support, /new Resend/)
-  assert.match(registration, /sendAdminNotificationEmail/)
+  assert.match(registration, /queueCompanyApplicationReview/)
+  assert.match(companyReview, /sendAdminNotificationEmail/)
 })
 
 test('CMS drafts can select media from the real media library', () => {

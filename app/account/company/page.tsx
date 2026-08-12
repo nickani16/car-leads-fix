@@ -48,8 +48,8 @@ const baseCopy = {
   updateProfile: 'Update company profile',
 }
 
-export default async function CompanyOverviewPage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyOverviewPage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   const summary = context.listingSummary
   const limit = context.subscription?.active_listing_limit || 0

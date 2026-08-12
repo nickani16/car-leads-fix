@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server'
+import { Resend } from 'resend'
 import { authOrigin, localeFromRequest, localizedAuthPath } from '@/lib/auth-locale'
 import { getAuthApiCopy } from '@/lib/auth-copy'
+import { authEmailHtml, getSignupConfirmationEmailCopy } from '@/lib/email/auth-emails'
 import { isStrongPassword } from '@/lib/password-policy'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import {
-  acceptCompanyTeamInvitationForUser,
-  acceptLatestCompanyTeamInvitationForUser,
-  CompanyTeamInvitationError,
-  tokenFromCompanyTeamAcceptPath,
-} from '@/lib/company-team-acceptance'
 
 function safeNext(value: unknown, locale: ReturnType<typeof localeFromRequest>) {
   const next = String(value || localizedAuthPath(locale, '/register?onboarding=1'))
@@ -21,6 +16,7 @@ function safeNext(value: unknown, locale: ReturnType<typeof localeFromRequest>) 
 }
 
 export async function POST(request: Request) {
+  let locale = localeFromRequest(request)
   try {
     const body = (await request.json()) as {
       email?: string
@@ -32,7 +28,7 @@ export async function POST(request: Request) {
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
     const confirmPassword = String(body.confirmPassword || '')
-    const locale = localeFromRequest(request, body.locale)
+    locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -58,8 +54,11 @@ export async function POST(request: Request) {
     }
 
     const origin = authOrigin(request)
-    const redirectTo = new URL('/auth/callback', origin)
-    redirectTo.searchParams.set('next', safeNext(body.next, locale))
+    const destination = safeNext(body.next, locale)
+    const resendKey = process.env.RESEND_API_KEY
+    if (!resendKey) {
+      return NextResponse.json({ error: copy.emailUnavailable }, { status: 503 })
+    }
 
     const admin = createAdminClient()
     const link = await admin.auth.admin.generateLink({
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
       email,
       password,
       options: {
-        redirectTo: redirectTo.toString(),
         data: { preferred_locale: locale },
       },
     })
@@ -79,55 +77,42 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: link.data.properties.hashed_token,
-      type: 'signup',
+    const confirmationUrl = new URL('/auth/callback', origin)
+    confirmationUrl.searchParams.set('token_hash', link.data.properties.hashed_token)
+    confirmationUrl.searchParams.set('type', 'signup')
+    confirmationUrl.searchParams.set('next', destination)
+    const confirmationCopy = getSignupConfirmationEmailCopy(locale)
+    const { error: sendError } = await new Resend(resendKey).emails.send({
+      from: 'Autorell <noreply@autorell.com>',
+      to: email,
+      subject: confirmationCopy.subject,
+      text: [
+        confirmationCopy.heading,
+        '',
+        confirmationCopy.intro,
+        `${confirmationCopy.cta}: ${confirmationUrl.toString()}`,
+        '',
+        confirmationCopy.expiry,
+        confirmationCopy.ignore,
+        '',
+        'Autorell marketplace',
+      ].join('\n'),
+      html: authEmailHtml(confirmationCopy, {
+        href: confirmationUrl.toString(),
+        label: confirmationCopy.cta,
+      }),
     })
-    if (error || !data.session?.user) throw error || new Error('Session could not be created.')
-    const sessionUser = data.session.user
-
-    const destination = safeNext(body.next, locale)
-    const invitationToken = tokenFromCompanyTeamAcceptPath(destination)
-    if (invitationToken) {
-      const accepted = await acceptCompanyTeamInvitationForUser(admin, {
-        token: invitationToken,
-        userId: sessionUser.id,
-        userEmail: sessionUser.email,
-        destinationHint: destination,
-      })
-      return NextResponse.json({
-        success: true,
-        sessionReady: true,
-        destination: accepted.destination,
-      })
-    }
-
-    const acceptedLatestInvitation = await acceptLatestCompanyTeamInvitationForUser(admin, {
-      userId: sessionUser.id,
-      userEmail: sessionUser.email,
-      destinationHint: destination,
-    })
-    if (acceptedLatestInvitation) {
-      return NextResponse.json({
-        success: true,
-        sessionReady: true,
-        destination: acceptedLatestInvitation.destination,
-      })
-    }
+    if (sendError) throw sendError
 
     return NextResponse.json({
       success: true,
-      sessionReady: true,
+      sessionReady: false,
       destination,
     })
   } catch (error) {
-    if (error instanceof CompanyTeamInvitationError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
-    }
     console.error('Password signup failed', error)
     return NextResponse.json(
-      { error: 'The account could not be created right now.' },
+      { error: getAuthApiCopy(locale).signupError },
       { status: 500 },
     )
   }

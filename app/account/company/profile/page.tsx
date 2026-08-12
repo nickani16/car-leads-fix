@@ -1,6 +1,6 @@
 import ProfileForm from '@/app/konto/ProfileForm'
 import { CompanyPortalShell, getCompanyPortalContext } from '@/lib/company-portal'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { translatePublicObject } from '@/lib/public-i18n'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { hasVerifiedEmailCode } from '@/lib/email-verification'
 import { generateAccountMetadata } from '@/lib/account-seo'
@@ -12,8 +12,8 @@ const baseCopy = {
   description: 'Manage company presentation, contact details and verified legal information.',
 }
 
-export default async function CompanyProfilePage({ localeOverride }: { localeOverride?: PublicLocale } = {}) {
-  const context = await getCompanyPortalContext(localeOverride)
+export default async function CompanyProfilePage() {
+  const context = await getCompanyPortalContext()
   const copy = translatePublicObject(context.locale, baseCopy)
   const { data: profile } = await createAdminClient()
     .from('marketplace_profiles')
