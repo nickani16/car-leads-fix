@@ -19,6 +19,8 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { FlagIcon } from '../components/PublicFooter'
+import BirthDatePicker from '../components/BirthDatePicker'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 const euDialCodes: Record<string, string> = {
   AT: '+43',
@@ -53,6 +55,131 @@ const euDialCodes: Record<string, string> = {
 const dialCodeEntries = Object.entries(euDialCodes).sort(
   (a, b) => b[1].length - a[1].length,
 )
+
+type RegistrationErrorCode =
+  | 'register_auth_required'
+  | 'register_email_unverified'
+  | 'register_invalid_business'
+  | 'register_invalid_private'
+  | 'register_profile_exists'
+  | 'register_failed'
+
+const registrationErrorCopy: Record<PublicLocale, Record<RegistrationErrorCode, string>> = {
+  sv: {
+    register_auth_required: 'Logga in med e-postkoden innan du skapar kontot.',
+    register_email_unverified: 'Bekräfta din e-postadress med koden innan du skapar kontot.',
+    register_invalid_business: 'Kontrollera kontaktperson, företagsuppgifter, adress, telefonnummer och villkor.',
+    register_invalid_private: 'Kontrollera namn, födelsedatum, adress, telefonnummer och identitetsuppgifter.',
+    register_profile_exists: 'Det finns redan en kontoprofil för den här användaren.',
+    register_failed: 'Kontot kunde inte skapas. Försök igen eller kontakta support.',
+  },
+  en: {
+    register_auth_required: 'Sign in with the email code before creating your account.',
+    register_email_unverified: 'Verify your email address with the code before creating your account.',
+    register_invalid_business: 'Check the contact person, company details, address, phone number and terms.',
+    register_invalid_private: 'Check your name, date of birth, address, phone number and identity details.',
+    register_profile_exists: 'An account profile already exists for this user.',
+    register_failed: 'The account could not be created. Try again or contact support.',
+  },
+  de: {
+    register_auth_required: 'Melden Sie sich mit dem E-Mail-Code an, bevor Sie Ihr Konto erstellen.',
+    register_email_unverified: 'Bestätigen Sie Ihre E-Mail-Adresse mit dem Code, bevor Sie Ihr Konto erstellen.',
+    register_invalid_business: 'Prüfen Sie Kontaktperson, Unternehmensdaten, Adresse, Telefonnummer und Bedingungen.',
+    register_invalid_private: 'Prüfen Sie Name, Geburtsdatum, Adresse, Telefonnummer und Identitätsangaben.',
+    register_profile_exists: 'Für diesen Benutzer besteht bereits ein Kontoprofil.',
+    register_failed: 'Das Konto konnte nicht erstellt werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.',
+  },
+  at: {
+    register_auth_required: 'Melden Sie sich mit dem E-Mail-Code an, bevor Sie Ihr Konto erstellen.',
+    register_email_unverified: 'Bestätigen Sie Ihre E-Mail-Adresse mit dem Code, bevor Sie Ihr Konto erstellen.',
+    register_invalid_business: 'Prüfen Sie Kontaktperson, Unternehmensdaten, Adresse, Telefonnummer und Bedingungen.',
+    register_invalid_private: 'Prüfen Sie Name, Geburtsdatum, Adresse, Telefonnummer und Identitätsangaben.',
+    register_profile_exists: 'Für diesen Benutzer besteht bereits ein Kontoprofil.',
+    register_failed: 'Das Konto konnte nicht erstellt werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.',
+  },
+  be: {
+    register_auth_required: 'Meld je aan met de e-mailcode voordat je je account aanmaakt.',
+    register_email_unverified: 'Bevestig je e-mailadres met de code voordat je je account aanmaakt.',
+    register_invalid_business: 'Controleer de contactpersoon, bedrijfsgegevens, het adres, telefoonnummer en de voorwaarden.',
+    register_invalid_private: 'Controleer je naam, geboortedatum, adres, telefoonnummer en identiteitsgegevens.',
+    register_profile_exists: 'Er bestaat al een accountprofiel voor deze gebruiker.',
+    register_failed: 'Het account kon niet worden aangemaakt. Probeer opnieuw of neem contact op met support.',
+  },
+  fr: {
+    register_auth_required: 'Connectez-vous avec le code reçu par e-mail avant de créer votre compte.',
+    register_email_unverified: 'Confirmez votre adresse e-mail avec le code avant de créer votre compte.',
+    register_invalid_business: 'Vérifiez le contact, les informations de l’entreprise, l’adresse, le téléphone et les conditions.',
+    register_invalid_private: 'Vérifiez votre nom, date de naissance, adresse, téléphone et justificatifs d’identité.',
+    register_profile_exists: 'Un profil de compte existe déjà pour cet utilisateur.',
+    register_failed: 'Le compte n’a pas pu être créé. Réessayez ou contactez le support.',
+  },
+  es: {
+    register_auth_required: 'Inicia sesión con el código del correo antes de crear tu cuenta.',
+    register_email_unverified: 'Confirma tu correo con el código antes de crear tu cuenta.',
+    register_invalid_business: 'Revisa la persona de contacto, los datos de empresa, la dirección, el teléfono y las condiciones.',
+    register_invalid_private: 'Revisa tu nombre, fecha de nacimiento, dirección, teléfono y datos de identidad.',
+    register_profile_exists: 'Ya existe un perfil de cuenta para este usuario.',
+    register_failed: 'No se pudo crear la cuenta. Inténtalo de nuevo o contacta con soporte.',
+  },
+  it: {
+    register_auth_required: 'Accedi con il codice ricevuto via e-mail prima di creare l’account.',
+    register_email_unverified: 'Conferma l’indirizzo e-mail con il codice prima di creare l’account.',
+    register_invalid_business: 'Controlla referente, dati aziendali, indirizzo, telefono e condizioni.',
+    register_invalid_private: 'Controlla nome, data di nascita, indirizzo, telefono e dati identificativi.',
+    register_profile_exists: 'Esiste già un profilo account per questo utente.',
+    register_failed: 'Impossibile creare l’account. Riprova o contatta l’assistenza.',
+  },
+  pl: {
+    register_auth_required: 'Zaloguj się kodem z wiadomości e-mail przed utworzeniem konta.',
+    register_email_unverified: 'Potwierdź adres e-mail kodem przed utworzeniem konta.',
+    register_invalid_business: 'Sprawdź osobę kontaktową, dane firmy, adres, telefon i akceptację warunków.',
+    register_invalid_private: 'Sprawdź imię i nazwisko, datę urodzenia, adres, telefon i dane tożsamości.',
+    register_profile_exists: 'Profil konta dla tego użytkownika już istnieje.',
+    register_failed: 'Nie udało się utworzyć konta. Spróbuj ponownie lub skontaktuj się z pomocą.',
+  },
+  nl: {
+    register_auth_required: 'Meld je aan met de e-mailcode voordat je je account aanmaakt.',
+    register_email_unverified: 'Bevestig je e-mailadres met de code voordat je je account aanmaakt.',
+    register_invalid_business: 'Controleer de contactpersoon, bedrijfsgegevens, het adres, telefoonnummer en de voorwaarden.',
+    register_invalid_private: 'Controleer je naam, geboortedatum, adres, telefoonnummer en identiteitsgegevens.',
+    register_profile_exists: 'Er bestaat al een accountprofiel voor deze gebruiker.',
+    register_failed: 'Het account kon niet worden aangemaakt. Probeer opnieuw of neem contact op met support.',
+  },
+  fi: {
+    register_auth_required: 'Kirjaudu sähköpostikoodilla ennen tilin luomista.',
+    register_email_unverified: 'Vahvista sähköpostiosoitteesi koodilla ennen tilin luomista.',
+    register_invalid_business: 'Tarkista yhteyshenkilö, yritystiedot, osoite, puhelinnumero ja ehdot.',
+    register_invalid_private: 'Tarkista nimi, syntymäaika, osoite, puhelinnumero ja henkilötiedot.',
+    register_profile_exists: 'Tälle käyttäjälle on jo olemassa tiliprofiili.',
+    register_failed: 'Tiliä ei voitu luoda. Yritä uudelleen tai ota yhteyttä tukeen.',
+  },
+  da: {
+    register_auth_required: 'Log ind med e-mailkoden, før du opretter din konto.',
+    register_email_unverified: 'Bekræft din e-mailadresse med koden, før du opretter din konto.',
+    register_invalid_business: 'Kontrollér kontaktperson, virksomhedsoplysninger, adresse, telefonnummer og vilkår.',
+    register_invalid_private: 'Kontrollér navn, fødselsdato, adresse, telefonnummer og identitetsoplysninger.',
+    register_profile_exists: 'Der findes allerede en kontoprofil for denne bruger.',
+    register_failed: 'Kontoen kunne ikke oprettes. Prøv igen, eller kontakt support.',
+  },
+}
+
+const birthDateGuidanceCopy: Record<
+  PublicLocale,
+  { birthDatePrivateHelper: string; birthDateBusinessHelper: string; birthDateRequired: string }
+> = {
+  sv: { birthDatePrivateHelper: 'Välj ditt födelsedatum. Du måste vara minst 18 år.', birthDateBusinessHelper: 'Valfritt för företagskonto. Om det anges måste du vara minst 18 år.', birthDateRequired: 'Välj ditt födelsedatum för att fortsätta.' },
+  en: { birthDatePrivateHelper: 'Choose your date of birth. You must be at least 18 years old.', birthDateBusinessHelper: 'Optional for business accounts. If provided, you must be at least 18 years old.', birthDateRequired: 'Choose your date of birth to continue.' },
+  de: { birthDatePrivateHelper: 'Wählen Sie Ihr Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.', birthDateBusinessHelper: 'Für Unternehmenskonten optional. Bei Angabe müssen Sie mindestens 18 Jahre alt sein.', birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.' },
+  at: { birthDatePrivateHelper: 'Wählen Sie Ihr Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.', birthDateBusinessHelper: 'Für Unternehmenskonten optional. Bei Angabe müssen Sie mindestens 18 Jahre alt sein.', birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.' },
+  be: { birthDatePrivateHelper: 'Kies je geboortedatum. Je moet minimaal 18 jaar zijn.', birthDateBusinessHelper: 'Optioneel voor bedrijfsaccounts. Indien ingevuld moet je minimaal 18 jaar zijn.', birthDateRequired: 'Kies je geboortedatum om door te gaan.' },
+  fr: { birthDatePrivateHelper: 'Choisissez votre date de naissance. Vous devez avoir au moins 18 ans.', birthDateBusinessHelper: 'Facultatif pour un compte professionnel. Si elle est indiquée, vous devez avoir au moins 18 ans.', birthDateRequired: 'Choisissez votre date de naissance pour continuer.' },
+  es: { birthDatePrivateHelper: 'Elige tu fecha de nacimiento. Debes tener al menos 18 años.', birthDateBusinessHelper: 'Opcional para cuentas de empresa. Si se indica, debes tener al menos 18 años.', birthDateRequired: 'Elige tu fecha de nacimiento para continuar.' },
+  it: { birthDatePrivateHelper: 'Scegli la data di nascita. Devi avere almeno 18 anni.', birthDateBusinessHelper: 'Facoltativa per gli account aziendali. Se indicata, devi avere almeno 18 anni.', birthDateRequired: 'Scegli la data di nascita per continuare.' },
+  pl: { birthDatePrivateHelper: 'Wybierz datę urodzenia. Musisz mieć co najmniej 18 lat.', birthDateBusinessHelper: 'Opcjonalne dla kont firmowych. Jeśli podasz datę, musisz mieć co najmniej 18 lat.', birthDateRequired: 'Wybierz datę urodzenia, aby kontynuować.' },
+  nl: { birthDatePrivateHelper: 'Kies je geboortedatum. Je moet minimaal 18 jaar zijn.', birthDateBusinessHelper: 'Optioneel voor bedrijfsaccounts. Indien ingevuld moet je minimaal 18 jaar zijn.', birthDateRequired: 'Kies je geboortedatum om door te gaan.' },
+  fi: { birthDatePrivateHelper: 'Valitse syntymäaikasi. Sinun on oltava vähintään 18-vuotias.', birthDateBusinessHelper: 'Valinnainen yritystilille. Jos päivämäärä annetaan, sinun on oltava vähintään 18-vuotias.', birthDateRequired: 'Valitse syntymäaikasi jatkaaksesi.' },
+  da: { birthDatePrivateHelper: 'Vælg din fødselsdato. Du skal være mindst 18 år.', birthDateBusinessHelper: 'Valgfrit for virksomhedskonti. Hvis datoen angives, skal du være mindst 18 år.', birthDateRequired: 'Vælg din fødselsdato for at fortsætte.' },
+}
 
 function normalizeInitialCountryCode(value?: string) {
   const normalized = (value || '').toUpperCase()
@@ -94,6 +221,7 @@ export default function RegisterForm({
     normalizeInitialCountryCode(initialCountryCode),
   )
   const [phone, setPhone] = useState(() => buildInitialPhone(countryCode))
+  const [birthDate, setBirthDate] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const countries = useMemo(
@@ -110,6 +238,11 @@ export default function RegisterForm({
     setError('')
     const form = new FormData(event.currentTarget)
     const legalAccepted = form.get('legalAccepted') === 'on'
+    if (accountType === 'private' && !birthDate) {
+      setError(copy.birthDateRequired)
+      setLoading(false)
+      return
+    }
     const normalizedPhone = normalizePhoneForSubmit(phone, countryCode)
     const response = await fetch('/api/account/register', {
       method: 'POST',
@@ -118,7 +251,7 @@ export default function RegisterForm({
         accountType,
         firstName: form.get('firstName'),
         lastName: form.get('lastName'),
-        birthDate: form.get('birthDate'),
+        birthDate,
         nationalId: form.get('nationalId'),
         phone: normalizedPhone,
         countryCode,
@@ -140,9 +273,14 @@ export default function RegisterForm({
         locale,
       }),
     })
-    const result = (await response.json()) as { error?: string }
+    const result = (await response.json()) as { error?: string; code?: string }
     if (!response.ok) {
-      setError(result.error || copy.createError)
+      const codedError = result.code as RegistrationErrorCode | undefined
+      setError(
+        codedError && registrationErrorCopy[locale][codedError]
+          ? registrationErrorCopy[locale][codedError]
+          : localizedAccountError(locale, result, copy.createError),
+      )
       setLoading(false)
       return
     }
@@ -189,11 +327,13 @@ export default function RegisterForm({
         >
           <Field name="firstName" label={copy.firstName} autoComplete="given-name" required />
           <Field name="lastName" label={copy.lastName} autoComplete="family-name" required />
-          <Field
+          <BirthDatePicker
             name="birthDate"
             label={copy.birthDate}
-            type="date"
-            helper={accountType === 'business' ? copy.birthDateBusinessHelper : undefined}
+            locale={locale}
+            value={birthDate}
+            onChange={setBirthDate}
+            helper={accountType === 'business' ? copy.birthDateBusinessHelper : copy.birthDatePrivateHelper}
             required={accountType === 'private'}
           />
           {accountType === 'private' ? (
@@ -300,11 +440,7 @@ export default function RegisterForm({
             label={
               <LegalConfirmationLabel
                 locale={locale}
-                text={
-                  accountType === 'business'
-                    ? copy.businessLegalConfirmation
-                    : copy.privateLegalConfirmation
-                }
+                accountType={accountType}
               />
             }
           />
@@ -455,44 +591,45 @@ function PhoneField({
 
 function LegalConfirmationLabel({
   locale,
-  text,
+  accountType,
 }: {
   locale: PublicLocale
-  text: string
+  accountType: 'private' | 'business'
 }) {
   const termsHref = localizePublicHref(locale, '/terms')
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const privacyHref = localizePublicHref(locale, '/privacy')
-  const parts = text.split(/(Användarvillkoren|Köpvillkoren|Integritetspolicyn|Terms of Use|Purchase Terms|Privacy Policy|Nutzungsbedingungen|Kaufbedingungen|Datenschutzrichtlinie)/g)
+  const copy = legalConfirmationCopy[locale]
 
   return (
     <>
-      {parts.map((part, index) => {
-        if (part === 'Användarvillkoren' || part === 'Terms of Use' || part === 'Nutzungsbedingungen') {
-          return (
-            <Link key={`${part}-${index}`} href={termsHref} className="font-semibold text-[#0866ff]">
-              {part}
-            </Link>
-          )
-        }
-        if (part === 'Köpvillkoren' || part === 'Purchase Terms' || part === 'Kaufbedingungen') {
-          return (
-            <Link key={`${part}-${index}`} href={purchaseTermsHref} className="font-semibold text-[#0866ff]">
-              {part}
-            </Link>
-          )
-        }
-        if (part === 'Integritetspolicyn' || part === 'Privacy Policy' || part === 'Datenschutzrichtlinie') {
-          return (
-            <Link key={`${part}-${index}`} href={privacyHref} className="font-semibold text-[#0866ff]">
-              {part}
-            </Link>
-          )
-        }
-        return part
-      })}
+      {accountType === 'business' ? copy.businessPrefix : copy.privatePrefix}{' '}
+      <Link href={termsHref} className="font-semibold text-[#0866ff]">{copy.terms}</Link>
+      {copy.separator}{' '}
+      <Link href={purchaseTermsHref} className="font-semibold text-[#0866ff]">{copy.purchaseTerms}</Link>
+      {copy.lastSeparator}{' '}
+      <Link href={privacyHref} className="font-semibold text-[#0866ff]">{copy.privacy}</Link>
+      {copy.suffix}
     </>
   )
+}
+
+const legalConfirmationCopy: Record<
+  PublicLocale,
+  { privatePrefix: string; businessPrefix: string; terms: string; purchaseTerms: string; privacy: string; separator: string; lastSeparator: string; suffix: string }
+> = {
+  sv: { privatePrefix: 'Jag bekräftar att jag är minst 18 år, har rätt att sälja de objekt jag publicerar och har läst och godkänner', businessPrefix: 'Jag bekräftar att företaget har rätt att sälja objektet och att jag har läst och godkänner', terms: 'Användarvillkoren', purchaseTerms: 'Köpvillkoren', privacy: 'Integritetspolicyn', separator: ',', lastSeparator: ' och', suffix: '.' },
+  en: { privatePrefix: 'I confirm that I am at least 18 years old, have the right to sell the objects I publish and have read and accept the', businessPrefix: 'I confirm that the company has the right to sell the object and that I have read and accept the', terms: 'Terms of Use', purchaseTerms: 'Purchase Terms', privacy: 'Privacy Policy', separator: ',', lastSeparator: ' and', suffix: '.' },
+  de: { privatePrefix: 'Ich bestätige, dass ich mindestens 18 Jahre alt bin, zum Verkauf der veröffentlichten Objekte berechtigt bin und Folgendes gelesen habe und akzeptiere:', businessPrefix: 'Ich bestätige, dass das Unternehmen zum Verkauf des Objekts berechtigt ist und dass ich Folgendes gelesen habe und akzeptiere:', terms: 'Nutzungsbedingungen', purchaseTerms: 'Kaufbedingungen', privacy: 'Datenschutzrichtlinie', separator: ',', lastSeparator: ' und', suffix: '.' },
+  at: { privatePrefix: 'Ich bestätige, dass ich mindestens 18 Jahre alt bin, zum Verkauf der veröffentlichten Objekte berechtigt bin und Folgendes gelesen habe und akzeptiere:', businessPrefix: 'Ich bestätige, dass das Unternehmen zum Verkauf des Objekts berechtigt ist und dass ich Folgendes gelesen habe und akzeptiere:', terms: 'Nutzungsbedingungen', purchaseTerms: 'Kaufbedingungen', privacy: 'Datenschutzrichtlinie', separator: ',', lastSeparator: ' und', suffix: '.' },
+  be: { privatePrefix: 'Ik bevestig dat ik minimaal 18 jaar ben, het recht heb de gepubliceerde objecten te verkopen en het volgende heb gelezen en accepteer:', businessPrefix: 'Ik bevestig dat het bedrijf het recht heeft het object te verkopen en dat ik het volgende heb gelezen en accepteer:', terms: 'Gebruiksvoorwaarden', purchaseTerms: 'Aankoopvoorwaarden', privacy: 'Privacybeleid', separator: ',', lastSeparator: ' en', suffix: '.' },
+  fr: { privatePrefix: 'Je confirme avoir au moins 18 ans, être autorisé à vendre les objets publiés et avoir lu et accepté les', businessPrefix: 'Je confirme que l’entreprise est autorisée à vendre l’objet et que j’ai lu et accepté les', terms: 'Conditions d’utilisation', purchaseTerms: 'Conditions d’achat', privacy: 'Politique de confidentialité', separator: ',', lastSeparator: ' et la', suffix: '.' },
+  es: { privatePrefix: 'Confirmo que tengo al menos 18 años, que puedo vender los objetos publicados y que he leído y acepto los', businessPrefix: 'Confirmo que la empresa puede vender el objeto y que he leído y acepto los', terms: 'Términos de uso', purchaseTerms: 'Condiciones de compra', privacy: 'Política de privacidad', separator: ',', lastSeparator: ' y la', suffix: '.' },
+  it: { privatePrefix: 'Confermo di avere almeno 18 anni, di poter vendere gli oggetti pubblicati e di aver letto e accettato i', businessPrefix: 'Confermo che l’azienda può vendere l’oggetto e che ho letto e accetto i', terms: 'Termini di utilizzo', purchaseTerms: 'Termini di acquisto', privacy: 'l’informativa sulla privacy', separator: ',', lastSeparator: ' e', suffix: '.' },
+  pl: { privatePrefix: 'Potwierdzam, że mam co najmniej 18 lat, mam prawo sprzedać opublikowane przedmioty oraz że znam i akceptuję', businessPrefix: 'Potwierdzam, że firma ma prawo sprzedać przedmiot oraz że znam i akceptuję', terms: 'Warunki użytkowania', purchaseTerms: 'Warunki zakupu', privacy: 'Politykę prywatności', separator: ',', lastSeparator: ' oraz', suffix: '.' },
+  nl: { privatePrefix: 'Ik bevestig dat ik minimaal 18 jaar ben, het recht heb de gepubliceerde objecten te verkopen en het volgende heb gelezen en accepteer:', businessPrefix: 'Ik bevestig dat het bedrijf het recht heeft het object te verkopen en dat ik het volgende heb gelezen en accepteer:', terms: 'Gebruiksvoorwaarden', purchaseTerms: 'Aankoopvoorwaarden', privacy: 'Privacybeleid', separator: ',', lastSeparator: ' en', suffix: '.' },
+  fi: { privatePrefix: 'Vahvistan olevani vähintään 18-vuotias, että minulla on oikeus myydä julkaisemani kohteet ja että olen lukenut ja hyväksyn', businessPrefix: 'Vahvistan, että yrityksellä on oikeus myydä kohde ja että olen lukenut ja hyväksyn', terms: 'Käyttöehdot', purchaseTerms: 'Ostoehdot', privacy: 'Tietosuojakäytännön', separator: ',', lastSeparator: ' ja', suffix: '.' },
+  da: { privatePrefix: 'Jeg bekræfter, at jeg er mindst 18 år, har ret til at sælge de publicerede genstande og har læst og accepterer', businessPrefix: 'Jeg bekræfter, at virksomheden har ret til at sælge genstanden, og at jeg har læst og accepterer', terms: 'Brugervilkårene', purchaseTerms: 'Købsvilkårene', privacy: 'Privatlivspolitikken', separator: ',', lastSeparator: ' og', suffix: '.' },
 }
 
 function getRegisterFormCopy(locale: PublicLocale) {
@@ -507,7 +644,9 @@ function getRegisterFormCopy(locale: PublicLocale) {
     firstName: 'First name',
     lastName: 'Last name',
     birthDate: 'Date of birth',
-    birthDateBusinessHelper: 'Optional for business accounts.',
+    birthDatePrivateHelper: 'Choose your date of birth. You must be at least 18 years old.',
+    birthDateBusinessHelper: 'Optional for business accounts. If provided, you must be at least 18 years old.',
+    birthDateRequired: 'Choose your date of birth to continue.',
     nationalId: 'National identity number',
     nationalIdHelper:
       'Checked against the country format. The number is never shown publicly.',
@@ -555,7 +694,9 @@ function getRegisterFormCopy(locale: PublicLocale) {
       firstName: 'Förnamn',
       lastName: 'Efternamn',
       birthDate: 'Födelsedatum',
-      birthDateBusinessHelper: 'Valfritt för företagskonto.',
+      birthDatePrivateHelper: 'Välj ditt födelsedatum. Du måste vara minst 18 år.',
+      birthDateBusinessHelper: 'Valfritt för företagskonto. Om det anges måste du vara minst 18 år.',
+      birthDateRequired: 'Välj ditt födelsedatum för att fortsätta.',
       nationalId: 'Nationellt identitetsnummer',
       nationalIdHelper:
         'Kontrolleras mot landets format. Numret visas aldrig publikt.',
@@ -604,7 +745,9 @@ function getRegisterFormCopy(locale: PublicLocale) {
       firstName: 'Vorname',
       lastName: 'Nachname',
       birthDate: 'Geburtsdatum',
-      birthDateBusinessHelper: 'Optional für Unternehmenskonten.',
+      birthDatePrivateHelper: 'Wählen Sie Ihr Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.',
+      birthDateBusinessHelper: 'Für Unternehmenskonten optional. Bei Angabe müssen Sie mindestens 18 Jahre alt sein.',
+      birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.',
       nationalId: 'Nationale Identifikationsnummer',
       nationalIdHelper:
         'Wird gegen das Länderformat geprüft. Die Nummer wird nie öffentlich angezeigt.',
@@ -640,5 +783,8 @@ function getRegisterFormCopy(locale: PublicLocale) {
     }
   }
 
-  return translatePublicObject(locale, en)
+  return {
+    ...translatePublicObject(locale, en),
+    ...birthDateGuidanceCopy[locale],
+  }
 }

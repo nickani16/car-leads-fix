@@ -134,13 +134,13 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser()
     if (!user?.email) {
       return NextResponse.json(
-        { error: 'Logga in med e-postkoden innan du skapar profilen.' },
+        { code: 'register_auth_required', error: 'Logga in med e-postkoden innan du skapar profilen.' },
         { status: 401 },
       )
     }
     if (!user.email_confirmed_at) {
       return NextResponse.json(
-        { error: 'Bekräfta mejladressen med koden innan du skapar profilen.' },
+        { code: 'register_email_unverified', error: 'Bekräfta mejladressen med koden innan du skapar profilen.' },
         { status: 403 },
       )
     }
@@ -202,6 +202,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
+          code: accountType === 'business' ? 'register_invalid_business' : 'register_invalid_private',
           error:
             accountType === 'business'
               ? 'Kontrollera kontaktperson, företagsnamn, organisationsnummer, adress, telefonnummer och villkor.'
@@ -235,7 +236,7 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (existingProfile) {
       return NextResponse.json(
-        { error: 'Det finns redan en profil för kontot.' },
+        { code: 'register_profile_exists', error: 'Det finns redan en profil för kontot.' },
         { status: 409 },
       )
     }
@@ -428,7 +429,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Marketplace registration failed', error)
     return NextResponse.json(
-      { error: 'Kontot kunde inte skapas. Försök igen eller kontakta support.' },
+      { code: 'register_failed', error: 'Kontot kunde inte skapas. Försök igen eller kontakta support.' },
       { status: 500 },
     )
   }

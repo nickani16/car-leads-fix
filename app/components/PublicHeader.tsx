@@ -12,6 +12,7 @@ import {
   CreditCard,
   FilePlus2,
   Heart,
+  Handshake,
   Home,
   LogIn,
   LogOut,
@@ -432,6 +433,21 @@ const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
     { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
     { href: '/help-center', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
+}
+
+const sellToDealerMenuCopy: Record<PublicLocale, { label: string; description: string }> = {
+  sv: { label: 'Sälj till en handlare', description: 'Skicka fordonsuppgifter och få bud från anslutna handlare.' },
+  en: { label: 'Sell to a dealer', description: 'Share your vehicle details and receive offers from connected dealers.' },
+  de: { label: 'An einen Händler verkaufen', description: 'Fahrzeugdaten senden und Angebote von angeschlossenen Händlern erhalten.' },
+  at: { label: 'An einen Händler verkaufen', description: 'Fahrzeugdaten senden und Angebote von angeschlossenen Händlern erhalten.' },
+  be: { label: 'Verkopen aan een dealer', description: 'Deel je voertuiggegevens en ontvang biedingen van aangesloten dealers.' },
+  fr: { label: 'Vendre à un professionnel', description: 'Envoyez les informations du véhicule et recevez des offres de professionnels partenaires.' },
+  es: { label: 'Vender a un concesionario', description: 'Envía los datos del vehículo y recibe ofertas de concesionarios asociados.' },
+  it: { label: 'Vendi a un concessionario', description: 'Invia i dati del veicolo e ricevi offerte dai concessionari aderenti.' },
+  pl: { label: 'Sprzedaj dealerowi', description: 'Prześlij dane pojazdu i otrzymuj oferty od współpracujących dealerów.' },
+  nl: { label: 'Verkopen aan een dealer', description: 'Deel je voertuiggegevens en ontvang biedingen van aangesloten dealers.' },
+  fi: { label: 'Myy autoliikkeelle', description: 'Lähetä ajoneuvon tiedot ja vastaanota tarjouksia mukana olevilta autoliikkeiltä.' },
+  da: { label: 'Sælg til en forhandler', description: 'Send køretøjets oplysninger og modtag bud fra tilknyttede forhandlere.' },
 }
 
 const businessMenuCopy: Record<
@@ -970,7 +986,7 @@ export default function PublicHeader({
   const createListingHref = isBusinessAccount
     ? `${marketPathPrefix}/account/company/listings/create`
     : localizePublicHref(locale, '/account/listings/new')
-  const sellMenuLinks = sellerItems[language].map((item) => {
+  const baseSellMenuLinks = sellerItems[language].map((item) => {
     const translatedItem =
       locale === 'sv' || locale === 'de' || locale === 'en'
         ? item
@@ -981,6 +997,17 @@ export default function PublicHeader({
       href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
+  const localizedDealerSell = sellToDealerMenuCopy[locale]
+  const sellMenuLinks = [
+    baseSellMenuLinks[0],
+    {
+      href: localizePublicHref(locale, '/sell-to-dealer'),
+      label: localizedDealerSell.label,
+      description: localizedDealerSell.description,
+      icon: Handshake,
+    },
+    ...baseSellMenuLinks.slice(1),
+  ].filter((item): item is MenuItem => Boolean(item))
   const localizedBusinessMenu = businessMenuCopy[locale]
   const businessMenuLinks = [
     {
@@ -1338,6 +1365,7 @@ export default function PublicHeader({
                       '/account/listings/new',
                       '/account/company/listings/create',
                       '/sell-car',
+                      '/sell-to-dealer',
                       '/sell-van',
                       '/sell-construction',
                     ].includes(activePathname)) ||
@@ -1863,7 +1891,7 @@ export default function PublicHeader({
                               const requiresLogin = 'requiresLogin' in child && child.requiresLogin
                               return (
                                 <Link
-                                  key={childHref}
+                                  key={`${childHref}:${childLabel}`}
                                   href={childHref}
                                   onClick={(event) => {
                                     if (requiresLogin) {
@@ -2286,7 +2314,7 @@ export default function PublicHeader({
                                 const requiresLogin = 'requiresLogin' in child && child.requiresLogin
                                 return (
                                   <Link
-                                    key={childHref}
+                                    key={`${childHref}:${childLabel}`}
                                     href={childHref}
                                     onClick={(event) => {
                                       if (requiresLogin) {
