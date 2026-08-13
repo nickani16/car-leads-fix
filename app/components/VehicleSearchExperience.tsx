@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode, WheelEvent as ReactWheelEvent } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
@@ -870,6 +871,7 @@ export default function VehicleSearchExperience({
   disableUrlSync = false,
   seoLanding,
   preserveCanonicalUrl = false,
+  syncCategoryRoute = false,
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
@@ -912,7 +914,9 @@ export default function VehicleSearchExperience({
   disableUrlSync?: boolean
   seoLanding?: VehicleSearchSeoLanding
   preserveCanonicalUrl?: boolean
+  syncCategoryRoute?: boolean
 }) {
+  const router = useRouter()
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
   const baseInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
@@ -995,6 +999,7 @@ export default function VehicleSearchExperience({
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
+  const categoryRouteSyncArmedRef = useRef(false)
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -1240,16 +1245,33 @@ export default function VehicleSearchExperience({
   useEffect(() => {
     if (disableUrlSync || !searchStateReady || typeof window === 'undefined') return
     const timer = window.setTimeout(() => {
-      const currentQuery = marketplaceSearchParams.toString()
+      const browserSearchParams = new URLSearchParams(marketplaceSearchParams)
+      const routeCategory = selectedCategories.length === 1 ? selectedCategories[0] : ''
+      const categoryPathname = routeCategory
+        ? localizePublicHref(locale, `/marketplace/${routeCategory}`)
+        : ''
+      const shouldSyncCategoryRoute = syncCategoryRoute && !preserveCanonicalUrl && Boolean(routeCategory) && (
+        categoryRouteSyncArmedRef.current || window.location.pathname === categoryPathname
+      )
+      if (shouldSyncCategoryRoute) browserSearchParams.delete('categories')
+      const currentQuery = browserSearchParams.toString()
       if (preserveCanonicalUrl && canonicalSearchBaselineRef.current === null) {
         canonicalSearchBaselineRef.current = currentQuery
       }
       const nextQuery = preserveCanonicalUrl && currentQuery === canonicalSearchBaselineRef.current
         ? ''
         : currentQuery
-      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
+      const nextPathname = shouldSyncCategoryRoute
+        ? categoryPathname
+        : window.location.pathname
+      const nextUrl = `${nextPathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
       const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
       if (nextUrl !== currentUrl) {
+        if (nextPathname !== window.location.pathname) {
+          categoryRouteSyncArmedRef.current = false
+          router.replace(nextUrl, { scroll: false })
+          return
+        }
         try {
           window.history.replaceState(window.history.state, '', nextUrl)
         } catch (error) {
@@ -1259,7 +1281,7 @@ export default function VehicleSearchExperience({
     }, 350)
 
     return () => window.clearTimeout(timer)
-  }, [disableUrlSync, marketplaceSearchParams, preserveCanonicalUrl, searchStateReady])
+  }, [disableUrlSync, locale, marketplaceSearchParams, preserveCanonicalUrl, router, searchStateReady, selectedCategories, syncCategoryRoute])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearchPage(1), 0)
@@ -1578,6 +1600,7 @@ export default function VehicleSearchExperience({
     setTechnicalFilters({})
     const next = [nextCategory]
     clearUnsupportedCategoryFilters(next)
+    categoryRouteSyncArmedRef.current = true
     setSelectedCategories(next)
     setMoreFiltersOpen(false)
   }

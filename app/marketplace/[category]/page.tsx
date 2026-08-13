@@ -25,6 +25,7 @@ import {
 import { searchMarketplaceListings } from '@/lib/marketplace-search-v2'
 import {
   isPublicLanguage,
+  localizePublicHref,
   stripLocalePrefix,
   translatePublic,
   type PublicLocale,
@@ -65,9 +66,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
-  const category = requestedCategory === 'vehicles'
+  const explicitCategory = getExplicitMarketplaceCategory(resolvedSearchParams)
+  const metadataCategory = explicitCategory || requestedCategory
+  const category = metadataCategory === 'vehicles'
     ? getAggregateMarketplaceCategory()
-    : getMarketplaceCategory(requestedCategory)
+    : getMarketplaceCategory(metadataCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
@@ -211,6 +214,10 @@ export default async function MarketplaceCategoryPage({
             ? requestedLanguage
             : 'en'
   )
+  const explicitCategory = getExplicitMarketplaceCategory(resolvedSearchParams)
+  if (explicitCategory && explicitCategory !== requestedCategory) {
+    permanentRedirect(getMarketplaceCategoryRedirectHref(locale, explicitCategory, resolvedSearchParams))
+  }
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -366,6 +373,7 @@ export default async function MarketplaceCategoryPage({
           relatedLinks: seoLanding.relatedLinks,
         } : undefined}
         preserveCanonicalUrl={Boolean(seoLanding)}
+        syncCategoryRoute={!seoLanding}
       />
     </>
   )
@@ -420,6 +428,30 @@ function getSearchParamList(
     .flatMap((item) => String(item || '').split(','))
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+function getExplicitMarketplaceCategory(
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const category = getSearchParamList(params, 'categories')[0]
+  if (!category) return ''
+  const normalized = marketplaceCategoryAliases[category] || category
+  return marketplaceCategories.some(({ slug }) => slug === normalized) ? normalized : ''
+}
+
+function getMarketplaceCategoryRedirectHref(
+  locale: PublicLocale,
+  category: string,
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (key === 'categories' || value === undefined) return
+    const values = Array.isArray(value) ? value : [value]
+    values.forEach((item) => query.append(key, item))
+  })
+  const pathname = localizePublicHref(locale, `/marketplace/${category}`)
+  return query.size ? `${pathname}?${query.toString()}` : pathname
 }
 
 function getBooleanSearchParam(
