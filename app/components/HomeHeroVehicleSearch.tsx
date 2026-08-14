@@ -496,7 +496,6 @@ function buildHomeSearchParams({
   params.set('categories', category)
   params.set('mode', intent)
   params.set('offerType', intent === 'leasing' ? 'lease' : 'sale')
-  if (intent === 'leasing') params.set('leasingPossible', '1')
   if (market) params.set('markets', market)
 
   const locationValue = location.trim()

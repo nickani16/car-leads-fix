@@ -346,15 +346,20 @@ export async function resolveGeoLandingRoute(
     placeSlug: localizedPlace?.slug,
   })
   const countryName = marketCountryNames[normalizedMarket]
-  const subject = model ? `${make} ${model}` : make || capitalize(categoryRoute.plural)
+  const baseCategoryRoute = Object.values(config.categories).find(
+    (route) => route.category === categoryRoute.category && !route.leasing,
+  )
+  const categorySubject = capitalize(baseCategoryRoute?.plural || categoryRoute.plural)
+  const routeCategoryLabel = capitalize(categoryRoute.plural)
+  const subject = model ? `${make} ${model}` : make || categorySubject
   const scope = localizedPlace?.name || countryName
-  const copy = buildLocalizedSeoCopy(config.locale, subject, scope, !localizedPlace)
+  const copy = buildLocalizedSeoCopy(config.locale, subject, scope, !localizedPlace, Boolean(categoryRoute.leasing))
   const routeKind = getRouteKind({ make, model, place: localizedPlace })
   const breadcrumbs = buildBreadcrumbs({
     market: normalizedMarket,
     countryName,
     categorySlug: normalizedCategorySlug,
-    categoryLabel: capitalize(categoryRoute.plural),
+    categoryLabel: routeCategoryLabel,
     make,
     model,
     place: localizedPlace,
@@ -366,7 +371,8 @@ export async function resolveGeoLandingRoute(
     countryName,
     category: categoryRoute.category,
     categorySlug: normalizedCategorySlug,
-    categoryLabel: capitalize(categoryRoute.plural),
+    categoryLabel: categorySubject,
+    leasing: Boolean(categoryRoute.leasing),
     make,
     model,
     place: localizedPlace,
@@ -379,7 +385,7 @@ export async function resolveGeoLandingRoute(
     countryCode: config.countryCode,
     category: categoryRoute.category,
     categorySlug: normalizedCategorySlug,
-    categoryLabel: capitalize(categoryRoute.plural),
+    categoryLabel: routeCategoryLabel,
     leasing: Boolean(categoryRoute.leasing),
     place: localizedPlace,
     makeSlug,
@@ -438,14 +444,12 @@ export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
   const params = new URLSearchParams()
   params.set('categories', landing.category)
   params.set('markets', landing.countryCode)
+  params.set('mode', landing.leasing ? 'leasing' : 'sale')
+  params.set('offerType', landing.leasing ? 'lease' : 'sale')
   if (landing.place) {
     params.set('geoAreaId', landing.place.id)
     params.set('geoFilterMode', 'strict')
     params.set('chips', landing.place.name)
-  }
-  if (landing.leasing) {
-    params.set('mode', 'leasing')
-    params.set('leasingPossible', 'true')
   }
   if (landing.make) params.set('make', landing.make)
   if (landing.model) params.set('model', landing.model)
@@ -456,6 +460,8 @@ export function buildSeoMarketplaceSearchParams(landing: GeoLandingRoute) {
   const params: Record<string, string | string[]> = {
     categories: landing.category,
     markets: landing.countryCode,
+    mode: landing.leasing ? 'leasing' : 'sale',
+    offerType: landing.leasing ? 'lease' : 'sale',
   }
   if (landing.make) params.make = landing.make
   if (landing.model) params.model = landing.model
@@ -463,10 +469,6 @@ export function buildSeoMarketplaceSearchParams(landing: GeoLandingRoute) {
     params.geoAreaId = landing.place.id
     params.geoFilterMode = 'strict'
     params.chips = landing.place.name
-  }
-  if (landing.leasing) {
-    params.mode = 'leasing'
-    params.leasingPossible = 'true'
   }
   return params
 }
@@ -493,11 +495,17 @@ export function buildSeoMarketplacePath({
   ].filter(Boolean).join('/')}`
 }
 
-export function getSeoCategoryPath(market: string, category: MarketplaceCategorySlug) {
+export function getSeoCategoryPath(
+  market: string,
+  category: MarketplaceCategorySlug,
+  leasing = false,
+) {
   const normalizedMarket = normalizeSegment(market)
   const config = marketRouteConfigs[normalizedMarket]
   if (!config) return null
-  const entry = Object.entries(config.categories).find(([, route]) => route.category === category && !route.leasing)
+  const entry = Object.entries(config.categories).find(
+    ([, route]) => route.category === category && Boolean(route.leasing) === leasing,
+  )
   return entry ? `/${normalizedMarket}/${entry[0]}` : null
 }
 
@@ -625,6 +633,7 @@ function buildRelatedLinks({
   category,
   categorySlug,
   categoryLabel,
+  leasing,
   make,
   model,
   place,
@@ -636,6 +645,7 @@ function buildRelatedLinks({
   category: MarketplaceCategorySlug
   categorySlug: string
   categoryLabel: string
+  leasing: boolean
   make: string | null
   model: string | null
   place: MarketplaceGeoArea | null
@@ -648,7 +658,13 @@ function buildRelatedLinks({
       : targetMake || categoryLabel
     const scope = targetPlace?.name || countryName
     links.push({
-      label: buildLocalizedSeoCopy(locale, subject, scope, !targetPlace).h1,
+      label: buildLocalizedSeoCopy(
+        locale,
+        subject,
+        scope,
+        !targetPlace,
+        leasing,
+      ).h1,
       href: buildSeoMarketplacePath({
         market,
         categorySlug,
@@ -694,7 +710,9 @@ function buildLocalizedSeoCopy(
   subject: string,
   scope: string,
   countryScope: boolean,
+  leasing = false,
 ) {
+  if (leasing) return buildLocalizedLeasingSeoCopy(locale, subject, scope)
   const copy = {
     sv: {
       h1: `${subject} till salu i ${scope}`,
@@ -758,6 +776,63 @@ function buildLocalizedSeoCopy(
     },
   } satisfies Record<PublicLocale, { h1: string; description: string; zeroResults: string }>
   return copy[locale] || copy.en
+}
+
+function buildLocalizedLeasingSeoCopy(locale: PublicLocale, subject: string, scope: string) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy = {
+    sv: {
+      h1: `${subject} f\u00f6r leasing i ${scope}`,
+      description: `Hitta ${subject} f\u00f6r leasing i ${scope}. J\u00e4mf\u00f6r aktuella leasingannonser fr\u00e5n anslutna f\u00f6retag p\u00e5 Autorell.`,
+      zeroResults: `Inga leasingannonser f\u00f6r ${subject} i ${scope} just nu`,
+    },
+    de: {
+      h1: `${subject} in ${scope} leasen`,
+      description: `${subject} in ${scope} leasen und aktuelle Angebote von gewerblichen Anbietern auf Autorell vergleichen.`,
+      zeroResults: `Derzeit keine Leasingangebote f\u00fcr ${subject} in ${scope}`,
+    },
+    fr: {
+      h1: `${subject} en leasing \u00e0 ${scope}`,
+      description: `Recherchez ${subject} en leasing \u00e0 ${scope}. Comparez les offres actuelles de professionnels sur Autorell.`,
+      zeroResults: `Aucune offre de leasing pour ${subject} \u00e0 ${scope} pour le moment`,
+    },
+    it: {
+      h1: `${subject} in leasing a ${scope}`,
+      description: `Cerca ${subject} in leasing a ${scope}. Confronta le offerte attuali delle aziende su Autorell.`,
+      zeroResults: `Nessuna offerta di leasing per ${subject} a ${scope} al momento`,
+    },
+    es: {
+      h1: `${subject} en leasing en ${scope}`,
+      description: `Busca ${subject} en leasing en ${scope}. Compara ofertas actuales de empresas en Autorell.`,
+      zeroResults: `No hay ofertas de leasing de ${subject} en ${scope} ahora mismo`,
+    },
+    nl: {
+      h1: `${subject} leasen in ${scope}`,
+      description: `Zoek ${subject} voor leasing in ${scope}. Vergelijk actuele aanbiedingen van bedrijven op Autorell.`,
+      zeroResults: `Momenteel geen leaseaanbiedingen voor ${subject} in ${scope}`,
+    },
+    pl: {
+      h1: `${subject} w leasingu - ${scope}`,
+      description: `Znajd\u017a ${subject} w leasingu w lokalizacji ${scope}. Por\u00f3wnaj aktualne oferty firm w Autorell.`,
+      zeroResults: `Obecnie brak ofert leasingu dla ${subject} - ${scope}`,
+    },
+    da: {
+      h1: `${subject} til leasing i ${scope}`,
+      description: `Find ${subject} til leasing i ${scope}. Sammenlign aktuelle tilbud fra virksomheder p\u00e5 Autorell.`,
+      zeroResults: `Ingen leasingtilbud for ${subject} i ${scope} lige nu`,
+    },
+    fi: {
+      h1: `${subject} leasingiin - ${scope}`,
+      description: `Etsi ${subject} leasingiin alueella ${scope}. Vertaile yritysten ajankohtaisia tarjouksia Autorellissa.`,
+      zeroResults: `Ei leasingilmoituksia haulle ${subject} - ${scope}`,
+    },
+    en: {
+      h1: `${subject} for leasing in ${scope}`,
+      description: `Find ${subject} for leasing in ${scope}. Compare current offers from business sellers on Autorell.`,
+      zeroResults: `No leasing listings for ${subject} in ${scope} right now`,
+    },
+  } satisfies Record<Exclude<PublicLocale, 'at' | 'be'>, { h1: string; description: string; zeroResults: string }>
+  return copy[effectiveLocale]
 }
 
 function category(categorySlug: MarketplaceCategorySlug, plural: string): GeoCategoryRoute {

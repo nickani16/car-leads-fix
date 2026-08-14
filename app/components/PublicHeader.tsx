@@ -49,6 +49,10 @@ import {
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import {
+  applyMarketplaceSearchModeParams,
+  type MarketplaceSearchMode,
+} from '@/lib/marketplace-search-seo'
+import {
   categoryLandingMenuHref,
   getCategoryLanding,
   localizeCategoryLanding,
@@ -79,6 +83,7 @@ type PublicHeaderProps = {
     slug: string
   }
   marketplaceResultsPage?: boolean
+  marketplaceMode?: MarketplaceSearchMode
   marketCode?: string
   hideOnMobile?: boolean
   lockMobileBottomNav?: boolean
@@ -537,6 +542,7 @@ export default function PublicHeader({
   locale: providedLocale,
   marketplaceChannel,
   marketplaceResultsPage = false,
+  marketplaceMode = 'all',
   marketCode,
   hideOnMobile = false,
   lockMobileBottomNav = false,
@@ -592,7 +598,7 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [searchMenuOpen, setSearchMenuOpen] = useState(false)
-  const [searchMenuIntent, setSearchMenuIntent] = useState<'all' | 'sale' | 'leasing'>('all')
+  const [searchMenuIntent, setSearchMenuIntent] = useState<MarketplaceSearchMode>(marketplaceMode)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
@@ -672,6 +678,11 @@ export default function PublicHeader({
     }, 0)
     return () => window.clearTimeout(timer)
   }, [unprefixedPathname])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchMenuIntent(marketplaceMode), 0)
+    return () => window.clearTimeout(timer)
+  }, [marketplaceMode])
 
   const refreshHeaderAccount = useCallback(async () => {
     try {
@@ -850,10 +861,11 @@ export default function PublicHeader({
     },
   ]
   const searchCategoryHref = (href: string) => {
-    const separator = href.includes('?') ? '&' : '?'
-    if (searchMenuIntent === 'leasing') return `${href}${separator}mode=leasing&offerType=lease`
-    if (searchMenuIntent === 'sale') return `${href}${separator}mode=sale&offerType=sale`
-    return `${href}${separator}mode=all`
+    const [pathname, search = ''] = href.split('?')
+    const params = new URLSearchParams(search)
+    applyMarketplaceSearchModeParams(params, searchMenuIntent)
+    const query = params.toString()
+    return query ? `${pathname}?${query}` : pathname
   }
   const visibleSearchCategoryItems =
     searchMenuIntent === 'leasing'

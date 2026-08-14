@@ -1036,7 +1036,13 @@ function marketplaceCategoryHref(
   category: 'cars' | 'vans' | 'electric-bikes',
   filters: Record<string, string> = {},
 ) {
-  const params = new URLSearchParams({ categories: category, ...filters })
+  const mode = filters.mode === 'leasing' ? 'leasing' : 'sale'
+  const params = new URLSearchParams({
+    categories: category,
+    mode,
+    offerType: mode === 'leasing' ? 'lease' : 'sale',
+    ...filters,
+  })
   return localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`)
 }
 
@@ -1060,7 +1066,7 @@ function getSelectedVehicleCategories(locale: PublicLocale): SelectedVehicleCate
       subtitle: label('Flexibelt bilägande', 'Flexible ownership', 'Flexibel fahren'),
       href: marketplaceCategoryHref(locale, 'cars', {
         mode: 'leasing',
-        leasingPossible: 'true',
+        offerType: 'lease',
       }),
       image: '/vehicle-category-rails/estate-v1.webp',
       icon: 'leasing',

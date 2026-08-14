@@ -146,7 +146,15 @@ export default function MarketplaceSearch({
     const route = categoryRoutes[category] || '/marketplace'
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
-    if (listingIntent !== 'sale') params.set('intent', listingIntent)
+    if (listingIntent === 'sale') {
+      params.set('mode', 'sale')
+      params.set('offerType', 'sale')
+    } else if (listingIntent === 'leasing') {
+      params.set('mode', 'leasing')
+      params.set('offerType', 'lease')
+    } else {
+      params.set('intent', 'rent')
+    }
     if (country) params.set('country', country)
     router.push(localizePublicHref(locale, `${route}${params.size ? `?${params}` : ''}`))
   }

@@ -486,8 +486,12 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.sellerType && filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
   if (filters.equipment) query = query.ilike('equipment', `%${escapeIlike(filters.equipment)}%`)
   if (filters.fourWheelDrive) query = query.ilike('equipment', '%fyrhjuls%')
-  if (filters.offerType === 'sale' || filters.offerType === 'lease') {
-    query = query.eq('offer_type', filters.offerType)
+  if (filters.offerType === 'sale' && filters.leasingPossible) {
+    query = query.eq('offer_type', 'sale_and_lease')
+  } else if (filters.offerType === 'sale') {
+    query = query.in('offer_type', ['sale', 'sale_and_lease'])
+  } else if (filters.offerType === 'lease') {
+    query = query.in('offer_type', ['lease', 'sale_and_lease'])
   } else if (filters.offerType === 'sale_and_lease') {
     query = query.eq('offer_type', 'sale_and_lease')
   } else if (filters.leasingPossible) {

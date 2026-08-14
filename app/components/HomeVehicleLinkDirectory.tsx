@@ -140,7 +140,7 @@ export default function HomeVehicleLinkDirectory({ locale }: { locale: PublicLoc
         filterLink(locale, copy.fuels[2], { fuel: 'Bensin' }),
         filterLink(locale, copy.fuels[3], { fuel: 'Diesel' }),
         filterLink(locale, copy.fuels[4], { gearbox: 'Automat' }),
-        filterLink(locale, copy.fuels[5], { mode: 'leasing', leasingPossible: 'true' }),
+        filterLink(locale, copy.fuels[5], { mode: 'leasing', offerType: 'lease' }),
       ],
     },
     {
@@ -200,7 +200,13 @@ function directLink(locale: PublicLocale, label: string, href: string): Director
 }
 
 function marketplaceHref(locale: PublicLocale, filters: Record<string, string>) {
-  const params = new URLSearchParams({ categories: 'cars', ...filters })
+  const mode = filters.mode === 'leasing' ? 'leasing' : 'sale'
+  const params = new URLSearchParams({
+    categories: 'cars',
+    mode,
+    offerType: mode === 'leasing' ? 'lease' : 'sale',
+    ...filters,
+  })
   return localizePublicHref(locale, `/marketplace/cars?${params.toString()}`)
 }
 
