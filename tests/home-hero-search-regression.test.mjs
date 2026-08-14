@@ -111,6 +111,16 @@ test('homepage popular brands keep an even logo grid', () => {
   assert.doesNotMatch(categoryRailsSource, /last:col-span-2/)
 })
 
+test('homepage vehicle rails use white bordered cards while preserving highlighted blue cards', () => {
+  assert.match(categoryRailsSource, /\? 'bg-\[#b8d3ff\] hover:bg-\[#adcbfc\]'/)
+  assert.match(
+    categoryRailsSource,
+    /border border-\[#d4dbe5\] bg-white hover:border-\[#b8c6d8\] hover:bg-\[#f8fbff\]/,
+  )
+  assert.match(categoryRailsSource, /bg-\[#edf4ff\] text-\[#5269b0\]/)
+  assert.doesNotMatch(categoryRailsSource, /bg-\[#e4e9f0\]/)
+})
+
 test('homepage search overrides broken generated Finnish reset copy', () => {
   assert.match(manualTranslationsSource, /fi:\s*\{[\s\S]*Reset: 'Tyhjennä'/)
   assert.ok(translations.fi?.Reset)

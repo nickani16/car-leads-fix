@@ -113,7 +113,7 @@ export default function HomeVehicleCategoryRails({
                 className={`group flex h-[150px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] transition sm:h-[158px] sm:w-[176px] ${
                   category.highlighted
                     ? 'bg-[#b8d3ff] hover:bg-[#adcbfc]'
-                    : 'bg-[#e4e9f0] hover:bg-[#dce4ed]'
+                    : 'border border-[#d4dbe5] bg-white hover:border-[#b8c6d8] hover:bg-[#f8fbff]'
                 }`}
               >
                 <div className="flex h-[88px] items-center justify-center px-2 pt-2 sm:h-[94px]">
@@ -131,7 +131,7 @@ export default function HomeVehicleCategoryRails({
                     className={`grid h-10 w-10 flex-none place-items-center rounded-[8px] ${
                       category.highlighted
                         ? 'bg-[#5269b0] text-white'
-                        : 'bg-[#d4dbe4] text-[#667085]'
+                        : 'bg-[#edf4ff] text-[#5269b0]'
                     }`}
                   >
                     <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
@@ -163,9 +163,9 @@ export default function HomeVehicleCategoryRails({
               href={category.href}
               prefetch={false}
               data-rail-card
-              className="group w-[280px] flex-none snap-start overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dde5ee] sm:w-[320px] lg:w-[336px]"
+              className="group w-[280px] flex-none snap-start overflow-hidden rounded-[8px] border border-[#d4dbe5] bg-white transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] sm:w-[320px] lg:w-[336px]"
             >
-              <div className="relative h-[187px] overflow-hidden bg-[#dce3eb] sm:h-[196px]">
+              <div className="relative h-[187px] overflow-hidden bg-white sm:h-[196px]">
                 <Image
                   src={category.image}
                   alt=""
@@ -182,7 +182,7 @@ export default function HomeVehicleCategoryRails({
                   {category.tags.map((tag) => (
                     <span
                       key={`${category.id}-${tag}`}
-                      className="inline-flex min-h-[22px] max-w-full items-center rounded-[4px] bg-[#d5dbe3] px-2 text-[12px] font-medium leading-[1.15] text-[#101828] [overflow-wrap:anywhere]"
+                      className="inline-flex min-h-[22px] max-w-full items-center rounded-[4px] bg-[#edf4ff] px-2 text-[12px] font-medium leading-[1.15] text-[#101828] [overflow-wrap:anywhere]"
                     >
                       {tag}
                     </span>
@@ -209,7 +209,7 @@ export default function HomeVehicleCategoryRails({
               href={category.href}
               prefetch={false}
               data-rail-card
-              className="group flex h-[162px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] bg-[#e4e9f0] transition hover:bg-[#dce4ed] sm:h-[174px] sm:w-[176px]"
+              className="group flex h-[162px] w-[164px] flex-none snap-start flex-col overflow-hidden rounded-[8px] border border-[#d4dbe5] bg-white transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] sm:h-[174px] sm:w-[176px]"
             >
               <div className="flex h-[108px] items-center justify-center px-2 pt-2 sm:h-[116px]">
                 <Image
