@@ -444,6 +444,21 @@ function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
   return locale === 'en' ? repairMojibakeText(en) : translatePublic(locale, en)
 }
 
+const filterDialogCopy: Record<PublicLocale, { close: string; label: string }> = {
+  en: { close: 'Close filter menu', label: 'Filter options' },
+  sv: { close: 'Stäng filtermeny', label: 'Filteralternativ' },
+  de: { close: 'Filtermenü schließen', label: 'Filteroptionen' },
+  at: { close: 'Filtermenü schließen', label: 'Filteroptionen' },
+  be: { close: 'Filtermenu sluiten', label: 'Filteropties' },
+  fr: { close: 'Fermer le menu des filtres', label: 'Options de filtrage' },
+  es: { close: 'Cerrar el menú de filtros', label: 'Opciones de filtro' },
+  it: { close: 'Chiudi il menu dei filtri', label: 'Opzioni filtro' },
+  pl: { close: 'Zamknij menu filtrów', label: 'Opcje filtrów' },
+  nl: { close: 'Filtermenu sluiten', label: 'Filteropties' },
+  fi: { close: 'Sulje suodatinvalikko', label: 'Suodatusvaihtoehdot' },
+  da: { close: 'Luk filtermenu', label: 'Filtermuligheder' },
+}
+
 function syncDocumentMeta(selector: string, attribute: string, value: string, content: string) {
   const elements = [...document.head.querySelectorAll<HTMLMetaElement>(selector)]
   if (elements.length) {
@@ -1339,8 +1354,15 @@ export default function VehicleSearchExperience({
       if (desktopFilterBarRef.current?.contains(target)) return
       setDesktopFilterMenu(null)
     }
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setDesktopFilterMenu(null)
+    }
     window.addEventListener('pointerdown', handlePointerDown)
-    return () => window.removeEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [desktopFilterMenu])
 
   useEffect(() => {
@@ -2260,19 +2282,33 @@ export default function VehicleSearchExperience({
       <>
         <button
           type="button"
-          aria-label={uiText(locale, 'Close filter menu', 'Stäng filtermeny', 'Filtermenü schließen')}
+          aria-label={filterDialogCopy[locale].close}
           onClick={() => setDesktopFilterMenu(null)}
           className="fixed inset-0 z-[230] cursor-default bg-white/35 backdrop-blur-[2px]"
         />
         <div
           data-marketplace-filter-surface
+          role="dialog"
+          aria-modal="true"
+          aria-label={filterDialogCopy[locale].label}
           style={{
             left: desktopFilterPopoverPosition?.left ?? 16,
             top: desktopFilterPopoverPosition?.top ?? 112,
           }}
           className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:rounded-[18px] max-sm:p-4`}
         >
-          {children}
+          <div className="mb-2 flex justify-end">
+            <button
+              type="button"
+              aria-label={filterDialogCopy[locale].close}
+              title={filterDialogCopy[locale].close}
+              onClick={() => setDesktopFilterMenu(null)}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828] transition hover:border-[#0866ff] hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+            >
+              <X className="h-4.5 w-4.5" aria-hidden="true" />
+            </button>
+          </div>
+          <div>{children}</div>
         </div>
       </>
     )
@@ -4193,7 +4229,7 @@ function MarketplaceAppDownloadLinks({
 }) {
   return (
     <div>
-      <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
+      <h3 className="text-[15px] font-semibold text-[#101828]">{copy.footerLabel}</h3>
       <div className="mt-2 grid gap-2">
         <Link
           href={href}

@@ -661,7 +661,7 @@ function AppDownloadLinks({
 }) {
   return (
     <div className={align === 'right' ? 'sm:text-right' : ''}>
-      <p className="text-[13px] font-semibold text-[#101828]">{copy.footerLabel}</p>
+      <h3 className="text-[15px] font-semibold text-[#101828]">{copy.footerLabel}</h3>
       <div className={`mt-2 grid gap-2 ${align === 'right' ? 'sm:justify-items-end' : ''}`}>
         <Link
           href={href}
