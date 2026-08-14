@@ -60,9 +60,9 @@ test('marketplace filter popovers expose a visible close control and Escape hand
   }
   assert.match(marketplace, /title=\{filterDialogCopy\[locale\]\.close\}/)
   assert.match(marketplace, /aria-label=\{filterDialogCopy\[locale\]\.label\}/)
-  assert.match(marketplace, /onClick=\{\(\) => setDesktopFilterMenu\(null\)\}/)
+  assert.match(marketplace, /onClick=\{closeQuickFilterMenu\}/)
   assert.match(marketplace, /event: globalThis\.KeyboardEvent/)
-  assert.match(marketplace, /if \(event\.key === 'Escape'\) setDesktopFilterMenu\(null\)/)
+  assert.match(marketplace, /if \(event\.key === 'Escape'\) closeQuickFilterMenu\(\)/)
 })
 
 test('dismissible modal surfaces keep an explicit close affordance', () => {

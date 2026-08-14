@@ -60,19 +60,16 @@ import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
-import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
 import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
-import {
-  applyMarketplaceSearchModeParams,
-  getMarketplaceSearchSeo,
-} from '@/lib/marketplace-search-seo'
+import { applyMarketplaceSearchModeParams } from '@/lib/marketplace-search-seo'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
+type QuickFilterPlacement = 'desktop' | 'mobile'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
@@ -457,25 +454,6 @@ const filterDialogCopy: Record<PublicLocale, { close: string; label: string }> =
   nl: { close: 'Filtermenu sluiten', label: 'Filteropties' },
   fi: { close: 'Sulje suodatinvalikko', label: 'Suodatusvaihtoehdot' },
   da: { close: 'Luk filtermenu', label: 'Filtermuligheder' },
-}
-
-function syncDocumentMeta(selector: string, attribute: string, value: string, content: string) {
-  const elements = [...document.head.querySelectorAll<HTMLMetaElement>(selector)]
-  if (elements.length) {
-    const [primary, ...duplicates] = elements
-    if (primary.content !== content) primary.content = content
-    duplicates.forEach((element) => element.remove())
-    return
-  }
-
-  const element = document.createElement('meta')
-  element.setAttribute(attribute, value)
-  element.content = content
-  document.head.appendChild(element)
-}
-
-function syncDocumentTitle(title: string) {
-  if (document.title !== title) document.title = title
 }
 
 function priceFilterValue(listing: VehicleSearchListing) {
@@ -1032,6 +1010,11 @@ export default function VehicleSearchExperience({
   const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [desktopFilterMenu, setDesktopFilterMenu] = useState<DesktopFilterMenu>(null)
+  const [quickFilterPlacement, setQuickFilterPlacement] = useState<QuickFilterPlacement | null>(null)
+  const closeQuickFilterMenu = useCallback(() => {
+    setDesktopFilterMenu(null)
+    setQuickFilterPlacement(null)
+  }, [])
   const [priceYearOpen, setPriceYearOpen] = useState(true)
   const [locationFiltersOpen, setLocationFiltersOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
@@ -1352,10 +1335,10 @@ export default function VehicleSearchExperience({
       if (!(target instanceof Node)) return
       if (target instanceof Element && target.closest('[data-marketplace-filter-surface]')) return
       if (desktopFilterBarRef.current?.contains(target)) return
-      setDesktopFilterMenu(null)
+      closeQuickFilterMenu()
     }
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') setDesktopFilterMenu(null)
+      if (event.key === 'Escape') closeQuickFilterMenu()
     }
     window.addEventListener('pointerdown', handlePointerDown)
     window.addEventListener('keydown', handleKeyDown)
@@ -1363,7 +1346,7 @@ export default function VehicleSearchExperience({
       window.removeEventListener('pointerdown', handlePointerDown)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [desktopFilterMenu])
+  }, [closeQuickFilterMenu, desktopFilterMenu])
 
   useEffect(() => {
     if (!searchStateReady) return
@@ -1632,50 +1615,59 @@ export default function VehicleSearchExperience({
     if (clearAllTechnical || !supported.has('equipment')) setEquipmentQuery('')
   }
 
+  function afterQuickFilterMenuCloses(update: () => void) {
+    closeQuickFilterMenu()
+    window.requestAnimationFrame(update)
+  }
+
   function toggleCategory(nextCategory: string) {
     if (nextCategory === 'all') return
     if (mode === 'leasing' && !isLeasingMarketplaceCategory(nextCategory)) return
     if (nextCategory === activeCategoryKey) {
+      closeQuickFilterMenu()
       return
     }
-    setMake('')
-    setModel('')
-    setMaxMileage('')
-    setMaxOperatingHours('')
-    setFuel('')
-    setGearbox('')
-    setBodyType('')
-    setColor('')
-    setFourWheelDrive(false)
-    setLeasingPossible(false)
-    setEquipmentQuery('')
-    setTechnicalFilters({})
-    const next = [nextCategory]
-    clearUnsupportedCategoryFilters(next)
-    categoryRouteSyncArmedRef.current = true
-    seoRouteSyncArmedRef.current = true
-    setSelectedCategories(next)
-    setMoreFiltersOpen(false)
+    afterQuickFilterMenuCloses(() => {
+      setMake('')
+      setModel('')
+      setMaxMileage('')
+      setMaxOperatingHours('')
+      setFuel('')
+      setGearbox('')
+      setBodyType('')
+      setColor('')
+      setFourWheelDrive(false)
+      setLeasingPossible(false)
+      setEquipmentQuery('')
+      setTechnicalFilters({})
+      const next = [nextCategory]
+      clearUnsupportedCategoryFilters(next)
+      categoryRouteSyncArmedRef.current = true
+      seoRouteSyncArmedRef.current = true
+      setSelectedCategories(next)
+      setMoreFiltersOpen(false)
+    })
   }
 
   function changeMarketplaceMode(nextMode: SearchMode) {
     if (nextMode === mode) {
-      setDesktopFilterMenu(null)
+      closeQuickFilterMenu()
       return
     }
 
-    seoRouteSyncArmedRef.current = true
-    setLeasingPossible(false)
-    if (nextMode === 'leasing') {
-      setSelectedCategories((current) => {
-        const supported = current.filter((category) => isLeasingMarketplaceCategory(category))
-        const next = supported.length ? supported : ['cars']
-        if (next.join(',') !== current.join(',')) categoryRouteSyncArmedRef.current = true
-        return next
-      })
-    }
-    setMode(nextMode)
-    setDesktopFilterMenu(null)
+    afterQuickFilterMenuCloses(() => {
+      seoRouteSyncArmedRef.current = true
+      setLeasingPossible(false)
+      if (nextMode === 'leasing') {
+        setSelectedCategories((current) => {
+          const supported = current.filter((category) => isLeasingMarketplaceCategory(category))
+          const next = supported.length ? supported : ['cars']
+          if (next.join(',') !== current.join(',')) categoryRouteSyncArmedRef.current = true
+          return next
+        })
+      }
+      setMode(nextMode)
+    })
   }
 
   function updateRegionFilter(value: string) {
@@ -1831,19 +1823,6 @@ export default function VehicleSearchExperience({
       ? uiText(locale, 'selected markets', 'valda marknader', 'ausgewählte Märkte')
       : uiText(locale, 'All markets', 'alla marknader', 'alle Märkte')
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
-  const metadataLocationName = city || municipality || region || (
-    query ? resultLocationName : marketSummary
-  )
-  const marketplaceSeo = getMarketplaceSearchSeo({
-    locale,
-    category: activeCategoryItem.key === 'all' ? 'vehicles' : activeCategoryItem.key as MarketplaceCategorySlug,
-    mode,
-    make,
-    model,
-    freeText: query,
-    place: metadataLocationName,
-    condition,
-  })
   const resultCountSummary = formatSearchResultCountSummary({
     locale,
     count: visibleCount,
@@ -1860,20 +1839,6 @@ export default function VehicleSearchExperience({
     mode,
   })
 
-  useEffect(() => {
-    if (!searchStateReady || preserveCanonicalUrl || typeof document === 'undefined') return
-    const syncMetadata = () => {
-      syncDocumentTitle(marketplaceSeo.title)
-      syncDocumentMeta('meta[name="description"]', 'name', 'description', marketplaceSeo.description)
-      syncDocumentMeta('meta[property="og:title"]', 'property', 'og:title', marketplaceSeo.title)
-      syncDocumentMeta('meta[property="og:description"]', 'property', 'og:description', marketplaceSeo.description)
-    }
-    syncMetadata()
-
-    const observer = new MutationObserver(syncMetadata)
-    observer.observe(document.head, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [marketplaceSeo.description, marketplaceSeo.title, preserveCanonicalUrl, searchStateReady])
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
@@ -2222,8 +2187,8 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function desktopMenuButton(menu: Exclude<DesktopFilterMenu, null>, label: string, active = false) {
-    const open = desktopFilterMenu === menu
+  function desktopMenuButton(placement: QuickFilterPlacement, menu: Exclude<DesktopFilterMenu, null>, label: string, active = false) {
+    const open = desktopFilterMenu === menu && quickFilterPlacement === placement
     return (
       <button
         type="button"
@@ -2234,7 +2199,12 @@ export default function VehicleSearchExperience({
             left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
             top: rect.bottom + 6,
           })
-          setDesktopFilterMenu((current) => (current === menu ? null : menu))
+          if (open) {
+            closeQuickFilterMenu()
+            return
+          }
+          setQuickFilterPlacement(placement)
+          setDesktopFilterMenu(menu)
         }}
         className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium leading-none transition sm:h-8 sm:px-3 sm:text-[13px] ${
           open || active
@@ -2276,14 +2246,14 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function renderDesktopFilterPopover(menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
-    if (desktopFilterMenu !== menu) return null
+  function renderDesktopFilterPopover(placement: QuickFilterPlacement, menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
+    if (desktopFilterMenu !== menu || quickFilterPlacement !== placement) return null
     return (
       <>
         <button
           type="button"
           aria-label={filterDialogCopy[locale].close}
-          onClick={() => setDesktopFilterMenu(null)}
+          onClick={closeQuickFilterMenu}
           className="fixed inset-0 z-[230] cursor-default bg-white/35 backdrop-blur-[2px]"
         />
         <div
@@ -2302,7 +2272,7 @@ export default function VehicleSearchExperience({
               type="button"
               aria-label={filterDialogCopy[locale].close}
               title={filterDialogCopy[locale].close}
-              onClick={() => setDesktopFilterMenu(null)}
+              onClick={closeQuickFilterMenu}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828] transition hover:border-[#0866ff] hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
             >
               <X className="h-4.5 w-4.5" aria-hidden="true" />
@@ -2386,7 +2356,7 @@ export default function VehicleSearchExperience({
               type="button"
               onClick={() => {
                 setFiltersOpen((open) => !open)
-                setDesktopFilterMenu(null)
+                closeQuickFilterMenu()
               }}
               className={`inline-flex h-8 items-center justify-center rounded-full border text-[12px] font-medium leading-none transition-all duration-200 ease-out sm:text-[13px] ${
                 compactMobileFilterButton
@@ -2422,8 +2392,8 @@ export default function VehicleSearchExperience({
           >
 
           <div className="relative order-10 shrink-0">
-            {desktopMenuButton('mode', modeLabel, false)}
-            {renderDesktopFilterPopover('mode', (
+            {desktopMenuButton(placement, 'mode', modeLabel, false)}
+            {renderDesktopFilterPopover(placement, 'mode', (
               <div className="space-y-1">
                 {[
                   { value: 'all' as SearchMode, label: marketplaceModeOptionLabel(locale, 'all') },
@@ -2445,8 +2415,8 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-50 shrink-0">
-            {desktopMenuButton('price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
-            {renderDesktopFilterPopover('price', (
+            {desktopMenuButton(placement, 'price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
+            {renderDesktopFilterPopover(placement, 'price', (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2460,7 +2430,7 @@ export default function VehicleSearchExperience({
                   unit={priceFilterCurrency}
                   step={1000}
                 />
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2468,8 +2438,8 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-60 shrink-0">
-            {desktopMenuButton('year', minYear || maxYear ? `${translatePublic(locale, 'Model year')}: ${minYear || '1950'}-${maxYear || 'max'}` : translatePublic(locale, 'Model year'), Boolean(minYear || maxYear))}
-            {renderDesktopFilterPopover('year', (
+            {desktopMenuButton(placement, 'year', minYear || maxYear ? `${translatePublic(locale, 'Model year')}: ${minYear || '1950'}-${maxYear || 'max'}` : translatePublic(locale, 'Model year'), Boolean(minYear || maxYear))}
+            {renderDesktopFilterPopover(placement, 'year', (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2483,7 +2453,7 @@ export default function VehicleSearchExperience({
                   step={1}
                   startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                 />
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2492,8 +2462,8 @@ export default function VehicleSearchExperience({
 
           {showMileageMenu ? (
           <div className="relative order-70 shrink-0">
-            {desktopMenuButton('mileage', minMileage || maxMileage ? `${mileageFilterLabel}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : mileageFilterLabel, Boolean(minMileage || maxMileage))}
-            {renderDesktopFilterPopover('mileage', (
+            {desktopMenuButton(placement, 'mileage', minMileage || maxMileage ? `${mileageFilterLabel}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : mileageFilterLabel, Boolean(minMileage || maxMileage))}
+            {renderDesktopFilterPopover(placement, 'mileage', (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2507,7 +2477,7 @@ export default function VehicleSearchExperience({
                   unit="km"
                   step={5000}
                 />
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2517,8 +2487,8 @@ export default function VehicleSearchExperience({
 
           {showOperatingHoursMenu ? (
           <div className="relative order-70 shrink-0">
-            {desktopMenuButton('operatingHours', minOperatingHours || maxOperatingHours ? `${operatingHoursFilterLabel}: ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}` : operatingHoursFilterLabel, Boolean(minOperatingHours || maxOperatingHours))}
-            {renderDesktopFilterPopover('operatingHours', (
+            {desktopMenuButton(placement, 'operatingHours', minOperatingHours || maxOperatingHours ? `${operatingHoursFilterLabel}: ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}` : operatingHoursFilterLabel, Boolean(minOperatingHours || maxOperatingHours))}
+            {renderDesktopFilterPopover(placement, 'operatingHours', (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2532,7 +2502,7 @@ export default function VehicleSearchExperience({
                   unit="h"
                   step={250}
                 />
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2541,8 +2511,8 @@ export default function VehicleSearchExperience({
           ) : null}
 
           <div className="relative order-20 shrink-0">
-            {desktopMenuButton('category', categoryLabel, false)}
-            {renderDesktopFilterPopover('category', (
+            {desktopMenuButton(placement, 'category', categoryLabel, false)}
+            {renderDesktopFilterPopover(placement, 'category', (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
                 {visibleSelectableCategories.map((item) => {
                   const Icon = item.icon
@@ -2550,10 +2520,7 @@ export default function VehicleSearchExperience({
                     <button
                       key={item.key}
                       type="button"
-                      onClick={() => {
-                        toggleCategory(item.key)
-                        setDesktopFilterMenu(null)
-                      }}
+                      onClick={() => toggleCategory(item.key)}
                       className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
                     >
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#101828]">
@@ -2570,8 +2537,8 @@ export default function VehicleSearchExperience({
 
           {showBodyTypeMenu ? (
           <div className="relative order-30 shrink-0">
-            {desktopMenuButton('bodyType', bodyTypeLabel, Boolean(bodyType))}
-            {renderDesktopFilterPopover('bodyType', (
+            {desktopMenuButton(placement, 'bodyType', bodyTypeLabel, Boolean(bodyType))}
+            {renderDesktopFilterPopover(placement, 'bodyType', (
               <div className="space-y-3">
                 <div className="grid max-h-[360px] gap-1 overflow-y-auto">
                   {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
@@ -2582,7 +2549,7 @@ export default function VehicleSearchExperience({
                         type="button"
                         onClick={() => {
                           setBodyType(bodyType === option ? '' : option)
-                          setDesktopFilterMenu(null)
+                          closeQuickFilterMenu()
                         }}
                         className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
                       >
@@ -2601,7 +2568,7 @@ export default function VehicleSearchExperience({
                     type="button"
                     onClick={() => {
                       setBodyType('')
-                      setDesktopFilterMenu(null)
+                      closeQuickFilterMenu()
                     }}
                     className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                   >
@@ -2614,8 +2581,8 @@ export default function VehicleSearchExperience({
           ) : null}
 
           <div className="relative order-80 shrink-0">
-            {desktopMenuButton('market', marketLabel, selectedMarketCodes.length > 1)}
-            {renderDesktopFilterPopover('market', (
+            {desktopMenuButton(placement, 'market', marketLabel, selectedMarketCodes.length > 1)}
+            {renderDesktopFilterPopover(placement, 'market', (
               <div className="space-y-3">
                 <div className="grid max-h-[360px] gap-1 overflow-y-auto">
                   {marketOptions.map((option) => {
@@ -2652,7 +2619,7 @@ export default function VehicleSearchExperience({
                     )
                   })}
                 </div>
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2660,8 +2627,8 @@ export default function VehicleSearchExperience({
           </div>
 
           <div className="relative order-40 shrink-0">
-            {desktopMenuButton('model', modelLabel, Boolean(make || model))}
-            {renderDesktopFilterPopover('model', (
+            {desktopMenuButton(placement, 'model', modelLabel, Boolean(make || model))}
+            {renderDesktopFilterPopover(placement, 'model', (
               <div className="space-y-4">
                 <MakeModelFilter
                   locale={locale}
@@ -2680,7 +2647,7 @@ export default function VehicleSearchExperience({
                   }}
                   compact
                 />
-                <button type="button" onClick={() => setDesktopFilterMenu(null)} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>

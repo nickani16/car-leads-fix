@@ -382,6 +382,33 @@ test('marketplace quick filter trigger stays outside the horizontal filter rail'
   )
 })
 
+test('marketplace quick filters serialize popovers and route-changing selections', () => {
+  assert.match(
+    vehicleSearchExperienceSource,
+    /const \[quickFilterPlacement, setQuickFilterPlacement\] = useState<QuickFilterPlacement \| null>\(null\)/,
+  )
+  assert.match(
+    vehicleSearchExperienceSource,
+    /if \(desktopFilterMenu !== menu \|\| quickFilterPlacement !== placement\) return null/,
+  )
+  assert.match(
+    vehicleSearchExperienceSource,
+    /function afterQuickFilterMenuCloses\(update: \(\) => void\) \{\s*closeQuickFilterMenu\(\)\s*window\.requestAnimationFrame\(update\)\s*\}/,
+  )
+  assert.match(
+    vehicleSearchExperienceSource,
+    /afterQuickFilterMenuCloses\(\(\) => \{[\s\S]*setSelectedCategories\(next\)[\s\S]*\}\)/,
+  )
+  assert.match(
+    vehicleSearchExperienceSource,
+    /afterQuickFilterMenuCloses\(\(\) => \{[\s\S]*setMode\(nextMode\)[\s\S]*\}\)/,
+  )
+  assert.doesNotMatch(
+    vehicleSearchExperienceSource,
+    /document\.head\.(appendChild|removeChild)|new MutationObserver\(syncMetadata\)|duplicates\.forEach\(\(element\) => element\.remove\(\)\)/,
+  )
+})
+
 test('marketplace range filters contain pointer gestures with pointer capture', () => {
   const rangeFilterSource = vehicleSearchExperienceSource.slice(
     vehicleSearchExperienceSource.indexOf('function RangeFilter('),
