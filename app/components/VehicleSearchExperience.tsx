@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode, WheelEvent as ReactWheelEvent } from 'react'
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, WheelEvent as ReactWheelEvent } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
@@ -2381,12 +2381,7 @@ export default function VehicleSearchExperience({
         className={wrapperClassName}
       >
         <div className={`flex h-full min-w-0 items-center gap-2 ${placement === 'mobile' ? 'relative top-[3px]' : ''}`}>
-          <div
-            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
-            onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
-            onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
-          >
-          <div className={`${placement === 'mobile' ? 'sticky left-0 z-20 bg-white pr-1' : ''} relative shrink-0`}>
+          <div data-marketplace-filter-trigger className="relative z-20 shrink-0 bg-white">
             <button
               type="button"
               onClick={() => {
@@ -2418,6 +2413,13 @@ export default function VehicleSearchExperience({
               ) : null}
             </button>
           </div>
+
+          <div
+            data-marketplace-filter-rail
+            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
+            onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
+            onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
+          >
 
           <div className="relative order-10 shrink-0">
             {desktopMenuButton('mode', modeLabel, false)}
@@ -3964,7 +3966,7 @@ function RangeFilter({
   startLabel?: string
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const [activeHandle, setActiveHandle] = useState<'min' | 'max' | null>(null)
+  const activeHandleRef = useRef<'min' | 'max' | null>(null)
   const parsedMin = parseOptionalNumber(minValue)
   const parsedMax = parseOptionalNumber(maxValue)
   const safeMinLimit = Math.min(minLimit, maxLimit)
@@ -4008,22 +4010,12 @@ function RangeFilter({
     }
   }, [normalizeMaxChange, normalizeMinChange, valueFromClientX])
 
-  useEffect(() => {
-    if (!activeHandle) return
-    const handlePointerMove = (event: PointerEvent) => {
-      event.preventDefault()
-      updateHandleFromClientX(activeHandle, event.clientX)
+  const finishRangeDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    activeHandleRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    const handlePointerUp = () => setActiveHandle(null)
-    window.addEventListener('pointermove', handlePointerMove, { passive: false })
-    window.addEventListener('pointerup', handlePointerUp)
-    window.addEventListener('pointercancel', handlePointerUp)
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-      window.removeEventListener('pointercancel', handlePointerUp)
-    }
-  }, [activeHandle, lowerValue, upperValue, safeMinLimit, safeMaxLimit, step, updateHandleFromClientX])
+  }, [])
 
   return (
     <section className="border-b border-[#edf1f6] pb-4 last:border-b-0 sm:col-span-2">
@@ -4046,10 +4038,27 @@ function RangeFilter({
         ref={trackRef}
         className="relative h-9 touch-none"
         onPointerDown={(event) => {
+          const handleTarget = (event.target as HTMLElement).closest<HTMLElement>('[data-range-handle]')
           const nextValue = valueFromClientX(event.clientX)
-          const nextHandle = Math.abs(nextValue - lowerValue) <= Math.abs(nextValue - upperValue) ? 'min' : 'max'
-          setActiveHandle(nextHandle)
+          const nextHandle = handleTarget?.dataset.rangeHandle === 'max'
+            ? 'max'
+            : handleTarget?.dataset.rangeHandle === 'min'
+              ? 'min'
+              : Math.abs(nextValue - lowerValue) <= Math.abs(nextValue - upperValue) ? 'min' : 'max'
+          activeHandleRef.current = nextHandle
+          event.currentTarget.setPointerCapture(event.pointerId)
           updateHandleFromClientX(nextHandle, event.clientX)
+        }}
+        onPointerMove={(event) => {
+          const activeHandle = activeHandleRef.current
+          if (!activeHandle) return
+          event.preventDefault()
+          updateHandleFromClientX(activeHandle, event.clientX)
+        }}
+        onPointerUp={finishRangeDrag}
+        onPointerCancel={finishRangeDrag}
+        onLostPointerCapture={() => {
+          activeHandleRef.current = null
         }}
       >
         <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
@@ -4062,10 +4071,7 @@ function RangeFilter({
           aria-valuemax={upperValue}
           aria-valuenow={lowerValue}
           role="slider"
-          onPointerDown={(event) => {
-            event.stopPropagation()
-            setActiveHandle('min')
-          }}
+          data-range-handle="min"
           onKeyDown={(event) => handleRangeHandleKeyDown(event, lowerValue, step, safeMinLimit, upperValue, normalizeMinChange)}
         />
         <button
@@ -4077,10 +4083,7 @@ function RangeFilter({
           aria-valuemax={safeMaxLimit}
           aria-valuenow={upperValue}
           role="slider"
-          onPointerDown={(event) => {
-            event.stopPropagation()
-            setActiveHandle('max')
-          }}
+          data-range-handle="max"
           onKeyDown={(event) => handleRangeHandleKeyDown(event, upperValue, step, lowerValue, safeMaxLimit, normalizeMaxChange)}
         />
       </div>

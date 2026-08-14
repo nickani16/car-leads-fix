@@ -366,6 +366,35 @@ test('marketplace mobile filter panel always opens fullscreen', () => {
   assert.doesNotMatch(vehicleSearchExperienceSource, /h-\[min\(88vh,820px\)\]/)
 })
 
+test('marketplace quick filter trigger stays outside the horizontal filter rail', () => {
+  const triggerIndex = vehicleSearchExperienceSource.indexOf('data-marketplace-filter-trigger')
+  const railIndex = vehicleSearchExperienceSource.indexOf('data-marketplace-filter-rail')
+
+  assert.ok(triggerIndex > -1, 'filter trigger marker should exist')
+  assert.ok(railIndex > triggerIndex, 'filter trigger must render before the scrollable rail')
+  assert.match(
+    vehicleSearchExperienceSource.slice(railIndex, railIndex + 320),
+    /min-w-0 flex-1 overflow-x-auto/,
+  )
+  assert.doesNotMatch(
+    vehicleSearchExperienceSource.slice(triggerIndex, railIndex),
+    /sticky left-0/,
+  )
+})
+
+test('marketplace range filters contain pointer gestures with pointer capture', () => {
+  const rangeFilterSource = vehicleSearchExperienceSource.slice(
+    vehicleSearchExperienceSource.indexOf('function RangeFilter('),
+    vehicleSearchExperienceSource.indexOf('function FilterSelect('),
+  )
+
+  assert.match(rangeFilterSource, /activeHandleRef = useRef/)
+  assert.match(rangeFilterSource, /setPointerCapture\(event\.pointerId\)/)
+  assert.match(rangeFilterSource, /releasePointerCapture\(event\.pointerId\)/)
+  assert.match(rangeFilterSource, /onLostPointerCapture/)
+  assert.doesNotMatch(rangeFilterSource, /window\.addEventListener\('pointermove'/)
+})
+
 test('marketplace cards and listing detail show stable rounded offer status', () => {
   assert.match(vehicleSearchExperienceSource, /px-2 py-0\.5 text-\[11px\][\s\S]*\{offerBadge\.label\}[\s\S]*line-clamp-1 font-semibold/)
   assert.match(vehicleSearchExperienceSource, /truncate rounded-full bg-\[#f2f4f7\]/)
