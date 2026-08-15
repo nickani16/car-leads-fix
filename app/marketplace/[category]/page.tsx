@@ -336,6 +336,7 @@ export default async function MarketplaceCategoryPage({
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,
+        description: listing.description,
         offerType: normalizeListingOfferType(listing.offer_type),
         leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
           ? listing.lease_data as Record<string, unknown>

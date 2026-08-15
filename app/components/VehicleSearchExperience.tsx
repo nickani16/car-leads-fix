@@ -14,7 +14,6 @@ import {
   Check,
   Columns2,
   Download,
-  Expand,
   Globe2,
   Heart,
   Layers,
@@ -31,6 +30,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
 import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
@@ -69,6 +69,7 @@ import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
+type DesktopMarketplaceView = 'map' | 'list'
 type QuickFilterPlacement = 'desktop' | 'mobile'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
@@ -209,6 +210,7 @@ export type VehicleSearchListing = {
   condition: string | null
   color: string | null
   equipment: string | null
+  description?: string | null
   offerType?: 'sale' | 'lease' | 'sale_and_lease' | null
   leaseData?: Record<string, unknown> | null
   insuranceOffers?: ListingInsuranceOffer[] | null
@@ -1024,6 +1026,7 @@ export default function VehicleSearchExperience({
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>('map')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
   const categoryRouteSyncArmedRef = useRef(false)
   const seoRouteSyncArmedRef = useRef(false)
@@ -2752,8 +2755,8 @@ export default function VehicleSearchExperience({
 
         {renderDesktopFilterBar('desktop')}
 
-        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
+        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'min-[1120px]:!grid-cols-1' : ''}`}>
+          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${desktopMarketplaceView === 'list' ? 'min-[1120px]:border-r-0' : ''} ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
                 <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[90] w-full max-w-full overflow-visible border-y border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:border-t-0`}>
@@ -2922,20 +2925,30 @@ export default function VehicleSearchExperience({
                   )}
                 </p>
                 <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
-                <button
-                  type="button"
-                  onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
-                    resultsLayout === 'split'
-                      ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                      : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
-                  }`}
-                  aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
-                  title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
-                >
-                  {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
-                </button>
-                <label className="relative block w-[108px] shrink-0 sm:w-auto">
+                  {desktopMarketplaceView === 'list' ? (
+                    <button
+                      type="button"
+                      onClick={() => setDesktopMarketplaceView('map')}
+                      className="hidden h-10 items-center justify-center gap-2 rounded-[8px] border border-[#0866ff] bg-white px-4 text-[13px] font-semibold text-[#0866ff] transition hover:bg-[#eef5ff] min-[1120px]:inline-flex"
+                    >
+                      <MapPin className="h-4 w-4" aria-hidden="true" />
+                      {translatePublic(locale, 'Map')}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
+                    className={`h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${desktopMarketplaceView === 'list' ? 'grid min-[1120px]:hidden' : 'grid'} ${
+                      resultsLayout === 'split'
+                        ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                        : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
+                    }`}
+                    aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
+                    title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
+                  >
+                    {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                  </button>
+                  <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
                     value={sortBy}
@@ -2949,26 +2962,46 @@ export default function VehicleSearchExperience({
                     ))}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
-                </label>
+                  </label>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}>
-                  {filteredListings.map((listing) => (
-                    <VehicleResultCard
-                      key={listing.id}
-                      listing={listing}
-                      locale={locale}
-                      compareActive={compareIds.includes(listing.id)}
-                      onCompare={() => toggleCompare(listing.id)}
-                      onBeforeNavigate={rememberSearchBeforeListingNavigation}
-                      layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
-                    />
-                  ))}
-                </div>
+                <>
+                  {desktopMarketplaceView === 'list' ? (
+                    <ol className="hidden space-y-4 bg-[#f7f9fc] px-5 py-5 min-[1120px]:block 2xl:px-7 2xl:py-6">
+                      {filteredListings.map((listing) => (
+                        <li key={listing.id}>
+                          <MarketplaceDesktopListingRow
+                            listing={listing}
+                            locale={locale}
+                            offerBadge={listingOfferBadge(locale, listing)}
+                            insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)}
+                            equipmentChips={listingEquipmentChips(listing.equipment)}
+                            compareActive={compareIds.includes(listing.id)}
+                            onCompare={() => toggleCompare(listing.id)}
+                            onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                          />
+                        </li>
+                      ))}
+                    </ol>
+                  ) : null}
+                  <div className={`${desktopMarketplaceView === 'list' ? 'min-[1120px]:hidden' : ''} ${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}`}>
+                    {filteredListings.map((listing) => (
+                      <VehicleResultCard
+                        key={listing.id}
+                        listing={listing}
+                        locale={locale}
+                        compareActive={compareIds.includes(listing.id)}
+                        onCompare={() => toggleCompare(listing.id)}
+                        onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                        layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
+                      />
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="px-6 py-14 sm:px-8 sm:py-16">
                   <div className="mx-auto flex max-w-[520px] flex-col items-center text-center">
@@ -3275,13 +3308,12 @@ export default function VehicleSearchExperience({
             </div>
           ) : null}
 
-          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden`}>
+          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden ${desktopMarketplaceView === 'list' ? 'min-[1120px]:!hidden' : ''}`}>
             <VehicleSearchMap
               listings={filteredListings}
               country={primaryMapCountry}
               locale={locale}
               searchPlaceholder={searchPlaceholder}
-              query={query}
               onQueryChange={(value) => {
                 setSearchInput(value)
                 setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, value))
@@ -3301,16 +3333,13 @@ export default function VehicleSearchExperience({
               onOpenFilters={() => {
                 setFiltersOpen((open) => !open)
               }}
-              onSaveSearch={saveCurrentSearch}
               onBeforeListingNavigate={rememberSearchBeforeListingNavigation}
-              saveSearchButtonLabel={saveSearchButtonLabel}
-              saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
-              saveSearchBusy={savingSearch}
               smartSearchSuggestions={mobileMapSmartSearch.suggestions}
               smartSearchLoading={mobileMapSmartSearch.loading}
               smartSearchSearched={mobileMapSmartSearch.searched}
               onSearchFocusChange={setMobileMapSearchFocused}
               onSmartSearchSelect={selectMarketplaceSuggestion}
+              onShowDesktopList={() => setDesktopMarketplaceView('list')}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
@@ -4520,7 +4549,6 @@ function VehicleSearchMap({
   country,
   locale,
   searchPlaceholder,
-  query,
   onQueryChange,
   searchInput,
   selectedSearchSuggestions,
@@ -4529,22 +4557,18 @@ function VehicleSearchMap({
   mobileOverlay = false,
   onCloseMobileMap,
   onOpenFilters,
-  onSaveSearch,
   onBeforeListingNavigate,
-  saveSearchButtonLabel,
-  saveSearchActive,
-  saveSearchBusy,
   smartSearchSuggestions,
   smartSearchLoading,
   smartSearchSearched,
   onSearchFocusChange,
   onSmartSearchSelect,
+  onShowDesktopList,
 }: {
   listings: VehicleSearchListing[]
   country: string
   locale: PublicLocale
   searchPlaceholder: string
-  query: string
   onQueryChange: (value: string) => void
   searchInput: string
   selectedSearchSuggestions: SelectedSearchSuggestion[]
@@ -4553,16 +4577,13 @@ function VehicleSearchMap({
   mobileOverlay?: boolean
   onCloseMobileMap?: () => void
   onOpenFilters: () => void
-  onSaveSearch: () => void
   onBeforeListingNavigate: () => void
-  saveSearchButtonLabel: string
-  saveSearchActive: boolean
-  saveSearchBusy: boolean
   smartSearchSuggestions: VehicleSmartSearchSuggestion[]
   smartSearchLoading: boolean
   smartSearchSearched: boolean
   onSearchFocusChange: (focused: boolean) => void
   onSmartSearchSelect: (suggestion: VehicleSmartSearchSuggestion) => void | boolean
+  onShowDesktopList: () => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -4570,7 +4591,6 @@ function VehicleSearchMap({
   const [mapReady, setMapReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
-  const [fullscreen, setFullscreen] = useState(false)
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
   const [selectedListingGroup, setSelectedListingGroup] = useState<VehicleSearchListing[]>([])
   const [selectedListingIndex, setSelectedListingIndex] = useState(0)
@@ -4627,22 +4647,6 @@ function VehicleSearchMap({
   }, [country, mapLayer])
 
   useEffect(() => {
-    if (!fullscreen) return undefined
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [fullscreen])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      mapRef.current?.resize()
-    }, 80)
-    return () => window.clearTimeout(timer)
-  }, [fullscreen])
-
-  useEffect(() => {
     let cancelled = false
 
     async function syncMarkers() {
@@ -4684,7 +4688,7 @@ function VehicleSearchMap({
   }, [country, geoBounds, mapListings, mapReady])
 
   return (
-    <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
+    <div className={`${mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
       <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
@@ -4703,7 +4707,7 @@ function VehicleSearchMap({
         </button>
       ) : null}
       <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      {mobileOverlay && !fullscreen ? (
+      {mobileOverlay ? (
         <>
           <div className="absolute inset-x-0 top-0 z-20 bg-white/96 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] shadow-[0_1px_12px_rgba(16,24,40,.14)] backdrop-blur">
             <div className="flex items-center gap-2">
@@ -4794,72 +4798,20 @@ function VehicleSearchMap({
             {translatePublic(locale, 'Show list')}
           </button>
         </>
-      ) : fullscreen ? (
-        <>
-          <div className="absolute inset-x-0 top-0 z-20 flex min-h-[64px] items-center gap-2 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:gap-3 sm:px-4">
-            <label className="relative flex h-[50px] min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085]">
-              <BrandLogo compact underline={false} />
-              <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
-              <input
-                value={query}
-                onChange={(event) => onQueryChange(event.target.value)}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
-              />
-              <Search className="h-5 w-5 shrink-0 text-[#101828]" />
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setFullscreen(false)
-                window.setTimeout(onOpenFilters, 0)
-              }}
-              style={{ fontWeight: 500 }}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff]"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">{translatePublic(locale, 'Search filters')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={onSaveSearch}
-              disabled={saveSearchBusy}
-              style={{ fontWeight: 500 }}
-              className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-[14px] font-[500] text-white shadow-sm transition sm:inline-flex ${
-                saveSearchActive ? 'bg-[#0866ff] hover:bg-[#0757da]' : 'bg-[#d1d3d8]'
-              }`}
-            >
-              <Bookmark className="h-4 w-4" />
-              {saveSearchButtonLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFullscreen(false)}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0757da]"
-            >
-              <List className="h-4 w-4" />
-              <span className="hidden sm:inline">{translatePublic(locale, 'Show list')}</span>
-            </button>
-          </div>
-          <div className="absolute right-4 top-[78px] z-20 flex gap-2">
-            <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
-          </div>
-        </>
       ) : (
         <div className="absolute right-4 top-4 z-20 flex gap-2">
           <button
             type="button"
-            onClick={() => setFullscreen(true)}
-            className="inline-flex h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
+            onClick={onShowDesktopList}
+            className="hidden h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da] min-[1120px]:inline-flex"
           >
-            <Expand className="h-4 w-4" />
-            {translatePublic(locale, 'Fullscreen')}
+            <List className="h-4 w-4" />
+            {translatePublic(locale, 'Show list')}
           </button>
           <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
         </div>
       )}
-      <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
+      <div className={`${mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
         {listings.length.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles in map view', 'fordon i kartvyn', 'Fahrzeuge in der Kartenansicht')}
       </div>
       {selectedListing ? (
@@ -5399,6 +5351,7 @@ function mapApiListingToVehicleSearchListing(
     condition: stringOrNull(listing.condition),
     color: stringOrNull(listing.color),
     equipment: stringOrNull(listing.equipment),
+    description: stringOrNull(listing.description),
     offerType: listing.offer_type === 'lease' || listing.offer_type === 'sale_and_lease' || listing.offer_type === 'sale'
       ? listing.offer_type
       : null,
