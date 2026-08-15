@@ -61,10 +61,35 @@ type RegistrationErrorCode =
   | 'register_email_unverified'
   | 'register_invalid_business'
   | 'register_invalid_private'
+  | 'register_invalid_email'
+  | 'register_invalid_name'
+  | 'register_invalid_birth_date'
+  | 'register_invalid_country'
+  | 'register_invalid_phone'
+  | 'register_invalid_address'
+  | 'register_invalid_national_id'
+  | 'register_invalid_company'
+  | 'register_terms_required'
   | 'register_profile_exists'
   | 'register_failed'
 
-const registrationErrorCopy: Record<PublicLocale, Record<RegistrationErrorCode, string>> = {
+type RegistrationFieldErrorCode = Extract<
+  RegistrationErrorCode,
+  | 'register_invalid_email'
+  | 'register_invalid_name'
+  | 'register_invalid_birth_date'
+  | 'register_invalid_country'
+  | 'register_invalid_phone'
+  | 'register_invalid_address'
+  | 'register_invalid_national_id'
+  | 'register_invalid_company'
+  | 'register_terms_required'
+>
+
+const registrationErrorCopy: Record<
+  PublicLocale,
+  Record<Exclude<RegistrationErrorCode, RegistrationFieldErrorCode>, string>
+> = {
   sv: {
     register_auth_required: 'Logga in med e-postkoden innan du skapar kontot.',
     register_email_unverified: 'Bekräfta din e-postadress med koden innan du skapar kontot.',
@@ -163,6 +188,159 @@ const registrationErrorCopy: Record<PublicLocale, Record<RegistrationErrorCode, 
   },
 }
 
+const registrationFieldErrorCopy: Record<
+  PublicLocale,
+  Record<RegistrationFieldErrorCode, string>
+> = {
+  sv: {
+    register_invalid_email: 'Kontrollera e-postadressen.',
+    register_invalid_name: 'Ange både förnamn och efternamn.',
+    register_invalid_birth_date: 'Kontrollera födelsedatumet. Du måste vara minst 18 år.',
+    register_invalid_country: 'Välj ett giltigt land.',
+    register_invalid_phone: 'Kontrollera telefonnumret och att landskoden stämmer.',
+    register_invalid_address: 'Fyll i gatuadress, postnummer och ort.',
+    register_invalid_national_id: 'Kontrollera personnumret. Använd ÅÅMMDD-XXXX eller YYYYMMDD-XXXX.',
+    register_invalid_company: 'Fyll i företagsnamn och organisations- eller VAT-nummer.',
+    register_terms_required: 'Godkänn villkoren för att skapa kontot.',
+  },
+  en: {
+    register_invalid_email: 'Check the email address.',
+    register_invalid_name: 'Enter both your first name and last name.',
+    register_invalid_birth_date: 'Check the date of birth. You must be at least 18 years old.',
+    register_invalid_country: 'Choose a valid country.',
+    register_invalid_phone: 'Check the phone number and country code.',
+    register_invalid_address: 'Enter your street address, postal code and city.',
+    register_invalid_national_id: 'Check the national identity number and use your country’s official format.',
+    register_invalid_company: 'Enter the company name and registration or VAT number.',
+    register_terms_required: 'Accept the terms to create the account.',
+  },
+  de: {
+    register_invalid_email: 'Überprüfen Sie die E-Mail-Adresse.',
+    register_invalid_name: 'Geben Sie Vor- und Nachnamen ein.',
+    register_invalid_birth_date: 'Überprüfen Sie das Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.',
+    register_invalid_country: 'Wählen Sie ein gültiges Land.',
+    register_invalid_phone: 'Überprüfen Sie Telefonnummer und Ländervorwahl.',
+    register_invalid_address: 'Geben Sie Straße, Postleitzahl und Ort ein.',
+    register_invalid_national_id: 'Überprüfen Sie die Identifikationsnummer im amtlichen Format Ihres Landes.',
+    register_invalid_company: 'Geben Sie Firmenname und Handelsregister- oder Umsatzsteuer-ID ein.',
+    register_terms_required: 'Akzeptieren Sie die Bedingungen, um das Konto zu erstellen.',
+  },
+  at: {
+    register_invalid_email: 'Überprüfen Sie die E-Mail-Adresse.',
+    register_invalid_name: 'Geben Sie Vor- und Nachnamen ein.',
+    register_invalid_birth_date: 'Überprüfen Sie das Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.',
+    register_invalid_country: 'Wählen Sie ein gültiges Land.',
+    register_invalid_phone: 'Überprüfen Sie Telefonnummer und Ländervorwahl.',
+    register_invalid_address: 'Geben Sie Straße, Postleitzahl und Ort ein.',
+    register_invalid_national_id: 'Überprüfen Sie die Identifikationsnummer im amtlichen Format Ihres Landes.',
+    register_invalid_company: 'Geben Sie Firmenname und Firmenbuch- oder Umsatzsteuer-ID ein.',
+    register_terms_required: 'Akzeptieren Sie die Bedingungen, um das Konto zu erstellen.',
+  },
+  be: {
+    register_invalid_email: 'Controleer het e-mailadres.',
+    register_invalid_name: 'Vul zowel je voornaam als achternaam in.',
+    register_invalid_birth_date: 'Controleer je geboortedatum. Je moet minstens 18 jaar zijn.',
+    register_invalid_country: 'Kies een geldig land.',
+    register_invalid_phone: 'Controleer het telefoonnummer en de landcode.',
+    register_invalid_address: 'Vul straat, postcode en plaats in.',
+    register_invalid_national_id: 'Controleer het nationale identificatienummer volgens het officiële formaat van je land.',
+    register_invalid_company: 'Vul bedrijfsnaam en ondernemings- of btw-nummer in.',
+    register_terms_required: 'Accepteer de voorwaarden om het account aan te maken.',
+  },
+  fr: {
+    register_invalid_email: 'Vérifiez l’adresse e-mail.',
+    register_invalid_name: 'Saisissez votre prénom et votre nom.',
+    register_invalid_birth_date: 'Vérifiez la date de naissance. Vous devez avoir au moins 18 ans.',
+    register_invalid_country: 'Choisissez un pays valide.',
+    register_invalid_phone: 'Vérifiez le numéro de téléphone et l’indicatif du pays.',
+    register_invalid_address: 'Saisissez l’adresse, le code postal et la ville.',
+    register_invalid_national_id: 'Vérifiez le numéro d’identité selon le format officiel de votre pays.',
+    register_invalid_company: 'Saisissez le nom de l’entreprise et son numéro d’immatriculation ou de TVA.',
+    register_terms_required: 'Acceptez les conditions pour créer le compte.',
+  },
+  es: {
+    register_invalid_email: 'Comprueba la dirección de correo electrónico.',
+    register_invalid_name: 'Introduce el nombre y los apellidos.',
+    register_invalid_birth_date: 'Comprueba la fecha de nacimiento. Debes tener al menos 18 años.',
+    register_invalid_country: 'Elige un país válido.',
+    register_invalid_phone: 'Comprueba el número de teléfono y el prefijo del país.',
+    register_invalid_address: 'Introduce la dirección, el código postal y la localidad.',
+    register_invalid_national_id: 'Comprueba el documento de identidad con el formato oficial de tu país.',
+    register_invalid_company: 'Introduce la empresa y el número de registro o IVA.',
+    register_terms_required: 'Acepta las condiciones para crear la cuenta.',
+  },
+  it: {
+    register_invalid_email: 'Controlla l’indirizzo e-mail.',
+    register_invalid_name: 'Inserisci nome e cognome.',
+    register_invalid_birth_date: 'Controlla la data di nascita. Devi avere almeno 18 anni.',
+    register_invalid_country: 'Scegli un paese valido.',
+    register_invalid_phone: 'Controlla il numero di telefono e il prefisso internazionale.',
+    register_invalid_address: 'Inserisci indirizzo, codice postale e città.',
+    register_invalid_national_id: 'Controlla il numero identificativo nel formato ufficiale del tuo paese.',
+    register_invalid_company: 'Inserisci ragione sociale e numero di registrazione o partita IVA.',
+    register_terms_required: 'Accetta le condizioni per creare l’account.',
+  },
+  pl: {
+    register_invalid_email: 'Sprawdź adres e-mail.',
+    register_invalid_name: 'Podaj imię i nazwisko.',
+    register_invalid_birth_date: 'Sprawdź datę urodzenia. Musisz mieć co najmniej 18 lat.',
+    register_invalid_country: 'Wybierz prawidłowy kraj.',
+    register_invalid_phone: 'Sprawdź numer telefonu i kod kraju.',
+    register_invalid_address: 'Podaj ulicę, kod pocztowy i miejscowość.',
+    register_invalid_national_id: 'Sprawdź krajowy numer identyfikacyjny w oficjalnym formacie swojego kraju.',
+    register_invalid_company: 'Podaj nazwę firmy oraz numer rejestracyjny lub VAT.',
+    register_terms_required: 'Zaakceptuj warunki, aby utworzyć konto.',
+  },
+  nl: {
+    register_invalid_email: 'Controleer het e-mailadres.',
+    register_invalid_name: 'Vul zowel je voornaam als achternaam in.',
+    register_invalid_birth_date: 'Controleer je geboortedatum. Je moet minstens 18 jaar zijn.',
+    register_invalid_country: 'Kies een geldig land.',
+    register_invalid_phone: 'Controleer het telefoonnummer en de landcode.',
+    register_invalid_address: 'Vul straat, postcode en plaats in.',
+    register_invalid_national_id: 'Controleer het nationale identificatienummer volgens het officiële formaat van je land.',
+    register_invalid_company: 'Vul bedrijfsnaam en KvK- of btw-nummer in.',
+    register_terms_required: 'Accepteer de voorwaarden om het account aan te maken.',
+  },
+  fi: {
+    register_invalid_email: 'Tarkista sähköpostiosoite.',
+    register_invalid_name: 'Anna sekä etu- että sukunimi.',
+    register_invalid_birth_date: 'Tarkista syntymäaika. Sinun on oltava vähintään 18-vuotias.',
+    register_invalid_country: 'Valitse kelvollinen maa.',
+    register_invalid_phone: 'Tarkista puhelinnumero ja maatunnus.',
+    register_invalid_address: 'Anna katuosoite, postinumero ja paikkakunta.',
+    register_invalid_national_id: 'Tarkista henkilötunnus maasi virallisen muodon mukaisesti.',
+    register_invalid_company: 'Anna yrityksen nimi sekä rekisteri- tai ALV-numero.',
+    register_terms_required: 'Hyväksy ehdot tilin luomiseksi.',
+  },
+  da: {
+    register_invalid_email: 'Kontrollér e-mailadressen.',
+    register_invalid_name: 'Angiv både fornavn og efternavn.',
+    register_invalid_birth_date: 'Kontrollér fødselsdatoen. Du skal være mindst 18 år.',
+    register_invalid_country: 'Vælg et gyldigt land.',
+    register_invalid_phone: 'Kontrollér telefonnummer og landekode.',
+    register_invalid_address: 'Angiv adresse, postnummer og by.',
+    register_invalid_national_id: 'Kontrollér det nationale identitetsnummer i dit lands officielle format.',
+    register_invalid_company: 'Angiv virksomhedsnavn og registrerings- eller momsnummer.',
+    register_terms_required: 'Acceptér vilkårene for at oprette kontoen.',
+  },
+}
+
+const nationalIdPlaceholderCopy: Record<PublicLocale, string> = {
+  sv: 'Ange enligt landets officiella format',
+  en: 'Use your country’s official format',
+  de: 'Amtliches Format Ihres Landes verwenden',
+  at: 'Amtliches Format Ihres Landes verwenden',
+  be: 'Gebruik het officiële formaat van je land',
+  fr: 'Utilisez le format officiel de votre pays',
+  es: 'Usa el formato oficial de tu país',
+  it: 'Usa il formato ufficiale del tuo paese',
+  pl: 'Użyj oficjalnego formatu swojego kraju',
+  nl: 'Gebruik het officiële formaat van je land',
+  fi: 'Käytä maasi virallista muotoa',
+  da: 'Brug dit lands officielle format',
+}
+
 const birthDateGuidanceCopy: Record<
   PublicLocale,
   { birthDatePrivateHelper: string; birthDateBusinessHelper: string; birthDateRequired: string }
@@ -201,6 +379,16 @@ function normalizePhoneForSubmit(value: string, countryCode: string) {
   if (compact.startsWith('+')) return compact
   const dialCode = euDialCodes[countryCode] || ''
   return dialCode ? `${dialCode}${compact.replace(/^0+/, '')}` : compact
+}
+
+function localizedRegistrationErrorCode(
+  locale: PublicLocale,
+  code: RegistrationErrorCode | undefined,
+) {
+  if (!code) return null
+  const general = registrationErrorCopy[locale] as Partial<Record<RegistrationErrorCode, string>>
+  const fields = registrationFieldErrorCopy[locale] as Partial<Record<RegistrationErrorCode, string>>
+  return general[code] || fields[code] || null
 }
 
 export default function RegisterForm({
@@ -273,12 +461,13 @@ export default function RegisterForm({
         locale,
       }),
     })
-    const result = (await response.json()) as { error?: string; code?: string }
+    const result = (await response.json()) as { error?: string; code?: string; field?: string }
     if (!response.ok) {
       const codedError = result.code as RegistrationErrorCode | undefined
+      const localizedCodeError = localizedRegistrationErrorCode(locale, codedError)
       setError(
-        codedError && registrationErrorCopy[locale][codedError]
-          ? registrationErrorCopy[locale][codedError]
+        localizedCodeError
+          ? localizedCodeError
           : localizedAccountError(locale, result, copy.createError),
       )
       setLoading(false)
@@ -313,7 +502,7 @@ export default function RegisterForm({
               }`}
             >
               <Icon className="h-5 w-5" />
-              <strong className="text-sm">{label}</strong>
+              <strong className="text-sm font-semibold">{label}</strong>
               <span className="text-xs font-normal leading-5 text-[#667085]">{description}</span>
             </button>
           ))}
@@ -341,6 +530,7 @@ export default function RegisterForm({
               name="nationalId"
               label={copy.nationalId}
               autoComplete="off"
+              placeholder={countryCode === 'SE' ? 'ÅÅMMDD-XXXX eller YYYYMMDD-XXXX' : nationalIdPlaceholderCopy[locale]}
               helper={copy.nationalIdHelper}
               required
             />
@@ -522,7 +712,7 @@ function Field({
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <input
         {...inputProps}
-        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
@@ -581,7 +771,7 @@ function PhoneField({
           onChange={(event) => onPhoneChange(event.target.value)}
           placeholder={`${activeDialCode} 70 123 45 67`}
           required
-          className="h-13 min-w-0 w-full px-4 outline-none"
+          className="h-13 min-w-0 w-full px-4 text-[#101828] outline-none placeholder:font-normal placeholder:text-[#7b8494]"
         />
       </div>
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}

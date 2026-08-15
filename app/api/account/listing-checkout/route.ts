@@ -8,6 +8,7 @@ import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 import { BUSINESS_INVOICE_DAYS_UNTIL_DUE } from '@/lib/billing/business-invoice-terms'
 import {
+  currencyForMarket,
   getBillingProduct,
   legacyListingPackageToProductKey,
   normalizeBillingMarket,
@@ -15,6 +16,7 @@ import {
   productToLegacyListingPackage,
 } from '@/lib/billing/product-catalog'
 import { resolveBillingPrice } from '@/lib/billing/price-lookup'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -90,32 +92,66 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Företagskonton använder abonnemang och kan inte köpa privata annonspaket.' }, { status: 403 })
   }
 
+  const businessScope = profile.account_type === 'business' && product.kind === 'subscription'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const subscriptionUserId = businessScope?.subscriptionUserId || user.id
+  const subscriptionBusinessId = businessScope?.companyId || body.businessId || null
+
   if (product.kind === 'subscription' && product.businessPlan === 'free') {
     if (profile.account_type !== 'business' || profile.business_verification_status !== 'verified' || !['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
       return NextResponse.json({ error: 'Företaget måste vara godkänt innan Free kan aktiveras.' }, { status: 403 })
     }
-    const { data: existingSubscription } = await admin
+    const { data: existingSubscription, error: existingSubscriptionError } = await admin
       .from('business_subscriptions')
-      .select('id,stripe_subscription_id,status')
-      .eq('user_id', user.id)
+      .select('id,plan_key,stripe_subscription_id,status')
+      .eq('user_id', subscriptionUserId)
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-    if (existingSubscription?.stripe_subscription_id && ['active', 'trialing', 'past_due'].includes(String(existingSubscription.status || ''))) {
-      return NextResponse.json({ error: 'Avsluta eller ändra det betalda abonnemanget innan Free kan väljas.' }, { status: 409 })
+    if (existingSubscriptionError) {
+      return NextResponse.json({ error: 'Could not load the company subscription.' }, { status: 500 })
     }
+    if (existingSubscription?.stripe_subscription_id) {
+      try {
+        await getStripe().subscriptions.cancel(existingSubscription.stripe_subscription_id)
+      } catch (error) {
+        if (!isMissingStripeResource(error)) {
+          console.error('[listing-checkout] Could not cancel paid subscription before Free activation', {
+            subscriptionId: existingSubscription.stripe_subscription_id,
+            userId: subscriptionUserId,
+            error: error instanceof Error ? error.message : String(error),
+          })
+          return NextResponse.json({ error: 'The paid subscription could not be closed before Free was activated.' }, { status: 502 })
+        }
+      }
+    }
+    const now = new Date().toISOString()
     const freePayload = {
-      user_id: user.id,
-      business_id: body.businessId || null,
+      user_id: subscriptionUserId,
+      business_id: subscriptionBusinessId,
       product_key: product.productKey,
       market,
-      currency: 'sek',
+      currency: currencyForMarket(market),
       plan_key: 'free',
       active_listing_limit: 10,
       status: 'active',
       payment_status: 'not_required',
       manually_activated: false,
-      updated_at: new Date().toISOString(),
+      stripe_subscription_id: null,
+      current_period_start: null,
+      current_period_end: null,
+      next_billing_at: null,
+      cancel_at_period_end: false,
+      payment_warning_at: null,
+      grace_period_ends_at: null,
+      free_period_ends_at: null,
+      cancellation_requested_at: null,
+      cancellation_effective_at: null,
+      cancellation_reason: null,
+      cancelled_at: null,
+      dealer_lead_access_starts_at: null,
+      updated_at: now,
     }
     const { data: subscription, error: subscriptionError } = existingSubscription?.id
       ? await admin.from('business_subscriptions').update(freePayload).eq('id', existingSubscription.id).select('id,plan_key,status,active_listing_limit').single()
@@ -123,12 +159,27 @@ export async function POST(request: Request) {
     if (subscriptionError || !subscription) {
       return NextResponse.json({ error: subscriptionError?.message || 'Could not activate Free plan.' }, { status: 400 })
     }
-    await admin.from('marketplace_profiles').update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: new Date().toISOString() }).eq('user_id', user.id)
-    await admin.from('business_subscription_events').insert({ subscription_id: subscription.id, user_id: user.id, event_type: 'activated', to_plan: 'free' })
+    const profileActivation = admin
+      .from('marketplace_profiles')
+      .update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: now })
+    const { error: profileActivationError } = subscriptionBusinessId
+      ? await profileActivation.eq('company_id', subscriptionBusinessId)
+      : await profileActivation.eq('user_id', subscriptionUserId)
+    if (profileActivationError) {
+      return NextResponse.json({ error: 'Free was activated, but the company profile could not be updated.' }, { status: 500 })
+    }
+    await admin.from('business_subscription_events').insert({
+      subscription_id: subscription.id,
+      user_id: subscriptionUserId,
+      event_type: existingSubscription?.plan_key && existingSubscription.plan_key !== 'free' ? 'downgraded_to_free' : 'activated',
+      from_plan: existingSubscription?.plan_key || null,
+      to_plan: 'free',
+      metadata: { activated_by: user.id },
+    })
     await sendBusinessBillingEmail(admin, {
       deliveryKey: `business-welcome-${subscription.id}`,
       kind: 'welcome',
-      userId: user.id,
+      userId: subscriptionUserId,
       subscriptionId: subscription.id,
       planKey: 'free',
       activeListingLimit: 10,
@@ -250,8 +301,8 @@ export async function POST(request: Request) {
   const { data: order, error: orderError } = await admin
     .from('payment_orders')
     .insert({
-      user_id: user.id,
-      business_id: body.businessId || null,
+      user_id: product.kind === 'subscription' ? subscriptionUserId : user.id,
+      business_id: product.kind === 'subscription' ? subscriptionBusinessId : body.businessId || null,
       listing_id: listing?.id || null,
       product_key: product.productKey,
       market,
@@ -274,8 +325,8 @@ export async function POST(request: Request) {
   const checkoutLocale = requestedLocale
   const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title, checkoutLocale)
   const metadata = {
-    user_id: user.id,
-    business_id: body.businessId || '',
+    user_id: product.kind === 'subscription' ? subscriptionUserId : user.id,
+    business_id: product.kind === 'subscription' ? subscriptionBusinessId || '' : body.businessId || '',
     listing_id: listing?.id || '',
     product_key: product.productKey,
     market,
@@ -304,7 +355,7 @@ export async function POST(request: Request) {
       const { data: existingSubscription } = await admin
         .from('business_subscriptions')
         .select('stripe_customer_id')
-        .eq('user_id', user.id)
+        .eq('user_id', subscriptionUserId)
         .not('stripe_customer_id', 'is', null)
         .order('updated_at', { ascending: false })
         .limit(1)
@@ -316,8 +367,8 @@ export async function POST(request: Request) {
         name: profile.company_name || profile.email || user.email || undefined,
         preferred_locales: [invoiceLocale],
         metadata: {
-          user_id: user.id,
-          business_id: body.businessId || '',
+          user_id: subscriptionUserId,
+          business_id: subscriptionBusinessId || '',
         },
       })).id
       if (existingSubscription?.stripe_customer_id) {
@@ -326,8 +377,8 @@ export async function POST(request: Request) {
           name: profile.company_name || profile.email || user.email || undefined,
           preferred_locales: [invoiceLocale],
           metadata: {
-            user_id: user.id,
-            business_id: body.businessId || '',
+            user_id: subscriptionUserId,
+            business_id: subscriptionBusinessId || '',
           },
         })
       }
@@ -376,8 +427,8 @@ export async function POST(request: Request) {
         current_period_end?: number | null
       }
       const subscriptionPayload = {
-        user_id: user.id,
-        business_id: body.businessId || null,
+        user_id: subscriptionUserId,
+        business_id: subscriptionBusinessId,
         product_key: product.productKey,
         market,
         currency: price.currency,
@@ -403,7 +454,7 @@ export async function POST(request: Request) {
       }
 
       if (latestInvoice) {
-        await upsertBusinessInvoice(admin, latestInvoice, businessSubscription.id, user.id)
+        await upsertBusinessInvoice(admin, latestInvoice, businessSubscription.id, subscriptionUserId)
       }
       await admin
         .from('payment_orders')
@@ -424,10 +475,10 @@ export async function POST(request: Request) {
           business_onboarding_status: 'active',
           verification_updated_at: new Date().toISOString(),
         })
-        .eq('user_id', user.id)
+        .eq(subscriptionBusinessId ? 'company_id' : 'user_id', subscriptionBusinessId || subscriptionUserId)
       await admin.from('business_subscription_events').insert({
         subscription_id: businessSubscription.id,
-        user_id: user.id,
+        user_id: subscriptionUserId,
         event_type: 'invoice_subscription_created',
         to_plan: product.businessPlan,
         metadata: {
@@ -437,12 +488,13 @@ export async function POST(request: Request) {
           invoice_email_sent: true,
           days_until_due: BUSINESS_INVOICE_DAYS_UNTIL_DUE,
           bank_transfer_enabled: Boolean(bankTransferSettings),
+          activated_by: user.id,
         },
       })
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-welcome-${businessSubscription.id}`,
         kind: 'welcome',
-        userId: user.id,
+        userId: subscriptionUserId,
         subscriptionId: businessSubscription.id,
         planKey: product.businessPlan,
         activeListingLimit: product.activeListingLimit || null,
@@ -452,7 +504,7 @@ export async function POST(request: Request) {
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-invoice-ready-${latestInvoice.id}`,
         kind: 'invoice_ready',
-        userId: user.id,
+        userId: subscriptionUserId,
         subscriptionId: businessSubscription.id,
         invoiceId: latestInvoice.id,
         planKey: product.businessPlan,
@@ -1161,6 +1213,12 @@ function capitalize(value: string) {
 
 function stripeTimestampToIso(value?: number | null) {
   return typeof value === 'number' ? new Date(value * 1000).toISOString() : null
+}
+
+function isMissingStripeResource(error: unknown) {
+  if (!error || typeof error !== 'object') return false
+  const stripeError = error as { code?: string; raw?: { code?: string } }
+  return stripeError.code === 'resource_missing' || stripeError.raw?.code === 'resource_missing'
 }
 
 function toStripeInvoice(invoice: Stripe.Subscription['latest_invoice']) {

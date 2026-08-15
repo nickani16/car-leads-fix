@@ -29,10 +29,31 @@ test('registration uses the fast localized birth-date picker for private and bus
 test('registration localizes API failures instead of rendering raw server text', () => {
   assert.match(registerForm, /localizedAccountError\(locale, result, copy\.createError\)/)
   assert.doesNotMatch(registerForm, /setError\(result\.error/)
-  for (const code of ['register_auth_required', 'register_email_unverified', 'register_invalid_business', 'register_invalid_private', 'register_profile_exists', 'register_failed']) {
+  for (const code of [
+    'register_auth_required',
+    'register_email_unverified',
+    'register_invalid_email',
+    'register_invalid_name',
+    'register_invalid_birth_date',
+    'register_invalid_country',
+    'register_invalid_phone',
+    'register_invalid_address',
+    'register_invalid_national_id',
+    'register_invalid_company',
+    'register_terms_required',
+    'register_profile_exists',
+    'register_failed',
+  ]) {
     assert.match(registerRoute, new RegExp(`['"]${code}['"]`))
   }
-  assert.match(registerForm, /const registrationErrorCopy: Record<PublicLocale/)
+  assert.match(registerForm, /const registrationErrorCopy: Record</)
+  assert.match(registerForm, /const registrationFieldErrorCopy: Record</)
+})
+
+test('registration explains national identity format and keeps account labels at weight 600', () => {
+  assert.match(registerForm, /ÅÅMMDD-XXXX eller YYYYMMDD-XXXX/)
+  assert.match(registerForm, /placeholder:font-normal placeholder:text-\[#7b8494\]/)
+  assert.match(registerForm, /<strong className="text-sm font-semibold">\{label\}<\/strong>/)
 })
 
 test('registration renders localized legal links for every public market', () => {

@@ -21,11 +21,24 @@ const findCarsPageSource = readFileSync(
 
 test('desktop list view extends the current marketplace instead of restoring a parallel layout', () => {
   assert.match(experienceSource, /type DesktopMarketplaceView = 'map' \| 'list'/)
+  assert.match(experienceSource, /useState<DesktopMarketplaceView>\('map'\)/)
   assert.match(experienceSource, /desktopMarketplaceView === 'list'/)
+  assert.match(experienceSource, /data-marketplace-list-sidebar/)
   assert.match(experienceSource, /<MarketplaceDesktopListingRow/)
   assert.match(experienceSource, /onShowDesktopList=\{\(\) => setDesktopMarketplaceView\('list'\)\}/)
+  assert.match(experienceSource, /setDesktopMarketplaceView\('map'\)/)
   assert.match(experienceSource, /min-\[1120px\]:!hidden/)
   assert.doesNotMatch(experienceSource, /setFullscreen|<Expand|translatePublic\(locale, 'Fullscreen'\)/)
+})
+
+test('desktop list shell has explicit copy for every public locale', () => {
+  assert.match(experienceSource, /const desktopListShellCopy: Record<PublicLocale, DesktopListShellCopy>/)
+  for (const locale of ['en', 'sv', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(experienceSource, new RegExp(`\\n  ${locale}: desktopList`))
+  }
+  assert.match(experienceSource, /showMap: 'Visa karta'/)
+  assert.match(experienceSource, /showMap: 'Karte anzeigen'/)
+  assert.match(experienceSource, /showMap: 'Afficher la carte'/)
 })
 
 test('desktop list rows expose mapped vehicle, seller and action data', () => {

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { notFound, permanentRedirect, redirect } from 'next/navigation'
-import MarketplaceCategoryPage from '@/app/marketplace/[category]/page'
+import MarketplaceCategoryPage from '@/app/marketplace/MarketplaceCategoryPage'
 import {
   buildGeoMarketplaceHref,
   buildSeoMarketplaceSearchParams,

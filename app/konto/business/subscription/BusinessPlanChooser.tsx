@@ -84,7 +84,7 @@ export default function BusinessPlanChooser({
     const result = await response.json().catch(() => ({}))
     if (result.activated) {
       setSuccess({ message: copy.freeActivated })
-      setLoading('')
+      window.location.assign(localizePublicHref(locale, '/account/company/listings/create'))
       return
     }
     if (result.invoice) {

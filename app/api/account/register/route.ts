@@ -185,31 +185,42 @@ export async function POST(request: Request) {
         ? businessAccountConfirmationKeys
         : accountConfirmationKeys
 
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      firstName.length < 2 ||
-      lastName.length < 2 ||
-      (accountType === 'private' && !isAdult(birthDate)) ||
-      (accountType === 'business' && birthDate && !isAdult(birthDate)) ||
-      !phoneValidation.valid ||
-      !euCountryCodes.has(countryCode) ||
-      !addressLine1 ||
-      !postalCode ||
-      !city ||
-      (accountType === 'private' && !validateNationalId(countryCode, nationalId)) ||
-      (accountType === 'business' && (!companyName || !(registrationNumber || vatNumber))) ||
-      requiredConfirmations.some((key) => confirmations[key] !== true)
-    ) {
-      return NextResponse.json(
-        {
-          code: accountType === 'business' ? 'register_invalid_business' : 'register_invalid_private',
-          error:
-            accountType === 'business'
-              ? 'Kontrollera kontaktperson, företagsnamn, organisationsnummer, adress, telefonnummer och villkor.'
-              : 'Kontrollera namn, ålder, adress, telefonnummer och identitetsuppgifter.',
-        },
-        { status: 400 },
-      )
+    const invalidRegistration = (() => {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return { code: 'register_invalid_email', field: 'email', error: 'Kontrollera e-postadressen.' }
+      }
+      if (firstName.length < 2 || lastName.length < 2) {
+        return { code: 'register_invalid_name', field: firstName.length < 2 ? 'firstName' : 'lastName', error: 'Ange både förnamn och efternamn.' }
+      }
+      if (
+        (accountType === 'private' && !isAdult(birthDate)) ||
+        (accountType === 'business' && birthDate && !isAdult(birthDate))
+      ) {
+        return { code: 'register_invalid_birth_date', field: 'birthDate', error: 'Kontrollera födelsedatumet. Du måste vara minst 18 år.' }
+      }
+      if (!euCountryCodes.has(countryCode)) {
+        return { code: 'register_invalid_country', field: 'countryCode', error: 'Välj ett giltigt land.' }
+      }
+      if (!phoneValidation.valid) {
+        return { code: 'register_invalid_phone', field: 'phone', error: 'Kontrollera telefonnumret och landskoden.' }
+      }
+      if (!addressLine1 || !postalCode || !city) {
+        return { code: 'register_invalid_address', field: !addressLine1 ? 'addressLine1' : !postalCode ? 'postalCode' : 'city', error: 'Fyll i gatuadress, postnummer och ort.' }
+      }
+      if (accountType === 'private' && !validateNationalId(countryCode, nationalId)) {
+        return { code: 'register_invalid_national_id', field: 'nationalId', error: 'Kontrollera identitetsnumrets format.' }
+      }
+      if (accountType === 'business' && (!companyName || !(registrationNumber || vatNumber))) {
+        return { code: 'register_invalid_company', field: !companyName ? 'companyName' : 'registrationNumber', error: 'Fyll i företagsnamn och organisations- eller VAT-nummer.' }
+      }
+      if (requiredConfirmations.some((key) => confirmations[key] !== true)) {
+        return { code: 'register_terms_required', field: 'legalAccepted', error: 'Godkänn villkoren för att skapa kontot.' }
+      }
+      return null
+    })()
+
+    if (invalidRegistration) {
+      return NextResponse.json(invalidRegistration, { status: 400 })
     }
 
     const normalizedNationalId =

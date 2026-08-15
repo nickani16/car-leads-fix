@@ -186,7 +186,13 @@ export async function generateMetadata({
   }
 }
 
-export default async function MarketplaceCategoryPage({
+export default function MarketplaceCategoryPage(
+  props: Omit<MarketplaceCategoryPageProps, 'seoLanding'>,
+) {
+  return renderMarketplaceCategoryPage(props as MarketplaceCategoryPageProps)
+}
+
+async function renderMarketplaceCategoryPage({
   params,
   searchParams,
   seoLanding = null,

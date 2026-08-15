@@ -458,6 +458,128 @@ const filterDialogCopy: Record<PublicLocale, { close: string; label: string }> =
   da: { close: 'Luk filtermenu', label: 'Filtermuligheder' },
 }
 
+type DesktopListShellCopy = {
+  filters: string
+  clearAll: string
+  offerType: string
+  vehicleCategory: string
+  makeModelYear: string
+  allVehicles: string
+  before1950: string
+  anyPrice: string
+  locationMarket: string
+  county: string
+  municipality: string
+  vehicleDetails: string
+  mileageFuelEquipment: string
+  sellerCondition: string
+  allSellers: string
+  updatingResults: string
+  countFailure: string
+  resultsUpdate: string
+  sorting: string
+  showMap: string
+  loading: string
+  showMore: string
+  searchResults: string
+}
+
+const desktopListEn: DesktopListShellCopy = {
+  filters: 'Filters', clearAll: 'Clear all', offerType: 'Offer type', vehicleCategory: 'Vehicle category',
+  makeModelYear: 'Make, model and year', allVehicles: 'All vehicles', before1950: 'Before 1950', anyPrice: 'Any price',
+  locationMarket: 'Location and market', county: 'Region', municipality: 'Municipality', vehicleDetails: 'Vehicle details',
+  mileageFuelEquipment: 'Mileage, fuel and equipment', sellerCondition: 'Seller and condition', allSellers: 'All sellers',
+  updatingResults: 'Updating results...', countFailure: 'Could not update search count', resultsUpdate: 'Listings update as you change filters',
+  sorting: 'Sorting', showMap: 'Show map', loading: 'Loading...', showMore: 'Show more listings', searchResults: 'Search results',
+}
+const desktopListSv: DesktopListShellCopy = {
+  filters: 'Filter', clearAll: 'Rensa alla', offerType: 'Annonstyp', vehicleCategory: 'Fordonskategori',
+  makeModelYear: 'Märke, modell och årsmodell', allVehicles: 'Alla fordon', before1950: 'Före 1950', anyPrice: 'Alla priser',
+  locationMarket: 'Plats och marknad', county: 'Län', municipality: 'Kommun', vehicleDetails: 'Fordonsuppgifter',
+  mileageFuelEquipment: 'Miltal, drivmedel och utrustning', sellerCondition: 'Säljare och skick', allSellers: 'Alla säljare',
+  updatingResults: 'Uppdaterar resultat...', countFailure: 'Kunde inte uppdatera antal', resultsUpdate: 'Annonserna uppdateras när du ändrar filtren',
+  sorting: 'Sortering', showMap: 'Visa karta', loading: 'Laddar...', showMore: 'Visa fler annonser', searchResults: 'Sökresultat',
+}
+const desktopListDe: DesktopListShellCopy = {
+  filters: 'Filter', clearAll: 'Alle löschen', offerType: 'Angebotsart', vehicleCategory: 'Fahrzeugkategorie',
+  makeModelYear: 'Marke, Modell und Baujahr', allVehicles: 'Alle Fahrzeuge', before1950: 'Vor 1950', anyPrice: 'Jeder Preis',
+  locationMarket: 'Ort und Markt', county: 'Region', municipality: 'Gemeinde', vehicleDetails: 'Fahrzeugdetails',
+  mileageFuelEquipment: 'Kilometerstand, Kraftstoff und Ausstattung', sellerCondition: 'Verkäufer und Zustand', allSellers: 'Alle Verkäufer',
+  updatingResults: 'Ergebnisse werden aktualisiert...', countFailure: 'Anzahl konnte nicht aktualisiert werden', resultsUpdate: 'Anzeigen werden beim Ändern der Filter aktualisiert',
+  sorting: 'Sortierung', showMap: 'Karte anzeigen', loading: 'Wird geladen...', showMore: 'Mehr Anzeigen zeigen', searchResults: 'Suchergebnisse',
+}
+const desktopListNl: DesktopListShellCopy = {
+  filters: 'Filters', clearAll: 'Alles wissen', offerType: 'Type aanbod', vehicleCategory: 'Voertuigcategorie',
+  makeModelYear: 'Merk, model en bouwjaar', allVehicles: 'Alle voertuigen', before1950: 'Voor 1950', anyPrice: 'Elke prijs',
+  locationMarket: 'Locatie en markt', county: 'Provincie', municipality: 'Gemeente', vehicleDetails: 'Voertuiggegevens',
+  mileageFuelEquipment: 'Kilometerstand, brandstof en uitrusting', sellerCondition: 'Verkoper en staat', allSellers: 'Alle verkopers',
+  updatingResults: 'Resultaten worden bijgewerkt...', countFailure: 'Aantal kon niet worden bijgewerkt', resultsUpdate: 'Advertenties worden bijgewerkt wanneer je filters wijzigt',
+  sorting: 'Sortering', showMap: 'Kaart tonen', loading: 'Laden...', showMore: 'Meer advertenties tonen', searchResults: 'Zoekresultaten',
+}
+const desktopListFr: DesktopListShellCopy = {
+  filters: 'Filtres', clearAll: 'Tout effacer', offerType: "Type d'offre", vehicleCategory: 'Catégorie du véhicule',
+  makeModelYear: 'Marque, modèle et année', allVehicles: 'Tous les véhicules', before1950: 'Avant 1950', anyPrice: 'Tous les prix',
+  locationMarket: 'Lieu et marché', county: 'Région', municipality: 'Commune', vehicleDetails: 'Détails du véhicule',
+  mileageFuelEquipment: 'Kilométrage, carburant et équipements', sellerCondition: 'Vendeur et état', allSellers: 'Tous les vendeurs',
+  updatingResults: 'Mise à jour des résultats...', countFailure: 'Impossible de mettre à jour le nombre', resultsUpdate: 'Les annonces se mettent à jour lorsque vous modifiez les filtres',
+  sorting: 'Tri', showMap: 'Afficher la carte', loading: 'Chargement...', showMore: "Afficher plus d'annonces", searchResults: 'Résultats de recherche',
+}
+const desktopListEs: DesktopListShellCopy = {
+  filters: 'Filtros', clearAll: 'Borrar todo', offerType: 'Tipo de oferta', vehicleCategory: 'Categoría del vehículo',
+  makeModelYear: 'Marca, modelo y año', allVehicles: 'Todos los vehículos', before1950: 'Antes de 1950', anyPrice: 'Cualquier precio',
+  locationMarket: 'Ubicación y mercado', county: 'Región', municipality: 'Municipio', vehicleDetails: 'Datos del vehículo',
+  mileageFuelEquipment: 'Kilometraje, combustible y equipamiento', sellerCondition: 'Vendedor y estado', allSellers: 'Todos los vendedores',
+  updatingResults: 'Actualizando resultados...', countFailure: 'No se pudo actualizar el número', resultsUpdate: 'Los anuncios se actualizan al cambiar los filtros',
+  sorting: 'Ordenación', showMap: 'Ver mapa', loading: 'Cargando...', showMore: 'Ver más anuncios', searchResults: 'Resultados de búsqueda',
+}
+const desktopListIt: DesktopListShellCopy = {
+  filters: 'Filtri', clearAll: 'Cancella tutto', offerType: 'Tipo di offerta', vehicleCategory: 'Categoria del veicolo',
+  makeModelYear: 'Marca, modello e anno', allVehicles: 'Tutti i veicoli', before1950: 'Prima del 1950', anyPrice: 'Qualsiasi prezzo',
+  locationMarket: 'Località e mercato', county: 'Regione', municipality: 'Comune', vehicleDetails: 'Dati del veicolo',
+  mileageFuelEquipment: 'Chilometraggio, carburante e dotazioni', sellerCondition: 'Venditore e condizioni', allSellers: 'Tutti i venditori',
+  updatingResults: 'Aggiornamento dei risultati...', countFailure: 'Impossibile aggiornare il numero', resultsUpdate: 'Gli annunci si aggiornano quando modifichi i filtri',
+  sorting: 'Ordinamento', showMap: 'Mostra mappa', loading: 'Caricamento...', showMore: 'Mostra altri annunci', searchResults: 'Risultati di ricerca',
+}
+const desktopListPl: DesktopListShellCopy = {
+  filters: 'Filtry', clearAll: 'Wyczyść wszystko', offerType: 'Typ oferty', vehicleCategory: 'Kategoria pojazdu',
+  makeModelYear: 'Marka, model i rocznik', allVehicles: 'Wszystkie pojazdy', before1950: 'Przed 1950', anyPrice: 'Dowolna cena',
+  locationMarket: 'Lokalizacja i rynek', county: 'Województwo', municipality: 'Gmina', vehicleDetails: 'Dane pojazdu',
+  mileageFuelEquipment: 'Przebieg, paliwo i wyposażenie', sellerCondition: 'Sprzedawca i stan', allSellers: 'Wszyscy sprzedawcy',
+  updatingResults: 'Aktualizowanie wyników...', countFailure: 'Nie udało się zaktualizować liczby', resultsUpdate: 'Ogłoszenia aktualizują się po zmianie filtrów',
+  sorting: 'Sortowanie', showMap: 'Pokaż mapę', loading: 'Ładowanie...', showMore: 'Pokaż więcej ogłoszeń', searchResults: 'Wyniki wyszukiwania',
+}
+const desktopListFi: DesktopListShellCopy = {
+  filters: 'Suodattimet', clearAll: 'Tyhjennä kaikki', offerType: 'Ilmoitustyyppi', vehicleCategory: 'Ajoneuvoluokka',
+  makeModelYear: 'Merkki, malli ja vuosimalli', allVehicles: 'Kaikki ajoneuvot', before1950: 'Ennen vuotta 1950', anyPrice: 'Mikä tahansa hinta',
+  locationMarket: 'Sijainti ja markkina', county: 'Maakunta', municipality: 'Kunta', vehicleDetails: 'Ajoneuvon tiedot',
+  mileageFuelEquipment: 'Ajokilometrit, polttoaine ja varusteet', sellerCondition: 'Myyjä ja kunto', allSellers: 'Kaikki myyjät',
+  updatingResults: 'Päivitetään tuloksia...', countFailure: 'Määrää ei voitu päivittää', resultsUpdate: 'Ilmoitukset päivittyvät, kun muutat suodattimia',
+  sorting: 'Lajittelu', showMap: 'Näytä kartta', loading: 'Ladataan...', showMore: 'Näytä lisää ilmoituksia', searchResults: 'Hakutulokset',
+}
+const desktopListDa: DesktopListShellCopy = {
+  filters: 'Filtre', clearAll: 'Ryd alle', offerType: 'Annoncetype', vehicleCategory: 'Køretøjskategori',
+  makeModelYear: 'Mærke, model og modelår', allVehicles: 'Alle køretøjer', before1950: 'Før 1950', anyPrice: 'Enhver pris',
+  locationMarket: 'Placering og marked', county: 'Region', municipality: 'Kommune', vehicleDetails: 'Køretøjsoplysninger',
+  mileageFuelEquipment: 'Kilometertal, brændstof og udstyr', sellerCondition: 'Sælger og stand', allSellers: 'Alle sælgere',
+  updatingResults: 'Opdaterer resultater...', countFailure: 'Antallet kunne ikke opdateres', resultsUpdate: 'Annoncerne opdateres, når du ændrer filtrene',
+  sorting: 'Sortering', showMap: 'Vis kort', loading: 'Indlæser...', showMore: 'Vis flere annoncer', searchResults: 'Søgeresultater',
+}
+
+const desktopListShellCopy: Record<PublicLocale, DesktopListShellCopy> = {
+  en: desktopListEn,
+  sv: desktopListSv,
+  de: desktopListDe,
+  at: desktopListDe,
+  be: desktopListNl,
+  nl: desktopListNl,
+  fr: desktopListFr,
+  es: desktopListEs,
+  it: desktopListIt,
+  pl: desktopListPl,
+  fi: desktopListFi,
+  da: desktopListDa,
+}
+
 function priceFilterValue(listing: VehicleSearchListing) {
   const value = listing.displayPriceValue ?? listing.priceValue
   return Number.isFinite(value) ? value : 0
@@ -1021,6 +1143,9 @@ export default function VehicleSearchExperience({
   const [locationFiltersOpen, setLocationFiltersOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
+  const [listOfferTypeOpen, setListOfferTypeOpen] = useState(true)
+  const [listCategoryOpen, setListCategoryOpen] = useState(true)
+  const [listVehicleOpen, setListVehicleOpen] = useState(true)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
@@ -1814,6 +1939,7 @@ export default function VehicleSearchExperience({
     .map((id) => filteredListings.find((listing) => listing.id === id) || listings.find((listing) => listing.id === id))
     .filter((listing): listing is VehicleSearchListing => Boolean(listing))
   const compareCopy = getCompareCopy(locale)
+  const desktopListText = desktopListShellCopy[locale]
   const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
@@ -2006,7 +2132,7 @@ export default function VehicleSearchExperience({
     return translatePublic(locale, english)
   }
 
-  function renderDynamicTechnicalFacets() {
+  function renderDynamicTechnicalFacets(compact = false) {
     const knownKeys = new Set(['fuelType', 'gearbox', 'bodyType', 'condition', 'color', 'equipment'])
     const entries = Object.entries(searchFacets?.technical || {})
       .filter(([key, options]) => !knownKeys.has(key) && options.length > 0)
@@ -2014,7 +2140,7 @@ export default function VehicleSearchExperience({
     if (!entries.length) return null
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 sm:col-span-2">
+      <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2 sm:col-span-2'}`}>
         {entries.map(([key, options]) => (
           <FilterSelect
             key={key}
@@ -2406,6 +2532,8 @@ export default function VehicleSearchExperience({
                   <button
                     key={option.value}
                     type="button"
+                    // This callback runs only from the click event; it never reads route-sync refs during render.
+                    // eslint-disable-next-line react-hooks/refs
                     onClick={() => changeMarketplaceMode(option.value)}
                     className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[15px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
                   >
@@ -2523,6 +2651,8 @@ export default function VehicleSearchExperience({
                     <button
                       key={item.key}
                       type="button"
+                      // This callback runs only from the click event; it never reads route-sync refs during render.
+                      // eslint-disable-next-line react-hooks/refs
                       onClick={() => toggleCategory(item.key)}
                       className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
                     >
@@ -2753,10 +2883,319 @@ export default function VehicleSearchExperience({
           </div>
         </header>
 
-        {renderDesktopFilterBar('desktop')}
+        {desktopMarketplaceView === 'map' ? renderDesktopFilterBar('desktop') : null}
 
         <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'min-[1120px]:!grid-cols-1' : ''}`}>
-          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${desktopMarketplaceView === 'list' ? 'min-[1120px]:border-r-0' : ''} ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
+          {desktopMarketplaceView === 'list' ? (
+            <div
+              data-marketplace-desktop-list
+              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[292px_minmax(0,1fr)] bg-[#f4f6f8] min-[1120px]:grid"
+            >
+              <aside
+                data-marketplace-list-sidebar
+                aria-label={filterDialogCopy[locale].label}
+                className="flex min-h-0 flex-col border-r border-[#dfe5ee] bg-white"
+              >
+                <div className="border-b border-[#e6ebf2] px-5 pb-4 pt-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
+                      <h2 className="text-[18px] font-semibold text-[#101828]">
+                        {desktopListText.filters}
+                      </h2>
+                      {activeFilters.length ? (
+                        <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
+                          {activeFilters.length}
+                        </span>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="text-[12px] font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4"
+                    >
+                      {desktopListText.clearAll}
+                    </button>
+                  </div>
+                  <div className="mt-4">{renderMarketplaceSearchInput()}</div>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-1 [scrollbar-width:thin]">
+                  <CollapsibleFilterSection
+                    title={desktopListText.offerType}
+                    summary={marketplaceModeLabel(locale, mode)}
+                    open={listOfferTypeOpen}
+                    onToggle={() => setListOfferTypeOpen((open) => !open)}
+                  >
+                    <div className="grid grid-cols-3 rounded-[9px] border border-[#cfd7e4] bg-[#f8fafc] p-1">
+                      {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => changeMarketplaceMode(option)}
+                          className={`min-h-9 rounded-[7px] px-2 text-[11px] font-semibold transition ${
+                            mode === option
+                              ? 'bg-[#0866ff] text-white shadow-sm'
+                              : 'text-[#475467] hover:bg-white hover:text-[#101828]'
+                          }`}
+                        >
+                          {marketplaceModeOptionLabel(locale, option)}
+                        </button>
+                      ))}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={desktopListText.vehicleCategory}
+                    summary={categoryText(
+                      visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
+                        visibleSelectableCategories[0] ||
+                        selectableCategories[0],
+                      locale,
+                    )}
+                    open={listCategoryOpen}
+                    onToggle={() => setListCategoryOpen((open) => !open)}
+                  >
+                    <FilterSelect
+                      locale={locale}
+                      label={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
+                      value={activeCategoryKey}
+                      onChange={(value) => {
+                        if (value && value !== activeCategoryKey) toggleCategory(value)
+                      }}
+                      options={visibleSelectableCategories.map((item) => ({ value: item.key, label: categoryText(item, locale) }))}
+                    />
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={desktopListText.makeModelYear}
+                    summary={[make, model, minYear || maxYear ? `${minYear || '1950'}-${maxYear || '+'}` : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listVehicleOpen}
+                    onToggle={() => setListVehicleOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Make', 'Märke', 'Marke')}
+                        value={make}
+                        onChange={(value) => {
+                          seoRouteSyncArmedRef.current = value !== make || Boolean(model)
+                          setMake(value)
+                          setModel('')
+                        }}
+                        options={makeModelOptions.makes.map((option) => ({ value: option.value, label: `${option.label} (${option.count})` }))}
+                      />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Model', 'Modell', 'Modell')}
+                        value={model}
+                        onChange={(value) => {
+                          seoRouteSyncArmedRef.current = value !== model
+                          setModel(value)
+                        }}
+                        options={makeModelOptions.models.map((option) => ({ value: option.value, label: `${option.label} (${option.count})` }))}
+                      />
+                      <RangeFilter
+                        locale={locale}
+                        title={translatePublic(locale, 'Model year')}
+                        minValue={minYear}
+                        maxValue={maxYear}
+                        onMinChange={setMinYear}
+                        onMaxChange={setMaxYear}
+                        minLimit={1950}
+                        maxLimit={new Date().getFullYear() + 1}
+                        step={1}
+                        startLabel={desktopListText.before1950}
+                      />
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                    summary={minPrice || maxPrice ? `${minPrice || '0'}-${maxPrice || '+'} ${priceFilterCurrency}` : desktopListText.anyPrice}
+                    open={priceYearOpen}
+                    onToggle={() => setPriceYearOpen((open) => !open)}
+                  >
+                    <RangeFilter
+                      locale={locale}
+                      title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                      minValue={minPrice}
+                      maxValue={maxPrice}
+                      onMinChange={setMinPrice}
+                      onMaxChange={setMaxPrice}
+                      minLimit={priceBounds.min}
+                      maxLimit={priceBounds.max}
+                      unit={priceFilterCurrency}
+                      step={1000}
+                    />
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={desktopListText.locationMarket}
+                    summary={[region, municipality, marketSummary].filter(Boolean).join(' · ')}
+                    open={locationFiltersOpen}
+                    onToggle={() => setLocationFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      <FilterSelect locale={locale} label={desktopListText.county} value={region} onChange={updateRegionFilter} options={regionOptions} />
+                      <FilterSelect locale={locale} label={desktopListText.municipality} value={municipality} onChange={updateMunicipalityFilter} options={municipalityOptions} />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Market', 'Marknad', 'Markt')}
+                        value={selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''}
+                        onChange={(value) => {
+                          setMarketOverride(true)
+                          setSelectedMarkets(value ? [value] : [])
+                        }}
+                        options={marketOptions.filter((option) => option.value)}
+                      />
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={desktopListText.vehicleDetails}
+                    summary={desktopListText.mileageFuelEquipment}
+                    open={moreFiltersOpen}
+                    onToggle={() => setMoreFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      {categoryFilterProfile(activeCategoryKey)
+                        .filter((filter) => filter.key !== 'condition')
+                        .map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
+                      {renderDynamicTechnicalFacets(true)}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    title={desktopListText.sellerCondition}
+                    summary={sellerSummary}
+                    open={sellerFiltersOpen}
+                    onToggle={() => setSellerFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3 pb-4">
+                      <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
+                        value={sellerType}
+                        onChange={setSellerType}
+                        options={[
+                          { value: 'all', label: desktopListText.allSellers },
+                          { value: 'business', label: uiText(locale, 'Business', 'Företag', 'Unternehmen') },
+                          { value: 'private', label: uiText(locale, 'Private seller', 'Privatperson', 'Privatperson') },
+                        ]}
+                      />
+                      <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
+                    </div>
+                  </CollapsibleFilterSection>
+                </div>
+              </aside>
+
+              <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
+                <div className="border-b border-[#dfe5ee] bg-white px-6 py-4 2xl:px-8">
+                  <div className="flex items-center justify-between gap-5">
+                    <div className="min-w-0">
+                      <p className="truncate text-[20px] font-semibold text-[#101828]">
+                        {searchLoading && searchPage === 1
+                          ? desktopListText.updatingResults
+                          : searchError
+                            ? desktopListText.countFailure
+                            : resultCountSummary}
+                      </p>
+                      <p className="mt-1 text-[12px] font-medium text-[#667085]">
+                        {desktopListText.resultsUpdate}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <label className="relative block">
+                        <span className="sr-only">{desktopListText.sorting}</span>
+                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-10 min-w-[170px] appearance-none rounded-[8px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[13px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
+                          {sortOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+                      </label>
+                      <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-[13px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                        <MapPin className="h-4 w-4" aria-hidden="true" />
+                        {desktopListText.showMap}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex min-h-8 items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"><ActiveFilterChips filters={activeFilters} locale={locale} /></div>
+                    <button type="button" onClick={saveCurrentSearch} disabled={savingSearch} className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[8px] px-4 text-[12px] font-semibold text-white transition ${savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'} disabled:cursor-wait disabled:opacity-70`}>
+                      <Bookmark className="h-4 w-4" aria-hidden="true" />
+                      {saveSearchButtonLabel}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f8] px-6 py-5 [scrollbar-width:thin] 2xl:px-8">
+                  {filteredListings.length ? (
+                    <ol className="mx-auto max-w-[1260px] space-y-4">
+                      {filteredListings.map((listing) => (
+                        <li key={listing.id}>
+                          <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <div className="mx-auto flex max-w-[520px] flex-col items-center px-6 py-14 text-center">
+                      <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={220} height={150} className="h-auto w-[200px]" />
+                      <p className="mt-5 text-2xl font-semibold text-[#101828]">{seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}</p>
+                      <p className="mt-2 text-sm leading-6 text-[#667085]">{translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}</p>
+                    </div>
+                  )}
+                  {filteredListings.length > 0 && searchPage < searchTotalPages ? (
+                    <div className="py-6 text-center">
+                      <button type="button" onClick={() => setSearchPage((page) => page + 1)} disabled={searchLoading} className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-[#cfd7e4] bg-white px-6 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-wait disabled:opacity-60">
+                        {searchLoading ? desktopListText.loading : desktopListText.showMore}
+                      </button>
+                    </div>
+                  ) : null}
+                  <div className="mx-auto mt-4 max-w-[1260px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                </div>
+                {compareIds.length ? (
+                  <div className="absolute bottom-5 left-1/2 z-30 w-[min(640px,calc(100%_-_40px))] -translate-x-1/2 rounded-[10px] border border-[#c9d9ef] bg-white/96 px-4 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#101828]">
+                          {compareIds.length} {compareIds.length === 1 ? compareCopy.selectedSingular : compareCopy.selectedPlural}
+                        </p>
+                        <p className="truncate text-xs font-medium text-[#667085]">{compareError || compareCopy.helper}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCompareOpen(true)}
+                          disabled={compareIds.length < 2}
+                          className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0757da] disabled:bg-[#c8d2e2]"
+                        >
+                          <Scale className="h-4 w-4" />
+                          {compareCopy.action}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompareIds([])
+                            setCompareOpen(false)
+                            setCompareError('')
+                          }}
+                          aria-label={compareCopy.clear}
+                          className="grid h-9 w-9 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#475467]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </section>
+            </div>
+          ) : null}
+
+          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${desktopMarketplaceView === 'list' ? 'min-[1120px]:hidden' : ''} ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
             <div className="bg-white">
               <div className="min-w-0 max-w-full overflow-visible bg-white">
                 <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[90] w-full max-w-full overflow-visible border-y border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:border-t-0`}>
@@ -2925,20 +3364,10 @@ export default function VehicleSearchExperience({
                   )}
                 </p>
                 <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
-                  {desktopMarketplaceView === 'list' ? (
-                    <button
-                      type="button"
-                      onClick={() => setDesktopMarketplaceView('map')}
-                      className="hidden h-10 items-center justify-center gap-2 rounded-[8px] border border-[#0866ff] bg-white px-4 text-[13px] font-semibold text-[#0866ff] transition hover:bg-[#eef5ff] min-[1120px]:inline-flex"
-                    >
-                      <MapPin className="h-4 w-4" aria-hidden="true" />
-                      {translatePublic(locale, 'Map')}
-                    </button>
-                  ) : null}
                   <button
                     type="button"
                     onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                    className={`h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${desktopMarketplaceView === 'list' ? 'grid min-[1120px]:hidden' : 'grid'} ${
+                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
                       resultsLayout === 'split'
                         ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                         : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
@@ -2969,26 +3398,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <>
-                  {desktopMarketplaceView === 'list' ? (
-                    <ol className="hidden space-y-4 bg-[#f7f9fc] px-5 py-5 min-[1120px]:block 2xl:px-7 2xl:py-6">
-                      {filteredListings.map((listing) => (
-                        <li key={listing.id}>
-                          <MarketplaceDesktopListingRow
-                            listing={listing}
-                            locale={locale}
-                            offerBadge={listingOfferBadge(locale, listing)}
-                            insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)}
-                            equipmentChips={listingEquipmentChips(listing.equipment)}
-                            compareActive={compareIds.includes(listing.id)}
-                            onCompare={() => toggleCompare(listing.id)}
-                            onBeforeNavigate={rememberSearchBeforeListingNavigation}
-                          />
-                        </li>
-                      ))}
-                    </ol>
-                  ) : null}
-                  <div className={`${desktopMarketplaceView === 'list' ? 'min-[1120px]:hidden' : ''} ${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}`}>
+                <div className={`${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}`}>
                     {filteredListings.map((listing) => (
                       <VehicleResultCard
                         key={listing.id}
@@ -3000,8 +3410,7 @@ export default function VehicleSearchExperience({
                         layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
                       />
                     ))}
-                  </div>
-                </>
+                </div>
               ) : (
                 <div className="px-6 py-14 sm:px-8 sm:py-16">
                   <div className="mx-auto flex max-w-[520px] flex-col items-center text-center">
