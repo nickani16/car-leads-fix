@@ -102,23 +102,28 @@ export async function POST(request: Request) {
     if (profile.account_type !== 'business' || profile.business_verification_status !== 'verified' || !['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
       return NextResponse.json({ error: 'Företaget måste vara godkänt innan Free kan aktiveras.' }, { status: 403 })
     }
-    const { data: existingSubscription, error: existingSubscriptionError } = await admin
+    const { data: existingSubscriptions, error: existingSubscriptionError } = await admin
       .from('business_subscriptions')
       .select('id,plan_key,stripe_subscription_id,status')
       .eq('user_id', subscriptionUserId)
       .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
     if (existingSubscriptionError) {
       return NextResponse.json({ error: 'Could not load the company subscription.' }, { status: 500 })
     }
-    if (existingSubscription?.stripe_subscription_id) {
+    const subscriptions = existingSubscriptions || []
+    const existingSubscription = subscriptions[0] || null
+    const stripeSubscriptionIds = Array.from(new Set(
+      subscriptions
+        .map((subscription) => subscription.stripe_subscription_id)
+        .filter((subscriptionId): subscriptionId is string => Boolean(subscriptionId)),
+    ))
+    for (const stripeSubscriptionId of stripeSubscriptionIds) {
       try {
-        await getStripe().subscriptions.cancel(existingSubscription.stripe_subscription_id)
+        await getStripe().subscriptions.cancel(stripeSubscriptionId)
       } catch (error) {
         if (!isMissingStripeResource(error)) {
           console.error('[listing-checkout] Could not cancel paid subscription before Free activation', {
-            subscriptionId: existingSubscription.stripe_subscription_id,
+            subscriptionId: stripeSubscriptionId,
             userId: subscriptionUserId,
             error: error instanceof Error ? error.message : String(error),
           })
@@ -158,6 +163,34 @@ export async function POST(request: Request) {
       : await admin.from('business_subscriptions').insert(freePayload).select('id,plan_key,status,active_listing_limit').single()
     if (subscriptionError || !subscription) {
       return NextResponse.json({ error: subscriptionError?.message || 'Could not activate Free plan.' }, { status: 400 })
+    }
+    const obsoleteSubscriptionIds = subscriptions
+      .slice(1)
+      .map((candidate) => candidate.id)
+      .filter(Boolean)
+    if (obsoleteSubscriptionIds.length > 0) {
+      const { error: obsoleteSubscriptionError } = await admin
+        .from('business_subscriptions')
+        .update({
+          status: 'canceled',
+          payment_status: 'not_required',
+          stripe_subscription_id: null,
+          cancel_at_period_end: false,
+          payment_warning_at: null,
+          grace_period_ends_at: null,
+          cancellation_effective_at: now,
+          cancelled_at: now,
+          updated_at: now,
+        })
+        .in('id', obsoleteSubscriptionIds)
+      if (obsoleteSubscriptionError) {
+        console.error('[listing-checkout] Free activated but obsolete subscriptions could not be retired', {
+          subscriptionIds: obsoleteSubscriptionIds,
+          userId: subscriptionUserId,
+          error: obsoleteSubscriptionError.message,
+        })
+        return NextResponse.json({ error: 'Free was activated, but older company subscriptions could not be closed.' }, { status: 500 })
+      }
     }
     const profileActivation = admin
       .from('marketplace_profiles')

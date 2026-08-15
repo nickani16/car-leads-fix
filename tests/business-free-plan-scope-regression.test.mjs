@@ -21,7 +21,11 @@ test('Free activation updates the company subscription owner instead of the acti
 })
 
 test('Free activation closes stale paid billing and restores the whole company profile', () => {
-  assert.match(checkoutRoute, /subscriptions\.cancel\(existingSubscription\.stripe_subscription_id\)/)
+  assert.match(checkoutRoute, /const stripeSubscriptionIds = Array\.from\(new Set\(/)
+  assert.match(checkoutRoute, /for \(const stripeSubscriptionId of stripeSubscriptionIds\)/)
+  assert.match(checkoutRoute, /subscriptions\.cancel\(stripeSubscriptionId\)/)
+  assert.match(checkoutRoute, /const obsoleteSubscriptionIds = subscriptions/)
+  assert.match(checkoutRoute, /\.in\('id', obsoleteSubscriptionIds\)/)
   assert.match(checkoutRoute, /stripe_subscription_id: null/)
   assert.match(checkoutRoute, /payment_status: 'not_required'/)
   assert.match(checkoutRoute, /business_onboarding_status: 'active'/)
